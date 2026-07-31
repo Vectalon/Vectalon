@@ -751,7 +751,7 @@ Areas we'd love help with:
 
 **Next up:**
 
-- **v0.2** — Local ONNX/CoreML model for truly offline component generation
+- **v0.4** — Local free-for-commercial-use code model (`Qwen2.5-Coder` via `node-llama-cpp`) for offline generation, with deterministic stub fallback
 - **Hosted artifact store** — sync the team brain to a remote (git remote or hosted service)
 - **Real embedding APIs** — OpenAI/Anthropic embeddings through the `EmbeddingProvider` seam
 - **CI/CD integration** — auto-fix PRs, draft release notes in CI

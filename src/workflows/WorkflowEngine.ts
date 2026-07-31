@@ -6,7 +6,7 @@ import type {
   PhaseResult,
 } from '../adapters/types'
 
-export interface WorkflowEngineOptions {
+interface WorkflowEngineOptions {
   resume?: boolean
   fromPhase?: string
 }

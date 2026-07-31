@@ -1,19 +1,16 @@
-export { WorkflowEngine, WorkflowEngineOptions } from './WorkflowEngine'
+export { WorkflowEngine } from './WorkflowEngine'
 export * from './WorkflowState'
 export type {
   WorkflowState,
   WorkflowContext,
-  WorkflowPhase,
   WorkflowDefinition,
-  WorkflowRegistry,
   PhaseResult,
-  WorkflowArtifact,
 } from '../adapters/types'
 
 import { featureDevelopmentWorkflow } from './definitions/featureDevelopment'
-import type { WorkflowDefinition, WorkflowRegistry } from '../adapters/types'
+import type { WorkflowDefinition } from '../adapters/types'
 
-export const WORKFLOWS: WorkflowRegistry = {
+const WORKFLOWS: Record<string, WorkflowDefinition> = {
   [featureDevelopmentWorkflow.id]: featureDevelopmentWorkflow,
 }
 

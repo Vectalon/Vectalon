@@ -131,6 +131,98 @@ Each phase runs the full SDLC loop: requirement → TDD → verify → release.
 - Provenance on every artifact.
 - Security review of remote embedding calls; API-key hygiene via config store.
 
+## Phase H — Local free-for-commercial-use model (v0.4)
+
+> Note: the original README roadmap labeled this "v0.2". Because the previous
+> releases (feature-development workflow, CLI polish, interactive menu, and
+> cleanup) shipped as v0.2.0–v0.3.0, this phase is now targeted at v0.4.0.
+
+Replace the deterministic `LocalProvider` stub with a real, locally runnable
+code model that works offline and is **free for commercial use**.
+
+### Model choice
+
+| Model | License | Commercial use | Size | Why |
+|---|---|---|---|---|
+| **Qwen2.5-Coder-1.5B-Instruct-GGUF** | Apache 2.0 | ✅ Free | ~1.1 GB (Q4_K_M) | Apache 2.0, small enough for laptops, strong coding performance, GGUF ecosystem, chat template support |
+| Qwen2.5-Coder-3B-Instruct-GGUF | Apache 2.0 | ✅ Free | ~2.0 GB (Q4_K_M) | Better quality if the user has more RAM |
+| Llama 3.1/3.2 Instruct GGUF | Llama 3 license | ✅ Free | 1–4 GB | Alternative, also GGUF compatible |
+| DeepSeek-Coder-V2 / V2.5 | DeepSeek license | ✅ Free | 3–16 GB | Strong code model, but larger |
+
+**Primary default**: `Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF:Q4_K_M` because the
+Apache 2.0 license is unambiguous for commercial use, and the 1.5B Q4_K_M
+quantization runs on CPU in ~1 GB of RAM.
+
+### Runtime choice
+
+| Option | License | Pros | Cons |
+|---|---|---|---|
+| **node-llama-cpp** | MIT | Pre-built binaries for macOS/Linux/Windows, Metal/CUDA/Vulkan, GGUF, chat templates, JSON schema | ESM-only, requires Node ≥20, native binaries, larger install |
+| **ollama** (subprocess) | MIT | Easy UX, handles model pulls, OpenAI-compatible API | Requires separate Ollama install, subprocess dependency |
+| **llama.cpp CLI** | MIT | Fastest, no Node binding | Requires manual download/compile |
+| **onnxruntime-node** | MIT | Pure JS/ONNX | Smaller model ecosystem, harder to find good RN code models |
+
+**Primary choice**: `node-llama-cpp` as the default runtime. It is MIT licensed,
+ships pre-built binaries, supports the chosen GGUF model, and has a TypeScript API.
+Because it is ESM-only and we compile to CommonJS, we load it via dynamic `import()`.
+
+### Commands
+
+```bash
+# Download the default model into ~/.config/rn-vectalon/models/
+vectalon pull
+
+# Download a specific model/quantization
+vectalon pull qwen2.5-coder-1.5b:q4_k_m
+
+# List downloaded models
+vectalon models
+
+# Interactive chat with the local model (optional)
+vectalon chat
+```
+
+### Integration plan
+
+1. **Model storage layer**
+   - `src/model/local/ModelStore.ts`: paths, download cache, manifest, cleanup
+   - Default directory: `~/.config/rn-vectalon/models/` (respect `RN_VECTALON_CONFIG_DIR`)
+   - Manifest records: model id, source URL, quantization, checksum, downloadedAt
+
+2. **Download / pull command**
+   - `src/cli/commands/pull.ts`: `vectalon pull [model][:quantization]`
+   - Use Hugging Face `huggingface-cli` or `node-llama-cpp` download helpers, or a plain HTTPS fetch to the GGUF file
+   - Show progress with `@clack/prompts`
+   - Verify checksum
+
+3. **Local model provider rewrite**
+   - `src/model/providers/LocalProvider.ts`:
+     - Load `node-llama-cpp` via dynamic import
+     - If a downloaded model exists, create `LlamaChatSession` and prompt
+     - Apply Qwen chat template
+     - If no model exists, fall back to the deterministic echo stub with a warning
+     - Keep `isReady()` semantics
+
+4. **Model router updates**
+   - `ModelRouter` stays the same; `provider: 'local'` now does real inference when a model is present.
+   - Add a `modelStatus` check to tools so the agent can tell whether it is running against the stub or the real model.
+
+5. **Non-functional requirements**
+   - **Deterministic fallback preserved**: tests run without downloading any model.
+   - **Optional dependency**: `node-llama-cpp` is an optional/peer dependency so installs without native binaries still work.
+   - **Engine bump**: Node `>=20.12.0` because `node-llama-cpp` requires Node ≥20 and `@clack/prompts` already requires Node ≥20.12.0.
+   - **License hygiene**: default model is Apache 2.0; document the license and attribution in the model manifest.
+
+### Status
+
+- [ ] Model store + download command
+- [ ] node-llama-cpp dynamic integration
+- [ ] Qwen chat template support
+- [ ] Fallback to deterministic stub
+- [ ] `vectalon models` / `vectalon chat` commands
+- [ ] Tests with stub (no model download required)
+- [ ] Documentation and license attribution
+
 ## Status tracker
 
 - [x] v0.1.0 release (tests, lint, typecheck, CI-ready scripts)
@@ -141,3 +233,4 @@ Each phase runs the full SDLC loop: requirement → TDD → verify → release.
 - [x] **Phase E — DevOps, ops, analytics** (ReleaseNoteWriter, IncidentAnalyzer, RunbookWriter, KpiReportAnalyzer; write_release_notes, analyze_incident, write_runbook, analyze_kpis)
 - [x] **Phase F — Team brain** (TeamStore multi-project registry; get_team_context + search_knowledge scoped by team/project/type; .vectalon/team.json config)
 - [x] **Phase G — Model-backed retrieval** (KnowledgeIndex with TF lexical + semantic cosine merge; embeddings provider seam + deterministic HashEmbeddingProvider; search_knowledge surfaces lexical/semantic scores)
+- [ ] **Phase H — Local model** (Qwen2.5-Coder + node-llama-cpp, free for commercial use, deterministic fallback)

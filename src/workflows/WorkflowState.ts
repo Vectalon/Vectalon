@@ -2,11 +2,11 @@ import { mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync } from 
 import { join } from 'path'
 import type { WorkflowState } from '../adapters/types'
 
-export function workflowStateDir(projectRoot: string, workflowId: string): string {
+function workflowStateDir(projectRoot: string, workflowId: string): string {
   return join(projectRoot, '.vectalon', 'workflows', workflowId)
 }
 
-export function generateWorkflowId(prompt: string): string {
+function generateWorkflowId(prompt: string): string {
   const slug = prompt
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')

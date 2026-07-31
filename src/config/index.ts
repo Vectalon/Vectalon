@@ -54,9 +54,3 @@ export function resetConfig(): void {
   cache = null
   rmSync(configDir(), { recursive: true, force: true })
 }
-
-export const store = {
-  get: (key: string) => getConfig(key),
-  set: (key: string, value: unknown) => setConfig(key, value),
-  clear: () => resetConfig(),
-}
