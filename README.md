@@ -36,13 +36,27 @@ rn-vectalon learns as your project grows:
 - Records decisions and their outcomes
 - Adapts its suggestions to match your codebase
 
-### SDLC Tools
-Built-in modules for common development tasks:
-- **Component Generator** — Create components matching project conventions
-- **Test Writer** — Generate Jest or Detox tests for any component
-- **Debug Analyzer** — Categorize and fix build/runtime errors
-- **Lint Fixer** — Auto-fix common lint issues
-- **Dependency Advisor** — Suggest updates and migrations
+### Multi-Role SDLC Harness
+
+Beyond the v0.1 core, rn-vectalon ships deterministic SDLC modules covering the
+whole lifecycle — **28 tools total**, all callable by any MCP agent:
+
+- **Requirements & BA** — PRDs, user stories, acceptance criteria, gap analysis,
+  SWOT, support-ticket theming
+- **QA & Engineering** — test plans, deterministic Jest cases from acceptance
+  criteria, bug triage, root-cause analysis, code review, refactor suggestions
+- **Architecture, Security, UX** — ADRs, tradeoff ranking, STRIDE threat models,
+  accessibility checks, design-token extraction, ASCII wireframes
+- **DevOps, Ops, Analytics** — release notes, incident analysis, runbooks, KPI
+  reports
+- **Company Brain** — a typed, versioned, traceable artifact store plus
+  role-scoped context and cross-project team retrieval
+
+Plus the v0.1 development tools: **Component Generator**, **Test Writer**,
+**Debug Analyzer**, **Lint Fixer**, and **Dependency Advisor**.
+
+Every SDLC tool is **deterministic-first** — it produces useful output with zero
+model calls, and can be optionally `enhance`d through the configured model.
 
 ### Pluggable Model Layer
 Works with any model:
@@ -71,11 +85,20 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 │  │  │  Engine   │  │  Router  │  │  Protocol  │  │    │
 │  │  └─────┬─────┘  └────┬─────┘  └────────────┘  │    │
 │  │        │              │                        │    │
-│  │  ┌─────▼──────────────▼─────┐                  │    │
-│  │  │     Evolution Engine     │                  │    │
-│  │  │  (Project Memory +       │                  │    │
-│  │  │   Pattern Learner)       │                  │    │
-│  │  └──────────────────────────┘                  │    │
+│  │  ┌─────▼──────────────▼─────────────────────┐  │    │
+│  │  │          Evolution Engine               │  │    │
+│  │  │  (Project Memory + Pattern Learner)     │  │    │
+│  │  └─────────────────────────────────────────┘  │    │
+│  │  ┌─────────────────────────────────────────┐  │    │
+│  │  │        SDLC Modules (28 tools)         │  │    │
+│  │  │  BA · QA · Architecture · Security ·   │  │    │
+│  │  │  UX · DevOps · Ops · Analytics         │  │    │
+│  │  └─────────────────────────────────────────┘  │    │
+│  │  ┌─────────────────────────────────────────┐  │    │
+│  │  │      Company Brain (knowledge base)    │  │    │
+│  │  │  ArtifactStore · RoleEngine · TeamStore│  │    │
+│  │  │  KnowledgeIndex · embeddings           │  │    │
+│  │  └─────────────────────────────────────────┘  │    │
 │  └──────────────────────────────────────────────┘    │
 │                                                        │
 │  ┌──────────────────────────────────────────────┐    │
@@ -88,10 +111,11 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 ### Flow
 
 1. **`rn-vectalon init`** — Scans your project, catalogues components, detects patterns, stores context in `.vectalon/`
-2. **`rn-vectalon serve`** — Starts a local server exposing MCP tools: `get_project_context`, `generate_component`, `write_test`, `analyze_error`, `get_learned_patterns`
-3. **Agent connects** — Your AI agent (Claude Code, OpenCode, etc.) connects to the MCP server and gets full project awareness
-4. **Agent acts** — The agent uses the harness tools to generate code, fix bugs, write tests — all in your project's style
-5. **Harness learns** — Every interaction improves the pattern store. The next session is even smarter.
+2. **`rn-vectalon serve`** — Starts a local server exposing 26 core MCP tools (plus the Company Brain tools when a knowledge base is present)
+3. **`rn-vectalon import`** — Feeds the Company Brain: PRDs, Jira exports, postmortems, any SDLC artifact
+4. **Agent connects** — Your AI agent (Claude Code, OpenCode, etc.) connects to the MCP server and gets full project awareness
+5. **Agent acts** — The agent uses the harness tools to generate code, fix bugs, write tests, produce PRDs/ADRs/test plans — all in your project's style
+6. **Harness learns** — Every interaction improves the pattern store and the knowledge base. The next session is even smarter.
 
 ---
 
@@ -193,7 +217,11 @@ npx rn-vectalon serve --protocol http --port 8931
 
 ## Available Tools
 
-Once the server is running, agents can call:
+Once the server is running, agents can call **32 tools** — 26 always available,
+4 more when a knowledge base is present, and 2 more when a team brain is
+configured:
+
+#### Core (project-aware dev)
 
 | Tool | Description |
 |---|---|
@@ -203,28 +231,58 @@ Once the server is running, agents can call:
 | `analyze_error` | Analyze RN errors with categorized fixes |
 | `suggest_dependency_update` | Suggest dependency upgrades against a curated catalog |
 | `get_learned_patterns` | View patterns the harness has learned |
+
+#### Requirements & BA
+
+| Tool | Description |
+|---|---|
 | `write_prd` | Write a Product Requirements Document scaffold for a feature (persists as a `product` artifact) |
 | `write_user_stories` | Write user stories, one per persona, optionally linked to a parent artifact |
 | `define_acceptance_criteria` | Define Given/When/Then acceptance criteria for a user story |
 | `analyze_support_tickets` | Group support tickets into themes and recommend next steps |
 | `run_gap_analysis` | Compare desired vs current capabilities and report gaps |
+
+#### QA & Engineering
+
+| Tool | Description |
+|---|---|
 | `write_test_plan` | Write a QA test plan scaffold for a feature |
 | `triage_bugs` | Triage bug reports by severity (critical→low) and priority (p0→p3) |
 | `analyze_root_cause` | Classify a production issue into a root-cause bucket with investigation steps |
 | `review_code` | Deterministic code review: console.log, `any`, empty catches, TODOs, inline styles |
 | `suggest_refactors` | Static refactor heuristics: oversized files/functions, magic numbers, `any` |
+
+#### Architecture, Security & UX
+
+| Tool | Description |
+|---|---|
 | `write_adr` | Write an Architecture Decision Record scaffold |
 | `analyze_tradeoffs` | Rank architecture options by scored attributes |
 | `threat_model` | Produce a STRIDE threat model for a feature |
 | `check_accessibility` | Deterministic a11y checks: unlabelled images, touchable roles, text inputs |
 | `extract_design_system` | Extract design tokens (colors, spacing, fonts, radius) from style code |
 | `generate_wireframe` | Generate an ASCII wireframe from a section list |
+
+#### DevOps, Ops & Analytics
+
+| Tool | Description |
+|---|---|
 | `write_release_notes` | Write release notes, auto-categorizing the change list into Added/Fixed/Security/… sections |
 | `analyze_incident` | Analyze a production incident: severity, root-cause bucket, timeline, actions |
 | `write_runbook` | Write an ops runbook with symptoms, numbered steps, and escalation |
 | `analyze_kpis` | Evaluate KPI metrics (JSON array of `{ name, current, previous?, target? }`) with baselines and targets |
+
+#### Team brain (when `.vectalon/team.json` is configured)
+
+| Tool | Description |
+|---|---|
 | `get_team_context` | Aggregated knowledge context across team projects, scoped by team, project, and role |
 | `search_knowledge` | Ranked cross-project search across the team brain, scoped by team, project, and type |
+
+#### Knowledge base (when a store is present)
+
+| Tool | Description |
+|---|---|
 | `list_artifacts` | List artifacts in the knowledge base |
 | `get_artifact` | Get a single knowledge base artifact by id |
 | `get_knowledge_context` | Knowledge base context scoped to a role (pm, ba, architect, engineer, qa, devops, support, analyst) |
@@ -480,38 +538,50 @@ rn-vectalon/
 │   │   ├── commands/
 │   │   │   ├── init.ts    # Project initialization
 │   │   │   ├── import.ts  # Knowledge base artifact import
-│   │   │   └── serve.ts   # MCP server startup
+│   │   │   └── serve.ts   # MCP server startup (+ .vectalon/team.json)
 │   │   └── index.ts       # CLI runner
 │   ├── harness/
 │   │   ├── Scanner.ts     # Project & component scanner
 │   │   ├── ContextEngine  # Context builder & manager
 │   │   └── types.ts
-│   ├── knowledge/         # Company Brain: typed, traceable artifact store
-│   │   ├── artifactTypes.ts
-│   │   ├── ArtifactStore.ts
-│   │   ├── Traceability.ts
-│   │   └── RoleEngine.ts
+│   ├── knowledge/         # Company Brain
+│   │   ├── artifactTypes.ts   # 13-type taxonomy + role→type map
+│   │   ├── ArtifactStore.ts   # Versioned, traceable artifact store
+│   │   ├── Traceability.ts    # RTM graph traversal over links
+│   │   ├── RoleEngine.ts      # Role-scoped context assembly
+│   │   ├── TeamStore.ts       # Multi-project registry (team brain)
+│   │   ├── KnowledgeIndex.ts  # TF + semantic retrieval
+│   │   └── embeddings.ts      # Provider seam + cosine similarity
+│   ├── sdlc/             # Deterministic-first SDLC modules (27)
+│   │   ├── RequirementWriter.ts, StoryWriter.ts, AcceptanceCriteriaWriter.ts,
+│   │   │   GapAnalyzer.ts, SWOTAnalyzer.ts, SupportTicketAnalyzer.ts   # BA
+│   │   ├── TestPlanWriter.ts, TestCaseWriter.ts, BugTriageAnalyzer.ts,
+│   │   │   RootCauseAnalyzer.ts, CodeReviewAnalyzer.ts,
+│   │   │   RefactorSuggester.ts                                       # QA/Eng
+│   │   ├── ADRWriter.ts, TradeoffAnalyzer.ts, ThreatModeler.ts,
+│   │   │   AccessibilityChecker.ts, DesignSystemExtractor.ts,
+│   │   │   WireframeGenerator.ts                                      # Arch/Sec/UX
+│   │   ├── ReleaseNoteWriter.ts, IncidentAnalyzer.ts, RunbookWriter.ts,
+│   │   │   KpiReportAnalyzer.ts                                       # DevOps/Ops
+│   │   └── ComponentGenerator.ts, TestWriter.ts, DebugAnalyzer.ts,
+│   │       LintFixer.ts                                               # v0.1 core
 │   ├── model/
 │   │   ├── ModelRouter.ts # Routes requests to providers
-│   │   ├── providers/
-│   │   │   ├── LocalProvider.ts
-│   │   │   └── RemoteProvider.ts
+│   │   ├── providers/     # LocalProvider, RemoteProvider
 │   │   └── types.ts
 │   ├── protocol/
-│   │   ├── MCPServer.ts   # MCP/stdio/HTTP server
+│   │   ├── MCPServer.ts   # MCP/stdio/HTTP server (32 tools)
 │   │   └── types.ts
-│   ├── sdlc/
-│   │   ├── ComponentGenerator.ts
-│   │   ├── TestWriter.ts
-│   │   ├── DebugAnalyzer.ts
-│   │   └── LintFixer.ts
 │   ├── memory/
 │   │   ├── PatternLearner.ts  # Pattern detection
 │   │   └── ProjectMemory.ts   # Persistent store
 │   └── config/
 │       └── index.ts
+├── __tests__/            # 264 tests across 49 suites
 ├── bin/
 │   └── rn-vectalon.js       # CLI entry
+├── docs/
+│   └── ENHANCEMENT_PLAN.md  # Phase roadmap (A–G delivered)
 ├── package.json
 └── README.md
 ```
@@ -572,10 +642,23 @@ Areas we'd love help with:
 
 ## Roadmap
 
-- **v0.2** — Local ONNX model for offline component generation
-- **v0.3** — VS Code extension with inline suggestions
-- **v0.4** — Multi-project pattern sharing & team memory
-- **v0.5** — CI/CD integration (auto-fix PRs, write changelogs)
+**Delivered** (see `docs/ENHANCEMENT_PLAN.md` for details):
+
+- ✅ **Phase A — Knowledge base** — typed artifact store, traceability, role engine, `import` command
+- ✅ **Phase B — Requirements & BA** — PRD, stories, acceptance criteria, gap/SWOT/ticket tools
+- ✅ **Phase C — QA & engineering depth** — test plans, triage, root cause, code review, refactors
+- ✅ **Phase D — Architecture, security, UX** — ADRs, tradeoffs, threat models, a11y, design tokens, wireframes
+- ✅ **Phase E — DevOps, ops, analytics** — release notes, incidents, runbooks, KPI reports
+- ✅ **Phase F — Team brain** — multi-project registry, `get_team_context`, `search_knowledge`
+- ✅ **Phase G — Model-backed retrieval** — `KnowledgeIndex`, embedding provider seam, semantic scores
+
+**Next up:**
+
+- **v0.2** — Local ONNX/CoreML model for truly offline component generation
+- **Hosted artifact store** — sync the team brain to a remote (git remote or hosted service)
+- **Real embedding APIs** — OpenAI/Anthropic embeddings through the `EmbeddingProvider` seam
+- **CI/CD integration** — auto-fix PRs, draft release notes in CI
+- **VS Code extension** — inline suggestions against the harness
 - **v1.0** — Stable protocol, production-ready
 
 ---
