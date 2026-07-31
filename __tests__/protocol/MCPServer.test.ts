@@ -64,9 +64,9 @@ describe('MCPServer', () => {
     return new MCPServer(engine, router)
   }
 
-  it('advertises the core, BA, QA, and architecture tools', () => {
+  it('advertises the core, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(22)
+    expect(names).toHaveLength(26)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -91,6 +91,10 @@ describe('MCPServer', () => {
         'check_accessibility',
         'extract_design_system',
         'generate_wireframe',
+        'write_release_notes',
+        'analyze_incident',
+        'write_runbook',
+        'analyze_kpis',
       ])
     )
   })
@@ -122,6 +126,18 @@ describe('MCPServer', () => {
       if (tool.name === 'check_accessibility') args.code = '<Image source={require("./a.png")} />'
       if (tool.name === 'extract_design_system') args.code = "color: '#FF5500'"
       if (tool.name === 'generate_wireframe') args.title = 'Login'
+      if (tool.name === 'write_release_notes') {
+        args.version = '1.1.0'
+        args.changes = 'Add camera onboarding\nFix login crash'
+      }
+      if (tool.name === 'analyze_incident') {
+        args.title = 'Outage'
+        args.description = 'App is down for all users'
+      }
+      if (tool.name === 'write_runbook') args.title = 'Restart the backend'
+      if (tool.name === 'analyze_kpis') {
+        args.metrics = JSON.stringify([{ name: 'Retention', current: 75, previous: 60, target: 70 }])
+      }
 
       const result = await server.handleToolCall({ id: '1', name: tool.name, arguments: args })
       expect(result.isError).not.toBe(true)

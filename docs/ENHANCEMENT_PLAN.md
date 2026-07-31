@@ -97,7 +97,9 @@ Each phase runs the full SDLC loop: requirement → TDD → verify → release.
 - Artifacts: `architecture` (ADRs, tradeoffs), `security` (threat models), `design` (a11y, tokens, wireframes)
 
 ### Phase E — DevOps, ops, analytics
-- `ReleaseNoteWriter`, `IncidentAnalyzer`, `RunbookWriter`, `KpiReportAnalyzer`
+- Modules: `ReleaseNoteWriter`, `IncidentAnalyzer`, `RunbookWriter`, `KpiReportAnalyzer`
+- Tools: `write_release_notes`, `analyze_incident`, `write_runbook`, `analyze_kpis`
+- Artifacts: `devops` (release notes), `operations` (incidents, runbooks), `analytics` (KPI reports)
 - CI/CD integration (v0.5 roadmap): auto-fix PRs, draft release notes in CI
 
 ### Phase F — Team brain (v0.4 roadmap)
@@ -129,6 +131,5 @@ Each phase runs the full SDLC loop: requirement → TDD → verify → release.
 - [x] **Phase B — Requirements & BA** (RequirementWriter, StoryWriter, AcceptanceCriteriaWriter, GapAnalyzer, SWOTAnalyzer, SupportTicketAnalyzer; write_prd, write_user_stories, define_acceptance_criteria, analyze_support_tickets, run_gap_analysis; generated artifacts persisted + linkable via parentId)
 - [x] **Phase C — QA & engineering depth** (TestPlanWriter, TestCaseWriter, BugTriageAnalyzer, RootCauseAnalyzer, CodeReviewAnalyzer, RefactorSuggester; write_test_plan, triage_bugs, analyze_root_cause, review_code, suggest_refactors; write_test consumes acceptance criteria → Jest cases)
 - [x] **Phase D — Architecture, security, UX** (ADRWriter, TradeoffAnalyzer, ThreatModeler, AccessibilityChecker, DesignSystemExtractor, WireframeGenerator; write_adr, analyze_tradeoffs, threat_model, check_accessibility, extract_design_system, generate_wireframe)
-- [ ] Phase E — DevOps, ops, analytics
-- [ ] Phase E — DevOps, ops, analytics
+- [x] **Phase E — DevOps, ops, analytics** (ReleaseNoteWriter, IncidentAnalyzer, RunbookWriter, KpiReportAnalyzer; write_release_notes, analyze_incident, write_runbook, analyze_kpis)
 - [ ] Phase F — Team brain

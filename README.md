@@ -219,6 +219,10 @@ Once the server is running, agents can call:
 | `check_accessibility` | Deterministic a11y checks: unlabelled images, touchable roles, text inputs |
 | `extract_design_system` | Extract design tokens (colors, spacing, fonts, radius) from style code |
 | `generate_wireframe` | Generate an ASCII wireframe from a section list |
+| `write_release_notes` | Write release notes, auto-categorizing the change list into Added/Fixed/Security/… sections |
+| `analyze_incident` | Analyze a production incident: severity, root-cause bucket, timeline, actions |
+| `write_runbook` | Write an ops runbook with symptoms, numbered steps, and escalation |
+| `analyze_kpis` | Evaluate KPI metrics (JSON array of `{ name, current, previous?, target? }`) with baselines and targets |
 | `list_artifacts` | List artifacts in the knowledge base |
 | `get_artifact` | Get a single knowledge base artifact by id |
 | `get_knowledge_context` | Knowledge base context scoped to a role (pm, ba, architect, engineer, qa, devops, support, analyst) |
@@ -292,6 +296,15 @@ checks, design-system extractions, wireframes):
 { "name": "write_adr", "arguments": { "title": "Choose backend", "context": "Need a BaaS", "options": "Firebase, Supabase", "decision": "Supabase" } }
 { "name": "threat_model", "arguments": { "feature": "Login" } }
 { "name": "generate_wireframe", "arguments": { "title": "Login", "sections": "header, input:Email, button:Sign In, footer" } }
+```
+
+DevOps, ops, and analytics artifacts persist as `devops` (release notes),
+`operations` (incidents, runbooks), and `analytics` (KPI reports):
+
+```json
+{ "name": "write_release_notes", "arguments": { "version": "1.4.0", "changes": "Add camera onboarding\nFix login crash" } }
+{ "name": "analyze_incident", "arguments": { "title": "Nightly outage", "description": "App is down for all users after deploy" } }
+{ "name": "analyze_kpis", "arguments": { "metrics": "[{\"name\":\"Retention\",\"current\":75,\"previous\":60,\"target\":70}]" } }
 ```
 
 ### Role-scoped context

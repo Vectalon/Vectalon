@@ -23,6 +23,11 @@ import { ThreatModeler } from '../sdlc/ThreatModeler'
 import { AccessibilityChecker } from '../sdlc/AccessibilityChecker'
 import { DesignSystemExtractor } from '../sdlc/DesignSystemExtractor'
 import { WireframeGenerator } from '../sdlc/WireframeGenerator'
+import { ReleaseNoteWriter } from '../sdlc/ReleaseNoteWriter'
+import { IncidentAnalyzer } from '../sdlc/IncidentAnalyzer'
+import { RunbookWriter } from '../sdlc/RunbookWriter'
+import { KpiReportAnalyzer } from '../sdlc/KpiReportAnalyzer'
+import type { KpiMetric } from '../sdlc/KpiReportAnalyzer'
 
 type ToolHandler = (args: Record<string, unknown>) => Promise<string>
 
@@ -340,6 +345,58 @@ export class MCPServer {
           required: ['title'],
         },
       },
+      {
+        name: 'write_release_notes',
+        description: 'Write release notes for a version, auto-categorizing the change list',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            version: { type: 'string' },
+            date: { type: 'string' },
+            changes: { type: 'string' },
+          },
+          required: ['version'],
+        },
+      },
+      {
+        name: 'analyze_incident',
+        description: 'Analyze a production incident: severity, root-cause bucket, timeline, and actions',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            description: { type: 'string' },
+            severity: { type: 'string', enum: ['sev1', 'sev2', 'sev3'] },
+            impact: { type: 'string' },
+          },
+          required: ['title', 'description'],
+        },
+      },
+      {
+        name: 'write_runbook',
+        description: 'Write an ops runbook with symptoms, numbered steps, and escalation',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            symptoms: { type: 'string' },
+            steps: { type: 'string' },
+            owner: { type: 'string' },
+          },
+          required: ['title'],
+        },
+      },
+      {
+        name: 'analyze_kpis',
+        description: 'Evaluate KPI metrics with baselines and targets (JSON array of { name, current, previous, target })',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            metrics: { type: 'string' },
+          },
+          required: ['metrics'],
+        },
+      },
       ...(this.artifactStore
         ? [
             {
@@ -398,6 +455,7 @@ export class MCPServer {
     this.registerBATools()
     this.registerQATools()
     this.registerArchTools()
+    this.registerOpsTools()
 
     this.tools.set('suggest_dependency_update', async (args: Record<string, unknown>) => {
       const packageName = (args.packageName as string) || ''
@@ -626,6 +684,61 @@ export class MCPServer {
       const suggestions = new RefactorSuggester().suggest(code, (args.filename as string) || 'Component.tsx')
       const content = new RefactorSuggester().render(suggestions)
       this.persistArtifact('engineering', 'Refactor Suggestions', content)
+      return content
+    })
+  }
+
+  private registerOpsTools(): void {
+    this.tools.set('write_release_notes', async (args: Record<string, unknown>) => {
+      const version = (args.version as string) || '0.0.0'
+      const content = new ReleaseNoteWriter().writeReleaseNotes({
+        version,
+        date: (args.date as string) || undefined,
+        changes: parseList(args.changes),
+      })
+      this.persistArtifact('devops', `Release Notes: v${version}`, content)
+      return content
+    })
+
+    this.tools.set('analyze_incident', async (args: Record<string, unknown>) => {
+      const analyzer = new IncidentAnalyzer()
+      const analysis = analyzer.analyze({
+        title: (args.title as string) || 'Untitled incident',
+        description: (args.description as string) || '',
+        severity: args.severity as 'sev1' | 'sev2' | 'sev3' | undefined,
+        impact: (args.impact as string) || undefined,
+      })
+      const content = analyzer.render(analysis)
+      this.persistArtifact('operations', `Incident: ${analysis.title}`, content)
+      return content
+    })
+
+    this.tools.set('write_runbook', async (args: Record<string, unknown>) => {
+      const title = (args.title as string) || 'Untitled runbook'
+      const content = new RunbookWriter().writeRunbook({
+        title,
+        symptoms: parseList(args.symptoms),
+        steps: parseList(args.steps),
+        owner: (args.owner as string) || undefined,
+      })
+      this.persistArtifact('operations', `Runbook: ${title}`, content)
+      return content
+    })
+
+    this.tools.set('analyze_kpis', async (args: Record<string, unknown>) => {
+      const raw = (args.metrics as string) || ''
+      let metrics: KpiMetric[]
+      try {
+        const parsed = JSON.parse(raw)
+        if (!Array.isArray(parsed)) throw new Error('not an array')
+        metrics = parsed as KpiMetric[]
+      } catch {
+        return `Invalid metrics JSON. Expected an array of { name, current, previous?, target? }. Received: ${raw.slice(0, 200)}`
+      }
+
+      const analyzer = new KpiReportAnalyzer()
+      const content = analyzer.render(analyzer.analyze(metrics))
+      this.persistArtifact('analytics', 'KPI Report', content)
       return content
     })
   }

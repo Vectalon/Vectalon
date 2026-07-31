@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Phase E: DevOps, ops, analytics
+
+- **Deterministic devops/ops/analytics modules** (`src/sdlc/`): `ReleaseNoteWriter`
+  (auto-categorized Added/Fixed/Changed/Removed/Security/Performance sections with
+  an explicit release date), `IncidentAnalyzer` (sev1/sev2/sev3 detection with
+  override, root-cause reuse, timeline, and severity-appropriate actions),
+  `RunbookWriter` (symptoms, numbered steps, escalation, verification, default
+  owner), `KpiReportAnalyzer` (change/change-percent vs baseline, on-track /
+  below-target / no-target / no-baseline statuses).
+- **MCP devops/ops/analytics tools**: `write_release_notes`, `analyze_incident`,
+  `write_runbook`, `analyze_kpis`. Deterministic-first, persisted as `devops`,
+  `operations`, and `analytics` artifacts.
+- Exported the new modules and types from the package entry point.
+- 22 new tests (228 total, 45 suites).
+
 ### Added — Phase D: Architecture, security, UX
 
 - **Deterministic architecture/security/UX modules** (`src/sdlc/`): `ADRWriter`

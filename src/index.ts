@@ -32,6 +32,12 @@ export {
   DesignSystemExtractor,
   WireframeGenerator,
 } from './sdlc'
+export {
+  ReleaseNoteWriter,
+  IncidentAnalyzer,
+  RunbookWriter,
+  KpiReportAnalyzer,
+} from './sdlc'
 export type {
   PRDInput,
   UserStoryCard,
@@ -64,6 +70,17 @@ export type {
   DesignSystem,
   WireframeSection,
   WireframeSectionType,
+} from './sdlc'
+export type {
+  ReleaseNoteInput,
+  ReleaseNoteCategory,
+  IncidentInput,
+  IncidentAnalysis,
+  RunbookInput,
+  KpiMetric,
+  KpiResult,
+  KpiResultMetric,
+  KpiStatus,
 } from './sdlc'
 
 export { PatternLearner, ProjectMemory } from './memory'
