@@ -23,7 +23,6 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: npm ci
@@ -39,6 +38,13 @@ jobs:
 
       - name: Test
         run: npm test
+
+      - name: Verify npm token
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npm config set //registry.npmjs.org/:_authToken="${NPM_TOKEN}"
+          npm whoami
 
       - name: Release
         env:
