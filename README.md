@@ -3,7 +3,7 @@
 **The adaptive AI harness for React Native — bring project-aware SDLC intelligence to any agent.**
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![npm version](https://img.shields.io/npm/v/rn-vectalon)](https://www.npmjs.com/package/rn-vectalon)
+[![npm version](https://img.shields.io/npm/v/@vectalon/rn-vectalon)](https://www.npmjs.com/package/@vectalon/rn-vectalon)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ---
@@ -15,8 +15,8 @@ rn-vectalon is an open-source React Native package that embeds an adaptive AI ha
 The harness **learns** from your codebase over time. It detects naming conventions, architectural patterns, styling preferences, and routing structures, then tailors its suggestions to match your project's unique style.
 
 ```
-npx rn-vectalon init    # Scan project, build context
-npx rn-vectalon serve   # Start MCP server for agents
+npx @vectalon/rn-vectalon init    # Scan project, build context
+npx @vectalon/rn-vectalon serve   # Start MCP server for agents
 ```
 
 ---
@@ -129,9 +129,9 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 ### Installation
 
 ```bash
-npm install --save-dev rn-vectalon
+npm install --save-dev @vectalon/rn-vectalon
 # or
-yarn add -D rn-vectalon
+yarn add -D @vectalon/rn-vectalon
 ```
 
 > `rn-vectalon` is a development-time tool (CLI, project scanner, and MCP server). Nothing it exports is imported by your app bundle, so it belongs in `devDependencies`.
@@ -139,7 +139,7 @@ yarn add -D rn-vectalon
 ### Initialize
 
 ```bash
-npx rn-vectalon init
+npx @vectalon/rn-vectalon init
 ```
 
 This scans your project and creates a `.vectalon/` directory with:
@@ -150,7 +150,7 @@ This scans your project and creates a `.vectalon/` directory with:
 ### Serve
 
 ```bash
-npx rn-vectalon serve
+npx @vectalon/rn-vectalon serve
 ```
 
 Starts the MCP server. Your agent connects and gets all the tools.
@@ -158,7 +158,7 @@ Starts the MCP server. Your agent connects and gets all the tools.
 ### Run a feature workflow
 
 ```bash
-npx rn-vectalon feature "create a login screen and integrate the auth API"
+npx @vectalon/rn-vectalon feature "create a login screen and integrate the auth API"
 ```
 
 Runs the full SDLC workflow: PRD, design, architecture, implementation,
@@ -174,7 +174,7 @@ Run Claude Code and connect to rn-vectalon via MCP:
 
 ```bash
 # Terminal 1: start harness
-npx rn-vectalon serve
+npx @vectalon/rn-vectalon serve
 
 # Terminal 2: use with Claude Code
 claude
@@ -214,7 +214,7 @@ Then ask: *"Generate a new ProfileCard component following the project's convent
 
 ```bash
 # Start rn-vectalon with HTTP
-npx rn-vectalon serve --protocol http --port 8931
+npx @vectalon/rn-vectalon serve --protocol http --port 8931
 
 # In another terminal, use Codex CLI with the MCP endpoint
 ```
@@ -233,7 +233,7 @@ npx rn-vectalon serve --protocol http --port 8931
 `rn-vectalon` can run an end-to-end SDLC workflow from a single prompt:
 
 ```bash
-npx rn-vectalon feature "create a login screen and integrate the auth API"
+npx @vectalon/rn-vectalon feature "create a login screen and integrate the auth API"
 ```
 
 This executes 11 phases in sequence, gating each one on the previous:
@@ -262,10 +262,10 @@ phase outputs and readiness:
 
 ```bash
 # Re-run the entire workflow using a saved state ID
-npx rn-vectalon feature "create a login screen and integrate the auth API" --resume <state-id>
+npx @vectalon/rn-vectalon feature "create a login screen and integrate the auth API" --resume <state-id>
 
 # Resume from a specific phase (e.g. after editing implementation)
-npx rn-vectalon feature "create a login screen and integrate the auth API" --resume <state-id> --from implementation
+npx @vectalon/rn-vectalon feature "create a login screen and integrate the auth API" --resume <state-id> --from implementation
 ```
 
 ### Use from an agent
@@ -287,7 +287,7 @@ and simulators. By default they run in **console mode** (they print what they
 would do). To connect real systems, configure the adapters:
 
 ```typescript
-import { createAdapters } from 'rn-vectalon'
+import { createAdapters } from '@vectalon/rn-vectalon'
 
 const adapters = createAdapters({
   projectManagement: { provider: 'jira', baseUrl: '...', projectKey: '...', email: '...', token: '...' },
@@ -388,13 +388,13 @@ context instead of just a file tree.
 
 ```bash
 # Import a single file
-npx rn-vectalon import docs/prd.md
+npx @vectalon/rn-vectalon import docs/prd.md
 
 # Import a whole directory of markdown/JSON
-npx rn-vectalon import docs/
+npx @vectalon/rn-vectalon import docs/
 
 # Force a type or title
-npx rn-vectalon import docs/prd.md --type product --title "Mobile App PRD"
+npx @vectalon/rn-vectalon import docs/prd.md --type product --title "Mobile App PRD"
 ```
 
 Artifact type is resolved from (in order): `--type` flag → frontmatter `type:`
@@ -679,7 +679,7 @@ rn-vectalon/
 
 ```bash
 # Clone
-git clone https://github.com/bhishaksanyal/rn-vectalon.git
+git clone https://github.com/Vectalon/rn-vectalon.git
 cd rn-vectalon
 
 # Install
@@ -707,8 +707,8 @@ npm link
 
 # In your RN project
 npm link rn-vectalon
-npx rn-vectalon init
-npx rn-vectalon serve
+npx @vectalon/rn-vectalon init
+npx @vectalon/rn-vectalon serve
 ```
 
 ---
@@ -760,4 +760,4 @@ Existing AI coding tools are **general-purpose** — they don't understand React
 
 ## License
 
-MIT © [Bhishak Sanyal](https://github.com/bhishaksanyal)
+MIT © [Vectalon](https://github.com/Vectalon)
