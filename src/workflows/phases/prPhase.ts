@@ -1,11 +1,13 @@
 import type { WorkflowPhase } from '../../adapters/types'
 import { phaseResult, failedPhase, sanitizeFileName } from './helpers'
+import { detectIntent, intentTitle } from './intent'
 
 export const prPhase: WorkflowPhase = {
   id: 'pr',
   name: 'Pull request',
   description: 'Create a branch, commit changes, and open a pull request.',
   run: async (ctx) => {
+    const intent = detectIntent(ctx.prompt)
     const featureName = sanitizeFileName(ctx.prompt) || 'feature'
     const branchName = `feature/${featureName}-${Date.now()}`
 
@@ -16,23 +18,22 @@ export const prPhase: WorkflowPhase = {
       const files = implementationPhase?.artifacts.map(a => a.path).filter(Boolean) as string[] | undefined
 
       await ctx.adapters.git.commit({
-        message: `feat: ${ctx.prompt}`,
+        message: `${intent.type === 'remove-dependency' ? 'chore' : 'feat'}: ${ctx.prompt}`,
         files,
       })
       await ctx.adapters.git.push(branchName)
 
       const pr = await ctx.adapters.git.createPullRequest({
-        title: `feat: ${ctx.prompt}`,
+        title: `${intent.type === 'remove-dependency' ? 'chore' : 'feat'}: ${ctx.prompt}`,
         body: [
-          `## Feature`,
-          ctx.prompt,
+          `## ${intentTitle(intent)}`,
           '',
           '## Checklist',
           '- [x] PRD generated',
-          '- [x] Design spec defined',
+          '- [x] Design/UX approach defined',
           '- [x] Architecture decision recorded',
           '- [x] Implementation generated',
-          '- [x] Verification passed',
+          '- [x] Verification completed',
         ].join('\n'),
         head: branchName,
       })

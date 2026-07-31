@@ -103,4 +103,49 @@ describe('featureDevelopmentWorkflow', () => {
     expect(result.status).toBe('failed')
     expect(result.phases.find(p => p.id === 'verification')?.status).toBe('failed')
   })
+
+  it('detects dependency removal intent and produces a removal plan', async () => {
+    const engine = new WorkflowEngine()
+    const ctx = makeContext('Remove appcenter safely from this project')
+    ctx.modelRouter.initialize({ provider: 'local' })
+
+    const result = await engine.run(featureDevelopmentWorkflow, ctx)
+
+    expect(result.status).toBe('completed')
+    const implementation = result.phases.find(p => p.id === 'implementation')
+    expect(implementation?.output).toContain('Remove dependency: appcenter')
+    expect(implementation?.output).toContain('npm uninstall appcenter')
+    expect(implementation?.output).not.toContain('LoginScreen')
+    expect(implementation?.output).not.toContain('Sign In')
+
+    const scope = result.phases.find(p => p.id === 'scope')
+    expect(scope?.output).toContain('Detected intent: remove-dependency')
+
+    const design = result.phases.find(p => p.id === 'design')
+    expect(design?.output).toContain('This request does not introduce new UI')
+
+    const readiness = result.phases.find(p => p.id === 'readiness')
+    expect(readiness?.output).toContain('GO')
+    expect(readiness?.output).toContain('simulation mode')
+  })
+
+  it('detects dependency still installed and fails verification', async () => {
+    const engine = new WorkflowEngine()
+    const ctx = makeContext('Remove appcenter safely from this project')
+    ctx.modelRouter.initialize({ provider: 'local' })
+    ctx.snapshot = {
+      ...ctx.snapshot!,
+      project: {
+        ...ctx.snapshot!.project,
+        dependencies: { ...ctx.snapshot!.project.dependencies, 'appcenter': '4.4.5' },
+      },
+    }
+
+    const result = await engine.run(featureDevelopmentWorkflow, ctx)
+
+    expect(result.status).toBe('failed')
+    const verification = result.phases.find(p => p.id === 'verification')
+    expect(verification?.status).toBe('failed')
+    expect(verification?.output).toContain('FAIL — package still in package.json')
+  })
 })

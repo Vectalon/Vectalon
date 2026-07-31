@@ -1,34 +1,34 @@
 import type { WorkflowPhase } from '../../adapters/types'
 import { phaseResult } from './helpers'
+import { detectIntent, intentTitle, isRemoveDependency } from './intent'
 
 export const documentationPhase: WorkflowPhase = {
   id: 'documentation',
   name: 'Documentation update',
   description: 'Draft README and CHANGELOG updates for the feature.',
   run: async (ctx) => {
+    const intent = detectIntent(ctx.prompt)
+    const changelogSection = isRemoveDependency(intent) ? '### Removed' : '### Added'
+
     const changelog = [
       `## [Unreleased]`,
       '',
-      '### Added',
+      changelogSection,
       `- ${ctx.prompt}`,
       '',
     ].join('\n')
 
     const readmeSection = [
-      `### ${ctx.prompt}`,
+      `### ${intentTitle(intent)}`,
       '',
-      'This feature adds a new screen and API integration.',
-      '',
-      '#### Usage',
-      '```tsx',
-      `import { ${sanitizeName(ctx.prompt)}Screen } from './src/screens/${sanitizeName(ctx.prompt)}Screen';`,
-      '',
-      '<NavigationStack.Screen name="Login" component={LoginScreen} />',
-      '```',
+      isRemoveDependency(intent)
+        ? 'This change removes a dependency and updates native configuration.'
+        : 'This feature adds a new screen and API integration.',
       '',
       '#### Configuration',
-      '- Set `API_BASE_URL` in your environment config',
-      '- Configure secure storage for auth tokens',
+      isRemoveDependency(intent)
+        ? '- Verify native build files are updated after uninstalling the package.'
+        : '- Set `API_BASE_URL` in your environment config',
     ].join('\n')
 
     const output = [
@@ -56,13 +56,4 @@ export const documentationPhase: WorkflowPhase = {
       ]
     )
   },
-}
-
-function sanitizeName(prompt: string): string {
-  return prompt
-    .replace(/[^a-zA-Z0-9]+/g, ' ')
-    .split(' ')
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join('')
-    .slice(0, 30)
 }

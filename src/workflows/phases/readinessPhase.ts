@@ -8,15 +8,16 @@ export const readinessPhase: WorkflowPhase = {
   run: async (ctx) => {
     const criteria = [
       'PRD generated and scoped',
-      'Design and motion spec defined',
+      'Design/UX approach defined',
       'Architecture decision recorded',
       'Implementation tasks created',
-      'Service, hook, and screen code generated',
-      'Verification passed',
+      'Code changes or removal plan generated',
+      'Verification completed',
     ]
 
     const verificationPhase = ctx.state.phases.find(p => p.id === 'verification')
     const verificationPassed = verificationPhase?.status === 'completed'
+    const isSimulated = ctx.adapters.testRunner.name === 'console'
 
     const output = [
       '# Readiness report',
@@ -28,12 +29,12 @@ export const readinessPhase: WorkflowPhase = {
       '',
       '## Go / No-go',
       verificationPassed
-        ? 'Status: GO — verification passed and the feature is ready for review.'
+        ? `Status: GO — verification completed. ${isSimulated ? 'However, verification ran in simulation mode. Configure real test/simulator adapters before merging.' : 'All checks passed and the feature is ready for review.'}`
         : 'Status: NO-GO — verification did not pass. Fix the issues and re-run the workflow.',
       '',
       '## Recommended reviewers',
       '- Mobile lead (architecture and native config)',
-      '- Security lead (auth and token handling)',
+      '- Security lead (if auth or token handling is involved)',
       '- QA lead (test coverage and edge cases)',
     ].join('\n')
 

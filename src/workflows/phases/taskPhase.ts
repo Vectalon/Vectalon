@@ -1,19 +1,38 @@
 import type { WorkflowPhase, TaskInput } from '../../adapters/types'
 import { phaseResult, failedPhase } from './helpers'
+import { detectIntent, isRemoveDependency, isRefactor } from './intent'
 
 export const taskPhase: WorkflowPhase = {
   id: 'tasks',
   name: 'Task creation',
   description: 'Create implementation tasks in the configured project management tool.',
   run: async (ctx) => {
+    const intent = detectIntent(ctx.prompt)
     const tasks: TaskInput[] = [
       { title: `PRD: ${ctx.prompt}`, description: 'Finalize requirements and acceptance criteria', type: 'requirements' },
-      { title: `Design: ${ctx.prompt}`, description: 'Approve wireframes and motion spec', type: 'design' },
-      { title: `API service: ${ctx.prompt}`, description: 'Implement service layer and error handling', type: 'engineering' },
-      { title: `UI screen: ${ctx.prompt}`, description: 'Build login screen following design spec', type: 'engineering' },
-      { title: `Tests: ${ctx.prompt}`, description: 'Unit tests, integration tests, and simulator checks', type: 'qa' },
-      { title: `Docs: ${ctx.prompt}`, description: 'Update README and project documentation', type: 'documentation' },
+      { title: `Design: ${ctx.prompt}`, description: 'Approve UX approach', type: 'design' },
     ]
+
+    if (isRemoveDependency(intent)) {
+      tasks.push(
+        { title: `Uninstall ${intent.dependency}`, description: `Remove ${intent.dependency} packages and update lockfiles`, type: 'engineering' },
+        { title: `Remove ${intent.dependency} imports`, description: 'Remove all JavaScript/TypeScript imports and API calls', type: 'engineering' },
+        { title: `Clean up ${intent.dependency} native config`, description: 'Remove iOS/Android native configuration', type: 'engineering' },
+        { title: `Verify ${intent.dependency} removal`, description: 'Run builds, tests, and app startup checks', type: 'qa' }
+      )
+    } else if (isRefactor(intent)) {
+      tasks.push(
+        { title: `Refactor ${intent.target}`, description: 'Apply the refactor while preserving behavior', type: 'engineering' },
+        { title: `Tests: ${ctx.prompt}`, description: 'Update or add tests for the refactored module', type: 'qa' }
+      )
+    } else {
+      tasks.push(
+        { title: `API service: ${ctx.prompt}`, description: 'Implement service layer and error handling', type: 'engineering' },
+        { title: `UI screen: ${ctx.prompt}`, description: 'Build screen following design spec', type: 'engineering' },
+        { title: `Tests: ${ctx.prompt}`, description: 'Unit tests, integration tests, and simulator checks', type: 'qa' },
+        { title: `Docs: ${ctx.prompt}`, description: 'Update README and project documentation', type: 'documentation' }
+      )
+    }
 
     try {
       const created = await ctx.adapters.projectManagement.createTasks(tasks)
