@@ -11,6 +11,11 @@ export async function initCommand(rootDir: string, _options: Record<string, unkn
   const engine = new ContextEngine(root)
   const snapshot = engine.init()
 
+  if (!snapshot.project.reactNativeVersion) {
+    process.stderr.write('  Warning: no react-native dependency detected in package.json.\n')
+    process.stderr.write('           rn-vectalon is designed for React Native projects (>= 0.72.0).\n')
+  }
+
   process.stderr.write(`  Found ${snapshot.components.length} components\n`)
 
   const memory = new ProjectMemory(root)

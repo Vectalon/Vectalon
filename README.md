@@ -129,8 +129,12 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 ### Installation
 
 ```bash
-npm install rn-vectalon
+npm install --save-dev rn-vectalon
+# or
+yarn add -D rn-vectalon
 ```
+
+> `rn-vectalon` is a development-time tool (CLI, project scanner, and MCP server). Nothing it exports is imported by your app bundle, so it belongs in `devDependencies`.
 
 ### Initialize
 

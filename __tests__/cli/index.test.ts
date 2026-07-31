@@ -39,6 +39,19 @@ describe('initCommand', () => {
     const gitignore = readFileSync(join(dir, '.gitignore'), 'utf-8')
     expect(gitignore).toContain('.vectalon/')
   })
+
+  it('warns when the target project does not have react-native in dependencies', async () => {
+    const dirNoRN = createTempProject({
+      'package.json': JSON.stringify({ name: 'plain-node', version: '1.0.0', dependencies: {} }),
+      '.gitignore': 'node_modules\n',
+    })
+    const write = jest.spyOn(process.stderr, 'write').mockImplementation(() => true)
+
+    await initCommand(dirNoRN, {})
+
+    expect(write).toHaveBeenCalledWith(expect.stringContaining('no react-native dependency detected'))
+    cleanup(dirNoRN)
+  })
 })
 
 describe('serveCommand', () => {
