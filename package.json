@@ -1,5 +1,5 @@
 {
-  "name": "@vectalon/rn-vectalon",
+  "name": "@vectalon-dev/rn-vectalon",
   "version": "0.1.0",
   "description": "The adaptive AI harness for React Native — project-aware SDLC intelligence for any agent",
   "main": "dist/index.js",
