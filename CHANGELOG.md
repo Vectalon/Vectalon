@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Phase F: Team brain
+
+- **`TeamStore`** (`src/knowledge/TeamStore.ts`): multi-project artifact registry with
+  keyword-ranked cross-project search (title matches weigh higher than content),
+  team/project/type scoping, a limit, and aggregated role-scoped context that groups
+  artifacts by project and reuses the role→type map.
+- **MCP team tools**: `get_team_context` (aggregated context across team projects,
+  scoped by team, project, and role) and `search_knowledge` (ranked cross-project
+  results scoped by team, project, and type). Advertised only when a `TeamStore` is
+  attached to the server.
+- **`serve` reads `.vectalon/team.json`**: register sibling projects (path, name,
+  optional team) so the harness serves a git-backed team brain; the local project is
+  registered automatically. Invalid/missing project stores are skipped with a warning.
+- Exported `TeamStore` and its types from the package entry point.
+- 20 new tests (248 total, 47 suites).
+
 ### Added — Phase E: DevOps, ops, analytics
 
 - **Deterministic devops/ops/analytics modules** (`src/sdlc/`): `ReleaseNoteWriter`

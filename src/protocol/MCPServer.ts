@@ -2,9 +2,10 @@ import type { AgentTool, ToolCall, ToolResult, ProtocolType } from './types'
 import { ContextEngine } from '../harness/ContextEngine'
 import { ModelRouter } from '../model/ModelRouter'
 import { ArtifactStore } from '../knowledge/ArtifactStore'
+import { TeamStore } from '../knowledge/TeamStore'
 import { RoleEngine } from '../knowledge/RoleEngine'
-import { ARTIFACT_ROLES } from '../knowledge/artifactTypes'
-import type { Artifact, ArtifactType } from '../knowledge/artifactTypes'
+import { ARTIFACT_ROLES, ARTIFACT_TYPES } from '../knowledge/artifactTypes'
+import type { Artifact, ArtifactRole, ArtifactType } from '../knowledge/artifactTypes'
 import { RequirementWriter } from '../sdlc/RequirementWriter'
 import { StoryWriter } from '../sdlc/StoryWriter'
 import { AcceptanceCriteriaWriter } from '../sdlc/AcceptanceCriteriaWriter'
@@ -45,17 +46,20 @@ export class MCPServer {
   private engine: ContextEngine
   private modelRouter: ModelRouter
   private artifactStore: ArtifactStore | null
+  private teamStore: TeamStore | null
 
   constructor(
     engine: ContextEngine,
     modelRouter: ModelRouter,
     protocol: ProtocolType = 'mcp',
-    artifactStore: ArtifactStore | null = null
+    artifactStore: ArtifactStore | null = null,
+    teamStore: TeamStore | null = null
   ) {
     this.engine = engine
     this.modelRouter = modelRouter
     this.protocol = protocol
     this.artifactStore = artifactStore
+    this.teamStore = teamStore
     this.registerDefaultTools()
   }
 
@@ -436,6 +440,37 @@ export class MCPServer {
             },
           ]
         : []),
+      ...(this.teamStore
+        ? [
+            {
+              name: 'get_team_context',
+              description: 'Get aggregated knowledge context across team projects, scoped by team, project, and role',
+              inputSchema: {
+                type: 'object',
+                properties: {
+                  team: { type: 'string' },
+                  project: { type: 'string' },
+                  role: { type: 'string', enum: ARTIFACT_ROLES },
+                },
+              },
+            },
+            {
+              name: 'search_knowledge',
+              description: 'Search artifacts across the team brain, ranked by relevance, scoped by team, project, and type',
+              inputSchema: {
+                type: 'object',
+                properties: {
+                  query: { type: 'string' },
+                  team: { type: 'string' },
+                  project: { type: 'string' },
+                  type: { type: 'string', enum: ARTIFACT_TYPES },
+                  limit: { type: 'number' },
+                },
+                required: ['query'],
+              },
+            },
+          ]
+        : []),
     ]
   }
 
@@ -564,6 +599,9 @@ export class MCPServer {
 
     if (this.artifactStore) {
       this.registerKnowledgeTools()
+    }
+    if (this.teamStore) {
+      this.registerTeamTools()
     }
   }
 
@@ -861,6 +899,64 @@ export class MCPServer {
         throw new Error(`Failed to link artifacts: missing id`)
       }
       return `Linked ${parentId} -> ${childId}`
+    })
+  }
+
+  private registerTeamTools(): void {
+    const teamStore = this.teamStore as TeamStore
+
+    this.tools.set('get_team_context', async (args: Record<string, unknown>) => {
+      const role = args.role as string
+      if (role && !ARTIFACT_ROLES.includes(role as never)) {
+        throw new Error(`Unknown role: ${role}. Valid roles: ${ARTIFACT_ROLES.join(', ')}`)
+      }
+      return teamStore.context({
+        team: args.team as string | undefined,
+        project: args.project as string | undefined,
+        role: (role as ArtifactRole) || undefined,
+      })
+    })
+
+    this.tools.set('search_knowledge', async (args: Record<string, unknown>) => {
+      const query = (args.query as string) || ''
+      if (!query) {
+        return 'No query provided. Pass a query string to search across the team brain.'
+      }
+
+      const type = args.type as string
+      if (type && !ARTIFACT_TYPES.includes(type as never)) {
+        throw new Error(`Unknown artifact type: ${type}. Valid types: ${ARTIFACT_TYPES.join(', ')}`)
+      }
+
+      const results = teamStore.search({
+        query,
+        team: args.team as string | undefined,
+        project: args.project as string | undefined,
+        type: (type as ArtifactType) || undefined,
+        limit: typeof args.limit === 'number' ? args.limit : undefined,
+      })
+
+      if (results.length === 0) {
+        return 'No artifacts matched the query across the registered projects.'
+      }
+
+      return JSON.stringify(
+        results.map(r => ({
+          project: r.project,
+          team: r.team || null,
+          score: r.score,
+          artifact: {
+            id: r.artifact.id,
+            type: r.artifact.type,
+            title: r.artifact.title,
+            status: r.artifact.status,
+            updatedAt: r.artifact.updatedAt,
+            content: r.artifact.content,
+          },
+        })),
+        null,
+        2
+      )
     })
   }
 

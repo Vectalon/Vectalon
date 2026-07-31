@@ -223,6 +223,8 @@ Once the server is running, agents can call:
 | `analyze_incident` | Analyze a production incident: severity, root-cause bucket, timeline, actions |
 | `write_runbook` | Write an ops runbook with symptoms, numbered steps, and escalation |
 | `analyze_kpis` | Evaluate KPI metrics (JSON array of `{ name, current, previous?, target? }`) with baselines and targets |
+| `get_team_context` | Aggregated knowledge context across team projects, scoped by team, project, and role |
+| `search_knowledge` | Ranked cross-project search across the team brain, scoped by team, project, and type |
 | `list_artifacts` | List artifacts in the knowledge base |
 | `get_artifact` | Get a single knowledge base artifact by id |
 | `get_knowledge_context` | Knowledge base context scoped to a role (pm, ba, architect, engineer, qa, devops, support, analyst) |
@@ -313,6 +315,33 @@ Agents query the brain through MCP tools. For example, ask your agent:
 *"What requirements context does the BA need for the onboarding feature?"* and
 it will call `get_knowledge_context` with the `ba` role to receive the relevant
 PRD, stories, and research artifacts.
+
+### Team brain
+
+When you add a `.vectalon/team.json` manifest, `serve` registers sibling projects
+so agents can query across your whole team instead of one repo. The manifest is
+git-backed — commit it so every developer serves the same team brain:
+
+```json
+{
+  "team": "mobile",
+  "projects": [
+    { "name": "payments", "path": "../payments", "team": "backend" }
+  ]
+}
+```
+
+Paths are resolved relative to the current project; the current project is
+registered automatically under its folder name. Any listed project without a
+knowledge base is skipped with a warning. Agents then use:
+
+```json
+{ "name": "get_team_context", "arguments": { "team": "backend" } }
+{ "name": "search_knowledge", "arguments": { "query": "payment", "team": "backend", "limit": 5 } }
+```
+
+`search_knowledge` ranks matches across projects (title matches outweigh content
+matches) and scopes by `team`, `project`, and `type`.
 
 See `docs/ENHANCEMENT_PLAN.md` for the full roadmap toward a multi-role SDLC harness.
 

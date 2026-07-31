@@ -86,7 +86,7 @@ export type {
 export { PatternLearner, ProjectMemory } from './memory'
 export type { Pattern, PatternStore } from './memory'
 
-export { ArtifactStore, Traceability, RoleEngine, ARTIFACT_TYPES, ARTIFACT_ROLES, ROLE_ARTIFACT_TYPES, checksum } from './knowledge'
+export { ArtifactStore, TeamStore, Traceability, RoleEngine, ARTIFACT_TYPES, ARTIFACT_ROLES, ROLE_ARTIFACT_TYPES, checksum } from './knowledge'
 export type {
   Artifact,
   ArtifactVersion,
@@ -94,6 +94,11 @@ export type {
   ArtifactSource,
   ArtifactStatus,
   ArtifactRole,
+  ProjectRegistration,
+  TeamSearchQuery,
+  TeamSearchResult,
+  ProjectSummary,
+  TeamContextOptions,
 } from './knowledge'
 
 export { getConfig, setConfig } from './config'

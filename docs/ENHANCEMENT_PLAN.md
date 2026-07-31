@@ -103,8 +103,10 @@ Each phase runs the full SDLC loop: requirement → TDD → verify → release.
 - CI/CD integration (v0.5 roadmap): auto-fix PRs, draft release notes in CI
 
 ### Phase F — Team brain (v0.4 roadmap)
-- Multi-project pattern sharing; git-backed or hosted artifact store
-- Cross-project retrieval scoped by project + team
+- Modules: `TeamStore` (multi-project registry, keyword-ranked cross-project search, aggregated role-scoped context)
+- Tools: `get_team_context`, `search_knowledge` (scoped by team, project, and type)
+- Config: `.vectalon/team.json` registers sibling projects (git-backed, shared across the team)
+- Future (v0.5): hosted artifact store, embedding-based retrieval
 
 ## Sequencing rationale
 
@@ -132,4 +134,5 @@ Each phase runs the full SDLC loop: requirement → TDD → verify → release.
 - [x] **Phase C — QA & engineering depth** (TestPlanWriter, TestCaseWriter, BugTriageAnalyzer, RootCauseAnalyzer, CodeReviewAnalyzer, RefactorSuggester; write_test_plan, triage_bugs, analyze_root_cause, review_code, suggest_refactors; write_test consumes acceptance criteria → Jest cases)
 - [x] **Phase D — Architecture, security, UX** (ADRWriter, TradeoffAnalyzer, ThreatModeler, AccessibilityChecker, DesignSystemExtractor, WireframeGenerator; write_adr, analyze_tradeoffs, threat_model, check_accessibility, extract_design_system, generate_wireframe)
 - [x] **Phase E — DevOps, ops, analytics** (ReleaseNoteWriter, IncidentAnalyzer, RunbookWriter, KpiReportAnalyzer; write_release_notes, analyze_incident, write_runbook, analyze_kpis)
-- [ ] Phase F — Team brain
+- [x] **Phase F — Team brain** (TeamStore multi-project registry; get_team_context + search_knowledge scoped by team/project/type; .vectalon/team.json config)
+- [ ] Phase G — Model-backed retrieval (embedding index + semantic search)
