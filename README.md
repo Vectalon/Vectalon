@@ -4,6 +4,8 @@
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![npm version](https://img.shields.io/npm/v/@vectalon/rn-vectalon)](https://www.npmjs.com/package/@vectalon/rn-vectalon)
+[![CI](https://github.com/Vectalon/rn-vectalon/actions/workflows/ci.yml/badge.svg)](https://github.com/Vectalon/rn-vectalon/actions/workflows/ci.yml)
+[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ---
