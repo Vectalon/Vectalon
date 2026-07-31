@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Phase A: Knowledge base (Company Brain)
+
+- **Artifact taxonomy** (`src/knowledge/artifactTypes.ts`): 13 SDLC artifact types,
+  sources, statuses, and an 8-role → artifact-type map.
+- **`ArtifactStore`**: typed, versioned document store persisted to
+  `.vectalon/knowledge/artifacts.json`; content checksums, history, links, and dedup.
+- **`Traceability`**: forward/backward graph traversal over artifact links.
+- **`RoleEngine`**: role-scoped knowledge context assembly (pm, ba, architect,
+  engineer, qa, devops, support, analyst).
+- **`rn-vectalon import <file|dir>`** command: imports markdown/JSON artifacts with
+  frontmatter + keyword type detection, `--type`/`--title` overrides, and
+  checksum-based dedup.
+- **MCP knowledge tools**: `list_artifacts`, `get_artifact`, `get_knowledge_context`,
+  `link_artifacts` (available when a knowledge store is present).
+- `docs/ENHANCEMENT_PLAN.md`: roadmap from project harness to multi-role SDLC harness.
+- 30 new tests (107 total, 19 suites).
+
 ## [0.1.0] - 2026-07-31
 
 First real release of rn-vectalon. This release hardens the v0.1 API surface

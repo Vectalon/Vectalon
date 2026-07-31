@@ -3,6 +3,7 @@ import { MCPServer } from '../../protocol/MCPServer'
 import { ModelRouter } from '../../model/ModelRouter'
 import { ProjectMemory } from '../../memory/ProjectMemory'
 import { PatternLearner } from '../../memory/PatternLearner'
+import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { existsSync } from 'fs'
 import { join } from 'path'
 
@@ -35,7 +36,8 @@ export async function serveCommand(options: {
   modelRouter.initialize({ provider: modelProvider as 'local' | 'openai' | 'anthropic' })
 
   const protocol = options.protocol || 'mcp'
-  const server = new MCPServer(engine, modelRouter, protocol as 'mcp' | 'stdio' | 'sse' | 'http')
+  const artifactStore = new ArtifactStore(root)
+  const server = new MCPServer(engine, modelRouter, protocol as 'mcp' | 'stdio' | 'sse' | 'http', artifactStore)
 
   process.stderr.write(`  rn-vectalon serving via ${protocol.toUpperCase()}\n`)
   process.stderr.write('  Agents can connect and use project-aware tools\n')

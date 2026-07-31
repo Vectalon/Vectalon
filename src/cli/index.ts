@@ -1,6 +1,7 @@
 import { Command } from 'commander'
 import { initCommand } from './commands/init'
 import { serveCommand } from './commands/serve'
+import { importCommand } from './commands/import'
 import pkg from '../../package.json'
 
 export function runCLI(): void {
@@ -25,6 +26,14 @@ export function runCLI(): void {
     .option('--protocol <type>', 'Protocol type (mcp/stdio/sse/http)', 'mcp')
     .option('--model <provider>', 'Model provider (local/openai/anthropic)')
     .action(serveCommand)
+
+  program
+    .command('import')
+    .description('Import SDLC artifacts (markdown/JSON) into the knowledge base')
+    .argument('<target>', 'File or directory to import')
+    .option('--type <type>', 'Artifact type (business, research, product, requirements, design, architecture, engineering, data, security, qa, devops, operations, analytics)')
+    .option('--title <title>', 'Artifact title')
+    .action(importCommand)
 
   program.parse(process.argv)
 }

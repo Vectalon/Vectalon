@@ -1,6 +1,9 @@
 import type { AgentTool, ToolCall, ToolResult, ProtocolType } from './types'
 import { ContextEngine } from '../harness/ContextEngine'
 import { ModelRouter } from '../model/ModelRouter'
+import { ArtifactStore } from '../knowledge/ArtifactStore'
+import { RoleEngine } from '../knowledge/RoleEngine'
+import { ARTIFACT_ROLES } from '../knowledge/artifactTypes'
 
 type ToolHandler = (args: Record<string, unknown>) => Promise<string>
 
@@ -17,11 +20,18 @@ export class MCPServer {
   private protocol: ProtocolType
   private engine: ContextEngine
   private modelRouter: ModelRouter
+  private artifactStore: ArtifactStore | null
 
-  constructor(engine: ContextEngine, modelRouter: ModelRouter, protocol: ProtocolType = 'mcp') {
+  constructor(
+    engine: ContextEngine,
+    modelRouter: ModelRouter,
+    protocol: ProtocolType = 'mcp',
+    artifactStore: ArtifactStore | null = null
+  ) {
     this.engine = engine
     this.modelRouter = modelRouter
     this.protocol = protocol
+    this.artifactStore = artifactStore
     this.registerDefaultTools()
   }
 
@@ -117,6 +127,45 @@ export class MCPServer {
         description: 'View patterns the harness has learned about this project',
         inputSchema: { type: 'object', properties: {} },
       },
+      ...(this.artifactStore
+        ? [
+            {
+              name: 'list_artifacts',
+              description: 'List artifacts in the knowledge base',
+              inputSchema: { type: 'object', properties: {} },
+            },
+            {
+              name: 'get_artifact',
+              description: 'Get a single artifact from the knowledge base by id',
+              inputSchema: {
+                type: 'object',
+                properties: { id: { type: 'string' } },
+                required: ['id'],
+              },
+            },
+            {
+              name: 'get_knowledge_context',
+              description: 'Get knowledge base context scoped to a role',
+              inputSchema: {
+                type: 'object',
+                properties: { role: { type: 'string', enum: ARTIFACT_ROLES } },
+                required: ['role'],
+              },
+            },
+            {
+              name: 'link_artifacts',
+              description: 'Link a parent artifact to a child artifact',
+              inputSchema: {
+                type: 'object',
+                properties: {
+                  parentId: { type: 'string' },
+                  childId: { type: 'string' },
+                },
+                required: ['parentId', 'childId'],
+              },
+            },
+          ]
+        : []),
     ]
   }
 
@@ -228,6 +277,49 @@ export class MCPServer {
       })
 
       return response.content
+    })
+
+    if (this.artifactStore) {
+      this.registerKnowledgeTools()
+    }
+  }
+
+  private registerKnowledgeTools(): void {
+    const store = this.artifactStore as ArtifactStore
+
+    this.tools.set('list_artifacts', async () => {
+      const summary = store.list().map(a => ({
+        id: a.id,
+        type: a.type,
+        title: a.title,
+        status: a.status,
+        version: a.version,
+        updatedAt: a.updatedAt,
+      }))
+      return JSON.stringify(summary, null, 2)
+    })
+
+    this.tools.set('get_artifact', async (args: Record<string, unknown>) => {
+      const artifact = store.get(args.id as string)
+      if (!artifact) throw new Error(`Artifact not found: ${args.id}`)
+      return JSON.stringify(artifact, null, 2)
+    })
+
+    this.tools.set('get_knowledge_context', async (args: Record<string, unknown>) => {
+      const role = args.role as string
+      if (!ARTIFACT_ROLES.includes(role as never)) {
+        throw new Error(`Unknown role: ${role}. Valid roles: ${ARTIFACT_ROLES.join(', ')}`)
+      }
+      return new RoleEngine().buildContext(role as never, store.list())
+    })
+
+    this.tools.set('link_artifacts', async (args: Record<string, unknown>) => {
+      const parentId = args.parentId as string
+      const childId = args.childId as string
+      if (!store.link(parentId, childId)) {
+        throw new Error(`Failed to link artifacts: missing id`)
+      }
+      return `Linked ${parentId} -> ${childId}`
     })
   }
 

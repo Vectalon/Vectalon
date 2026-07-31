@@ -203,6 +203,49 @@ Once the server is running, agents can call:
 | `analyze_error` | Analyze RN errors with categorized fixes |
 | `suggest_dependency_update` | Suggest dependency upgrades against a curated catalog |
 | `get_learned_patterns` | View patterns the harness has learned |
+| `list_artifacts` | List artifacts in the knowledge base |
+| `get_artifact` | Get a single knowledge base artifact by id |
+| `get_knowledge_context` | Knowledge base context scoped to a role (pm, ba, architect, engineer, qa, devops, support, analyst) |
+| `link_artifacts` | Link a parent artifact to a child artifact |
+
+---
+
+## Knowledge Base
+
+The knowledge base ("Company Brain") is a typed, versioned, traceable document
+store at `.vectalon/knowledge/artifacts.json`. It holds SDLC artifacts — PRDs,
+user stories, ADRs, test plans, incident reports — so agents get role-scoped
+context instead of just a file tree.
+
+### Import artifacts
+
+```bash
+# Import a single file
+npx rn-vectalon import docs/prd.md
+
+# Import a whole directory of markdown/JSON
+npx rn-vectalon import docs/
+
+# Force a type or title
+npx rn-vectalon import docs/prd.md --type product --title "Mobile App PRD"
+```
+
+Artifact type is resolved from (in order): `--type` flag → frontmatter `type:`
+field → keyword detection in content. Supported types: `business`, `research`,
+`product`, `requirements`, `design`, `architecture`, `engineering`, `data`,
+`security`, `qa`, `devops`, `operations`, `analytics`.
+
+JSON files may be a single `{ title, type, content }` object or an array of
+them (useful for Jira/ticket exports). Identical content is skipped via checksum.
+
+### Role-scoped context
+
+Agents query the brain through MCP tools. For example, ask your agent:
+*"What requirements context does the BA need for the onboarding feature?"* and
+it will call `get_knowledge_context` with the `ba` role to receive the relevant
+PRD, stories, and research artifacts.
+
+See `docs/ENHANCEMENT_PLAN.md` for the full roadmap toward a multi-role SDLC harness.
 
 ---
 
@@ -329,12 +372,18 @@ rn-vectalon/
 │   ├── cli/               # CLI entry point and commands
 │   │   ├── commands/
 │   │   │   ├── init.ts    # Project initialization
+│   │   │   ├── import.ts  # Knowledge base artifact import
 │   │   │   └── serve.ts   # MCP server startup
 │   │   └── index.ts       # CLI runner
 │   ├── harness/
 │   │   ├── Scanner.ts     # Project & component scanner
 │   │   ├── ContextEngine  # Context builder & manager
 │   │   └── types.ts
+│   ├── knowledge/         # Company Brain: typed, traceable artifact store
+│   │   ├── artifactTypes.ts
+│   │   ├── ArtifactStore.ts
+│   │   ├── Traceability.ts
+│   │   └── RoleEngine.ts
 │   ├── model/
 │   │   ├── ModelRouter.ts # Routes requests to providers
 │   │   ├── providers/
