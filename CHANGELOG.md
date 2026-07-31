@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Phase B: Requirements & BA
+
+- **Deterministic BA modules** (`src/sdlc/`): `RequirementWriter` (PRD scaffold),
+  `StoryWriter` (user story cards, one per persona), `AcceptanceCriteriaWriter`
+  (Given/When/Then from a story), `GapAnalyzer` (missing/partial/met with
+  recommendations), `SWOTAnalyzer` (four quadrants + SO/WO/ST/WT strategies),
+  `SupportTicketAnalyzer` (keyword-themed grouping with top-issue + recommendations).
+- **MCP BA tools**: `write_prd`, `write_user_stories`, `define_acceptance_criteria`,
+  `analyze_support_tickets`, `run_gap_analysis`. All deterministic-first; generated
+  documents are persisted to the knowledge base as `generated` artifacts, and
+  `write_user_stories` / `define_acceptance_criteria` accept `parentId` to link
+  into the traceability chain. `write_prd` / `write_user_stories` support an
+  `enhance: true` flag to expand the scaffold through the configured model.
+- Exported the new modules and types from the package entry point.
+- 33 new tests (140 total, 26 suites).
+
 ### Added — Phase A: Knowledge base (Company Brain)
 
 - **Artifact taxonomy** (`src/knowledge/artifactTypes.ts`): 13 SDLC artifact types,

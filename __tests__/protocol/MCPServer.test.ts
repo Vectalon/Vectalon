@@ -64,9 +64,9 @@ describe('MCPServer', () => {
     return new MCPServer(engine, router)
   }
 
-  it('advertises all six tools', () => {
+  it('advertises the core and BA tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(6)
+    expect(names).toHaveLength(11)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -75,6 +75,11 @@ describe('MCPServer', () => {
         'analyze_error',
         'suggest_dependency_update',
         'get_learned_patterns',
+        'write_prd',
+        'write_user_stories',
+        'define_acceptance_criteria',
+        'analyze_support_tickets',
+        'run_gap_analysis',
       ])
     )
   })
@@ -87,6 +92,11 @@ describe('MCPServer', () => {
       if (tool.name === 'write_test') args.target = 'Button'
       if (tool.name === 'analyze_error') args.error = 'TypeError: x is not a function'
       if (tool.name === 'suggest_dependency_update') args.packageName = 'react-native'
+      if (tool.name === 'write_prd') args.feature = 'Onboarding'
+      if (tool.name === 'write_user_stories') args.feature = 'Onboarding'
+      if (tool.name === 'define_acceptance_criteria') args.story = 'As a user, I want to sign up'
+      if (tool.name === 'analyze_support_tickets') args.tickets = 'App crashed on startup'
+      if (tool.name === 'run_gap_analysis') args.desired = 'sync'
 
       const result = await server.handleToolCall({ id: '1', name: tool.name, arguments: args })
       expect(result.isError).not.toBe(true)

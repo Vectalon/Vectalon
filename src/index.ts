@@ -8,6 +8,25 @@ export { MCPServer } from './protocol'
 export type { AgentTool, ToolCall, ToolResult, ProtocolType } from './protocol'
 
 export { ComponentGenerator, TestWriter, DebugAnalyzer, LintFixer } from './sdlc'
+export {
+  RequirementWriter,
+  StoryWriter,
+  AcceptanceCriteriaWriter,
+  GapAnalyzer,
+  SWOTAnalyzer,
+  SupportTicketAnalyzer,
+} from './sdlc'
+export type {
+  PRDInput,
+  UserStoryCard,
+  StoryInput,
+  GapInput,
+  GapAnalysis,
+  SWOTInput,
+  SWOTAnalysis,
+  TicketTheme,
+  TicketAnalysis,
+} from './sdlc'
 
 export { PatternLearner, ProjectMemory } from './memory'
 export type { Pattern, PatternStore } from './memory'

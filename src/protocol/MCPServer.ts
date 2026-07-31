@@ -4,6 +4,12 @@ import { ModelRouter } from '../model/ModelRouter'
 import { ArtifactStore } from '../knowledge/ArtifactStore'
 import { RoleEngine } from '../knowledge/RoleEngine'
 import { ARTIFACT_ROLES } from '../knowledge/artifactTypes'
+import type { Artifact, ArtifactType } from '../knowledge/artifactTypes'
+import { RequirementWriter } from '../sdlc/RequirementWriter'
+import { StoryWriter } from '../sdlc/StoryWriter'
+import { AcceptanceCriteriaWriter } from '../sdlc/AcceptanceCriteriaWriter'
+import { GapAnalyzer } from '../sdlc/GapAnalyzer'
+import { SupportTicketAnalyzer } from '../sdlc/SupportTicketAnalyzer'
 
 type ToolHandler = (args: Record<string, unknown>) => Promise<string>
 
@@ -127,6 +133,69 @@ export class MCPServer {
         description: 'View patterns the harness has learned about this project',
         inputSchema: { type: 'object', properties: {} },
       },
+      {
+        name: 'write_prd',
+        description: 'Write a Product Requirements Document scaffold for a feature',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            projectName: { type: 'string' },
+            feature: { type: 'string' },
+            featureIdeas: { type: 'string' },
+            enhance: { type: 'boolean' },
+          },
+          required: ['feature'],
+        },
+      },
+      {
+        name: 'write_user_stories',
+        description: 'Write user stories for a feature, one per persona',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            feature: { type: 'string' },
+            personas: { type: 'string' },
+            parentId: { type: 'string' },
+            enhance: { type: 'boolean' },
+          },
+          required: ['feature'],
+        },
+      },
+      {
+        name: 'define_acceptance_criteria',
+        description: 'Define Given/When/Then acceptance criteria for a user story',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            story: { type: 'string' },
+            parentId: { type: 'string' },
+          },
+          required: ['story'],
+        },
+      },
+      {
+        name: 'analyze_support_tickets',
+        description: 'Group support tickets into themes and suggest next steps',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            tickets: { type: 'string' },
+          },
+          required: ['tickets'],
+        },
+      },
+      {
+        name: 'run_gap_analysis',
+        description: 'Compare desired capabilities against current ones and report gaps',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            desired: { type: 'string' },
+            current: { type: 'string' },
+          },
+          required: ['desired', 'current'],
+        },
+      },
       ...(this.artifactStore
         ? [
             {
@@ -181,6 +250,8 @@ export class MCPServer {
       if (!store) return 'No learned patterns available.'
       return JSON.stringify(store.getActivePatterns(), null, 2)
     })
+
+    this.registerBATools()
 
     this.tools.set('suggest_dependency_update', async (args: Record<string, unknown>) => {
       const packageName = (args.packageName as string) || ''
@@ -284,6 +355,97 @@ export class MCPServer {
     }
   }
 
+  private registerBATools(): void {
+    this.tools.set('write_prd', async (args: Record<string, unknown>) => {
+      const feature = (args.feature as string) || 'untitled feature'
+      const snapshot = this.engine.getSnapshot()
+      const projectName = (args.projectName as string) || snapshot?.project.name || 'project'
+      const featureIdeas = parseList(args.featureIdeas)
+
+      const scaffold = new RequirementWriter().writePRD({ projectName, feature, featureIdeas })
+      const content = await this.maybeEnhance(
+        args,
+        scaffold,
+        'You are a product manager writing a Product Requirements Document. Expand the scaffold into a complete PRD.'
+      )
+      this.persistArtifact('product', `PRD: ${feature}`, content)
+      return content
+    })
+
+    this.tools.set('write_user_stories', async (args: Record<string, unknown>) => {
+      const feature = (args.feature as string) || 'untitled feature'
+      const personas = parseList(args.personas)
+
+      const scaffold = new StoryWriter().writeUserStories({ feature, personas })
+      const content = await this.maybeEnhance(
+        args,
+        scaffold,
+        'You are a business analyst writing user stories. Expand the scaffold into complete stories with the right format.'
+      )
+      this.persistArtifact('requirements', `User Stories: ${feature}`, content, args.parentId)
+      return content
+    })
+
+    this.tools.set('define_acceptance_criteria', async (args: Record<string, unknown>) => {
+      const story = (args.story as string) || ''
+      const content = new AcceptanceCriteriaWriter().writeAcceptanceCriteria(story)
+      const label = story.replace(/\s+/g, ' ').slice(0, 60)
+      this.persistArtifact('requirements', `Acceptance Criteria: ${label}`, content, args.parentId)
+      return content
+    })
+
+    this.tools.set('analyze_support_tickets', async (args: Record<string, unknown>) => {
+      const analyzer = new SupportTicketAnalyzer()
+      const analysis = analyzer.analyze(parseTickets(args.tickets))
+      const content = analyzer.render(analysis)
+      this.persistArtifact('research', 'Support Ticket Analysis', content)
+      return content
+    })
+
+    this.tools.set('run_gap_analysis', async (args: Record<string, unknown>) => {
+      const analyzer = new GapAnalyzer()
+      const analysis = analyzer.analyze({
+        desired: parseList(args.desired),
+        current: parseList(args.current),
+      })
+      const content = analyzer.render(analysis)
+      this.persistArtifact('research', 'Gap Analysis', content)
+      return content
+    })
+  }
+
+  private async maybeEnhance(
+    args: Record<string, unknown>,
+    scaffold: string,
+    systemPrompt: string
+  ): Promise<string> {
+    if (args.enhance !== true) return scaffold
+    try {
+      const response = await this.modelRouter.generate({
+        prompt: `Expand the following scaffold into a complete document:\n\n${scaffold}`,
+        systemPrompt,
+        temperature: 0.3,
+      })
+      return response.content
+    } catch {
+      return scaffold
+    }
+  }
+
+  private persistArtifact(
+    type: ArtifactType,
+    title: string,
+    content: string,
+    parentId?: unknown
+  ): Artifact | null {
+    if (!this.artifactStore) return null
+    const artifact = this.artifactStore.add({ type, title, content, source: 'generated' })
+    if (parentId && this.artifactStore.get(String(parentId))) {
+      this.artifactStore.link(String(parentId), artifact.id)
+    }
+    return artifact
+  }
+
   private registerKnowledgeTools(): void {
     const store = this.artifactStore as ArtifactStore
 
@@ -362,4 +524,31 @@ export class MCPServer {
       process.stderr.write(`rn-vectalon MCP server running on port ${port}\n`)
     })
   }
+}
+
+function parseList(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter(v => typeof v === 'string').map(v => (v as string).trim()).filter(Boolean)
+  }
+  if (typeof value === 'string') {
+    return value
+      .split(/[\n,]/)
+      .map(s => s.trim())
+      .filter(Boolean)
+  }
+  return []
+}
+
+function parseTickets(raw: unknown): string[] {
+  if (Array.isArray(raw)) {
+    return raw.filter(v => typeof v === 'string') as string[]
+  }
+  if (typeof raw === 'string') {
+    return raw
+      .split('\n')
+      .map(l => l.trim())
+      .filter(Boolean)
+      .map(l => l.replace(/^[-*]\s*/, '').replace(/^[A-Za-z]+[-_]?\d+\s*[:.]\s*/, ''))
+  }
+  return []
 }

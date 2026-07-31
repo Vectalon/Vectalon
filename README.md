@@ -203,6 +203,11 @@ Once the server is running, agents can call:
 | `analyze_error` | Analyze RN errors with categorized fixes |
 | `suggest_dependency_update` | Suggest dependency upgrades against a curated catalog |
 | `get_learned_patterns` | View patterns the harness has learned |
+| `write_prd` | Write a Product Requirements Document scaffold for a feature (persists as a `product` artifact) |
+| `write_user_stories` | Write user stories, one per persona, optionally linked to a parent artifact |
+| `define_acceptance_criteria` | Define Given/When/Then acceptance criteria for a user story |
+| `analyze_support_tickets` | Group support tickets into themes and recommend next steps |
+| `run_gap_analysis` | Compare desired vs current capabilities and report gaps |
 | `list_artifacts` | List artifacts in the knowledge base |
 | `get_artifact` | Get a single knowledge base artifact by id |
 | `get_knowledge_context` | Knowledge base context scoped to a role (pm, ba, architect, engineer, qa, devops, support, analyst) |
@@ -237,6 +242,24 @@ field → keyword detection in content. Supported types: `business`, `research`,
 
 JSON files may be a single `{ title, type, content }` object or an array of
 them (useful for Jira/ticket exports). Identical content is skipped via checksum.
+
+### Generate artifacts
+
+Beyond importing, the harness **writes** artifacts into the brain through the
+Requirements & BA tools. Generated documents are persisted with `source:
+"generated"` and can be linked into a traceability chain — e.g. ask your agent to
+"write a PRD for camera onboarding", then "write user stories for it, linked to
+the PRD". `write_user_stories` and `define_acceptance_criteria` accept a
+`parentId` so stories stay traceable to their PRD:
+
+```json
+{ "name": "write_prd", "arguments": { "projectName": "Acme", "feature": "Camera Onboarding" } }
+{ "name": "write_user_stories", "arguments": { "feature": "Camera Onboarding", "personas": "new user, returning user", "parentId": "<prd-artifact-id>" } }
+```
+
+All BA tools are deterministic (no model call required); pass `enhance: true`
+to `write_prd` / `write_user_stories` to have the configured model expand the
+scaffold into a full document.
 
 ### Role-scoped context
 

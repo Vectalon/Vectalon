@@ -82,8 +82,9 @@ Each phase runs the full SDLC loop: requirement → TDD → verify → release.
 - **Unblocks every later phase**; ships standalone value.
 
 ### Phase B — Requirements & BA
-- Modules: `RequirementWriter`, `StoryWriter`, `AcceptanceCriteriaWriter`, `GapAnalyzer`, `SWOTAnalyzer`
+- Modules: `RequirementWriter`, `StoryWriter`, `AcceptanceCriteriaWriter`, `GapAnalyzer`, `SWOTAnalyzer`, `SupportTicketAnalyzer`
 - Tools: `write_prd`, `write_user_stories`, `define_acceptance_criteria`, `analyze_support_tickets`, `run_gap_analysis`
+- Generated documents persist as `generated` artifacts; stories/acceptance criteria link to a parent via `parentId`
 
 ### Phase C — QA & engineering depth
 - `TestPlanWriter`, `BugTriageAnalyzer`, `RootCauseAnalyzer`, `CodeReviewAnalyzer`, `RefactorSuggester`
@@ -122,7 +123,7 @@ Each phase runs the full SDLC loop: requirement → TDD → verify → release.
 
 - [x] v0.1.0 release (tests, lint, typecheck, CI-ready scripts)
 - [x] **Phase A — Knowledge base** (taxonomy, ArtifactStore, Traceability, RoleEngine, import command, MCP knowledge tools)
-- [ ] Phase B — Requirements & BA
+- [x] **Phase B — Requirements & BA** (RequirementWriter, StoryWriter, AcceptanceCriteriaWriter, GapAnalyzer, SWOTAnalyzer, SupportTicketAnalyzer; write_prd, write_user_stories, define_acceptance_criteria, analyze_support_tickets, run_gap_analysis; generated artifacts persisted + linkable via parentId)
 - [ ] Phase C — QA & engineering depth
 - [ ] Phase D — Architecture, security, UX
 - [ ] Phase E — DevOps, ops, analytics
