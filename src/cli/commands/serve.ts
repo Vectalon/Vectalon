@@ -5,6 +5,7 @@ import { ProjectMemory } from '../../memory/ProjectMemory'
 import { PatternLearner } from '../../memory/PatternLearner'
 import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { TeamStore } from '../../knowledge/TeamStore'
+import { HashEmbeddingProvider } from '../../knowledge/embeddings'
 import { existsSync, readFileSync } from 'fs'
 import { join, basename, resolve } from 'path'
 
@@ -68,7 +69,7 @@ function buildTeamStore(root: string, localStore: ArtifactStore): TeamStore | nu
     return null
   }
 
-  const teamStore = new TeamStore()
+  const teamStore = new TeamStore({ embeddingProvider: new HashEmbeddingProvider() })
   teamStore.register({ name: basename(root), team: config.team, store: localStore })
 
   for (const project of config.projects || []) {

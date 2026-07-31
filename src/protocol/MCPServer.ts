@@ -945,6 +945,8 @@ export class MCPServer {
           project: r.project,
           team: r.team || null,
           score: r.score,
+          lexicalScore: r.lexicalScore,
+          semanticScore: r.semanticScore,
           artifact: {
             id: r.artifact.id,
             type: r.artifact.type,

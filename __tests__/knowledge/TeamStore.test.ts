@@ -1,5 +1,6 @@
 import { ArtifactStore } from '../../src/knowledge/ArtifactStore'
 import { TeamStore } from '../../src/knowledge/TeamStore'
+import { HashEmbeddingProvider } from '../../src/knowledge/embeddings'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
 const tempDirs: string[] = []
@@ -162,5 +163,27 @@ describe('TeamStore', () => {
     expect(team.projects()).toEqual([])
     expect(team.context()).toContain('# Team knowledge context')
     expect(team.search({ query: 'anything' })).toEqual([])
+  })
+
+  it('merges semantic scores when an embedding provider is attached', () => {
+    const team = new TeamStore({ embeddingProvider: new HashEmbeddingProvider(), semanticWeight: 0.5 })
+    team.register({ name: 'app', team: 'mobile', store: appStore })
+
+    const results = team.search({ query: 'onboarding' })
+    expect(results.length).toBeGreaterThan(0)
+    expect(results[0].semanticScore).not.toBeNull()
+    expect(results[0].semanticScore as number).toBeGreaterThan(0)
+    expect(results[0].score).toBeGreaterThan(0)
+    expect(results[0]).toMatchObject({ project: 'app', team: 'mobile' })
+  })
+
+  it('stays purely lexical without an embedding provider', () => {
+    const team = new TeamStore()
+    team.register({ name: 'app', store: appStore })
+
+    const results = team.search({ query: 'retention' })
+    expect(results).toHaveLength(1)
+    expect(results[0].semanticScore).toBeNull()
+    expect(results[0].lexicalScore).toBeGreaterThan(0)
   })
 })

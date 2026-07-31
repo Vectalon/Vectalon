@@ -341,7 +341,16 @@ knowledge base is skipped with a warning. Agents then use:
 ```
 
 `search_knowledge` ranks matches across projects (title matches outweigh content
-matches) and scopes by `team`, `project`, and `type`.
+matches), scopes by `team`, `project`, and `type`, and reports the score
+breakdown. Retrieval merges lexical and semantic signals: the `serve` command
+attaches a deterministic offline embedding provider by default, so results carry
+`lexicalScore` and `semanticScore` even with no model configured. Bring your own
+embedding API by implementing the `EmbeddingProvider` interface
+(`embed(text: string): number[]`) and passing it to `new TeamStore({ embeddingProvider })`.
+
+```json
+{ "name": "search_knowledge", "arguments": { "query": "payments are failing", "team": "backend", "limit": 5 } }
+```
 
 See `docs/ENHANCEMENT_PLAN.md` for the full roadmap toward a multi-role SDLC harness.
 

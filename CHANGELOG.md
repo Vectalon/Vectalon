@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Phase G: Model-backed retrieval
+
+- **`KnowledgeIndex`** (`src/knowledge/KnowledgeIndex.ts`): artifact index with
+  TF-based lexical scoring (title terms weigh 3× content), team/project/type
+  scoping, limits, and an optional semantic cosine merge via an `EmbeddingProvider`.
+- **`embeddings`** (`src/knowledge/embeddings.ts`): `EmbeddingProvider` interface,
+  `cosineSimilarity`, and a deterministic offline `HashEmbeddingProvider`
+  (character-bigram hashing) so retrieval stays hermetic; real providers plug into
+  the same seam.
+- **`TeamStore` now delegates search to `KnowledgeIndex`** and `search_knowledge`
+  surfaces `lexicalScore` and `semanticScore` alongside the combined `score` —
+  enabling model-backed retrieval over the team brain.
+- **`serve` attaches the deterministic embedding provider by default** so semantic
+  retrieval works offline out of the box.
+- Exported the index, embedding helpers, and their types from the package entry point.
+- 16 new tests (264 total, 49 suites).
+
 ### Added — Phase F: Team brain
 
 - **`TeamStore`** (`src/knowledge/TeamStore.ts`): multi-project artifact registry with

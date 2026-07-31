@@ -106,7 +106,12 @@ Each phase runs the full SDLC loop: requirement → TDD → verify → release.
 - Modules: `TeamStore` (multi-project registry, keyword-ranked cross-project search, aggregated role-scoped context)
 - Tools: `get_team_context`, `search_knowledge` (scoped by team, project, and type)
 - Config: `.vectalon/team.json` registers sibling projects (git-backed, shared across the team)
-- Future (v0.5): hosted artifact store, embedding-based retrieval
+
+### Phase G — Model-backed retrieval (embedding index + semantic search)
+- Modules: `KnowledgeIndex` (TF lexical scoring + optional semantic cosine merge), `embeddings` (provider interface, `cosineSimilarity`, deterministic `HashEmbeddingProvider`)
+- `TeamStore` delegates search to `KnowledgeIndex`; `search_knowledge` surfaces `lexicalScore` + `semanticScore`
+- `serve` attaches the deterministic provider by default; real providers plug in via the `EmbeddingProvider` seam
+- Future (v0.5): hosted artifact store, real embedding API providers
 
 ## Sequencing rationale
 
@@ -135,4 +140,4 @@ Each phase runs the full SDLC loop: requirement → TDD → verify → release.
 - [x] **Phase D — Architecture, security, UX** (ADRWriter, TradeoffAnalyzer, ThreatModeler, AccessibilityChecker, DesignSystemExtractor, WireframeGenerator; write_adr, analyze_tradeoffs, threat_model, check_accessibility, extract_design_system, generate_wireframe)
 - [x] **Phase E — DevOps, ops, analytics** (ReleaseNoteWriter, IncidentAnalyzer, RunbookWriter, KpiReportAnalyzer; write_release_notes, analyze_incident, write_runbook, analyze_kpis)
 - [x] **Phase F — Team brain** (TeamStore multi-project registry; get_team_context + search_knowledge scoped by team/project/type; .vectalon/team.json config)
-- [ ] Phase G — Model-backed retrieval (embedding index + semantic search)
+- [x] **Phase G — Model-backed retrieval** (KnowledgeIndex with TF lexical + semantic cosine merge; embeddings provider seam + deterministic HashEmbeddingProvider; search_knowledge surfaces lexical/semantic scores)

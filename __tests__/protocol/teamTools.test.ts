@@ -3,6 +3,7 @@ import { ContextEngine } from '../../src/harness/ContextEngine'
 import { ModelRouter } from '../../src/model/ModelRouter'
 import { ArtifactStore } from '../../src/knowledge/ArtifactStore'
 import { TeamStore } from '../../src/knowledge/TeamStore'
+import { HashEmbeddingProvider } from '../../src/knowledge/embeddings'
 import { resetConfig } from '../../src/config'
 import { createTempProject, cleanup, useTempConfig } from '../helpers/tmp'
 
@@ -172,5 +173,25 @@ describe('MCPServer team tools', () => {
     })
     expect(result.isError).toBe(true)
     expect(result.content).toContain('Unknown artifact type')
+  })
+
+  it('search_knowledge surfaces semantic scores when embeddings are enabled', async () => {
+    const appDir = createTempProject({})
+    tempDirs.push(appDir)
+    const app = new ArtifactStore(appDir)
+    app.add({ type: 'operations', title: 'Runbook', content: 'restart the billing and checkout services on outage' })
+    const team = new TeamStore({ embeddingProvider: new HashEmbeddingProvider(), semanticWeight: 0.5 })
+    team.register({ name: 'billing', team: 'backend', store: app })
+
+    const server = createServer(team)
+    const result = await server.handleToolCall({
+      id: '1',
+      name: 'search_knowledge',
+      arguments: { query: 'payment service down' },
+    })
+    expect(result.isError).not.toBe(true)
+    expect(result.content).toContain('Runbook')
+    expect(result.content).toContain('"semanticScore"')
+    expect(result.content).not.toContain('No artifacts matched')
   })
 })
