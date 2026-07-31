@@ -125,7 +125,7 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 
 ### Prerequisites
 
-- Node.js >= 18
+- Node.js >= 20.12.0
 - React Native CLI project (>= 0.72)
 
 ### Installation
@@ -164,6 +164,21 @@ npx vectalon serve
 ```
 
 Starts the MCP server. Your agent connects and gets all the tools.
+
+
+### Download a local model (optional)
+
+`vectalon` works offline by default using a deterministic stub, but you can
+download a real, free-for-commercial-use local model to generate code in the
+implementation phase.
+
+```bash
+vectalon pull              # default: Qwen2.5-Coder-1.5B-Instruct-GGUF
+vectalon models            # list available and downloaded models
+```
+
+The default model is **Qwen2.5-Coder-1.5B-Instruct-GGUF** (`Q4_K_M`, ~1.1 GB), licensed under **Apache 2.0**, which is free for commercial use. If no model is
+downloaded, the feature workflow falls back to deterministic scaffolds.
 
 ### Run a feature workflow
 

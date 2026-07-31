@@ -12,7 +12,7 @@ export class ModelRouter {
     this.provider = config?.provider || (getConfig('modelProvider') as ModelProviderType) || 'local'
 
     if (this.provider === 'local') {
-      this.localProvider = new LocalProvider('')
+      this.localProvider = new LocalProvider()
       void this.localProvider.initialize()
     } else {
       this.remoteProviders.set(this.provider, new RemoteProvider(this.provider))
@@ -38,5 +38,9 @@ export class ModelRouter {
       openai: this.remoteProviders.has('openai'),
       anthropic: this.remoteProviders.has('anthropic'),
     }
+  }
+
+  isLocalFallback(): boolean {
+    return this.provider === 'local' && this.localProvider?.isFallback() === true
   }
 }

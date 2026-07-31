@@ -4,6 +4,8 @@ import { initCommand } from './commands/init'
 import { serveCommand } from './commands/serve'
 import { importCommand } from './commands/import'
 import { featureCommand } from './commands/feature'
+import { pullCommand } from './commands/pull'
+import { modelsCommand } from './commands/models'
 import { logger } from './logger'
 import pkg from '../../package.json'
 
@@ -48,6 +50,16 @@ export function runCLI(): void {
     .option('--json', 'Output as JSON')
     .action(featureCommand)
 
+  program
+    .command('pull [preset]')
+    .description('Download a local model preset (default: qwen2.5-coder-1.5b)')
+    .action(pullCommand)
+
+  program
+    .command('models')
+    .description('List available and downloaded local models')
+    .action(modelsCommand)
+
   const argv = process.argv
   const supportsClack = majorNode() > 20 || (majorNode() === 20 && (minorNode() > 12 || (minorNode() === 12 && patchNode() >= 0)))
   const interactiveEligible = argv.length <= 2 && process.stdin.isTTY && supportsClack
@@ -86,6 +98,8 @@ async function runInteractive(): Promise<void> {
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
       { value: 'import', label: 'Import artifacts', hint: 'Add markdown/JSON to the knowledge base' },
+      { value: 'pull', label: 'Download local model', hint: 'Download the default Qwen2.5-Coder model' },
+      { value: 'models', label: 'List models', hint: 'Show available and downloaded local models' },
       { value: 'help', label: 'Show help', hint: 'Print command reference' },
     ],
   })
@@ -158,6 +172,17 @@ async function runInteractive(): Promise<void> {
     }
     await importCommand(target as string, {})
     p.outro('Import complete')
+    return
+  }
+
+  if (action === 'pull') {
+    await pullCommand(undefined)
+    p.outro('Model download complete')
+    return
+  }
+
+  if (action === 'models') {
+    await modelsCommand()
     return
   }
 }

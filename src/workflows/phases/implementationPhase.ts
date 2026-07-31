@@ -1,5 +1,6 @@
 import type { WorkflowPhase, WorkflowArtifact } from '../../adapters/types'
 import type { ContextSnapshot } from '../../harness/types'
+import type { ModelRouter } from '../../model/ModelRouter'
 import { detectConventions, phaseResult, sanitizeFileName, fileExtension, jsxExtension } from './helpers'
 import { detectIntent, intentTitle, isRemoveDependency, isRefactor } from './intent'
 
@@ -7,6 +8,16 @@ interface DependencyMatch {
   name: string
   version: string
   isDev: boolean
+}
+
+interface GeneratedFile {
+  path: string
+  content: string
+}
+
+interface GeneratedImplementation {
+  files: GeneratedFile[]
+  notes?: string
 }
 
 function findDependency(snapshot: ContextSnapshot | null, dependency: string): DependencyMatch[] {
@@ -43,6 +54,117 @@ function findUsages(snapshot: ContextSnapshot | null, dependency: string): { fil
   }
 
   return usages
+}
+
+function isFallbackResponse(content: string): boolean {
+  return content.includes('[Local model fallback') || content.includes('no downloaded model')
+}
+
+function parseModelOutput(content: string): GeneratedImplementation | null {
+  // Try to extract JSON from markdown code block first
+  const jsonBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
+  const jsonText = jsonBlockMatch ? jsonBlockMatch[1].trim() : content.trim()
+
+  try {
+    const parsed = JSON.parse(jsonText) as GeneratedImplementation
+    if (Array.isArray(parsed.files)) {
+      return {
+        files: parsed.files.map(f => ({ path: f.path, content: f.content })),
+        notes: parsed.notes,
+      }
+    }
+  } catch {
+    // Ignore parse error
+  }
+
+  return null
+}
+
+function buildImplementationPrompt(ctx: {
+  snapshot: ContextSnapshot | null
+  prompt: string
+  intent: ReturnType<typeof detectIntent>
+}): { systemPrompt: string; prompt: string } {
+  const conventions = detectConventions(ctx.snapshot)
+  const featureName = sanitizeFileName(ctx.prompt) || 'Feature'
+
+  const systemPrompt = [
+    'You are a senior React Native engineer.',
+    'Generate production-ready, minimal React Native code for the user request.',
+    'Do not add TODOs or placeholders. Use real, runnable code.',
+    'Return ONLY a JSON object with no markdown outside the JSON block.',
+    'The JSON must have this exact shape:',
+    '{"files":[{"path":"src/...","content":"..."}],"notes":"..."}',
+    'Each file must be a complete, self-contained source file.',
+  ].join(' ')
+
+  const projectContext = [
+    'Project conventions:',
+    `- TypeScript: ${conventions.hasTypeScript ? 'yes' : 'no'}`,
+    `- React Navigation: ${conventions.hasNavigation ? 'yes' : 'no'}`,
+    `- StyleSheet: ${conventions.usesStyleSheet ? 'yes' : 'no'}`,
+    `- Existing components: ${ctx.snapshot?.components.map(c => c.name).join(', ') || 'none'}`,
+    '',
+    `Request: ${ctx.prompt}`,
+    '',
+    `Intent: ${ctx.intent.type}`,
+    '',
+    'Generate the files for this request.',
+    `Use "${featureName}" as the base name for the generated modules.`,
+  ].join('\n')
+
+  return { systemPrompt, prompt: projectContext }
+}
+
+async function generateModelImplementation(
+  modelRouter: ModelRouter,
+  ctx: {
+    snapshot: ContextSnapshot | null
+    prompt: string
+    intent: ReturnType<typeof detectIntent>
+  }
+): Promise<{ output: string; artifacts: WorkflowArtifact[] } | null> {
+  const promptCtx = buildImplementationPrompt(ctx)
+  const response = await modelRouter.generate({
+    systemPrompt: promptCtx.systemPrompt,
+    prompt: promptCtx.prompt,
+    context: ctx.snapshot
+      ? `Project: ${ctx.snapshot.project.name}, React Native ${ctx.snapshot.project.reactNativeVersion || 'unknown'}`
+      : undefined,
+  })
+
+  if (isFallbackResponse(response.content)) {
+    return null
+  }
+
+  const parsed = parseModelOutput(response.content)
+  if (!parsed || parsed.files.length === 0) {
+    return null
+  }
+
+  const fileSections = parsed.files.map(f => [
+    `### ${f.path}`,
+    '```typescript',
+    f.content,
+    '```',
+  ].join('\n'))
+
+  const output = [
+    '## Generated files',
+    '',
+    ...(parsed.notes ? [parsed.notes, ''] : []),
+    ...fileSections,
+  ].join('\n')
+
+  return {
+    output,
+    artifacts: parsed.files.map(f => ({
+      type: 'engineering',
+      title: f.path,
+      content: f.content,
+      path: f.path,
+    })),
+  }
 }
 
 function generateAddFeatureImplementation(ctx: {
@@ -360,10 +482,21 @@ export const implementationPhase: WorkflowPhase = {
         prompt: ctx.prompt,
       })
     } else {
-      result = generateAddFeatureImplementation({
+      // Try to use the local model for actual implementation generation
+      const modelResult = await generateModelImplementation(ctx.modelRouter, {
         snapshot: ctx.snapshot,
         prompt: ctx.prompt,
+        intent,
       })
+
+      if (modelResult) {
+        result = modelResult
+      } else {
+        result = generateAddFeatureImplementation({
+          snapshot: ctx.snapshot,
+          prompt: ctx.prompt,
+        })
+      }
     }
 
     const conventionsNote = [

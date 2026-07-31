@@ -215,13 +215,13 @@ vectalon chat
 
 ### Status
 
-- [ ] Model store + download command
-- [ ] node-llama-cpp dynamic integration
-- [ ] Qwen chat template support
-- [ ] Fallback to deterministic stub
-- [ ] `vectalon models` / `vectalon chat` commands
-- [ ] Tests with stub (no model download required)
-- [ ] Documentation and license attribution
+- [x] Model store + download command
+- [x] node-llama-cpp dynamic integration
+- [ ] Qwen chat template support (using default node-llama-cpp chat wrapper)
+- [x] Fallback to deterministic stub
+- [x] `vectalon models` / `vectalon pull` commands
+- [x] Tests with stub (no model download required)
+- [x] Documentation and license attribution
 
 ## Status tracker
 
@@ -233,4 +233,4 @@ vectalon chat
 - [x] **Phase E — DevOps, ops, analytics** (ReleaseNoteWriter, IncidentAnalyzer, RunbookWriter, KpiReportAnalyzer; write_release_notes, analyze_incident, write_runbook, analyze_kpis)
 - [x] **Phase F — Team brain** (TeamStore multi-project registry; get_team_context + search_knowledge scoped by team/project/type; .vectalon/team.json config)
 - [x] **Phase G — Model-backed retrieval** (KnowledgeIndex with TF lexical + semantic cosine merge; embeddings provider seam + deterministic HashEmbeddingProvider; search_knowledge surfaces lexical/semantic scores)
-- [ ] **Phase H — Local model** (Qwen2.5-Coder + node-llama-cpp, free for commercial use, deterministic fallback)
+- [x] **Phase H — Local model** (Qwen2.5-Coder + node-llama-cpp, free for commercial use, deterministic fallback)
