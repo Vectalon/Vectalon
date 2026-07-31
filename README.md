@@ -198,17 +198,21 @@ Once the server is running, agents can call:
 | Tool | Description |
 |---|---|
 | `get_project_context` | Full project snapshot: structure, components, dependencies |
-| `generate_component` | Generate a new RN component following project conventions |
+| `generate_component` | Generate a functional RN component following project conventions |
 | `write_test` | Write Jest/Detox tests for a component |
 | `analyze_error` | Analyze RN errors with categorized fixes |
-| `suggest_dependency_update` | Suggest dependency upgrades |
+| `suggest_dependency_update` | Suggest dependency upgrades against a curated catalog |
 | `get_learned_patterns` | View patterns the harness has learned |
 
 ---
 
 ## Configuration
 
-Create or edit `.vectalon/rn-vectalon.json`:
+### Runtime config
+
+Runtime settings (model provider, API keys, protocol, learning toggles) are stored
+in a user-level config file at `~/.config/rn-vectalon/config.json` (override the
+location with the `RN_VECTALON_CONFIG_DIR` environment variable):
 
 ```json
 {
@@ -234,6 +238,25 @@ Set environment variables for API keys:
 export OPENAI_API_KEY="sk-..."
 export ANTHROPIC_API_KEY="sk-ant-..."
 ```
+
+### Project manifest
+
+`rn-vectalon init` writes `.vectalon/rn-vectalon.json` — a project **manifest**
+describing when the project was initialized and what it contained:
+
+```json
+{
+  "version": "0.1.0",
+  "projectName": "my-app",
+  "rnVersion": "0.72.0",
+  "initializedAt": 1700000000000,
+  "modelProvider": "local",
+  "autoLearn": true
+}
+```
+
+The manifest records project state; runtime behavior is controlled by the
+user-level config above and by CLI flags.
 
 ---
 
@@ -357,6 +380,10 @@ npm run dev
 
 # Test
 npm test
+
+# Lint + typecheck
+npm run lint
+npm run typecheck
 ```
 
 ### Testing with a local RN project

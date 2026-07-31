@@ -1,5 +1,5 @@
 export class DebugAnalyzer {
-  analyzeError(errorMessage: string, projectContext?: string): {
+  analyzeError(errorMessage: string, _projectContext?: string): {
     category: string
     probableCause: string
     suggestions: string[]

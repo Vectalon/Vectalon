@@ -1,32 +1,62 @@
-import Conf from 'conf'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
+import { join } from 'path'
+import { homedir } from 'os'
 
-const store = new Conf({
-  projectName: 'rn-vectalon',
-  schema: {
-    projectRoot: { type: 'string' },
-    modelProvider: { type: 'string', default: 'local' },
-    modelConfig: { type: 'object', default: {} },
-    agentProtocol: { type: 'string', default: 'mcp' },
-    autoScan: { type: 'boolean', default: true },
-    learningEnabled: { type: 'boolean', default: true },
-    sdlcModules: {
-      type: 'array',
-      items: { type: 'string' },
-      default: ['component-gen', 'test-writer', 'debug-analyzer', 'lint-fixer'],
-    },
-  },
-})
+const DEFAULTS: Record<string, unknown> = {
+  modelProvider: 'local',
+  modelConfig: {},
+  agentProtocol: 'mcp',
+  autoScan: true,
+  learningEnabled: true,
+  sdlcModules: ['component-gen', 'test-writer', 'debug-analyzer', 'lint-fixer'],
+}
+
+function configDir(): string {
+  return process.env.RN_VECTALON_CONFIG_DIR || join(homedir(), '.config', 'rn-vectalon')
+}
+
+function configPath(): string {
+  return join(configDir(), 'config.json')
+}
+
+let cache: Record<string, unknown> | null = null
+
+function load(): Record<string, unknown> {
+  if (cache) return cache
+  try {
+    if (existsSync(configPath())) {
+      cache = JSON.parse(readFileSync(configPath(), 'utf-8'))
+    }
+  } catch {
+    // Corrupted or unreadable config — start fresh
+  }
+  cache = cache || {}
+  return cache
+}
+
+function save(): void {
+  mkdirSync(configDir(), { recursive: true })
+  writeFileSync(configPath(), JSON.stringify(cache, null, 2))
+}
 
 export function getConfig(key: string): unknown {
-  return store.get(key)
+  const data = load()
+  return key in data ? data[key] : DEFAULTS[key]
 }
 
 export function setConfig(key: string, value: unknown): void {
-  store.set(key, value)
+  const data = load()
+  data[key] = value
+  save()
 }
 
 export function resetConfig(): void {
-  store.clear()
+  cache = null
+  rmSync(configDir(), { recursive: true, force: true })
 }
 
-export { store }
+export const store = {
+  get: (key: string) => getConfig(key),
+  set: (key: string, value: unknown) => setConfig(key, value),
+  clear: () => resetConfig(),
+}

@@ -36,6 +36,9 @@ export class ProjectMemory implements PatternStore {
     }
     this.memoryPath = join(vectalonDir, 'memory.json')
     this.store = this.load()
+    if (!existsSync(this.memoryPath)) {
+      this.save()
+    }
   }
 
   getActivePatterns(): Pattern[] {

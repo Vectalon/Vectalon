@@ -1,7 +1,7 @@
-import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { Scanner } from './Scanner'
-import type { ContextSnapshot, ProjectInfo, FileNode, ComponentInfo } from './types'
+import type { ContextSnapshot } from './types'
 import type { PatternStore } from '../memory/PatternLearner'
 
 export class ContextEngine {
@@ -33,6 +33,10 @@ export class ContextEngine {
 
   getSnapshot(): ContextSnapshot | null {
     return this.snapshot
+  }
+
+  getPatternStore(): PatternStore | null {
+    return this.patternStore
   }
 
   attachPatternStore(store: PatternStore): void {

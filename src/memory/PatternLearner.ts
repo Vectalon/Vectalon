@@ -14,11 +14,15 @@ export interface PatternStore {
   getPatternsByCategory(category: string): Pattern[]
 }
 
+export interface PatternStoreWithWrite extends PatternStore {
+  addPattern(pattern: Pattern): void
+}
+
 export class PatternLearner {
   private patterns: Pattern[] = []
-  private store: PatternStore
+  private store: PatternStoreWithWrite
 
-  constructor(store: PatternStore) {
+  constructor(store: PatternStoreWithWrite) {
     this.store = store
   }
 
@@ -69,7 +73,6 @@ export class PatternLearner {
     const patterns: Pattern[] = []
     const pascalCaseCount = components.filter(c => /^[A-Z][a-zA-Z0-9]*$/.test(c.name)).length
     const camelCaseCount = components.filter(c => /^[a-z][a-zA-Z0-9]*$/.test(c.name)).length
-    const kebabCount = components.filter(c => c.name.includes('-')).length
     const total = components.length
 
     if (total > 0) {
@@ -114,5 +117,7 @@ export class PatternLearner {
       pattern.lastSeen = Date.now()
       this.patterns.push(pattern)
     }
+
+    this.store.addPattern({ ...pattern })
   }
 }

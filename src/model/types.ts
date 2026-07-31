@@ -23,6 +23,8 @@ export interface ModelResponse {
     promptTokens?: number
     completionTokens?: number
     totalTokens?: number
+    inputTokens?: number
+    outputTokens?: number
   }
   provider: string
 }

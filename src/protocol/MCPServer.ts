@@ -4,6 +4,14 @@ import { ModelRouter } from '../model/ModelRouter'
 
 type ToolHandler = (args: Record<string, unknown>) => Promise<string>
 
+const LATEST_KNOWN: Record<string, string> = {
+  'react-native': '0.74.0',
+  react: '18.3.1',
+  typescript: '5.5.0',
+  jest: '29.7.0',
+  '@react-navigation/native': '6.1.0',
+}
+
 export class MCPServer {
   private tools: Map<string, ToolHandler> = new Map()
   private protocol: ProtocolType
@@ -14,11 +22,10 @@ export class MCPServer {
     this.engine = engine
     this.modelRouter = modelRouter
     this.protocol = protocol
+    this.registerDefaultTools()
   }
 
   async start(port = 0): Promise<void> {
-    this.registerDefaultTools()
-
     switch (this.protocol) {
       case 'mcp':
       case 'stdio':
@@ -28,6 +35,25 @@ export class MCPServer {
       case 'http':
         await this.startHTTP(port)
         break
+    }
+  }
+
+  async handleToolCall(call: ToolCall): Promise<ToolResult> {
+    const handler = this.tools.get(call.name)
+
+    if (!handler) {
+      return { id: call.id, content: `Unknown tool: ${call.name}`, isError: true }
+    }
+
+    try {
+      const content = await handler(call.arguments)
+      return { id: call.id, content }
+    } catch (err) {
+      return {
+        id: call.id,
+        content: `Error: ${err instanceof Error ? err.message : String(err)}`,
+        isError: true,
+      }
     }
   }
 
@@ -45,7 +71,7 @@ export class MCPServer {
           type: 'object',
           properties: {
             name: { type: 'string' },
-            type: { type: 'string', enum: ['functional', 'class'] },
+            type: { type: 'string', enum: ['functional'] },
             usesNavigation: { type: 'boolean' },
             usesStyleSheet: { type: 'boolean' },
           },
@@ -102,9 +128,59 @@ export class MCPServer {
     })
 
     this.tools.set('get_learned_patterns', async () => {
+      const store = this.engine.getPatternStore()
+      if (!store) return 'No learned patterns available.'
+      return JSON.stringify(store.getActivePatterns(), null, 2)
+    })
+
+    this.tools.set('suggest_dependency_update', async (args: Record<string, unknown>) => {
+      const packageName = (args.packageName as string) || ''
       const snapshot = this.engine.getSnapshot()
-      if (!snapshot) return 'No data available.'
-      return JSON.stringify(snapshot.components.slice(0, 30), null, 2)
+      const version =
+        snapshot?.project.dependencies[packageName] ||
+        snapshot?.project.devDependencies[packageName]
+
+      if (!version) {
+        return JSON.stringify(
+          {
+            packageName,
+            status: 'not-installed',
+            message: `Package "${packageName}" is not in this project's dependencies.`,
+          },
+          null,
+          2
+        )
+      }
+
+      const latest = LATEST_KNOWN[packageName]
+      if (!latest) {
+        return JSON.stringify(
+          {
+            packageName,
+            currentVersion: version,
+            status: 'unknown-latest',
+            message: `Unable to determine the latest version of ${packageName} without a network call.`,
+          },
+          null,
+          2
+        )
+      }
+
+      const current = version.replace(/[^\d.]/g, '')
+      const upToDate = current === latest.replace(/[^\d.]/g, '')
+      return JSON.stringify(
+        {
+          packageName,
+          currentVersion: version,
+          latestKnown: latest,
+          status: upToDate ? 'up-to-date' : 'update-available',
+          message: upToDate
+            ? `${packageName}@${version} is up to date.`
+            : `Update ${packageName} from ${version} to ${latest}: npm install ${packageName}@${latest}`,
+        },
+        null,
+        2
+      )
     })
 
     this.tools.set('analyze_error', async (args: Record<string, unknown>) => {
@@ -165,19 +241,7 @@ export class MCPServer {
     readline.on('line', async (line: string) => {
       try {
         const call: ToolCall = JSON.parse(line)
-        const handler = this.tools.get(call.name)
-
-        if (!handler) {
-          this.sendResult({
-            id: call.id,
-            content: `Unknown tool: ${call.name}`,
-            isError: true,
-          })
-          return
-        }
-
-        const content = await handler(call.arguments)
-        this.sendResult({ id: call.id, content })
+        this.sendResult(await this.handleToolCall(call))
       } catch (err) {
         this.sendResult({
           id: 'error',

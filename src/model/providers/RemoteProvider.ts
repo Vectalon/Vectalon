@@ -1,6 +1,16 @@
 import type { ModelRequest, ModelResponse } from '../types'
 import { getConfig } from '../../config'
 
+interface OpenAIResponse {
+  choices?: { message?: { content?: string } }[]
+  usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number }
+}
+
+interface AnthropicResponse {
+  content?: { text?: string }[]
+  usage?: { input_tokens?: number; output_tokens?: number }
+}
+
 const PROVIDER_CONFIGS: Record<string, { baseUrl: string; defaultModel: string }> = {
   openai: {
     baseUrl: 'https://api.openai.com/v1',
@@ -70,7 +80,7 @@ export class RemoteProvider {
       throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`)
     }
 
-    const data = await response.json()
+    const data = (await response.json()) as OpenAIResponse
     return {
       content: data.choices?.[0]?.message?.content || '',
       usage: {
@@ -107,7 +117,7 @@ export class RemoteProvider {
       throw new Error(`Anthropic API error: ${response.status} ${response.statusText}`)
     }
 
-    const data = await response.json()
+    const data = (await response.json()) as AnthropicResponse
     return {
       content: data.content?.[0]?.text || '',
       usage: {

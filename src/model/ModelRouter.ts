@@ -4,32 +4,32 @@ import { RemoteProvider } from './providers/RemoteProvider'
 import type { ModelConfig, ModelRequest, ModelResponse, ModelProviderType } from './types'
 
 export class ModelRouter {
+  private provider: ModelProviderType = 'local'
   private localProvider: LocalProvider | null = null
   private remoteProviders: Map<string, RemoteProvider> = new Map()
 
   initialize(config?: Partial<ModelConfig>): void {
-    const provider: ModelProviderType = config?.provider || (getConfig('modelProvider') as ModelProviderType) || 'local'
+    this.provider = config?.provider || (getConfig('modelProvider') as ModelProviderType) || 'local'
 
-    if (provider === 'local') {
+    if (this.provider === 'local') {
       this.localProvider = new LocalProvider('')
+      void this.localProvider.initialize()
     } else {
-      this.remoteProviders.set(provider, new RemoteProvider(provider))
+      this.remoteProviders.set(this.provider, new RemoteProvider(this.provider))
     }
   }
 
   async generate(request: ModelRequest): Promise<ModelResponse> {
-    const provider: ModelProviderType = getConfig('modelProvider') as ModelProviderType || 'local'
-
-    if (provider === 'local' && this.localProvider) {
+    if (this.provider === 'local' && this.localProvider) {
       return this.localProvider.generate(request)
     }
 
-    const remoteProvider = this.remoteProviders.get(provider)
+    const remoteProvider = this.remoteProviders.get(this.provider)
     if (remoteProvider) {
       return remoteProvider.generate(request)
     }
 
-    throw new Error(`No provider available for: ${provider}`)
+    throw new Error(`No provider available for: ${this.provider}`)
   }
 
   async getProviderStatus(): Promise<Record<string, boolean>> {
