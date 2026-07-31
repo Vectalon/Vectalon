@@ -12,7 +12,7 @@ export class ContextEngine {
 
   constructor(root: string) {
     this.scanner = new Scanner(root)
-    this.contextDir = join(root, '.cortex')
+    this.contextDir = join(root, '.vectalon')
   }
 
   init(): ContextSnapshot {

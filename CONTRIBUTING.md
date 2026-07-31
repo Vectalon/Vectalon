@@ -1,4 +1,4 @@
-# Contributing to rn-cortex
+# Contributing to rn-vectalon
 
 ## Development
 

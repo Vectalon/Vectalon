@@ -1,22 +1,22 @@
-# rn-cortex
+# rn-vectalon
 
 **The adaptive AI harness for React Native — bring project-aware SDLC intelligence to any agent.**
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![npm version](https://img.shields.io/npm/v/@rn-cortex/core)](https://www.npmjs.com/package/@rn-cortex/core)
+[![npm version](https://img.shields.io/npm/v/rn-vectalon)](https://www.npmjs.com/package/rn-vectalon)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 ---
 
-## What is rn-cortex?
+## What is rn-vectalon?
 
-rn-cortex is an open-source React Native package that embeds an adaptive AI harness directly into your RN CLI application. It scans your project, understands its architecture, and exposes a universal protocol that any AI agent — Claude Code, OpenCode, Codex CLI, Cursor, Windsurf — can connect to for project-aware assistance.
+rn-vectalon is an open-source React Native package that embeds an adaptive AI harness directly into your RN CLI application. It scans your project, understands its architecture, and exposes a universal protocol that any AI agent — Claude Code, OpenCode, Codex CLI, Cursor, Windsurf — can connect to for project-aware assistance.
 
 The harness **learns** from your codebase over time. It detects naming conventions, architectural patterns, styling preferences, and routing structures, then tailors its suggestions to match your project's unique style.
 
 ```
-npx rn-cortex init    # Scan project, build context
-npx rn-cortex serve   # Start MCP server for agents
+npx rn-vectalon init    # Scan project, build context
+npx rn-vectalon serve   # Start MCP server for agents
 ```
 
 ---
@@ -24,13 +24,13 @@ npx rn-cortex serve   # Start MCP server for agents
 ## Features
 
 ### Universal Agent Protocol
-Not locked to any single AI agent. rn-cortex speaks **MCP** (Model Context Protocol) by default, plus stdio, SSE, and HTTP modes. Any agent that supports these protocols gets full project context.
+Not locked to any single AI agent. rn-vectalon speaks **MCP** (Model Context Protocol) by default, plus stdio, SSE, and HTTP modes. Any agent that supports these protocols gets full project context.
 
 ### Project-Aware Intelligence
 The harness scans your entire RN app — `package.json`, folder structure, components, imports, metro config, TypeScript setup, navigation patterns. Agents get rich context, not just a file tree.
 
 ### Self-Evolving Memory
-rn-cortex learns as your project grows:
+rn-vectalon learns as your project grows:
 - Detects naming conventions (PascalCase vs camelCase components)
 - Recognizes architecture patterns (React Navigation, StyleSheet usage, state management)
 - Records decisions and their outcomes
@@ -52,7 +52,7 @@ Works with any model:
 - **Custom**: Any API-compatible endpoint
 
 ### Framework-Native
-Zero lock-in. rn-cortex is a standard npm package that integrates with your existing RN CLI workflow. No new build system, no proprietary DSL — just a `serve` command and your agent connects.
+Zero lock-in. rn-vectalon is a standard npm package that integrates with your existing RN CLI workflow. No new build system, no proprietary DSL — just a `serve` command and your agent connects.
 
 ---
 
@@ -65,7 +65,7 @@ Zero lock-in. rn-cortex is a standard npm package that integrates with your exis
 │          │                                           │
 │          ▼ MCP / stdio / SSE / HTTP                  │
 │  ┌──────────────────────────────────────────────┐    │
-│  │              rn-cortex Server                  │    │
+│  │              rn-vectalon Server                  │    │
 │  │  ┌──────────┐  ┌──────────┐  ┌────────────┐  │    │
 │  │  │  Context  │  │  Model   │  │   Agent    │  │    │
 │  │  │  Engine   │  │  Router  │  │  Protocol  │  │    │
@@ -87,8 +87,8 @@ Zero lock-in. rn-cortex is a standard npm package that integrates with your exis
 
 ### Flow
 
-1. **`rn-cortex init`** — Scans your project, catalogues components, detects patterns, stores context in `.cortex/`
-2. **`rn-cortex serve`** — Starts a local server exposing MCP tools: `get_project_context`, `generate_component`, `write_test`, `analyze_error`, `get_learned_patterns`
+1. **`rn-vectalon init`** — Scans your project, catalogues components, detects patterns, stores context in `.vectalon/`
+2. **`rn-vectalon serve`** — Starts a local server exposing MCP tools: `get_project_context`, `generate_component`, `write_test`, `analyze_error`, `get_learned_patterns`
 3. **Agent connects** — Your AI agent (Claude Code, OpenCode, etc.) connects to the MCP server and gets full project awareness
 4. **Agent acts** — The agent uses the harness tools to generate code, fix bugs, write tests — all in your project's style
 5. **Harness learns** — Every interaction improves the pattern store. The next session is even smarter.
@@ -105,16 +105,16 @@ Zero lock-in. rn-cortex is a standard npm package that integrates with your exis
 ### Installation
 
 ```bash
-npm install @rn-cortex/core
+npm install rn-vectalon
 ```
 
 ### Initialize
 
 ```bash
-npx rn-cortex init
+npx rn-vectalon init
 ```
 
-This scans your project and creates a `.cortex/` directory with:
+This scans your project and creates a `.vectalon/` directory with:
 - `snapshot.json` — Full project context (components, structure, config)
 - `context.md` — Human-readable project summary for agent prompts
 - `memory.json` — Learned patterns and decision history
@@ -122,7 +122,7 @@ This scans your project and creates a `.cortex/` directory with:
 ### Serve
 
 ```bash
-npx rn-cortex serve
+npx rn-vectalon serve
 ```
 
 Starts the MCP server. Your agent connects and gets all the tools.
@@ -133,24 +133,24 @@ Starts the MCP server. Your agent connects and gets all the tools.
 
 ### Claude Code (Anthropic)
 
-Run Claude Code and connect to rn-cortex via MCP:
+Run Claude Code and connect to rn-vectalon via MCP:
 
 ```bash
 # Terminal 1: start harness
-npx rn-cortex serve
+npx rn-vectalon serve
 
 # Terminal 2: use with Claude Code
 claude
 ```
 
-Claude Code automatically discovers MCP servers running locally. You can also add rn-cortex as a direct MCP tool in your `~/.claude/settings.json`:
+Claude Code automatically discovers MCP servers running locally. You can also add rn-vectalon as a direct MCP tool in your `~/.claude/settings.json`:
 
 ```json
 {
   "mcpServers": {
-    "rn-cortex": {
+    "rn-vectalon": {
       "command": "npx",
-      "args": ["rn-cortex", "serve", "--protocol", "stdio"]
+      "args": ["rn-vectalon", "serve", "--protocol", "stdio"]
     }
   }
 }
@@ -163,9 +163,9 @@ Add to your `opencode.json`:
 ```json
 {
   "mcpServers": {
-    "rn-cortex": {
+    "rn-vectalon": {
       "command": "npx",
-      "args": ["rn-cortex", "serve", "--protocol", "stdio"]
+      "args": ["rn-vectalon", "serve", "--protocol", "stdio"]
     }
   }
 }
@@ -176,8 +176,8 @@ Then ask: *"Generate a new ProfileCard component following the project's convent
 ### Codex CLI (OpenAI)
 
 ```bash
-# Start rn-cortex with HTTP
-npx rn-cortex serve --protocol http --port 8931
+# Start rn-vectalon with HTTP
+npx rn-vectalon serve --protocol http --port 8931
 
 # In another terminal, use Codex CLI with the MCP endpoint
 ```
@@ -185,7 +185,7 @@ npx rn-cortex serve --protocol http --port 8931
 ### Cursor / Windsurf / Any MCP Agent
 
 ```bash
-# rn-cortex automatically detected if running on standard ports
+# rn-vectalon automatically detected if running on standard ports
 # Or configure manually in your editor's MCP settings
 ```
 
@@ -208,7 +208,7 @@ Once the server is running, agents can call:
 
 ## Configuration
 
-Create or edit `.cortex/rn-cortex.json`:
+Create or edit `.vectalon/rn-vectalon.json`:
 
 ```json
 {
@@ -278,7 +278,7 @@ Auto-fix common React Native lint issues:
 
 ## Self-Evolution
 
-rn-cortex's **Evolution Engine** is what makes it adaptive:
+rn-vectalon's **Evolution Engine** is what makes it adaptive:
 
 ### Pattern Detection
 The harness automatically detects:
@@ -301,7 +301,7 @@ Over time, the harness's understanding of your project becomes increasingly accu
 ## Project Structure
 
 ```
-rn-cortex/
+rn-vectalon/
 ├── src/
 │   ├── cli/               # CLI entry point and commands
 │   │   ├── commands/
@@ -332,7 +332,7 @@ rn-cortex/
 │   └── config/
 │       └── index.ts
 ├── bin/
-│   └── rn-cortex.js       # CLI entry
+│   └── rn-vectalon.js       # CLI entry
 ├── package.json
 └── README.md
 ```
@@ -343,8 +343,8 @@ rn-cortex/
 
 ```bash
 # Clone
-git clone https://github.com/bhishaksanyal/rn-cortex.git
-cd rn-cortex
+git clone https://github.com/bhishaksanyal/rn-vectalon.git
+cd rn-vectalon
 
 # Install
 npm install
@@ -362,13 +362,13 @@ npm test
 ### Testing with a local RN project
 
 ```bash
-# In rn-cortex package directory
+# In rn-vectalon package directory
 npm link
 
 # In your RN project
-npm link @rn-cortex/core
-npx rn-cortex init
-npx rn-cortex serve
+npm link rn-vectalon
+npx rn-vectalon init
+npx rn-vectalon serve
 ```
 
 ---
@@ -397,11 +397,11 @@ Areas we'd love help with:
 
 ---
 
-## Why rn-cortex?
+## Why rn-vectalon?
 
-Existing AI coding tools are **general-purpose** — they don't understand React Native's unique constraints (bridge threading, native modules, platform-specific code, metro bundler quirks, Hermes vs JSC). rn-cortex fills this gap with an RN-specialized harness that any agent can leverage.
+Existing AI coding tools are **general-purpose** — they don't understand React Native's unique constraints (bridge threading, native modules, platform-specific code, metro bundler quirks, Hermes vs JSC). rn-vectalon fills this gap with an RN-specialized harness that any agent can leverage.
 
-**You keep your favorite agent.** rn-cortex doesn't replace your AI tooling — it makes it smarter about React Native.
+**You keep your favorite agent.** rn-vectalon doesn't replace your AI tooling — it makes it smarter about React Native.
 
 ---
 

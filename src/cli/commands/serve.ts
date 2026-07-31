@@ -12,10 +12,10 @@ export async function serveCommand(options: {
   modelProvider?: string
 }): Promise<void> {
   const root = process.cwd()
-  const cortexDir = join(root, '.cortex')
+  const vectalonDir = join(root, '.vectalon')
 
-  if (!existsSync(cortexDir)) {
-    process.stderr.write('  No .cortex/ directory found. Run `rn-cortex init` first.\n')
+  if (!existsSync(vectalonDir)) {
+    process.stderr.write('  No .vectalon/ directory found. Run `rn-vectalon init` first.\n')
     process.exit(1)
   }
 
@@ -37,7 +37,7 @@ export async function serveCommand(options: {
   const protocol = options.protocol || 'mcp'
   const server = new MCPServer(engine, modelRouter, protocol as 'mcp' | 'stdio' | 'sse' | 'http')
 
-  process.stderr.write(`  rn-cortex serving via ${protocol.toUpperCase()}\n`)
+  process.stderr.write(`  rn-vectalon serving via ${protocol.toUpperCase()}\n`)
   process.stderr.write('  Agents can connect and use project-aware tools\n')
   process.stderr.write('  Available tools:\n')
   for (const tool of server.getToolList()) {

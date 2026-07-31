@@ -97,7 +97,7 @@ export class MCPServer {
   private registerDefaultTools(): void {
     this.tools.set('get_project_context', async () => {
       const snapshot = this.engine.getSnapshot()
-      if (!snapshot) return 'No snapshot available. Run `rn-cortex init` first.'
+      if (!snapshot) return 'No snapshot available. Run `rn-vectalon init` first.'
       return this.engine.buildContextPrompt()
     })
 
@@ -203,7 +203,7 @@ export class MCPServer {
     })
 
     server.listen(port, () => {
-      process.stderr.write(`rn-cortex MCP server running on port ${port}\n`)
+      process.stderr.write(`rn-vectalon MCP server running on port ${port}\n`)
     })
   }
 }

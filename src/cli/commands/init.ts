@@ -18,10 +18,10 @@ export async function initCommand(rootDir: string, _options: Record<string, unkn
   learner.learnFromComponents(snapshot.components)
   engine.attachPatternStore(memory)
 
-  const cortexDir = join(root, '.cortex')
+  const vectalonDir = join(root, '.vectalon')
 
   writeFileSync(
-    join(cortexDir, 'rn-cortex.json'),
+    join(vectalonDir, 'rn-vectalon.json'),
     JSON.stringify({
       version: '0.1.0',
       projectName: snapshot.project.name,
@@ -35,11 +35,11 @@ export async function initCommand(rootDir: string, _options: Record<string, unkn
   const gitignorePath = join(root, '.gitignore')
   if (existsSync(gitignorePath)) {
     const gitignore = readFileSync(gitignorePath, 'utf-8')
-    if (!gitignore.includes('.cortex/')) {
-      writeFileSync(gitignorePath, gitignore + '\n# rn-cortex context\n.cortex/\n')
+    if (!gitignore.includes('.vectalon/')) {
+      writeFileSync(gitignorePath, gitignore + '\n# rn-vectalon context\n.vectalon/\n')
     }
   }
 
-  process.stderr.write('  rn-cortex initialized.\n')
-  process.stderr.write(`  Created .cortex/ with project context and memory store\n`)
+  process.stderr.write('  rn-vectalon initialized.\n')
+  process.stderr.write(`  Created .vectalon/ with project context and memory store\n`)
 }

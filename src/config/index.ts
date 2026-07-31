@@ -1,7 +1,7 @@
 import Conf from 'conf'
 
 const store = new Conf({
-  projectName: 'rn-cortex',
+  projectName: 'rn-vectalon',
   schema: {
     projectRoot: { type: 'string' },
     modelProvider: { type: 'string', default: 'local' },

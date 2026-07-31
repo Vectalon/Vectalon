@@ -1,10 +1,10 @@
 {
-  "name": "@rn-cortex/core",
+  "name": "rn-vectalon",
   "version": "0.1.0",
   "description": "The adaptive AI harness for React Native — project-aware SDLC intelligence for any agent",
   "main": "dist/index.js",
   "bin": {
-    "rn-cortex": "./bin/rn-cortex.js"
+    "rn-vectalon": "./bin/rn-vectalon.js"
   },
   "files": [
     "dist",
@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bhishaksanyal/rn-cortex.git"
+    "url": "git+https://github.com/bhishaksanyal/rn-vectalon.git"
   },
   "keywords": [
     "react-native",
@@ -39,9 +39,9 @@
   "author": "Bhishak Sanyal",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/bhishaksanyal/rn-cortex/issues"
+    "url": "https://github.com/bhishaksanyal/rn-vectalon/issues"
   },
-  "homepage": "https://github.com/bhishaksanyal/rn-cortex#readme",
+  "homepage": "https://github.com/bhishaksanyal/rn-vectalon#readme",
   "engines": {
     "node": ">=18.0.0"
   },

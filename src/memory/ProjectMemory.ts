@@ -30,11 +30,11 @@ export class ProjectMemory implements PatternStore {
   private store: MemoryStore
 
   constructor(projectRoot: string) {
-    const cortexDir = join(projectRoot, '.cortex')
-    if (!existsSync(cortexDir)) {
-      mkdirSync(cortexDir, { recursive: true })
+    const vectalonDir = join(projectRoot, '.vectalon')
+    if (!existsSync(vectalonDir)) {
+      mkdirSync(vectalonDir, { recursive: true })
     }
-    this.memoryPath = join(cortexDir, 'memory.json')
+    this.memoryPath = join(vectalonDir, 'memory.json')
     this.store = this.load()
   }
 
