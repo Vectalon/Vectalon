@@ -1,28 +1,30 @@
 import { Command } from 'commander'
+import pc from 'picocolors'
 import { initCommand } from './commands/init'
 import { serveCommand } from './commands/serve'
 import { importCommand } from './commands/import'
 import { featureCommand } from './commands/feature'
+import { logger } from './logger'
 import pkg from '../../package.json'
 
 export function runCLI(): void {
   const program = new Command()
 
   program
-    .name('rn-vectalon')
+    .name('vectalon')
     .description('The adaptive AI harness for React Native')
     .version(pkg.version)
 
   program
     .command('init')
-    .description('Initialize rn-vectalon in your React Native project')
+    .description('Initialize vectalon in your React Native project')
     .argument('[directory]', 'Project root directory')
     .option('--model <provider>', 'Default model provider (local/openai/anthropic)')
     .action(initCommand)
 
   program
     .command('serve')
-    .description('Start the rn-vectalon MCP server for agent connections')
+    .description('Start the vectalon MCP server for agent connections')
     .option('-p, --port <number>', 'HTTP server port', Number, 0)
     .option('--protocol <type>', 'Protocol type (mcp/stdio/sse/http)', 'mcp')
     .option('--model <provider>', 'Model provider (local/openai/anthropic)')
@@ -46,5 +48,116 @@ export function runCLI(): void {
     .option('--json', 'Output as JSON')
     .action(featureCommand)
 
-  program.parse(process.argv)
+  const argv = process.argv
+  const supportsClack = majorNode() > 20 || (majorNode() === 20 && (minorNode() > 12 || (minorNode() === 12 && patchNode() >= 0)))
+  const interactiveEligible = argv.length <= 2 && process.stdin.isTTY && supportsClack
+
+  if (interactiveEligible) {
+    runInteractive().catch((err: Error) => {
+      logger.error(err.message)
+      process.exit(1)
+    })
+  } else {
+    program.parse(argv)
+  }
+}
+
+function majorNode(): number {
+  return parseInt(process.versions.node.split('.')[0], 10)
+}
+
+function minorNode(): number {
+  return parseInt(process.versions.node.split('.')[1], 10)
+}
+
+function patchNode(): number {
+  return parseInt(process.versions.node.split('.')[2], 10)
+}
+
+async function runInteractive(): Promise<void> {
+  const p = await import('@clack/prompts')
+
+  p.intro(pc.bold(pc.cyan('vectalon')))
+
+  const action = await p.select({
+    message: 'What would you like to do?',
+    options: [
+      { value: 'init', label: 'Initialize a project', hint: 'Scan React Native project and create .vectalon/' },
+      { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
+      { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
+      { value: 'import', label: 'Import artifacts', hint: 'Add markdown/JSON to the knowledge base' },
+      { value: 'help', label: 'Show help', hint: 'Print command reference' },
+    ],
+  })
+
+  if (p.isCancel(action)) {
+    p.outro('Cancelled')
+    return
+  }
+
+  if (action === 'help') {
+    new Command().name('vectalon').help()
+    return
+  }
+
+  if (action === 'init') {
+    const directory = await p.text({
+      message: 'Project directory',
+      placeholder: process.cwd(),
+    })
+    if (p.isCancel(directory)) {
+      p.outro('Cancelled')
+      return
+    }
+    await initCommand(typeof directory === 'string' ? directory : '', {})
+    p.outro('Project initialized')
+    return
+  }
+
+  if (action === 'feature') {
+    const prompt = await p.text({
+      message: 'Feature prompt',
+      placeholder: 'e.g., Add a login screen with email and password',
+      validate: value => value ? undefined : 'Prompt is required',
+    })
+    if (p.isCancel(prompt)) {
+      p.outro('Cancelled')
+      return
+    }
+    await featureCommand(prompt as string, {})
+    return
+  }
+
+  if (action === 'serve') {
+    const protocol = await p.select({
+      message: 'Protocol',
+      options: [
+        { value: 'mcp', label: 'MCP' },
+        { value: 'stdio', label: 'Stdio' },
+        { value: 'sse', label: 'SSE' },
+        { value: 'http', label: 'HTTP' },
+      ],
+    })
+    if (p.isCancel(protocol)) {
+      p.outro('Cancelled')
+      return
+    }
+    await serveCommand({ protocol: protocol as string })
+    return
+  }
+
+  if (action === 'import') {
+    const target = await p.text({
+      message: 'File or directory to import',
+      placeholder: './docs',
+      validate: value => value ? undefined : 'Target is required',
+    })
+    if (p.isCancel(target)) {
+      p.outro('Cancelled')
+      return
+    }
+    await importCommand(target as string, {})
+    p.outro('Import complete')
+    return
+  }
 }

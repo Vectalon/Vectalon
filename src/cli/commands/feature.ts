@@ -1,11 +1,14 @@
 import { existsSync, writeFileSync } from 'fs'
 import { join } from 'path'
+import pc from 'picocolors'
+import Table from 'cli-table'
 import { ContextEngine } from '../../harness/ContextEngine'
 import { ProjectMemory } from '../../memory/ProjectMemory'
 import { PatternLearner } from '../../memory/PatternLearner'
 import { ModelRouter } from '../../model/ModelRouter'
 import { createAdapters } from '../../adapters'
 import { WorkflowEngine, getWorkflow, listWorkflows, createWorkflowState, saveWorkflowState, loadWorkflowState, listWorkflowStates } from '../../workflows'
+import { logger } from '../logger'
 
 export async function featureCommand(
   prompt: string,
@@ -15,15 +18,15 @@ export async function featureCommand(
   const vectalonDir = join(root, '.vectalon')
 
   if (!existsSync(vectalonDir)) {
-    process.stderr.write('  No .vectalon/ directory found. Run `rn-vectalon init` first.\n')
+    logger.error('No .vectalon/ directory found. Run `vectalon init` first.')
     process.exit(1)
   }
 
   const workflow = getWorkflow(options.workflow || 'feature-development')
   if (!workflow) {
     const available = listWorkflows().map(w => w.id).join(', ')
-    process.stderr.write(`  Unknown workflow: ${options.workflow}\n`)
-    process.stderr.write(`  Available workflows: ${available}\n`)
+    logger.error(`Unknown workflow: ${options.workflow}`)
+    logger.dim(`  Available workflows: ${available}`)
     process.exit(1)
   }
 
@@ -47,15 +50,15 @@ export async function featureCommand(
   if (options.resume) {
     const loaded = loadWorkflowState(root, workflow.id, options.resume)
     if (!loaded) {
-      process.stderr.write(`  Workflow state not found: ${options.resume}\n`)
-      process.stderr.write(`  Available states:\n`)
+      logger.error(`Workflow state not found: ${options.resume}`)
+      logger.info('Available states:')
       for (const s of listWorkflowStates(root, workflow.id)) {
-        process.stderr.write(`    - ${s.id} (${s.status})\n`)
+        logger.dim(`  - ${s.id} (${s.status})`)
       }
       process.exit(1)
     }
     state = { ...loaded, prompt, status: 'running', updatedAt: Date.now() }
-    process.stderr.write(`  Resuming workflow state: ${state.id}\n`)
+    logger.info(`Resuming workflow state: ${state.id}`)
   }
 
   const workflowEngine = new WorkflowEngine()
@@ -73,13 +76,22 @@ export async function featureCommand(
 
   saveWorkflowState(root, result)
 
+  const phaseTable = new Table({
+    head: ['Phase', 'Status'],
+    style: { head: ['cyan'] },
+  })
+  for (const p of result.phases) {
+    const statusColor = p.status === 'completed' ? pc.green : p.status === 'failed' ? pc.red : pc.yellow
+    phaseTable.push([p.name, statusColor(p.status)])
+  }
+
   const summary = [
-    `# Workflow: ${workflow.name}`,
-    `ID: ${result.id}`,
-    `Status: ${result.status}`,
+    `# ${pc.bold(`Workflow: ${workflow.name}`)}`,
+    `ID: ${pc.dim(result.id)}`,
+    `Status: ${result.status === 'completed' ? pc.green(result.status) : pc.red(result.status)}`,
     '',
     '## Phase summary',
-    ...result.phases.map(p => `- ${p.name}: ${p.status}`),
+    phaseTable.toString(),
   ].join('\n')
 
   if (options.json) {
@@ -87,19 +99,19 @@ export async function featureCommand(
     if (options.output) {
       writeFileSync(options.output, json)
     }
-    process.stdout.write(json + '\n')
+    logger.out(json + '\n')
   } else {
     const output = `${summary}\n\n## Detailed output\n\n${result.phases.map(p => `### ${p.name}\n${p.output}`).join('\n\n')}`
     if (options.output) {
       writeFileSync(options.output, output)
     }
-    process.stdout.write(output + '\n')
+    logger.out(output + '\n')
   }
 
   if (result.status === 'completed') {
-    process.stderr.write(`  Workflow completed: ${result.id}\n`)
+    logger.success(`Workflow completed: ${result.id}`)
   } else {
-    process.stderr.write(`  Workflow failed: ${result.id}\n`)
+    logger.error(`Workflow failed: ${result.id}`)
     process.exit(1)
   }
 }

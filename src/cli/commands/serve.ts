@@ -8,6 +8,7 @@ import { TeamStore } from '../../knowledge/TeamStore'
 import { HashEmbeddingProvider } from '../../knowledge/embeddings'
 import { existsSync, readFileSync } from 'fs'
 import { join, basename, resolve } from 'path'
+import { logger } from '../logger'
 
 interface TeamConfig {
   team?: string
@@ -23,7 +24,7 @@ export async function serveCommand(options: {
   const vectalonDir = join(root, '.vectalon')
 
   if (!existsSync(vectalonDir)) {
-    process.stderr.write('  No .vectalon/ directory found. Run `rn-vectalon init` first.\n')
+    logger.error('No .vectalon/ directory found. Run `vectalon init` first.')
     process.exit(1)
   }
 
@@ -47,11 +48,11 @@ export async function serveCommand(options: {
   const teamStore = buildTeamStore(root, artifactStore)
   const server = new MCPServer(engine, modelRouter, protocol as 'mcp' | 'stdio' | 'sse' | 'http', artifactStore, teamStore)
 
-  process.stderr.write(`  rn-vectalon serving via ${protocol.toUpperCase()}\n`)
-  process.stderr.write('  Agents can connect and use project-aware tools\n')
-  process.stderr.write('  Available tools:\n')
+  logger.success(`rn-vectalon serving via ${protocol.toUpperCase()}`)
+  logger.info('Agents can connect and use project-aware tools')
+  logger.info('Available tools:')
   for (const tool of server.getToolList()) {
-    process.stderr.write(`    - ${tool.name}: ${tool.description}\n`)
+    logger.dim(`  - ${tool.name}: ${tool.description}`)
   }
 
   await server.start(options.port || 0)
@@ -65,7 +66,7 @@ function buildTeamStore(root: string, localStore: ArtifactStore): TeamStore | nu
   try {
     config = JSON.parse(readFileSync(teamFile, 'utf-8'))
   } catch {
-    process.stderr.write('  Warning: .vectalon/team.json is not valid JSON; team brain disabled.\n')
+    logger.warn('.vectalon/team.json is not valid JSON; team brain disabled.')
     return null
   }
 
@@ -76,11 +77,11 @@ function buildTeamStore(root: string, localStore: ArtifactStore): TeamStore | nu
     const projectRoot = resolve(root, project.path)
     const projectStore = new ArtifactStore(projectRoot)
     if (projectStore.list().length === 0) {
-      process.stderr.write(`  Warning: no knowledge base at ${project.path}; skipping.\n`)
+      logger.warn(`No knowledge base at ${project.path}; skipping.`)
       continue
     }
     teamStore.register({ name: project.name, team: project.team || config.team, store: projectStore })
-    process.stderr.write(`  Registered team project: ${project.name}${project.team ? ` (${project.team})` : ''}\n`)
+    logger.info(`Registered team project: ${project.name}${project.team ? ` (${project.team})` : ''}`)
   }
 
   return teamStore

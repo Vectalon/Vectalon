@@ -3,6 +3,7 @@ import { join, basename, extname } from 'path'
 import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { checksum } from '../../knowledge/artifactTypes'
 import type { ArtifactType } from '../../knowledge/artifactTypes'
+import { logger } from '../logger'
 
 const KEYWORD_MAP: [ArtifactType, string[]][] = [
   ['business', ['business requirements', 'business case', 'vision document', 'product charter', 'project proposal']],
@@ -46,7 +47,7 @@ export async function importCommand(
     }
   }
 
-  process.stderr.write(`  Imported ${imported} artifact(s), ${unchanged} unchanged\n`)
+  logger.success(`Imported ${imported} artifact(s), ${unchanged} unchanged`)
 }
 
 function importFile(
@@ -88,12 +89,12 @@ function importOne(
   const artifactTitle = titleOverride || title || basename(file, extname(file))
 
   if (store.hasChecksum(checksum(content))) {
-    process.stderr.write(`  - ${artifactTitle} (${artifactType}): unchanged\n`)
+    logger.dim(`  - ${artifactTitle} (${artifactType}): unchanged`)
     return false
   }
 
   store.add({ type: artifactType, title: artifactTitle, content, source: 'import' })
-  process.stderr.write(`  - ${artifactTitle} (${artifactType}): imported\n`)
+  logger.info(`  - ${artifactTitle} (${artifactType}): imported`)
   return true
 }
 

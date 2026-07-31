@@ -17,8 +17,8 @@ rn-vectalon is an open-source React Native package that embeds an adaptive AI ha
 The harness **learns** from your codebase over time. It detects naming conventions, architectural patterns, styling preferences, and routing structures, then tailors its suggestions to match your project's unique style.
 
 ```
-npx @vectalon-dev/rn-vectalon init    # Scan project, build context
-npx @vectalon-dev/rn-vectalon serve   # Start MCP server for agents
+npx vectalon init    # Scan project, build context
+npx vectalon serve   # Start MCP server for agents
 ```
 
 ---
@@ -112,9 +112,9 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 
 ### Flow
 
-1. **`rn-vectalon init`** — Scans your project, catalogues components, detects patterns, stores context in `.vectalon/`
-2. **`rn-vectalon serve`** — Starts a local server exposing 26 core MCP tools (plus the Company Brain tools when a knowledge base is present)
-3. **`rn-vectalon import`** — Feeds the Company Brain: PRDs, Jira exports, postmortems, any SDLC artifact
+1. **`vectalon init`** — Scans your project, catalogues components, detects patterns, stores context in `.vectalon/`
+2. **`vectalon serve`** — Starts a local server exposing 26 core MCP tools (plus the Company Brain tools when a knowledge base is present)
+3. **`vectalon import`** — Feeds the Company Brain: PRDs, Jira exports, postmortems, any SDLC artifact
 4. **Agent connects** — Your AI agent (Claude Code, OpenCode, etc.) connects to the MCP server and gets full project awareness
 5. **Agent acts** — The agent uses the harness tools to generate code, fix bugs, write tests, produce PRDs/ADRs/test plans — all in your project's style
 6. **Harness learns** — Every interaction improves the pattern store and the knowledge base. The next session is even smarter.
@@ -138,10 +138,18 @@ yarn add -D @vectalon-dev/rn-vectalon
 
 > `rn-vectalon` is a development-time tool (CLI, project scanner, and MCP server). Nothing it exports is imported by your app bundle, so it belongs in `devDependencies`.
 
+After installing locally, you can use the shorter alias:
+
+```bash
+npx vectalon
+```
+
+Running `npx vectalon` with no arguments opens an interactive menu so you can pick init, feature, serve, import, or help without memorizing flags.
+
 ### Initialize
 
 ```bash
-npx @vectalon-dev/rn-vectalon init
+npx vectalon init
 ```
 
 This scans your project and creates a `.vectalon/` directory with:
@@ -152,7 +160,7 @@ This scans your project and creates a `.vectalon/` directory with:
 ### Serve
 
 ```bash
-npx @vectalon-dev/rn-vectalon serve
+npx vectalon serve
 ```
 
 Starts the MCP server. Your agent connects and gets all the tools.
@@ -160,7 +168,7 @@ Starts the MCP server. Your agent connects and gets all the tools.
 ### Run a feature workflow
 
 ```bash
-npx @vectalon-dev/rn-vectalon feature "create a login screen and integrate the auth API"
+npx vectalon feature "create a login screen and integrate the auth API"
 ```
 
 Runs the full SDLC workflow: PRD, design, architecture, implementation,
@@ -176,7 +184,7 @@ Run Claude Code and connect to rn-vectalon via MCP:
 
 ```bash
 # Terminal 1: start harness
-npx @vectalon-dev/rn-vectalon serve
+npx vectalon serve
 
 # Terminal 2: use with Claude Code
 claude
@@ -189,7 +197,7 @@ Claude Code automatically discovers MCP servers running locally. You can also ad
   "mcpServers": {
     "rn-vectalon": {
       "command": "npx",
-      "args": ["rn-vectalon", "serve", "--protocol", "stdio"]
+      "args": ["vectalon", "serve", "--protocol", "stdio"]
     }
   }
 }
@@ -204,7 +212,7 @@ Add to your `opencode.json`:
   "mcpServers": {
     "rn-vectalon": {
       "command": "npx",
-      "args": ["rn-vectalon", "serve", "--protocol", "stdio"]
+      "args": ["vectalon", "serve", "--protocol", "stdio"]
     }
   }
 }
@@ -216,7 +224,7 @@ Then ask: *"Generate a new ProfileCard component following the project's convent
 
 ```bash
 # Start rn-vectalon with HTTP
-npx @vectalon-dev/rn-vectalon serve --protocol http --port 8931
+npx vectalon serve --protocol http --port 8931
 
 # In another terminal, use Codex CLI with the MCP endpoint
 ```
@@ -235,7 +243,7 @@ npx @vectalon-dev/rn-vectalon serve --protocol http --port 8931
 `rn-vectalon` can run an end-to-end SDLC workflow from a single prompt:
 
 ```bash
-npx @vectalon-dev/rn-vectalon feature "create a login screen and integrate the auth API"
+npx vectalon feature "create a login screen and integrate the auth API"
 ```
 
 This executes 11 phases in sequence, gating each one on the previous:
@@ -264,10 +272,10 @@ phase outputs and readiness:
 
 ```bash
 # Re-run the entire workflow using a saved state ID
-npx @vectalon-dev/rn-vectalon feature "create a login screen and integrate the auth API" --resume <state-id>
+npx vectalon feature "create a login screen and integrate the auth API" --resume <state-id>
 
 # Resume from a specific phase (e.g. after editing implementation)
-npx @vectalon-dev/rn-vectalon feature "create a login screen and integrate the auth API" --resume <state-id> --from implementation
+npx vectalon feature "create a login screen and integrate the auth API" --resume <state-id> --from implementation
 ```
 
 ### Use from an agent
@@ -390,13 +398,13 @@ context instead of just a file tree.
 
 ```bash
 # Import a single file
-npx @vectalon-dev/rn-vectalon import docs/prd.md
+npx vectalon import docs/prd.md
 
 # Import a whole directory of markdown/JSON
-npx @vectalon-dev/rn-vectalon import docs/
+npx vectalon import docs/
 
 # Force a type or title
-npx @vectalon-dev/rn-vectalon import docs/prd.md --type product --title "Mobile App PRD"
+npx vectalon import docs/prd.md --type product --title "Mobile App PRD"
 ```
 
 Artifact type is resolved from (in order): `--type` flag → frontmatter `type:`
@@ -708,9 +716,9 @@ npm run typecheck
 npm link
 
 # In your RN project
-npm link rn-vectalon
-npx @vectalon-dev/rn-vectalon init
-npx @vectalon-dev/rn-vectalon serve
+npm link @vectalon-dev/rn-vectalon
+npx vectalon init
+npx vectalon serve
 ```
 
 ---

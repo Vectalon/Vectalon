@@ -3,20 +3,21 @@ import { ProjectMemory } from '../../memory/ProjectMemory'
 import { PatternLearner } from '../../memory/PatternLearner'
 import { writeFileSync, existsSync, readFileSync } from 'fs'
 import { join } from 'path'
+import { logger } from '../logger'
 
 export async function initCommand(rootDir: string, _options: Record<string, unknown>): Promise<void> {
   const root = rootDir || process.cwd()
 
-  process.stderr.write('  Scanning React Native project...\n')
+  logger.info('Scanning React Native project...')
   const engine = new ContextEngine(root)
   const snapshot = engine.init()
 
   if (!snapshot.project.reactNativeVersion) {
-    process.stderr.write('  Warning: no react-native dependency detected in package.json.\n')
-    process.stderr.write('           rn-vectalon is designed for React Native projects (>= 0.72.0).\n')
+    logger.warn('no react-native dependency detected in package.json.')
+    logger.dim('         rn-vectalon is designed for React Native projects (>= 0.72.0).')
   }
 
-  process.stderr.write(`  Found ${snapshot.components.length} components\n`)
+  logger.info(`Found ${snapshot.components.length} component(s)`)
 
   const memory = new ProjectMemory(root)
   const learner = new PatternLearner(memory)
@@ -45,6 +46,6 @@ export async function initCommand(rootDir: string, _options: Record<string, unkn
     }
   }
 
-  process.stderr.write('  rn-vectalon initialized.\n')
-  process.stderr.write(`  Created .vectalon/ with project context and memory store\n`)
+  logger.success('rn-vectalon initialized.')
+  logger.dim(`  Created .vectalon/ with project context and memory store`)
 }
