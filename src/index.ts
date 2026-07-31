@@ -16,6 +16,14 @@ export {
   SWOTAnalyzer,
   SupportTicketAnalyzer,
 } from './sdlc'
+export {
+  TestPlanWriter,
+  TestCaseWriter,
+  BugTriageAnalyzer,
+  RootCauseAnalyzer,
+  CodeReviewAnalyzer,
+  RefactorSuggester,
+} from './sdlc'
 export type {
   PRDInput,
   UserStoryCard,
@@ -26,6 +34,16 @@ export type {
   SWOTAnalysis,
   TicketTheme,
   TicketAnalysis,
+} from './sdlc'
+export type {
+  TestPlanInput,
+  CriteriaStep,
+  BugTriage,
+  TriageSeverity,
+  TriagePriority,
+  RootCauseResult,
+  ReviewFinding,
+  RefactorSuggestion,
 } from './sdlc'
 
 export { PatternLearner, ProjectMemory } from './memory'

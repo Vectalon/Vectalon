@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Phase C: QA & engineering depth
+
+- **Deterministic QA/engineering modules** (`src/sdlc/`): `TestPlanWriter` (plan
+  scaffold with scope, environments, entry/exit criteria), `TestCaseWriter`
+  (Given/When/Then acceptance criteria → Jest test file), `BugTriageAnalyzer`
+  (severity + p0–p3 priority triage), `RootCauseAnalyzer` (8 root-cause buckets
+  with investigation steps), `CodeReviewAnalyzer` (console.log, `any`, empty
+  catches, TODOs, inline styles, `@ts-ignore` with line numbers), `RefactorSuggester`
+  (oversized files/functions, magic numbers, `any`, console output).
+- **MCP QA tools**: `write_test_plan`, `triage_bugs`, `analyze_root_cause`,
+  `review_code`, `suggest_refactors`. Deterministic-first, persisted to the
+  knowledge base as `qa` / `engineering` artifacts.
+- **`write_test` now accepts `acceptanceCriteria`**: when provided, it emits
+  deterministic Jest test cases derived from the criteria (persisted as a `qa`
+  artifact); without it, it continues to proxy to the model layer.
+- Exported the new modules and types from the package entry point.
+- 34 new tests (174 total, 33 suites).
+
 ### Added — Phase B: Requirements & BA
 
 - **Deterministic BA modules** (`src/sdlc/`): `RequirementWriter` (PRD scaffold),

@@ -64,9 +64,9 @@ describe('MCPServer', () => {
     return new MCPServer(engine, router)
   }
 
-  it('advertises the core and BA tools', () => {
+  it('advertises the core, BA, and QA tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(11)
+    expect(names).toHaveLength(16)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -80,6 +80,11 @@ describe('MCPServer', () => {
         'define_acceptance_criteria',
         'analyze_support_tickets',
         'run_gap_analysis',
+        'write_test_plan',
+        'triage_bugs',
+        'analyze_root_cause',
+        'review_code',
+        'suggest_refactors',
       ])
     )
   })
@@ -97,6 +102,11 @@ describe('MCPServer', () => {
       if (tool.name === 'define_acceptance_criteria') args.story = 'As a user, I want to sign up'
       if (tool.name === 'analyze_support_tickets') args.tickets = 'App crashed on startup'
       if (tool.name === 'run_gap_analysis') args.desired = 'sync'
+      if (tool.name === 'write_test_plan') args.feature = 'Onboarding'
+      if (tool.name === 'triage_bugs') args.bugs = 'App crashed on startup'
+      if (tool.name === 'analyze_root_cause') args.issue = 'null is not an object'
+      if (tool.name === 'review_code') args.code = 'console.log(1)'
+      if (tool.name === 'suggest_refactors') args.code = 'const x = 1'
 
       const result = await server.handleToolCall({ id: '1', name: tool.name, arguments: args })
       expect(result.isError).not.toBe(true)

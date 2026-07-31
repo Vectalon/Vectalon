@@ -10,6 +10,12 @@ import { StoryWriter } from '../sdlc/StoryWriter'
 import { AcceptanceCriteriaWriter } from '../sdlc/AcceptanceCriteriaWriter'
 import { GapAnalyzer } from '../sdlc/GapAnalyzer'
 import { SupportTicketAnalyzer } from '../sdlc/SupportTicketAnalyzer'
+import { TestPlanWriter } from '../sdlc/TestPlanWriter'
+import { TestCaseWriter } from '../sdlc/TestCaseWriter'
+import { BugTriageAnalyzer } from '../sdlc/BugTriageAnalyzer'
+import { RootCauseAnalyzer } from '../sdlc/RootCauseAnalyzer'
+import { CodeReviewAnalyzer } from '../sdlc/CodeReviewAnalyzer'
+import { RefactorSuggester } from '../sdlc/RefactorSuggester'
 
 type ToolHandler = (args: Record<string, unknown>) => Promise<string>
 
@@ -96,12 +102,13 @@ export class MCPServer {
       },
       {
         name: 'write_test',
-        description: 'Write a test file for a given component or module',
+        description: 'Write a test file for a given component or module; pass acceptance criteria for deterministic cases',
         inputSchema: {
           type: 'object',
           properties: {
             target: { type: 'string' },
             framework: { type: 'string', enum: ['jest', 'detox'] },
+            acceptanceCriteria: { type: 'string' },
           },
           required: ['target'],
         },
@@ -196,6 +203,65 @@ export class MCPServer {
           required: ['desired', 'current'],
         },
       },
+      {
+        name: 'write_test_plan',
+        description: 'Write a QA test plan scaffold for a feature',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            feature: { type: 'string' },
+            scope: { type: 'string' },
+            environments: { type: 'string' },
+          },
+          required: ['feature'],
+        },
+      },
+      {
+        name: 'triage_bugs',
+        description: 'Triage a list of bug reports by severity and priority',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            bugs: { type: 'string' },
+          },
+          required: ['bugs'],
+        },
+      },
+      {
+        name: 'analyze_root_cause',
+        description: 'Analyze the probable root cause of a production issue',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            issue: { type: 'string' },
+          },
+          required: ['issue'],
+        },
+      },
+      {
+        name: 'review_code',
+        description: 'Run deterministic code review checks over a code snippet',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            code: { type: 'string' },
+            language: { type: 'string' },
+          },
+          required: ['code'],
+        },
+      },
+      {
+        name: 'suggest_refactors',
+        description: 'Suggest refactors for a code snippet based on static heuristics',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            code: { type: 'string' },
+            filename: { type: 'string' },
+          },
+          required: ['code'],
+        },
+      },
       ...(this.artifactStore
         ? [
             {
@@ -252,6 +318,7 @@ export class MCPServer {
     })
 
     this.registerBATools()
+    this.registerQATools()
 
     this.tools.set('suggest_dependency_update', async (args: Record<string, unknown>) => {
       const packageName = (args.packageName as string) || ''
@@ -340,6 +407,14 @@ export class MCPServer {
     this.tools.set('write_test', async (args: Record<string, unknown>) => {
       const target = args.target as string
       const framework = (args.framework as string) || 'jest'
+      const acceptanceCriteria = (args.acceptanceCriteria as string) || ''
+
+      if (acceptanceCriteria) {
+        const component = extractComponentName(target)
+        const content = new TestCaseWriter().writeTestCases(acceptanceCriteria, component)
+        this.persistArtifact('qa', `Test Cases: ${target}`, content)
+        return content
+      }
 
       const response = await this.modelRouter.generate({
         prompt: `Write ${framework} tests for: ${target}`,
@@ -430,6 +505,50 @@ export class MCPServer {
     } catch {
       return scaffold
     }
+  }
+  private registerQATools(): void {
+    this.tools.set('write_test_plan', async (args: Record<string, unknown>) => {
+      const feature = (args.feature as string) || 'untitled feature'
+      const content = new TestPlanWriter().writeTestPlan({
+        feature,
+        scope: parseList(args.scope),
+        environments: parseList(args.environments),
+      })
+      this.persistArtifact('qa', `Test Plan: ${feature}`, content)
+      return content
+    })
+
+    this.tools.set('triage_bugs', async (args: Record<string, unknown>) => {
+      const analyzer = new BugTriageAnalyzer()
+      const triage = analyzer.triage(parseTickets(args.bugs))
+      const content = analyzer.render(triage)
+      this.persistArtifact('qa', 'Bug Triage', content)
+      return content
+    })
+
+    this.tools.set('analyze_root_cause', async (args: Record<string, unknown>) => {
+      const issue = (args.issue as string) || ''
+      const result = new RootCauseAnalyzer().analyze(issue)
+      const content = new RootCauseAnalyzer().render(result)
+      this.persistArtifact('qa', 'Root Cause Analysis', content)
+      return content
+    })
+
+    this.tools.set('review_code', async (args: Record<string, unknown>) => {
+      const code = (args.code as string) || ''
+      const findings = new CodeReviewAnalyzer().review(code, (args.language as string) || 'tsx')
+      const content = new CodeReviewAnalyzer().render(findings)
+      this.persistArtifact('engineering', 'Code Review', content)
+      return content
+    })
+
+    this.tools.set('suggest_refactors', async (args: Record<string, unknown>) => {
+      const code = (args.code as string) || ''
+      const suggestions = new RefactorSuggester().suggest(code, (args.filename as string) || 'Component.tsx')
+      const content = new RefactorSuggester().render(suggestions)
+      this.persistArtifact('engineering', 'Refactor Suggestions', content)
+      return content
+    })
   }
 
   private persistArtifact(
@@ -551,4 +670,9 @@ function parseTickets(raw: unknown): string[] {
       .map(l => l.replace(/^[-*]\s*/, '').replace(/^[A-Za-z]+[-_]?\d+\s*[:.]\s*/, ''))
   }
   return []
+}
+
+function extractComponentName(target: string): string {
+  const base = (target.match(/[^/\\]+$/)?.[0] || target).replace(/\.(tsx?|jsx?)$/, '')
+  return base || 'Component'
 }

@@ -208,6 +208,11 @@ Once the server is running, agents can call:
 | `define_acceptance_criteria` | Define Given/When/Then acceptance criteria for a user story |
 | `analyze_support_tickets` | Group support tickets into themes and recommend next steps |
 | `run_gap_analysis` | Compare desired vs current capabilities and report gaps |
+| `write_test_plan` | Write a QA test plan scaffold for a feature |
+| `triage_bugs` | Triage bug reports by severity (critical→low) and priority (p0→p3) |
+| `analyze_root_cause` | Classify a production issue into a root-cause bucket with investigation steps |
+| `review_code` | Deterministic code review: console.log, `any`, empty catches, TODOs, inline styles |
+| `suggest_refactors` | Static refactor heuristics: oversized files/functions, magic numbers, `any` |
 | `list_artifacts` | List artifacts in the knowledge base |
 | `get_artifact` | Get a single knowledge base artifact by id |
 | `get_knowledge_context` | Knowledge base context scoped to a role (pm, ba, architect, engineer, qa, devops, support, analyst) |
@@ -260,6 +265,18 @@ the PRD". `write_user_stories` and `define_acceptance_criteria` accept a
 All BA tools are deterministic (no model call required); pass `enhance: true`
 to `write_prd` / `write_user_stories` to have the configured model expand the
 scaffold into a full document.
+
+The QA & engineering tools are likewise deterministic: `write_test_plan`,
+`triage_bugs`, `analyze_root_cause`, `review_code`, and `suggest_refactors`
+all produce structured output with no model call. `write_test` consumes
+acceptance criteria to emit deterministic Jest cases:
+
+```json
+{ "name": "write_test", "arguments": { "target": "PasswordReset.tsx", "acceptanceCriteria": "- Given the user has access, when they reset their password, then the reset succeeds." } }
+```
+
+Generated QA artifacts persist as `qa` (test plans, triage, root cause, test
+cases) and `engineering` (code review, refactor suggestions) artifacts.
 
 ### Role-scoped context
 

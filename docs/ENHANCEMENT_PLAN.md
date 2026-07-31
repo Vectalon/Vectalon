@@ -87,8 +87,9 @@ Each phase runs the full SDLC loop: requirement → TDD → verify → release.
 - Generated documents persist as `generated` artifacts; stories/acceptance criteria link to a parent via `parentId`
 
 ### Phase C — QA & engineering depth
-- `TestPlanWriter`, `BugTriageAnalyzer`, `RootCauseAnalyzer`, `CodeReviewAnalyzer`, `RefactorSuggester`
-- `write_test` consumes acceptance criteria → test cases
+- Modules: `TestPlanWriter`, `TestCaseWriter`, `BugTriageAnalyzer`, `RootCauseAnalyzer`, `CodeReviewAnalyzer`, `RefactorSuggester`
+- Tools: `write_test_plan`, `triage_bugs`, `analyze_root_cause`, `review_code`, `suggest_refactors`
+- `write_test` consumes acceptance criteria → deterministic Jest test cases
 
 ### Phase D — Architecture, security, UX
 - `ADRWriter`, `TradeoffAnalyzer`, `ThreatModeler`, `AccessibilityChecker`, `DesignSystemExtractor`, `WireframeGenerator`
@@ -124,7 +125,7 @@ Each phase runs the full SDLC loop: requirement → TDD → verify → release.
 - [x] v0.1.0 release (tests, lint, typecheck, CI-ready scripts)
 - [x] **Phase A — Knowledge base** (taxonomy, ArtifactStore, Traceability, RoleEngine, import command, MCP knowledge tools)
 - [x] **Phase B — Requirements & BA** (RequirementWriter, StoryWriter, AcceptanceCriteriaWriter, GapAnalyzer, SWOTAnalyzer, SupportTicketAnalyzer; write_prd, write_user_stories, define_acceptance_criteria, analyze_support_tickets, run_gap_analysis; generated artifacts persisted + linkable via parentId)
-- [ ] Phase C — QA & engineering depth
+- [x] **Phase C — QA & engineering depth** (TestPlanWriter, TestCaseWriter, BugTriageAnalyzer, RootCauseAnalyzer, CodeReviewAnalyzer, RefactorSuggester; write_test_plan, triage_bugs, analyze_root_cause, review_code, suggest_refactors; write_test consumes acceptance criteria → Jest cases)
 - [ ] Phase D — Architecture, security, UX
 - [ ] Phase E — DevOps, ops, analytics
 - [ ] Phase F — Team brain
