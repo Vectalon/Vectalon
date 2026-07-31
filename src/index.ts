@@ -24,6 +24,14 @@ export {
   CodeReviewAnalyzer,
   RefactorSuggester,
 } from './sdlc'
+export {
+  ADRWriter,
+  TradeoffAnalyzer,
+  ThreatModeler,
+  AccessibilityChecker,
+  DesignSystemExtractor,
+  WireframeGenerator,
+} from './sdlc'
 export type {
   PRDInput,
   UserStoryCard,
@@ -44,6 +52,18 @@ export type {
   RootCauseResult,
   ReviewFinding,
   RefactorSuggestion,
+} from './sdlc'
+export type {
+  ADRInput,
+  TradeoffOption,
+  TradeoffRanking,
+  TradeoffResult,
+  Threat,
+  AccessibilityFinding,
+  DesignToken,
+  DesignSystem,
+  WireframeSection,
+  WireframeSectionType,
 } from './sdlc'
 
 export { PatternLearner, ProjectMemory } from './memory'

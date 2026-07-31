@@ -213,6 +213,12 @@ Once the server is running, agents can call:
 | `analyze_root_cause` | Classify a production issue into a root-cause bucket with investigation steps |
 | `review_code` | Deterministic code review: console.log, `any`, empty catches, TODOs, inline styles |
 | `suggest_refactors` | Static refactor heuristics: oversized files/functions, magic numbers, `any` |
+| `write_adr` | Write an Architecture Decision Record scaffold |
+| `analyze_tradeoffs` | Rank architecture options by scored attributes |
+| `threat_model` | Produce a STRIDE threat model for a feature |
+| `check_accessibility` | Deterministic a11y checks: unlabelled images, touchable roles, text inputs |
+| `extract_design_system` | Extract design tokens (colors, spacing, fonts, radius) from style code |
+| `generate_wireframe` | Generate an ASCII wireframe from a section list |
 | `list_artifacts` | List artifacts in the knowledge base |
 | `get_artifact` | Get a single knowledge base artifact by id |
 | `get_knowledge_context` | Knowledge base context scoped to a role (pm, ba, architect, engineer, qa, devops, support, analyst) |
@@ -277,6 +283,16 @@ acceptance criteria to emit deterministic Jest cases:
 
 Generated QA artifacts persist as `qa` (test plans, triage, root cause, test
 cases) and `engineering` (code review, refactor suggestions) artifacts.
+
+Architecture, security, and UX artifacts persist as `architecture` (ADRs,
+tradeoff analyses), `security` (threat models), and `design` (accessibility
+checks, design-system extractions, wireframes):
+
+```json
+{ "name": "write_adr", "arguments": { "title": "Choose backend", "context": "Need a BaaS", "options": "Firebase, Supabase", "decision": "Supabase" } }
+{ "name": "threat_model", "arguments": { "feature": "Login" } }
+{ "name": "generate_wireframe", "arguments": { "title": "Login", "sections": "header, input:Email, button:Sign In, footer" } }
+```
 
 ### Role-scoped context
 

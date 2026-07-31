@@ -64,9 +64,9 @@ describe('MCPServer', () => {
     return new MCPServer(engine, router)
   }
 
-  it('advertises the core, BA, and QA tools', () => {
+  it('advertises the core, BA, QA, and architecture tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(16)
+    expect(names).toHaveLength(22)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -85,6 +85,12 @@ describe('MCPServer', () => {
         'analyze_root_cause',
         'review_code',
         'suggest_refactors',
+        'write_adr',
+        'analyze_tradeoffs',
+        'threat_model',
+        'check_accessibility',
+        'extract_design_system',
+        'generate_wireframe',
       ])
     )
   })
@@ -107,6 +113,15 @@ describe('MCPServer', () => {
       if (tool.name === 'analyze_root_cause') args.issue = 'null is not an object'
       if (tool.name === 'review_code') args.code = 'console.log(1)'
       if (tool.name === 'suggest_refactors') args.code = 'const x = 1'
+      if (tool.name === 'write_adr') {
+        args.title = 'Use TypeScript'
+        args.context = 'We need types'
+      }
+      if (tool.name === 'analyze_tradeoffs') args.options = JSON.stringify([{ name: 'A', scores: { cost: 2 } }])
+      if (tool.name === 'threat_model') args.feature = 'Login'
+      if (tool.name === 'check_accessibility') args.code = '<Image source={require("./a.png")} />'
+      if (tool.name === 'extract_design_system') args.code = "color: '#FF5500'"
+      if (tool.name === 'generate_wireframe') args.title = 'Login'
 
       const result = await server.handleToolCall({ id: '1', name: tool.name, arguments: args })
       expect(result.isError).not.toBe(true)

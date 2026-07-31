@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Phase D: Architecture, security, UX
+
+- **Deterministic architecture/security/UX modules** (`src/sdlc/`): `ADRWriter`
+  (ADR scaffold with options/decision/status), `TradeoffAnalyzer` (scored-attribute
+  ranking with best-option), `ThreatModeler` (STRIDE six-category model with
+  mitigations), `AccessibilityChecker` (unlabelled images, touchable roles,
+  text-input labels), `DesignSystemExtractor` (colors/spacing/fonts/radius tokens
+  with occurrence counts), `WireframeGenerator` (ASCII wireframes from typed
+  sections, `type:label` syntax).
+- **MCP architecture/security/UX tools**: `write_adr`, `analyze_tradeoffs`,
+  `threat_model`, `check_accessibility`, `extract_design_system`,
+  `generate_wireframe`. Deterministic-first, persisted as `architecture`,
+  `security`, and `design` artifacts.
+- Exported the new modules and types from the package entry point.
+- 32 new tests (206 total, 40 suites).
+
 ### Added — Phase C: QA & engineering depth
 
 - **Deterministic QA/engineering modules** (`src/sdlc/`): `TestPlanWriter` (plan

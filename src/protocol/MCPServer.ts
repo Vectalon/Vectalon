@@ -16,6 +16,13 @@ import { BugTriageAnalyzer } from '../sdlc/BugTriageAnalyzer'
 import { RootCauseAnalyzer } from '../sdlc/RootCauseAnalyzer'
 import { CodeReviewAnalyzer } from '../sdlc/CodeReviewAnalyzer'
 import { RefactorSuggester } from '../sdlc/RefactorSuggester'
+import { ADRWriter } from '../sdlc/ADRWriter'
+import { TradeoffAnalyzer } from '../sdlc/TradeoffAnalyzer'
+import type { TradeoffOption } from '../sdlc/TradeoffAnalyzer'
+import { ThreatModeler } from '../sdlc/ThreatModeler'
+import { AccessibilityChecker } from '../sdlc/AccessibilityChecker'
+import { DesignSystemExtractor } from '../sdlc/DesignSystemExtractor'
+import { WireframeGenerator } from '../sdlc/WireframeGenerator'
 
 type ToolHandler = (args: Record<string, unknown>) => Promise<string>
 
@@ -262,6 +269,77 @@ export class MCPServer {
           required: ['code'],
         },
       },
+      {
+        name: 'write_adr',
+        description: 'Write an Architecture Decision Record scaffold',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            context: { type: 'string' },
+            options: { type: 'string' },
+            decision: { type: 'string' },
+            number: { type: 'number' },
+          },
+          required: ['title', 'context'],
+        },
+      },
+      {
+        name: 'analyze_tradeoffs',
+        description: 'Rank architecture options by scored attributes (JSON array of { name, scores })',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            options: { type: 'string' },
+          },
+          required: ['options'],
+        },
+      },
+      {
+        name: 'threat_model',
+        description: 'Produce a STRIDE threat model for a feature',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            feature: { type: 'string' },
+            components: { type: 'string' },
+          },
+        },
+      },
+      {
+        name: 'check_accessibility',
+        description: 'Run deterministic accessibility checks over JSX code',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            code: { type: 'string' },
+          },
+          required: ['code'],
+        },
+      },
+      {
+        name: 'extract_design_system',
+        description: 'Extract design tokens (colors, spacing, fonts, radius) from style code',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            code: { type: 'string' },
+          },
+          required: ['code'],
+        },
+      },
+      {
+        name: 'generate_wireframe',
+        description: 'Generate an ASCII wireframe for a screen from a section list',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            sections: { type: 'string' },
+          },
+          required: ['title'],
+        },
+      },
       ...(this.artifactStore
         ? [
             {
@@ -319,6 +397,7 @@ export class MCPServer {
 
     this.registerBATools()
     this.registerQATools()
+    this.registerArchTools()
 
     this.tools.set('suggest_dependency_update', async (args: Record<string, unknown>) => {
       const packageName = (args.packageName as string) || ''
@@ -563,6 +642,74 @@ export class MCPServer {
       this.artifactStore.link(String(parentId), artifact.id)
     }
     return artifact
+  }
+
+  private registerArchTools(): void {
+    this.tools.set('write_adr', async (args: Record<string, unknown>) => {
+      const title = (args.title as string) || 'Untitled decision'
+      const context = (args.context as string) || 'No context provided.'
+      const content = new ADRWriter().writeADR({
+        title,
+        context,
+        options: parseList(args.options),
+        decision: (args.decision as string) || 'TBD',
+        number: typeof args.number === 'number' ? args.number : undefined,
+      })
+      this.persistArtifact('architecture', `ADR: ${title}`, content)
+      return content
+    })
+
+    this.tools.set('analyze_tradeoffs', async (args: Record<string, unknown>) => {
+      const raw = (args.options as string) || ''
+      let options: TradeoffOption[]
+      try {
+        const parsed = JSON.parse(raw)
+        if (!Array.isArray(parsed)) throw new Error('not an array')
+        options = parsed as TradeoffOption[]
+      } catch {
+        return `Invalid options JSON. Expected an array of { name, scores: { attribute: 1-5 } }. Received: ${raw.slice(0, 200)}`
+      }
+
+      const analyzer = new TradeoffAnalyzer()
+      const result = analyzer.analyze(options)
+      const content = analyzer.render(result)
+      this.persistArtifact('architecture', 'Tradeoff Analysis', content)
+      return content
+    })
+
+    this.tools.set('threat_model', async (args: Record<string, unknown>) => {
+      const modeler = new ThreatModeler()
+      const threats = modeler.threatModel(parseList(args.feature), parseList(args.components))
+      const content = modeler.render(threats)
+      this.persistArtifact('security', 'Threat Model', content)
+      return content
+    })
+
+    this.tools.set('check_accessibility', async (args: Record<string, unknown>) => {
+      const code = (args.code as string) || ''
+      const checker = new AccessibilityChecker()
+      const findings = checker.check(code)
+      const content = checker.render(findings)
+      this.persistArtifact('design', 'Accessibility Check', content)
+      return content
+    })
+
+    this.tools.set('extract_design_system', async (args: Record<string, unknown>) => {
+      const code = (args.code as string) || ''
+      const extractor = new DesignSystemExtractor()
+      const ds = extractor.extract(code)
+      const content = extractor.render(ds)
+      this.persistArtifact('design', 'Design System', content)
+      return content
+    })
+
+    this.tools.set('generate_wireframe', async (args: Record<string, unknown>) => {
+      const title = (args.title as string) || 'Screen'
+      const sections = parseList(args.sections)
+      const content = new WireframeGenerator().generate(title, sections)
+      this.persistArtifact('design', `Wireframe: ${title}`, content)
+      return content
+    })
   }
 
   private registerKnowledgeTools(): void {
