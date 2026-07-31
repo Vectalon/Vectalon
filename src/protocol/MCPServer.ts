@@ -6,6 +6,8 @@ import { TeamStore } from '../knowledge/TeamStore'
 import { RoleEngine } from '../knowledge/RoleEngine'
 import { ARTIFACT_ROLES, ARTIFACT_TYPES } from '../knowledge/artifactTypes'
 import type { Artifact, ArtifactRole, ArtifactType } from '../knowledge/artifactTypes'
+import { WorkflowEngine, getWorkflow, listWorkflows, createWorkflowState } from '../workflows'
+import { createAdapters } from '../adapters'
 import { RequirementWriter } from '../sdlc/RequirementWriter'
 import { StoryWriter } from '../sdlc/StoryWriter'
 import { AcceptanceCriteriaWriter } from '../sdlc/AcceptanceCriteriaWriter'
@@ -155,6 +157,18 @@ export class MCPServer {
         name: 'get_learned_patterns',
         description: 'View patterns the harness has learned about this project',
         inputSchema: { type: 'object', properties: {} },
+      },
+      {
+        name: 'execute_workflow',
+        description: 'Run a named SDLC workflow end-to-end for a given prompt (e.g. feature-development)',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            workflowId: { type: 'string', enum: ['feature-development'] },
+            prompt: { type: 'string' },
+          },
+          required: ['workflowId', 'prompt'],
+        },
       },
       {
         name: 'write_prd',
@@ -485,6 +499,34 @@ export class MCPServer {
       const store = this.engine.getPatternStore()
       if (!store) return 'No learned patterns available.'
       return JSON.stringify(store.getActivePatterns(), null, 2)
+    })
+
+    this.tools.set('execute_workflow', async (args: Record<string, unknown>) => {
+      const workflowId = args.workflowId as string
+      const prompt = args.prompt as string
+      if (!workflowId || !prompt) {
+        return 'Missing workflowId or prompt'
+      }
+
+      const workflow = getWorkflow(workflowId)
+      if (!workflow) {
+        return `Unknown workflow: ${workflowId}. Available: ${listWorkflows().map(w => w.id).join(', ')}`
+      }
+
+      const engine = new WorkflowEngine()
+      const state = createWorkflowState(workflowId, prompt)
+      const result = await engine.run(workflow, {
+        projectRoot: process.cwd(),
+        snapshot: this.engine.getSnapshot(),
+        prompt,
+        inputs: {},
+        outputs: {},
+        state,
+        adapters: createAdapters({}),
+        modelRouter: this.modelRouter,
+      })
+
+      return JSON.stringify(result, null, 2)
     })
 
     this.registerBATools()

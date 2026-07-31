@@ -155,6 +155,15 @@ npx rn-vectalon serve
 
 Starts the MCP server. Your agent connects and gets all the tools.
 
+### Run a feature workflow
+
+```bash
+npx rn-vectalon feature "create a login screen and integrate the auth API"
+```
+
+Runs the full SDLC workflow: PRD, design, architecture, implementation,
+verification, PR, docs, and board closure.
+
 ---
 
 ## Agent Integration
@@ -219,11 +228,84 @@ npx rn-vectalon serve --protocol http --port 8931
 
 ---
 
+## Feature Development Workflow
+
+`rn-vectalon` can run an end-to-end SDLC workflow from a single prompt:
+
+```bash
+npx rn-vectalon feature "create a login screen and integrate the auth API"
+```
+
+This executes 11 phases in sequence, gating each one on the previous:
+
+1. **PRD** — product requirements, goals, acceptance criteria
+2. **Scope & impact analysis** — affected areas, new dependencies, risks
+3. **Design & UX** — wireframes and motion-design recommendations
+4. **Architecture** — ADR and API integration design
+5. **Task creation** — issues/tasks in the configured PM tool (Jira, Monday, …)
+6. **Implementation** — project-convention-aware code for service, hook, and screen
+7. **Verification** — tests, lint, type check, and simulator run
+8. **Readiness report** — go/no-go against acceptance criteria
+9. **Pull request** — branch, commit, push, and open PR
+10. **Documentation** — draft README and CHANGELOG updates
+11. **Close feature board** — mark tasks as complete
+
+The workflow is deterministic-first, project-aware, and observable. Each phase
+produces artifacts and the full state is persisted to
+`.vectalon/workflows/feature-development/<id>.json` so you can resume, audit, or
+re-run iterations.
+
+### Iterations
+
+After making changes, re-run the same workflow with its saved state to update
+phase outputs and readiness:
+
+```bash
+# Re-run the entire workflow using a saved state ID
+npx rn-vectalon feature "create a login screen and integrate the auth API" --resume <state-id>
+
+# Resume from a specific phase (e.g. after editing implementation)
+npx rn-vectalon feature "create a login screen and integrate the auth API" --resume <state-id> --from implementation
+```
+
+### Use from an agent
+
+```json
+{
+  "name": "execute_workflow",
+  "arguments": {
+    "workflowId": "feature-development",
+    "prompt": "create a login screen and integrate the auth API"
+  }
+}
+```
+
+### Configuring external tools
+
+The workflow uses adapter interfaces for project management, Git, test runners,
+and simulators. By default they run in **console mode** (they print what they
+would do). To connect real systems, configure the adapters:
+
+```typescript
+import { createAdapters } from 'rn-vectalon'
+
+const adapters = createAdapters({
+  projectManagement: { provider: 'jira', baseUrl: '...', projectKey: '...', email: '...', token: '...' },
+  git: { provider: 'github', owner: 'acme', repo: 'app', token: '...' },
+  testRunner: { provider: 'jest' },
+  simulator: { provider: 'ios-simulator' },
+})
+```
+
+See `src/adapters/` for the interfaces and example implementations.
+
+---
+
 ## Available Tools
 
-Once the server is running, agents can call **32 tools** — 26 always available,
-4 more when a knowledge base is present, and 2 more when a team brain is
-configured:
+Once the server is running, agents can call **33 tools** — 26 always available,
+1 workflow orchestrator, 4 more when a knowledge base is present, and 2 more
+when a team brain is configured:
 
 #### Core (project-aware dev)
 
@@ -235,6 +317,7 @@ configured:
 | `analyze_error` | Analyze RN errors with categorized fixes |
 | `suggest_dependency_update` | Suggest dependency upgrades against a curated catalog |
 | `get_learned_patterns` | View patterns the harness has learned |
+| `execute_workflow` | Run a full end-to-end SDLC workflow (e.g. feature-development) |
 
 #### Requirements & BA
 

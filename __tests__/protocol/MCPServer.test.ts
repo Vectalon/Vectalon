@@ -64,9 +64,9 @@ describe('MCPServer', () => {
     return new MCPServer(engine, router)
   }
 
-  it('advertises the core, BA, QA, architecture, and ops tools', () => {
+  it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(26)
+    expect(names).toHaveLength(27)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -75,6 +75,7 @@ describe('MCPServer', () => {
         'analyze_error',
         'suggest_dependency_update',
         'get_learned_patterns',
+        'execute_workflow',
         'write_prd',
         'write_user_stories',
         'define_acceptance_criteria',
@@ -104,6 +105,10 @@ describe('MCPServer', () => {
     for (const tool of server.getToolList()) {
       const args: Record<string, unknown> = {}
       if (tool.name === 'generate_component') args.name = 'Button'
+      if (tool.name === 'execute_workflow') {
+        args.workflowId = 'feature-development'
+        args.prompt = 'Create a login screen'
+      }
       if (tool.name === 'write_test') args.target = 'Button'
       if (tool.name === 'analyze_error') args.error = 'TypeError: x is not a function'
       if (tool.name === 'suggest_dependency_update') args.packageName = 'react-native'

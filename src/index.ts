@@ -108,3 +108,9 @@ export type {
 } from './knowledge'
 
 export { getConfig, setConfig } from './config'
+
+export { WorkflowEngine, getWorkflow, listWorkflows, createWorkflowState, featureDevelopmentWorkflow } from './workflows'
+export type { WorkflowDefinition, WorkflowContext, WorkflowState, PhaseResult } from './workflows'
+
+export { createAdapters } from './adapters'
+export type { AdapterRegistry, ProjectManagementAdapter, GitAdapter, TestRunnerAdapter, SimulatorAdapter, DesignAdapter } from './adapters'
