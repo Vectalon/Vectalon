@@ -813,8 +813,9 @@ Areas we'd love help with:
 
 - **Guardrails & policy engine** — enforce project-specific rules (no hardcoded URLs,
   required error handling, navigation patterns) before any generated code is written
-- **Web-aware knowledge refresh** — optional retrieval of latest React Native docs,
-  library changelogs, and community best practices (opt-in, with caching)
+- **Web-aware knowledge refresh** — always-on periodic retrieval of latest React Native docs,
+  library changelogs, and community best practices; updates the memory graph, best-practices
+  knowledge base, and manages improvement suggestions for each client project
 - **Hosted artifact store** — sync the team brain to a remote (git remote or hosted service)
 - **Real embedding APIs** — OpenAI/Anthropic embeddings through the `EmbeddingProvider` seam
 - **CI/CD integration** — auto-fix PRs, draft release notes in CI

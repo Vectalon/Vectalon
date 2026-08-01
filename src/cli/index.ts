@@ -6,6 +6,8 @@ import { importCommand } from './commands/import'
 import { featureCommand } from './commands/feature'
 import { pullCommand } from './commands/pull'
 import { modelsCommand } from './commands/models'
+import { policyCommand } from './commands/policy'
+import { refreshCommand } from './commands/refresh'
 import { logger } from './logger'
 import pkg from '../../package.json'
 import { dynamicImport } from '../utils/dynamicImport'
@@ -64,6 +66,19 @@ export function runCLI(): void {
     .description('List available and downloaded local models')
     .action(modelsCommand)
 
+  program
+    .command('policy [directory]')
+    .description('Manage project-specific guardrail policy')
+    .option('--init', 'Create a default .vectalon/policy.json')
+    .option('--check <file>', 'Run the policy against a source file')
+    .action(policyCommand)
+
+  program
+    .command('refresh [directory]')
+    .description('Refresh knowledge from web sources and generate improvement suggestions')
+    .option('--force', 'Refresh even if the cache is still fresh')
+    .action(refreshCommand)
+
   const argv = process.argv
   const supportsClack = majorNode() > 20 || (majorNode() === 20 && (minorNode() > 12 || (minorNode() === 12 && patchNode() >= 0)))
   const interactiveEligible = argv.length <= 2 && process.stdin.isTTY && supportsClack
@@ -100,6 +115,8 @@ async function runInteractive(): Promise<void> {
     options: [
       { value: 'init', label: 'Initialize a project', hint: 'Scan React Native project and create .vectalon/' },
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
+      { value: 'refresh', label: 'Refresh knowledge', hint: 'Update best practices and dependency suggestions from the web' },
+      { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
       { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
       { value: 'import', label: 'Import artifacts', hint: 'Add markdown/JSON to the knowledge base' },
       { value: 'pull', label: 'Download local model', hint: 'Download the default Qwen2.5-Coder model' },
@@ -176,6 +193,33 @@ async function runInteractive(): Promise<void> {
     }
     await importCommand(target as string, {})
     p.outro('Import complete')
+    return
+  }
+
+  if (action === 'refresh') {
+    await refreshCommand('', { force: true })
+    p.outro('Knowledge refreshed')
+    return
+  }
+
+  if (action === 'policy') {
+    const policyAction = await p.select({
+      message: 'Policy action',
+      options: [
+        { value: 'init', label: 'Initialize default policy' },
+        { value: 'show', label: 'Show current policy' },
+      ],
+    })
+    if (p.isCancel(policyAction)) {
+      p.outro('Cancelled')
+      return
+    }
+    if (policyAction === 'init') {
+      policyCommand('', { init: true })
+      p.outro('Policy initialized')
+    } else {
+      policyCommand('', {})
+    }
     return
   }
 
