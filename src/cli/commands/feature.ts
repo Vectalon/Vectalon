@@ -24,6 +24,7 @@ export interface FeatureCommandOptions {
   dryRun?: boolean
   push?: boolean
   model?: string
+  device?: boolean
 }
 
 export async function featureCommand(
@@ -98,6 +99,7 @@ export async function featureCommand(
   modelRouter.initialize({ provider: (options.model || 'local') as ModelProviderType })
 
   const adapters = createAdapters({ root, dryRun: options.dryRun, git: { push: options.push } })
+  const deviceRun = options.device === true
 
   let state = createWorkflowState(workflow.id, prompt)
   if (options.resume) {
@@ -128,6 +130,7 @@ export async function featureCommand(
     state,
     adapters,
     modelRouter,
+    deviceRun,
   }, {
     ...engineOptions,
     onPhaseStart: (phase) => {

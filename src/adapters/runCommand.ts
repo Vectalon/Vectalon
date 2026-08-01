@@ -21,15 +21,11 @@ export function runCommand(command: string, args: string[], options: { cwd: stri
     let stderr = ''
 
     child.stdout.on('data', (data: Buffer) => {
-      const chunk = data.toString()
-      stdout += chunk
-      process.stdout.write(chunk)
+      stdout += data.toString()
     })
 
     child.stderr.on('data', (data: Buffer) => {
-      const chunk = data.toString()
-      stderr += chunk
-      process.stderr.write(chunk)
+      stderr += data.toString()
     })
 
     const timeout = options.timeout ?? 10 * 60 * 1000

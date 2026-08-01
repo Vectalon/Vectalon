@@ -1,6 +1,6 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'fs'
-import { join, dirname } from 'path'
+import { join } from 'path'
 import type { WorkflowPhase, WorkflowArtifact } from '../../adapters/types'
+import { isSafeProjectPath, isSelfPackageRepo, writeProjectFile, GENERATED_OUTPUT_DIR } from './fileOutput'
 import type { ContextSnapshot } from '../../harness/types'
 import type { ModelRouter } from '../../model/ModelRouter'
 import { removeUnusedImportsFromProject, findSourceFiles } from '../../utils/unusedImports'
@@ -65,32 +65,6 @@ function formatGuardrailSummary(results: GuardrailResult[]): string {
   return lines.join('\n')
 }
 
-const VECTALON_PACKAGE_NAME = '@vectalon-dev/rn-vectalon'
-const GENERATED_OUTPUT_DIR = '.vectalon/generated'
-
-function isSelfPackageRepo(projectRoot: string): boolean {
-  try {
-    const pkg = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf-8')) as { name?: string }
-    return pkg.name === VECTALON_PACKAGE_NAME
-  } catch {
-    return false
-  }
-}
-
-// When the workflow runs inside the rn-vectalon package itself, generated code
-// must never land in the package's own src/ bundle. Route it to the gitignored
-// .vectalon/generated/ directory instead.
-function getGeneratedOutputRoot(projectRoot: string): string {
-  return isSelfPackageRepo(projectRoot) ? join(projectRoot, GENERATED_OUTPUT_DIR) : projectRoot
-}
-
-function writeProjectFile(projectRoot: string, filePath: string, content: string): string | null {
-  if (!isSafeProjectPath(filePath)) return null
-  const fullPath = join(getGeneratedOutputRoot(projectRoot), filePath)
-  mkdirSync(dirname(fullPath), { recursive: true })
-  writeFileSync(fullPath, content, 'utf-8')
-  return fullPath
-}
 
 function findDependency(snapshot: ContextSnapshot | null, dependency: string): DependencyMatch[] {
   if (!snapshot) return []
@@ -130,16 +104,6 @@ function findUsages(snapshot: ContextSnapshot | null, dependency: string): { fil
 
 function isFallbackResponse(content: string): boolean {
   return content.includes('[Local model fallback') || content.includes('no downloaded model')
-}
-
-const FILE_PATH_RE = /^[A-Za-z0-9_@./-]+\.(?:tsx?|jsx?|ts|js|json|css|scss|swift|kt|java|gradle|plist|podspec|yaml|yml|md)$/
-
-function isSafeProjectPath(filePath: string): boolean {
-  if (!FILE_PATH_RE.test(filePath)) return false
-  const normalized = filePath.replace(/\\/g, '/')
-  if (normalized.startsWith('/')) return false
-  if (normalized.split('/').includes('..')) return false
-  return true
 }
 
 function extractJsonFiles(content: string): GeneratedImplementation | null {
@@ -219,6 +183,7 @@ function buildImplementationPrompt(ctx: {
   snapshot: ContextSnapshot | null
   prompt: string
   intent: ReturnType<typeof detectIntent>
+  tests?: string
 }): { systemPrompt: string; prompt: string } {
   const conventions = detectConventions(ctx.snapshot)
   const featureName = sanitizeFileName(ctx.prompt) || 'Feature'
@@ -231,6 +196,18 @@ function buildImplementationPrompt(ctx: {
     'The JSON must have this exact shape:',
     '{"files":[{"path":"src/...","content":"..."}],"notes":"..."}',
     'Each file must be a complete, self-contained source file.',
+    '',
+    'CRITICAL: Tests have already been written for this feature (TDD).',
+    'Your implementation MUST satisfy the existing tests.',
+    'Read every test file carefully and export exactly the symbols, names, and',
+    'signatures the tests import and assert on. If a test imports a named export',
+    'from a specific module path, you MUST provide that module at that path with',
+    'that exact named export.',
+    'Ensure all exported functions, hooks, and components are testable:',
+    '- Accept props/params instead of hardcoded values where possible.',
+    '- Return predictable outputs for given inputs.',
+    '- Avoid side effects in pure functions.',
+    '- Make async operations mockable.',
     '',
     'Best practices that must be followed:',
     '- Use StyleSheet.create(...) for all styles; no inline style objects.',
@@ -249,6 +226,10 @@ function buildImplementationPrompt(ctx: {
     '- Do not use deprecated APIs: ListView, AsyncStorage from react-native, AlertIOS, StatusBarIOS, Navigator.',
   ].join('\n')
 
+  const testsSection = ctx.tests
+    ? ['', '## Existing tests (TDD contract) — your code MUST make these pass', '', ctx.tests, ''].join('\n')
+    : ''
+
   const projectContext = [
     'Project conventions:',
     `- TypeScript: ${conventions.hasTypeScript ? 'yes' : 'no'}`,
@@ -260,6 +241,7 @@ function buildImplementationPrompt(ctx: {
     '',
     `Intent: ${ctx.intent.type}`,
     '',
+    testsSection,
     'Generate the files for this request.',
     `Use "${featureName}" as the base name for the generated modules.`,
   ].join('\n')
@@ -279,6 +261,7 @@ async function generateModelImplementation(
     snapshot: ContextSnapshot | null
     prompt: string
     intent: ReturnType<typeof detectIntent>
+    tests?: string
   }
 ): Promise<ModelImplementationResult> {
   const promptCtx = buildImplementationPrompt(ctx)
@@ -705,10 +688,17 @@ export const implementationPhase: WorkflowPhase = {
       })
     } else {
       // Try to use the model for actual implementation generation
+      const testsPhase = ctx.state.phases.find(p => p.id === 'tests')
+      const tests = testsPhase?.artifacts
+        .filter(a => a.type === 'qa' && a.content)
+        .map(a => [`### ${a.title || a.path}`, '```typescript', a.content, '```', ''].join('\n'))
+        .join('\n') || undefined
+
       const modelResult = await generateModelImplementation(ctx.modelRouter, projectRoot, {
         snapshot: ctx.snapshot,
         prompt: ctx.prompt,
         intent,
+        tests,
       })
 
       if (modelResult.implementation) {

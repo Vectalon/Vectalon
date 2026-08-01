@@ -55,6 +55,7 @@ export function runCLI(): void {
     .option('--dry-run', 'Simulate adapters without running real commands')
     .option('--model <provider>', 'Model provider (local/openai/anthropic)')
     .option('--push', 'Allow git push and PR creation (default: local branch/commit only)')
+    .option('--device', 'Run device/simulator build checks (iOS/Android) during verification')
     .action(featureCommand)
 
   program

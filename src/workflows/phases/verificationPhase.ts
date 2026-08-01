@@ -2,7 +2,7 @@ import type { WorkflowPhase } from '../../adapters/types'
 import { runCommand } from '../../adapters/runCommand'
 import { detectValidationCommands } from '../../utils/validationCommands'
 import { phaseResult, failedPhase } from './helpers'
-import { detectIntent, isRemoveDependency } from './intent'
+import { detectIntent, isRemoveDependency, isRefactor } from './intent'
 
 function formatOutput(stdout: string, stderr: string, limit = 4000): string {
   const out = stdout.trim()
@@ -26,14 +26,14 @@ function formatOutput(stdout: string, stderr: string, limit = 4000): string {
 export const verificationPhase: WorkflowPhase = {
   id: 'verification',
   name: 'Verification',
-  description: 'Run lint, type check, tests, and native build checks based on package.json scripts and React Native CLI project structure.',
+  description: 'Run lint, type check, tests, prettier, and native build checks. Validates TDD and code review gates before PR.',
   run: async (ctx) => {
     const testRunner = ctx.adapters.testRunner
     const isSimulated = testRunner.name === 'console'
     const results: string[] = []
     let allPassed = true
 
-    const validation = detectValidationCommands(ctx.projectRoot)
+    const validation = detectValidationCommands(ctx.projectRoot, { deviceRun: ctx.deviceRun })
 
     const runCheck = async (name: string, promise: Promise<import('../../adapters/types').TestResult>) => {
       try {
@@ -50,13 +50,17 @@ export const verificationPhase: WorkflowPhase = {
       }
     }
 
-    // Run legacy checks via adapter if available, otherwise fall back to validation commands
+    // Always run tests, lint, prettier, and type check if scripts are available
     if (testRunner.runTests) {
       await runCheck('Tests', testRunner.runTests())
     }
 
     if (testRunner.runLint) {
       await runCheck('Lint', testRunner.runLint())
+    }
+
+    if (testRunner.runPrettier) {
+      await runCheck('Prettier', testRunner.runPrettier())
     }
 
     if (testRunner.runTypeCheck) {
@@ -93,6 +97,33 @@ export const verificationPhase: WorkflowPhase = {
       if (stillInstalled) allPassed = false
     }
 
+    // Validate that tests exist for the new implementation. The engine appends a
+    // document artifact to every phase, so filter for actual qa test artifacts.
+    const testPhase = ctx.state.phases.find(p => p.id === 'tests')
+    const implementationPhase = ctx.state.phases.find(p => p.id === 'implementation')
+    const hasTests = !!testPhase && testPhase.artifacts.some(a => a.type === 'qa')
+    const hasImplementation = !!implementationPhase && implementationPhase.artifacts.length > 0
+
+    if (isRemoveDependency(intent) || isRefactor(intent)) {
+      results.push('- TDD validation: skipped (no new scaffold tests required for this intent)')
+    } else if (hasImplementation && !hasTests) {
+      results.push('- TDD validation: FAIL — no tests were written before implementation')
+      allPassed = false
+    } else if (hasTests && hasImplementation) {
+      results.push('- TDD validation: pass — tests written before implementation')
+    }
+
+    // Validate that code review passed
+    const codeReviewPhase = ctx.state.phases.find(p => p.id === 'code-review')
+    if (codeReviewPhase) {
+      if (codeReviewPhase.status === 'completed') {
+        results.push('- Code review: pass — no critical issues found')
+      } else {
+        results.push('- Code review: FAIL — critical issues must be fixed before PR')
+        allPassed = false
+      }
+    }
+
     const output = [
       '# Verification report',
       '',
@@ -112,7 +143,7 @@ export const verificationPhase: WorkflowPhase = {
       return phaseResult(
         'verification',
         'Verification',
-        'Run lint, type check, tests, and native build checks based on package.json scripts and React Native CLI project structure.',
+        'Run lint, type check, tests, prettier, and native build checks. Validates TDD and code review gates before PR.',
         output,
         [{ type: 'qa', title: `Verification: ${ctx.prompt}`, content: output }]
       )
@@ -121,7 +152,7 @@ export const verificationPhase: WorkflowPhase = {
     return failedPhase(
       'verification',
       'Verification',
-      'Run lint, type check, tests, and native build checks based on package.json scripts and React Native CLI project structure.',
+      'Run lint, type check, tests, prettier, and native build checks. Validates TDD and code review gates before PR.',
       output
     )
   },

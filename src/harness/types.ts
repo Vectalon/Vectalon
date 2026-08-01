@@ -35,4 +35,5 @@ export interface ContextSnapshot {
   components: ComponentInfo[]
   recentChanges: string[]
   timestamp: number
+  codeGraph?: import('./CodeGraph').CodeGraph
 }

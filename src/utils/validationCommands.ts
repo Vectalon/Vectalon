@@ -56,26 +56,22 @@ function findScript(scripts: Record<string, string>, candidates: string[]): stri
   return undefined
 }
 
-export function detectValidationCommands(root: string): DetectedValidationCommands {
+export function detectValidationCommands(root: string, opts?: { deviceRun?: boolean }): DetectedValidationCommands {
   const pm = detectPackageManager(root)
   const scripts = readPackageScripts(root)
   const hasRN = hasReactNativeDependency(root)
   const commands: ValidationCommand[] = []
 
-  const iosBuildScript = findScript(scripts, ['ios', 'ios:build', 'run-ios', 'ios:run'])
-  if (iosBuildScript) {
+  const iosBuildScript = findScript(scripts, ['ios', 'ios:build'])
+  if (iosBuildScript && opts?.deviceRun) {
     const [cmd, args] = runArgs(pm, iosBuildScript)
     commands.push({ name: 'iOS build', cmd, args, timeout: 20 * 60 * 1000, source: 'package.json' })
-  } else if (hasRN && existsSync(join(root, 'ios'))) {
-    commands.push({ name: 'iOS build', cmd: 'npx', args: ['react-native', 'run-ios'], timeout: 20 * 60 * 1000, source: 'rn-cli-default' })
   }
 
-  const androidBuildScript = findScript(scripts, ['android', 'android:build', 'run-android', 'android:run'])
-  if (androidBuildScript) {
+  const androidBuildScript = findScript(scripts, ['android', 'android:build'])
+  if (androidBuildScript && opts?.deviceRun) {
     const [cmd, args] = runArgs(pm, androidBuildScript)
     commands.push({ name: 'Android build', cmd, args, timeout: 20 * 60 * 1000, source: 'package.json' })
-  } else if (hasRN && existsSync(join(root, 'android'))) {
-    commands.push({ name: 'Android build', cmd: 'npx', args: ['react-native', 'run-android'], timeout: 20 * 60 * 1000, source: 'rn-cli-default' })
   }
 
   const podInstallScript = findScript(scripts, ['pod-install', 'ios:pod-install', 'pods'])
