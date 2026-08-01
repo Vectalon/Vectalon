@@ -1,13 +1,31 @@
 import { existsSync } from 'fs'
 import { join } from 'path'
-import { featureCommand } from '../../src/cli/commands/feature'
 import { createTempProject, cleanup, useTempConfig } from '../helpers/tmp'
+
+let clackNoteOutput = ''
+
+const mockSpinner = () => ({ start: jest.fn(), stop: jest.fn(), message: jest.fn() })
+
+jest.mock('../../src/utils/dynamicImport', () => ({
+  dynamicImport: jest.fn(async () => ({
+    intro: jest.fn(),
+    outro: jest.fn(),
+    spinner: jest.fn(mockSpinner),
+    log: { error: jest.fn(), info: jest.fn(), success: jest.fn(), warn: jest.fn() },
+    note: jest.fn((message: string) => {
+      clackNoteOutput += message + '\n'
+    }),
+  })),
+}))
+
+import { featureCommand } from '../../src/cli/commands/feature'
 
 describe('featureCommand', () => {
   let dir: string
   let configDir: string
 
   beforeEach(() => {
+    clackNoteOutput = ''
     dir = createTempProject({
       'package.json': JSON.stringify({
         name: 'app',
@@ -39,17 +57,13 @@ describe('featureCommand', () => {
   it('runs the feature workflow and writes state to disk', async () => {
     await import('../../src/cli/commands/init').then(m => m.initCommand(dir, {}))
 
-    let stdout = ''
-    jest.spyOn(process.stdout, 'write').mockImplementation((chunk: unknown) => {
-      stdout += String(chunk)
-      return true
-    })
+    jest.spyOn(process.stdout, 'write').mockImplementation(() => true)
 
     await featureCommand('Login', { dryRun: true })
 
-    expect(stdout).toContain('Workflow: Feature Development')
-    expect(stdout).toContain('Product Requirements Document')
-    expect(stdout).toContain('src/services/LoginApi.ts')
+    expect(clackNoteOutput).toContain('Workflow: Feature Development')
+    expect(clackNoteOutput).toContain('Product Requirements Document')
+    expect(clackNoteOutput).toContain('src/services/LoginApi.ts')
 
     const workflowsDir = join(dir, '.vectalon', 'workflows', 'feature-development')
     expect(existsSync(workflowsDir)).toBe(true)
