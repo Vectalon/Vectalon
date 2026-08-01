@@ -53,6 +53,7 @@ export function runCLI(): void {
     .option('--json', 'Output as JSON')
     .option('--verbose', 'Show full phase output')
     .option('--dry-run', 'Simulate adapters without running real commands')
+    .option('--model <provider>', 'Model provider (local/openai/anthropic)')
     .option('--push', 'Allow git push and PR creation (default: local branch/commit only)')
     .action(featureCommand)
 

@@ -20,8 +20,8 @@ export class LocalProvider {
         const result = await runInference(preset.id, {
           systemPrompt: request.systemPrompt,
           prompt: request.prompt,
-          temperature: 0.2,
-          maxTokens: 2048,
+          temperature: request.temperature ?? 0.2,
+          maxTokens: request.maxTokens || 2048,
         })
         return {
           content: result.content,

@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join, dirname } from 'path'
 import type { WorkflowPhase, WorkflowArtifact } from '../../adapters/types'
 import type { ContextSnapshot } from '../../harness/types'
@@ -65,8 +65,28 @@ function formatGuardrailSummary(results: GuardrailResult[]): string {
   return lines.join('\n')
 }
 
-function writeProjectFile(projectRoot: string, filePath: string, content: string): string {
-  const fullPath = join(projectRoot, filePath)
+const VECTALON_PACKAGE_NAME = '@vectalon-dev/rn-vectalon'
+const GENERATED_OUTPUT_DIR = '.vectalon/generated'
+
+function isSelfPackageRepo(projectRoot: string): boolean {
+  try {
+    const pkg = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf-8')) as { name?: string }
+    return pkg.name === VECTALON_PACKAGE_NAME
+  } catch {
+    return false
+  }
+}
+
+// When the workflow runs inside the rn-vectalon package itself, generated code
+// must never land in the package's own src/ bundle. Route it to the gitignored
+// .vectalon/generated/ directory instead.
+function getGeneratedOutputRoot(projectRoot: string): string {
+  return isSelfPackageRepo(projectRoot) ? join(projectRoot, GENERATED_OUTPUT_DIR) : projectRoot
+}
+
+function writeProjectFile(projectRoot: string, filePath: string, content: string): string | null {
+  if (!isSafeProjectPath(filePath)) return null
+  const fullPath = join(getGeneratedOutputRoot(projectRoot), filePath)
   mkdirSync(dirname(fullPath), { recursive: true })
   writeFileSync(fullPath, content, 'utf-8')
   return fullPath
@@ -112,22 +132,85 @@ function isFallbackResponse(content: string): boolean {
   return content.includes('[Local model fallback') || content.includes('no downloaded model')
 }
 
-function parseModelOutput(content: string): GeneratedImplementation | null {
-  // Try to extract JSON from markdown code block first
+const FILE_PATH_RE = /^[A-Za-z0-9_@./-]+\.(?:tsx?|jsx?|ts|js|json|css|scss|swift|kt|java|gradle|plist|podspec|yaml|yml|md)$/
+
+function isSafeProjectPath(filePath: string): boolean {
+  if (!FILE_PATH_RE.test(filePath)) return false
+  const normalized = filePath.replace(/\\/g, '/')
+  if (normalized.startsWith('/')) return false
+  if (normalized.split('/').includes('..')) return false
+  return true
+}
+
+function extractJsonFiles(content: string): GeneratedImplementation | null {
   const jsonBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
   const jsonText = jsonBlockMatch ? jsonBlockMatch[1].trim() : content.trim()
 
   try {
     const parsed = JSON.parse(jsonText) as GeneratedImplementation
     if (Array.isArray(parsed.files)) {
-      return {
-        files: parsed.files.map(f => ({ path: f.path, content: f.content })),
-        notes: parsed.notes,
+      const files = parsed.files
+        .map(f => ({ path: f.path, content: f.content }))
+        .filter(f => isSafeProjectPath(f.path) && typeof f.content === 'string')
+      if (files.length > 0) {
+        return { files, notes: parsed.notes }
       }
     }
   } catch {
     // Ignore parse error
   }
+
+  return null
+}
+
+function normalizeMarkdownPath(raw: string): string {
+  return raw
+    .trim()
+    .replace(/^['"]|['"]$/g, '')
+    .replace(/^\*\*|\*\*$/g, '')
+    .replace(/^File:\s*/i, '')
+    .replace(/^\d+[.)]\s*/, '')
+    .trim()
+}
+
+function extractMarkdownSectionFiles(content: string): GeneratedFile[] | null {
+  const files: GeneratedFile[] = []
+  const sectionRe = /^#{1,6}\s*`?([^`\n]+?)`?\s*\n+```[a-zA-Z]*\n([\s\S]*?)```/gm
+  let match: RegExpExecArray | null
+  while ((match = sectionRe.exec(content)) !== null) {
+    const path = normalizeMarkdownPath(match[1])
+    if (isSafeProjectPath(path)) {
+      files.push({ path, content: match[2] })
+    }
+  }
+  return files.length > 0 ? files : null
+}
+
+function extractPathFenceFiles(content: string): GeneratedFile[] | null {
+  const files: GeneratedFile[] = []
+  const pathRe = /^([A-Za-z0-9_@./-]+\.(?:tsx?|jsx?|ts|js|json|css|scss|swift|kt|java|gradle|plist|podspec|yaml|yml|md))\s*\n+```[a-zA-Z]*\n([\s\S]*?)```/gm
+  let match: RegExpExecArray | null
+  while ((match = pathRe.exec(content)) !== null) {
+    const path = match[1]
+    if (isSafeProjectPath(path)) {
+      files.push({ path, content: match[2] })
+    }
+  }
+  return files.length > 0 ? files : null
+}
+
+function parseModelOutput(content: string): GeneratedImplementation | null {
+  const trimmed = content.trim()
+  if (!trimmed) return null
+
+  const jsonResult = extractJsonFiles(content)
+  if (jsonResult) return jsonResult
+
+  const markdownFiles = extractMarkdownSectionFiles(content)
+  if (markdownFiles) return { files: markdownFiles }
+
+  const pathFiles = extractPathFenceFiles(content)
+  if (pathFiles) return { files: pathFiles }
 
   return null
 }
@@ -184,6 +267,11 @@ function buildImplementationPrompt(ctx: {
   return { systemPrompt, prompt: projectContext }
 }
 
+interface ModelImplementationResult {
+  implementation: { output: string; artifacts: WorkflowArtifact[] } | null
+  rawOutput?: string
+}
+
 async function generateModelImplementation(
   modelRouter: ModelRouter,
   projectRoot: string | undefined,
@@ -192,7 +280,7 @@ async function generateModelImplementation(
     prompt: string
     intent: ReturnType<typeof detectIntent>
   }
-): Promise<{ output: string; artifacts: WorkflowArtifact[] } | null> {
+): Promise<ModelImplementationResult> {
   const promptCtx = buildImplementationPrompt(ctx)
   const response = await modelRouter.generate({
     systemPrompt: promptCtx.systemPrompt,
@@ -200,24 +288,29 @@ async function generateModelImplementation(
     context: ctx.snapshot
       ? `Project: ${ctx.snapshot.project.name}, React Native ${ctx.snapshot.project.reactNativeVersion || 'unknown'}`
       : undefined,
+    maxTokens: 4096,
+    temperature: 0.2,
   })
 
   if (isFallbackResponse(response.content)) {
-    return null
+    return { implementation: null }
   }
 
   const parsed = parseModelOutput(response.content)
   if (!parsed || parsed.files.length === 0) {
-    return null
+    return { implementation: null, rawOutput: response.content }
   }
 
   const conventions = detectConventions(ctx.snapshot)
   const guardrailResults = checkGuardrails(parsed.files, conventions, projectRoot)
   const writtenFiles: string[] = []
+  const redirected = projectRoot ? isSelfPackageRepo(projectRoot) : false
   if (projectRoot) {
     for (const file of parsed.files) {
       const writtenPath = writeProjectFile(projectRoot, file.path, file.content)
-      writtenFiles.push(writtenPath)
+      if (writtenPath) {
+        writtenFiles.push(writtenPath)
+      }
     }
   }
 
@@ -228,24 +321,31 @@ async function generateModelImplementation(
     '```',
   ].join('\n'))
 
+  const redirectNote = redirected
+    ? [`> ⚠️ Generated into ${GENERATED_OUTPUT_DIR}/ (this project is the rn-vectalon package itself; its src/ bundle is protected).`, '']
+    : []
+
   const output = [
     '## Generated files',
     '',
     ...(parsed.notes ? [parsed.notes, ''] : []),
     ...(writtenFiles.length > 0 ? ['Files written to disk:', ...writtenFiles.map(f => `- \`${f}\``), ''] : []),
+    ...redirectNote,
     ...fileSections,
     '',
     formatGuardrailSummary(guardrailResults),
   ].join('\n')
 
   return {
-    output,
-    artifacts: parsed.files.map(f => ({
-      type: 'engineering',
-      title: f.path,
-      content: f.content,
-      path: f.path,
-    })),
+    implementation: {
+      output,
+      artifacts: parsed.files.map(f => ({
+        type: 'engineering',
+        title: f.path,
+        content: f.content,
+        path: f.path,
+      })),
+    },
   }
 }
 
@@ -358,12 +458,19 @@ function generateAddFeatureImplementation(
   const guardrailResults = checkGuardrails(files, conventions, projectRoot)
 
   const writtenFiles: string[] = []
+  const redirected = projectRoot ? isSelfPackageRepo(projectRoot) : false
   if (projectRoot) {
     for (const file of files) {
       const writtenPath = writeProjectFile(projectRoot, file.path, file.content)
-      writtenFiles.push(writtenPath)
+      if (writtenPath) {
+        writtenFiles.push(writtenPath)
+      }
     }
   }
+
+  const redirectNote = redirected
+    ? [`> ⚠️ Generated into ${GENERATED_OUTPUT_DIR}/ (this project is the rn-vectalon package itself; its src/ bundle is protected).`, '']
+    : []
 
   const output = [
     '## Generated files',
@@ -371,6 +478,7 @@ function generateAddFeatureImplementation(
     `> Note: This is a generic starter scaffold for "${ctx.prompt}". Replace the placeholder API logic with your domain code.`,
     '',
     ...(writtenFiles.length > 0 ? ['Files written to disk:', ...writtenFiles.map(f => `- \`${f}\``), ''] : []),
+    ...redirectNote,
     ...files.map(f => [
       `### ${f.path}`,
       '```typescript',
@@ -450,7 +558,7 @@ function generateRemoveDependencyImplementation(
   const scriptPath = 'scripts/remove-appcenter.sh'
   let writtenScriptPath: string | undefined
   if (projectRoot) {
-    writtenScriptPath = writeProjectFile(projectRoot, scriptPath, removalScript)
+    writtenScriptPath = writeProjectFile(projectRoot, scriptPath, removalScript) ?? undefined
   }
 
   const output = [
@@ -596,20 +704,38 @@ export const implementationPhase: WorkflowPhase = {
         prompt: ctx.prompt,
       })
     } else {
-      // Try to use the local model for actual implementation generation
+      // Try to use the model for actual implementation generation
       const modelResult = await generateModelImplementation(ctx.modelRouter, projectRoot, {
         snapshot: ctx.snapshot,
         prompt: ctx.prompt,
         intent,
       })
 
-      if (modelResult) {
-        result = modelResult
+      if (modelResult.implementation) {
+        result = modelResult.implementation
       } else {
         result = generateAddFeatureImplementation(projectRoot, {
           snapshot: ctx.snapshot,
           prompt: ctx.prompt,
         })
+        if (modelResult.rawOutput) {
+          const raw = modelResult.rawOutput.length > 4000
+            ? modelResult.rawOutput.slice(0, 4000) + '\n... (truncated)'
+            : modelResult.rawOutput
+          result = {
+            ...result,
+            output: result.output + [
+              '',
+              '## Model output (not applied)',
+              '',
+              '> The model returned content that could not be parsed into files. Preserved below for review:',
+              '',
+              '```',
+              raw,
+              '```',
+            ].join('\n'),
+          }
+        }
       }
     }
 
