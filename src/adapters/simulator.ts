@@ -1,9 +1,6 @@
-import { execFile } from 'child_process'
-import { promisify } from 'util'
 import { logger } from '../cli/logger'
+import { runCommand } from './runCommand'
 import type { SimulatorAdapter, SimulatorOptions, SimulatorResult } from './types'
-
-const execFileAsync = promisify(execFile)
 
 export class LocalSimulatorAdapter implements SimulatorAdapter {
   name = 'local'
@@ -19,27 +16,16 @@ export class LocalSimulatorAdapter implements SimulatorAdapter {
       args.push('--device', options.device)
     }
 
-    logger.info(`Running simulator: npx ${args.join(' ')}`)
-    try {
-      const { stdout, stderr } = await execFileAsync('npx', args, {
-        cwd: this.root,
-        maxBuffer: 10 * 1024 * 1024,
-        timeout: 5 * 60 * 1000,
-      })
-      return {
-        success: true,
-        stdout,
-        stderr,
-        exitCode: 0,
-      }
-    } catch (err) {
-      const error = err as { stdout?: string; stderr?: string; code?: number }
-      return {
-        success: false,
-        stdout: error.stdout || '',
-        stderr: error.stderr || '',
-        exitCode: error.code ?? 1,
-      }
+    const result = await runCommand('npx', args, {
+      cwd: this.root,
+      timeout: 10 * 60 * 1000,
+    })
+
+    return {
+      success: result.success,
+      stdout: result.stdout,
+      stderr: result.stderr,
+      exitCode: result.exitCode,
     }
   }
 }

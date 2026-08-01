@@ -140,4 +140,13 @@ function renderSummary(result: WorkflowState, workflowName: string, root: string
       logger.out(`  ${pc.green('✔')} ${displayPath}\n`)
     }
   }
+
+  const failedPhase = result.phases.find(p => p.status === 'failed')
+  if (failedPhase) {
+    logger.out('\n')
+    logger.error(`Failed phase: ${failedPhase.name}`)
+    logger.out('\n')
+    logger.out(failedPhase.output)
+    logger.out('\n')
+  }
 }

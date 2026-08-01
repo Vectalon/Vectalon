@@ -1,15 +1,6 @@
-import { execFile } from 'child_process'
-import { promisify } from 'util'
 import { logger } from '../cli/logger'
+import { runCommand } from './runCommand'
 import type { GitAdapter, CommitInput, PullRequestInput, PullRequest } from './types'
-
-const execFileAsync = promisify(execFile)
-
-async function runGit(cwd: string, args: string[]): Promise<{ stdout: string; stderr: string }> {
-  logger.info(`git ${args.join(' ')}`)
-  const { stdout, stderr } = await execFileAsync('git', args, { cwd })
-  return { stdout: stdout.trim(), stderr: stderr.trim() }
-}
 
 export class LocalGitAdapter implements GitAdapter {
   name = 'local'
@@ -20,15 +11,17 @@ export class LocalGitAdapter implements GitAdapter {
   ) {}
 
   async createBranch(name: string): Promise<void> {
-    await runGit(this.root, ['checkout', '-b', name])
+    await runCommand('git', ['checkout', '-b', name], { cwd: this.root })
   }
 
   async commit(input: CommitInput): Promise<string> {
     const files = input.files && input.files.length > 0 ? input.files : ['.']
-    await runGit(this.root, ['add', ...files])
-    const args = input.allowEmpty ? ['commit', '--allow-empty', '-m', input.message] : ['commit', '-m', input.message]
-    const { stdout } = await runGit(this.root, args)
-    return stdout
+    await runCommand('git', ['add', ...files], { cwd: this.root })
+    const args = input.allowEmpty
+      ? ['commit', '--allow-empty', '-m', input.message]
+      : ['commit', '-m', input.message]
+    const result = await runCommand('git', args, { cwd: this.root })
+    return result.stdout
   }
 
   async push(branch?: string): Promise<void> {
@@ -37,7 +30,7 @@ export class LocalGitAdapter implements GitAdapter {
       return
     }
     const args = branch ? ['push', '-u', 'origin', branch] : ['push']
-    await runGit(this.root, args)
+    await runCommand('git', args, { cwd: this.root })
   }
 
   async createPullRequest(input: PullRequestInput): Promise<PullRequest> {

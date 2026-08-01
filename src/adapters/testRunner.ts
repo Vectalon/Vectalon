@@ -1,11 +1,8 @@
-import { execFile } from 'child_process'
-import { promisify } from 'util'
 import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { logger } from '../cli/logger'
+import { runCommand } from './runCommand'
 import type { TestRunnerAdapter, TestOptions, TestResult } from './types'
-
-const execFileAsync = promisify(execFile)
 
 function detectPackageManager(root: string): 'npm' | 'yarn' | 'pnpm' {
   if (existsSync(join(root, 'pnpm-lock.yaml'))) return 'pnpm'
@@ -13,10 +10,10 @@ function detectPackageManager(root: string): 'npm' | 'yarn' | 'pnpm' {
   return 'npm'
 }
 
-function getRunCommand(pm: 'npm' | 'yarn' | 'pnpm', script: string): [string, string[]] {
-  if (pm === 'yarn') return ['yarn', [script]]
-  if (pm === 'pnpm') return ['pnpm', ['run', script]]
-  return ['npm', ['run', script]]
+function getRunArgs(pm: 'npm' | 'yarn' | 'pnpm', script: string, extraArgs: string[] = []): [string, string[]] {
+  if (pm === 'yarn') return ['yarn', [script, ...extraArgs]]
+  if (pm === 'pnpm') return ['pnpm', ['run', script, ...extraArgs]]
+  return ['npm', ['run', script, '--', ...extraArgs]]
 }
 
 function readScripts(root: string): Record<string, string> {
@@ -30,28 +27,11 @@ function readScripts(root: string): Record<string, string> {
 
 async function runScript(root: string, scriptName: string, extraArgs: string[] = []): Promise<TestResult> {
   const pm = detectPackageManager(root)
-  const [cmd, baseArgs] = getRunCommand(pm, scriptName)
-  const args = [...baseArgs, ...extraArgs]
-
-  logger.info(`Running: ${cmd} ${args.join(' ')}`)
-  try {
-    const { stdout, stderr } = await execFileAsync(cmd, args, { cwd: root, maxBuffer: 10 * 1024 * 1024 })
-    return {
-      success: true,
-      stdout,
-      stderr,
-      exitCode: 0,
-      summary: `${scriptName} passed`,
-    }
-  } catch (err) {
-    const error = err as { stdout?: string; stderr?: string; code?: number }
-    return {
-      success: false,
-      stdout: error.stdout || '',
-      stderr: error.stderr || '',
-      exitCode: error.code ?? 1,
-      summary: `${scriptName} failed`,
-    }
+  const [cmd, args] = getRunArgs(pm, scriptName, extraArgs)
+  const result = await runCommand(cmd, args, { cwd: root })
+  return {
+    ...result,
+    summary: `${scriptName} ${result.success ? 'passed' : 'failed'}`,
   }
 }
 
@@ -63,7 +43,7 @@ export class LocalTestRunnerAdapter implements TestRunnerAdapter {
   async runTests(options?: TestOptions): Promise<TestResult> {
     const scripts = readScripts(this.root)
     const scriptName = scripts.test ? 'test' : 'jest'
-    const extraArgs = options?.pattern ? ['--', options.pattern] : []
+    const extraArgs = options?.pattern ? [options.pattern] : []
     return runScript(this.root, scriptName, extraArgs)
   }
 

@@ -2,6 +2,25 @@ import type { WorkflowPhase } from '../../adapters/types'
 import { phaseResult, failedPhase } from './helpers'
 import { detectIntent, isRemoveDependency } from './intent'
 
+function formatOutput(stdout: string, stderr: string, limit = 4000): string {
+  const out = stdout.trim()
+  const err = stderr.trim()
+  const parts: string[] = []
+  if (err) {
+    parts.push('**stderr**')
+    parts.push('```')
+    parts.push(err.length > limit ? err.slice(0, limit) + '\n... (truncated)' : err)
+    parts.push('```')
+  }
+  if (out) {
+    parts.push('**stdout**')
+    parts.push('```')
+    parts.push(out.length > limit ? out.slice(0, limit) + '\n... (truncated)' : out)
+    parts.push('```')
+  }
+  return parts.length > 0 ? '\n' + parts.join('\n') : ''
+}
+
 export const verificationPhase: WorkflowPhase = {
   id: 'verification',
   name: 'Verification',
@@ -16,7 +35,7 @@ export const verificationPhase: WorkflowPhase = {
       try {
         const result = await promise
         const status = result.success ? 'passed' : 'failed'
-        results.push(`- ${name}: ${status}${isSimulated ? ' (simulated)' : ` (${result.exitCode})`}`)
+        results.push(`- ${name}: ${status}${isSimulated ? ' (simulated)' : ` (exit ${result.exitCode})`}${formatOutput(result.stdout, result.stderr)}`)
         if (!result.success) {
           allPassed = false
         }
@@ -40,7 +59,7 @@ export const verificationPhase: WorkflowPhase = {
     if (allPassed) {
       try {
         const iosResult = await ctx.adapters.simulator.run({ platform: 'ios', build: true })
-        results.push(`- iOS simulator: ${iosResult.success ? 'passed' : 'failed'}${isSimulated ? ' (simulated)' : ''}`)
+        results.push(`- iOS simulator: ${iosResult.success ? 'passed' : 'failed'}${isSimulated ? ' (simulated)' : ` (exit ${iosResult.exitCode})`}${formatOutput(iosResult.stdout, iosResult.stderr)}`)
         if (!iosResult.success) allPassed = false
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err)
@@ -69,7 +88,7 @@ export const verificationPhase: WorkflowPhase = {
       '',
       allPassed
         ? 'All checks passed. Feature is ready for review.'
-        : 'Some checks failed. Review the output above.',
+        : 'Some checks failed. Review the command output above.',
     ].join('\n')
 
     const status = allPassed ? 'completed' : 'failed'
