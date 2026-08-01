@@ -67,6 +67,37 @@ Works with any model:
 - **Anthropic**: Claude Sonnet 4, Claude 3.5 Haiku
 - **Custom**: Any API-compatible endpoint
 
+### Model limitations, guardrails, and verification
+
+rn-vectalon is **deterministic-first**. Most tools — the scanner, code review,
+refactor suggestions, test writer, accessibility checker, and many SDLC modules
+— run without any model and follow curated, RN-specific heuristics.
+
+When a model is used (e.g., for implementation generation), keep these
+limitations in mind:
+
+- **No model knows every React Native best practice.** Models have knowledge
+cutoffs and may be unaware of the latest React Native release, newly deprecated
+APIs, or your organization's private conventions.
+- **There are no automatic web lookups.** The local model and the current
+adapters do not browse the web, fetch documentation, or update themselves with
+new best practices. The only "learning" happens inside your project: the harness
+records patterns it observes in your codebase.
+- **Guardrails are present but not exhaustive.** Current guardrails include:
+  - System prompts that require real, runnable code and forbid TODOs/placeholders
+  - Convention detection (TypeScript, navigation, StyleSheet) that shapes generated code
+  - A deterministic fallback scaffold when no model is downloaded
+  - Real lint/typecheck/test/native-build verification after implementation
+  - Code-review tools that flag `console.log`, `any`, empty catches, TODOs, and inline styles
+- **Always review generated code.** Run the verification step, inspect the diff,
+and run your own test suite before merging. `vectalon` accelerates the SDLC; it
+does not replace engineering judgment.
+
+To improve output quality you can:
+- Import your own PRDs, ADRs, and conventions into the knowledge base (`vectalon import`)
+- Use a more capable remote model provider (OpenAI/Anthropic) for complex generation
+- Run with `--dry-run` first to preview what the workflow will do
+
 ### Framework-Native
 Zero lock-in. rn-vectalon is a standard npm package that integrates with your existing RN CLI workflow. No new build system, no proprietary DSL — just a `serve` command and your agent connects.
 
@@ -189,6 +220,17 @@ npx vectalon feature "create a login screen and integrate the auth API"
 Runs the full SDLC workflow: PRD, design, architecture, implementation,
 verification, PR, docs, and board closure.
 
+By default the workflow uses **real local adapters** — it actually runs `test`,
+`lint`, `typecheck`, and native build commands detected from your `package.json`
+and project structure. Use `--dry-run` to simulate without side effects, and
+`--push` to allow the workflow to push the branch and open a PR:
+
+```bash
+npx vectalon feature "remove unused imports" --dry-run   # safe preview
+npx vectalon feature "remove unused imports" --push      # commit, push, and open PR
+npx vectalon feature "remove unused imports" --verbose   # show full phase output
+```
+
 ---
 
 ## Agent Integration
@@ -269,7 +311,7 @@ This executes 11 phases in sequence, gating each one on the previous:
 4. **Architecture** — ADR and API integration design
 5. **Task creation** — issues/tasks in the configured PM tool (Jira, Monday, …)
 6. **Implementation** — project-convention-aware code for service, hook, and screen
-7. **Verification** — tests, lint, type check, and simulator run
+7. **Verification** — tests, lint, type check, and native build commands detected from `package.json` and RN CLI project structure (iOS build, Android build, pod install, gradle clean/assemble). Commands stream output to the terminal in real time.
 8. **Readiness report** — go/no-go against acceptance criteria
 9. **Pull request** — branch, commit, push, and open PR
 10. **Documentation** — draft README and CHANGELOG updates
@@ -308,21 +350,24 @@ npx vectalon feature "create a login screen and integrate the auth API" --resume
 ### Configuring external tools
 
 The workflow uses adapter interfaces for project management, Git, test runners,
-and simulators. By default they run in **console mode** (they print what they
-would do). To connect real systems, configure the adapters:
+and simulators. By default **real local adapters** are used: commands such as
+`git`, `yarn test`, `yarn lint`, `yarn typecheck`, and `npx react-native run-ios`
+are executed in your project directory. Use `dryRun: true` to fall back to the
+console adapters (they print what they would do without running anything):
 
 ```typescript
 import { createAdapters } from '@vectalon-dev/rn-vectalon'
 
 const adapters = createAdapters({
+  dryRun: true, // simulate all adapters
   projectManagement: { provider: 'jira', baseUrl: '...', projectKey: '...', email: '...', token: '...' },
-  git: { provider: 'github', owner: 'acme', repo: 'app', token: '...' },
-  testRunner: { provider: 'jest' },
-  simulator: { provider: 'ios-simulator' },
+  git: { provider: 'local', push: true }, // or provider: 'github', owner: '...', repo: '...', token: '...'
+  testRunner: { provider: 'local' },
+  simulator: { provider: 'local' },
 })
 ```
 
-See `src/adapters/` for the interfaces and example implementations.
+See `src/adapters/` for the interfaces and implementations.
 
 ---
 
@@ -766,7 +811,10 @@ Areas we'd love help with:
 
 **Next up:**
 
-- **v0.4** — Local free-for-commercial-use code model (`Qwen2.5-Coder` via `node-llama-cpp`) for offline generation, with deterministic stub fallback
+- **Guardrails & policy engine** — enforce project-specific rules (no hardcoded URLs,
+  required error handling, navigation patterns) before any generated code is written
+- **Web-aware knowledge refresh** — optional retrieval of latest React Native docs,
+  library changelogs, and community best practices (opt-in, with caching)
 - **Hosted artifact store** — sync the team brain to a remote (git remote or hosted service)
 - **Real embedding APIs** — OpenAI/Anthropic embeddings through the `EmbeddingProvider` seam
 - **CI/CD integration** — auto-fix PRs, draft release notes in CI
