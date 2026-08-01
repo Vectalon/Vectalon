@@ -1,7 +1,7 @@
 import { ContextEngine } from '../../harness/ContextEngine'
 import { ProjectMemory } from '../../memory/ProjectMemory'
 import { PatternLearner } from '../../memory/PatternLearner'
-import { writeFileSync, existsSync, readFileSync } from 'fs'
+import { writeFileSync } from 'fs'
 import { join } from 'path'
 import { logger } from '../logger'
 
@@ -37,14 +37,6 @@ export async function initCommand(rootDir: string, _options: Record<string, unkn
       autoLearn: true,
     }, null, 2)
   )
-
-  const gitignorePath = join(root, '.gitignore')
-  if (existsSync(gitignorePath)) {
-    const gitignore = readFileSync(gitignorePath, 'utf-8')
-    if (!gitignore.includes('.vectalon/')) {
-      writeFileSync(gitignorePath, gitignore + '\n# rn-vectalon context\n.vectalon/\n')
-    }
-  }
 
   logger.success('rn-vectalon initialized.')
   logger.dim(`  Created .vectalon/ with project context and memory store`)

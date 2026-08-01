@@ -69,6 +69,7 @@ export interface TestRunnerAdapter {
   name: string
   runTests(options?: TestOptions): Promise<TestResult>
   runLint?(): Promise<TestResult>
+  runPrettier?(): Promise<TestResult>
   runTypeCheck?(): Promise<TestResult>
 }
 
@@ -153,6 +154,7 @@ export interface WorkflowContext {
   state: WorkflowState
   adapters: AdapterRegistry
   modelRouter: import('../model/ModelRouter').ModelRouter
+  deviceRun?: boolean
 }
 
 export interface WorkflowPhase {

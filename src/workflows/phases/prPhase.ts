@@ -32,8 +32,10 @@ export const prPhase: WorkflowPhase = {
           '- [x] PRD generated',
           '- [x] Design/UX approach defined',
           '- [x] Architecture decision recorded',
-          '- [x] Implementation generated',
-          '- [x] Verification completed',
+          '- [x] Tests written first (TDD)',
+          '- [x] Implementation generated to satisfy tests',
+          '- [x] Code review passed',
+          '- [x] Verification completed (tests, lint, typecheck)',
         ].join('\n'),
         head: branchName,
       })

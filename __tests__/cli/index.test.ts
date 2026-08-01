@@ -34,10 +34,11 @@ describe('initCommand', () => {
     expect(manifest.rnVersion).toBe('0.72.0')
   })
 
-  it('appends .vectalon/ to an existing .gitignore', async () => {
+  it('does not modify .gitignore', async () => {
     await initCommand(dir, {})
     const gitignore = readFileSync(join(dir, '.gitignore'), 'utf-8')
-    expect(gitignore).toContain('.vectalon/')
+    expect(gitignore).not.toContain('.vectalon/')
+    expect(gitignore).toBe('node_modules\n')
   })
 
   it('warns when the target project does not have react-native in dependencies', async () => {

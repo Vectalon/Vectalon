@@ -22,14 +22,17 @@ export const taskPhase: WorkflowPhase = {
       )
     } else if (isRefactor(intent)) {
       tasks.push(
+        { title: `Tests: ${ctx.prompt}`, description: 'Update tests against the refactored module to define expected behavior (TDD)', type: 'qa' },
         { title: `Refactor ${intent.target}`, description: 'Apply the refactor while preserving behavior', type: 'engineering' },
-        { title: `Tests: ${ctx.prompt}`, description: 'Update or add tests for the refactored module', type: 'qa' }
+        { title: `Validate tests: ${ctx.prompt}`, description: 'Ensure all tests pass after refactoring', type: 'qa' }
       )
     } else {
       tasks.push(
-        { title: `API service: ${ctx.prompt}`, description: 'Implement service layer and error handling', type: 'engineering' },
-        { title: `UI screen: ${ctx.prompt}`, description: 'Build screen following design spec', type: 'engineering' },
-        { title: `Tests: ${ctx.prompt}`, description: 'Unit tests, integration tests, and simulator checks', type: 'qa' },
+        { title: `Tests: ${ctx.prompt}`, description: 'Write unit, integration, and hook tests first (TDD) based on acceptance criteria', type: 'qa' },
+        { title: `API service: ${ctx.prompt}`, description: 'Implement service layer and error handling to satisfy tests', type: 'engineering' },
+        { title: `UI screen: ${ctx.prompt}`, description: 'Build screen following design spec to satisfy tests', type: 'engineering' },
+        { title: `Code review: ${ctx.prompt}`, description: 'Review generated code for quality and best practices', type: 'engineering' },
+        { title: `Validate tests: ${ctx.prompt}`, description: 'Run all tests to verify implementation satisfies requirements', type: 'qa' },
         { title: `Docs: ${ctx.prompt}`, description: 'Update README and project documentation', type: 'documentation' }
       )
     }

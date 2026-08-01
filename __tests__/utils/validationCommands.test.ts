@@ -30,8 +30,8 @@ describe('detectValidationCommands', () => {
     const detected = detectValidationCommands(tmpDir)
     const names = detected.commands.map(c => c.name)
 
-    expect(names).toContain('iOS build')
-    expect(names).toContain('Android build')
+    expect(names).not.toContain('iOS build')
+    expect(names).not.toContain('Android build')
     expect(names).toContain('Android clean')
     expect(names).toContain('Android assemble')
     expect(detected.hasReactNativeCLI).toBe(true)
@@ -76,7 +76,7 @@ describe('detectValidationCommands', () => {
     mkdirSync(join(tmpDir, 'ios'), { recursive: true })
     mkdirSync(join(tmpDir, 'android'), { recursive: true })
 
-    const detected = detectValidationCommands(tmpDir)
+    const detected = detectValidationCommands(tmpDir, { deviceRun: true })
     const ios = detected.commands.find(c => c.name === 'iOS build')
     const android = detected.commands.find(c => c.name === 'Android build')
     const pods = detected.commands.find(c => c.name === 'iOS pod install')
@@ -101,7 +101,7 @@ describe('detectValidationCommands', () => {
     mkdirSync(join(tmpDir, 'ios'), { recursive: true })
     writeFileSync(join(tmpDir, 'yarn.lock'), '')
 
-    const detected = detectValidationCommands(tmpDir)
+    const detected = detectValidationCommands(tmpDir, { deviceRun: true })
     expect(detected.packageManager).toBe('yarn')
     const ios = detected.commands.find(c => c.name === 'iOS build')
     expect(ios?.cmd).toBe('yarn')

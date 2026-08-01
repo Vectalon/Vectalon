@@ -220,15 +220,17 @@ npx vectalon feature "create a login screen and integrate the auth API"
 Runs the full SDLC workflow: PRD, design, architecture, implementation,
 verification, PR, docs, and board closure.
 
-By default the workflow uses **real local adapters** — it actually runs `test`,
-`lint`, `typecheck`, and native build commands detected from your `package.json`
-and project structure. Use `--dry-run` to simulate without side effects, and
-`--push` to allow the workflow to push the branch and open a PR:
+By default the workflow uses **real local adapters** — it automatically runs
+`test`, `lint`, `prettier`, and `typecheck` scripts found in your `package.json`.
+Device/simulator builds (`run-ios`, `run-android`) are **opt-in** via `--device`.
+Use `--dry-run` to simulate without side effects, and `--push` to allow the
+workflow to push the branch and open a PR:
 
 ```bash
 npx vectalon feature "remove unused imports" --dry-run   # safe preview
 npx vectalon feature "remove unused imports" --push      # commit, push, and open PR
 npx vectalon feature "remove unused imports" --verbose   # show full phase output
+npx vectalon feature "add login screen" --device         # include iOS/Android build checks
 ```
 
 ---
@@ -303,19 +305,21 @@ npx vectalon serve --protocol http --port 8931
 npx vectalon feature "create a login screen and integrate the auth API"
 ```
 
-This executes 11 phases in sequence, gating each one on the previous:
+This executes 13 phases in sequence, gating each one on the previous:
 
 1. **PRD** — product requirements, goals, acceptance criteria
 2. **Scope & impact analysis** — affected areas, new dependencies, risks
 3. **Design & UX** — wireframes and motion-design recommendations
 4. **Architecture** — ADR and API integration design
 5. **Task creation** — issues/tasks in the configured PM tool (Jira, Monday, …)
-6. **Implementation** — project-convention-aware code for service, hook, and screen
-7. **Verification** — tests, lint, type check, and native build commands detected from `package.json` and RN CLI project structure (iOS build, Android build, pod install, gradle clean/assemble). Commands stream output to the terminal in real time.
-8. **Readiness report** — go/no-go against acceptance criteria
-9. **Pull request** — branch, commit, push, and open PR
-10. **Documentation** — draft README and CHANGELOG updates
-11. **Close feature board** — mark tasks as complete
+6. **Test writing (TDD)** — tests are written BEFORE implementation, defining the contract the code must satisfy
+7. **Implementation** — project-convention-aware code for service, hook, and screen, generated to make the written tests pass
+8. **Code review** — static review of the generated code and tests before verification and PR
+9. **Verification** — runs the tests (validating the TDD gate), plus `lint`, `prettier:check`, and `typecheck` scripts from `package.json`. iOS/Android device builds are only included when you pass `--device`.
+10. **Readiness report** — go/no-go against acceptance criteria
+11. **Pull request** — branch, commit, push, and open PR
+12. **Documentation** — draft README and CHANGELOG updates
+13. **Close feature board** — mark tasks as complete
 
 The workflow is deterministic-first, project-aware, and observable. Each phase
 produces artifacts and the full state is persisted to
@@ -686,6 +690,19 @@ Over time, the harness's understanding of your project becomes increasingly accu
 
 ---
 
+## Graph Engineering
+
+rn-vectalon builds a **code dependency graph** during every `init` and `refresh`. The graph parses imports and exports across your `src/` tree and persists to `.vectalon/code-graph.json`:
+
+- **Entry points** — files with no incoming imports (top-level screens, app entry)
+- **Circular dependencies** — detected cycles in the import graph
+- **Orphan files** — source files unreachable from any entry point
+- **Dependents / dependencies** — query who imports a file and what it imports
+
+Agents can use this graph for architecture analysis, refactoring impact assessment, and dead-code detection.
+
+---
+
 ## Project Structure
 
 ```
@@ -699,6 +716,7 @@ rn-vectalon/
 │   │   └── index.ts       # CLI runner
 │   ├── harness/
 │   │   ├── Scanner.ts     # Project & component scanner
+│   │   ├── CodeGraph.ts   # Dependency graph builder
 │   │   ├── ContextEngine  # Context builder & manager
 │   │   └── types.ts
 │   ├── knowledge/         # Company Brain

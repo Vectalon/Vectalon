@@ -46,7 +46,7 @@ function makeContext(prompt: string): WorkflowContext {
 }
 
 describe('featureDevelopmentWorkflow', () => {
-  it('runs all 11 phases for a login + API prompt', async () => {
+  it('runs all 13 phases for a login + API prompt', async () => {
     const engine = new WorkflowEngine()
     const ctx = makeContext('Login')
     ctx.modelRouter.initialize({ provider: 'local' })
@@ -54,7 +54,7 @@ describe('featureDevelopmentWorkflow', () => {
     const result = await engine.run(featureDevelopmentWorkflow, ctx)
 
     expect(result.status).toBe('completed')
-    expect(result.phases).toHaveLength(11)
+    expect(result.phases).toHaveLength(13)
 
     const phaseIds = result.phases.map(p => p.id)
     expect(phaseIds).toEqual([
@@ -63,7 +63,9 @@ describe('featureDevelopmentWorkflow', () => {
       'design',
       'architecture',
       'tasks',
+      'tests',
       'implementation',
+      'code-review',
       'verification',
       'readiness',
       'pr',
@@ -71,10 +73,27 @@ describe('featureDevelopmentWorkflow', () => {
       'close',
     ])
 
+    // TDD: tests are written BEFORE implementation
+    const phases = result.phases
+    const testsIndex = phases.findIndex(p => p.id === 'tests')
+    const implementationIndex = phases.findIndex(p => p.id === 'implementation')
+    const reviewIndex = phases.findIndex(p => p.id === 'code-review')
+    const verificationIndex = phases.findIndex(p => p.id === 'verification')
+    expect(testsIndex).toBeGreaterThan(-1)
+    expect(implementationIndex).toBeGreaterThan(testsIndex)
+    expect(reviewIndex).toBeGreaterThan(implementationIndex)
+    expect(verificationIndex).toBeGreaterThan(reviewIndex)
+
+    const tests = result.phases.find(p => p.id === 'tests')
+    expect(tests?.artifacts.some(a => a.type === 'qa')).toBe(true)
+
     const implementation = result.phases.find(p => p.id === 'implementation')
     expect(implementation?.output).toContain('src/services/LoginApi.ts')
     expect(implementation?.output).toContain('src/hooks/useLogin.ts')
     expect(implementation?.output).toContain('src/screens/LoginScreen.tsx')
+
+    const review = result.phases.find(p => p.id === 'code-review')
+    expect(review?.status).toBe('completed')
 
     const design = result.phases.find(p => p.id === 'design')
     expect(design?.output).toContain('Motion design recommendations')

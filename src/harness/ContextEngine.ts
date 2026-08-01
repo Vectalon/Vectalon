@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { Scanner } from './Scanner'
+import { buildCodeGraph } from './CodeGraph'
 import type { ContextSnapshot } from './types'
 import type { PatternStore } from '../memory/PatternLearner'
 
@@ -87,6 +88,7 @@ export class ContextEngine {
     const project = this.scanner.scanProject()
     const structure = this.scanner.scanStructure()
     const components = this.scanner.scanComponents()
+    const codeGraph = buildCodeGraph(project.root)
 
     return {
       project,
@@ -94,6 +96,7 @@ export class ContextEngine {
       components,
       recentChanges: [],
       timestamp: Date.now(),
+      codeGraph,
     }
   }
 
@@ -107,5 +110,11 @@ export class ContextEngine {
       join(this.contextDir, 'context.md'),
       this.buildContextPrompt()
     )
+    if (this.snapshot.codeGraph) {
+      writeFileSync(
+        join(this.contextDir, 'code-graph.json'),
+        JSON.stringify(this.snapshot.codeGraph, null, 2)
+      )
+    }
   }
 }

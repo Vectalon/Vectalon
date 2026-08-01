@@ -1,0 +1,178 @@
+import type { WorkflowPhase, WorkflowArtifact } from '../../adapters/types'
+import { phaseResult, sanitizeFileName, detectConventions } from './helpers'
+import { detectIntent, isRemoveDependency, isRefactor } from './intent'
+import { writeProjectFile, isSelfPackageRepo, GENERATED_OUTPUT_DIR } from './fileOutput'
+
+export const testPhase: WorkflowPhase = {
+  id: 'tests',
+  name: 'Test writing',
+  description: 'Write tests first (TDD) based on acceptance criteria and feature requirements, before any implementation code.',
+  run: async (ctx) => {
+    const intent = detectIntent(ctx.prompt)
+    const conventions = detectConventions(ctx.snapshot)
+    const ext = conventions.hasTypeScript ? 'ts' : 'js'
+    const featureName = sanitizeFileName(ctx.prompt) || 'Feature'
+    const camelName = featureName.charAt(0).toLowerCase() + featureName.slice(1)
+    const projectRoot = ctx.projectRoot
+
+    // Dependency removal needs no new tests — it removes code, it does not add behavior.
+    if (isRemoveDependency(intent)) {
+      return phaseResult(
+        'tests',
+        'Test writing',
+        'Write tests first (TDD) based on acceptance criteria and feature requirements, before any implementation code.',
+        'Skipping test generation for dependency removal.',
+        []
+      )
+    }
+
+    // Refactors do not create new scaffold modules — the implementation phase
+    // produces a change plan and modifies existing files — so writing fresh
+    // tests that import src/screens/<Feature>Screen would target files that
+    // never exist. Tests for a refactor must be updated against the refactored
+    // module itself, which the implementation phase handles.
+    if (isRefactor(intent)) {
+      return phaseResult(
+        'tests',
+        'Test writing',
+        'Write tests first (TDD) based on acceptance criteria and feature requirements, before any implementation code.',
+        'Skipping scaffold test generation for refactor; tests must be updated against the refactored module.',
+        []
+      )
+    }
+
+    // Gather context from previous phases to drive the test contract
+    const prdPhase = ctx.state.phases.find(p => p.id === 'prd')
+    const acceptancePhase = ctx.state.phases.find(p => p.id === 'acceptance-criteria')
+    const acceptanceCriteria = acceptancePhase?.output || prdPhase?.output || ''
+
+    // Tests are written BEFORE implementation. They define the contract that the
+    // implementation phase (model or scaffold) must satisfy. Imports use the named
+    // exports produced by the implementation scaffold so the tests compile and run.
+    const testFiles: { path: string; content: string }[] = []
+
+    // 1. Screen component test
+    testFiles.push({
+      path: `src/__tests__/${featureName}.${ext}`,
+      content: [
+        `// TDD test suite for ${featureName} — written before implementation.`,
+        `// Run \`npm test ${featureName}\` to verify the implementation satisfies these requirements.`,
+        '',
+        "import React from 'react';",
+        "import { render } from '@testing-library/react-native';",
+        `import { ${featureName}Screen } from '../screens/${featureName}Screen';`,
+        '',
+        `describe('${featureName}Screen', () => {`,
+        `  it('renders the ${featureName} title', () => {`,
+        `    const { getByText } = render(<${featureName}Screen />);`,
+        `    expect(getByText('${featureName}')).toBeDefined();`,
+        '  });',
+        '});',
+        '',
+      ].join('\n'),
+    })
+
+    // 2. Hook test
+    testFiles.push({
+      path: `src/__tests__/use${featureName}.${ext}`,
+      content: [
+        `// TDD test suite for use${featureName} — written before implementation.`,
+        '',
+        "import { renderHook, act } from '@testing-library/react-native';",
+        `import { use${featureName} } from '../hooks/use${featureName}';`,
+        '',
+        `describe('use${featureName}', () => {`,
+        `  it('starts in the default state', () => {`,
+        `    const { result } = renderHook(() => use${featureName}());`,
+        '    expect(result.current.loading).toBe(false);',
+        '    expect(result.current.error).toBeNull();',
+        '    expect(result.current.data).toBeNull();',
+        '  });',
+        '',
+        `  it('stores the result after running', async () => {`,
+        `    const { result } = renderHook(() => use${featureName}());`,
+        '    await act(async () => {',
+        '      await result.current.run();',
+        '    });',
+        `    expect(result.current.data).toBe('ok');`,
+        '    expect(result.current.loading).toBe(false);',
+        '  });',
+        '});',
+        '',
+      ].join('\n'),
+    })
+
+    // 3. Service test
+    testFiles.push({
+      path: `src/__tests__/${featureName}Api.${ext}`,
+      content: [
+        `// TDD test suite for ${featureName}Api — written before implementation.`,
+        '',
+        `import { ${camelName}Api } from '../services/${featureName}Api';`,
+        '',
+        `describe('${featureName}Api', () => {`,
+        `  it('executes and returns a result', async () => {`,
+        `    const result = await ${camelName}Api.execute();`,
+        '    expect(result).toBeDefined();',
+        '  });',
+        '});',
+        '',
+      ].join('\n'),
+    })
+
+    const writtenTests: string[] = []
+    const artifacts: WorkflowArtifact[] = []
+    const redirected = projectRoot ? isSelfPackageRepo(projectRoot) : false
+
+    if (projectRoot) {
+      for (const file of testFiles) {
+        const written = writeProjectFile(projectRoot, file.path, file.content)
+        if (written) {
+          writtenTests.push(written)
+          artifacts.push({ type: 'qa', title: file.path, content: file.content, path: written })
+        }
+      }
+    } else {
+      // No project root: record the tests as artifacts so the TDD gate can still
+      // verify that tests were written before implementation.
+      for (const file of testFiles) {
+        artifacts.push({ type: 'qa', title: file.path, content: file.content })
+      }
+    }
+
+    const redirectNote = redirected
+      ? [`> ⚠️ Generated into ${GENERATED_OUTPUT_DIR}/ (this project is the rn-vectalon package itself; its src/ bundle is protected).`, '']
+      : []
+
+    const output = [
+      '# Test-Driven Development — Tests written before implementation',
+      '',
+      `Feature: ${ctx.prompt}`,
+      '',
+      `Acceptance criteria source: ${acceptanceCriteria ? 'PRD / acceptance criteria captured' : 'none — using default component contract'}`,
+      '',
+      writtenTests.length > 0
+        ? `## Test files written (${writtenTests.length})`
+        : '## Test files (simulated — no project root)',
+      '',
+      ...writtenTests.map(t => `- \`${t}\``),
+      ...redirectNote,
+      '',
+      '## TDD Approach',
+      '1. These tests define the expected behavior BEFORE implementation.',
+      '2. The implementation phase must make these tests pass.',
+      '3. The verification phase re-runs the tests after code changes and reports failures.',
+      '',
+      '## Next step',
+      'Run the implementation phase to generate code that satisfies these tests.',
+    ].join('\n')
+
+    return phaseResult(
+      'tests',
+      'Test writing',
+      'Write tests first (TDD) based on acceptance criteria and feature requirements, before any implementation code.',
+      output,
+      artifacts
+    )
+  },
+}
