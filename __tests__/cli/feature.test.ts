@@ -18,7 +18,8 @@ jest.mock('../../src/utils/dynamicImport', () => ({
   })),
 }))
 
-import { featureCommand } from '../../src/cli/commands/feature'
+import { featureCommand, formatUpgradeSuggestions, renderUpgradeSuggestions } from '../../src/cli/commands/feature'
+import type { ImprovementSuggestion } from '../../src/knowledge/refresh'
 
 describe('featureCommand', () => {
   let dir: string
@@ -67,5 +68,65 @@ describe('featureCommand', () => {
 
     const workflowsDir = join(dir, '.vectalon', 'workflows', 'feature-development')
     expect(existsSync(workflowsDir)).toBe(true)
+  })
+})
+
+describe('upgrade suggestion rendering', () => {
+  const suggestions: ImprovementSuggestion[] = [
+    {
+      id: 'dep-react-native-0.75.0-1',
+      sourceId: 'registry-react-native',
+      severity: 'warning',
+      library: 'react-native',
+      currentVersion: '^0.72.0',
+      latestVersion: '0.75.0',
+      title: 'react-native is behind latest',
+      description: 'Upgrade to pick up fixes.',
+      createdAt: 1,
+    },
+    {
+      id: 'dep-expo-52.0.0-1',
+      sourceId: 'registry-expo',
+      severity: 'error',
+      library: 'expo',
+      currentVersion: '~50.0.0',
+      latestVersion: '52.0.0',
+      title: 'expo is behind latest',
+      description: 'Upgrade to pick up fixes.',
+      createdAt: 1,
+    },
+  ]
+
+  it('formats suggestions with version ranges and severity', () => {
+    expect(formatUpgradeSuggestions(suggestions)).toEqual([
+      { severity: 'warning', message: 'react-native: ^0.72.0 → 0.75.0' },
+      { severity: 'error', message: 'expo: ~50.0.0 → 52.0.0' },
+    ])
+  })
+
+  it('falls back to the library name when versions are missing', () => {
+    const [{ severity, message }] = formatUpgradeSuggestions([
+      { ...suggestions[0], currentVersion: undefined, latestVersion: undefined },
+    ])
+    expect(severity).toBe('warning')
+    expect(message).toBe('react-native')
+  })
+
+  it('renders nothing when there are no suggestions', () => {
+    const log = { error: jest.fn(), warn: jest.fn(), info: jest.fn() }
+    renderUpgradeSuggestions([], log)
+    expect(log.error).not.toHaveBeenCalled()
+    expect(log.warn).not.toHaveBeenCalled()
+    expect(log.info).not.toHaveBeenCalled()
+  })
+
+  it('routes severity to the matching log method and prints the refresh hint', () => {
+    const log = { error: jest.fn(), warn: jest.fn(), info: jest.fn() }
+    renderUpgradeSuggestions(suggestions, log)
+
+    expect(log.info).toHaveBeenCalledWith(expect.stringContaining('Upgrade suggestions available (2)'))
+    expect(log.warn).toHaveBeenCalledWith('react-native: ^0.72.0 → 0.75.0')
+    expect(log.error).toHaveBeenCalledWith('expo: ~50.0.0 → 52.0.0')
+    expect(log.info).toHaveBeenCalledWith(expect.stringContaining('vectalon refresh --force'))
   })
 })

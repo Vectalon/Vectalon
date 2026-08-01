@@ -1,4 +1,4 @@
-import { existsSync, writeFileSync } from 'fs'
+import { existsSync, writeFileSync, readFileSync } from 'fs'
 import { join } from 'path'
 import pc from 'picocolors'
 import Table from 'cli-table'
@@ -10,6 +10,8 @@ import { createAdapters } from '../../adapters'
 import { WorkflowEngine, getWorkflow, listWorkflows, createWorkflowState, saveWorkflowState, loadWorkflowState, listWorkflowStates } from '../../workflows'
 import type { WorkflowState } from '../../adapters/types'
 import { dynamicImport } from '../../utils/dynamicImport'
+import { KnowledgeRefreshService } from '../../knowledge/refresh'
+import type { ImprovementSuggestion } from '../../knowledge/refresh'
 
 export async function featureCommand(
   prompt: string,
@@ -37,6 +39,32 @@ export async function featureCommand(
 
   const engine = new ContextEngine(root)
   engine.refresh()
+
+  const refreshService = new KnowledgeRefreshService({ projectRoot: root })
+  if (refreshService.isStale()) {
+    log.info('Knowledge cache is stale; refreshing from web sources...')
+    try {
+      const packageJsonPath = join(root, 'package.json')
+      let dependencies: Record<string, string> = {}
+      let devDependencies: Record<string, string> = {}
+      if (existsSync(packageJsonPath)) {
+        const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+        dependencies = pkg.dependencies || {}
+        devDependencies = pkg.devDependencies || {}
+      }
+      const refreshResult = await refreshService.refresh({
+        projectRoot: root,
+        dependencies,
+        devDependencies,
+      })
+      if (refreshResult.suggestions.length > 0) {
+        log.info(`${refreshResult.suggestions.length} improvement suggestion(s) available`)
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      log.warn(`Knowledge refresh failed: ${message}`)
+    }
+  }
 
   const memory = new ProjectMemory(root)
   const learner = new PatternLearner(memory)
@@ -119,11 +147,47 @@ export async function featureCommand(
   }
 
   if (result.status === 'completed') {
+    if (!options.json) {
+      renderUpgradeSuggestions(refreshService.getSuggestions(), log)
+    }
     outro('Workflow completed successfully')
   } else {
     outro('Workflow failed')
     process.exit(1)
   }
+}
+
+interface SuggestionLog {
+  error: (message: string) => void
+  warn: (message: string) => void
+  info: (message: string) => void
+}
+
+export function formatUpgradeSuggestions(suggestions: ImprovementSuggestion[]): Array<{ severity: ImprovementSuggestion['severity']; message: string }> {
+  return suggestions.map(s => {
+    const version =
+      s.currentVersion && s.latestVersion && s.currentVersion !== s.latestVersion
+        ? `${s.currentVersion} → ${s.latestVersion}`
+        : s.latestVersion || s.currentVersion || ''
+    return { severity: s.severity, message: version ? `${s.library}: ${version}` : s.library }
+  })
+}
+
+export function renderUpgradeSuggestions(suggestions: ImprovementSuggestion[], log: SuggestionLog): void {
+  const lines = formatUpgradeSuggestions(suggestions)
+  if (lines.length === 0) return
+
+  log.info(pc.bold(`Upgrade suggestions available (${lines.length})`))
+  for (const line of lines) {
+    if (line.severity === 'error') {
+      log.error(line.message)
+    } else if (line.severity === 'warning') {
+      log.warn(line.message)
+    } else {
+      log.info(line.message)
+    }
+  }
+  log.info(pc.dim('Run `vectalon refresh --force` to re-check for updates'))
 }
 
 function renderSummary(

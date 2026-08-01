@@ -6,7 +6,7 @@ import type { ModelRouter } from '../../model/ModelRouter'
 import { removeUnusedImportsFromProject, findSourceFiles } from '../../utils/unusedImports'
 import { detectConventions, phaseResult, sanitizeFileName, fileExtension, jsxExtension } from './helpers'
 import { detectIntent, intentTitle, isRemoveDependency, isRefactor } from './intent'
-import { runGuardrails, formatGuardrailResult, GuardrailResult } from '../../guardrails'
+import { runGuardrails, formatGuardrailResult, GuardrailResult, PolicyEngine } from '../../guardrails'
 
 interface DependencyMatch {
   name: string
@@ -24,9 +24,14 @@ interface GeneratedImplementation {
   notes?: string
 }
 
-function checkGuardrails(files: GeneratedFile[], conventions: ReturnType<typeof detectConventions>): GuardrailResult[] {
-  return files.map(file =>
-    runGuardrails({
+function checkGuardrails(
+  files: GeneratedFile[],
+  conventions: ReturnType<typeof detectConventions>,
+  projectRoot?: string
+): GuardrailResult[] {
+  const policy = projectRoot ? new PolicyEngine(projectRoot) : null
+  return files.map(file => {
+    const options = {
       filePath: file.path,
       content: file.content,
       conventions: {
@@ -34,8 +39,9 @@ function checkGuardrails(files: GeneratedFile[], conventions: ReturnType<typeof 
         usesStyleSheet: conventions.usesStyleSheet,
         hasNavigation: conventions.hasNavigation,
       },
-    })
-  )
+    }
+    return policy ? policy.runPolicy(options) : runGuardrails(options)
+  })
 }
 
 function formatGuardrailSummary(results: GuardrailResult[]): string {
@@ -206,7 +212,7 @@ async function generateModelImplementation(
   }
 
   const conventions = detectConventions(ctx.snapshot)
-  const guardrailResults = checkGuardrails(parsed.files, conventions)
+  const guardrailResults = checkGuardrails(parsed.files, conventions, projectRoot)
   const writtenFiles: string[] = []
   if (projectRoot) {
     for (const file of parsed.files) {
@@ -349,7 +355,7 @@ function generateAddFeatureImplementation(
     { path: screenFile, content: screenContent },
   ]
 
-  const guardrailResults = checkGuardrails(files, conventions)
+  const guardrailResults = checkGuardrails(files, conventions, projectRoot)
 
   const writtenFiles: string[] = []
   if (projectRoot) {

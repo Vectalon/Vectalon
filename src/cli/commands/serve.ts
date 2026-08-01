@@ -6,6 +6,7 @@ import { PatternLearner } from '../../memory/PatternLearner'
 import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { TeamStore } from '../../knowledge/TeamStore'
 import { HashEmbeddingProvider } from '../../knowledge/embeddings'
+import { KnowledgeRefreshService } from '../../knowledge/refresh'
 import { existsSync, readFileSync } from 'fs'
 import { join, basename, resolve } from 'path'
 import { logger } from '../logger'
@@ -55,7 +56,50 @@ export async function serveCommand(options: {
     logger.dim(`  - ${tool.name}: ${tool.description}`)
   }
 
+  startBackgroundRefresh(root)
+
   await server.start(options.port || 0)
+}
+
+const BACKGROUND_REFRESH_INTERVAL_MS = 60 * 60 * 1000
+
+function startBackgroundRefresh(root: string): void {
+  const refreshService = new KnowledgeRefreshService({ projectRoot: root })
+
+  async function runRefresh(): Promise<void> {
+    try {
+      const packageJsonPath = join(root, 'package.json')
+      let dependencies: Record<string, string> = {}
+      let devDependencies: Record<string, string> = {}
+      if (existsSync(packageJsonPath)) {
+        const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf-8'))
+        dependencies = pkg.dependencies || {}
+        devDependencies = pkg.devDependencies || {}
+      }
+      const result = await refreshService.refresh({
+        projectRoot: root,
+        dependencies,
+        devDependencies,
+      })
+      if (result.suggestions.length > 0) {
+        logger.info(`Background refresh: ${result.suggestions.length} improvement suggestion(s) available`)
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      logger.warn(`Background knowledge refresh failed: ${message}`)
+    }
+  }
+
+  if (refreshService.isStale()) {
+    void runRefresh()
+  }
+
+  if (process.env.NODE_ENV !== 'test') {
+    // unref() so the interval never keeps the process alive on its own.
+    setInterval(() => {
+      void runRefresh()
+    }, BACKGROUND_REFRESH_INTERVAL_MS).unref()
+  }
 }
 
 function buildTeamStore(root: string, localStore: ArtifactStore): TeamStore | null {
