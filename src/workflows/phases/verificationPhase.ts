@@ -1,4 +1,6 @@
 import type { WorkflowPhase } from '../../adapters/types'
+import { runCommand } from '../../adapters/runCommand'
+import { detectValidationCommands } from '../../utils/validationCommands'
 import { phaseResult, failedPhase } from './helpers'
 import { detectIntent, isRemoveDependency } from './intent'
 
@@ -24,12 +26,14 @@ function formatOutput(stdout: string, stderr: string, limit = 4000): string {
 export const verificationPhase: WorkflowPhase = {
   id: 'verification',
   name: 'Verification',
-  description: 'Run lint, type check, tests, and optional simulator checks.',
+  description: 'Run lint, type check, tests, and native build checks based on package.json scripts and React Native CLI project structure.',
   run: async (ctx) => {
     const testRunner = ctx.adapters.testRunner
     const isSimulated = testRunner.name === 'console'
     const results: string[] = []
     let allPassed = true
+
+    const validation = detectValidationCommands(ctx.projectRoot)
 
     const runCheck = async (name: string, promise: Promise<import('../../adapters/types').TestResult>) => {
       try {
@@ -46,7 +50,10 @@ export const verificationPhase: WorkflowPhase = {
       }
     }
 
-    await runCheck('Tests', testRunner.runTests())
+    // Run legacy checks via adapter if available, otherwise fall back to validation commands
+    if (testRunner.runTests) {
+      await runCheck('Tests', testRunner.runTests())
+    }
 
     if (testRunner.runLint) {
       await runCheck('Lint', testRunner.runLint())
@@ -56,14 +63,23 @@ export const verificationPhase: WorkflowPhase = {
       await runCheck('Type check', testRunner.runTypeCheck())
     }
 
-    if (allPassed) {
+    // Run native/CLI validation commands detected from package.json and project structure
+    for (const cmd of validation.commands) {
+      if (isSimulated) {
+        results.push(`- ${cmd.name}: skipped (simulated)`)
+        continue
+      }
       try {
-        const iosResult = await ctx.adapters.simulator.run({ platform: 'ios', build: true })
-        results.push(`- iOS simulator: ${iosResult.success ? 'passed' : 'failed'}${isSimulated ? ' (simulated)' : ` (exit ${iosResult.exitCode})`}${formatOutput(iosResult.stdout, iosResult.stderr)}`)
-        if (!iosResult.success) allPassed = false
+        const result = await runCommand(cmd.cmd, cmd.args, { cwd: cmd.cwd || ctx.projectRoot, timeout: cmd.timeout })
+        const status = result.success ? 'passed' : 'failed'
+        results.push(`- ${cmd.name}: ${status} (${cmd.source}, exit ${result.exitCode})${formatOutput(result.stdout, result.stderr)}`)
+        if (!result.success) {
+          allPassed = false
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err)
-        results.push(`- iOS simulator: skipped — ${message}`)
+        results.push(`- ${cmd.name}: error — ${message}`)
+        allPassed = false
       }
     }
 
@@ -82,7 +98,7 @@ export const verificationPhase: WorkflowPhase = {
       '',
       isSimulated
         ? '⚠️  Running in simulation mode. No actual test commands were executed. Configure a real test runner to enable live verification.'
-        : 'Running with configured test/simulator adapters.',
+        : `Detected ${validation.commands.length} validation command(s) from package.json scripts and React Native CLI project structure.`,
       '',
       ...results,
       '',
@@ -96,7 +112,7 @@ export const verificationPhase: WorkflowPhase = {
       return phaseResult(
         'verification',
         'Verification',
-        'Run lint, type check, tests, and optional simulator checks.',
+        'Run lint, type check, tests, and native build checks based on package.json scripts and React Native CLI project structure.',
         output,
         [{ type: 'qa', title: `Verification: ${ctx.prompt}`, content: output }]
       )
@@ -105,7 +121,7 @@ export const verificationPhase: WorkflowPhase = {
     return failedPhase(
       'verification',
       'Verification',
-      'Run lint, type check, tests, and optional simulator checks.',
+      'Run lint, type check, tests, and native build checks based on package.json scripts and React Native CLI project structure.',
       output
     )
   },
