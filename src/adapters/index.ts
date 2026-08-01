@@ -7,18 +7,27 @@ import { createDesignAdapter } from './design'
 
 export * from './types'
 
-export function createAdapters(config: {
+export interface CreateAdaptersOptions {
+  root?: string
+  dryRun?: boolean
   projectManagement?: Record<string, unknown>
   git?: Record<string, unknown>
   testRunner?: Record<string, unknown>
   simulator?: Record<string, unknown>
   design?: Record<string, unknown>
-}): AdapterRegistry {
+}
+
+export function createAdapters(options: CreateAdaptersOptions = {}): AdapterRegistry {
+  const root = options.root || process.cwd()
+  const dryRun = options.dryRun === true
+
+  const baseConfig = { root, dryRun }
+
   return {
-    projectManagement: createProjectManagementAdapter(config.projectManagement || {}),
-    git: createGitAdapter(config.git || {}),
-    testRunner: createTestRunnerAdapter(config.testRunner || {}),
-    simulator: createSimulatorAdapter(config.simulator || {}),
-    design: createDesignAdapter(config.design || {}),
+    projectManagement: createProjectManagementAdapter(options.projectManagement || {}),
+    git: createGitAdapter({ ...baseConfig, ...(options.git || {}) }),
+    testRunner: createTestRunnerAdapter({ ...baseConfig, ...(options.testRunner || {}) }),
+    simulator: createSimulatorAdapter({ ...baseConfig, ...(options.simulator || {}) }),
+    design: createDesignAdapter(options.design || {}),
   }
 }

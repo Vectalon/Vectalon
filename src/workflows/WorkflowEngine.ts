@@ -1,3 +1,4 @@
+import { writePhaseDocument } from './phases/documentWriter'
 import type {
   WorkflowContext,
   WorkflowDefinition,
@@ -34,6 +35,7 @@ export class WorkflowEngine {
       }
 
       const result = await this.runPhase(phase, context)
+      this.writePhaseDocument(context, phase, result)
       this.updatePhaseInState(state, result)
       state.updatedAt = Date.now()
 
@@ -76,6 +78,28 @@ export class WorkflowEngine {
         completedAt: Date.now(),
         error: message,
       }
+    }
+  }
+
+  private writePhaseDocument(context: WorkflowContext, phase: WorkflowPhase, result: PhaseResult): void {
+    if (!context.projectRoot) {
+      return
+    }
+    if (typeof result.output !== 'string' || result.output.trim().length === 0) {
+      return
+    }
+    const runId = context.state.id || 'unknown'
+    const workflowId = context.state.workflowId || 'workflow'
+    try {
+      const path = writePhaseDocument(context.projectRoot, workflowId, runId, phase.id, phase.name, result.output)
+      result.artifacts.push({
+        type: 'document',
+        title: phase.name,
+        content: result.output,
+        path,
+      })
+    } catch {
+      // Non-fatal: document writing failure should not fail the phase
     }
   }
 

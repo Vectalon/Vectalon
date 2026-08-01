@@ -45,7 +45,7 @@ describe('featureCommand', () => {
       return true
     })
 
-    await featureCommand('Login', {})
+    await featureCommand('Login', { dryRun: true })
 
     expect(stdout).toContain('Workflow: Feature Development')
     expect(stdout).toContain('Product Requirements Document')

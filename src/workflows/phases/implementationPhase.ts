@@ -1,6 +1,9 @@
+import { mkdirSync, writeFileSync } from 'fs'
+import { join, dirname } from 'path'
 import type { WorkflowPhase, WorkflowArtifact } from '../../adapters/types'
 import type { ContextSnapshot } from '../../harness/types'
 import type { ModelRouter } from '../../model/ModelRouter'
+import { removeUnusedImportsFromProject, findSourceFiles } from '../../utils/unusedImports'
 import { detectConventions, phaseResult, sanitizeFileName, fileExtension, jsxExtension } from './helpers'
 import { detectIntent, intentTitle, isRemoveDependency, isRefactor } from './intent'
 
@@ -18,6 +21,13 @@ interface GeneratedFile {
 interface GeneratedImplementation {
   files: GeneratedFile[]
   notes?: string
+}
+
+function writeProjectFile(projectRoot: string, filePath: string, content: string): string {
+  const fullPath = join(projectRoot, filePath)
+  mkdirSync(dirname(fullPath), { recursive: true })
+  writeFileSync(fullPath, content, 'utf-8')
+  return fullPath
 }
 
 function findDependency(snapshot: ContextSnapshot | null, dependency: string): DependencyMatch[] {
@@ -167,10 +177,13 @@ async function generateModelImplementation(
   }
 }
 
-function generateAddFeatureImplementation(ctx: {
-  snapshot: ContextSnapshot | null
-  prompt: string
-}): { output: string; artifacts: WorkflowArtifact[] } {
+function generateAddFeatureImplementation(
+  projectRoot: string | undefined,
+  ctx: {
+    snapshot: ContextSnapshot | null
+    prompt: string
+  }
+): { output: string; artifacts: WorkflowArtifact[] } {
   const conventions = detectConventions(ctx.snapshot)
   const ext = fileExtension(conventions.hasTypeScript)
   const jsxExt = jsxExtension(conventions.hasTypeScript)
@@ -179,34 +192,10 @@ function generateAddFeatureImplementation(ctx: {
   const serviceFile = `src/services/${featureName}Api.${ext}`
   const serviceContent = [
     `// ${serviceFile}`,
-    "import { Platform } from 'react-native';",
-    '',
-    "const API_BASE_URL = 'https://api.example.com'; // TODO: use environment config",
-    '',
-    `export interface ${featureName}Request {`,
-    '  email: string;',
-    '  password: string;',
-    '}',
-    '',
-    `export interface ${featureName}Response {`,
-    '  token: string;',
-    '  refreshToken: string;',
-    '  user: { id: string; email: string };',
-    '}',
     '',
     `export class ${featureName}Api {`,
-    `  async authenticate(payload: ${featureName}Request): Promise<${featureName}Response> {`,
-    '    const response = await fetch(`${API_BASE_URL}/auth/login`, {',
-    "      method: 'POST',",
-    "      headers: { 'Content-Type': 'application/json' },",
-    '      body: JSON.stringify(payload),',
-    '    });',
-    '',
-    '    if (!response.ok) {',
-    '      throw new Error(`Authentication failed: ${response.status}`);',
-    '    }',
-    '',
-    '    return response.json();',
+    `  async execute(): Promise<string> {`,
+    '    return Promise.resolve("ok");',
     '  }',
     '}',
     '',
@@ -217,27 +206,25 @@ function generateAddFeatureImplementation(ctx: {
   const hookContent = [
     `// ${hookFile}`,
     "import { useState, useCallback } from 'react';",
-    `import { ${featureName}Api, ${featureName}Request, ${featureName}Response } from '../services/${featureName}Api';`,
+    `import { ${featureName}Api } from '../services/${featureName}Api';`,
     '',
     `interface Use${featureName}State {`,
     '  loading: boolean;',
     '  error: Error | null;',
-    `  data: ${featureName}Response | null;`,
+    '  data: string | null;',
     '}',
     '',
-    `export function use${featureName}(): Use${featureName}State & {`,
-    `  submit: (payload: ${featureName}Request) => Promise<void>;`,
-    '} {',
+    `export function use${featureName}(): Use${featureName}State & { run: () => Promise<void> } {`,
     `  const [state, setState] = useState<Use${featureName}State>({`,
     '    loading: false,',
     '    error: null,',
     '    data: null,',
     '  });',
     '',
-    `  const submit = useCallback(async (payload: ${featureName}Request) => {`,
+    '  const run = useCallback(async () => {',
     '    setState(prev => ({ ...prev, loading: true, error: null }));',
     '    try {',
-    `      const data = await ${featureName.charAt(0).toLowerCase() + featureName.slice(1)}Api.authenticate(payload);`,
+    `      const data = await ${featureName.charAt(0).toLowerCase() + featureName.slice(1)}Api.execute();`,
     '      setState({ loading: false, error: null, data });',
     '    } catch (err) {',
     '      const error = err instanceof Error ? err : new Error(String(err));',
@@ -245,104 +232,94 @@ function generateAddFeatureImplementation(ctx: {
     '    }',
     '  }, []);',
     '',
-    '  return { ...state, submit };',
+    '  return { ...state, run };',
     '}',
   ].join('\n')
 
   const screenFile = `src/screens/${featureName}Screen.${jsxExt}`
-  const importStyle = conventions.usesStyleSheet ? "import { StyleSheet } from 'react-native';" : ''
-  const styleProp = conventions.usesStyleSheet ? ' style={styles.container}' : ''
-  const styleCode = conventions.usesStyleSheet
-    ? '\nconst styles = StyleSheet.create({\n  container: { flex: 1, justifyContent: "center", padding: 24 },\n  title: { fontSize: 24, fontWeight: "bold", marginBottom: 24 },\n  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 12, marginBottom: 12 },\n  button: { backgroundColor: "#007AFF", padding: 16, borderRadius: 8, alignItems: "center" },\n  buttonText: { color: "#fff", fontWeight: "600" },\n  error: { color: "#FF3B30", marginBottom: 12 },\n});'
-    : ''
 
   const screenContent = [
     `// ${screenFile}`,
-    "import React, { useState } from 'react';",
-    "import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';",
-    importStyle,
+    "import React from 'react';",
+    "import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';",
     `import { use${featureName} } from '../hooks/use${featureName}';`,
     '',
     `export function ${featureName}Screen() {`,
-    `  const { submit, loading, error } = use${featureName}();`,
-    "  const [email, setEmail] = useState('');",
-    "  const [password, setPassword] = useState('');",
-    '',
-    '  const handleSubmit = () => {',
-    '    submit({ email, password });',
-    '  };',
+    `  const { run, loading, error, data } = use${featureName}();`,
     '',
     '  return (',
-    `    <View${styleProp}>`,
-    '      <Text style={styles.title}>Sign In</Text>',
-    '      <TextInput',
-    '        style={styles.input}',
-    '        placeholder="Email"',
-    '        keyboardType="email-address"',
-    '        autoCapitalize="none"',
-    '        value={email}',
-    '        onChangeText={setEmail}',
-    '      />',
-    '      <TextInput',
-    '        style={styles.input}',
-    '        placeholder="Password"',
-    '        secureTextEntry',
-    '        value={password}',
-    '        onChangeText={setPassword}',
-    '      />',
+    '    <View style={styles.container}>',
+    `      <Text style={styles.title}>${featureName}</Text>`,
     '      {error && <Text style={styles.error}>{error.message}</Text>}',
-    '      <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>',
-    '        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Sign In</Text>}',
+    '      {data && <Text>{data}</Text>}',
+    '      <TouchableOpacity style={styles.button} onPress={run} disabled={loading}>', // eslint-disable-line
+    '        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Run</Text>}',
     '      </TouchableOpacity>',
     '    </View>',
     '  );',
     '}',
-    styleCode,
+    '',
+    'const styles = StyleSheet.create({',
+    '  container: { flex: 1, justifyContent: "center", padding: 24 },',
+    '  title: { fontSize: 24, fontWeight: "bold", marginBottom: 24 },',
+    '  error: { color: "#FF3B30", marginBottom: 12 },',
+    '  button: { backgroundColor: "#007AFF", padding: 16, borderRadius: 8, alignItems: "center" },',
+    '  buttonText: { color: "#fff", fontWeight: "600" },',
+    '});',
+  ].join('\n')
+
+  const files = [
+    { path: serviceFile, content: serviceContent },
+    { path: hookFile, content: hookContent },
+    { path: screenFile, content: screenContent },
   ]
-    .filter(Boolean)
-    .join('\n')
+
+  const writtenFiles: string[] = []
+  if (projectRoot) {
+    for (const file of files) {
+      const writtenPath = writeProjectFile(projectRoot, file.path, file.content)
+      writtenFiles.push(writtenPath)
+    }
+  }
 
   const output = [
     '## Generated files',
     '',
-    `> Note: This is a starter scaffold for "${ctx.prompt}". Review and adapt it to your exact domain.`,
+    `> Note: This is a generic starter scaffold for "${ctx.prompt}". Replace the placeholder API logic with your domain code.`,
     '',
-    `### ${serviceFile}`,
-    '```typescript',
-    serviceContent,
-    '```',
-    '',
-    `### ${hookFile}`,
-    '```typescript',
-    hookContent,
-    '```',
-    '',
-    `### ${screenFile}`,
-    '```typescript',
-    screenContent,
-    '```',
+    ...(writtenFiles.length > 0 ? ['Files written to disk:', ...writtenFiles.map(f => `- \`${f}\``), ''] : []),
+    ...files.map(f => [
+      `### ${f.path}`,
+      '```typescript',
+      f.content,
+      '```',
+    ].join('\n')),
     '',
     '## Next steps',
-    '- Replace `API_BASE_URL` with your actual endpoint',
-    '- Add token persistence using secure storage',
+    '- Replace the placeholder API logic with your domain code',
     '- Wire the screen into your navigation stack',
+    '- Add unit tests for the service and hook',
   ].join('\n')
 
   return {
     output,
-    artifacts: [
-      { type: 'engineering', title: `Service: ${ctx.prompt}`, content: serviceContent, path: serviceFile },
-      { type: 'engineering', title: `Hook: ${ctx.prompt}`, content: hookContent, path: hookFile },
-      { type: 'engineering', title: `Screen: ${ctx.prompt}`, content: screenContent, path: screenFile },
-    ],
+    artifacts: files.map(f => ({
+      type: 'engineering',
+      title: f.path,
+      content: f.content,
+      path: f.path,
+    })),
   }
 }
 
-function generateRemoveDependencyImplementation(ctx: {
-  snapshot: ContextSnapshot | null
-  dependency: string
-  prompt: string
-}): { output: string; artifacts: WorkflowArtifact[] } {
+function generateRemoveDependencyImplementation(
+  projectRoot: string | undefined,
+  ctx: {
+    snapshot: ContextSnapshot | null
+    dependency: string
+    prompt: string
+  }
+): { output: string; artifacts: WorkflowArtifact[] } {
   const matches = findDependency(ctx.snapshot, ctx.dependency)
   const usages = findUsages(ctx.snapshot, ctx.dependency)
 
@@ -369,6 +346,27 @@ function generateRemoveDependencyImplementation(ctx: {
     '1. Open `ios/Podfile` and remove any App Center pods.',
     '2. Run `cd ios && pod install` to update the lockfile.',
   ]
+
+  const removalScript = [
+    '#!/bin/bash',
+    '# Run this script after reviewing the code changes above',
+    '',
+    `npm uninstall ${uninstallPackages.join(' ')}`,
+    '',
+    '# iOS cleanup',
+    'cd ios || exit 0',
+    'pod install',
+    'cd ..',
+    '',
+    '# Verify no imports remain',
+    `grep -R "${ctx.dependency}" src/ --include="*.ts" --include="*.tsx" || echo "No source imports found"`,
+  ].join('\n')
+
+  const scriptPath = 'scripts/remove-appcenter.sh'
+  let writtenScriptPath: string | undefined
+  if (projectRoot) {
+    writtenScriptPath = writeProjectFile(projectRoot, scriptPath, removalScript)
+  }
 
   const output = [
     `## Remove dependency: ${ctx.dependency}`,
@@ -398,39 +396,68 @@ function generateRemoveDependencyImplementation(ctx: {
     '- [ ] iOS Podfile.lock is updated',
     '- [ ] Android build succeeds',
     '- [ ] App launches without App Center errors',
-  ].join('\n')
-
-  const removalScript = [
-    '#!/bin/bash',
-    '# Run this script after reviewing the code changes above',
     '',
-    `npm uninstall ${uninstallPackages.join(' ')}`,
-    '',
-    '# iOS cleanup',
-    'cd ios || exit 0',
-    'pod install',
-    'cd ..',
-    '',
-    '# Verify no imports remain',
-    `grep -R "${ctx.dependency}" src/ --include="*.ts" --include="*.tsx" || echo "No source imports found"`,
+    writtenScriptPath ? `Cleanup script written to: \`${writtenScriptPath}\`` : '',
   ].join('\n')
 
   return {
     output,
     artifacts: [
       { type: 'engineering', title: `Removal plan: ${ctx.dependency}`, content: output },
-      { type: 'engineering', title: `Cleanup script: ${ctx.dependency}`, content: removalScript, path: 'scripts/remove-appcenter.sh' },
+      { type: 'engineering', title: `Cleanup script: ${ctx.dependency}`, content: removalScript, path: scriptPath },
     ],
   }
 }
 
-function generateRefactorImplementation(ctx: {
-  snapshot: ContextSnapshot | null
-  target: string
-  prompt: string
-}): { output: string; artifacts: WorkflowArtifact[] } {
+function generateRefactorImplementation(
+  projectRoot: string | undefined,
+  srcDir: string | undefined,
+  ctx: {
+    snapshot: ContextSnapshot | null
+    target: string
+    prompt: string
+  }
+): { output: string; artifacts: WorkflowArtifact[] } {
   const conventions = detectConventions(ctx.snapshot)
   const ext = fileExtension(conventions.hasTypeScript)
+
+  if (ctx.target === 'remove-unused-imports') {
+    const targetDir = srcDir || (projectRoot ? join(projectRoot, 'src') : '')
+    if (!targetDir) {
+      return {
+        output: '## Refactor: remove unused imports\n\nCould not determine source directory.',
+        artifacts: [],
+      }
+    }
+
+    const files = findSourceFiles(targetDir)
+    const results = removeUnusedImportsFromProject(targetDir)
+    const changed = results.filter(r => r.changed)
+    const unchanged = results.filter(r => !r.changed)
+
+    const output = [
+      '## Refactor: remove unused imports',
+      '',
+      `Scanned ${files.length} source files in \`${targetDir}\`.`,
+      '',
+      changed.length > 0
+        ? `### Files modified (${changed.length})\n\n${changed.map(r => `- \`${r.file}\` removed ${r.removed.length} import(s)`).join('\n')}`
+        : '### No files modified\n\nNo unused imports were found in the scanned source files.',
+      '',
+      `### Unchanged files (${unchanged.length})`,
+      ...unchanged.map(r => `- \`${r.file}\``),
+    ].join('\n')
+
+    return {
+      output,
+      artifacts: changed.map(r => ({
+        type: 'engineering',
+        title: `Cleaned: ${r.file}`,
+        content: `Removed ${r.removed.length} unused import(s):\n${r.removed.map(i => `- ${i}`).join('\n')}`,
+        path: r.file,
+      })),
+    }
+  }
 
   const output = [
     `## Refactor: ${ctx.target}`,
@@ -466,17 +493,19 @@ export const implementationPhase: WorkflowPhase = {
   run: async (ctx) => {
     const intent = detectIntent(ctx.prompt)
     const conventions = detectConventions(ctx.snapshot)
+    const projectRoot = ctx.projectRoot
+    const srcDir = projectRoot ? join(projectRoot, 'src') : undefined
 
     let result: { output: string; artifacts: WorkflowArtifact[] }
 
     if (isRemoveDependency(intent)) {
-      result = generateRemoveDependencyImplementation({
+      result = generateRemoveDependencyImplementation(projectRoot, {
         snapshot: ctx.snapshot,
         dependency: intent.dependency,
         prompt: ctx.prompt,
       })
     } else if (isRefactor(intent)) {
-      result = generateRefactorImplementation({
+      result = generateRefactorImplementation(projectRoot, srcDir, {
         snapshot: ctx.snapshot,
         target: intent.target,
         prompt: ctx.prompt,
@@ -492,7 +521,7 @@ export const implementationPhase: WorkflowPhase = {
       if (modelResult) {
         result = modelResult
       } else {
-        result = generateAddFeatureImplementation({
+        result = generateAddFeatureImplementation(projectRoot, {
           snapshot: ctx.snapshot,
           prompt: ctx.prompt,
         })

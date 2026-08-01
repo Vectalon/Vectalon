@@ -1,3 +1,4 @@
+import { logger } from '../cli/logger'
 import type {
   ProjectManagementAdapter,
   Task,
@@ -15,19 +16,16 @@ export class ConsoleProjectManagementAdapter implements ProjectManagementAdapter
       status: 'open',
     }))
 
-    console.log('[PM] Would create tasks:')
-    for (const task of created) {
-      console.log(`  - ${task.id}: ${task.title}`)
-    }
+    logger.dim(`  PM: created ${created.length} task(s)`)
     return created
   }
 
   async updateTasks(ids: string[], status: string): Promise<void> {
-    console.log(`[PM] Would update tasks ${ids.join(', ')} to status ${status}`)
+    logger.dim(`  PM: updated ${ids.length} task(s) to ${status}`)
   }
 
   async closeTasks(ids: string[]): Promise<void> {
-    console.log(`[PM] Would close tasks ${ids.join(', ')}`)
+    logger.dim(`  PM: closed ${ids.length} task(s)`)
   }
 }
 
@@ -42,7 +40,7 @@ export class JiraAdapter implements ProjectManagementAdapter {
   ) {}
 
   async createTasks(tasks: TaskInput[]): Promise<Task[]> {
-    console.log(`[Jira] Would create ${tasks.length} issue(s) in ${this.projectKey} at ${this.baseUrl}`)
+    logger.info(`[Jira] Would create ${tasks.length} issue(s) in ${this.projectKey}`)
     return tasks.map((t, index) => ({
       id: `${this.projectKey}-${index + 1}`,
       title: t.title,
@@ -52,11 +50,11 @@ export class JiraAdapter implements ProjectManagementAdapter {
   }
 
   async updateTasks(ids: string[], status: string): Promise<void> {
-    console.log(`[Jira] Would transition ${ids.join(', ')} to ${status}`)
+    logger.info(`[Jira] Would transition ${ids.length} issue(s) to ${status}`)
   }
 
   async closeTasks(ids: string[]): Promise<void> {
-    console.log(`[Jira] Would close ${ids.join(', ')}`)
+    logger.info(`[Jira] Would close ${ids.length} issue(s)`)
   }
 }
 
@@ -66,7 +64,7 @@ export class MondayAdapter implements ProjectManagementAdapter {
   constructor(private boardId: string, private token?: string) {}
 
   async createTasks(tasks: TaskInput[]): Promise<Task[]> {
-    console.log(`[Monday] Would create ${tasks.length} item(s) on board ${this.boardId}`)
+    logger.info(`[Monday] Would create ${tasks.length} item(s) on board ${this.boardId}`)
     return tasks.map((t, index) => ({
       id: `monday-${this.boardId}-${index + 1}`,
       title: t.title,
@@ -76,11 +74,11 @@ export class MondayAdapter implements ProjectManagementAdapter {
   }
 
   async updateTasks(ids: string[], status: string): Promise<void> {
-    console.log(`[Monday] Would update ${ids.join(', ')} to ${status}`)
+    logger.info(`[Monday] Would update ${ids.length} item(s) to ${status}`)
   }
 
   async closeTasks(ids: string[]): Promise<void> {
-    console.log(`[Monday] Would close ${ids.join(', ')}`)
+    logger.info(`[Monday] Would close ${ids.length} item(s)`)
   }
 }
 

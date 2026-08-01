@@ -1,3 +1,7 @@
+import { mkdtempSync, writeFileSync, mkdirSync } from 'fs'
+import { tmpdir } from 'os'
+import { join } from 'path'
+import { execSync } from 'child_process'
 import { createProjectManagementAdapter } from '../../src/adapters/projectManagement'
 import { createGitAdapter } from '../../src/adapters/git'
 import { createTestRunnerAdapter } from '../../src/adapters/testRunner'
@@ -29,8 +33,13 @@ describe('Adapters', () => {
   })
 
   describe('git', () => {
-    it('defaults to console adapter', () => {
+    it('defaults to local adapter', () => {
       const adapter = createGitAdapter({})
+      expect(adapter.name).toBe('local')
+    })
+
+    it('creates a console adapter in dry-run mode', () => {
+      const adapter = createGitAdapter({ dryRun: true })
       expect(adapter.name).toBe('console')
     })
 
@@ -39,21 +48,34 @@ describe('Adapters', () => {
       expect(adapter.name).toBe('github')
     })
 
-    it('returns a PR object', async () => {
-      const adapter = createGitAdapter({})
-      const pr = await adapter.createPullRequest({
-        title: 'feat: login',
-        body: 'Adds login.',
-        head: 'feature/login',
-      })
-      expect(pr.url).toBeDefined()
-      expect(pr.number).toBeGreaterThan(0)
+    it('runs real git commands in a temp repo', async () => {
+      const tmpDir = mkdtempSync(join(tmpdir(), 'vectalon-git-'))
+      execSync('git init', { cwd: tmpDir })
+      execSync('git config user.email "test@example.com"', { cwd: tmpDir })
+      execSync('git config user.name "Test"', { cwd: tmpDir })
+      writeFileSync(join(tmpDir, 'file.txt'), 'hello')
+      execSync('git add .', { cwd: tmpDir })
+      execSync('git commit -m "initial"', { cwd: tmpDir })
+
+      const adapter = createGitAdapter({ root: tmpDir })
+      await adapter.createBranch('feature/test')
+      const branch = execSync('git branch --show-current', { cwd: tmpDir, encoding: 'utf-8' }).trim()
+      expect(branch).toBe('feature/test')
+
+      writeFileSync(join(tmpDir, 'new.txt'), 'world')
+      const sha = await adapter.commit({ message: 'feat: test' })
+      expect(sha.length).toBeGreaterThan(0)
     })
   })
 
   describe('test runner', () => {
-    it('defaults to console adapter', () => {
+    it('defaults to local adapter', () => {
       const adapter = createTestRunnerAdapter({})
+      expect(adapter.name).toBe('local')
+    })
+
+    it('creates a console adapter in dry-run mode', () => {
+      const adapter = createTestRunnerAdapter({ dryRun: true })
       expect(adapter.name).toBe('console')
     })
 
@@ -62,16 +84,28 @@ describe('Adapters', () => {
       expect(adapter.name).toBe('jest')
     })
 
-    it('returns a successful test result', async () => {
-      const adapter = createTestRunnerAdapter({})
+    it('runs a real npm test script in a temp project', async () => {
+      const tmpDir = mkdtempSync(join(tmpdir(), 'vectalon-test-'))
+      writeFileSync(
+        join(tmpDir, 'package.json'),
+        JSON.stringify({ name: 'test', version: '1.0.0', scripts: { test: 'echo "all tests passed"' } })
+      )
+
+      const adapter = createTestRunnerAdapter({ root: tmpDir })
       const result = await adapter.runTests()
       expect(result.success).toBe(true)
+      expect(result.stdout).toContain('all tests passed')
     })
   })
 
   describe('simulator', () => {
-    it('defaults to console adapter', () => {
+    it('defaults to local adapter', () => {
       const adapter = createSimulatorAdapter({})
+      expect(adapter.name).toBe('local')
+    })
+
+    it('creates a console adapter in dry-run mode', () => {
+      const adapter = createSimulatorAdapter({ dryRun: true })
       expect(adapter.name).toBe('console')
     })
 
@@ -80,11 +114,25 @@ describe('Adapters', () => {
       expect(adapter.name).toBe('ios-simulator')
     })
 
-    it('returns a successful simulator result', async () => {
-      const adapter = createSimulatorAdapter({})
+    it('returns a result when the real command fails', async () => {
+      const tmpDir = mkdtempSync(join(tmpdir(), 'vectalon-sim-'))
+      mkdirSync(join(tmpDir, 'node_modules', '.bin'), { recursive: true })
+      // A fake react-native binary that exits with code 1 quickly
+      writeFileSync(
+        join(tmpDir, 'node_modules', '.bin', 'react-native'),
+        '#!/bin/sh\necho "no react-native project" >&2\nexit 1\n'
+      )
+      execSync('chmod +x ' + join(tmpDir, 'node_modules', '.bin', 'react-native'))
+      writeFileSync(
+        join(tmpDir, 'package.json'),
+        JSON.stringify({ name: 'test', version: '1.0.0' })
+      )
+
+      const adapter = createSimulatorAdapter({ root: tmpDir })
       const result = await adapter.run({ platform: 'ios' })
-      expect(result.success).toBe(true)
-    })
+      expect(result.success).toBe(false)
+      expect(result.exitCode).toBe(1)
+    }, 10000)
   })
 
   describe('design', () => {

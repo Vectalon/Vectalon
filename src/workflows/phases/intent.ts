@@ -7,6 +7,29 @@ export type WorkflowIntent =
 export function detectIntent(prompt: string): WorkflowIntent {
   const lower = prompt.toLowerCase()
 
+  // Specific refactor patterns that should be caught before generic removal/add-feature patterns
+  const unusedImportsMatch = lower.match(
+    /(?:remove|clean(?:\s+up)?|delete|fix)\s+(?:all\s+)?unused\s+(?:imports|import\s+statements)/i
+  )
+  if (unusedImportsMatch) {
+    return {
+      type: 'refactor',
+      target: 'remove-unused-imports',
+      description: prompt,
+    }
+  }
+
+  const refactorMatch = lower.match(
+    /(?:refactor|rewrite|migrate|convert|modernize|restructure|optimize)\s+(?:the\s+)?(?:file\s+)?(?:component\s+)?(?:screen\s+)?(?:module\s+)?(?:unused\s+)?['"]?([a-z0-9_/.-]+)['"]?/i
+  )
+  if (refactorMatch) {
+    return {
+      type: 'refactor',
+      target: refactorMatch[1],
+      description: prompt,
+    }
+  }
+
   const removeMatch = lower.match(
     /(?:remove|uninstall|delete|drop|stop using|get rid of|clean up|clean)\s+(?:using\s+)?(?:the\s+)?(?:package\s+)?(?:library\s+)?(?:module\s+)?['"]?([a-z0-9_-]+)['"]?/i
   )
@@ -14,17 +37,6 @@ export function detectIntent(prompt: string): WorkflowIntent {
     return {
       type: 'remove-dependency',
       dependency: normalizeDependencyName(removeMatch[1]),
-      description: prompt,
-    }
-  }
-
-  const refactorMatch = lower.match(
-    /(?:refactor|rewrite|migrate|convert|modernize|restructure)\s+(?:the\s+)?(?:file\s+)?(?:component\s+)?(?:screen\s+)?(?:module\s+)?['"]?([a-z0-9_/.-]+)['"]?/i
-  )
-  if (refactorMatch) {
-    return {
-      type: 'refactor',
-      target: refactorMatch[1],
       description: prompt,
     }
   }

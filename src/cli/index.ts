@@ -49,6 +49,9 @@ export function runCLI(): void {
     .option('--from <phase-id>', 'Start from a specific phase when resuming')
     .option('-o, --output <path>', 'Write workflow output to a file')
     .option('--json', 'Output as JSON')
+    .option('--verbose', 'Show full phase output')
+    .option('--dry-run', 'Simulate adapters without running real commands')
+    .option('--push', 'Allow git push and PR creation (default: local branch/commit only)')
     .action(featureCommand)
 
   program

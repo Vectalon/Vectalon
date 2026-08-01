@@ -8,11 +8,12 @@ import { PatternLearner } from '../../memory/PatternLearner'
 import { ModelRouter } from '../../model/ModelRouter'
 import { createAdapters } from '../../adapters'
 import { WorkflowEngine, getWorkflow, listWorkflows, createWorkflowState, saveWorkflowState, loadWorkflowState, listWorkflowStates } from '../../workflows'
+import type { WorkflowState } from '../../adapters/types'
 import { logger } from '../logger'
 
 export async function featureCommand(
   prompt: string,
-  options: { workflow?: string; output?: string; json?: boolean; resume?: string; from?: string }
+  options: { workflow?: string; output?: string; json?: boolean; resume?: string; from?: string; verbose?: boolean; dryRun?: boolean; push?: boolean }
 ): Promise<void> {
   const root = process.cwd()
   const vectalonDir = join(root, '.vectalon')
@@ -30,6 +31,9 @@ export async function featureCommand(
     process.exit(1)
   }
 
+  logger.info(`Starting workflow: ${pc.bold(workflow.name)}`)
+  logger.dim(`  prompt: ${prompt}`)
+
   const engine = new ContextEngine(root)
   engine.refresh()
 
@@ -44,7 +48,7 @@ export async function featureCommand(
   const modelRouter = new ModelRouter()
   modelRouter.initialize({ provider: 'local' })
 
-  const adapters = createAdapters({})
+  const adapters = createAdapters({ root, dryRun: options.dryRun, git: { push: options.push } })
 
   let state = createWorkflowState(workflow.id, prompt)
   if (options.resume) {
@@ -76,24 +80,6 @@ export async function featureCommand(
 
   saveWorkflowState(root, result)
 
-  const phaseTable = new Table({
-    head: ['Phase', 'Status'],
-    style: { head: ['cyan'] },
-  })
-  for (const p of result.phases) {
-    const statusColor = p.status === 'completed' ? pc.green : p.status === 'failed' ? pc.red : pc.yellow
-    phaseTable.push([p.name, statusColor(p.status)])
-  }
-
-  const summary = [
-    `# ${pc.bold(`Workflow: ${workflow.name}`)}`,
-    `ID: ${pc.dim(result.id)}`,
-    `Status: ${result.status === 'completed' ? pc.green(result.status) : pc.red(result.status)}`,
-    '',
-    '## Phase summary',
-    phaseTable.toString(),
-  ].join('\n')
-
   if (options.json) {
     const json = JSON.stringify(result, null, 2)
     if (options.output) {
@@ -101,11 +87,18 @@ export async function featureCommand(
     }
     logger.out(json + '\n')
   } else {
-    const output = `${summary}\n\n## Detailed output\n\n${result.phases.map(p => `### ${p.name}\n${p.output}`).join('\n\n')}`
-    if (options.output) {
-      writeFileSync(options.output, output)
+    renderSummary(result, workflow.name, root)
+
+    if (options.verbose) {
+      logger.out('\n## Detailed output\n\n')
+      logger.out(result.phases.map(p => `### ${p.name}\n${p.output}`).join('\n\n') + '\n')
     }
-    logger.out(output + '\n')
+
+    if (options.output) {
+      const output = result.phases.map(p => `### ${p.name}\n${p.output}`).join('\n\n')
+      writeFileSync(options.output, output)
+      logger.dim(`Detailed output written to ${options.output}`)
+    }
   }
 
   if (result.status === 'completed') {
@@ -113,5 +106,38 @@ export async function featureCommand(
   } else {
     logger.error(`Workflow failed: ${result.id}`)
     process.exit(1)
+  }
+}
+
+function renderSummary(result: WorkflowState, workflowName: string, root: string): void {
+  const phaseTable = new Table({
+    head: ['Phase', 'Status'],
+    style: { head: ['cyan'] },
+    colWidths: [32, 16],
+  })
+  for (const p of result.phases) {
+    const statusColor = p.status === 'completed' ? pc.green : p.status === 'failed' ? pc.red : pc.yellow
+    phaseTable.push([p.name, statusColor(p.status)])
+  }
+
+  logger.out('\n')
+  logger.out(pc.bold(`Workflow: ${workflowName}`) + '\n')
+  logger.out(`ID:     ${pc.dim(result.id)}\n`)
+  logger.out(`Status: ${result.status === 'completed' ? pc.green(result.status) : pc.red(result.status)}\n`)
+  logger.out('\n')
+  logger.out(phaseTable.toString())
+  logger.out('\n')
+
+  const docsDir = join(root, '.vectalon', 'docs', result.workflowId, result.id)
+  logger.success(`Documents saved to ${docsDir}`)
+
+  const fileArtifacts = result.phases.flatMap(p => p.artifacts).filter(a => a.path && a.type !== 'document')
+  if (fileArtifacts.length > 0) {
+    logger.out('\n')
+    logger.out(pc.bold('Files created or modified:') + '\n')
+    for (const artifact of fileArtifacts) {
+      const displayPath = artifact.path?.startsWith(root) ? artifact.path.slice(root.length + 1) : artifact.path
+      logger.out(`  ${pc.green('✔')} ${displayPath}\n`)
+    }
   }
 }

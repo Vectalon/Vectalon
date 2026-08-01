@@ -522,7 +522,7 @@ export class MCPServer {
         inputs: {},
         outputs: {},
         state,
-        adapters: createAdapters({}),
+        adapters: createAdapters({ dryRun: true }),
         modelRouter: this.modelRouter,
       })
 

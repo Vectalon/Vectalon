@@ -40,7 +40,7 @@ function makeContext(prompt: string): WorkflowContext {
     inputs: {},
     outputs: {},
     state: createWorkflowState('feature-development', prompt),
-    adapters: createAdapters({}),
+    adapters: createAdapters({ dryRun: true }),
     modelRouter: new ModelRouter(),
   }
 }
