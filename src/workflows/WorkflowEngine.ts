@@ -7,9 +7,11 @@ import type {
   PhaseResult,
 } from '../adapters/types'
 
-interface WorkflowEngineOptions {
+export interface WorkflowEngineOptions {
   resume?: boolean
   fromPhase?: string
+  onPhaseStart?: (phase: WorkflowPhase) => void
+  onPhaseComplete?: (phase: WorkflowPhase, result: PhaseResult) => void
 }
 
 export class WorkflowEngine {
@@ -34,10 +36,12 @@ export class WorkflowEngine {
         continue
       }
 
+      options.onPhaseStart?.(phase)
       const result = await this.runPhase(phase, context)
       this.writePhaseDocument(context, phase, result)
       this.updatePhaseInState(state, result)
       state.updatedAt = Date.now()
+      options.onPhaseComplete?.(phase, result)
 
       if (result.status === 'failed') {
         state.status = 'failed'

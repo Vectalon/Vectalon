@@ -9,30 +9,31 @@ import { ModelRouter } from '../../model/ModelRouter'
 import { createAdapters } from '../../adapters'
 import { WorkflowEngine, getWorkflow, listWorkflows, createWorkflowState, saveWorkflowState, loadWorkflowState, listWorkflowStates } from '../../workflows'
 import type { WorkflowState } from '../../adapters/types'
-import { logger } from '../logger'
+import { dynamicImport } from '../../utils/dynamicImport'
 
 export async function featureCommand(
   prompt: string,
   options: { workflow?: string; output?: string; json?: boolean; resume?: string; from?: string; verbose?: boolean; dryRun?: boolean; push?: boolean }
 ): Promise<void> {
+  const { intro, outro, spinner, log, note } = await dynamicImport<typeof import('@clack/prompts')>('@clack/prompts')
+
   const root = process.cwd()
   const vectalonDir = join(root, '.vectalon')
 
   if (!existsSync(vectalonDir)) {
-    logger.error('No .vectalon/ directory found. Run `vectalon init` first.')
+    log.error('No .vectalon/ directory found. Run `vectalon init` first.')
     process.exit(1)
   }
 
   const workflow = getWorkflow(options.workflow || 'feature-development')
   if (!workflow) {
     const available = listWorkflows().map(w => w.id).join(', ')
-    logger.error(`Unknown workflow: ${options.workflow}`)
-    logger.dim(`  Available workflows: ${available}`)
+    log.error(`Unknown workflow: ${options.workflow}`)
+    log.info(`Available workflows: ${available}`)
     process.exit(1)
   }
 
-  logger.info(`Starting workflow: ${pc.bold(workflow.name)}`)
-  logger.dim(`  prompt: ${prompt}`)
+  intro(`${workflow.name}: ${pc.dim(prompt)}`)
 
   const engine = new ContextEngine(root)
   engine.refresh()
@@ -54,16 +55,19 @@ export async function featureCommand(
   if (options.resume) {
     const loaded = loadWorkflowState(root, workflow.id, options.resume)
     if (!loaded) {
-      logger.error(`Workflow state not found: ${options.resume}`)
-      logger.info('Available states:')
+      log.error(`Workflow state not found: ${options.resume}`)
+      log.info('Available states:')
       for (const s of listWorkflowStates(root, workflow.id)) {
-        logger.dim(`  - ${s.id} (${s.status})`)
+        log.info(`  - ${s.id} (${s.status})`)
       }
       process.exit(1)
     }
     state = { ...loaded, prompt, status: 'running', updatedAt: Date.now() }
-    logger.info(`Resuming workflow state: ${state.id}`)
+    log.info(`Resuming workflow state: ${state.id}`)
   }
+
+  const s = spinner()
+  s.start('Starting workflow...')
 
   const workflowEngine = new WorkflowEngine()
   const engineOptions = options.from ? { fromPhase: options.from } : undefined
@@ -76,7 +80,19 @@ export async function featureCommand(
     state,
     adapters,
     modelRouter,
-  }, engineOptions)
+  }, {
+    ...engineOptions,
+    onPhaseStart: (phase) => {
+      s.message(`${phase.name}...`)
+    },
+    onPhaseComplete: (phase, phaseResult) => {
+      if (phaseResult.status === 'failed') {
+        s.stop(`${phase.name} failed`)
+      } else {
+        s.message(`${phase.name} completed`)
+      }
+    },
+  })
 
   saveWorkflowState(root, result)
 
@@ -85,31 +101,38 @@ export async function featureCommand(
     if (options.output) {
       writeFileSync(options.output, json)
     }
-    logger.out(json + '\n')
+    process.stdout.write(json + '\n')
   } else {
-    renderSummary(result, workflow.name, root)
+    s.stop(result.status === 'completed' ? 'Workflow completed' : 'Workflow failed')
+    renderSummary(result, workflow.name, root, note, log)
 
     if (options.verbose) {
-      logger.out('\n## Detailed output\n\n')
-      logger.out(result.phases.map(p => `### ${p.name}\n${p.output}`).join('\n\n') + '\n')
+      process.stdout.write('\n## Detailed output\n\n')
+      process.stdout.write(result.phases.map(p => `### ${p.name}\n${p.output}`).join('\n\n') + '\n')
     }
 
     if (options.output) {
       const output = result.phases.map(p => `### ${p.name}\n${p.output}`).join('\n\n')
       writeFileSync(options.output, output)
-      logger.dim(`Detailed output written to ${options.output}`)
+      log.info(`Detailed output written to ${options.output}`)
     }
   }
 
   if (result.status === 'completed') {
-    logger.success(`Workflow completed: ${result.id}`)
+    outro('Workflow completed successfully')
   } else {
-    logger.error(`Workflow failed: ${result.id}`)
+    outro('Workflow failed')
     process.exit(1)
   }
 }
 
-function renderSummary(result: WorkflowState, workflowName: string, root: string): void {
+function renderSummary(
+  result: WorkflowState,
+  workflowName: string,
+  root: string,
+  note: (message: string, title?: string) => void,
+  log: { error: (message: string) => void; info: (message: string) => void }
+): void {
   const phaseTable = new Table({
     head: ['Phase', 'Status'],
     style: { head: ['cyan'] },
@@ -120,33 +143,36 @@ function renderSummary(result: WorkflowState, workflowName: string, root: string
     phaseTable.push([p.name, statusColor(p.status)])
   }
 
-  logger.out('\n')
-  logger.out(pc.bold(`Workflow: ${workflowName}`) + '\n')
-  logger.out(`ID:     ${pc.dim(result.id)}\n`)
-  logger.out(`Status: ${result.status === 'completed' ? pc.green(result.status) : pc.red(result.status)}\n`)
-  logger.out('\n')
-  logger.out(phaseTable.toString())
-  logger.out('\n')
-
   const docsDir = join(root, '.vectalon', 'docs', result.workflowId, result.id)
-  logger.success(`Documents saved to ${docsDir}`)
-
   const fileArtifacts = result.phases.flatMap(p => p.artifacts).filter(a => a.path && a.type !== 'document')
+
+  const lines: string[] = [
+    `Workflow: ${workflowName}`,
+    `ID: ${result.id}`,
+    `Status: ${result.status === 'completed' ? 'completed' : 'failed'}`,
+    '',
+    phaseTable.toString(),
+  ]
+
   if (fileArtifacts.length > 0) {
-    logger.out('\n')
-    logger.out(pc.bold('Files created or modified:') + '\n')
+    lines.push('')
+    lines.push(pc.bold('Files created or modified:'))
     for (const artifact of fileArtifacts) {
       const displayPath = artifact.path?.startsWith(root) ? artifact.path.slice(root.length + 1) : artifact.path
-      logger.out(`  ${pc.green('✔')} ${displayPath}\n`)
+      lines.push(`  ${pc.green('✔')} ${displayPath}`)
     }
   }
 
+  lines.push('')
+  lines.push(`Documents saved to ${docsDir}`)
+
+  note(lines.join('\n'), 'Summary')
+
   const failedPhase = result.phases.find(p => p.status === 'failed')
   if (failedPhase) {
-    logger.out('\n')
-    logger.error(`Failed phase: ${failedPhase.name}`)
-    logger.out('\n')
-    logger.out(failedPhase.output)
-    logger.out('\n')
+    log.error(`Failed phase: ${failedPhase.name}`)
+    process.stdout.write('\n')
+    process.stdout.write(failedPhase.output)
+    process.stdout.write('\n')
   }
 }
