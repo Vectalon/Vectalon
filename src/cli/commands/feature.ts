@@ -9,13 +9,26 @@ import { ModelRouter } from '../../model/ModelRouter'
 import { createAdapters } from '../../adapters'
 import { WorkflowEngine, getWorkflow, listWorkflows, createWorkflowState, saveWorkflowState, loadWorkflowState, listWorkflowStates } from '../../workflows'
 import type { WorkflowState } from '../../adapters/types'
+import type { ModelProviderType } from '../../model/types'
 import { dynamicImport } from '../../utils/dynamicImport'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
 import type { ImprovementSuggestion } from '../../knowledge/refresh'
 
+export interface FeatureCommandOptions {
+  workflow?: string
+  output?: string
+  json?: boolean
+  resume?: string
+  from?: string
+  verbose?: boolean
+  dryRun?: boolean
+  push?: boolean
+  model?: string
+}
+
 export async function featureCommand(
   prompt: string,
-  options: { workflow?: string; output?: string; json?: boolean; resume?: string; from?: string; verbose?: boolean; dryRun?: boolean; push?: boolean }
+  options: FeatureCommandOptions
 ): Promise<void> {
   const { intro, outro, spinner, log, note } = await dynamicImport<typeof import('@clack/prompts')>('@clack/prompts')
 
@@ -32,6 +45,13 @@ export async function featureCommand(
     const available = listWorkflows().map(w => w.id).join(', ')
     log.error(`Unknown workflow: ${options.workflow}`)
     log.info(`Available workflows: ${available}`)
+    process.exit(1)
+  }
+
+  const VALID_PROVIDERS = ['local', 'openai', 'anthropic']
+  if (options.model && !VALID_PROVIDERS.includes(options.model)) {
+    log.error(`Unknown model provider: ${options.model}`)
+    log.info(`Available providers: ${VALID_PROVIDERS.join(', ')}`)
     process.exit(1)
   }
 
@@ -75,7 +95,7 @@ export async function featureCommand(
   engine.attachPatternStore(memory)
 
   const modelRouter = new ModelRouter()
-  modelRouter.initialize({ provider: 'local' })
+  modelRouter.initialize({ provider: (options.model || 'local') as ModelProviderType })
 
   const adapters = createAdapters({ root, dryRun: options.dryRun, git: { push: options.push } })
 

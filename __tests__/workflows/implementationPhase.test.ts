@@ -1,4 +1,4 @@
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'fs'
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import { implementationPhase } from '../../src/workflows/phases/implementationPhase'
@@ -84,6 +84,141 @@ describe('implementationPhase', () => {
     expect(result.output).toContain('src/screens/AddLoginScreenScreen.tsx')
     expect(result.artifacts).toHaveLength(1)
     expect(result.artifacts[0].path).toBe('src/screens/AddLoginScreenScreen.tsx')
+  })
+
+  it('writes model-generated JSON files to disk', async () => {
+    const response = JSON.stringify({
+      files: [
+        { path: 'src/screens/AddLoginScreenScreen.tsx', content: 'export function LoginScreen() { return null }' },
+      ],
+    })
+    const router = createMockModelRouter(response)
+    await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
+
+    const screenPath = join(projectRoot, 'src/screens/AddLoginScreenScreen.tsx')
+    expect(readFileSync(screenPath, 'utf-8')).toContain('export function LoginScreen')
+  })
+
+  it('parses markdown sections with ### paths and fenced code into files on disk', async () => {
+    const response = [
+      'Here are the files:',
+      '',
+      '### src/services/AddLoginScreenApi.ts',
+      '```typescript',
+      'export class AddLoginScreenApi { async execute() { return "ok" } }',
+      '```',
+      '',
+      '### src/screens/AddLoginScreenScreen.tsx',
+      '```tsx',
+      'export function AddLoginScreenScreen() { return null }',
+      '```',
+    ].join('\n')
+    const router = createMockModelRouter(response)
+    const result = await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
+
+    expect(result.artifacts).toHaveLength(2)
+    const servicePath = join(projectRoot, 'src/services/AddLoginScreenApi.ts')
+    const screenPath = join(projectRoot, 'src/screens/AddLoginScreenScreen.tsx')
+    expect(readFileSync(servicePath, 'utf-8')).toContain('class AddLoginScreenApi')
+    expect(readFileSync(screenPath, 'utf-8')).toContain('AddLoginScreenScreen')
+    expect(result.output).toContain('Files written to disk')
+  })
+
+  it('parses bare path lines followed by fenced code blocks', async () => {
+    const response = [
+      'src/hooks/useAddLoginScreen.ts',
+      '```ts',
+      'export function useAddLoginScreen() { return { run: async () => "ok" } }',
+      '```',
+    ].join('\n')
+    const router = createMockModelRouter(response)
+    const result = await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
+
+    expect(result.artifacts).toHaveLength(1)
+    const hookPath = join(projectRoot, 'src/hooks/useAddLoginScreen.ts')
+    expect(readFileSync(hookPath, 'utf-8')).toContain('useAddLoginScreen')
+  })
+
+  it('preserves unparseable model output as a note instead of discarding it', async () => {
+    const router = createMockModelRouter('the login screen should use email and password fields with validation')
+    const result = await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
+
+    expect(result.output).toContain('Model output (not applied)')
+    expect(result.output).toContain('email and password fields')
+    // Still falls back to the deterministic scaffold so the phase produces runnable files
+    expect(result.output).toContain('src/services/AddLoginScreenApi.ts')
+  })
+
+  it('rejects path traversal and absolute paths from model output', async () => {
+    const response = JSON.stringify({
+      files: [
+        { path: '../evil.ts', content: 'export const evil = 1' },
+        { path: '/etc/hosts.ts', content: 'export const hosts = 1' },
+        { path: 'src/screens/AddLoginScreenScreen.tsx', content: 'export function LoginScreen() { return null }' },
+      ],
+    })
+    const router = createMockModelRouter(response)
+    const result = await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
+
+    // Safe file written; unsafe paths filtered out entirely
+    expect(readFileSync(join(projectRoot, 'src/screens/AddLoginScreenScreen.tsx'), 'utf-8')).toContain('LoginScreen')
+    expect(result.artifacts.map(a => a.path)).toEqual(['src/screens/AddLoginScreenScreen.tsx'])
+    expect(existsSync(join(projectRoot, '../evil.ts'))).toBe(false)
+    expect(existsSync(join(projectRoot, 'etc/hosts.ts'))).toBe(false)
+  })
+
+  it('drops JSON entries that lack string content', async () => {
+    const response = JSON.stringify({
+      files: [
+        { path: 'src/services/AddLoginScreenApi.ts', content: 'export class AddLoginScreenApi {}' },
+        { path: 'src/hooks/useAddLoginScreen.ts' },
+      ],
+    })
+    const router = createMockModelRouter(response)
+    const result = await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
+
+    expect(result.artifacts.map(a => a.path)).toEqual(['src/services/AddLoginScreenApi.ts'])
+    expect(readFileSync(join(projectRoot, 'src/services/AddLoginScreenApi.ts'), 'utf-8')).toContain('AddLoginScreenApi')
+  })
+
+  it('keeps generated scaffold out of src/ when the project is the rn-vectalon package itself', async () => {
+    writeFileSync(join(projectRoot, 'package.json'), JSON.stringify({ name: '@vectalon-dev/rn-vectalon', version: '0.5.0' }))
+
+    const router = createMockModelRouter('[Local model fallback: no downloaded model]')
+    const result = await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
+
+    expect(result.output).toContain('.vectalon/generated')
+    // Nothing written into the package's own src/
+    expect(existsSync(join(projectRoot, 'src/services/AddLoginScreenApi.ts'))).toBe(false)
+    expect(existsSync(join(projectRoot, 'src/hooks/useAddLoginScreen.ts'))).toBe(false)
+    expect(existsSync(join(projectRoot, 'src/screens/AddLoginScreenScreen.tsx'))).toBe(false)
+    // Generated files land in the gitignored output dir instead
+    expect(existsSync(join(projectRoot, '.vectalon/generated/src/services/AddLoginScreenApi.ts'))).toBe(true)
+    expect(existsSync(join(projectRoot, '.vectalon/generated/src/hooks/useAddLoginScreen.ts'))).toBe(true)
+    expect(existsSync(join(projectRoot, '.vectalon/generated/src/screens/AddLoginScreenScreen.tsx'))).toBe(true)
+  })
+
+  it('keeps model-generated files out of src/ when the project is the rn-vectalon package itself', async () => {
+    writeFileSync(join(projectRoot, 'package.json'), JSON.stringify({ name: '@vectalon-dev/rn-vectalon', version: '0.5.0' }))
+    const response = JSON.stringify({
+      files: [{ path: 'src/screens/AddLoginScreenScreen.tsx', content: 'export function LoginScreen() { return null }' }],
+    })
+    const router = createMockModelRouter(response)
+    await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
+
+    expect(existsSync(join(projectRoot, 'src/screens/AddLoginScreenScreen.tsx'))).toBe(false)
+    expect(existsSync(join(projectRoot, '.vectalon/generated/src/screens/AddLoginScreenScreen.tsx'))).toBe(true)
+  })
+
+  it('still writes into src/ for a regular React Native project', async () => {
+    writeFileSync(join(projectRoot, 'package.json'), JSON.stringify({ name: 'my-app', version: '1.0.0' }))
+
+    const router = createMockModelRouter('[Local model fallback: no downloaded model]')
+    const result = await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
+
+    expect(existsSync(join(projectRoot, 'src/services/AddLoginScreenApi.ts'))).toBe(true)
+    expect(existsSync(join(projectRoot, '.vectalon/generated/src/services/AddLoginScreenApi.ts'))).toBe(false)
+    expect(result.output).not.toContain('.vectalon/generated')
   })
 
   it('falls back to deterministic scaffold when the model returns fallback marker', async () => {
