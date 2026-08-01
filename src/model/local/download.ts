@@ -1,4 +1,5 @@
 import type { ModelPreset } from './presets'
+import { dynamicImport } from '../../utils/dynamicImport'
 import {
   getModelDir,
   registerModel,
@@ -34,18 +35,15 @@ export async function downloadModel(
   const fileName = resolveModelFileName(preset.uri)
 
   try {
-    const { resolveModelFile } = await import('node-llama-cpp')
-    const filePath = await resolveModelFile(
-      preset.uri,
-      {
-        directory: dirPath,
-        fileName,
-        download: 'auto',
-        verify: true,
-        cli: true,
-        onProgress,
-      }
-    )
+    const nlc = await dynamicImport<typeof import('node-llama-cpp')>('node-llama-cpp')
+    const filePath = await nlc.resolveModelFile(preset.uri, {
+      directory: dirPath,
+      fileName,
+      download: 'auto',
+      verify: true,
+      cli: true,
+      onProgress,
+    })
 
     registerModel({
       id: preset.id,

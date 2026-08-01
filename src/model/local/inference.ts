@@ -1,4 +1,5 @@
 import type { ModelPreset } from './presets'
+import { dynamicImport } from '../../utils/dynamicImport'
 import { getDownloadedModel } from './ModelStore'
 
 export interface InferenceOptions {
@@ -21,7 +22,7 @@ export async function runInference(modelId: string, options: InferenceOptions): 
   }
 
   try {
-    const nlc = await import('node-llama-cpp')
+    const nlc = await dynamicImport<typeof import('node-llama-cpp')>('node-llama-cpp')
     const llama = await nlc.getLlama()
     const llamaModel = await llama.loadModel({ modelPath: model.filePath })
     const context = await llamaModel.createContext()
@@ -39,7 +40,8 @@ export async function runInference(modelId: string, options: InferenceOptions): 
       modelId,
     }
   } catch (err) {
-    throw new Error(`Inference failed for model ${modelId}: ${err instanceof Error ? err.message : String(err)}`)
+    const message = err instanceof Error ? err.message : String(err)
+    throw new Error(`Inference failed for model ${modelId}: ${message}`)
   }
 }
 

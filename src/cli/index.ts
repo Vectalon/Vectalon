@@ -8,6 +8,7 @@ import { pullCommand } from './commands/pull'
 import { modelsCommand } from './commands/models'
 import { logger } from './logger'
 import pkg from '../../package.json'
+import { dynamicImport } from '../utils/dynamicImport'
 
 export function runCLI(): void {
   const program = new Command()
@@ -87,7 +88,7 @@ function patchNode(): number {
 }
 
 async function runInteractive(): Promise<void> {
-  const p = await import('@clack/prompts')
+  const p = await dynamicImport<typeof import('@clack/prompts')>('@clack/prompts')
 
   p.intro(pc.bold(pc.cyan('vectalon')))
 
