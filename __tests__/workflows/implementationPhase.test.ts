@@ -144,4 +144,26 @@ describe('implementationPhase', () => {
     expect(updated).toContain("import { View, Text } from 'react-native';")
     expect(updated).not.toContain("import { unusedHelper } from './helpers';")
   })
+
+  it('reports guardrail summary for generated scaffold', async () => {
+    const router = createMockModelRouter('[Local model fallback: no downloaded model]')
+    const result = await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
+
+    expect(result.output).toContain('Guardrail summary')
+    expect(result.output).toContain('All guardrails passed')
+  })
+
+  it('reports guardrail findings for model-generated code with violations', async () => {
+    const response = JSON.stringify({
+      files: [
+        { path: 'src/screens/BadScreen.tsx', content: 'export function BadScreen() { console.log("hi"); return null; }' },
+      ],
+    })
+    const router = createMockModelRouter(response)
+    const result = await implementationPhase.run(createContext(router, 'Add a bad screen', projectRoot))
+
+    expect(result.output).toContain('Guardrail summary')
+    expect(result.output).toContain('No console.log statements')
+    expect(result.output).toContain('1 error(s)')
+  })
 })

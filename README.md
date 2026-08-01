@@ -83,7 +83,7 @@ APIs, or your organization's private conventions.
 adapters do not browse the web, fetch documentation, or update themselves with
 new best practices. The only "learning" happens inside your project: the harness
 records patterns it observes in your codebase.
-- **Guardrails are present but not exhaustive.** Current guardrails include:
+- **Guardrails are applied before generated code is written.** The implementation phase runs an exhaustive rule set over every generated file and reports the results in the workflow output. Rules cover: `console.log`, inline styles, hardcoded URLs, secrets, `any`, missing error handling, unused imports, state mutation, missing hook deps, heavy work in render, missing accessibility labels, deprecated APIs, platform-specific code, navigation types, naming conventions, safe-area usage, TODO/FIXME comments, TypeScript return types, remote image assets, list virtualization, mutation in hooks/Reducers, `==`/`!=`, `var`, and default component exports.
   - System prompts that require real, runnable code and forbid TODOs/placeholders
   - Convention detection (TypeScript, navigation, StyleSheet) that shapes generated code
   - A deterministic fallback scaffold when no model is downloaded
