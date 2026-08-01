@@ -6,6 +6,7 @@ import type { ModelRouter } from '../../model/ModelRouter'
 import { removeUnusedImportsFromProject, findSourceFiles } from '../../utils/unusedImports'
 import { detectConventions, phaseResult, sanitizeFileName, fileExtension, jsxExtension } from './helpers'
 import { detectIntent, intentTitle, isRemoveDependency, isRefactor } from './intent'
+import { runGuardrails, formatGuardrailResult, GuardrailResult } from '../../guardrails'
 
 interface DependencyMatch {
   name: string
@@ -21,6 +22,41 @@ interface GeneratedFile {
 interface GeneratedImplementation {
   files: GeneratedFile[]
   notes?: string
+}
+
+function checkGuardrails(files: GeneratedFile[], conventions: ReturnType<typeof detectConventions>): GuardrailResult[] {
+  return files.map(file =>
+    runGuardrails({
+      filePath: file.path,
+      content: file.content,
+      conventions: {
+        hasTypeScript: conventions.hasTypeScript,
+        usesStyleSheet: conventions.usesStyleSheet,
+        hasNavigation: conventions.hasNavigation,
+      },
+    })
+  )
+}
+
+function formatGuardrailSummary(results: GuardrailResult[]): string {
+  const errors = results.flatMap(r => r.findings.filter(f => !f.passed && f.severity === 'error'))
+  const warnings = results.flatMap(r => r.findings.filter(f => !f.passed && f.severity === 'warning'))
+  const infos = results.flatMap(r => r.findings.filter(f => !f.passed && f.severity === 'info'))
+
+  const lines = ['## Guardrail summary', '']
+  if (errors.length === 0 && warnings.length === 0 && infos.length === 0) {
+    lines.push('✅ All guardrails passed for every generated file.')
+  } else {
+    lines.push(`- ${errors.length} error(s), ${warnings.length} warning(s), ${infos.length} info note(s)`)
+    lines.push('')
+    for (const result of results) {
+      if (result.findings.some(f => !f.passed)) {
+        lines.push(formatGuardrailResult(result))
+        lines.push('')
+      }
+    }
+  }
+  return lines.join('\n')
 }
 
 function writeProjectFile(projectRoot: string, filePath: string, content: string): string {
@@ -106,7 +142,23 @@ function buildImplementationPrompt(ctx: {
     'The JSON must have this exact shape:',
     '{"files":[{"path":"src/...","content":"..."}],"notes":"..."}',
     'Each file must be a complete, self-contained source file.',
-  ].join(' ')
+    '',
+    'Best practices that must be followed:',
+    '- Use StyleSheet.create(...) for all styles; no inline style objects.',
+    '- Use named exports for components and hooks.',
+    '- Add accessibilityLabel or accessible={false} to TouchableOpacity, Pressable, and Button elements.',
+    '- Use SafeAreaView or react-native-safe-area-context for full screens.',
+    '- Use try/catch in async functions or propagate errors explicitly.',
+    '- No console.log or debug statements in production code.',
+    '- No hardcoded API URLs or secrets.',
+    '- No explicit any types; use specific types or unknown.',
+    '- Use Platform.OS or Platform.select for platform-specific code.',
+    '- Virtualize long lists with FlatList or SectionList instead of .map over arrays in JSX.',
+    '- Use const and let; never var.',
+    '- Use === and !== instead of == and !=.',
+    '- Screens with TextInput must use KeyboardAvoidingView on iOS.',
+    '- Do not use deprecated APIs: ListView, AsyncStorage from react-native, AlertIOS, StatusBarIOS, Navigator.',
+  ].join('\n')
 
   const projectContext = [
     'Project conventions:',
@@ -128,6 +180,7 @@ function buildImplementationPrompt(ctx: {
 
 async function generateModelImplementation(
   modelRouter: ModelRouter,
+  projectRoot: string | undefined,
   ctx: {
     snapshot: ContextSnapshot | null
     prompt: string
@@ -152,6 +205,16 @@ async function generateModelImplementation(
     return null
   }
 
+  const conventions = detectConventions(ctx.snapshot)
+  const guardrailResults = checkGuardrails(parsed.files, conventions)
+  const writtenFiles: string[] = []
+  if (projectRoot) {
+    for (const file of parsed.files) {
+      const writtenPath = writeProjectFile(projectRoot, file.path, file.content)
+      writtenFiles.push(writtenPath)
+    }
+  }
+
   const fileSections = parsed.files.map(f => [
     `### ${f.path}`,
     '```typescript',
@@ -163,7 +226,10 @@ async function generateModelImplementation(
     '## Generated files',
     '',
     ...(parsed.notes ? [parsed.notes, ''] : []),
+    ...(writtenFiles.length > 0 ? ['Files written to disk:', ...writtenFiles.map(f => `- \`${f}\``), ''] : []),
     ...fileSections,
+    '',
+    formatGuardrailSummary(guardrailResults),
   ].join('\n')
 
   return {
@@ -195,7 +261,12 @@ function generateAddFeatureImplementation(
     '',
     `export class ${featureName}Api {`,
     `  async execute(): Promise<string> {`,
-    '    return Promise.resolve("ok");',
+    '    try {',
+    '      return "ok";',
+    '    } catch (err) {',
+    '      const error = err instanceof Error ? err : new Error(String(err));',
+    '      throw error;',
+    '    }',
     '  }',
     '}',
     '',
@@ -206,7 +277,7 @@ function generateAddFeatureImplementation(
   const hookContent = [
     `// ${hookFile}`,
     "import { useState, useCallback } from 'react';",
-    `import { ${featureName}Api } from '../services/${featureName}Api';`,
+    `import { ${featureName.charAt(0).toLowerCase() + featureName.slice(1)}Api } from '../services/${featureName}Api';`,
     '',
     `interface Use${featureName}State {`,
     '  loading: boolean;',
@@ -240,22 +311,26 @@ function generateAddFeatureImplementation(
 
   const screenContent = [
     `// ${screenFile}`,
-    "import React from 'react';",
-    "import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';",
+    "import { Text, TouchableOpacity, ActivityIndicator, StyleSheet, SafeAreaView } from 'react-native';",
     `import { use${featureName} } from '../hooks/use${featureName}';`,
     '',
-    `export function ${featureName}Screen() {`,
+    `export function ${featureName}Screen(): JSX.Element {`,
     `  const { run, loading, error, data } = use${featureName}();`,
     '',
     '  return (',
-    '    <View style={styles.container}>',
+    '    <SafeAreaView style={styles.container}>',
     `      <Text style={styles.title}>${featureName}</Text>`,
     '      {error && <Text style={styles.error}>{error.message}</Text>}',
     '      {data && <Text>{data}</Text>}',
-    '      <TouchableOpacity style={styles.button} onPress={run} disabled={loading}>', // eslint-disable-line
+    '      <TouchableOpacity',
+    '        style={styles.button}',
+    '        onPress={run}',
+    '        disabled={loading}',
+    `        accessibilityLabel="Run ${featureName}"`,
+    '      >',
     '        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Run</Text>}',
     '      </TouchableOpacity>',
-    '    </View>',
+    '    </SafeAreaView>',
     '  );',
     '}',
     '',
@@ -273,6 +348,8 @@ function generateAddFeatureImplementation(
     { path: hookFile, content: hookContent },
     { path: screenFile, content: screenContent },
   ]
+
+  const guardrailResults = checkGuardrails(files, conventions)
 
   const writtenFiles: string[] = []
   if (projectRoot) {
@@ -294,6 +371,8 @@ function generateAddFeatureImplementation(
       f.content,
       '```',
     ].join('\n')),
+    '',
+    formatGuardrailSummary(guardrailResults),
     '',
     '## Next steps',
     '- Replace the placeholder API logic with your domain code',
@@ -512,7 +591,7 @@ export const implementationPhase: WorkflowPhase = {
       })
     } else {
       // Try to use the local model for actual implementation generation
-      const modelResult = await generateModelImplementation(ctx.modelRouter, {
+      const modelResult = await generateModelImplementation(ctx.modelRouter, projectRoot, {
         snapshot: ctx.snapshot,
         prompt: ctx.prompt,
         intent,
