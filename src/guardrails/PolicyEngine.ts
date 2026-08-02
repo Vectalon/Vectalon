@@ -19,10 +19,27 @@ export interface PolicyCustomRule {
   filePattern?: string
 }
 
+/**
+ * Self-healing code-review tuning, read by the code-review phase.
+ *
+ * - maxAttempts: review→fix→re-review cycles before giving up (default 3).
+ * - healSeverity: lowest finding severity that triggers the heal loop —
+ *   'error' heals only errors, 'warning' also heals warnings, 'info' all
+ *   (default 'error'). The phase still only fails on error findings.
+ * - toolChecks: run lint/typecheck after the LLM review loop and feed those
+ *   errors back through the heal loop (default true, requires a real runner).
+ */
+export interface CodeReviewPolicy {
+  maxAttempts?: number
+  healSeverity?: GuardrailSeverity
+  toolChecks?: boolean
+}
+
 export interface PolicyConfig {
   version: number
   rules?: Record<string, PolicyRuleOverride>
   customRules?: PolicyCustomRule[]
+  codeReview?: CodeReviewPolicy
 }
 
 export interface PolicyOptions {
@@ -47,10 +64,17 @@ export interface PolicyRunResult {
 
 const POLICY_FILE = 'policy.json'
 
+export const defaultCodeReviewPolicy: Required<CodeReviewPolicy> = {
+  maxAttempts: 3,
+  healSeverity: 'error',
+  toolChecks: true,
+}
+
 export const defaultPolicy: PolicyConfig = {
   version: 1,
   rules: {},
   customRules: [],
+  codeReview: defaultCodeReviewPolicy,
 }
 
 function compileCustomRule(custom: PolicyCustomRule): GuardrailRule | null {
@@ -101,6 +125,22 @@ export class PolicyEngine {
 
   getPolicy(): PolicyConfig {
     return this.policy
+  }
+
+  /** Resolved code-review tuning (policy values merged over defaults). */
+  getCodeReviewPolicy(): Required<CodeReviewPolicy> {
+    const user = this.policy.codeReview || {}
+    return {
+      maxAttempts:
+        typeof user.maxAttempts === 'number' && user.maxAttempts >= 1
+          ? Math.floor(user.maxAttempts)
+          : defaultCodeReviewPolicy.maxAttempts,
+      healSeverity:
+        user.healSeverity === 'warning' || user.healSeverity === 'info'
+          ? user.healSeverity
+          : defaultCodeReviewPolicy.healSeverity,
+      toolChecks: typeof user.toolChecks === 'boolean' ? user.toolChecks : defaultCodeReviewPolicy.toolChecks,
+    }
   }
 
   getPolicyPath(): string {
@@ -161,6 +201,7 @@ export class PolicyEngine {
         ...defaultPolicy,
         ...parsed,
         customRules: parsed.customRules || defaultPolicy.customRules,
+        codeReview: parsed.codeReview || defaultPolicy.codeReview,
       }
     } catch {
       return defaultPolicy

@@ -5,6 +5,8 @@ export type {
   WorkflowContext,
   WorkflowDefinition,
   PhaseResult,
+  HealDecision,
+  HealFixInfo,
 } from '../adapters/types'
 
 import { featureDevelopmentWorkflow } from './definitions/featureDevelopment'

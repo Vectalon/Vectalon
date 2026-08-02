@@ -314,7 +314,7 @@ This executes 13 phases in sequence, gating each one on the previous:
 5. **Task creation** — issues/tasks in the configured PM tool (Jira, Monday, …)
 6. **Test writing (TDD)** — tests are written BEFORE implementation, defining the contract the code must satisfy
 7. **Implementation** — project-convention-aware code for service, hook, and screen, generated to make the written tests pass
-8. **Code review** — static review of the generated code and tests before verification and PR
+8. **Code review** — LLM + rule-based review of the generated code and tests, with a **self-healing loop**: error findings are fed back to the model, the corrected files are written (with diffs streamed to the console), and the phase re-reviews up to N attempts before giving up and restoring the originals. It also runs the project's `lint`/`typecheck` and heals those errors too
 9. **Verification** — runs the tests (validating the TDD gate), plus `lint`, `prettier:check`, and `typecheck` scripts from `package.json`. iOS/Android device builds are only included when you pass `--device`.
 10. **Readiness report** — go/no-go against acceptance criteria
 11. **Pull request** — branch, commit, push, and open PR
@@ -337,6 +337,32 @@ npx vectalon feature "create a login screen and integrate the auth API" --resume
 
 # Resume from a specific phase (e.g. after editing implementation)
 npx vectalon feature "create a login screen and integrate the auth API" --resume <state-id> --from implementation
+```
+
+#### Self-healing code review
+
+During the code-review phase, findings are fed back to the model until the code
+is clean or the attempt cap is reached:
+
+```bash
+# Ask before applying each model fix (accept / reject / retry)
+npx vectalon feature "create a login screen" --heal-interactive
+
+# Override the heal loop per run
+npx vectalon feature "create a login screen" --heal-attempts 5 --heal-severity warning
+```
+
+- `--heal-interactive` — stream a live diff and prompt for each fix instead of
+  applying it automatically
+- `--heal-attempts <n>` — max review→fix→re-review cycles (default 3)
+- `--heal-severity <error|warning|info>` — lowest severity that triggers healing
+  (default `error`; `warning` also heals warnings, `info` heals everything)
+
+Failed heals are recorded to `.vectalon/knowledge/failed-heals.json` and injected
+as context into the next run's review prompts, so the model avoids repeating the
+same mistakes. See [Policy configuration](#policy-configuration) to tune the heal
+loop per project.
+
 ```
 
 ### Use from an agent
@@ -626,6 +652,41 @@ describing when the project was initialized and what it contained:
 
 The manifest records project state; runtime behavior is controlled by the
 user-level config above and by CLI flags.
+
+### Policy configuration
+
+Project-specific guardrails live in `.vectalon/policy.json` (create it with
+`vectalon policy --init`). Besides base-rule overrides and custom regex rules,
+the policy tunes the **self-healing code review** loop:
+
+```json
+{
+  "version": 1,
+  "rules": {
+    "no-hardcoded-urls": { "enabled": false }
+  },
+  "customRules": [],
+  "codeReview": {
+    "maxAttempts": 5,
+    "healSeverity": "warning",
+    "toolChecks": true
+  }
+}
+```
+
+- `maxAttempts` — review→fix→re-review cycles before the phase gives up
+  (default `3`)
+- `healSeverity` — lowest finding severity that triggers the heal loop
+  (`error`, `warning`, or `info`; default `error`). The phase still only fails
+  on error-severity findings
+- `toolChecks` — run the project's `lint` and `typecheck` after the LLM review
+  loop and feed their errors back through the same heal loop (default `true`).
+  Note that the verification phase also runs these checks, so on large projects
+  you may prefer `toolChecks: false` to avoid running lint/typecheck twice
+  when the verification gate alone is enough
+
+CLI flags `--heal-attempts` and `--heal-severity` override the policy for a
+single run.
 
 ---
 
