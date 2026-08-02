@@ -56,6 +56,9 @@ export function runCLI(): void {
     .option('--model <provider>', 'Model provider (local/openai/anthropic)')
     .option('--push', 'Allow git push and PR creation (default: local branch/commit only)')
     .option('--device', 'Run device/simulator build checks (iOS/Android) during verification')
+    .option('--heal-interactive', 'Prompt before applying each self-healing code-review fix (accept/reject/retry)')
+    .option('--heal-attempts <n>', 'Max self-healing review attempts (default 3, or per .vectalon/policy.json)', Number)
+    .option('--heal-severity <level>', 'Lowest severity that triggers healing: error|warning|info (default error)', 'error')
     .action(featureCommand)
 
   program

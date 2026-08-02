@@ -126,7 +126,10 @@ export type {
 export { getConfig, setConfig } from './config'
 
 export { WorkflowEngine, getWorkflow, listWorkflows, createWorkflowState, featureDevelopmentWorkflow } from './workflows'
-export type { WorkflowDefinition, WorkflowContext, WorkflowState, PhaseResult } from './workflows'
+export { MAX_REVIEW_ATTEMPTS } from './workflows/phases/codeReviewPhase'
+export { loadFailedHeals, recordFailedHeals, formatFailedHeals } from './workflows/phases/healMemory'
+export type { FailedHealRecord } from './workflows/phases/healMemory'
+export type { WorkflowDefinition, WorkflowContext, WorkflowState, PhaseResult, HealDecision, HealFixInfo } from './workflows'
 
 export { createAdapters } from './adapters'
 export type { AdapterRegistry, ProjectManagementAdapter, GitAdapter, TestRunnerAdapter, SimulatorAdapter, DesignAdapter } from './adapters'

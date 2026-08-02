@@ -1,5 +1,5 @@
 import { codeReviewPhase } from '../../src/workflows/phases/codeReviewPhase'
-import type { WorkflowContext, PhaseResult, WorkflowArtifact } from '../../src/adapters/types'
+import type { WorkflowContext, PhaseResult, WorkflowArtifact, TestRunnerAdapter } from '../../src/adapters/types'
 import type { ModelRouter } from '../../src/model/ModelRouter'
 import type { ModelRequest } from '../../src/model/types'
 import { createTempProject, cleanup } from '../helpers/tmp'
@@ -7,7 +7,8 @@ import { createTempProject, cleanup } from '../helpers/tmp'
 function makeContext(
   overrides: Partial<WorkflowContext['state']> = {},
   modelRouter: WorkflowContext['modelRouter'] = {} as WorkflowContext['modelRouter'],
-  projectRoot: string = '/tmp'
+  projectRoot: string = '/tmp',
+  extra: Partial<Pick<WorkflowContext, 'inputs' | 'adapters' | 'onHealFix'>> = {}
 ): WorkflowContext {
   return {
     projectRoot,
@@ -27,6 +28,7 @@ function makeContext(
     },
     adapters: {} as WorkflowContext['adapters'],
     modelRouter,
+    ...extra,
   }
 }
 
@@ -240,7 +242,7 @@ describe('codeReviewPhase', () => {
 
       expect(result.status).toBe('completed')
       expect(result.output).toContain('Self-healing')
-      expect(result.output).toContain('fixed 1 error finding(s)')
+      expect(result.output).toContain('fixed 1 finding(s)')
       expect(result.output).toContain('**LLM review:** ✅ approved')
     } finally {
       cleanup(dir)
@@ -406,6 +408,364 @@ describe('codeReviewPhase', () => {
       expect(result.output).toContain('No files could be auto-fixed')
       // Prose never reached the disk: the fix was attempted once then abandoned.
       expect(fixCall).toBe(1)
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('honors policy maxAttempts via inputs and stops healing early', async () => {
+    const dir = createTempProject({})
+    try {
+      let fixCall = 0
+      const router = {
+        generate: jest.fn(async (req: ModelRequest) => {
+          const prompt = req.prompt || ''
+          if (prompt.includes('# Findings to resolve')) {
+            fixCall++
+            return { content: `const value: any = ${fixCall}`, provider: 'test' }
+          }
+          return {
+            content: JSON.stringify({
+              verdict: 'changes-requested',
+              summary: 'Still broken',
+              findings: [{ severity: 'error', rule: 'no-any', message: 'Avoid any', line: 1 }],
+            }),
+            provider: 'test',
+          }
+        }),
+      } as unknown as ModelRouter
+
+      const ctx = makeContext({
+        phases: [
+          phase('implementation', 'Implementation', [
+            {
+              type: 'engineering',
+              title: 'Bad.ts',
+              content: 'const value: any = 0',
+              path: 'src/Bad.ts',
+            },
+          ]),
+        ],
+      }, router, dir, { inputs: { maxAttempts: 1 } })
+
+      const result = await codeReviewPhase.run(ctx)
+
+      expect(result.status).toBe('failed')
+      // With maxAttempts=1 the review runs once and gives up before healing.
+      expect(fixCall).toBe(0)
+      expect(result.output).toContain('1 attempt(s)')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('heals warnings when healSeverity is warning', async () => {
+    const dir = createTempProject({})
+    try {
+      // First review flags a warning only; after the heal the review approves.
+      let reviewed = 0
+      let fixCall = 0
+      const router = {
+        generate: jest.fn(async (req: ModelRequest) => {
+          const prompt = req.prompt || ''
+          if (prompt.includes('# Findings to resolve')) {
+            fixCall++
+            return { content: 'const style = StyleSheet.create({})', provider: 'test' }
+          }
+          reviewed++
+          return reviewed === 1
+            ? {
+                content: JSON.stringify({
+                  verdict: 'changes-requested',
+                  summary: 'Inline style',
+                  // Warning only: with default severity this would not heal.
+                  findings: [{ severity: 'warning', rule: 'inline-style', message: 'Use StyleSheet', line: 1 }],
+                }),
+                provider: 'test',
+              }
+            : {
+                content: JSON.stringify({ verdict: 'approved', summary: 'Clean', findings: [] }),
+                provider: 'test',
+              }
+        }),
+      } as unknown as ModelRouter
+
+      const ctx = makeContext({
+        phases: [
+          phase('implementation', 'Implementation', [
+            {
+              type: 'engineering',
+              title: 'Bad.ts',
+              content: 'const style = { color: "red" }',
+              path: 'src/Bad.ts',
+            },
+          ]),
+        ],
+      }, router, dir, { inputs: { healSeverity: 'warning' } })
+
+      const result = await codeReviewPhase.run(ctx)
+
+      expect(result.status).toBe('completed')
+      expect(fixCall).toBe(1)
+      expect(result.output).toContain('severity ≥ warning')
+      expect(result.output).toContain('fixed 1 finding(s)')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('runs lint/typecheck tool checks and heals reported errors', async () => {
+    const dir = createTempProject({})
+    try {
+      let lintCalls = 0
+      let fixCall = 0
+      const testRunner: TestRunnerAdapter = {
+        name: 'test',
+        runTests: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+        runLint: jest.fn(async () => {
+          lintCalls++
+          // First run reports an error in the generated file; after the heal
+          // writes a fix, the re-run passes.
+          return lintCalls === 1
+            ? { success: false, stdout: 'src/Bad.ts:2:1 - error: avoid any (no-any)\n', stderr: '', exitCode: 1 }
+            : { success: true, stdout: '', stderr: '', exitCode: 0 }
+        }),
+        runTypeCheck: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+      }
+      const router = {
+        generate: jest.fn(async (req: ModelRequest) => {
+          const prompt = req.prompt || ''
+          if (prompt.includes('# Findings to resolve')) {
+            fixCall++
+            return { content: 'const value: number = 1', provider: 'test' }
+          }
+          return {
+            content: JSON.stringify({ verdict: 'approved', summary: 'Clean', findings: [] }),
+            provider: 'test',
+          }
+        }),
+      } as unknown as ModelRouter
+
+      const ctx = makeContext({
+        phases: [
+          phase('implementation', 'Implementation', [
+            {
+              type: 'engineering',
+              title: 'Bad.ts',
+              content: 'const value: any = 1',
+              path: 'src/Bad.ts',
+            },
+          ]),
+        ],
+      }, router, dir, { adapters: { testRunner } as WorkflowContext['adapters'] })
+
+      const result = await codeReviewPhase.run(ctx)
+
+      expect(result.status).toBe('completed')
+      expect(lintCalls).toBeGreaterThanOrEqual(2)
+      expect(fixCall).toBe(1)
+      expect(result.output).toContain('Tool check attempt')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('fails when tool errors exist outside generated files and are not healable', async () => {
+    const dir = createTempProject({})
+    try {
+      let fixCall = 0
+      const testRunner: TestRunnerAdapter = {
+        name: 'test',
+        runTests: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+        runLint: jest.fn(async () => ({
+          success: false,
+          stdout: 'src/unrelated/legacy.js:4:1 - error: unexpected var (no-var)\n',
+          stderr: '',
+          exitCode: 1,
+        })),
+        runTypeCheck: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+      }
+      const router = {
+        generate: jest.fn(async (req: ModelRequest) => {
+          const prompt = req.prompt || ''
+          if (prompt.includes('# Findings to resolve')) {
+            fixCall++
+            return { content: 'const value: number = 1', provider: 'test' }
+          }
+          return {
+            content: JSON.stringify({ verdict: 'approved', summary: 'Clean', findings: [] }),
+            provider: 'test',
+          }
+        }),
+      } as unknown as ModelRouter
+
+      const ctx = makeContext({
+        phases: [
+          phase('implementation', 'Implementation', [
+            {
+              type: 'engineering',
+              title: 'Bad.ts',
+              content: 'const value: any = 1',
+              path: 'src/Bad.ts',
+            },
+          ]),
+        ],
+      }, router, dir, { adapters: { testRunner } as WorkflowContext['adapters'] })
+
+      const result = await codeReviewPhase.run(ctx)
+
+      // The lint error is in a file the workflow did not generate, so it cannot
+      // be healed — the phase reports it (verification gates on lint anyway)
+      // rather than failing code review on pre-existing lint debt.
+      expect(result.status).toBe('completed')
+      expect(fixCall).toBe(0)
+      expect(result.output).toContain('outside generated files')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('skips tool checks entirely when policy toolChecks is false', async () => {
+    const dir = createTempProject({ '.vectalon/policy.json': JSON.stringify({ version: 1, codeReview: { toolChecks: false } }) })
+    try {
+      const testRunner: TestRunnerAdapter = {
+        name: 'test',
+        runTests: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+        runLint: jest.fn(async () => ({
+          success: false,
+          stdout: 'src/Bad.ts:2:1 - error: avoid any (no-any)\n',
+          stderr: '',
+          exitCode: 1,
+        })),
+        runTypeCheck: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+      }
+      const router = {
+        generate: jest.fn(async () => ({
+          content: JSON.stringify({ verdict: 'approved', summary: 'Clean', findings: [] }),
+          provider: 'test',
+        })),
+      } as unknown as ModelRouter
+
+      const ctx = makeContext({
+        phases: [
+          phase('implementation', 'Implementation', [
+            {
+              type: 'engineering',
+              title: 'Bad.ts',
+              content: 'const value: any = 1',
+              path: 'src/Bad.ts',
+            },
+          ]),
+        ],
+      }, router, dir, { adapters: { testRunner } as WorkflowContext['adapters'] })
+
+      const result = await codeReviewPhase.run(ctx)
+
+      expect(result.status).toBe('completed')
+      // toolChecks off means lint never runs, so a failing lint is ignored.
+      expect(result.output).toContain('tool checks off')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('rejects a fix when the interactive hook says reject', async () => {
+    const dir = createTempProject({})
+    try {
+      let fixCall = 0
+      const router = {
+        generate: jest.fn(async (req: ModelRequest) => {
+          const prompt = req.prompt || ''
+          if (prompt.includes('# Findings to resolve')) {
+            fixCall++
+            return { content: 'const value: number = 1', provider: 'test' }
+          }
+          return {
+            content: JSON.stringify({
+              verdict: 'changes-requested',
+              summary: 'Uses any',
+              findings: [{ severity: 'error', rule: 'no-any', message: 'Avoid any', line: 1 }],
+            }),
+            provider: 'test',
+          }
+        }),
+      } as unknown as ModelRouter
+
+      const ctx = makeContext({
+        phases: [
+          phase('implementation', 'Implementation', [
+            {
+              type: 'engineering',
+              title: 'Bad.ts',
+              content: 'const value: any = 0',
+              path: 'src/Bad.ts',
+            },
+          ]),
+        ],
+      }, router, dir, { onHealFix: jest.fn(async () => 'reject' as const) })
+
+      const result = await codeReviewPhase.run(ctx)
+
+      expect(result.status).toBe('failed')
+      expect(fixCall).toBe(1)
+      expect(result.output).toContain('fix rejected by user')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('retries when the interactive hook says retry, then accepts', async () => {
+    const dir = createTempProject({})
+    try {
+      let fixed = false
+      let fixCall = 0
+      const router = {
+        generate: jest.fn(async (req: ModelRequest) => {
+          const prompt = req.prompt || ''
+          if (prompt.includes('# Findings to resolve')) {
+            fixCall++
+            fixed = true
+            return { content: `const value: number = ${fixCall}`, provider: 'test' }
+          }
+          return prompt.includes('Bad.ts')
+            ? fixed
+              ? {
+                  content: JSON.stringify({ verdict: 'approved', summary: 'Clean', findings: [] }),
+                  provider: 'test',
+                }
+              : {
+                  content: JSON.stringify({
+                    verdict: 'changes-requested',
+                    summary: 'Uses any',
+                    findings: [{ severity: 'error', rule: 'no-any', message: 'Avoid any', line: 1 }],
+                  }),
+                  provider: 'test',
+                }
+            : {
+                content: JSON.stringify({ verdict: 'approved', summary: 'Clean', findings: [] }),
+                provider: 'test',
+              }
+        }),
+      } as unknown as ModelRouter
+
+      const decisions: string[] = ['retry', 'accept']
+      const ctx = makeContext({
+        phases: [
+          phase('implementation', 'Implementation', [
+            {
+              type: 'engineering',
+              title: 'Bad.ts',
+              content: 'const value: any = 0',
+              path: 'src/Bad.ts',
+            },
+          ]),
+        ],
+      }, router, dir, { onHealFix: jest.fn(async () => decisions.shift() as 'retry' | 'accept') })
+
+      const result = await codeReviewPhase.run(ctx)
+
+      expect(result.status).toBe('completed')
+      expect(fixCall).toBe(2)
     } finally {
       cleanup(dir)
     }

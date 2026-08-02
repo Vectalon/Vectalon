@@ -13,9 +13,10 @@ import type { ModelProviderType } from '../../model/types'
 import type { ContextSnapshot } from '../../harness/types'
 import { getIntent, type WorkflowIntent, type IntentPrediction } from '../../workflows/phases/intent'
 import { dynamicImport } from '../../utils/dynamicImport'
-import { setFileChangeWriter, formatFileChange, type FileChange } from '../../utils/fileDiff'
+import { setFileChangeWriter, formatFileChange, computeFileChange, type FileChange } from '../../utils/fileDiff'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
 import type { ImprovementSuggestion } from '../../knowledge/refresh'
+import type { HealDecision } from '../../adapters/types'
 
 export interface FeatureCommandOptions {
   workflow?: string
@@ -28,6 +29,9 @@ export interface FeatureCommandOptions {
   push?: boolean
   model?: string
   device?: boolean
+  healInteractive?: boolean
+  healAttempts?: number
+  healSeverity?: string
 }
 
 export function formatIntentLabel(intent: WorkflowIntent): string {
@@ -176,6 +180,12 @@ export async function featureCommand(
   const s = spinner()
   s.start('Starting workflow...')
 
+  // Interactive self-healing: when enabled, prompt before each model fix with a
+  // live diff and accept/reject/retry choices instead of applying it blindly.
+  const inputs: Record<string, unknown> = {}
+  if (options.healAttempts !== undefined) inputs.maxAttempts = options.healAttempts
+  if (options.healSeverity !== undefined) inputs.healSeverity = options.healSeverity
+
   const workflowEngine = new WorkflowEngine()
   const engineOptions = options.from ? { fromPhase: options.from } : undefined
   let result: WorkflowState
@@ -184,12 +194,35 @@ export async function featureCommand(
       projectRoot: root,
       snapshot,
       prompt,
-      inputs: {},
+      inputs,
       outputs,
       state,
       adapters,
       modelRouter,
       deviceRun,
+      onHealFix: options.healInteractive && !options.json
+        ? async (info) => {
+            // Show the proposed fix as a Claude-style diff before asking.
+            const change = computeFileChange(info.file, 'modified', info.currentContent, info.fixedContent)
+            s.stop('Reviewing proposed fix...')
+            process.stderr.write('\n' + formatFileChange(change) + '\n')
+            const { select, isCancel } = await dynamicImport<typeof import('@clack/prompts')>('@clack/prompts')
+            const action = await select({
+              message: `Accept the fix for ${info.file}?`,
+              options: [
+                { value: 'accept', label: 'Accept and write fix' },
+                { value: 'reject', label: 'Reject and keep original' },
+                { value: 'retry', label: 'Ask the model to retry' },
+              ],
+            })
+            if (isCancel(action)) {
+              s.start('Workflow paused...')
+              return 'reject'
+            }
+            s.start('Continuing workflow...')
+            return action as HealDecision
+          }
+        : undefined,
     }, {
       ...engineOptions,
       onPhaseStart: (phase) => {

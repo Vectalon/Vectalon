@@ -1,7 +1,7 @@
 import { mkdtempSync, readFileSync, rmSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
-import { PolicyEngine, initPolicy, defaultPolicy } from '../../src/guardrails/PolicyEngine'
+import { PolicyEngine, initPolicy, defaultPolicy, defaultCodeReviewPolicy } from '../../src/guardrails/PolicyEngine'
 
 describe('PolicyEngine', () => {
   let tmpDir: string
@@ -106,5 +106,51 @@ describe('PolicyEngine', () => {
     const finding = result.findings.find(f => f.rule === 'No explicit any types')
     expect(finding?.severity).toBe('error')
     expect(finding?.passed).toBe(false)
+  })
+
+  it('getCodeReviewPolicy returns defaults when no policy file exists', () => {
+    const engine = new PolicyEngine(tmpDir)
+    expect(engine.getCodeReviewPolicy()).toEqual(defaultCodeReviewPolicy)
+  })
+
+  it('getCodeReviewPolicy honors user overrides and clamps invalid values', () => {
+    const engine = new PolicyEngine(tmpDir)
+    engine.updatePolicy({
+      version: 1,
+      rules: {},
+      customRules: [],
+      codeReview: {
+        maxAttempts: 5,
+        healSeverity: 'warning',
+        toolChecks: false,
+      },
+    })
+    expect(engine.getCodeReviewPolicy()).toEqual({
+      maxAttempts: 5,
+      healSeverity: 'warning',
+      toolChecks: false,
+    })
+
+    engine.updatePolicy({
+      version: 1,
+      rules: {},
+      customRules: [],
+      codeReview: { maxAttempts: 0, healSeverity: 'bogus' as never, toolChecks: 'no' as never },
+    })
+    expect(engine.getCodeReviewPolicy()).toEqual(defaultCodeReviewPolicy)
+  })
+
+  it('getCodeReviewPolicy falls back per-field when partially configured', () => {
+    const engine = new PolicyEngine(tmpDir)
+    engine.updatePolicy({
+      version: 1,
+      rules: {},
+      customRules: [],
+      codeReview: { healSeverity: 'info' },
+    })
+    const policy = engine.getCodeReviewPolicy()
+    expect(policy.healSeverity).toBe('info')
+    expect(policy.maxAttempts).toBe(defaultCodeReviewPolicy.maxAttempts)
+    expect(policy.toolChecks).toBe(defaultCodeReviewPolicy.toolChecks)
   })
 })

@@ -145,6 +145,15 @@ export interface WorkflowState {
   updatedAt: number
 }
 
+export type HealDecision = 'accept' | 'reject' | 'retry'
+
+export interface HealFixInfo {
+  file: string
+  currentContent: string
+  fixedContent: string
+  findings: Array<{ severity: string; rule: string; message: string; line: number; suggestion?: string }>
+}
+
 export interface WorkflowContext {
   projectRoot: string
   snapshot: import('../harness/types').ContextSnapshot | null
@@ -155,6 +164,12 @@ export interface WorkflowContext {
   adapters: AdapterRegistry
   modelRouter: import('../model/ModelRouter').ModelRouter
   deviceRun?: boolean
+  /**
+   * Optional interactive hook for the self-healing review loop. When set, the
+   * code-review phase asks this callback before applying each model fix and
+   * honors accept / reject / retry. When unset, fixes are applied automatically.
+   */
+  onHealFix?: (info: HealFixInfo) => Promise<HealDecision> | HealDecision
 }
 
 export interface WorkflowPhase {
