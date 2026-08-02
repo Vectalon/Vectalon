@@ -23,6 +23,22 @@ export { RootCauseAnalyzer } from './RootCauseAnalyzer'
 export type { RootCauseResult } from './RootCauseAnalyzer'
 export { CodeReviewAnalyzer } from './CodeReviewAnalyzer'
 export type { ReviewFinding } from './CodeReviewAnalyzer'
+export {
+  reviewCodeWithLLM,
+  parseLLMReview,
+  buildLLMReviewPrompt,
+  formatLLMReview,
+  fixCodeWithLLM,
+  buildFixPrompt,
+  extractFixedCode,
+} from './LLMCodeReviewer'
+export type {
+  LLMCodeReview,
+  LLMReviewFinding,
+  LLMReviewOptions,
+  FixCodeOptions,
+  ReviewSeverity,
+} from './LLMCodeReviewer'
 export { RefactorSuggester } from './RefactorSuggester'
 export type { RefactorSuggestion } from './RefactorSuggester'
 export { ADRWriter } from './ADRWriter'
