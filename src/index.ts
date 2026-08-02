@@ -104,7 +104,10 @@ export type { Pattern, PatternStore } from './memory'
 
 export { ArtifactStore, TeamStore, KnowledgeIndex, Traceability, RoleEngine, ARTIFACT_TYPES, ARTIFACT_ROLES, ROLE_ARTIFACT_TYPES, checksum } from './knowledge'
 export { cosineSimilarity, HashEmbeddingProvider } from './knowledge'
-export type { EmbeddingProvider } from './knowledge'
+export { OpenAIEmbeddingProvider, OpenAICompatibleEmbeddingProvider, createRemoteEmbeddingProvider } from './knowledge'
+export { ArtifactSync, readSyncConfig, writeSyncConfig, createArtifactSync, DEFAULT_SYNC_BRANCH } from './knowledge'
+export type { EmbeddingProvider, RemoteEmbeddingProvider } from './knowledge'
+export type { ArtifactSyncConfig, SyncResult, SyncOptions } from './knowledge'
 export type {
   Artifact,
   ArtifactVersion,

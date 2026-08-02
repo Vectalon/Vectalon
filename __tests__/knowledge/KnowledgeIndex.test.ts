@@ -1,6 +1,7 @@
 import { ArtifactStore } from '../../src/knowledge/ArtifactStore'
 import { KnowledgeIndex } from '../../src/knowledge/KnowledgeIndex'
 import { HashEmbeddingProvider } from '../../src/knowledge/embeddings'
+import type { RemoteEmbeddingProvider } from '../../src/knowledge/remoteEmbeddings'
 import type { Artifact } from '../../src/knowledge/artifactTypes'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
@@ -120,5 +121,69 @@ describe('KnowledgeIndex', () => {
     expect(results).toHaveLength(2)
     expect(results[0].artifact.id).toBe(one.id)
     expect(results[0].score).toBeLessThanOrEqual(1.5)
+  })
+
+  it('searchRemote uses a real embedding provider and reports semantic scores', async () => {
+    // Deterministic fake embedding: bigram overlap with the query, like the
+    // hash provider but explicit so the test asserts the async path is used.
+    const remote: RemoteEmbeddingProvider = {
+      name: 'fake-remote',
+      embed: jest.fn(async (text: string) => {
+        // Character-presence overlap with the query: gives both docs a
+        // deterministic, non-zero score with 'Retention Strategy' ranked
+        // higher than 'Billing invoices' (which shares fewer letters).
+        const vec = new Array<number>(8).fill(0)
+        const query = 'retention'
+        const lower = text.toLowerCase()
+        for (let i = 0; i < query.length; i++) {
+          if (lower.includes(query[i])) vec[i % 8] = 1
+        }
+        return vec
+      }),
+    }
+    const index = new KnowledgeIndex(null, 0.5, remote)
+    const [titled, other] = artifacts([
+      { type: 'product', title: 'Retention Strategy', content: 'cohort growth' },
+      { type: 'analytics', title: 'Billing', content: 'invoices' },
+    ])
+    index.add({ artifact: titled, project: 'a' })
+    index.add({ artifact: other, project: 'b' })
+
+    const results = await index.searchRemote('retention')
+
+    expect(results).toHaveLength(2)
+    expect(results[0].artifact.id).toBe(titled.id)
+    expect(results[0].semanticScore).not.toBeNull()
+    expect(results[0].semanticScore as number).toBeGreaterThan(0)
+    // Real API is called for the query and each candidate; cached afterwards.
+    expect((remote.embed as jest.Mock).mock.calls.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('searchRemote falls back to sync search without a remote provider', async () => {
+    const index = new KnowledgeIndex(new HashEmbeddingProvider(), 0.5)
+    const [a] = artifacts([{ type: 'product', title: 'Retention', content: 'cohort' }])
+    index.add({ artifact: a })
+
+    const results = await index.searchRemote('retention')
+    expect(results).toHaveLength(1)
+    expect(results[0].semanticScore).not.toBeNull()
+  })
+
+  it('searchRemote never reuses hash vectors cached by add when a remote provider is attached', async () => {
+    // Regression: add() caches sync-provider (hash) vectors under the same ids;
+    // searchRemote must recompute via the remote API instead of leaking them.
+    const remote = {
+      name: 'fake-remote',
+      embed: jest.fn(async (text: string) =>
+        text.toLowerCase().includes('retention') ? new Array<number>(8).fill(1) : new Array<number>(8).fill(0)
+      ),
+    }
+    const index = new KnowledgeIndex(new HashEmbeddingProvider(), 0.5, remote)
+    const [a] = artifacts([{ type: 'product', title: 'Retention Strategy', content: 'cohort growth' }])
+    index.add({ artifact: a }) // hash vector cached here
+
+    const results = await index.searchRemote('retention')
+    expect(results).toHaveLength(1)
+    expect((remote.embed as jest.Mock).mock.calls.length).toBeGreaterThanOrEqual(2) // query + doc
   })
 })

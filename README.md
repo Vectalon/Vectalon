@@ -634,6 +634,65 @@ export OPENAI_API_KEY="sk-..."
 export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
+#### Remote embedding APIs
+
+Semantic search (`search_knowledge`) uses a deterministic offline hash provider by
+default so it works with no model configured. To get real model embeddings,
+point the harness at an OpenAI-compatible `/v1/embeddings` endpoint (OpenAI,
+Azure OpenAI, local vLLM/Ollama, or any compatible gateway):
+
+```json
+{
+  "embeddingProvider": "openai",
+  "openaiBaseUrl": "https://api.openai.com/v1",
+  "embeddingModel": "text-embedding-3-small"
+}
+```
+
+- `embeddingProvider` — `openai` or `openai-compatible` (or `hash` for the
+  offline deterministic provider)
+- `openaiApiKey` — key (also read from `OPENAI_API_KEY` /
+  `RN_VECTALON_OPENAI_API_KEY` env vars)
+- `openaiBaseUrl` — base URL for compatible endpoints; defaults to
+  `https://api.openai.com/v1`
+- `embeddingModel` — model id; defaults to `text-embedding-3-small`
+
+When a remote provider is configured, `search_knowledge` embeds the query with
+real vectors and merges the semantic score with lexical ranking.
+
+### Team brain sync (hosted artifact store)
+
+Sync the team brain (`.vectalon/knowledge/`) to a git remote so the knowledge
+base is shared across the team:
+
+```bash
+# Configure a remote once
+npx vectalon sync --init --remote git@github.com:org/team-brain.git
+
+# Push the local team brain to the remote
+npx vectalon sync --push
+
+# Pull the remote team brain over the local one
+npx vectalon sync --pull
+```
+
+Sync settings live in `.vectalon/sync.json`:
+
+```json
+{
+  "remote": "git@github.com:org/team-brain.git",
+  "branch": "main",
+  "enabled": true
+}
+```
+
+- `--branch <name>` — sync branch (default `main`)
+- `--force` — run even when sync is disabled (`"enabled": false`)
+
+Push commits the knowledge directory and pushes to a `vectalon-sync` remote;
+pull fetches the branch and checks out its knowledge directory over the local
+one. `vectalon serve` logs the sync status at startup.
+
 ### Project manifest
 
 `rn-vectalon init` writes `.vectalon/rn-vectalon.json` — a project **manifest**
@@ -887,16 +946,17 @@ Areas we'd love help with:
 - ✅ **Phase E — DevOps, ops, analytics** — release notes, incidents, runbooks, KPI reports
 - ✅ **Phase F — Team brain** — multi-project registry, `get_team_context`, `search_knowledge`
 - ✅ **Phase G — Model-backed retrieval** — `KnowledgeIndex`, embedding provider seam, semantic scores
+- ✅ **Guardrails & policy engine** — project-specific `.vectalon/policy.json` rules,
+  self-healing code review, interactive heals
+- ✅ **Web-aware knowledge refresh** — always-on periodic retrieval of latest React Native docs,
+  library changelogs, and community best practices; updates the memory graph, best-practices
+  knowledge base, and manages improvement suggestions for each client project
+- ✅ **Hosted artifact store** — `vectalon sync` pushes/pulls the team brain to a git remote
+- ✅ **Real embedding APIs** — OpenAI & OpenAI-compatible embedding providers behind the
+  `EmbeddingProvider` seam (async semantic search in `search_knowledge`)
 
 **Next up:**
 
-- **Guardrails & policy engine** — enforce project-specific rules (no hardcoded URLs,
-  required error handling, navigation patterns) before any generated code is written
-- **Web-aware knowledge refresh** — always-on periodic retrieval of latest React Native docs,
-  library changelogs, and community best practices; updates the memory graph, best-practices
-  knowledge base, and manages improvement suggestions for each client project
-- **Hosted artifact store** — sync the team brain to a remote (git remote or hosted service)
-- **Real embedding APIs** — OpenAI/Anthropic embeddings through the `EmbeddingProvider` seam
 - **CI/CD integration** — auto-fix PRs, draft release notes in CI
 - **VS Code extension** — inline suggestions against the harness
 - **v1.0** — Stable protocol, production-ready

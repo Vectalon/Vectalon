@@ -9,6 +9,7 @@ const DEFAULTS: Record<string, unknown> = {
   autoScan: true,
   learningEnabled: true,
   sdlcModules: ['component-gen', 'test-writer', 'debug-analyzer', 'lint-fixer'],
+  embeddingProvider: 'hash',
 }
 
 function configDir(): string {

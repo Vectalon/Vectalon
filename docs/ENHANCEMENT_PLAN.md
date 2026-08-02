@@ -233,4 +233,6 @@ vectalon chat
 - [x] **Phase E — DevOps, ops, analytics** (ReleaseNoteWriter, IncidentAnalyzer, RunbookWriter, KpiReportAnalyzer; write_release_notes, analyze_incident, write_runbook, analyze_kpis)
 - [x] **Phase F — Team brain** (TeamStore multi-project registry; get_team_context + search_knowledge scoped by team/project/type; .vectalon/team.json config)
 - [x] **Phase G — Model-backed retrieval** (KnowledgeIndex with TF lexical + semantic cosine merge; embeddings provider seam + deterministic HashEmbeddingProvider; search_knowledge surfaces lexical/semantic scores)
+- [x] **Phase G.2 — Real embedding APIs** (RemoteEmbeddingProvider seam + OpenAI/OpenAI-compatible providers from config/env; async searchRemote in KnowledgeIndex + TeamStore; MCP search_knowledge uses real vectors when configured)
+- [x] **Phase G.3 — Hosted artifact store** (ArtifactSync push/pull via git remote, `.vectalon/sync.json` config, `vectalon sync` CLI command; serve logs sync status)
 - [x] **Phase H — Local model** (Qwen2.5-Coder + node-llama-cpp, free for commercial use, deterministic fallback)
