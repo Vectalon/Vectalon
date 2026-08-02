@@ -25,6 +25,22 @@ export {
   RefactorSuggester,
 } from './sdlc'
 export {
+  reviewCodeWithLLM,
+  parseLLMReview,
+  buildLLMReviewPrompt,
+  formatLLMReview,
+  fixCodeWithLLM,
+  buildFixPrompt,
+  extractFixedCode,
+} from './sdlc'
+export type {
+  LLMCodeReview,
+  LLMReviewFinding,
+  LLMReviewOptions,
+  FixCodeOptions,
+  ReviewSeverity,
+} from './sdlc'
+export {
   ADRWriter,
   TradeoffAnalyzer,
   ThreatModeler,

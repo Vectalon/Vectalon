@@ -18,6 +18,7 @@ import { TestCaseWriter } from '../sdlc/TestCaseWriter'
 import { BugTriageAnalyzer } from '../sdlc/BugTriageAnalyzer'
 import { RootCauseAnalyzer } from '../sdlc/RootCauseAnalyzer'
 import { CodeReviewAnalyzer } from '../sdlc/CodeReviewAnalyzer'
+import { reviewCodeWithLLM, formatLLMReview } from '../sdlc/LLMCodeReviewer'
 import { RefactorSuggester } from '../sdlc/RefactorSuggester'
 import { ADRWriter } from '../sdlc/ADRWriter'
 import { TradeoffAnalyzer } from '../sdlc/TradeoffAnalyzer'
@@ -754,7 +755,21 @@ export class MCPServer {
     this.tools.set('review_code', async (args: Record<string, unknown>) => {
       const code = (args.code as string) || ''
       const findings = new CodeReviewAnalyzer().review(code, (args.language as string) || 'tsx')
-      const content = new CodeReviewAnalyzer().render(findings)
+      const parts = [new CodeReviewAnalyzer().render(findings)]
+
+      // Nit-picking LLM pass on top of the deterministic rules when a model is
+      // available; falls back to rule-only output when the model is on its
+      // fallback path (no downloaded model) or returns nothing parseable.
+      const llmReview = await reviewCodeWithLLM(this.modelRouter, {
+        code,
+        fileName: (args.filename as string) || 'snippet.tsx',
+        context: (args.context as string) || '',
+      })
+      if (llmReview) {
+        parts.push(`## LLM Review\n\n${formatLLMReview(llmReview)}`)
+      }
+
+      const content = parts.join('\n\n')
       this.persistArtifact('engineering', 'Code Review', content)
       return content
     })
