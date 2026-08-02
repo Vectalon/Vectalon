@@ -301,4 +301,78 @@ describe('implementationPhase', () => {
     expect(result.output).toContain('No console.log statements')
     expect(result.output).toContain('1 error(s)')
   })
+
+  it('routes lint-fix requests to the fix path and repairs existing files without scaffolding', async () => {
+    const response = JSON.stringify({
+      files: [
+        { path: 'src/screens/Home.tsx', content: 'export function Home() { return null }' },
+      ],
+    })
+    const router = createMockModelRouter(response)
+    const ctx = createContext(router, 'fix all lint issues', projectRoot)
+    ctx.adapters.testRunner = {
+      name: 'mock',
+      runTests: jest.fn(),
+      runLint: jest.fn().mockResolvedValue({
+        success: false,
+        stdout: '',
+        stderr: 'src/screens/Home.tsx:3:5 - Unexpected console statement (no-console)',
+        exitCode: 1,
+      }),
+    }
+
+    const result = await implementationPhase.run(ctx)
+
+    // The repaired file was written to disk
+    expect(result.artifacts.map(a => a.path)).toEqual(['src/screens/Home.tsx'])
+    expect(readFileSync(join(projectRoot, 'src/screens/Home.tsx'), 'utf-8')).toContain('export function Home')
+    // No scaffold files were created for the request
+    expect(existsSync(join(projectRoot, 'src/services/FixAllLintIssuesApi.ts'))).toBe(false)
+    expect(existsSync(join(projectRoot, 'src/hooks/useFixAllLintIssues.ts'))).toBe(false)
+    expect(existsSync(join(projectRoot, 'src/screens/FixAllLintIssuesScreen.tsx'))).toBe(false)
+  })
+
+  it('never scaffolds new files for a lint-fix request when the model cannot produce a fix', async () => {
+    const router = createMockModelRouter('this model output cannot be parsed into files')
+    const ctx = createContext(router, 'fix all lint issues', projectRoot)
+    ctx.adapters.testRunner = {
+      name: 'mock',
+      runTests: jest.fn(),
+      runLint: jest.fn().mockResolvedValue({
+        success: false,
+        stdout: '',
+        stderr: 'src/screens/Home.tsx:3:5 - Unexpected console statement (no-console)',
+        exitCode: 1,
+      }),
+    }
+
+    const result = await implementationPhase.run(ctx)
+
+    expect(result.output).toContain('Fix lint issues')
+    expect(result.output).toContain('No files were created or modified')
+    expect(result.output).toContain('no-console')
+    // Nothing was written to disk at all
+    expect(existsSync(join(projectRoot, 'src'))).toBe(false)
+  })
+
+  it('reports a clean check for a lint-fix request when lint already passes', async () => {
+    const router = createMockModelRouter('ignored')
+    const ctx = createContext(router, 'fix all lint issues', projectRoot)
+    ctx.adapters.testRunner = {
+      name: 'mock',
+      runTests: jest.fn(),
+      runLint: jest.fn().mockResolvedValue({
+        success: true,
+        stdout: 'No lint issues',
+        stderr: '',
+        exitCode: 0,
+      }),
+    }
+
+    const result = await implementationPhase.run(ctx)
+
+    expect(result.output).toContain('passes cleanly')
+    expect(result.output).toContain('Nothing to fix')
+    expect(existsSync(join(projectRoot, 'src'))).toBe(false)
+  })
 })
