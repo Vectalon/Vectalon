@@ -12,6 +12,19 @@ function createMockModelRouter(response: string): ModelRouter {
   return router
 }
 
+// Intent always comes from the LLM, so tests that exercise a specific intent
+// must feed intent JSON to the first generate() call and the implementation
+// response to subsequent calls.
+function createMockModelRouterSequence(responses: string[]): ModelRouter {
+  const router = new ModelRouter()
+  router.initialize({ provider: 'local' })
+  const mock = jest.spyOn(router, 'generate')
+  for (const content of responses) {
+    mock.mockResolvedValueOnce({ content, provider: 'mock' })
+  }
+  return router
+}
+
 function createContext(modelRouter: ModelRouter, prompt: string, projectRoot: string): WorkflowContext {
   return {
     projectRoot,
@@ -268,7 +281,9 @@ describe('implementationPhase', () => {
       ].join('\n')
     )
 
-    const router = createMockModelRouter('[Local model fallback: no downloaded model]')
+    const router = createMockModelRouterSequence([
+      JSON.stringify({ intents: [{ type: 'refactor', target: 'remove-unused-imports', confidence: 1, reasoning: 'unused imports to remove' }] }),
+    ])
     const result = await implementationPhase.run(createContext(router, 'remove unused imports throughout the app', projectRoot))
 
     expect(result.output).toContain('Refactor: remove unused imports')
@@ -303,12 +318,14 @@ describe('implementationPhase', () => {
   })
 
   it('routes lint-fix requests to the fix path and repairs existing files without scaffolding', async () => {
-    const response = JSON.stringify({
-      files: [
-        { path: 'src/screens/Home.tsx', content: 'export function Home() { return null }' },
-      ],
-    })
-    const router = createMockModelRouter(response)
+    const router = createMockModelRouterSequence([
+      JSON.stringify({ intents: [{ type: 'fix', area: 'lint', confidence: 1, reasoning: 'lint violations' }] }),
+      JSON.stringify({
+        files: [
+          { path: 'src/screens/Home.tsx', content: 'export function Home() { return null }' },
+        ],
+      }),
+    ])
     const ctx = createContext(router, 'fix all lint issues', projectRoot)
     ctx.adapters.testRunner = {
       name: 'mock',
@@ -333,7 +350,10 @@ describe('implementationPhase', () => {
   })
 
   it('never scaffolds new files for a lint-fix request when the model cannot produce a fix', async () => {
-    const router = createMockModelRouter('this model output cannot be parsed into files')
+    const router = createMockModelRouterSequence([
+      JSON.stringify({ intents: [{ type: 'fix', area: 'lint', confidence: 1, reasoning: 'lint violations' }] }),
+      'this model output cannot be parsed into files',
+    ])
     const ctx = createContext(router, 'fix all lint issues', projectRoot)
     ctx.adapters.testRunner = {
       name: 'mock',
@@ -356,7 +376,9 @@ describe('implementationPhase', () => {
   })
 
   it('reports a clean check for a lint-fix request when lint already passes', async () => {
-    const router = createMockModelRouter('ignored')
+    const router = createMockModelRouterSequence([
+      JSON.stringify({ intents: [{ type: 'fix', area: 'lint', confidence: 1, reasoning: 'lint violations' }] }),
+    ])
     const ctx = createContext(router, 'fix all lint issues', projectRoot)
     ctx.adapters.testRunner = {
       name: 'mock',

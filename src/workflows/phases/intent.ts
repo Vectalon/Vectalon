@@ -22,122 +22,13 @@ export interface IntentPrediction {
   /** Every distinct intent the query expresses, ordered by confidence. */
   alternatives: IntentAlternative[]
   reasoning: string
-  source: 'llm' | 'rules'
+  /** The intent and reasoning always come from the LLM. */
+  source: 'llm'
 }
 
 export interface IntentPredictionContext {
   prompt: string
   snapshot: ContextSnapshot | null
-}
-
-export function detectIntent(prompt: string): WorkflowIntent {
-  const lower = prompt.toLowerCase()
-
-  // Shared area vocabulary for repair requests (lint, type, test, build, ...).
-  const fixAreaPattern =
-    '(?:(?:failing|broken|existing|remaining)\\s+)*(?:eslint|lint(?:ing)?|type(?:script|check)?(?:\\s+errors?)?|types?|test(?:s)?|bug(?:s)?|issue(?:s)?|error(?:s)?|warning(?:s)?|build(?:ing)?(?:\\s+errors?)?|compil(?:ation|e)(?:\\s+errors?)?)'
-
-  // Specific refactor patterns that should be caught before generic removal/add-feature patterns
-  const unusedImportsMatch = lower.match(
-    /(?:remove|clean(?:\s+up)?|delete|fix)\s+(?:all\s+)?unused\s+(?:imports|import\s+statements)/i
-  )
-  if (unusedImportsMatch) {
-    return {
-      type: 'refactor',
-      target: 'remove-unused-imports',
-      description: prompt,
-    }
-  }
-
-  const refactorMatch = lower.match(
-    /(?:refactor|rewrite|migrate|convert|modernize|restructure|optimize)\s+(?:the\s+)?(?:file\s+)?(?:component\s+)?(?:screen\s+)?(?:module\s+)?(?:unused\s+)?['"]?([a-z0-9_/.-]+)['"]?/i
-  )
-  if (refactorMatch) {
-    return {
-      type: 'refactor',
-      target: refactorMatch[1],
-      description: prompt,
-    }
-  }
-
-  // Repair phrasings that use removal verbs against area keywords ("clean up the
-  // lint errors", "remove the type errors") fix EXISTING code — they must not be
-  // mistaken for dependency removal. Real dependency names are not area words, so
-  // removal requests like "remove appcenter" still fall through to removeMatch.
-  const cleanRepairMatch = lower.match(
-    new RegExp(`^(?:please\\s+)?(?:clean(?:\\s+up)?|remove|delete|get\\s+rid\\s+of)\\s+(?:the\\s+|all\\s+|any\\s+)*(${fixAreaPattern})`)
-  )
-  if (cleanRepairMatch) {
-    return {
-      type: 'fix',
-      area: normalizeFixArea(cleanRepairMatch[1]),
-      description: prompt,
-    }
-  }
-
-  const removeMatch = lower.match(
-    /(?:remove|uninstall|delete|drop|stop using|get rid of|clean up|clean)\s+(?:using\s+)?(?:the\s+)?(?:package\s+)?(?:library\s+)?(?:module\s+)?['"]?([a-z0-9_-]+)['"]?/i
-  )
-  if (removeMatch) {
-    return {
-      type: 'remove-dependency',
-      dependency: normalizeDependencyName(removeMatch[1]),
-      description: prompt,
-    }
-  }
-
-  // Fix / repair requests (lint, type, test, bug fixes) repair EXISTING code.
-  // They must never be routed to the add-feature path, which scaffolds new
-  // screens, hooks, and services.
-  const fixMatch = lower.match(
-    new RegExp(`^(?:please\\s+)?(?:fix|resolve|repair|correct|address)\\s+(?:all\\s+|the\\s+|any\\s+)?(${fixAreaPattern})`)
-  )
-  if (fixMatch) {
-    return {
-      type: 'fix',
-      area: normalizeFixArea(fixMatch[1]),
-      description: prompt,
-    }
-  }
-
-  // Generic "fix X" fallback — still a repair, never a new feature.
-  const genericFixMatch = lower.match(/^(?:please\s+)?(?:fix|resolve|repair|correct|address)\b/)
-  if (genericFixMatch) {
-    return {
-      type: 'fix',
-      area: 'code',
-      description: prompt,
-    }
-  }
-
-  // Goal-style repair requests — "make lint pass", "get the tests passing",
-  // "get typecheck green". Same class as fix: repair, never a new feature.
-  const makePassMatch = lower.match(
-    new RegExp(`^(?:please\\s+)?(?:make|get)\\s+(?:the\\s+|all\\s+|my\\s+)*(${fixAreaPattern})\\s+(?:pass|passing|green|clean|working|fixed)`)
-  )
-  if (makePassMatch) {
-    return {
-      type: 'fix',
-      area: normalizeFixArea(makePassMatch[1]),
-      description: prompt,
-    }
-  }
-
-  const addFeatureMatch = prompt.match(
-    /(?:create|add|implement|build|generate)\s+(?:a\s+)?(?:new\s+)?(.+)/i
-  )
-  if (addFeatureMatch) {
-    return {
-      type: 'add-feature',
-      feature: addFeatureMatch[1].trim().replace(/[.!?]$/, ''),
-      description: prompt,
-    }
-  }
-
-  return {
-    type: 'unknown',
-    description: prompt,
-  }
 }
 
 function normalizeFixArea(raw: string): string {
@@ -195,7 +86,7 @@ function entryToIntent(entry: RawIntentEntry): WorkflowIntent | null {
  * detection. Mirrors the zod-style schema validation used in LLM intent
  * detection (see dswithmac.com/posts/intent-detection): only enum values are
  * accepted, entries failing validation are dropped, and invalid payloads
- * return null so callers can fall back to rule-based detection.
+ * return null so callers return the safe 'unknown' default.
  */
 export function parseIntentPrediction(content: string): IntentPrediction | null {
   const trimmed = content.trim()
@@ -296,24 +187,25 @@ export function buildIntentDetectionPrompt(
 }
 
 /**
- * Detect intent with the LLM (structured output, temperature 0). Any failure —
- * missing model, fallback marker, unparseable output, invalid enum values —
- * falls back to deterministic rule-based detection so intent detection never
- * breaks the workflow.
+ * Detect intent with the LLM (structured output, temperature 0). The intent and
+ * its reasoning ALWAYS come from the model — the deterministic rules are never
+ * consulted for routing. When the model is unavailable or cannot produce a valid
+ * prediction, the detection prompt's safe default ('unknown') is returned with
+ * no fabricated reasoning.
  */
 export async function predictIntent(
   modelRouter: ModelRouter,
   ctx: IntentPredictionContext
 ): Promise<IntentPrediction> {
-  const fallback = (reason: string): IntentPrediction => ({
-    intent: detectIntent(ctx.prompt),
+  const unknown: IntentPrediction = {
+    intent: { type: 'unknown', description: '' },
     alternatives: [],
-    reasoning: `Fell back to rule-based detection: ${reason}`,
-    source: 'rules',
-  })
+    reasoning: '',
+    source: 'llm',
+  }
 
   if (!modelRouter || typeof modelRouter.generate !== 'function') {
-    return fallback('no model router available')
+    return unknown
   }
 
   try {
@@ -329,39 +221,11 @@ export async function predictIntent(
     })
     const content = response?.content || ''
     if (content.includes('[Local model fallback') || content.includes('no downloaded model')) {
-      return fallback('model returned the fallback marker')
+      return unknown
     }
-    const parsed = parseIntentPrediction(content)
-    if (!parsed) {
-      return fallback('model output could not be parsed as intent JSON')
-    }
-
-    // Safety net: the deterministic rules may pin a concrete intent when the LLM
-    // is uncertain (unknown) or low-confidence. This guarantees the hardened
-    // repair-class patterns (fix/refactor/remove) can never be routed to the
-    // add-feature scaffold just because the model returned 'unknown' — the exact
-    // failure mode that motivated LLM intent detection.
-    const ruleIntent = detectIntent(ctx.prompt)
-    const llmConfidence = parsed.alternatives[0]?.confidence ?? 0
-    if (ruleIntent.type !== 'unknown' && (parsed.intent.type === 'unknown' || llmConfidence < 0.6)) {
-      return {
-        intent: ruleIntent,
-        alternatives: [
-          {
-            intent: ruleIntent,
-            confidence: Math.max(llmConfidence, 0.7),
-            reasoning: 'Deterministic rule match overrides low-confidence or unknown LLM prediction',
-          },
-          ...parsed.alternatives,
-        ],
-        reasoning: `${parsed.reasoning || 'LLM prediction'}. Overridden by rule-based detection: ${ruleIntent.type}.`,
-        source: 'llm',
-      }
-    }
-
-    return parsed
-  } catch (err) {
-    return fallback(err instanceof Error ? err.message : 'model call failed')
+    return parseIntentPrediction(content) ?? unknown
+  } catch {
+    return unknown
   }
 }
 

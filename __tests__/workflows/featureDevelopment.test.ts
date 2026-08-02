@@ -127,6 +127,13 @@ describe('featureDevelopmentWorkflow', () => {
     const engine = new WorkflowEngine()
     const ctx = makeContext('Remove appcenter safely from this project')
     ctx.modelRouter.initialize({ provider: 'local' })
+    // Intent always comes from the LLM, so the model must classify this prompt.
+    jest.spyOn(ctx.modelRouter, 'generate').mockResolvedValue({
+      content: JSON.stringify({
+        intents: [{ type: 'remove-dependency', dependency: 'appcenter', confidence: 0.99, reasoning: 'explicit removal request' }],
+      }),
+      provider: 'mock',
+    })
 
     const result = await engine.run(featureDevelopmentWorkflow, ctx)
 
@@ -152,6 +159,12 @@ describe('featureDevelopmentWorkflow', () => {
     const engine = new WorkflowEngine()
     const ctx = makeContext('Remove appcenter safely from this project')
     ctx.modelRouter.initialize({ provider: 'local' })
+    jest.spyOn(ctx.modelRouter, 'generate').mockResolvedValue({
+      content: JSON.stringify({
+        intents: [{ type: 'remove-dependency', dependency: 'appcenter', confidence: 0.99, reasoning: 'explicit removal request' }],
+      }),
+      provider: 'mock',
+    })
     ctx.snapshot = {
       ...ctx.snapshot!,
       project: {

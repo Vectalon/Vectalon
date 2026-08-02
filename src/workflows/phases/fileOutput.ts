@@ -1,5 +1,6 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
+import { reportPathChange } from '../../utils/fileDiff'
 
 export const VECTALON_PACKAGE_NAME = '@vectalon-dev/rn-vectalon'
 export const GENERATED_OUTPUT_DIR = '.vectalon/generated'
@@ -33,7 +34,13 @@ export function getGeneratedOutputRoot(projectRoot: string): string {
 export function writeProjectFile(projectRoot: string, filePath: string, content: string): string | null {
   if (!isSafeProjectPath(filePath)) return null
   const fullPath = join(getGeneratedOutputRoot(projectRoot), filePath)
+  const oldContent = existsSync(fullPath) ? readFileSync(fullPath, 'utf-8') : null
   mkdirSync(dirname(fullPath), { recursive: true })
   writeFileSync(fullPath, content, 'utf-8')
+  // Skip reporting byte-identical rewrites so idempotent regenerations don't
+  // produce `+0 -0` no-op diff noise.
+  if (oldContent !== content) {
+    reportPathChange(filePath, oldContent, content)
+  }
   return fullPath
 }

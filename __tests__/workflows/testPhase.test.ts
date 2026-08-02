@@ -3,6 +3,18 @@ import { join } from 'path'
 import { tmpdir } from 'os'
 import { testPhase } from '../../src/workflows/phases/testPhase'
 import type { WorkflowContext } from '../../src/adapters/types'
+import { ModelRouter } from '../../src/model/ModelRouter'
+
+// Intent always comes from the LLM, so tests exercising a specific intent must
+// feed intent JSON through the model router.
+function intentRouter(...intents: Array<Record<string, unknown>>): ModelRouter {
+  const router = new ModelRouter()
+  jest.spyOn(router, 'generate').mockResolvedValue({
+    content: JSON.stringify({ intents }),
+    provider: 'mock',
+  })
+  return router
+}
 
 function makeContext(projectRoot: string | undefined, prompt: string): WorkflowContext {
   return {
@@ -104,7 +116,9 @@ describe('testPhase (TDD)', () => {
   })
 
   it('skips test generation for dependency removal', async () => {
-    const result = await testPhase.run(makeContext(projectRoot, 'Remove appcenter from this project'))
+    const ctx = makeContext(projectRoot, 'Remove appcenter from this project')
+    ctx.modelRouter = intentRouter({ type: 'remove-dependency', dependency: 'appcenter', confidence: 0.99, reasoning: 'removal' })
+    const result = await testPhase.run(ctx)
 
     expect(result.status).toBe('completed')
     expect(result.artifacts.filter(a => a.type === 'qa')).toHaveLength(0)
@@ -112,7 +126,9 @@ describe('testPhase (TDD)', () => {
   })
 
   it('skips scaffold test generation for refactor intents', async () => {
-    const result = await testPhase.run(makeContext(projectRoot, 'Refactor the login screen'))
+    const ctx = makeContext(projectRoot, 'Refactor the login screen')
+    ctx.modelRouter = intentRouter({ type: 'refactor', target: 'loginscreen', confidence: 0.99, reasoning: 'refactor' })
+    const result = await testPhase.run(ctx)
 
     expect(result.status).toBe('completed')
     expect(result.artifacts.filter(a => a.type === 'qa')).toHaveLength(0)

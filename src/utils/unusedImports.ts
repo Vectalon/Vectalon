@@ -1,5 +1,11 @@
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'fs'
-import { join } from 'path'
+import { join, relative } from 'path'
+import { reportPathChange } from './fileDiff'
+
+function displayPath(filePath: string): string {
+  const rel = relative(process.cwd(), filePath)
+  return rel.startsWith('..') ? filePath : rel
+}
 
 export interface UnusedImportResult {
   file: string
@@ -47,6 +53,7 @@ export function removeUnusedImportsFromFile(filePath: string): UnusedImportResul
   }
 
   writeFileSync(filePath, result.source, 'utf-8')
+  reportPathChange(displayPath(filePath), source, result.source)
   return { file: filePath, removed: result.removed, changed: true }
 }
 

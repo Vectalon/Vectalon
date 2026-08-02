@@ -1,13 +1,13 @@
 import type { WorkflowPhase } from '../../adapters/types'
 import { phaseResult } from './helpers'
-import { detectIntent, intentTitle, isRemoveDependency } from './intent'
+import { getIntent, intentTitle, isRemoveDependency } from './intent'
 
 export const documentationPhase: WorkflowPhase = {
   id: 'documentation',
   name: 'Documentation update',
   description: 'Draft README and CHANGELOG updates for the feature.',
   run: async (ctx) => {
-    const intent = detectIntent(ctx.prompt)
+    const intent = (await getIntent(ctx)).intent
     const changelogSection = isRemoveDependency(intent) ? '### Removed' : '### Added'
 
     const changelog = [

@@ -3,6 +3,7 @@ import { join } from 'path'
 import { createTempProject, cleanup, useTempConfig } from '../helpers/tmp'
 
 let clackNoteOutput = ''
+let stderrOutput = ''
 
 const mockSpinner = () => ({ start: jest.fn(), stop: jest.fn(), message: jest.fn() })
 
@@ -28,6 +29,7 @@ describe('featureCommand', () => {
 
   beforeEach(() => {
     clackNoteOutput = ''
+    stderrOutput = ''
     dir = createTempProject({
       'package.json': JSON.stringify({
         name: 'app',
@@ -39,7 +41,10 @@ describe('featureCommand', () => {
     })
     configDir = useTempConfig()
     jest.spyOn(process, 'cwd').mockReturnValue(dir)
-    jest.spyOn(process.stderr, 'write').mockImplementation(() => true)
+    jest.spyOn(process.stderr, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      stderrOutput += typeof chunk === 'string' ? chunk : Buffer.from(chunk).toString('utf-8')
+      return true
+    })
   })
 
   afterEach(() => {
@@ -69,6 +74,30 @@ describe('featureCommand', () => {
 
     const workflowsDir = join(dir, '.vectalon', 'workflows', 'feature-development')
     expect(existsSync(workflowsDir)).toBe(true)
+  })
+
+  it('streams Claude-style file change logs with diffs to stderr', async () => {
+    await import('../../src/cli/commands/init').then(m => m.initCommand(dir, {}))
+
+    await featureCommand('Login', { dryRun: true })
+
+    expect(stderrOutput).toContain('Created')
+    expect(stderrOutput).toContain('src/services/LoginApi.ts')
+    expect(stderrOutput).toContain('+ import')
+  })
+
+  it('does not stream file change logs in json mode', async () => {
+    await import('../../src/cli/commands/init').then(m => m.initCommand(dir, {}))
+    jest.spyOn(process.stdout, 'write').mockImplementation(() => true)
+
+    await featureCommand('Login', { dryRun: true, json: true })
+
+    // json mode must not stream the Claude-style diff blocks (init's own
+    // 'Created .vectalon/' line legitimately appears on stderr, so assert on
+    // the diff-streaming signature instead).
+    expect(stderrOutput).not.toContain('+ import')
+    expect(stderrOutput).not.toContain('📝')
+    expect(stderrOutput).not.toContain('✏️')
   })
 })
 
@@ -147,14 +176,14 @@ describe('intent summary rendering', () => {
     expect(summary).toContain('The user reported lint violations in the project.')
   })
 
-  it('formats a rule-based fallback without confidence', () => {
+  it('formats a prediction without confidence', () => {
     const prediction: IntentPrediction = {
       intent: { type: 'add-feature', feature: 'login', description: '' },
       alternatives: [],
       reasoning: '',
-      source: 'rules',
+      source: 'llm',
     }
-    expect(formatIntentSummary(prediction)).toBe('Detected intent: add-feature/login — rules')
+    expect(formatIntentSummary(prediction)).toBe('Detected intent: add-feature/login — LLM')
   })
 
   it('labels every intent type', () => {
