@@ -876,7 +876,7 @@ rn-vectalon/
 ├── bin/
 │   └── rn-vectalon.js       # CLI entry
 ├── docs/
-│   └── ENHANCEMENT_PLAN.md  # Phase roadmap (A–G delivered)
+│   └── ENHANCEMENT_PLAN.md  # Phase roadmap (A–H delivered, I+ futuristic)
 ├── package.json
 └── README.md
 ```
