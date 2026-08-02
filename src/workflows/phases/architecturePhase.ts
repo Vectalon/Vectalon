@@ -1,14 +1,14 @@
 import type { WorkflowPhase } from '../../adapters/types'
 import { ADRWriter } from '../../sdlc/ADRWriter'
 import { phaseResult } from './helpers'
-import { detectIntent, isRemoveDependency, isRefactor } from './intent'
+import { getIntent, isRemoveDependency, isRefactor } from './intent'
 
 export const architecturePhase: WorkflowPhase = {
   id: 'architecture',
   name: 'Architecture and API design',
   description: 'Document the architecture decision and integration approach.',
   run: async (ctx) => {
-    const intent = detectIntent(ctx.prompt)
+    const intent = (await getIntent(ctx)).intent
 
     if (isRemoveDependency(intent)) {
       const output = [

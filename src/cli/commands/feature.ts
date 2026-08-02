@@ -13,6 +13,7 @@ import type { ModelProviderType } from '../../model/types'
 import type { ContextSnapshot } from '../../harness/types'
 import { getIntent, type WorkflowIntent, type IntentPrediction } from '../../workflows/phases/intent'
 import { dynamicImport } from '../../utils/dynamicImport'
+import { setFileChangeWriter, formatFileChange, type FileChange } from '../../utils/fileDiff'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
 import type { ImprovementSuggestion } from '../../knowledge/refresh'
 
@@ -46,11 +47,10 @@ export function formatIntentLabel(intent: WorkflowIntent): string {
 
 export function formatIntentSummary(prediction: IntentPrediction): string {
   const label = formatIntentLabel(prediction.intent)
-  const source = prediction.source === 'llm' ? 'LLM' : 'rules'
   const confidence = prediction.alternatives[0]?.confidence
   const confidenceText = typeof confidence === 'number' ? `, confidence ${confidence.toFixed(2)}` : ''
   const reasoning = prediction.reasoning?.trim()
-  const lines = [`Detected intent: ${label} — ${source}${confidenceText}`]
+  const lines = [`Detected intent: ${label} — LLM${confidenceText}`]
   if (reasoning) {
     const truncated = reasoning.length > 160 ? `${reasoning.slice(0, 157)}...` : reasoning
     lines.push(`  ↳ ${truncated}`)
@@ -64,8 +64,9 @@ async function detectIntentLine(options: {
   modelRouter: ModelRouter
   outputs: Record<string, string>
 }): Promise<string> {
-  // getIntent is fully guarded internally (model failures fall back to rules), so
-  // this cannot throw and intent detection never blocks the CLI.
+  // getIntent always returns an LLM-driven prediction (the safe 'unknown' default
+  // when the model is unavailable), so this cannot throw and intent detection
+  // never blocks the CLI.
   const prediction = await getIntent(options)
   return formatIntentSummary(prediction)
 }
@@ -150,6 +151,11 @@ export async function featureCommand(
   const outputs: Record<string, string> = {}
   if (!options.json) {
     log.info(await detectIntentLine({ prompt, snapshot, modelRouter, outputs }))
+    // Stream Claude-style file-change logs with diffs to stderr while the
+    // spinner (stdout) keeps animating. The writer is a no-op when unset.
+    setFileChangeWriter((change: FileChange) => {
+      process.stderr.write(formatFileChange(change) + '\n')
+    })
   }
 
   let state = createWorkflowState(workflow.id, prompt)
@@ -172,29 +178,36 @@ export async function featureCommand(
 
   const workflowEngine = new WorkflowEngine()
   const engineOptions = options.from ? { fromPhase: options.from } : undefined
-  const result = await workflowEngine.run(workflow, {
-    projectRoot: root,
-    snapshot,
-    prompt,
-    inputs: {},
-    outputs,
-    state,
-    adapters,
-    modelRouter,
-    deviceRun,
-  }, {
-    ...engineOptions,
-    onPhaseStart: (phase) => {
-      s.message(`${phase.name}...`)
-    },
-    onPhaseComplete: (phase, phaseResult) => {
-      if (phaseResult.status === 'failed') {
-        s.stop(`${phase.name} failed`)
-      } else {
-        s.message(`${phase.name} completed`)
-      }
-    },
-  })
+  let result: WorkflowState
+  try {
+    result = await workflowEngine.run(workflow, {
+      projectRoot: root,
+      snapshot,
+      prompt,
+      inputs: {},
+      outputs,
+      state,
+      adapters,
+      modelRouter,
+      deviceRun,
+    }, {
+      ...engineOptions,
+      onPhaseStart: (phase) => {
+        s.message(`${phase.name}...`)
+      },
+      onPhaseComplete: (phase, phaseResult) => {
+        if (phaseResult.status === 'failed') {
+          s.stop(`${phase.name} failed`)
+        } else {
+          s.message(`${phase.name} completed`)
+        }
+      },
+    })
+  } finally {
+    // All file writes happen inside the workflow run; detach the writer so it
+    // never leaks into later runs (json mode, MCP server, subsequent CLI runs).
+    setFileChangeWriter(null)
+  }
 
   saveWorkflowState(root, result)
 

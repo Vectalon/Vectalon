@@ -2,7 +2,7 @@ import {
   parseIntentPrediction,
   predictIntent,
   getIntent,
-  detectIntent,
+  intentTitle,
 } from '../../src/workflows/phases/intent'
 import { ModelRouter } from '../../src/model/ModelRouter'
 
@@ -61,40 +61,40 @@ describe('predictIntent', () => {
     expect(prediction.intent).toEqual({ type: 'fix', area: 'tests', description: '' })
   })
 
-  it('falls back to rules when the model output is not intent JSON', async () => {
+  it('returns the unknown default when the model output is not intent JSON', async () => {
     const router = mockRouter('{"files":[{"path":"src/a.ts","content":"x"}]}')
     const prediction = await predictIntent(router, { prompt: 'fix all lint issues', snapshot: null })
-    expect(prediction.source).toBe('rules')
-    expect(prediction.intent).toEqual(detectIntent('fix all lint issues'))
+    expect(prediction.source).toBe('llm')
+    expect(prediction.intent).toMatchObject({ type: 'unknown' })
+    expect(prediction.reasoning).toBe('')
+    expect(prediction.alternatives).toEqual([])
   })
 
-  it('falls back to rules on the local-model fallback marker', async () => {
+  it('returns the unknown default on the local-model fallback marker', async () => {
     const router = mockRouter('[Local model fallback: no downloaded model]')
     const prediction = await predictIntent(router, { prompt: 'create a login screen', snapshot: null })
-    expect(prediction.source).toBe('rules')
-    expect(prediction.intent.type).toBe('add-feature')
+    expect(prediction.intent).toMatchObject({ type: 'unknown' })
   })
 
-  it('falls back to rules when no model router is available', async () => {
+  it('returns the unknown default when no model router is available', async () => {
     const prediction = await predictIntent({} as ModelRouter, { prompt: 'create a login screen', snapshot: null })
-    expect(prediction.source).toBe('rules')
-    expect(prediction.intent.type).toBe('add-feature')
+    expect(prediction.intent).toMatchObject({ type: 'unknown' })
   })
 
-  it('prefers a concrete rule match over LLM unknown', async () => {
+  it('keeps the LLM unknown when the model is uncertain', async () => {
     const router = mockRouter(JSON.stringify({ intents: [{ type: 'unknown', confidence: 0.5, reasoning: 'not sure' }] }))
     const prediction = await predictIntent(router, { prompt: 'fix all lint issues', snapshot: null })
-    expect(prediction.intent).toMatchObject({ type: 'fix', area: 'lint' })
-    expect(prediction.alternatives[0].intent.type).toBe('fix')
+    expect(prediction.intent).toMatchObject({ type: 'unknown' })
+    expect(prediction.alternatives).toHaveLength(1)
   })
 
-  it('prefers rules when the LLM classification is low-confidence', async () => {
+  it('keeps a low-confidence LLM classification without rule overrides', async () => {
     const router = mockRouter(JSON.stringify({ intents: [{ type: 'add-feature', feature: 'dashboard', confidence: 0.3, reasoning: 'maybe' }] }))
     const prediction = await predictIntent(router, { prompt: 'fix all lint issues', snapshot: null })
-    expect(prediction.intent).toMatchObject({ type: 'fix', area: 'lint' })
+    expect(prediction.intent).toMatchObject({ type: 'add-feature', feature: 'dashboard' })
   })
 
-  it('keeps a confident LLM classification even when the rules differ', async () => {
+  it('keeps a confident LLM classification as-is', async () => {
     const router = mockRouter(JSON.stringify({ intents: [{ type: 'add-feature', feature: 'dashboard', confidence: 0.95, reasoning: 'new page' }] }))
     const prediction = await predictIntent(router, { prompt: 'fix all lint issues', snapshot: null })
     expect(prediction.intent.type).toBe('add-feature')
@@ -113,15 +113,24 @@ describe('getIntent', () => {
     expect(router.generate).toHaveBeenCalledTimes(1)
   })
 
-  it('memoizes rule-based results as well', async () => {
+  it('memoizes unknown results as well', async () => {
     const router = mockRouter('garbage that is not intent JSON')
     const outputs: Record<string, string> = {}
     const first = await getIntent({ prompt: 'create a login screen', snapshot: null, modelRouter: router, outputs })
     const second = await getIntent({ prompt: 'create a login screen', snapshot: null, modelRouter: router, outputs })
 
-    expect(first.source).toBe('rules')
-    expect(first.intent.type).toBe('add-feature')
+    expect(first.intent.type).toBe('unknown')
     expect(router.generate).toHaveBeenCalledTimes(1)
     expect(second.intent).toEqual(first.intent)
+  })
+})
+
+describe('intentTitle', () => {
+  it('renders titles for every intent type', () => {
+    expect(intentTitle({ type: 'add-feature', feature: 'login', description: '' })).toBe('Add feature: login')
+    expect(intentTitle({ type: 'remove-dependency', dependency: 'appcenter', description: '' })).toBe('Remove dependency: appcenter')
+    expect(intentTitle({ type: 'refactor', target: 'profilescreen', description: '' })).toBe('Refactor: profilescreen')
+    expect(intentTitle({ type: 'fix', area: 'lint', description: '' })).toBe('Fix lint issues')
+    expect(intentTitle({ type: 'unknown', description: '' })).toBe('Custom request')
   })
 })

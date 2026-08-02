@@ -1,6 +1,6 @@
 import type { WorkflowPhase } from '../../adapters/types'
 import { phaseResult, detectConventions } from './helpers'
-import { detectIntent, intentTitle, isRemoveDependency, isRefactor } from './intent'
+import { getIntent, intentTitle, isRemoveDependency, isRefactor } from './intent'
 
 export const designPhase: WorkflowPhase = {
   id: 'design',
@@ -8,7 +8,7 @@ export const designPhase: WorkflowPhase = {
   description: 'Generate wireframes, extract design tokens, and apply motion design principles.',
   run: async (ctx) => {
     const conventions = detectConventions(ctx.snapshot)
-    const intent = detectIntent(ctx.prompt)
+    const intent = (await getIntent(ctx)).intent
 
     if (isRemoveDependency(intent) || isRefactor(intent)) {
       const output = [
