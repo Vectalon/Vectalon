@@ -23,6 +23,14 @@ export function formatBenchmarkReport(summary: BenchSummary): string {
       lines.push(`### ${run.id} — ${run.title}`)
       lines.push('')
       lines.push(`Composite: **${composite}** · ${axisLine(run.axes)}`)
+      if (run.reference) {
+        const refComposite = run.reference.composite !== null ? `${(run.reference.composite * 100).toFixed(0)}%` : 'n/a'
+        const relComposite =
+          run.reference.relative.composite !== null
+            ? `${(run.reference.relative.composite * 100).toFixed(0)}%`
+            : 'n/a'
+        lines.push(`Relative to human reference: **${relComposite}** (reference composite: ${refComposite})`)
+      }
       if (run.generatedFiles.length > 0) {
         lines.push('')
         lines.push(`Generated files: ${run.generatedFiles.map(f => `\`${f}\``).join(', ')}`)
@@ -45,6 +53,12 @@ export function formatBenchmarkReport(summary: BenchSummary): string {
     `Overall composite: ${summary.overallComposite !== null ? `${(summary.overallComposite * 100).toFixed(0)}%` : 'n/a'}` +
       ` · Overall guardrails: ${summary.overallGuardrails !== null ? `${(summary.overallGuardrails * 100).toFixed(0)}%` : 'n/a'}`
   )
+  if (summary.overallReferenceComposite !== null || summary.overallRelativeComposite !== null) {
+    lines.push(
+      `Overall reference composite: ${summary.overallReferenceComposite !== null ? `${(summary.overallReferenceComposite * 100).toFixed(0)}%` : 'n/a'}` +
+        ` · Overall relative to human: ${summary.overallRelativeComposite !== null ? `${(summary.overallRelativeComposite * 100).toFixed(0)}%` : 'n/a'}`
+    )
+  }
   lines.push('')
 
   return lines.join('\n')

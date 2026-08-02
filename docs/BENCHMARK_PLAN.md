@@ -175,6 +175,12 @@ also be reported as **relative to the human baseline** (e.g. "generated code is
 92% of human best-practice adherence"), which makes the benchmark honest about
 what "passing" means.
 
+> Note: the human baseline is scored by the *same* rubric, so a reference that
+> uses a hardcoded hex literal or a sparse empty state will score below 1.0 on
+> that axis — the reference ceiling is not automatically 100%. A generated
+> solution that avoids those pitfalls can therefore report relative adherence
+> above 100%, which is honest scoring, not an error.
+
 ## 5. Publishing & community
 
 - **Repo:** `bench/` directory with scenarios, fixtures, and the deterministic

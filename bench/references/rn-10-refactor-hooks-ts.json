@@ -1,0 +1,9 @@
+{
+  "id": "rn-10-refactor-hooks-ts",
+  "files": [
+    {
+      "path": "src/components/ProfileCard.tsx",
+      "content": "import { useState } from 'react';\nimport { View, Text, TouchableOpacity, StyleSheet } from 'react-native';\n\nexport interface ProfileCardProps {\n  displayName: string;\n  bio: string;\n}\n\nexport function ProfileCard({ displayName, bio }: ProfileCardProps): JSX.Element {\n  const [expanded, setExpanded] = useState(false);\n\n  const toggle = (): void => setExpanded(prev => !prev);\n\n  return (\n    <View style={styles.card}>\n      <Text style={styles.name}>{displayName}</Text>\n      <TouchableOpacity\n        onPress={toggle}\n        accessibilityRole=\"button\"\n        accessibilityLabel={expanded ? 'Collapse bio' : 'Expand bio'}\n        accessibilityState={{ expanded }}\n      >\n        <Text style={styles.bio} numberOfLines={expanded ? undefined : 2}>\n          {bio}\n        </Text>\n      </TouchableOpacity>\n    </View>\n  );\n}\n\nconst styles = StyleSheet.create({\n  card: { padding: 16, backgroundColor: '#F2F2F7', borderRadius: 12 },\n  name: { fontSize: 18, fontWeight: '700' },\n  bio: { fontSize: 14, color: '#333', marginTop: 8 },\n});\n"
+    }
+  ]
+}

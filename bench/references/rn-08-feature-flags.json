@@ -1,0 +1,17 @@
+{
+  "id": "rn-08-feature-flags",
+  "files": [
+    {
+      "path": "src/config/flags.ts",
+      "content": "export interface FeatureFlag {\n  key: string;\n  enabled: boolean;\n  rollout: number;\n}\n\nexport const featureFlags: Record<string, FeatureFlag> = {\n  'new-checkout': { key: 'new-checkout', enabled: true, rollout: 1.0 },\n  'dark-mode': { key: 'dark-mode', enabled: false, rollout: 0.25 },\n};\n\nexport function isFlagEnabled(key: string): boolean {\n  const flag = featureFlags[key];\n  return flag !== undefined && flag.enabled && flag.rollout >= Math.random();\n}\n"
+    },
+    {
+      "path": "src/hooks/useFeatureFlag.ts",
+      "content": "import { useEffect, useState } from 'react';\nimport { isFlagEnabled } from '../config/flags';\n\nexport function useFeatureFlag(key: string): boolean {\n  const [enabled, setEnabled] = useState(() => isFlagEnabled(key));\n\n  useEffect(() => {\n    setEnabled(isFlagEnabled(key));\n  }, [key]);\n\n  return enabled;\n}\n"
+    },
+    {
+      "path": "src/components/FeatureGate.tsx",
+      "content": "import type { ReactNode } from 'react';\nimport { useFeatureFlag } from '../hooks/useFeatureFlag';\n\nexport interface FeatureGateProps {\n  flag: string;\n  children: ReactNode;\n  fallback?: ReactNode;\n}\n\nexport function FeatureGate({ flag, children, fallback = null }: FeatureGateProps): ReactNode {\n  const enabled = useFeatureFlag(flag);\n  return enabled ? children : fallback;\n}\n"
+    }
+  ]
+}

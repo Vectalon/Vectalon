@@ -1,0 +1,17 @@
+{
+  "id": "rn-04-typed-navigation",
+  "files": [
+    {
+      "path": "src/navigation/types.ts",
+      "content": "export type RootStackParamList = {\n  Home: undefined;\n  Settings: { userId: string; from?: 'onboarding' };\n};\n"
+    },
+    {
+      "path": "src/navigation/linking.ts",
+      "content": "import type { LinkingOptions } from '@react-navigation/native';\nimport type { RootStackParamList } from './types';\n\nexport const linking: LinkingOptions<RootStackParamList> = {\n  prefixes: ['myapp://'],\n  config: {\n    screens: {\n      Home: 'home',\n      Settings: 'settings/:userId',\n    },\n  },\n};\n"
+    },
+    {
+      "path": "src/screens/SettingsScreen.tsx",
+      "content": "import type { NativeStackScreenProps } from '@react-navigation/native-stack';\nimport { View, Text, StyleSheet } from 'react-native';\nimport { SafeAreaView } from 'react-native-safe-area-context';\nimport type { RootStackParamList } from '../navigation/types';\n\ntype Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;\n\nexport function SettingsScreen({ route }: Props): JSX.Element {\n  const { userId, from } = route.params;\n  return (\n    <SafeAreaView style={styles.safe}>\n      <View style={styles.container}>\n        <Text style={styles.title}>Settings for {userId}</Text>\n        {from !== undefined && <Text>Arrived from {from}</Text>}\n      </View>\n    </SafeAreaView>\n  );\n}\n\nconst styles = StyleSheet.create({\n  safe: { flex: 1 },\n  container: { padding: 24 },\n  title: { fontSize: 20, fontWeight: '700' },\n});\n"
+    }
+  ]
+}

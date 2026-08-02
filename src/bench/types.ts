@@ -68,6 +68,17 @@ export interface BenchAxisScores {
   guardrails: number | null
 }
 
+/** Relative-to-human scores (M6): generated / reference per axis, when both exist. */
+export interface BenchReferenceScore {
+  /** Reference files scored. */
+  files: string[]
+  axes: BenchAxisScores
+  /** Renormalized composite of the reference solution itself. */
+  composite: number | null
+  /** generated / reference per axis; null when either side is N/A or zero. */
+  relative: BenchAxisScores & { composite: number | null }
+}
+
 export interface BenchScenarioRun {
   id: string
   title: string
@@ -80,6 +91,8 @@ export interface BenchScenarioRun {
   composite: number | null
   /** Per-check correctness detail lines (only present in live runs). */
   correctnessDetails?: string[]
+  /** Human reference score + relative-to-human (M6); absent when no reference. */
+  reference?: BenchReferenceScore
 }
 
 export interface BenchSuiteSummary {
@@ -95,11 +108,17 @@ export interface BenchSummary {
   suites: BenchSuiteSummary[]
   overallComposite: number | null
   overallGuardrails: number | null
+  /** Average reference composite over runs that have a reference (M6). */
+  overallReferenceComposite: number | null
+  /** Average generated/reference composite over runs that have both (M6). */
+  overallRelativeComposite: number | null
 }
 
 export interface BenchRunOptions {
   /** Directory containing the scenario JSON files. */
   scenariosDir?: string
+  /** Directory containing human reference solutions (M6); default bench/references. */
+  referencesDir?: string
   /** When true, correctness runs real tests/typecheck/lint in the temp project
    * (requires installed deps). Default false → correctness is N/A. */
   live?: boolean
@@ -107,6 +126,10 @@ export interface BenchRunOptions {
   rubric?: (files: BenchGeneratedFile[]) => number | null
   /** Override the deterministic scaffold generator (e.g. a real model). */
   generate?: (scenario: BenchScenario) => BenchGeneratedFile[] | Promise<BenchGeneratedFile[]>
+  /** When set (M5), runBenchmarkFromDir builds a ModelRouter-backed generate seam. */
+  modelRouter?: import('../model/ModelRouter').ModelRouter
+  /** scenario id → reference files (M6); runScenario uses the entry for its scenario. */
+  references?: Record<string, BenchGeneratedFile[]>
   /** Filter which scenarios run. */
   filter?: { suite?: string; scaffoldable?: boolean; ids?: string[] }
   /** Executor for live correctness commands (injectable for tests). */

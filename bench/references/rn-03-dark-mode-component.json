@@ -1,0 +1,13 @@
+{
+  "id": "rn-03-dark-mode-component",
+  "files": [
+    {
+      "path": "src/theme/tokens.ts",
+      "content": "export const tokens = {\n  colors: {\n    background: '#FFFFFF',\n    surface: '#F2F2F7',\n    surfaceDark: '#1C1C1E',\n    text: '#1C1C1E',\n    textOnDark: '#F2F2F7',\n    primary: '#007AFF',\n    border: '#C7C7CC',\n  },\n  spacing: {\n    sm: 8,\n    md: 16,\n    lg: 24,\n  },\n  radius: { md: 12 },\n} as const;\n"
+    },
+    {
+      "path": "src/components/ThemeCard.tsx",
+      "content": "import { View, Text, StyleSheet } from 'react-native';\nimport { tokens } from '../theme/tokens';\n\nexport interface ThemeCardProps {\n  title: string;\n  body: string;\n  dark?: boolean;\n}\n\nexport function ThemeCard({ title, body, dark = false }: ThemeCardProps): JSX.Element {\n  const palette = dark ? tokens.colors.surfaceDark : tokens.colors.surface;\n  const textColor = dark ? tokens.colors.textOnDark : tokens.colors.text;\n  return (\n    <View\n      style={[styles.card, { backgroundColor: palette }]}\n      accessibilityLabel={`${title}: ${body}`}\n    >\n      <Text style={[styles.title, { color: textColor }]}>{title}</Text>\n      <Text style={[styles.body, { color: textColor }]}>{body}</Text>\n    </View>\n  );\n}\n\nconst styles = StyleSheet.create({\n  card: {\n    borderRadius: tokens.radius.md,\n    padding: tokens.spacing.md,\n    margin: tokens.spacing.sm,\n    borderWidth: 1,\n    borderColor: tokens.colors.border,\n  },\n  title: { fontSize: 18, fontWeight: '700', marginBottom: tokens.spacing.sm },\n  body: { fontSize: 14 },\n});\n"
+    }
+  ]
+}
