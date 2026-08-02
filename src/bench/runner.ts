@@ -5,6 +5,7 @@ import { generateAddFeatureImplementation } from '../workflows/phases/implementa
 import type { ContextSnapshot } from '../harness/types'
 import { compositeScore, guardrailPassRate, guardrailPerFile, CORRECTNESS_WEIGHTS } from './scoring'
 import { loadScenarios, defaultScenariosDir } from './loader'
+import { rubricAdherence } from './rubric'
 import { runCommand } from '../adapters/runCommand'
 import {
   BenchGeneratedFile,
@@ -131,8 +132,8 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
   }
 
   let adherence: number | null = null
-  if (options.rubric && files.length > 0) {
-    adherence = options.rubric(files)
+  if (files.length > 0) {
+    adherence = options.rubric ? options.rubric(files) : rubricAdherence(files)
   }
 
   const axes = { correctness, adherence, guardrails }

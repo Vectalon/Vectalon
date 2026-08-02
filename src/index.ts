@@ -152,6 +152,10 @@ export {
   runBenchmark,
   runBenchmarkFromDir,
   shouldRunScenario,
+  rubricChecks,
+  runRubric,
+  rubricAdherence,
+  formatRubricResult,
   formatBenchmarkReport,
 } from './bench'
 export type {
@@ -167,4 +171,8 @@ export type {
   BenchSummary,
   BenchRunOptions,
   LoadScenariosResult,
+  RubricCheck,
+  RubricCheckResult,
+  RubricFileResult,
+  RubricResult,
 } from './bench'
