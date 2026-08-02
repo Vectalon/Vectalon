@@ -98,6 +98,27 @@ To improve output quality you can:
 - Use a more capable remote model provider (OpenAI/Anthropic) for complex generation
 - Run with `--dry-run` first to preview what the workflow will do
 
+### RN Coding Tests Benchmark
+
+Measure how well the harness — or any model — writes React Native code.
+`vectalon bench` runs a **versioned suite of 10 RN coding tests** (login screen,
+FlatList feeds, typed navigation, secure forms, offline queues, image feeds,
+feature flags, accessible forms, hooks refactors, …), scoring generated code on
+three axes:
+
+- **Correctness** — real `test` / `typecheck` / `lint` runs in a throwaway temp
+  project (`--live`)
+- **Best-practice adherence** — a 15-check RN rubric (KeyboardAvoidingView,
+  FlatList over `.map`, safe areas, typed nav props, `Platform.OS`, style tokens,
+  hook deps, a11y labels, …)
+- **Guardrails** — the same project guardrail rules the implementation phase runs
+
+Every scenario ships with a **human-authored reference solution**, so scores are
+also reported **relative to the human baseline** (e.g. “generated code is 92% of
+human best-practice adherence”). Run the deterministic baseline offline, or pass
+`--model local|openai|anthropic` for a real-model leaderboard pass over all 10
+scenarios. See `docs/BENCHMARK_PLAN.md` for the full plan.
+
 ### Framework-Native
 Zero lock-in. rn-vectalon is a standard npm package that integrates with your existing RN CLI workflow. No new build system, no proprietary DSL — just a `serve` command and your agent connects.
 
@@ -175,7 +196,7 @@ After installing locally, you can use the shorter alias:
 npx vectalon
 ```
 
-Running `npx vectalon` with no arguments opens an interactive menu so you can pick init, feature, serve, import, or help without memorizing flags.
+Running `npx vectalon` with no arguments opens an interactive menu so you can pick init, feature, refresh, bench, sync, policy, serve, import, pull, models, or help without memorizing flags.
 
 ### Initialize
 
@@ -232,6 +253,28 @@ npx vectalon feature "remove unused imports" --push      # commit, push, and ope
 npx vectalon feature "remove unused imports" --verbose   # show full phase output
 npx vectalon feature "add login screen" --device         # include iOS/Android build checks
 ```
+
+### Run the benchmark
+
+Score the harness on the RN coding tests — no project setup required:
+
+```bash
+npx vectalon bench                            # deterministic baseline (offline)
+npx vectalon bench --suite data-flow          # only the data-flow scenarios
+npx vectalon bench --live                     # run real tests/typecheck/lint
+npx vectalon bench --model local              # real-model leaderboard (all 10 scenarios)
+npx vectalon bench --model openai --json      # JSON summary for tooling
+npx vectalon bench -o report.md               # write the report to a file
+```
+
+- `--model <provider>` — `local` / `openai` / `anthropic`; runs the real-model
+  leaderboard pass over all 10 scenarios
+- `--suite <id>` — only scenarios in one suite
+  (`core-ui`, `data-flow`, `forms-security`, `navigation`, `a11y`, `perf`, `refactor`)
+- `--live` — run real tests/typecheck/lint for the correctness axis (slow)
+- `--json` — machine-readable summary instead of markdown
+- `-o, --output <path>` — write the report to a file
+- `--scenarios <dir>` — override the scenarios directory
 
 ---
 
@@ -832,8 +875,15 @@ rn-vectalon/
 │   │   ├── commands/
 │   │   │   ├── init.ts    # Project initialization
 │   │   │   ├── import.ts  # Knowledge base artifact import
+│   │   │   ├── bench.ts   # RN coding tests benchmark CLI
 │   │   │   └── serve.ts   # MCP server startup (+ .vectalon/team.json)
 │   │   └── index.ts       # CLI runner
+│   ├── bench/             # RN coding tests benchmark
+│   │   ├── runner.ts      # Scenario runner + scoring aggregation
+│   │   ├── rubric.ts      # 15-check RN best-practice rubric
+│   │   ├── modelGenerate.ts  # ModelRouter-backed generate seam
+│   │   ├── references.ts  # Human reference solution loader
+│   │   └── report.ts      # Markdown report formatter
 │   ├── harness/
 │   │   ├── Scanner.ts     # Project & component scanner
 │   │   ├── CodeGraph.ts   # Dependency graph builder
@@ -872,7 +922,7 @@ rn-vectalon/
 │   │   └── ProjectMemory.ts   # Persistent store
 │   └── config/
 │       └── index.ts
-├── __tests__/            # 264 tests across 49 suites
+├── __tests__/            # 524 tests across 75 suites
 ├── bin/
 │   └── rn-vectalon.js       # CLI entry
 ├── docs/
@@ -954,9 +1004,16 @@ Areas we'd love help with:
 - ✅ **Hosted artifact store** — `vectalon sync` pushes/pulls the team brain to a git remote
 - ✅ **Real embedding APIs** — OpenAI & OpenAI-compatible embedding providers behind the
   `EmbeddingProvider` seam (async semantic search in `search_knowledge`)
+- ✅ **RN coding tests benchmark** — versioned scenario spec, 10 eval scenarios,
+  deterministic baseline runner, 15-check best-practice rubric, human reference
+  solutions with relative-to-human scoring, and the `vectalon bench` CLI
+  (`--model`/`--suite`/`--live`) for deterministic or real-model leaderboard runs
 
 **Next up:**
 
+- **Live correctness scoring in CI** — run `vectalon bench --live` on a model
+  matrix and comment the leaderboard on PRs
+- **Leaderboard artifacts** — timestamped run history comparing models and commits
 - **CI/CD integration** — auto-fix PRs, draft release notes in CI
 - **VS Code extension** — inline suggestions against the harness
 - **v1.0** — Stable protocol, production-ready

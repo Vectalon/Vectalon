@@ -9,6 +9,7 @@ import { modelsCommand } from './commands/models'
 import { policyCommand } from './commands/policy'
 import { refreshCommand } from './commands/refresh'
 import { syncCommand } from './commands/sync'
+import { benchCommand } from './commands/bench'
 import { logger } from './logger'
 import pkg from '../../package.json'
 import { dynamicImport } from '../utils/dynamicImport'
@@ -96,6 +97,17 @@ export function runCLI(): void {
     .option('--force', 'Override a disabled sync config')
     .action(syncCommand)
 
+  program
+    .command('bench')
+    .description('Run the RN coding tests benchmark (deterministic baseline or real-model leaderboard)')
+    .option('--model <provider>', 'Model provider (local/openai/anthropic) — run the real-model leaderboard pass')
+    .option('--suite <id>', 'Only run scenarios in the given suite (core-ui, data-flow, forms-security, navigation, a11y, perf, refactor)')
+    .option('--live', 'Run real tests/typecheck/lint for correctness scoring (slow)')
+    .option('--json', 'Print the summary as JSON instead of markdown')
+    .option('-o, --output <path>', 'Write the report to a file instead of stdout')
+    .option('--scenarios <dir>', 'Override the scenarios directory (default: bench/scenarios)')
+    .action(benchCommand)
+
   const argv = process.argv
   const supportsClack = majorNode() > 20 || (majorNode() === 20 && (minorNode() > 12 || (minorNode() === 12 && patchNode() >= 0)))
   const interactiveEligible = argv.length <= 2 && process.stdin.isTTY && supportsClack
@@ -133,6 +145,7 @@ async function runInteractive(): Promise<void> {
       { value: 'init', label: 'Initialize a project', hint: 'Scan React Native project and create .vectalon/' },
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Refresh knowledge', hint: 'Update best practices and dependency suggestions from the web' },
+      { value: 'bench', label: 'Run benchmark', hint: 'Score the harness on the RN coding tests (10 scenarios)' },
       { value: 'sync', label: 'Sync team brain', hint: 'Push/pull .vectalon/knowledge to a hosted git remote' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
       { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
@@ -217,6 +230,23 @@ async function runInteractive(): Promise<void> {
   if (action === 'refresh') {
     await refreshCommand('', { force: true })
     p.outro('Knowledge refreshed')
+    return
+  }
+
+  if (action === 'bench') {
+    const scope = await p.select({
+      message: 'Benchmark scope',
+      options: [
+        { value: 'default', label: 'Deterministic baseline', hint: 'Scaffold-able scenarios (rn-01/02/05/06), offline' },
+        { value: 'local', label: 'Local model leaderboard', hint: 'All 10 scenarios through the local model' },
+      ],
+    })
+    if (p.isCancel(scope)) {
+      p.outro('Cancelled')
+      return
+    }
+    await benchCommand({ model: scope === 'local' ? 'local' : undefined })
+    p.outro('Benchmark complete')
     return
   }
 
