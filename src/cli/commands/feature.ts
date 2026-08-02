@@ -10,6 +10,8 @@ import { createAdapters } from '../../adapters'
 import { WorkflowEngine, getWorkflow, listWorkflows, createWorkflowState, saveWorkflowState, loadWorkflowState, listWorkflowStates } from '../../workflows'
 import type { WorkflowState } from '../../adapters/types'
 import type { ModelProviderType } from '../../model/types'
+import type { ContextSnapshot } from '../../harness/types'
+import { getIntent, type WorkflowIntent, type IntentPrediction } from '../../workflows/phases/intent'
 import { dynamicImport } from '../../utils/dynamicImport'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
 import type { ImprovementSuggestion } from '../../knowledge/refresh'
@@ -25,6 +27,47 @@ export interface FeatureCommandOptions {
   push?: boolean
   model?: string
   device?: boolean
+}
+
+export function formatIntentLabel(intent: WorkflowIntent): string {
+  switch (intent.type) {
+    case 'add-feature':
+      return `add-feature/${intent.feature}`
+    case 'remove-dependency':
+      return `remove-dependency/${intent.dependency}`
+    case 'refactor':
+      return `refactor/${intent.target}`
+    case 'fix':
+      return `fix/${intent.area}`
+    default:
+      return 'unknown'
+  }
+}
+
+export function formatIntentSummary(prediction: IntentPrediction): string {
+  const label = formatIntentLabel(prediction.intent)
+  const source = prediction.source === 'llm' ? 'LLM' : 'rules'
+  const confidence = prediction.alternatives[0]?.confidence
+  const confidenceText = typeof confidence === 'number' ? `, confidence ${confidence.toFixed(2)}` : ''
+  const reasoning = prediction.reasoning?.trim()
+  const lines = [`Detected intent: ${label} — ${source}${confidenceText}`]
+  if (reasoning) {
+    const truncated = reasoning.length > 160 ? `${reasoning.slice(0, 157)}...` : reasoning
+    lines.push(`  ↳ ${truncated}`)
+  }
+  return lines.join('\n')
+}
+
+async function detectIntentLine(options: {
+  prompt: string
+  snapshot: ContextSnapshot | null
+  modelRouter: ModelRouter
+  outputs: Record<string, string>
+}): Promise<string> {
+  // getIntent is fully guarded internally (model failures fall back to rules), so
+  // this cannot throw and intent detection never blocks the CLI.
+  const prediction = await getIntent(options)
+  return formatIntentSummary(prediction)
 }
 
 export async function featureCommand(
@@ -101,6 +144,14 @@ export async function featureCommand(
   const adapters = createAdapters({ root, dryRun: options.dryRun, git: { push: options.push } })
   const deviceRun = options.device === true
 
+  // Detect intent up front so users can see why the workflow routes the way it
+  // does, then hand the memoized prediction to the engine so every phase reuses
+  // it — one model call per run instead of per phase.
+  const outputs: Record<string, string> = {}
+  if (!options.json) {
+    log.info(await detectIntentLine({ prompt, snapshot, modelRouter, outputs }))
+  }
+
   let state = createWorkflowState(workflow.id, prompt)
   if (options.resume) {
     const loaded = loadWorkflowState(root, workflow.id, options.resume)
@@ -123,10 +174,10 @@ export async function featureCommand(
   const engineOptions = options.from ? { fromPhase: options.from } : undefined
   const result = await workflowEngine.run(workflow, {
     projectRoot: root,
-    snapshot: engine.getSnapshot(),
+    snapshot,
     prompt,
     inputs: {},
-    outputs: {},
+    outputs,
     state,
     adapters,
     modelRouter,

@@ -1,6 +1,6 @@
 import type { WorkflowPhase } from '../../adapters/types'
 import { detectConventions, phaseResult } from './helpers'
-import { detectIntent, intentTitle, isRemoveDependency, isAddFeature, isRefactor } from './intent'
+import { getIntent, intentTitle, isRemoveDependency, isAddFeature, isRefactor, isFix } from './intent'
 
 export const scopePhase: WorkflowPhase = {
   id: 'scope',
@@ -10,7 +10,7 @@ export const scopePhase: WorkflowPhase = {
     const conventions = detectConventions(ctx.snapshot)
     const components = ctx.snapshot?.components || []
     const deps = ctx.snapshot?.project.dependencies || {}
-    const intent = detectIntent(ctx.prompt)
+    const intent = (await getIntent(ctx)).intent
 
     const lines: string[] = [
       `# ${intentTitle(intent)}`,
@@ -100,6 +100,20 @@ export const scopePhase: WorkflowPhase = {
         '- Public API changes can break consumers.',
         '- Refactors without tests increase regression risk.',
         '- Native dependencies referenced by the module may need updated paths.'
+      )
+    }
+
+    if (isFix(intent)) {
+      lines.push(
+        '## Affected areas',
+        `- Source files with ${intent.area} violations`,
+        '- Lint / type / test configuration that gates the check',
+        '- CI and verification scripts that run the check',
+        '',
+        '## Risks',
+        '- Fixes must preserve public APIs and existing behavior.',
+        '- Auto-applied fixes should be reviewed before committing.',
+        '- Re-run the full verification suite (lint, type check, tests) after fixing.'
       )
     }
 

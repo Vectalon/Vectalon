@@ -18,8 +18,9 @@ jest.mock('../../src/utils/dynamicImport', () => ({
   })),
 }))
 
-import { featureCommand, formatUpgradeSuggestions, renderUpgradeSuggestions } from '../../src/cli/commands/feature'
+import { featureCommand, formatUpgradeSuggestions, renderUpgradeSuggestions, formatIntentSummary, formatIntentLabel } from '../../src/cli/commands/feature'
 import type { ImprovementSuggestion } from '../../src/knowledge/refresh'
+import type { IntentPrediction } from '../../src/workflows/phases/intent'
 
 describe('featureCommand', () => {
   let dir: string
@@ -128,5 +129,38 @@ describe('upgrade suggestion rendering', () => {
     expect(log.warn).toHaveBeenCalledWith('react-native: ^0.72.0 → 0.75.0')
     expect(log.error).toHaveBeenCalledWith('expo: ~50.0.0 → 52.0.0')
     expect(log.info).toHaveBeenCalledWith(expect.stringContaining('vectalon refresh --force'))
+  })
+})
+
+describe('intent summary rendering', () => {
+  it('formats an LLM fix prediction with confidence and reasoning', () => {
+    const prediction: IntentPrediction = {
+      intent: { type: 'fix', area: 'lint', description: '' },
+      alternatives: [
+        { intent: { type: 'fix', area: 'lint', description: '' }, confidence: 0.95, reasoning: 'lint violations reported' },
+      ],
+      reasoning: 'The user reported lint violations in the project.',
+      source: 'llm',
+    }
+    const summary = formatIntentSummary(prediction)
+    expect(summary).toContain('Detected intent: fix/lint — LLM, confidence 0.95')
+    expect(summary).toContain('The user reported lint violations in the project.')
+  })
+
+  it('formats a rule-based fallback without confidence', () => {
+    const prediction: IntentPrediction = {
+      intent: { type: 'add-feature', feature: 'login', description: '' },
+      alternatives: [],
+      reasoning: '',
+      source: 'rules',
+    }
+    expect(formatIntentSummary(prediction)).toBe('Detected intent: add-feature/login — rules')
+  })
+
+  it('labels every intent type', () => {
+    expect(formatIntentLabel({ type: 'remove-dependency', dependency: 'appcenter', description: '' })).toBe('remove-dependency/appcenter')
+    expect(formatIntentLabel({ type: 'refactor', target: 'home-screen', description: '' })).toBe('refactor/home-screen')
+    expect(formatIntentLabel({ type: 'fix', area: 'types', description: '' })).toBe('fix/types')
+    expect(formatIntentLabel({ type: 'unknown', description: '' })).toBe('unknown')
   })
 })

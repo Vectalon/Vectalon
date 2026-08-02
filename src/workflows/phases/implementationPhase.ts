@@ -1,11 +1,11 @@
 import { join } from 'path'
-import type { WorkflowPhase, WorkflowArtifact } from '../../adapters/types'
+import type { WorkflowPhase, WorkflowArtifact, TestRunnerAdapter, TestResult } from '../../adapters/types'
 import { isSafeProjectPath, isSelfPackageRepo, writeProjectFile, GENERATED_OUTPUT_DIR } from './fileOutput'
 import type { ContextSnapshot } from '../../harness/types'
 import type { ModelRouter } from '../../model/ModelRouter'
 import { removeUnusedImportsFromProject, findSourceFiles } from '../../utils/unusedImports'
 import { detectConventions, phaseResult, sanitizeFileName, fileExtension, jsxExtension } from './helpers'
-import { detectIntent, intentTitle, isRemoveDependency, isRefactor } from './intent'
+import { getIntent, intentTitle, isRemoveDependency, isRefactor, isFix, type WorkflowIntent } from './intent'
 import { runGuardrails, formatGuardrailResult, GuardrailResult, PolicyEngine } from '../../guardrails'
 
 interface DependencyMatch {
@@ -106,6 +106,25 @@ function isFallbackResponse(content: string): boolean {
   return content.includes('[Local model fallback') || content.includes('no downloaded model')
 }
 
+function selectFixCheck(
+  area: string,
+  runner: TestRunnerAdapter
+): { name: string; run: () => Promise<TestResult> } | null {
+  const candidates: Array<{ name: string; run: (() => Promise<TestResult>) | undefined }> = []
+  if (area === 'lint') candidates.push({ name: 'Lint', run: runner.runLint })
+  if (area === 'types') candidates.push({ name: 'Type check', run: runner.runTypeCheck })
+  if (area === 'tests') candidates.push({ name: 'Tests', run: runner.runTests })
+  if (candidates.length === 0) {
+    candidates.push(
+      { name: 'Lint', run: runner.runLint },
+      { name: 'Type check', run: runner.runTypeCheck },
+      { name: 'Tests', run: runner.runTests }
+    )
+  }
+  const pick = candidates.find(c => typeof c.run === 'function')
+  return pick ? { name: pick.name, run: () => (pick.run as () => Promise<TestResult>)() } : null
+}
+
 function extractJsonFiles(content: string): GeneratedImplementation | null {
   const jsonBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
   const jsonText = jsonBlockMatch ? jsonBlockMatch[1].trim() : content.trim()
@@ -182,7 +201,7 @@ function parseModelOutput(content: string): GeneratedImplementation | null {
 function buildImplementationPrompt(ctx: {
   snapshot: ContextSnapshot | null
   prompt: string
-  intent: ReturnType<typeof detectIntent>
+  intent: WorkflowIntent
   tests?: string
 }): { systemPrompt: string; prompt: string } {
   const conventions = detectConventions(ctx.snapshot)
@@ -260,7 +279,7 @@ async function generateModelImplementation(
   ctx: {
     snapshot: ContextSnapshot | null
     prompt: string
-    intent: ReturnType<typeof detectIntent>
+    intent: WorkflowIntent
     tests?: string
   }
 ): Promise<ModelImplementationResult> {
@@ -329,6 +348,168 @@ async function generateModelImplementation(
         path: f.path,
       })),
     },
+  }
+}
+
+async function generateFixImplementation(
+  modelRouter: ModelRouter,
+  projectRoot: string | undefined,
+  ctx: {
+    snapshot: ContextSnapshot | null
+    prompt: string
+    area: string
+    testRunner: TestRunnerAdapter
+  }
+): Promise<{ output: string; artifacts: WorkflowArtifact[] }> {
+  const conventions = detectConventions(ctx.snapshot)
+  const check = selectFixCheck(ctx.area, ctx.testRunner)
+
+  if (!check) {
+    const output = [
+      `## Fix ${ctx.area} issues`,
+      '',
+      'No suitable check (lint / type check / tests) is available on the configured test runner,',
+      'so the violations could not be captured. Enable a real test runner (e.g. `local`) to',
+      'diagnose and auto-fix the issues. No files were created or modified.',
+    ].join('\n')
+    return {
+      output,
+      artifacts: [{ type: 'engineering', title: `Fix ${ctx.area} issues`, content: output }],
+    }
+  }
+
+  // 1. Diagnose — run the relevant check and capture the violations.
+  const rawResult = await check.run()
+  if (!rawResult || typeof rawResult.success !== 'boolean') {
+    const output = [
+      `## Fix ${ctx.area} issues`,
+      '',
+      `The ${check.name} check could not be executed, so violations could not be captured.`,
+      'No files were created or modified.',
+    ].join('\n')
+    return {
+      output,
+      artifacts: [{ type: 'engineering', title: `Fix ${ctx.area} issues`, content: output }],
+    }
+  }
+
+  if (rawResult.success) {
+    const output = [
+      `## Fix ${ctx.area} issues`,
+      '',
+      `✅ ${check.name} passes cleanly — no issues found. Nothing to fix.`,
+    ].join('\n')
+    return {
+      output,
+      artifacts: [{ type: 'engineering', title: `Fix ${ctx.area} issues`, content: output }],
+    }
+  }
+
+  const diagnostics = [rawResult.stdout, rawResult.stderr]
+    .filter(Boolean)
+    .map(s => s.trim())
+    .join('\n')
+    .slice(0, 12000)
+
+  // 2. Repair — ask the model to fix the EXISTING files. Never create new ones.
+  const systemPrompt = [
+    'You are a senior React Native engineer fixing violations reported by a project check.',
+    'Repair the EXISTING files that contain violations. Do NOT create new screens, hooks, services, or tests.',
+    'Preserve the public API, exports, and behavior of every file you change.',
+    'Return ONLY a JSON object with no markdown outside the JSON block:',
+    '{"files":[{"path":"src/...","content":"FULL new content of each changed file"}]}',
+    'Only include files you actually changed.',
+  ].join('\n')
+
+  const fixPrompt = [
+    `Request: ${ctx.prompt}`,
+    '',
+    `### Violations reported by \`${check.name}\``,
+    '```',
+    diagnostics || '(check produced no stdout/stderr)',
+    '```',
+    '',
+    'Fix every violation above in the existing files. Return each changed file with its complete new content.',
+  ].join('\n')
+
+  let raw = ''
+  try {
+    const response = await modelRouter.generate({
+      systemPrompt,
+      prompt: fixPrompt,
+      context: ctx.snapshot
+        ? `Project: ${ctx.snapshot.project.name}, React Native ${ctx.snapshot.project.reactNativeVersion || 'unknown'}`
+        : undefined,
+      maxTokens: 4096,
+      temperature: 0.2,
+    })
+    raw = response.content
+  } catch {
+    raw = ''
+  }
+
+  const parsed = raw && !isFallbackResponse(raw) ? parseModelOutput(raw) : null
+
+  if (parsed && parsed.files.length > 0) {
+    const guardrailResults = checkGuardrails(parsed.files, conventions, projectRoot)
+    const writtenFiles: string[] = []
+    const redirected = projectRoot ? isSelfPackageRepo(projectRoot) : false
+    if (projectRoot) {
+      for (const file of parsed.files) {
+        const writtenPath = writeProjectFile(projectRoot, file.path, file.content)
+        if (writtenPath) {
+          writtenFiles.push(writtenPath)
+        }
+      }
+    }
+
+    const redirectNote = redirected
+      ? [`> ⚠️ Generated into ${GENERATED_OUTPUT_DIR}/ (this project is the rn-vectalon package itself; its src/ bundle is protected).`, '']
+      : []
+
+    const output = [
+      `## Fix ${ctx.area} issues`,
+      '',
+      `Captured ${check.name} violations and asked the model to repair the affected files.`,
+      ...(parsed.notes ? [parsed.notes, ''] : []),
+      ...(writtenFiles.length > 0 ? ['Files written to disk:', ...writtenFiles.map(f => `- \`${f}\``), ''] : []),
+      ...redirectNote,
+      ...parsed.files.map(f => [`### ${f.path}`, '```typescript', f.content, '```'].join('\n')),
+      '',
+      formatGuardrailSummary(guardrailResults),
+    ].join('\n')
+
+    return {
+      output,
+      artifacts: parsed.files.map(f => ({
+        type: 'engineering',
+        title: f.path,
+        content: f.content,
+        path: f.path,
+      })),
+    }
+  }
+
+  // 3. Fallback — a fix plan. NEVER scaffold new files for a repair request.
+  const output = [
+    `## Fix ${ctx.area} issues`,
+    '',
+    `The ${check.name} check reported violations, but the model could not produce a clean, parseable fix.`,
+    'No files were created or modified by this phase.',
+    '',
+    '### Violations',
+    '```',
+    diagnostics || '(no output captured)',
+    '```',
+    '',
+    '### Suggested approach',
+    '- Open each `file:line` reported above and resolve the violation.',
+    `- Re-run the ${check.name} check (and the full verification suite) until clean.`,
+  ].join('\n')
+
+  return {
+    output,
+    artifacts: [{ type: 'engineering', title: `Fix ${ctx.area} issues`, content: output }],
   }
 }
 
@@ -667,7 +848,7 @@ export const implementationPhase: WorkflowPhase = {
   name: 'Implementation',
   description: 'Generate code files or a change plan for the requested work, following project conventions.',
   run: async (ctx) => {
-    const intent = detectIntent(ctx.prompt)
+    const intent = (await getIntent(ctx)).intent
     const conventions = detectConventions(ctx.snapshot)
     const projectRoot = ctx.projectRoot
     const srcDir = projectRoot ? join(projectRoot, 'src') : undefined
@@ -685,6 +866,15 @@ export const implementationPhase: WorkflowPhase = {
         snapshot: ctx.snapshot,
         target: intent.target,
         prompt: ctx.prompt,
+      })
+    } else if (isFix(intent)) {
+      // Repair requests: diagnose -> model fixes existing files -> plan fallback.
+      // This path intentionally never scaffolds new screens/hooks/services.
+      result = await generateFixImplementation(ctx.modelRouter, projectRoot, {
+        snapshot: ctx.snapshot,
+        prompt: ctx.prompt,
+        area: intent.area,
+        testRunner: ctx.adapters.testRunner,
       })
     } else {
       // Try to use the model for actual implementation generation

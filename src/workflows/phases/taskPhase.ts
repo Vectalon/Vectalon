@@ -1,13 +1,13 @@
 import type { WorkflowPhase, TaskInput } from '../../adapters/types'
 import { phaseResult, failedPhase } from './helpers'
-import { detectIntent, isRemoveDependency, isRefactor } from './intent'
+import { getIntent, isRemoveDependency, isRefactor, isFix } from './intent'
 
 export const taskPhase: WorkflowPhase = {
   id: 'tasks',
   name: 'Task creation',
   description: 'Create implementation tasks in the configured project management tool.',
   run: async (ctx) => {
-    const intent = detectIntent(ctx.prompt)
+    const intent = (await getIntent(ctx)).intent
     const tasks: TaskInput[] = [
       { title: `PRD: ${ctx.prompt}`, description: 'Finalize requirements and acceptance criteria', type: 'requirements' },
       { title: `Design: ${ctx.prompt}`, description: 'Approve UX approach', type: 'design' },
@@ -25,6 +25,12 @@ export const taskPhase: WorkflowPhase = {
         { title: `Tests: ${ctx.prompt}`, description: 'Update tests against the refactored module to define expected behavior (TDD)', type: 'qa' },
         { title: `Refactor ${intent.target}`, description: 'Apply the refactor while preserving behavior', type: 'engineering' },
         { title: `Validate tests: ${ctx.prompt}`, description: 'Ensure all tests pass after refactoring', type: 'qa' }
+      )
+    } else if (isFix(intent)) {
+      tasks.push(
+        { title: `Fix ${intent.area} issues: ${ctx.prompt}`, description: 'Run the relevant check, fix every reported violation in existing files, and re-run until clean. Do not create new screens, hooks, or services.', type: 'engineering' },
+        { title: `Code review: ${ctx.prompt}`, description: 'Review the fix for correctness and regressions', type: 'engineering' },
+        { title: `Validate ${intent.area} fix: ${ctx.prompt}`, description: 'Re-run lint, type check, and tests to confirm all issues are resolved', type: 'qa' }
       )
     } else {
       tasks.push(

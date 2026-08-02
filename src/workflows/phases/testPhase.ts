@@ -1,6 +1,6 @@
 import type { WorkflowPhase, WorkflowArtifact } from '../../adapters/types'
 import { phaseResult, sanitizeFileName, detectConventions } from './helpers'
-import { detectIntent, isRemoveDependency, isRefactor } from './intent'
+import { getIntent, isRemoveDependency, isRefactor, isFix } from './intent'
 import { writeProjectFile, isSelfPackageRepo, GENERATED_OUTPUT_DIR } from './fileOutput'
 
 export const testPhase: WorkflowPhase = {
@@ -8,7 +8,7 @@ export const testPhase: WorkflowPhase = {
   name: 'Test writing',
   description: 'Write tests first (TDD) based on acceptance criteria and feature requirements, before any implementation code.',
   run: async (ctx) => {
-    const intent = detectIntent(ctx.prompt)
+    const intent = (await getIntent(ctx)).intent
     const conventions = detectConventions(ctx.snapshot)
     const ext = conventions.hasTypeScript ? 'ts' : 'js'
     const featureName = sanitizeFileName(ctx.prompt) || 'Feature'
@@ -37,6 +37,19 @@ export const testPhase: WorkflowPhase = {
         'Test writing',
         'Write tests first (TDD) based on acceptance criteria and feature requirements, before any implementation code.',
         'Skipping scaffold test generation for refactor; tests must be updated against the refactored module.',
+        []
+      )
+    }
+
+    // Fix requests repair EXISTING files (lint/type/test violations). They do not
+    // introduce new scaffold modules, so there are no new contracts to write —
+    // existing tests must simply keep passing after the fix.
+    if (isFix(intent)) {
+      return phaseResult(
+        'tests',
+        'Test writing',
+        'Write tests first (TDD) based on acceptance criteria and feature requirements, before any implementation code.',
+        'Skipping scaffold test generation for fix requests; the implementation phase repairs existing files and existing tests must keep passing.',
         []
       )
     }

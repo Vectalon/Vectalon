@@ -2,7 +2,7 @@ import type { WorkflowPhase } from '../../adapters/types'
 import { runCommand } from '../../adapters/runCommand'
 import { detectValidationCommands } from '../../utils/validationCommands'
 import { phaseResult, failedPhase } from './helpers'
-import { detectIntent, isRemoveDependency, isRefactor } from './intent'
+import { getIntent, isRemoveDependency, isRefactor, isFix } from './intent'
 
 function formatOutput(stdout: string, stderr: string, limit = 4000): string {
   const out = stdout.trim()
@@ -87,7 +87,7 @@ export const verificationPhase: WorkflowPhase = {
       }
     }
 
-    const intent = detectIntent(ctx.prompt)
+    const intent = (await getIntent(ctx)).intent
     if (isRemoveDependency(intent) && ctx.snapshot) {
       const deps = { ...ctx.snapshot.project.dependencies, ...ctx.snapshot.project.devDependencies }
       const stillInstalled = Object.keys(deps).some(name =>
@@ -104,7 +104,7 @@ export const verificationPhase: WorkflowPhase = {
     const hasTests = !!testPhase && testPhase.artifacts.some(a => a.type === 'qa')
     const hasImplementation = !!implementationPhase && implementationPhase.artifacts.length > 0
 
-    if (isRemoveDependency(intent) || isRefactor(intent)) {
+    if (isRemoveDependency(intent) || isRefactor(intent) || isFix(intent)) {
       results.push('- TDD validation: skipped (no new scaffold tests required for this intent)')
     } else if (hasImplementation && !hasTests) {
       results.push('- TDD validation: FAIL — no tests were written before implementation')

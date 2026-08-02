@@ -1,13 +1,13 @@
 import type { WorkflowPhase } from '../../adapters/types'
 import { phaseResult, failedPhase, sanitizeFileName } from './helpers'
-import { detectIntent, intentTitle } from './intent'
+import { getIntent, intentTitle } from './intent'
 
 export const prPhase: WorkflowPhase = {
   id: 'pr',
   name: 'Pull request',
   description: 'Create a branch, commit changes, and open a pull request.',
   run: async (ctx) => {
-    const intent = detectIntent(ctx.prompt)
+    const intent = (await getIntent(ctx)).intent
     const featureName = sanitizeFileName(ctx.prompt) || 'feature'
     const branchName = `feature/${featureName}-${Date.now()}`
 
@@ -17,14 +17,16 @@ export const prPhase: WorkflowPhase = {
       const implementationPhase = ctx.state.phases.find(p => p.id === 'implementation')
       const files = implementationPhase?.artifacts.map(a => a.path).filter(Boolean) as string[] | undefined
 
+      const commitPrefix = intent.type === 'remove-dependency' ? 'chore' : intent.type === 'fix' ? 'fix' : 'feat'
+
       await ctx.adapters.git.commit({
-        message: `${intent.type === 'remove-dependency' ? 'chore' : 'feat'}: ${ctx.prompt}`,
+        message: `${commitPrefix}: ${ctx.prompt}`,
         files,
       })
       await ctx.adapters.git.push(branchName)
 
       const pr = await ctx.adapters.git.createPullRequest({
-        title: `${intent.type === 'remove-dependency' ? 'chore' : 'feat'}: ${ctx.prompt}`,
+        title: `${commitPrefix}: ${ctx.prompt}`,
         body: [
           `## ${intentTitle(intent)}`,
           '',
