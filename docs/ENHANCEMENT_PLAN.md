@@ -389,7 +389,13 @@ behind one team brain so the org grows without per-project silos.
 **V-5. Benchmark suite for RN generation.** Build a public eval harness — "RN
 coding tests" — measuring generated code correctness, RN best-practice
 adherence, and guardrail pass rate, so the project can *prove* it beats generic
-tools and drive regression-aware model/harness tuning.
+tools and drive regression-aware model/harness tuning. **Scoped in
+[`docs/BENCHMARK_PLAN.md`](BENCHMARK_PLAN.md):** three scored axes
+(correctness 0.4 / RN best-practice rubric 0.3 / guardrail pass rate 0.3), a
+`vectalon bench` harness that reuses the temp-project fixtures, guardrail rules,
+and verification gate, plus the first 10 eval scenarios (login screen,
+FlatList fetch, dark-mode, typed navigation, form validation, offline queue,
+image feed, feature flags, accessible form, refactor-to-hooks).
 
 ### Sequencing (why this order)
 
