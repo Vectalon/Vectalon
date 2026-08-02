@@ -1,0 +1,25 @@
+{
+  "id": "rn-02-flatlist-fetch",
+  "specVersion": 1,
+  "suite": "data-flow",
+  "title": "Paginated list with pull-to-refresh",
+  "prompt": "Create a screen that fetches a paginated list from the API and renders it with FlatList, pull-to-refresh, and loading, empty, and error states.",
+  "scaffoldable": true,
+  "fixtures": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.3.1\",\n    \"react-native\": \"0.74.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.0\",\n    \"jest\": \"29.7.0\"\n  }\n}",
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"jsx\": \"react-native\",\n    \"esModuleInterop\": true,\n    \"skipLibCheck\": true\n  }\n}",
+    "src/config/api.ts": "export const API_BASE_URL = 'https://api.example.com';\nexport const ITEMS_ENDPOINT = `${API_BASE_URL}/items`;",
+    "src/screens/HomeScreen.tsx": "import React from 'react';\nimport { Text, View, StyleSheet } from 'react-native';\n\nexport function HomeScreen(): JSX.Element {\n  return (\n    <View style={styles.container}>\n      <Text>Home</Text>\n    </View>\n  );\n}\n\nconst styles = StyleSheet.create({ container: { flex: 1 } });"
+  },
+  "expect": {
+    "files": ["src/screens/ListScreen.tsx", "src/services/items.ts"],
+    "behaviors": [
+      "FlatList used, not ScrollView with map",
+      "loading, empty, and error states",
+      "pull-to-refresh",
+      "immutable state updates"
+    ]
+  },
+  "correctness": { "tests": true, "typecheck": true, "lint": true },
+  "axes": ["correctness", "adherence", "guardrails"]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "rn-04-typed-navigation",
+  "specVersion": 1,
+  "suite": "navigation",
+  "title": "Settings stack with typed route params and deep links",
+  "prompt": "Create a settings navigation stack using React Navigation with typed route params (NativeStackScreenProps) and deep link support. No deprecated Navigator or AlertIOS.",
+  "scaffoldable": false,
+  "fixtures": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.3.1\",\n    \"react-native\": \"0.74.0\",\n    \"@react-navigation/native\": \"6.1.0\",\n    \"@react-navigation/native-stack\": \"6.9.0\",\n    \"react-native-safe-area-context\": \"4.10.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.0\",\n    \"jest\": \"29.7.0\"\n  }\n}",
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"jsx\": \"react-native\",\n    \"esModuleInterop\": true,\n    \"skipLibCheck\": true\n  }\n}",
+    "src/navigation/types.ts": "export type SettingsStackParamList = {\n  SettingsHome: undefined;\n  SettingsDetail: { id: string; title: string };\n};",
+    "src/screens/SettingsScreen.tsx": "import React from 'react';\nimport { Text, View, StyleSheet } from 'react-native';\n\nexport function SettingsScreen(): JSX.Element {\n  return (\n    <View style={styles.container}>\n      <Text>Settings</Text>\n    </View>\n  );\n}\n\nconst styles = StyleSheet.create({ container: { flex: 1 } });"
+  },
+  "expect": {
+    "files": ["src/navigation/SettingsStack.tsx", "src/screens/SettingsDetailScreen.tsx"],
+    "behaviors": [
+      "NativeStackScreenProps typed route params",
+      "deep link configuration",
+      "SafeAreaView on screens",
+      "no deprecated APIs"
+    ]
+  },
+  "correctness": { "tests": true, "typecheck": true, "lint": true },
+  "axes": ["correctness", "adherence", "guardrails"]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "rn-10-refactor-hooks-ts",
+  "specVersion": 1,
+  "suite": "refactor",
+  "title": "Convert class/JS component to typed hooks",
+  "prompt": "Convert the legacy Profile component from a class-based JS component to a typed functional component using hooks. Remove unused imports, use named exports and explicit return types.",
+  "scaffoldable": false,
+  "fixtures": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.3.1\",\n    \"react-native\": \"0.74.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.0\",\n    \"jest\": \"29.7.0\"\n  }\n}",
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"jsx\": \"react-native\",\n    \"esModuleInterop\": true,\n    \"skipLibCheck\": true\n  }\n}",
+    "src/components/Profile.js": "import React, { Component } from 'react';\nimport { Text, View, StyleSheet } from 'react-native';\n\nvar unused = true;\n\nexport default class Profile extends Component {\n  constructor(props) {\n    super(props);\n    this.state = { name: props.name || 'Guest' };\n  }\n\n  render() {\n    var greeting = 'Hello ' + this.state.name;\n    return (\n      <View style={styles.container}>\n        <Text>{greeting}</Text>\n      </View>\n    );\n  }\n}\n\nconst styles = StyleSheet.create({ container: { flex: 1 } });"
+  },
+  "expect": {
+    "files": ["src/components/Profile.tsx"],
+    "behaviors": [
+      "functional component with hooks",
+      "named export",
+      "no unused imports or var",
+      "explicit return type"
+    ]
+  },
+  "correctness": { "tests": true, "typecheck": true, "lint": true },
+  "axes": ["correctness", "adherence", "guardrails"]
+}

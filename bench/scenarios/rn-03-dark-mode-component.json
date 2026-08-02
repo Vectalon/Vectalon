@@ -1,0 +1,25 @@
+{
+  "id": "rn-03-dark-mode-component",
+  "specVersion": 1,
+  "suite": "core-ui",
+  "title": "Themed card component honoring dark mode",
+  "prompt": "Create a reusable Card component that reads colors from the design system theme and updates automatically in dark mode. No hardcoded hex colors.",
+  "scaffoldable": false,
+  "fixtures": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.3.1\",\n    \"react-native\": \"0.74.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.0\",\n    \"jest\": \"29.7.0\"\n  }\n}",
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"jsx\": \"react-native\",\n    \"esModuleInterop\": true,\n    \"skipLibCheck\": true\n  }\n}",
+    "src/theme/tokens.ts": "export const colors = {\n  background: { light: '#FFFFFF', dark: '#121212' },\n  surface: { light: '#F5F5F5', dark: '#1E1E1E' },\n  text: { light: '#111111', dark: '#FFFFFF' }\n} as const;",
+    "src/theme/index.ts": "import { colors } from './tokens';\nimport { useColorScheme } from 'react-native';\n\nexport function useTheme(): { colors: typeof colors.surface; isDark: boolean } {\n  const isDark = useColorScheme() === 'dark';\n  return { colors: colors.surface, isDark };\n}"
+  },
+  "expect": {
+    "files": ["src/components/Card.tsx"],
+    "behaviors": [
+      "colors come from the design system, not hex literals",
+      "StyleSheet.create used, no inline styles",
+      "accessibility label",
+      "works in dark and light mode"
+    ]
+  },
+  "correctness": { "tests": true, "typecheck": true, "lint": true },
+  "axes": ["correctness", "adherence", "guardrails"]
+}

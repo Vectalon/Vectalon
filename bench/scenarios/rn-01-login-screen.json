@@ -1,0 +1,25 @@
+{
+  "id": "rn-01-login-screen",
+  "specVersion": 1,
+  "suite": "forms-security",
+  "title": "Login screen with auth API",
+  "prompt": "Create a login screen with email and password fields that calls the auth API, shows loading and error states, and handles keyboard overlap on iOS.",
+  "scaffoldable": true,
+  "fixtures": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.3.1\",\n    \"react-native\": \"0.74.0\",\n    \"react-native-safe-area-context\": \"4.10.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.0\",\n    \"jest\": \"29.7.0\"\n  }\n}",
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"jsx\": \"react-native\",\n    \"esModuleInterop\": true,\n    \"skipLibCheck\": true\n  }\n}",
+    "src/config/api.ts": "export const API_BASE_URL = 'https://api.example.com';\nexport const LOGIN_ENDPOINT = `${API_BASE_URL}/auth/login`;",
+    "src/screens/HomeScreen.tsx": "import React from 'react';\nimport { Text, View, StyleSheet } from 'react-native';\n\nexport function HomeScreen(): JSX.Element {\n  return (\n    <View style={styles.container}>\n      <Text>Home</Text>\n    </View>\n  );\n}\n\nconst styles = StyleSheet.create({ container: { flex: 1 } });"
+  },
+  "expect": {
+    "files": ["src/screens/LoginScreen.tsx", "src/services/auth.ts"],
+    "behaviors": [
+      "uses config URL, not hardcoded",
+      "handles loading and error states",
+      "KeyboardAvoidingView on iOS",
+      "accessibility labels on inputs"
+    ]
+  },
+  "correctness": { "tests": true, "typecheck": true, "lint": true },
+  "axes": ["correctness", "adherence", "guardrails"]
+}
