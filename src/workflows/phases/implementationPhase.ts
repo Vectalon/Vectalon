@@ -182,7 +182,7 @@ function extractPathFenceFiles(content: string): GeneratedFile[] | null {
   return files.length > 0 ? files : null
 }
 
-function parseModelOutput(content: string): GeneratedImplementation | null {
+export function parseModelOutput(content: string): GeneratedImplementation | null {
   const trimmed = content.trim()
   if (!trimmed) return null
 
@@ -198,7 +198,7 @@ function parseModelOutput(content: string): GeneratedImplementation | null {
   return null
 }
 
-function buildImplementationPrompt(ctx: {
+export function buildImplementationPrompt(ctx: {
   snapshot: ContextSnapshot | null
   prompt: string
   intent: WorkflowIntent

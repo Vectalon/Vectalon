@@ -2,13 +2,17 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'fs'
 import { tmpdir } from 'os'
 import { join, dirname } from 'path'
 import { generateAddFeatureImplementation } from '../workflows/phases/implementationPhase'
-import type { ContextSnapshot } from '../harness/types'
+import { benchmarkSnapshot } from './snapshot'
 import { compositeScore, guardrailPassRate, guardrailPerFile, CORRECTNESS_WEIGHTS } from './scoring'
 import { loadScenarios, defaultScenariosDir } from './loader'
+import { loadReferences, defaultReferencesDir } from './references'
+import { createModelGenerate } from './modelGenerate'
 import { rubricAdherence } from './rubric'
 import { runCommand } from '../adapters/runCommand'
 import {
+  BenchAxisScores,
   BenchGeneratedFile,
+  BenchReferenceScore,
   BenchRunOptions,
   BenchScenario,
   BenchScenarioRun,
@@ -16,29 +20,6 @@ import {
   BenchSuiteSummary,
   ScenarioGuardrailFile,
 } from './types'
-
-/** Minimal TS-convention snapshot so the deterministic scaffold emits .ts/.tsx. */
-function benchmarkSnapshot(): ContextSnapshot {
-  return {
-    project: {
-      root: '',
-      name: 'rn-bench-app',
-      version: '1.0.0',
-      reactNativeVersion: '0.74.0',
-      dependencies: {},
-      devDependencies: {},
-      scripts: {},
-      platforms: ['ios', 'android'],
-      hasTypeScript: true,
-      hasMetro: true,
-      hasExpo: false,
-    },
-    structure: [],
-    components: [],
-    recentChanges: [],
-    timestamp: Date.now(),
-  }
-}
 
 /** Deterministic baseline: the same "add feature" scaffold the implementation
  * phase falls back to with no model. */
@@ -106,6 +87,20 @@ async function runLiveCorrectness(
   return { score: Math.min(1, weighted / weightSum), details }
 }
 
+/** Score a set of files on the non-live axes (adherence + guardrails). */
+function scoreFilesOffline(
+  files: BenchGeneratedFile[],
+  options: BenchRunOptions
+): { axes: BenchAxisScores; composite: number | null } {
+  const guardrails = guardrailPassRate(files)
+  let adherence: number | null = null
+  if (files.length > 0) {
+    adherence = options.rubric ? options.rubric(files) : rubricAdherence(files)
+  }
+  const axes = { correctness: null, adherence, guardrails }
+  return { axes, composite: compositeScore(axes) }
+}
+
 export async function runScenario(scenario: BenchScenario, options: BenchRunOptions = {}): Promise<BenchScenarioRun> {
   const generate = options.generate || deterministicGenerate
   const files = await generate(scenario)
@@ -137,6 +132,21 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
   }
 
   const axes = { correctness, adherence, guardrails }
+  const composite = compositeScore(axes)
+
+  // M6: score the human reference for this scenario and compute relative-to-human.
+  const referenceFiles = options.references?.[scenario.id]
+  let reference: BenchScenarioRun['reference']
+  if (referenceFiles && referenceFiles.length > 0) {
+    const ref = scoreFilesOffline(referenceFiles, options)
+    const relative = relativeToReference(axes, composite, ref.axes, ref.composite)
+    reference = {
+      files: referenceFiles.map(f => f.path),
+      axes: ref.axes,
+      composite: ref.composite,
+      relative,
+    }
+  }
 
   return {
     id: scenario.id,
@@ -146,8 +156,28 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
     generatedFiles: files.map(f => f.path),
     guardrail,
     axes,
-    composite: compositeScore(axes),
+    composite,
     ...(correctnessDetails.length > 0 ? { correctnessDetails } : {}),
+    ...(reference ? { reference } : {}),
+  }
+}
+
+/** generated / reference per axis; null when either side is N/A or reference is 0. */
+function relativeToReference(
+  generated: BenchAxisScores,
+  generatedComposite: number | null,
+  reference: BenchAxisScores,
+  referenceComposite: number | null
+): BenchReferenceScore['relative'] {
+  const ratio = (g: number | null, r: number | null): number | null => {
+    if (g === null || r === null || r === 0) return null
+    return g / r
+  }
+  return {
+    correctness: ratio(generated.correctness, reference.correctness),
+    adherence: ratio(generated.adherence, reference.adherence),
+    guardrails: ratio(generated.guardrails, reference.guardrails),
+    composite: ratio(generatedComposite, referenceComposite),
   }
 }
 
@@ -187,34 +217,68 @@ export async function runBenchmark(scenarios: BenchScenario[], options: BenchRun
 
   const allComposites = runs.map(r => r.composite).filter((c): c is number => c !== null)
   const allGuardrails = runs.map(r => r.axes.guardrails).filter((g): g is number => g !== null)
+  const allReferenceComposites = runs
+    .map(r => r.reference?.composite)
+    .filter((c): c is number => c !== null && c !== undefined)
+  const allRelativeComposites = runs
+    .map(r => r.reference?.relative.composite)
+    .filter((c): c is number => c !== null && c !== undefined)
+
+  const average = (values: number[]): number | null =>
+    values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : null
 
   return {
     specVersion: scenarios[0]?.specVersion ?? 0,
     runs,
     suites,
-    overallComposite: allComposites.length > 0 ? allComposites.reduce((a, b) => a + b, 0) / allComposites.length : null,
-    overallGuardrails: allGuardrails.length > 0 ? allGuardrails.reduce((a, b) => a + b, 0) / allGuardrails.length : null,
+    overallComposite: average(allComposites),
+    overallGuardrails: average(allGuardrails),
+    overallReferenceComposite: average(allReferenceComposites),
+    overallRelativeComposite: average(allRelativeComposites),
   }
 }
 
 /**
  * Convenience: load + run in one call.
  *
- * The deterministic baseline (no `generate` seam) scores only the scaffold-able
- * subset (rn-01/02/05/06); model-only scenarios require a real generate seam.
- * Callers can override via `filter.scaffoldable`.
+ * - The deterministic baseline (no `generate` seam and no `modelRouter`) scores
+ *   only the scaffold-able subset (rn-01/02/05/06).
+ * - Passing `modelRouter` (M5) builds a ModelRouter-backed generate seam so all
+ *   10 scenarios run through the real model (the leaderboard pass).
+ * - Human references (M6) are loaded from `referencesDir` (default
+ *   bench/references) and scored relative-to-human per run.
  */
-export async function runBenchmarkFromDir(options: BenchRunOptions & { scenariosDir?: string }): Promise<{ summary: BenchSummary; problems: Array<{ file: string; problems: string[] }> }> {
+export async function runBenchmarkFromDir(
+  options: BenchRunOptions & { scenariosDir?: string }
+): Promise<{ summary: BenchSummary; problems: Array<{ file: string; problems: string[] }>; referenceProblems: Array<{ file: string; problems: string[] }> }> {
   const loaded = loadScenarios(options.scenariosDir || defaultScenariosDir())
+  const emptySummary = (): BenchSummary => ({
+    specVersion: 0,
+    runs: [],
+    suites: [],
+    overallComposite: null,
+    overallGuardrails: null,
+    overallReferenceComposite: null,
+    overallRelativeComposite: null,
+  })
   if (loaded.scenarios.length === 0) {
-    return { summary: { specVersion: 0, runs: [], suites: [], overallComposite: null, overallGuardrails: null }, problems: loaded.problems }
+    return { summary: emptySummary(), problems: loaded.problems, referenceProblems: [] }
   }
+
+  const refLoaded = loadReferences(options.referencesDir || defaultReferencesDir())
+  const references: Record<string, BenchGeneratedFile[]> = {}
+  for (const [id, files] of refLoaded.references.entries()) {
+    references[id] = files
+  }
+
   const filter = options.filter ? { ...options.filter } : {}
-  if (!options.generate && filter.scaffoldable === undefined) {
+  const hasGenerateSeam = Boolean(options.generate) || Boolean(options.modelRouter)
+  if (!hasGenerateSeam && filter.scaffoldable === undefined) {
     filter.scaffoldable = true
   }
-  const summary = await runBenchmark(loaded.scenarios, { ...options, filter })
-  return { summary, problems: loaded.problems }
+  const generate = options.generate || (options.modelRouter ? createModelGenerate({ modelRouter: options.modelRouter }) : undefined)
+  const summary = await runBenchmark(loaded.scenarios, { ...options, filter, generate, references })
+  return { summary, problems: loaded.problems, referenceProblems: refLoaded.problems }
 }
 
 export type { BenchGeneratedFile, ScenarioGuardrailFile }
