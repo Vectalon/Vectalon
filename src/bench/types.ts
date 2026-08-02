@@ -1,0 +1,170 @@
+/**
+ * Phase V-5 benchmark — versioned scenario spec shape (M1).
+ *
+ * A scenario describes one "RN coding test": the prompt the harness is given,
+ * the fixture project it runs in, the files/behaviors it must produce, and the
+ * axes it is scored on. The `specVersion` field is validated so scenario files
+ * can evolve without silently breaking the runner.
+ */
+
+export const SCENARIO_SPEC_VERSION = 1
+
+/** The three scored axes from docs/BENCHMARK_PLAN.md. */
+export type BenchAxes = 'correctness' | 'adherence' | 'guardrails'
+
+export interface BenchScenarioExpect {
+  /** File paths the generated code is expected to produce (relative to root). */
+  files: string[]
+  /** Free-form behaviors; scored by the rubric (M2). */
+  behaviors: string[]
+}
+
+export interface BenchScenarioCorrectness {
+  /** Whether the axis expects real tests/typecheck/lint to run and pass. */
+  tests: boolean
+  typecheck: boolean
+  lint: boolean
+}
+
+export interface BenchScenario {
+  /** Stable id, e.g. `rn-01-login-screen`. */
+  id: string
+  /** Must equal SCENARIO_SPEC_VERSION. */
+  specVersion: number
+  /** Suite grouping for the leaderboard (core-ui, data-flow, navigation, ...). */
+  suite: string
+  title: string
+  prompt: string
+  /** When true, the deterministic scaffold baseline can generate output for
+   * this scenario; when false the scenario is model-only. */
+  scaffoldable: boolean
+  /** Files written into the throwaway temp project before generation. */
+  fixtures: Record<string, string>
+  expect: BenchScenarioExpect
+  correctness: BenchScenarioCorrectness
+  /** Which axes to score for this scenario. */
+  axes: BenchAxes[]
+}
+
+/** A generated file in the benchmark's throwaway project. */
+export interface BenchGeneratedFile {
+  path: string
+  content: string
+}
+
+export interface ScenarioGuardrailFile {
+  path: string
+  passed: number
+  failed: number
+  skipped: number
+  ok: boolean
+}
+
+/** Score per axis; `null` means N/A for that run (e.g. correctness in
+ * simulated mode, adherence before the rubric exists). */
+export interface BenchAxisScores {
+  correctness: number | null
+  adherence: number | null
+  guardrails: number | null
+}
+
+export interface BenchScenarioRun {
+  id: string
+  title: string
+  suite: string
+  scaffoldable: boolean
+  generatedFiles: string[]
+  guardrail: ScenarioGuardrailFile[]
+  axes: BenchAxisScores
+  /** Renormalized weighted composite over the available axes (0–1). */
+  composite: number | null
+  /** Per-check correctness detail lines (only present in live runs). */
+  correctnessDetails?: string[]
+}
+
+export interface BenchSuiteSummary {
+  suite: string
+  scenarioIds: string[]
+  composite: number | null
+  guardrails: number | null
+}
+
+export interface BenchSummary {
+  specVersion: number
+  runs: BenchScenarioRun[]
+  suites: BenchSuiteSummary[]
+  overallComposite: number | null
+  overallGuardrails: number | null
+}
+
+export interface BenchRunOptions {
+  /** Directory containing the scenario JSON files. */
+  scenariosDir?: string
+  /** When true, correctness runs real tests/typecheck/lint in the temp project
+   * (requires installed deps). Default false → correctness is N/A. */
+  live?: boolean
+  /** Rubric seam (M2): score RN best-practice adherence for generated files. */
+  rubric?: (files: BenchGeneratedFile[]) => number | null
+  /** Override the deterministic scaffold generator (e.g. a real model). */
+  generate?: (scenario: BenchScenario) => BenchGeneratedFile[] | Promise<BenchGeneratedFile[]>
+  /** Filter which scenarios run. */
+  filter?: { suite?: string; scaffoldable?: boolean; ids?: string[] }
+  /** Executor for live correctness commands (injectable for tests). */
+  runCommand?: (cmd: string, args: string[], opts: { cwd: string }) => Promise<{ success: boolean; exitCode: number; stdout: string; stderr: string }>
+}
+
+/** Validate a parsed scenario file; returns a list of problems (empty = valid). */
+export function validateScenario(raw: unknown): string[] {
+  const problems: string[] = []
+  if (!raw || typeof raw !== 'object') return ['scenario is not an object']
+  const s = raw as Record<string, unknown>
+
+  if (typeof s.id !== 'string' || !s.id.trim()) problems.push('missing string field: id')
+  if (s.specVersion !== SCENARIO_SPEC_VERSION) {
+    problems.push(`specVersion must be ${SCENARIO_SPEC_VERSION}, got ${String(s.specVersion)}`)
+  }
+  if (typeof s.suite !== 'string' || !s.suite.trim()) problems.push('missing string field: suite')
+  if (typeof s.title !== 'string' || !s.title.trim()) problems.push('missing string field: title')
+  if (typeof s.prompt !== 'string' || !s.prompt.trim()) problems.push('missing string field: prompt')
+  if (typeof s.scaffoldable !== 'boolean') problems.push('missing boolean field: scaffoldable')
+
+  if (!s.fixtures || typeof s.fixtures !== 'object' || Array.isArray(s.fixtures)) {
+    problems.push('missing record field: fixtures')
+  } else {
+    for (const [path, content] of Object.entries(s.fixtures as Record<string, unknown>)) {
+      if (typeof content !== 'string') problems.push(`fixture "${path}" must be a string`)
+    }
+  }
+
+  const expect = s.expect as Partial<BenchScenarioExpect> | undefined
+  if (!expect || typeof expect !== 'object') {
+    problems.push('missing object field: expect')
+  } else {
+    if (!Array.isArray(expect.files) || expect.files.some(f => typeof f !== 'string')) {
+      problems.push('expect.files must be a string array')
+    }
+    if (!Array.isArray(expect.behaviors) || expect.behaviors.some(b => typeof b !== 'string')) {
+      problems.push('expect.behaviors must be a string array')
+    }
+  }
+
+  const correctness = s.correctness as Partial<BenchScenarioCorrectness> | undefined
+  if (!correctness || typeof correctness !== 'object') {
+    problems.push('missing object field: correctness')
+  } else {
+    for (const key of ['tests', 'typecheck', 'lint'] as const) {
+      if (typeof correctness[key] !== 'boolean') problems.push(`correctness.${key} must be a boolean`)
+    }
+  }
+
+  if (!Array.isArray(s.axes) || s.axes.length === 0) {
+    problems.push('missing non-empty array field: axes')
+  } else {
+    const valid: BenchAxes[] = ['correctness', 'adherence', 'guardrails']
+    for (const axis of s.axes) {
+      if (!valid.includes(axis as BenchAxes)) problems.push(`unknown axis: ${String(axis)}`)
+    }
+  }
+
+  return problems
+}

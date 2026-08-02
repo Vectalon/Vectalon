@@ -1,0 +1,24 @@
+{
+  "id": "rn-07-image-feed",
+  "specVersion": 1,
+  "suite": "perf",
+  "title": "Image-heavy feed with thumbnails",
+  "prompt": "Create a performant image feed: FlatList with thumbnails, remote images with error handling and caching, memoized rows, and no heavy work in render.",
+  "scaffoldable": false,
+  "fixtures": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.3.1\",\n    \"react-native\": \"0.74.0\",\n    \"react-native-fast-image\": \"8.6.3\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.0\",\n    \"jest\": \"29.7.0\"\n  }\n}",
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"jsx\": \"react-native\",\n    \"esModuleInterop\": true,\n    \"skipLibCheck\": true\n  }\n}",
+    "src/data/posts.ts": "export interface Post {\n  id: string;\n  title: string;\n  imageUrl: string;\n}\n\nexport const posts: Post[] = Array.from({ length: 50 }, (_, i) => ({\n  id: `post-${i}`,\n  title: `Post ${i}`,\n  imageUrl: `https://images.example.com/${i}.jpg`\n}));"
+  },
+  "expect": {
+    "files": ["src/screens/FeedScreen.tsx", "src/components/FeedRow.tsx"],
+    "behaviors": [
+      "FlatList with getItemLayout",
+      "remote images with error handling and caching",
+      "memoized rows (React.memo)",
+      "no heavy work inside JSX render"
+    ]
+  },
+  "correctness": { "tests": true, "typecheck": true, "lint": true },
+  "axes": ["correctness", "adherence", "guardrails"]
+}

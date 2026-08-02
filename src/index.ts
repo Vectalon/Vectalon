@@ -136,3 +136,35 @@ export type { WorkflowDefinition, WorkflowContext, WorkflowState, PhaseResult, H
 
 export { createAdapters } from './adapters'
 export type { AdapterRegistry, ProjectManagementAdapter, GitAdapter, TestRunnerAdapter, SimulatorAdapter, DesignAdapter } from './adapters'
+
+export {
+  SCENARIO_SPEC_VERSION,
+  validateScenario,
+  loadScenarios,
+  defaultScenariosDir,
+  AXIS_WEIGHTS,
+  CORRECTNESS_WEIGHTS,
+  compositeScore,
+  guardrailPassRate,
+  guardrailPerFile,
+  deterministicGenerate,
+  runScenario,
+  runBenchmark,
+  runBenchmarkFromDir,
+  shouldRunScenario,
+  formatBenchmarkReport,
+} from './bench'
+export type {
+  BenchAxes,
+  BenchScenario,
+  BenchScenarioExpect,
+  BenchScenarioCorrectness,
+  BenchGeneratedFile,
+  ScenarioGuardrailFile,
+  BenchAxisScores,
+  BenchScenarioRun,
+  BenchSuiteSummary,
+  BenchSummary,
+  BenchRunOptions,
+  LoadScenariosResult,
+} from './bench'

@@ -513,7 +513,12 @@ async function generateFixImplementation(
   }
 }
 
-function generateAddFeatureImplementation(
+/**
+ * Deterministic "add feature" scaffold — the no-model fallback used by the
+ * implementation phase and the benchmark baseline. Exported so the bench
+ * runner can score it without driving the full workflow.
+ */
+export function generateAddFeatureImplementation(
   projectRoot: string | undefined,
   ctx: {
     snapshot: ContextSnapshot | null

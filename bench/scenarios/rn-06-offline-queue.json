@@ -1,0 +1,24 @@
+{
+  "id": "rn-06-offline-queue",
+  "specVersion": 1,
+  "suite": "data-flow",
+  "title": "Offline-first action queue with optimistic UI",
+  "prompt": "Create an offline-first action queue: enqueue user actions, retry when back online, and update the UI optimistically with rollback on failure.",
+  "scaffoldable": true,
+  "fixtures": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.3.1\",\n    \"react-native\": \"0.74.0\",\n    \"@react-native-community/netinfo\": \"11.1.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.0\",\n    \"jest\": \"29.7.0\"\n  }\n}",
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"jsx\": \"react-native\",\n    \"esModuleInterop\": true,\n    \"skipLibCheck\": true\n  }\n}",
+    "src/store/queue.ts": "export interface QueuedAction {\n  id: string;\n  type: string;\n  payload: unknown;\n  createdAt: number;\n}\n\nexport class ActionQueue {\n  private items: QueuedAction[] = [];\n  enqueue(action: Omit<QueuedAction, 'id' | 'createdAt'>): QueuedAction {\n    const item: QueuedAction = { ...action, id: `q-${this.items.length}`, createdAt: Date.now() };\n    this.items.push(item);\n    return item;\n  }\n  pending(): QueuedAction[] {\n    return this.items.slice();\n  }\n}"
+  },
+  "expect": {
+    "files": ["src/store/queue.ts", "src/hooks/useOfflineQueue.ts", "src/screens/QueueScreen.tsx"],
+    "behaviors": [
+      "optimistic update with rollback",
+      "immutable updates",
+      "connectivity listener for retry",
+      "error states"
+    ]
+  },
+  "correctness": { "tests": true, "typecheck": true, "lint": true },
+  "axes": ["correctness", "adherence", "guardrails"]
+}
