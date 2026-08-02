@@ -6,7 +6,9 @@ import { PatternLearner } from '../../memory/PatternLearner'
 import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { TeamStore } from '../../knowledge/TeamStore'
 import { HashEmbeddingProvider } from '../../knowledge/embeddings'
+import { createRemoteEmbeddingProvider } from '../../knowledge/remoteEmbeddings'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
+import { printSyncStatus } from './sync'
 import { existsSync, readFileSync } from 'fs'
 import { join, basename, resolve } from 'path'
 import { logger } from '../logger'
@@ -47,6 +49,7 @@ export async function serveCommand(options: {
   const protocol = options.protocol || 'mcp'
   const artifactStore = new ArtifactStore(root)
   const teamStore = buildTeamStore(root, artifactStore)
+  printSyncStatus(root)
   const server = new MCPServer(engine, modelRouter, protocol as 'mcp' | 'stdio' | 'sse' | 'http', artifactStore, teamStore)
 
   logger.success(`rn-vectalon serving via ${protocol.toUpperCase()}`)
@@ -114,7 +117,16 @@ function buildTeamStore(root: string, localStore: ArtifactStore): TeamStore | nu
     return null
   }
 
-  const teamStore = new TeamStore({ embeddingProvider: new HashEmbeddingProvider() })
+  // Real embedding API (OpenAI / OpenAI-compatible) when configured; falls back
+  // to the deterministic hash seam for offline semantic scoring.
+  const remoteProvider = createRemoteEmbeddingProvider()
+  const teamStore = new TeamStore({
+    embeddingProvider: new HashEmbeddingProvider(),
+    ...(remoteProvider ? { remoteEmbeddingProvider: remoteProvider } : {}),
+  })
+  if (remoteProvider) {
+    logger.info(`Semantic search: ${remoteProvider.name} embeddings enabled`)
+  }
   teamStore.register({ name: basename(root), team: config.team, store: localStore })
 
   for (const project of config.projects || []) {

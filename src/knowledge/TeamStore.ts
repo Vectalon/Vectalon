@@ -3,6 +3,7 @@ import { KnowledgeIndex } from './KnowledgeIndex'
 import { ROLE_ARTIFACT_TYPES } from './artifactTypes'
 import type { IndexedArtifact } from './KnowledgeIndex'
 import type { EmbeddingProvider } from './embeddings'
+import type { RemoteEmbeddingProvider } from './remoteEmbeddings'
 import type { Artifact, ArtifactRole, ArtifactType } from './artifactTypes'
 
 export interface ProjectRegistration {
@@ -42,6 +43,8 @@ export interface TeamContextOptions {
 
 export interface TeamStoreOptions {
   embeddingProvider?: EmbeddingProvider
+  /** Real (async) embedding API; enables semantic search through searchRemote. */
+  remoteEmbeddingProvider?: RemoteEmbeddingProvider
   semanticWeight?: number
 }
 
@@ -54,12 +57,44 @@ export class TeamStore {
   private entries: ProjectEntry[] = []
   private index: KnowledgeIndex
   private embeddingProvider: EmbeddingProvider | undefined
+  private remoteEmbeddingProvider: RemoteEmbeddingProvider | null
   private semanticWeight: number
 
   constructor(options: TeamStoreOptions = {}) {
     this.embeddingProvider = options.embeddingProvider
+    this.remoteEmbeddingProvider = options.remoteEmbeddingProvider || null
     this.semanticWeight = options.semanticWeight ?? 0.5
     this.index = this.buildIndex()
+  }
+
+  /**
+   * Async search using the real embedding API; falls back to sync search when
+   * no remote provider is configured or the API call fails (network, quota).
+   */
+  async searchRemote(query: TeamSearchQuery): Promise<TeamSearchResult[]> {
+    if (!this.remoteEmbeddingProvider) {
+      return this.search(query)
+    }
+    try {
+      const results = await this.index.searchRemote(query.query, {
+        team: query.team,
+        project: query.project,
+        type: query.type,
+        limit: query.limit,
+      })
+      return results.map(r => ({
+        artifact: r.artifact,
+        project: r.project || '',
+        team: r.team,
+        score: r.score,
+        lexicalScore: r.lexicalScore,
+        semanticScore: r.semanticScore,
+      }))
+    } catch {
+      // A dead embedding endpoint must never break search; degrade to the
+      // deterministic lexical/hash path.
+      return this.search(query)
+    }
   }
 
   register(project: ProjectRegistration): void {
@@ -125,7 +160,7 @@ export class TeamStore {
   }
 
   private buildIndex(): KnowledgeIndex {
-    const index = new KnowledgeIndex(this.embeddingProvider || null, this.semanticWeight)
+    const index = new KnowledgeIndex(this.embeddingProvider || null, this.semanticWeight, this.remoteEmbeddingProvider)
     const docs: IndexedArtifact[] = []
     for (const entry of this.entries) {
       for (const artifact of entry.artifacts) {

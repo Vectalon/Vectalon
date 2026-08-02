@@ -1,6 +1,7 @@
 import { ArtifactStore } from '../../src/knowledge/ArtifactStore'
 import { TeamStore } from '../../src/knowledge/TeamStore'
 import { HashEmbeddingProvider } from '../../src/knowledge/embeddings'
+import type { RemoteEmbeddingProvider } from '../../src/knowledge/remoteEmbeddings'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
 const tempDirs: string[] = []
@@ -185,5 +186,37 @@ describe('TeamStore', () => {
     expect(results).toHaveLength(1)
     expect(results[0].semanticScore).toBeNull()
     expect(results[0].lexicalScore).toBeGreaterThan(0)
+  })
+
+  it('searchRemote uses the real embedding provider and falls back without one', async () => {
+    const remote: RemoteEmbeddingProvider = {
+      name: 'fake-remote',
+      embed: jest.fn(async (text: string) => {
+        // Discriminating fake: docs containing 'retention' get a matching
+        // vector; everything else gets an orthogonal one so only the matching
+        // doc survives the semantic filter.
+        const match = text.toLowerCase().includes('retention')
+        return new Array<number>(8).fill(match ? 1 : 0)
+      }),
+    }
+    const team = new TeamStore({
+      embeddingProvider: new HashEmbeddingProvider(),
+      remoteEmbeddingProvider: remote,
+      semanticWeight: 0.5,
+    })
+    team.register({ name: 'app', team: 'mobile', store: appStore })
+
+    const results = await team.searchRemote({ query: 'retention', team: 'mobile' })
+    expect(results).toHaveLength(1)
+    expect(results[0].semanticScore).not.toBeNull()
+    expect(results[0].semanticScore as number).toBeGreaterThan(0)
+    expect((remote.embed as jest.Mock).mock.calls.length).toBeGreaterThan(0)
+
+    // Without a remote provider, searchRemote mirrors sync search.
+    const plain = new TeamStore()
+    plain.register({ name: 'app', store: appStore })
+    const fallback = await plain.searchRemote({ query: 'retention' })
+    expect(fallback).toHaveLength(1)
+    expect(fallback[0].semanticScore).toBeNull()
   })
 })

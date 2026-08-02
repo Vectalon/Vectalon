@@ -8,6 +8,7 @@ import { pullCommand } from './commands/pull'
 import { modelsCommand } from './commands/models'
 import { policyCommand } from './commands/policy'
 import { refreshCommand } from './commands/refresh'
+import { syncCommand } from './commands/sync'
 import { logger } from './logger'
 import pkg from '../../package.json'
 import { dynamicImport } from '../utils/dynamicImport'
@@ -84,6 +85,17 @@ export function runCLI(): void {
     .option('--force', 'Refresh even if the cache is still fresh')
     .action(refreshCommand)
 
+  program
+    .command('sync [directory]')
+    .description('Sync the team brain (.vectalon/knowledge) to a hosted git remote')
+    .option('--push', 'Push the knowledge base to the remote')
+    .option('--pull', 'Pull the knowledge base from the remote')
+    .option('--init', 'Create .vectalon/sync.json (requires --remote)')
+    .option('--remote <url>', 'Git remote URL for the hosted artifact store')
+    .option('--branch <name>', 'Remote branch to sync to/from (default: main)')
+    .option('--force', 'Override a disabled sync config')
+    .action(syncCommand)
+
   const argv = process.argv
   const supportsClack = majorNode() > 20 || (majorNode() === 20 && (minorNode() > 12 || (minorNode() === 12 && patchNode() >= 0)))
   const interactiveEligible = argv.length <= 2 && process.stdin.isTTY && supportsClack
@@ -121,6 +133,7 @@ async function runInteractive(): Promise<void> {
       { value: 'init', label: 'Initialize a project', hint: 'Scan React Native project and create .vectalon/' },
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Refresh knowledge', hint: 'Update best practices and dependency suggestions from the web' },
+      { value: 'sync', label: 'Sync team brain', hint: 'Push/pull .vectalon/knowledge to a hosted git remote' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
       { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
       { value: 'import', label: 'Import artifacts', hint: 'Add markdown/JSON to the knowledge base' },
@@ -204,6 +217,23 @@ async function runInteractive(): Promise<void> {
   if (action === 'refresh') {
     await refreshCommand('', { force: true })
     p.outro('Knowledge refreshed')
+    return
+  }
+
+  if (action === 'sync') {
+    const direction = await p.select({
+      message: 'Sync direction',
+      options: [
+        { value: 'push', label: 'Push knowledge to remote' },
+        { value: 'pull', label: 'Pull knowledge from remote' },
+      ],
+    })
+    if (p.isCancel(direction)) {
+      p.outro('Cancelled')
+      return
+    }
+    await syncCommand('', { push: direction === 'push', pull: direction === 'pull' })
+    p.outro('Sync complete')
     return
   }
 

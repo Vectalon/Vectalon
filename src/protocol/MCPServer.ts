@@ -985,7 +985,7 @@ export class MCPServer {
         throw new Error(`Unknown artifact type: ${type}. Valid types: ${ARTIFACT_TYPES.join(', ')}`)
       }
 
-      const results = teamStore.search({
+      const results = await teamStore.searchRemote({
         query,
         team: args.team as string | undefined,
         project: args.project as string | undefined,
