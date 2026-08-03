@@ -17,6 +17,8 @@ function okCheckers(): DoctorCheckers {
     env: () => undefined,
     portOpen: () => false,
     platform: 'linux',
+    hasModel: () => true,
+    writable: () => true,
   }
 }
 
@@ -77,6 +79,58 @@ describe('doctorCommand', () => {
     expect(() => doctorCommand(dir, { checkers: okCheckers() })).not.toThrow()
     expect(out).toContain('Native toolchain')
     expect(out).toContain('Node.js')
+  })
+
+  it('prints a nightly leaderboard readiness section', () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    writeFileSync(join(dir, '.vectalon', 'ecosystem.json'), JSON.stringify({ version: '1.0.0', enabled: [] }))
+
+    let out = ''
+    jest.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+    jest.spyOn(process.stderr, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+
+    expect(() => doctorCommand(dir, { checkers: okCheckers() })).not.toThrow()
+    expect(out).toContain('Nightly leaderboard readiness')
+    expect(out).toContain('OPENAI_API_KEY secret')
+    expect(out).toContain('Local model downloaded')
+    expect(out).toContain('Benchmark results directory')
+  })
+
+  it('includes leaderboard checks in the --json report and honors a custom model id', () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    writeFileSync(join(dir, '.vectalon', 'ecosystem.json'), JSON.stringify({ version: '1.0.0', enabled: [] }))
+
+    let jsonOutput = ''
+    jest.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') jsonOutput += chunk
+      return true
+    })
+    const exit = jest.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('exit')
+    }) as unknown as (code?: string | number | null) => never)
+
+    try {
+      doctorCommand(dir, {
+        json: true,
+        checkers: {
+          ...okCheckers(),
+          env: name => (name === 'OPENAI_API_KEY' || name === 'ANTHROPIC_API_KEY' ? 'sk-' : undefined),
+        },
+        leaderboard: { localModelPresetId: 'qwen2.5-coder-3b' },
+      })
+    } catch {
+      // no-op: exit mocked to throw
+    }
+    const parsed = JSON.parse(jsonOutput) as { leaderboard: Array<{ id: string; status: string }> }
+    expect(parsed.leaderboard.map(c => c.id)).toEqual(['lb-openai-key', 'lb-anthropic-key', 'lb-local-model', 'lb-results-dir'])
+    expect(parsed.leaderboard.every(c => c.status === 'ok')).toBe(true)
+    expect(exit).toHaveBeenCalledWith(0)
   })
 
   it('prints a JSON report with --json including the toolchain section', () => {

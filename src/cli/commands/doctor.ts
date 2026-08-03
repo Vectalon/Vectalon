@@ -1,10 +1,12 @@
 import { resolve } from 'path'
-import { existsSync } from 'fs'
+import { existsSync, accessSync, constants } from 'fs'
 import { spawnSync } from 'child_process'
 import Table from 'cli-table'
 import pc from 'picocolors'
 import { logger } from '../logger'
-import { runDoctor, runDoctorFixes, type DoctorCheckers, type DoctorFixer, type FixAttempt, type ToolchainCheckOptions } from '../../ecosystem'
+import { runDoctor, runDoctorFixes, type DoctorCheckers, type DoctorFixer, type FixAttempt, type ToolchainCheckOptions, type LeaderboardCheckOptions } from '../../ecosystem'
+import { hasDownloadedModel } from '../../model/local/ModelStore'
+import { getDefaultPreset } from '../../model/local/presets'
 
 export interface DoctorOptions {
   json?: boolean
@@ -16,6 +18,8 @@ export interface DoctorOptions {
   fixer?: DoctorFixer
   /** Overrides for toolchain thresholds/ports (e.g. a custom Metro port). */
   toolchain?: ToolchainCheckOptions
+  /** Overrides for nightly-leaderboard readiness (e.g. a custom local model). */
+  leaderboard?: LeaderboardCheckOptions
 }
 
 /**
@@ -54,6 +58,17 @@ function realCheckers(root: string): DoctorCheckers {
     },
     env(name: string): string | undefined {
       return process.env[name]
+    },
+    hasModel(presetId: string): boolean {
+      return hasDownloadedModel(presetId)
+    },
+    writable(dir: string): boolean {
+      try {
+        accessSync(dir, constants.W_OK)
+        return true
+      } catch {
+        return false
+      }
     },
     portOpen(port: number): boolean {
       // Bounded synchronous probe: a tiny child node process tries to connect
@@ -124,7 +139,9 @@ export function doctorCommand(directory: string, options: DoctorOptions): void {
   const root = resolve(directory || process.cwd())
   const hasEcosystem = existsSync(resolve(root, '.vectalon', 'ecosystem.json'))
   const checkers = options.checkers || realCheckers(root)
-  let report = runDoctor(root, checkers, options.toolchain)
+  const leaderboardOptions = { localModelPresetId: getDefaultPreset().id, ...(options.leaderboard || {}) }
+  const doctorOptions = { ...(options.toolchain || {}), ...leaderboardOptions }
+  let report = runDoctor(root, checkers, doctorOptions)
 
   if (options.fix && report.missingCount > 0) {
     logger.info(pc.bold('Attempting to fix missing checks…'))
@@ -135,7 +152,7 @@ export function doctorCommand(directory: string, options: DoctorOptions): void {
     logger.info('')
     // Re-run the full doctor with the original (env-aware) checkers so the
     // report reflects what the fixer installed.
-    report = runDoctor(root, checkers, options.toolchain)
+    report = runDoctor(root, checkers, doctorOptions)
   }
 
   if (options.json) {
@@ -149,7 +166,7 @@ export function doctorCommand(directory: string, options: DoctorOptions): void {
     logger.warn('No ecosystem items enabled. Run `vectalon ecosystem --enable <id>` to opt in.')
   }
 
-  logger.info(pc.bold(`vectalon doctor — ${report.enabledCount} enabled ecosystem item(s) + native toolchain`))
+  logger.info(pc.bold(`vectalon doctor — ${report.enabledCount} enabled ecosystem item(s) + native toolchain + nightly leaderboard`))
   logger.info('')
 
   if (report.checks.length > 0) {
@@ -183,6 +200,22 @@ export function doctorCommand(directory: string, options: DoctorOptions): void {
   }
 
   process.stdout.write(toolchainTable.toString() + '\n')
+  logger.info('')
+
+  logger.info(pc.bold('Nightly leaderboard readiness (M5)'))
+  const leaderboardTable = new Table({
+    head: ['Status', 'Check', 'Detail', 'Hint'],
+    style: { head: ['cyan'] },
+    colWidths: [10, 30, 56, 46],
+  })
+
+  for (const check of report.leaderboard) {
+    const statusColor =
+      check.status === 'ok' ? pc.green('OK') : check.status === 'missing' ? pc.red('MISSING') : pc.yellow('WARN')
+    leaderboardTable.push([statusColor, check.name, check.detail, check.hint || ''])
+  }
+
+  process.stdout.write(leaderboardTable.toString() + '\n')
   logger.info('')
 
   if (report.missingCount === 0 && report.warningCount === 0) {

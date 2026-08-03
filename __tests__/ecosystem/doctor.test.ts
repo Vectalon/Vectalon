@@ -6,6 +6,7 @@ import {
   runDoctor,
   checkEcosystemItem,
   checkNativeToolchain,
+  checkLeaderboardReadiness,
   fixForMissing,
   runDoctorFixes,
   type DoctorCheckers,
@@ -21,6 +22,8 @@ function makeCheckers(overrides: Partial<DoctorCheckers> = {}): DoctorCheckers {
     env: () => undefined,
     portOpen: () => false,
     platform: 'darwin',
+    hasModel: () => false,
+    writable: () => false,
     ...overrides,
   }
 }
@@ -262,6 +265,100 @@ describe('ecosystem doctor', () => {
       for (const id of ['node', 'jdk', 'android-sdk', 'android-emulator', 'xcode', 'cocoapods', 'metro-port']) {
         expect(report.toolchain.some(c => c.id === id)).toBe(true)
       }
+    })
+  })
+
+  describe('nightly leaderboard readiness', () => {
+    it('reports OK when API keys, the local model, and the results dir are ready', () => {
+      const checks = checkLeaderboardReadiness(dir, makeCheckers({
+        env: name => (name === 'OPENAI_API_KEY' || name === 'ANTHROPIC_API_KEY' ? 'sk-' : undefined),
+        hasModel: () => true,
+        writable: () => true,
+      }))
+      expect(checks.map(c => c.id)).toEqual(['lb-openai-key', 'lb-anthropic-key', 'lb-local-model', 'lb-results-dir'])
+      expect(checks.every(c => c.status === 'ok')).toBe(true)
+    })
+
+    it('warns when a remote API key secret is unset', () => {
+      const checks = checkLeaderboardReadiness(dir, makeCheckers({
+        env: () => undefined,
+        hasModel: () => true,
+        writable: () => true,
+      }))
+      expect(checks.find(c => c.id === 'lb-openai-key')?.status).toBe('warning')
+      expect(checks.find(c => c.id === 'lb-anthropic-key')?.status).toBe('warning')
+      expect(checks.find(c => c.id === 'lb-openai-key')?.hint).toContain('OPENAI_API_KEY')
+    })
+
+    it('warns when the local model is not downloaded', () => {
+      const checks = checkLeaderboardReadiness(dir, makeCheckers({ hasModel: () => false }))
+      expect(checks.find(c => c.id === 'lb-local-model')?.status).toBe('warning')
+      expect(checks.find(c => c.id === 'lb-local-model')?.hint).toContain('vectalon pull')
+    })
+
+    it('accepts a custom local model preset id', () => {
+      const checks = checkLeaderboardReadiness(dir, makeCheckers({
+        hasModel: id => id === 'qwen2.5-coder-3b',
+        writable: () => true,
+      }), { localModelPresetId: 'qwen2.5-coder-3b' })
+      expect(checks.find(c => c.id === 'lb-local-model')?.status).toBe('ok')
+      expect(checks.find(c => c.id === 'lb-local-model')?.detail).toContain('qwen2.5-coder-3b')
+    })
+
+    it('degrades the results-dir check to a warning in non-benchmark projects', () => {
+      // No bench/scenarios → this project never runs the nightly leaderboard.
+      const checks = checkLeaderboardReadiness(dir, makeCheckers({ writable: () => false }))
+      expect(checks.find(c => c.id === 'lb-results-dir')?.status).toBe('warning')
+    })
+
+    it('flags a missing/unwritable results dir as missing on a benchmark host', () => {
+      // The repo itself has bench/scenarios — the leaderboard workflow runs there.
+      mkdirSync(join(dir, 'bench', 'scenarios'), { recursive: true })
+      const checks = checkLeaderboardReadiness(dir, makeCheckers({
+        dirExists: d => d === join(dir, 'bench', 'scenarios'),
+        writable: () => false,
+      }))
+      expect(checks.find(c => c.id === 'lb-results-dir')?.status).toBe('missing')
+      expect(checks.find(c => c.id === 'lb-results-dir')?.hint).toContain('mkdir -p bench/results')
+    })
+
+    it('fixes a missing results dir with mkdir -p on a benchmark host', () => {
+      mkdirSync(join(dir, 'bench', 'scenarios'), { recursive: true })
+      const checks = checkLeaderboardReadiness(dir, makeCheckers({
+        dirExists: d => d === join(dir, 'bench', 'scenarios'),
+        writable: () => false,
+      }))
+      const check = checks.find(c => c.id === 'lb-results-dir')!
+      const fix = fixForMissing(check, dir)!
+      expect(fix.command).toBe('mkdir')
+      expect(fix.args).toEqual(['-p', 'bench/results'])
+      expect(fix.manual).toBe(false)
+    })
+
+    it('does not auto-fix API-key or model checks (user/environment actions)', () => {
+      const checks = checkLeaderboardReadiness(dir, makeCheckers({
+        env: () => undefined,
+        hasModel: () => false,
+        writable: () => true,
+      }))
+      for (const check of checks.filter(c => c.status === 'warning')) {
+        expect(fixForMissing(check, dir)).toBeNull()
+      }
+    })
+
+    it('includes leaderboard checks in the runDoctor report and counts', () => {
+      mkdirSync(join(dir, '.vectalon'), { recursive: true })
+      mkdirSync(join(dir, 'bench', 'scenarios'), { recursive: true })
+      writeFileSync(join(dir, '.vectalon', 'ecosystem.json'), JSON.stringify({ version: '1.0.0', enabled: [] }))
+      writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'app', version: '1.0.0' }))
+      const report = runDoctor(dir, makeCheckers({
+        run: () => ({ success: true, output: 'v20.11.0' }),
+        platform: 'linux',
+        dirExists: d => d === join(dir, 'bench', 'scenarios'),
+        writable: () => false,
+      }))
+      expect(report.leaderboard.map(c => c.id)).toEqual(['lb-openai-key', 'lb-anthropic-key', 'lb-local-model', 'lb-results-dir'])
+      expect(report.missingCount).toBeGreaterThanOrEqual(1)
     })
   })
 
