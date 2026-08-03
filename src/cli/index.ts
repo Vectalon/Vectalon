@@ -126,6 +126,9 @@ export function runCLI(): void {
     .option('--json', 'Print the summary as JSON instead of markdown')
     .option('-o, --output <path>', 'Write the report to a file instead of stdout')
     .option('--scenarios <dir>', 'Override the scenarios directory (default: bench/scenarios)')
+    .option('--references <dir>', 'Override the human reference-solutions directory (default: bench/references)')
+    .option('--baseline <file>', 'Compare the deterministic run against a stored baseline JSON (CI regression gate; the gate runs only when this flag is passed)')
+    .option('--tolerance <fraction>', 'Max allowed axis drop before a regression is flagged (default 0.01)')
     .action(benchCommand)
 
   const argv = process.argv

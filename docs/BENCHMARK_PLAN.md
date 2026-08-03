@@ -7,11 +7,14 @@
 
 ## Status
 
-> M1–M3 and M6 are **delivered** (committed on `main`). The harness lives in
+> M1–M4 and M6 are **delivered** (committed on `main`). The harness lives in
 > `src/bench/` with scenarios in `bench/scenarios/` and reference solutions in
 > `bench/references/`; the CLI is `vectalon bench --model … --suite … --live`
-> (see [`CLI_REFERENCE.md`](CLI_REFERENCE.md)). M4 (CI deterministic baseline
-> gate) and M5 (scheduled real-model leaderboard) are next up — see the README
+> (see [`CLI_REFERENCE.md`](CLI_REFERENCE.md)). M4 adds the **CI regression
+> gate**: `vectalon bench --baseline bench/baseline.json` compares the
+> deterministic run against the committed baseline and fails on any axis
+> regression (`.github/workflows/ci.yml` runs it on every PR). M5 (scheduled
+> real-model leaderboard) is next up — see the README
 > [`Roadmap`](README.md) and [`ENHANCEMENT_PLAN.md`](ENHANCEMENT_PLAN.md) V-5.
 
 | Milestone | Status |
@@ -19,7 +22,7 @@
 | M1 — Scenario spec + 10 scenarios + deterministic baseline runner | ✅ Delivered (`src/bench/loader.ts` + `snapshot.ts`, `bench/scenarios/`)
 | M2 — Rubric (15 checks) + scoring + report | ✅ Delivered (`src/bench/rubric.ts`, `scoring.ts`, `report.ts`)
 | M3 — `vectalon bench` CLI + `--suite`/`--model`/`--live` flags | ✅ Delivered (`src/cli/commands/bench.ts`)
-| M4 — CI deterministic baseline + PR gate | ⬜ Next up
+| M4 — CI deterministic baseline + PR gate | ✅ Delivered (`bench/baseline.json`, `--baseline`/`--tolerance`, `.github/workflows/ci.yml` `bench` job)
 | M5 — Public leaderboard (scheduled real-model pass, `BENCHMARK_RESULTS.md`) | ⬜ Next up (`--live` seam delivered)
 | M6 — Reference solutions + relative-to-human scoring | ✅ Delivered (`bench/references/`, `src/bench/references.ts`)
 
@@ -217,6 +220,13 @@ what "passing" means.
   *only* public RN-specific model leaderboard.
 - **Extensibility:** the community can add scenarios via PR (spec shape is
   versioned); a `--suite` flag keeps CI runs fast (subset selection).
+- **Local custom packs (no PR needed):** teams can run their own RN evals
+  directly — `vectalon bench --scenarios ./my-evals --references ./my-refs`.
+  The loader walks **nested subdirectories** (no flat-file requirement),
+  validates every file against the versioned spec (`specVersion`, required
+  fields, axes, fixture types), and **rejects duplicate scenario/reference ids**
+  with a per-file warning. Reference solutions live in a parallel directory keyed
+  by scenario id, so custom packs get full relative-to-human scoring too.
 
 ## 6. Milestones
 
@@ -225,7 +235,7 @@ what "passing" means.
 | M1 | Scenario spec + 10 scenarios + deterministic baseline runner | ✅ Delivered |
 | M2 | Rubric (15 checks) + scoring + markdown report | ✅ Delivered |
 | M3 | `vectalon bench` CLI + `--suite`/`--model`/`--live` flags | ✅ Delivered |
-| M4 | CI deterministic baseline + PR gate | ⬜ Next up |
+| M4 | CI deterministic baseline + PR gate | ✅ Delivered (committed `bench/baseline.json` + `--baseline` flag + CI job) |
 | M5 | Public leaderboard (scheduled real-model pass, BENCHMARK_RESULTS.md) | ⬜ Next up (`--live` seam delivered) |
 | M6 | Reference solutions + relative-to-human scoring | ✅ Delivered |
 

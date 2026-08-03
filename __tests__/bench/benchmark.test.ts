@@ -101,6 +101,36 @@ describe('bench scenario loader', () => {
       cleanup(dir)
     }
   })
+
+  it('loads scenarios from nested subdirectories (custom packs)', () => {
+    const dir = createTempProject({
+      'forms/rn-form.json': JSON.stringify(validScenario({ id: 'rn-form', suite: 'forms-security' })),
+      'nav/rn-nav.json': JSON.stringify(validScenario({ id: 'rn-nav', suite: 'navigation' })),
+      'readme.md': '# my eval pack',
+    })
+    try {
+      const loaded = loadScenarios(dir)
+      expect(loaded.problems).toEqual([])
+      expect(loaded.scenarios.map(s => s.id).sort()).toEqual(['rn-form', 'rn-nav'])
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('flags duplicate scenario ids and keeps the first', () => {
+    const dir = createTempProject({
+      'a/rn-dup.json': JSON.stringify(validScenario({ id: 'rn-dup' })),
+      'b/rn-dup.json': JSON.stringify(validScenario({ id: 'rn-dup', title: 'Duplicate' })),
+    })
+    try {
+      const loaded = loadScenarios(dir)
+      expect(loaded.scenarios.map(s => s.id)).toEqual(['rn-dup'])
+      expect(loaded.problems.length).toBe(1)
+      expect(loaded.problems[0].problems[0]).toContain('duplicate scenario id: rn-dup')
+    } finally {
+      cleanup(dir)
+    }
+  })
 })
 
 describe('bench scoring', () => {
