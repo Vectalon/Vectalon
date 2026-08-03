@@ -54,6 +54,18 @@ export const testPhase: WorkflowPhase = {
       )
     }
 
+    // Unclassified requests get a clarifying plan from the implementation phase,
+    // never a generic scaffold — so there are no new test contracts to write.
+    if (intent.type === 'unknown') {
+      return phaseResult(
+        'tests',
+        'Test writing',
+        'Write tests first (TDD) based on acceptance criteria and feature requirements, before any implementation code.',
+        'Skipping test generation because the request could not be classified; the implementation phase will produce a clarification plan instead of new code.',
+        []
+      )
+    }
+
     // Gather context from previous phases to drive the test contract
     const prdPhase = ctx.state.phases.find(p => p.id === 'prd')
     const acceptancePhase = ctx.state.phases.find(p => p.id === 'acceptance-criteria')

@@ -50,6 +50,13 @@ describe('featureDevelopmentWorkflow', () => {
     const engine = new WorkflowEngine()
     const ctx = makeContext('Login')
     ctx.modelRouter.initialize({ provider: 'local' })
+    // Intent comes from the LLM; feed an add-feature classification so the
+    // workflow takes the scaffold path (unparseable implementation output then
+    // falls back to the deterministic scaffold, which this test asserts on).
+    jest.spyOn(ctx.modelRouter, 'generate').mockResolvedValue({
+      content: JSON.stringify({ intents: [{ type: 'add-feature', feature: 'login', confidence: 0.99, reasoning: 'new feature' }] }),
+      provider: 'mock',
+    })
 
     const result = await engine.run(featureDevelopmentWorkflow, ctx)
 
@@ -106,6 +113,10 @@ describe('featureDevelopmentWorkflow', () => {
     const engine = new WorkflowEngine()
     const ctx = makeContext('Login')
     ctx.modelRouter.initialize({ provider: 'local' })
+    jest.spyOn(ctx.modelRouter, 'generate').mockResolvedValue({
+      content: JSON.stringify({ intents: [{ type: 'add-feature', feature: 'login', confidence: 0.99, reasoning: 'new feature' }] }),
+      provider: 'mock',
+    })
     ctx.adapters.testRunner = {
       name: 'failing',
       runTests: async () => ({

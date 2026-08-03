@@ -32,6 +32,10 @@ export const taskPhase: WorkflowPhase = {
         { title: `Code review: ${ctx.prompt}`, description: 'Review the fix for correctness and regressions', type: 'engineering' },
         { title: `Validate ${intent.area} fix: ${ctx.prompt}`, description: 'Re-run lint, type check, and tests to confirm all issues are resolved', type: 'qa' }
       )
+    } else if (intent.type === 'unknown') {
+      tasks.push(
+        { title: `Clarify request: ${ctx.prompt}`, description: 'The request could not be classified. Confirm whether this is a new feature, dependency removal, refactor, or fix before implementation.', type: 'requirements' }
+      )
     } else {
       tasks.push(
         { title: `Tests: ${ctx.prompt}`, description: 'Write unit, integration, and hook tests first (TDD) based on acceptance criteria', type: 'qa' },

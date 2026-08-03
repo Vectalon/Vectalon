@@ -17,6 +17,9 @@ function intentRouter(...intents: Array<Record<string, unknown>>): ModelRouter {
 }
 
 function makeContext(projectRoot: string | undefined, prompt: string): WorkflowContext {
+  // Default to an add-feature intent so scaffold-generation tests exercise the
+  // happy path; intent-specific tests override modelRouter below.
+  const router = intentRouter({ type: 'add-feature', feature: 'login', confidence: 0.99, reasoning: 'new feature' })
   return {
     // WorkflowContext.projectRoot is typed as string; a falsy root simulates the
     // no-project-root path where tests are recorded but not written to disk.
@@ -68,7 +71,7 @@ function makeContext(projectRoot: string | undefined, prompt: string): WorkflowC
       simulator: { name: 'mock', run: jest.fn() },
       design: { name: 'mock', analyzeMotion: jest.fn() },
     },
-    modelRouter: {} as WorkflowContext['modelRouter'],
+    modelRouter: router,
   }
 }
 
@@ -133,6 +136,17 @@ describe('testPhase (TDD)', () => {
     expect(result.status).toBe('completed')
     expect(result.artifacts.filter(a => a.type === 'qa')).toHaveLength(0)
     expect(result.output).toContain('Skipping scaffold test generation for refactor')
+  })
+
+  it('skips test generation when the intent is unknown', async () => {
+    const ctx = makeContext(projectRoot, 'Remove appcenter safely from this project')
+    ctx.modelRouter = intentRouter({ type: 'unknown', confidence: 0.5, reasoning: 'not sure' })
+    const result = await testPhase.run(ctx)
+
+    expect(result.status).toBe('completed')
+    expect(result.artifacts.filter(a => a.type === 'qa')).toHaveLength(0)
+    expect(result.output).toContain('could not be classified')
+    expect(existsSync(join(projectRoot, 'src'))).toBe(false)
   })
 
   it('keeps generated tests out of src/ when the project is the rn-vectalon package itself', async () => {
