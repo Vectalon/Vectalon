@@ -21,6 +21,8 @@ function makeContext(prompt: string): WorkflowContext {
         hasTypeScript: true,
         hasMetro: true,
         hasExpo: false,
+        tooling: 'rn-cli',
+        expoSdkVersion: '',
       },
       structure: [],
       components: [
@@ -164,6 +166,30 @@ describe('featureDevelopmentWorkflow', () => {
     const readiness = result.phases.find(p => p.id === 'readiness')
     expect(readiness?.output).toContain('GO')
     expect(readiness?.output).toContain('simulation mode')
+  })
+
+  it('completes when intent is unknown — clarification plan, no TDD failure', async () => {
+    const engine = new WorkflowEngine()
+    const ctx = makeContext('Login')
+    ctx.modelRouter.initialize({ provider: 'local' })
+    // Intent always comes from the LLM; here the model says it cannot classify
+    // the request. testPhase skips generation for unknown intents by design, so
+    // verification must not fail the TDD gate for the missing scaffold.
+    jest.spyOn(ctx.modelRouter, 'generate').mockResolvedValue({
+      content: JSON.stringify({ intents: [{ type: 'unknown', confidence: 0.99, reasoning: 'cannot classify' }] }),
+      provider: 'mock',
+    })
+
+    const result = await engine.run(featureDevelopmentWorkflow, ctx)
+
+    expect(result.status).toBe('completed')
+    const implementation = result.phases.find(p => p.id === 'implementation')
+    expect(implementation?.output).toContain('Request not classified')
+    const tests = result.phases.find(p => p.id === 'tests')
+    expect(tests?.artifacts.some(a => a.type === 'qa')).toBe(false)
+    const verification = result.phases.find(p => p.id === 'verification')
+    expect(verification?.status).toBe('completed')
+    expect(verification?.output).toContain('TDD validation: skipped')
   })
 
   it('detects dependency still installed and fails verification', async () => {
