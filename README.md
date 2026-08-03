@@ -201,6 +201,24 @@ documentation, project dependency management, and EAS workflows.
 fragment ready to paste into Cursor/Claude Code, and `--flavor expo|rn-cli`
 filters items by project flavor.
 
+### Ecosystem Doctor
+
+`vectalon doctor` verifies that every enabled ecosystem item is actually
+installed and reachable, so agents never discover tooling that isn't there:
+
+- **MCP servers** — the npx package resolves locally, or the binary responds
+  to a bounded version/help probe
+- **Tools & hooks** — the npm package is resolvable from the project's
+  `node_modules`, or the global binary (fastlane/maestro/EAS CLI) responds on
+  `PATH`
+- **Skills** — the skill install directory exists under `.vectalon/skills/` or
+  `.agents/skills/`
+
+Each check prints a status (`OK`/`MISSING`/`WARN`) with an actionable fix hint
+(e.g. the `npm install` / `npx skills add` command to run). The command exits
+non-zero when anything is missing — useful in CI — and `--json` emits the full
+report as machine-readable output.
+
 ### Framework-Native
 Zero lock-in. rn-vectalon is a standard npm package that integrates with your existing RN CLI workflow. No new build system, no proprietary DSL — just a `serve` command and your agent connects.
 
