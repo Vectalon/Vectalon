@@ -1,6 +1,7 @@
-import { existsSync, readdirSync, readFileSync } from 'fs'
-import { join, resolve } from 'path'
+import { existsSync, readFileSync } from 'fs'
+import { resolve } from 'path'
 import { validateScenario, BenchScenario } from './types'
+import { collectJsonFiles } from './fs'
 
 export interface LoadScenariosResult {
   scenarios: BenchScenario[]
@@ -21,9 +22,8 @@ export function loadScenarios(dir = defaultScenariosDir()): LoadScenariosResult 
     return { scenarios, problems: [{ file: dir, problems: ['directory does not exist'] }] }
   }
 
-  for (const entry of readdirSync(dir)) {
-    if (!entry.endsWith('.json')) continue
-    const file = join(dir, entry)
+  const seenIds = new Set<string>()
+  for (const file of collectJsonFiles(dir)) {
     let raw: unknown
     try {
       raw = JSON.parse(readFileSync(file, 'utf-8'))
@@ -36,7 +36,13 @@ export function loadScenarios(dir = defaultScenariosDir()): LoadScenariosResult 
       problems.push({ file, problems: issues })
       continue
     }
-    scenarios.push(raw as BenchScenario)
+    const scenario = raw as BenchScenario
+    if (seenIds.has(scenario.id)) {
+      problems.push({ file, problems: [`duplicate scenario id: ${scenario.id}`] })
+      continue
+    }
+    seenIds.add(scenario.id)
+    scenarios.push(scenario)
   }
 
   return { scenarios, problems }

@@ -74,6 +74,41 @@ describe('bench reference solutions (M6)', () => {
       cleanup(dir)
     }
   })
+
+  it('flags duplicate reference ids', () => {
+    const dir = createTempProject({
+      'a.json': JSON.stringify({ id: 'rn-dup', files: [{ path: 'src/a.ts', content: 'a' }] }),
+      'b.json': JSON.stringify({ id: 'rn-dup', files: [{ path: 'src/b.ts', content: 'b' }] }),
+    })
+    try {
+      const { references, problems } = loadReferences(dir)
+      expect([...references.keys()]).toEqual(['rn-dup'])
+      expect(problems.length).toBe(1)
+      expect(problems[0].problems[0]).toContain('duplicate reference id: rn-dup')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('loads references from nested subdirectories (custom packs)', () => {
+    const dir = createTempProject({
+      'forms/rn-form.json': JSON.stringify({
+        id: 'rn-form',
+        files: [{ path: 'src/FormScreen.tsx', content: 'export const FormScreen = () => null;' }],
+      }),
+      'nav/rn-nav.json': JSON.stringify({
+        id: 'rn-nav',
+        files: [{ path: 'src/NavScreen.tsx', content: 'export const NavScreen = () => null;' }],
+      }),
+    })
+    try {
+      const { references, problems } = loadReferences(dir)
+      expect(problems).toEqual([])
+      expect([...references.keys()].sort()).toEqual(['rn-form', 'rn-nav'])
+    } finally {
+      cleanup(dir)
+    }
+  })
 })
 
 describe('bench model generate seam (M5)', () => {
@@ -182,5 +217,42 @@ describe('bench relative-to-human scoring (M6)', () => {
     const { summary } = await runBenchmarkFromDir({ modelRouter: router })
     // A model seam runs every scenario (10), not just the scaffold-able subset.
     expect(summary.runs.length).toBe(10)
+  })
+
+  it('runBenchmarkFromDir runs a custom scenarios dir with custom references', async () => {
+    const scenariosDir = createTempProject({
+      'my-pack/forms/my-form.json': JSON.stringify({
+        id: 'my-form',
+        specVersion: SCENARIO_SPEC_VERSION,
+        suite: 'my-forms',
+        title: 'Custom form eval',
+        prompt: 'Create a custom form screen',
+        scaffoldable: true,
+        fixtures: { 'package.json': '{"name":"app","version":"1.0.0"}' },
+        expect: { files: ['src/screens/FormScreen.tsx'], behaviors: [] },
+        correctness: { tests: false, typecheck: false, lint: false },
+        axes: ['adherence', 'guardrails'],
+      }),
+    })
+    const referencesDir = createTempProject({
+      'my-form.json': JSON.stringify({
+        id: 'my-form',
+        files: [{ path: 'src/screens/FormScreen.tsx', content: 'export const FormScreen = () => null;' }],
+      }),
+    })
+    try {
+      const { summary, problems, referenceProblems } = await runBenchmarkFromDir({
+        scenariosDir,
+        referencesDir,
+      })
+      expect(problems).toEqual([])
+      expect(referenceProblems).toEqual([])
+      expect(summary.runs.map(r => r.id)).toEqual(['my-form'])
+      expect(summary.runs[0].reference).toBeDefined()
+      expect(summary.overallRelativeComposite).not.toBeNull()
+    } finally {
+      cleanup(scenariosDir)
+      cleanup(referencesDir)
+    }
   })
 })

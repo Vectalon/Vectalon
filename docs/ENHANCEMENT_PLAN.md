@@ -36,8 +36,8 @@ self-corrects before it ever shows you a diff.
 > routing, the ecosystem catalog (MCP servers/skills/tools/hooks) with Expo &
 > RN-CLI separation, ecosystem MCP exposure in `serve`, init tooling & model
 > setup, resolved-model surfacing, the ecosystem & native-toolchain doctor with
-> `--fix` auto-remediation, and the RN coding-tests benchmark (V-5, M1–M3/M6
-> delivered). See the README
+> `--fix` auto-remediation, and the RN coding-tests benchmark (V-5, M1–M4/M6
+> delivered, including the CI regression gate). See the README
 > [`Roadmap`](README.md) for the authoritative delivered/next-up lists and
 > [`CLI_REFERENCE.md`](CLI_REFERENCE.md) for every command. The rows below show
 > where the roadmap goes next; see the
@@ -404,8 +404,10 @@ tools and drive regression-aware model/harness tuning. **Scoped in
 and verification gate, plus the first 10 eval scenarios (login screen,
 FlatList fetch, dark-mode, typed navigation, form validation, offline queue,
 image feed, feature flags, accessible form, refactor-to-hooks). **Status:**
-M1–M3 and M6 are delivered (see the [Status tracker](#status-tracker)); M4 (CI
-baseline gate) and M5 (public leaderboard) are next up.
+M1–M4 and M6 are delivered (see the [Status tracker](#status-tracker)); M5
+(public leaderboard) is next up. M4 adds the CI regression gate: a committed
+`bench/baseline.json` plus `vectalon bench --baseline` run by
+`.github/workflows/ci.yml` on every PR, failing on any axis regression.
 
 ### Sequencing (why this order)
 
@@ -447,4 +449,4 @@ baseline gate) and M5 (public leaderboard) are next up.
 - [ ] **Phase K — Living knowledge brain** (runtime telemetry ingestion, auto-derivation from git, provenance scoring, team-brain v2)
 - [ ] **Phase L — DX magic** (IDE extension, MCP Apps, policy marketplace + PR guardrails, offline-first, preview environments)
 - [ ] **Phase M — Trust & scale** (sandboxed execution, secrets/supply-chain guardrails, audit trail, monorepo federation)
-- [x] **Phase V-5 (M1–M3, M6) — RN coding-tests benchmark** (versioned scenario spec + 10 eval scenarios in `bench/scenarios/`, deterministic baseline runner + 15-check best-practice rubric + scoring/report in `src/bench/`, `vectalon bench` CLI with `--model`/`--suite`/`--live`, human reference solutions with relative-to-human scoring; M4 CI gate and M5 public leaderboard pending — see [`docs/BENCHMARK_PLAN.md`](BENCHMARK_PLAN.md))
+- [x] **Phase V-5 (M1–M4, M6) — RN coding-tests benchmark** (versioned scenario spec + 10 eval scenarios in `bench/scenarios/`, deterministic baseline runner + 15-check best-practice rubric + scoring/report in `src/bench/`, `vectalon bench` CLI with `--model`/`--suite`/`--live`/`--baseline`, human reference solutions with relative-to-human scoring, committed `bench/baseline.json` + CI regression gate on every PR; M5 public leaderboard pending — see [`docs/BENCHMARK_PLAN.md`](BENCHMARK_PLAN.md))

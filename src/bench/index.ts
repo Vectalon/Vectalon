@@ -25,3 +25,10 @@ export { benchmarkSnapshot } from './snapshot'
 export { rubricChecks, runRubric, rubricAdherence, formatRubricResult } from './rubric'
 export type { RubricCheck, RubricCheckResult, RubricFileResult, RubricResult } from './rubric'
 export { formatBenchmarkReport } from './report'
+export {
+  DEFAULT_BASELINE_TOLERANCE,
+  loadBaselineFile,
+  compareToBaseline,
+  formatBaselineComparison,
+} from './baseline'
+export type { BaselineAxisDelta, BaselineComparison } from './baseline'

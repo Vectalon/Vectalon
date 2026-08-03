@@ -7,9 +7,10 @@
  * (e.g. "generated code is 92% of human best-practice adherence").
  */
 
-import { existsSync, readdirSync, readFileSync } from 'fs'
-import { join, resolve } from 'path'
+import { existsSync, readFileSync } from 'fs'
+import { resolve } from 'path'
 import type { BenchGeneratedFile } from './types'
+import { collectJsonFiles } from './fs'
 
 export interface ReferenceSolution {
   id: string
@@ -58,9 +59,7 @@ export function loadReferences(dir = defaultReferencesDir()): LoadReferencesResu
     return { references, problems: [{ file: dir, problems: ['directory does not exist'] }] }
   }
 
-  for (const entry of readdirSync(dir)) {
-    if (!entry.endsWith('.json')) continue
-    const file = join(dir, entry)
+  for (const file of collectJsonFiles(dir)) {
     let raw: unknown
     try {
       raw = JSON.parse(readFileSync(file, 'utf-8'))
@@ -74,6 +73,10 @@ export function loadReferences(dir = defaultReferencesDir()): LoadReferencesResu
       continue
     }
     const solution = raw as ReferenceSolution
+    if (references.has(solution.id)) {
+      problems.push({ file, problems: [`duplicate reference id: ${solution.id}`] })
+      continue
+    }
     references.set(solution.id, solution.files)
   }
 

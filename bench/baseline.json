@@ -1,0 +1,260 @@
+{
+  "specVersion": 1,
+  "runs": [
+    {
+      "id": "rn-01-login-screen",
+      "title": "Login screen with auth API",
+      "suite": "forms-security",
+      "scaffoldable": true,
+      "generatedFiles": [
+        "src/services/CreateLoginScreenEmailPasswordApi.ts",
+        "src/hooks/useCreateLoginScreenEmailPassword.ts",
+        "src/screens/CreateLoginScreenEmailPasswordScreen.tsx"
+      ],
+      "guardrail": [
+        {
+          "path": "src/services/CreateLoginScreenEmailPasswordApi.ts",
+          "passed": 15,
+          "failed": 0,
+          "skipped": 10,
+          "ok": true
+        },
+        {
+          "path": "src/hooks/useCreateLoginScreenEmailPassword.ts",
+          "passed": 15,
+          "failed": 0,
+          "skipped": 10,
+          "ok": true
+        },
+        {
+          "path": "src/screens/CreateLoginScreenEmailPasswordScreen.tsx",
+          "passed": 22,
+          "failed": 0,
+          "skipped": 3,
+          "ok": true
+        }
+      ],
+      "axes": {
+        "correctness": null,
+        "adherence": 0.6666666666666666,
+        "guardrails": 1
+      },
+      "composite": 0.8333333333333334,
+      "reference": {
+        "files": [
+          "src/services/auth.ts",
+          "src/screens/LoginScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.7272727272727273,
+          "guardrails": 0.9736842105263158
+        },
+        "composite": 0.8504784688995215,
+        "relative": {
+          "correctness": null,
+          "adherence": 0.9166666666666666,
+          "guardrails": 1.027027027027027,
+          "composite": 0.9798406000937647
+        }
+      }
+    },
+    {
+      "id": "rn-02-flatlist-fetch",
+      "title": "Paginated list with pull-to-refresh",
+      "suite": "data-flow",
+      "scaffoldable": true,
+      "generatedFiles": [
+        "src/services/CreateScreenThatFetchesPaginatApi.ts",
+        "src/hooks/useCreateScreenThatFetchesPaginat.ts",
+        "src/screens/CreateScreenThatFetchesPaginatScreen.tsx"
+      ],
+      "guardrail": [
+        {
+          "path": "src/services/CreateScreenThatFetchesPaginatApi.ts",
+          "passed": 15,
+          "failed": 0,
+          "skipped": 10,
+          "ok": true
+        },
+        {
+          "path": "src/hooks/useCreateScreenThatFetchesPaginat.ts",
+          "passed": 15,
+          "failed": 0,
+          "skipped": 10,
+          "ok": true
+        },
+        {
+          "path": "src/screens/CreateScreenThatFetchesPaginatScreen.tsx",
+          "passed": 22,
+          "failed": 0,
+          "skipped": 3,
+          "ok": true
+        }
+      ],
+      "axes": {
+        "correctness": null,
+        "adherence": 0.6666666666666666,
+        "guardrails": 1
+      },
+      "composite": 0.8333333333333334,
+      "reference": {
+        "files": [
+          "src/screens/FeedScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.8571428571428571,
+          "guardrails": 0.9523809523809523
+        },
+        "composite": 0.9047619047619048,
+        "relative": {
+          "correctness": null,
+          "adherence": 0.7777777777777778,
+          "guardrails": 1.05,
+          "composite": 0.9210526315789475
+        }
+      }
+    },
+    {
+      "id": "rn-05-form-validation",
+      "title": "Multi-field form with validation and secure persistence",
+      "suite": "forms-security",
+      "scaffoldable": true,
+      "generatedFiles": [
+        "src/services/CreateMultiFieldFormClientApi.ts",
+        "src/hooks/useCreateMultiFieldFormClient.ts",
+        "src/screens/CreateMultiFieldFormClientScreen.tsx"
+      ],
+      "guardrail": [
+        {
+          "path": "src/services/CreateMultiFieldFormClientApi.ts",
+          "passed": 15,
+          "failed": 0,
+          "skipped": 10,
+          "ok": true
+        },
+        {
+          "path": "src/hooks/useCreateMultiFieldFormClient.ts",
+          "passed": 15,
+          "failed": 0,
+          "skipped": 10,
+          "ok": true
+        },
+        {
+          "path": "src/screens/CreateMultiFieldFormClientScreen.tsx",
+          "passed": 22,
+          "failed": 0,
+          "skipped": 3,
+          "ok": true
+        }
+      ],
+      "axes": {
+        "correctness": null,
+        "adherence": 0.6666666666666666,
+        "guardrails": 1
+      },
+      "composite": 0.8333333333333334,
+      "reference": {
+        "files": [
+          "src/services/credentials.ts",
+          "src/screens/SignUpScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.8,
+          "guardrails": 0.9473684210526315
+        },
+        "composite": 0.8736842105263158,
+        "relative": {
+          "correctness": null,
+          "adherence": 0.8333333333333333,
+          "guardrails": 1.0555555555555556,
+          "composite": 0.9538152610441767
+        }
+      }
+    },
+    {
+      "id": "rn-06-offline-queue",
+      "title": "Offline-first action queue with optimistic UI",
+      "suite": "data-flow",
+      "scaffoldable": true,
+      "generatedFiles": [
+        "src/services/CreateOfflineFirstActionQueueApi.ts",
+        "src/hooks/useCreateOfflineFirstActionQueue.ts",
+        "src/screens/CreateOfflineFirstActionQueueScreen.tsx"
+      ],
+      "guardrail": [
+        {
+          "path": "src/services/CreateOfflineFirstActionQueueApi.ts",
+          "passed": 15,
+          "failed": 0,
+          "skipped": 10,
+          "ok": true
+        },
+        {
+          "path": "src/hooks/useCreateOfflineFirstActionQueue.ts",
+          "passed": 15,
+          "failed": 0,
+          "skipped": 10,
+          "ok": true
+        },
+        {
+          "path": "src/screens/CreateOfflineFirstActionQueueScreen.tsx",
+          "passed": 22,
+          "failed": 0,
+          "skipped": 3,
+          "ok": true
+        }
+      ],
+      "axes": {
+        "correctness": null,
+        "adherence": 0.6666666666666666,
+        "guardrails": 1
+      },
+      "composite": 0.8333333333333334,
+      "reference": {
+        "files": [
+          "src/hooks/useOfflineQueue.ts",
+          "src/screens/QueueScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.4,
+          "guardrails": 0.9722222222222222
+        },
+        "composite": 0.6861111111111111,
+        "relative": {
+          "correctness": null,
+          "adherence": 1.6666666666666665,
+          "guardrails": 1.0285714285714287,
+          "composite": 1.2145748987854252
+        }
+      }
+    }
+  ],
+  "suites": [
+    {
+      "suite": "forms-security",
+      "scenarioIds": [
+        "rn-01-login-screen",
+        "rn-05-form-validation"
+      ],
+      "composite": 0.8333333333333334,
+      "guardrails": 1
+    },
+    {
+      "suite": "data-flow",
+      "scenarioIds": [
+        "rn-02-flatlist-fetch",
+        "rn-06-offline-queue"
+      ],
+      "composite": 0.8333333333333334,
+      "guardrails": 1
+    }
+  ],
+  "overallComposite": 0.8333333333333334,
+  "overallGuardrails": 1,
+  "overallReferenceComposite": 0.8287589238247133,
+  "overallRelativeComposite": 1.0173208478755784
+}

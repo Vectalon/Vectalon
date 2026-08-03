@@ -274,6 +274,9 @@ npx vectalon bench --live                   # run real tests/typecheck/lint
 npx vectalon bench --model local            # real-model leaderboard (all 10)
 npx vectalon bench --model openai --json    # JSON summary for tooling
 npx vectalon bench -o report.md             # write the report to a file
+npx vectalon bench --scenarios ./my-evals   # run your own custom eval pack
+npx vectalon bench --scenarios ./my-evals --references ./my-refs  # + custom human baselines
+npx vectalon bench --baseline bench/baseline.json  # CI regression gate (exit 1 on regression)
 ```
 
 **Options**
@@ -286,7 +289,28 @@ npx vectalon bench -o report.md             # write the report to a file
 | `--json` | Print a JSON summary instead of markdown |
 | `-o, --output <path>` | Write the report to a file |
 | `--scenarios <dir>` | Override the scenarios directory (default `bench/scenarios`) |
+| `--references <dir>` | Override the human reference-solutions directory (default `bench/references`) |
+| `--baseline <file>` | Compare the deterministic run against a stored baseline JSON and **exit 1 on any axis regression** — the CI gate. Pass `bench/baseline.json` to run the gate; without the flag the gate does not run |
+| `--tolerance <fraction>` | Max allowed axis drop before a regression is flagged (default `0.01`). Cannot be combined with `--model` |
 
+**Custom scenario packs** — teams can author their own RN evals without a PR.
+Scenarios live in a user-supplied directory (any nesting depth) as versioned
+JSON files (see `docs/BENCHMARK_PLAN.md` for the spec shape). Files that fail
+validation — wrong `specVersion`, missing fields, unknown axes, duplicate ids —
+are reported as warnings and skipped, and the command exits `1` if nothing ran.
+Pair them with `--references` to score relative-to-human against your own
+reference solutions.
+
+**CI regression gate (M4)** — `--baseline <file>` compares the deterministic
+run against a committed baseline (`bench/baseline.json`) and exits `1` when any
+scored axis drops more than the tolerance, a baseline scenario stops running,
+or a suite/overall composite regresses. The GitHub Actions `bench` job runs
+this on every PR (`.github/workflows/ci.yml`). Regenerate the baseline after
+intentional improvements with:
+
+```bash
+npx vectalon bench --json -o bench/baseline.json
+```
 **What it does**
 
 - Runs **10 versioned RN coding test scenarios** (login screen, FlatList feeds,

@@ -471,6 +471,8 @@ npx vectalon bench --live                     # run real tests/typecheck/lint
 npx vectalon bench --model local              # real-model leaderboard (all 10 scenarios)
 npx vectalon bench --model openai --json      # JSON summary for tooling
 npx vectalon bench -o report.md               # write the report to a file
+npx vectalon bench --scenarios ./my-evals     # run your own custom eval pack
+npx vectalon bench --baseline bench/baseline.json  # CI regression gate
 ```
 
 - `--model <provider>` — `local` / `openai` / `anthropic`; runs the real-model
@@ -480,7 +482,19 @@ npx vectalon bench -o report.md               # write the report to a file
 - `--live` — run real tests/typecheck/lint for the correctness axis (slow)
 - `--json` — machine-readable summary instead of markdown
 - `-o, --output <path>` — write the report to a file
-- `--scenarios <dir>` — override the scenarios directory
+- `--scenarios <dir>` — override the scenarios directory (custom eval packs)
+- `--references <dir>` — override the human reference-solutions directory
+- `--baseline <file>` — compare the deterministic run against a stored baseline
+  JSON and **exit 1 on any axis regression** (the CI gate; pass
+  `bench/baseline.json` to run it — without the flag the gate is off);
+  `--tolerance <fraction>` tunes the allowed drop (default `0.01`)
+
+**Custom eval packs** — teams can author their own RN evals without a PR.
+Point `--scenarios` at any directory of versioned scenario JSON files (nested
+subdirectories are fine) and `--references` at your own human reference
+solutions; files that fail validation (wrong `specVersion`, missing fields,
+duplicate ids) are reported and skipped. See the
+[benchmark plan](docs/BENCHMARK_PLAN.md) for the scenario spec shape.
 
 ---
 
@@ -1257,8 +1271,13 @@ Areas we'd love help with:
   `EmbeddingProvider` seam (async semantic search in `search_knowledge`)
 - ✅ **RN coding tests benchmark** — versioned scenario spec, 10 eval scenarios,
   deterministic baseline runner, 15-check best-practice rubric, human reference
-  solutions with relative-to-human scoring, and the `vectalon bench` CLI
+  solutions with relative-to-human scoring, custom eval packs
+  (`--scenarios`/`--references`), and the `vectalon bench` CLI
   (`--model`/`--suite`/`--live`) for deterministic or real-model leaderboard runs
+- ✅ **Benchmark CI regression gate (M4)** — committed `bench/baseline.json` and
+  `vectalon bench --baseline`, run by the CI `bench` job on every PR so any
+  axis regression fails the build; regenerate with
+  `npx vectalon bench --json -o bench/baseline.json`
 - ✅ **Expo & RN-CLI separation** — `Scanner` detects `tooling` + Expo SDK
   version; context prompts, simulator runs, and dependency removal are
   flavor-aware
