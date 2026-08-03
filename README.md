@@ -41,7 +41,8 @@ rn-vectalon learns as your project grows:
 ### Multi-Role SDLC Harness
 
 Beyond the v0.1 core, rn-vectalon ships deterministic SDLC modules covering the
-whole lifecycle — **28 tools total**, all callable by any MCP agent:
+whole lifecycle — **27 modules surfaced as 33 MCP tools**, all callable by any
+MCP agent:
 
 - **Requirements & BA** — PRDs, user stories, acceptance criteria, gap analysis,
   SWOT, support-ticket theming
@@ -79,10 +80,13 @@ limitations in mind:
 - **No model knows every React Native best practice.** Models have knowledge
 cutoffs and may be unaware of the latest React Native release, newly deprecated
 APIs, or your organization's private conventions.
-- **There are no automatic web lookups.** The local model and the current
-adapters do not browse the web, fetch documentation, or update themselves with
-new best practices. The only "learning" happens inside your project: the harness
-records patterns it observes in your codebase.
+- **The model doesn't browse the web itself.** Code generation uses the model
+and your project's learned patterns only. What keeps the harness current is the
+**always-on web-aware knowledge refresh** (`vectalon refresh` and the background
+scheduler in `vectalon serve`): it periodically retrieves React Native docs,
+library changelogs, and community best practices, caches them, updates the
+knowledge graph, and surfaces dependency upgrade suggestions — so the model's
+stale training data is supplemented by fresh, project-relevant knowledge.
 - **Guardrails are applied before generated code is written.** The implementation phase runs an exhaustive rule set over every generated file and reports the results in the workflow output. Rules cover: `console.log`, inline styles, hardcoded URLs, secrets, `any`, missing error handling, unused imports, state mutation, missing hook deps, heavy work in render, missing accessibility labels, deprecated APIs, platform-specific code, navigation types, naming conventions, safe-area usage, TODO/FIXME comments, TypeScript return types, remote image assets, list virtualization, mutation in hooks/Reducers, `==`/`!=`, `var`, and default component exports.
   - System prompts that require real, runnable code and forbid TODOs/placeholders
   - Convention detection (TypeScript, navigation, StyleSheet) that shapes generated code
@@ -132,6 +136,44 @@ they don't recommend RN-CLI-native edits for managed projects
 - Dependency removal plans produce Expo-aware cleanup (`npx expo prebuild
 --clean`, `npx expo-doctor`) instead of `ios/Podfile` edits when the project is
 Expo-managed
+
+### LLM intent detection & smart routing
+
+Before the workflow runs, an **LLM intent detector** classifies the prompt
+(`add-feature`, `fix`/`lint`, `refactor`, `remove-dependency`, or `unknown`).
+The detected intent and the model's reasoning are surfaced right in the CLI
+output — e.g. `Detected intent: fix/lint — LLM, confidence 0.95` — so you can see
+*why* the workflow routed the way it did. Intent drives the phase path:
+
+- **`add-feature`** — full scaffold: PRD → scope → design → architecture →
+  tasks → TDD tests → implementation → review → verification → PR
+- **`fix` / `lint`** — diagnoses the failing check (lint/typecheck/test),
+  generates a targeted repair, and re-runs the check instead of scaffolding a
+  new feature
+- **`refactor`** — restructure path without adding user-facing features
+- **`remove-dependency`** — planned dependency removal with Expo-aware cleanup
+- **`unknown`** — completes with a clarification plan instead of hard-failing
+
+When the model can't produce parseable intent JSON, the raw (truncated) response
+is logged to stderr and a single repair retry fires, so users see exactly what
+happened.
+
+### Web-aware knowledge refresh & upgrade suggestions
+
+An always-on refresh service keeps the harness current with the React Native
+ecosystem. `vectalon refresh` (or the background scheduler inside
+`vectalon serve`) retrieves and caches:
+
+- **Official RN docs** — React Native releases, API changes, new architecture
+- **Library changelogs** — version history for dependencies you actually use
+- **Community best practices** — curried into the knowledge graph
+
+The refreshed knowledge is stored under `.vectalon/knowledge/refresh/` and the
+service compares your `package.json` dependencies against it to generate
+**upgrade suggestions** (`.vectalon/knowledge/refresh/suggestions.json`). After a
+`vectalon feature` run, a compact "upgrade suggestions available" section prints
+at the end of the workflow output with severity-colored lines and a hint to run
+`vectalon refresh --force` for the latest data.
 
 ### Ecosystem catalog (MCP servers, skills, tools, hooks)
 `vectalon ecosystem` indexes the full stack of React Native / Expo MCP servers,
@@ -201,6 +243,21 @@ documentation, project dependency management, and EAS workflows.
 fragment ready to paste into Cursor/Claude Code, and `--flavor expo|rn-cli`
 filters items by project flavor.
 
+When `vectalon serve` starts, it reads the enabled ecosystem items from
+`.vectalon/ecosystem.json` and exposes **each enabled MCP server as a first-class
+tool** in the MCP tool list — so connected agents auto-discover the Metro MCP,
+Expo MCP, etc. without manual config. The descriptors carry the install command,
+so the agent knows exactly how to connect. (`vectalon ecosystem --export` still
+produces the ready-to-paste config fragment for agents that manage their own MCP
+server list.)
+
+`vectalon init` **auto-enables ecosystem items from your installed dependencies**
+— scanning `package.json` and matching package names against the catalog
+(zustand, react-native-gesture-handler, react-native-reanimated, react-native-mmkv,
+@shopify/flash-list, husky, lint-staged, …), surfacing each detection in the init
+log with `(already enabled)` markers when the flavor recommendations already
+covered it.
+
 ### Ecosystem Doctor
 
 `vectalon doctor` verifies that every enabled ecosystem item is actually
@@ -259,7 +316,7 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 │  │  │  (Project Memory + Pattern Learner)     │  │    │
 │  │  └─────────────────────────────────────────┘  │    │
 │  │  ┌─────────────────────────────────────────┐  │    │
-│  │  │        SDLC Modules (28 tools)         │  │    │
+│  │  │     SDLC Modules (27, 33 MCP tools)     │  │    │
 │  │  │  BA · QA · Architecture · Security ·   │  │    │
 │  │  │  UX · DevOps · Ops · Analytics         │  │    │
 │  │  └─────────────────────────────────────────┘  │    │
@@ -280,7 +337,7 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 ### Flow
 
 1. **`vectalon init`** — Scans your project, catalogues components, detects patterns, stores context in `.vectalon/`
-2. **`vectalon serve`** — Starts a local server exposing 26 core MCP tools (plus the Company Brain tools when a knowledge base is present)
+2. **`vectalon serve`** — Starts a local server exposing 33 MCP tools (plus the Company Brain tools when a knowledge base is present, and any enabled ecosystem MCP servers as first-class tools)
 3. **`vectalon import`** — Feeds the Company Brain: PRDs, Jira exports, postmortems, any SDLC artifact
 4. **Agent connects** — Your AI agent (Claude Code, OpenCode, etc.) connects to the MCP server and gets full project awareness
 5. **Agent acts** — The agent uses the harness tools to generate code, fix bugs, write tests, produce PRDs/ADRs/test plans — all in your project's style
@@ -293,7 +350,7 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 ### Prerequisites
 
 - Node.js >= 20.12.0
-- React Native CLI project (>= 0.72)
+- A React Native project — Expo-managed or bare RN CLI (>= 0.72)
 
 ### Installation
 
@@ -311,7 +368,7 @@ After installing locally, you can use the shorter alias:
 npx vectalon
 ```
 
-Running `npx vectalon` with no arguments opens an interactive menu so you can pick init, feature, refresh, bench, sync, policy, serve, import, pull, models, or help without memorizing flags.
+Running `npx vectalon` with no arguments opens an interactive menu so you can pick init, feature, refresh, ecosystem, doctor, bench, sync, policy, serve, import, pull, models, or help without memorizing flags.
 
 ### Initialize
 
@@ -552,8 +609,6 @@ as context into the next run's review prompts, so the model avoids repeating the
 same mistakes. See [Policy configuration](#policy-configuration) to tune the heal
 loop per project.
 
-```
-
 ### Use from an agent
 
 ```json
@@ -592,9 +647,10 @@ See `src/adapters/` for the interfaces and implementations.
 
 ## Available Tools
 
-Once the server is running, agents can call **33 tools** — 26 always available,
-1 workflow orchestrator, 4 more when a knowledge base is present, and 2 more
-when a team brain is configured:
+Once the server is running, agents can call **33 built-in tools** — 26 always
+available, 1 workflow orchestrator, 4 more when a knowledge base is present, and
+2 more when a team brain is configured — plus any **enabled ecosystem MCP
+servers** (Metro MCP, Expo MCP, …) exposed as first-class tools:
 
 #### Core (project-aware dev)
 
@@ -1017,23 +1073,45 @@ Agents can use this graph for architecture analysis, refactoring impact assessme
 ```
 rn-vectalon/
 ├── src/
-│   ├── cli/               # CLI entry point and commands
+│   ├── cli/               # CLI entry point and commands (12)
 │   │   ├── commands/
-│   │   │   ├── init.ts    # Project initialization
-│   │   │   ├── import.ts  # Knowledge base artifact import
-│   │   │   ├── bench.ts   # RN coding tests benchmark CLI
-│   │   │   └── serve.ts   # MCP server startup (+ .vectalon/team.json)
-│   │   └── index.ts       # CLI runner
+│   │   │   ├── init.ts        # Project init: scan, tooling detection (Expo vs
+│   │   │   │                  #   RN-CLI), model setup, dependency auto-enable
+│   │   │   ├── feature.ts     # End-to-end feature-development workflow
+│   │   │   ├── serve.ts       # MCP server (+ team.json, background refresh)
+│   │   │   ├── import.ts      # Knowledge base artifact import
+│   │   │   ├── refresh.ts     # Web-aware knowledge refresh + suggestions
+│   │   │   ├── ecosystem.ts   # Browse/enable/export MCPs, skills, tools, hooks
+│   │   │   ├── doctor.ts      # Ecosystem + native toolchain health checks
+│   │   │   ├── policy.ts      # Project-specific guardrail policy
+│   │   │   ├── sync.ts        # Team brain sync to a git remote
+│   │   │   ├── bench.ts       # RN coding tests benchmark CLI
+│   │   │   ├── pull.ts        # Download a local model
+│   │   │   └── models.ts      # List local models
+│   │   └── index.ts       # CLI runner + interactive menu
 │   ├── bench/             # RN coding tests benchmark
 │   │   ├── runner.ts      # Scenario runner + scoring aggregation
 │   │   ├── rubric.ts      # 15-check RN best-practice rubric
+│   │   ├── scoring.ts     # Correctness / rubric / guardrails scoring
 │   │   ├── modelGenerate.ts  # ModelRouter-backed generate seam
 │   │   ├── references.ts  # Human reference solution loader
-│   │   └── report.ts      # Markdown report formatter
+│   │   ├── loader.ts      # Versioned scenario spec loading
+│   │   ├── snapshot.ts    # Project snapshot capture
+│   │   └── report.ts      # Markdown/JSON report formatter
+│   ├── ecosystem/         # External tooling catalog + doctor
+│   │   ├── catalog.ts     # MCP servers, skills, tools, hooks (Expo & RN-CLI)
+│   │   ├── config.ts      # ecosystem.json, recommendations, dependency detection
+│   │   ├── doctor.ts      # Ecosystem + native toolchain check engine
+│   │   └── types.ts
+│   ├── guardrails/        # Guardrail rules + policy engine
+│   │   ├── rules.ts       # 25 RN-specific guardrail rules
+│   │   ├── engine.ts      # runGuardrails + formatGuardrailResult
+│   │   ├── PolicyEngine.ts    # .vectalon/policy.json overrides + custom rules
+│   │   └── types.ts
 │   ├── harness/
-│   │   ├── Scanner.ts     # Project & component scanner
+│   │   ├── Scanner.ts     # Project & component scanner (Expo vs RN-CLI)
 │   │   ├── CodeGraph.ts   # Dependency graph builder
-│   │   ├── ContextEngine  # Context builder & manager
+│   │   ├── ContextEngine.ts  # Context builder & manager
 │   │   └── types.ts
 │   ├── knowledge/         # Company Brain
 │   │   ├── artifactTypes.ts   # 13-type taxonomy + role→type map
@@ -1042,7 +1120,10 @@ rn-vectalon/
 │   │   ├── RoleEngine.ts      # Role-scoped context assembly
 │   │   ├── TeamStore.ts       # Multi-project registry (team brain)
 │   │   ├── KnowledgeIndex.ts  # TF + semantic retrieval
-│   │   └── embeddings.ts      # Provider seam + cosine similarity
+│   │   ├── embeddings.ts      # Hash provider + cosine similarity
+│   │   ├── remoteEmbeddings.ts  # OpenAI / OpenAI-compatible providers
+│   │   ├── artifactSync.ts    # Git-backed team brain sync
+│   │   └── refresh/           # Web-aware refresh (fetchers, sources, cache)
 │   ├── sdlc/             # Deterministic-first SDLC modules (27)
 │   │   ├── RequirementWriter.ts, StoryWriter.ts, AcceptanceCriteriaWriter.ts,
 │   │   │   GapAnalyzer.ts, SWOTAnalyzer.ts, SupportTicketAnalyzer.ts   # BA
@@ -1058,21 +1139,41 @@ rn-vectalon/
 │   │       LintFixer.ts                                               # v0.1 core
 │   ├── model/
 │   │   ├── ModelRouter.ts # Routes requests to providers
+│   │   ├── setup.ts       # Provider resolution during init
 │   │   ├── providers/     # LocalProvider, RemoteProvider
+│   │   ├── local/         # ModelStore, download, inference, presets
 │   │   └── types.ts
 │   ├── protocol/
-│   │   ├── MCPServer.ts   # MCP/stdio/HTTP server (32 tools)
+│   │   ├── MCPServer.ts   # MCP/stdio/HTTP server (33 tools + ecosystem MCPs)
 │   │   └── types.ts
+│   ├── workflows/         # Feature-development workflow engine
+│   │   ├── WorkflowEngine.ts  # Phase orchestration + state
+│   │   ├── intent.ts          # LLM intent detection (add-feature/fix/refactor/…)
+│   │   ├── definitions/       # featureDevelopment workflow definition
+│   │   └── phases/            # prd, scope, design, architecture, task, test
+│   │       │                  #   (TDD), implementation, codeReview
+│   │       │                  #   (self-healing), verification, readiness,
+│   │       │                  #   pr, documentation, close
+│   │       └── helpers.ts, healMemory.ts, fileOutput.ts, documentWriter.ts
 │   ├── memory/
 │   │   ├── PatternLearner.ts  # Pattern detection
 │   │   └── ProjectMemory.ts   # Persistent store
+│   ├── utils/
+│   │   ├── fileDiff.ts        # Streamed diffs for code changes
+│   │   ├── unusedImports.ts   # Unused import detection/removal
+│   │   ├── validationCommands.ts # Detect test/lint/typecheck scripts
+│   │   └── dynamicImport.ts
+│   ├── adapters/          # PM, git, test-runner, simulator, runCommand
 │   └── config/
 │       └── index.ts
-├── __tests__/            # 524 tests across 75 suites
+├── __tests__/            # 604 tests across 81 suites
+├── bench/
+│   └── scenarios/        # 10 versioned RN coding test scenarios (rn-01…rn-10)
 ├── bin/
 │   └── rn-vectalon.js       # CLI entry
 ├── docs/
-│   └── ENHANCEMENT_PLAN.md  # Phase roadmap (A–H delivered, I+ futuristic)
+│   ├── ENHANCEMENT_PLAN.md  # Phase roadmap (A–H delivered, I+ futuristic)
+│   └── BENCHMARK_PLAN.md    # RN coding tests benchmark plan (M1–M6)
 ├── package.json
 └── README.md
 ```
@@ -1154,12 +1255,36 @@ Areas we'd love help with:
   deterministic baseline runner, 15-check best-practice rubric, human reference
   solutions with relative-to-human scoring, and the `vectalon bench` CLI
   (`--model`/`--suite`/`--live`) for deterministic or real-model leaderboard runs
+- ✅ **Expo & RN-CLI separation** — `Scanner` detects `tooling` + Expo SDK
+  version; context prompts, simulator runs, and dependency removal are
+  flavor-aware
+- ✅ **LLM intent detection & smart routing** — `add-feature` / `fix` / `refactor` /
+  `remove-dependency` / `unknown` classification with confidence surfaced in the
+  CLI, driving the correct phase path (fixes skip scaffolding)
+- ✅ **Ecosystem catalog** — 35+ MCP servers, agent skills, tools, and git hooks
+  for Expo & RN-CLI, browsable via `vectalon ecosystem`, with flavor-based
+  recommendations and install-command exports
+- ✅ **Ecosystem MCP exposure** — `vectalon serve` reads `.vectalon/ecosystem.json`
+  and exposes every enabled MCP server as a first-class tool agents auto-discover
+- ✅ **Init tooling & model setup** — `vectalon init` detects Expo vs RN-CLI,
+  auto-enables matching ecosystem items from `package.json` dependencies
+  (zustand, gesture-handler, reanimated, …), and offers local-download or
+  remote (OpenAI/Anthropic) model configuration written to the manifest
+- ✅ **Resolved-model surfacing** — the feature workflow summary and `serve`
+  startup logs print the actual provider + model used, with a warning when a
+  remote key is missing
+- ✅ **Ecosystem doctor** — `vectalon doctor` verifies every enabled ecosystem
+  item is installed/reachable **and** checks the native toolchain (Node, JDK,
+  Android SDK/emulator, Xcode/CocoaPods, Metro port) with actionable fix hints
+  and `--json` output
 
 **Next up:**
 
 - **Live correctness scoring in CI** — run `vectalon bench --live` on a model
   matrix and comment the leaderboard on PRs
 - **Leaderboard artifacts** — timestamped run history comparing models and commits
+- **Doctor auto-remediation** — `vectalon doctor --fix` installs missing
+  ecosystem items / toolchain components and re-runs the checks
 - **CI/CD integration** — auto-fix PRs, draft release notes in CI
 - **VS Code extension** — inline suggestions against the harness
 - **v1.0** — Stable protocol, production-ready
