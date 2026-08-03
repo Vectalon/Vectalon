@@ -6,7 +6,10 @@ import {
   runDoctor,
   checkEcosystemItem,
   checkNativeToolchain,
+  fixForMissing,
+  runDoctorFixes,
   type DoctorCheckers,
+  type DoctorFixer,
 } from '../../src/ecosystem'
 import { listEcosystemItems, getEcosystemItem } from '../../src/ecosystem'
 
@@ -24,6 +27,13 @@ function makeCheckers(overrides: Partial<DoctorCheckers> = {}): DoctorCheckers {
 
 function resultFor(id: string, checks: ReturnType<typeof checkNativeToolchain>): (typeof checks)[number] {
   return checks.find(c => c.id === id)!
+}
+
+function makeFixer(overrides: Partial<DoctorFixer> = {}): DoctorFixer {
+  return {
+    run: () => ({ success: true, output: 'ok' }),
+    ...overrides,
+  }
 }
 
 describe('ecosystem doctor', () => {
@@ -252,6 +262,122 @@ describe('ecosystem doctor', () => {
       for (const id of ['node', 'jdk', 'android-sdk', 'android-emulator', 'xcode', 'cocoapods', 'metro-port']) {
         expect(report.toolchain.some(c => c.id === id)).toBe(true)
       }
+    })
+  })
+
+  describe('doctor --fix', () => {
+    it('builds an npm install fix for a missing npm tool', () => {
+      const item = getEcosystemItem('zustand')!
+      const check = checkEcosystemItem(item, dir, makeCheckers())
+      expect(check.status).toBe('missing')
+      const fix = fixForMissing(check, dir)!
+      expect(fix.command).toBe('npm')
+      expect(fix.args).toEqual(['install', 'zustand'])
+      expect(fix.manual).toBe(false)
+    })
+
+    it('installs MCP packages as devDependencies', () => {
+      const item = getEcosystemItem('metro-mcp')!
+      const check = checkEcosystemItem(item, dir, makeCheckers())
+      const fix = fixForMissing(check, dir)!
+      expect(fix.args).toEqual(['install', '-D', '@steve228uk/metro-mcp'])
+    })
+
+    it('installs dev-time hooks with -D per the catalog install string', () => {
+      const item = getEcosystemItem('husky')!
+      const check = checkEcosystemItem(item, dir, makeCheckers())
+      const fix = fixForMissing(check, dir)!
+      expect(fix.command).toBe('npm')
+      expect(fix.args).toEqual(['install', '-D', 'husky'])
+      // runtime libraries install as regular dependencies
+      const zustand = fixForMissing(checkEcosystemItem(getEcosystemItem('zustand')!, dir, makeCheckers()), dir)!
+      expect(zustand.args).toEqual(['install', 'zustand'])
+    })
+
+    it('strips quotes from npx skills add args (all-in-one skill)', () => {
+      const item = getEcosystemItem('expo-skills')!
+      const check = checkEcosystemItem(item, dir, makeCheckers())
+      const fix = fixForMissing(check, dir)!
+      expect(fix.command).toBe('npx')
+      expect(fix.args.some(a => a.includes("'"))).toBe(false)
+      expect(fix.args).toContain('*')
+    })
+
+    it('builds an npx skills add fix for a missing skill', () => {
+      const item = getEcosystemItem('expo-router')!
+      const check = checkEcosystemItem(item, dir, makeCheckers())
+      const fix = fixForMissing(check, dir)!
+      expect(fix.command).toBe('npx')
+      expect(fix.label).toContain('skills')
+    })
+
+    it('fixes a missing JDK with brew cask', () => {
+      const checks = checkNativeToolchain(dir, makeCheckers())
+      const check = resultFor('jdk', checks)
+      const fix = fixForMissing(check, dir)!
+      expect(fix.command).toBe('brew')
+      expect(fix.args).toContain('temurin@17')
+    })
+
+    it('fixes CocoaPods via brew and flags Xcode as manual', () => {
+      const checks = checkNativeToolchain(dir, makeCheckers())
+      const pod = fixForMissing(resultFor('cocoapods', checks), dir)!
+      expect(pod.command).toBe('brew')
+      const xcode = fixForMissing(resultFor('xcode', checks), dir)!
+      expect(xcode.manual).toBe(true)
+    })
+
+    it('flags manual-only fixes (node, android-sdk, android-emulator)', () => {
+      // android/ present so the SDK/emulator checks report missing, not warning
+      mkdirSync(join(dir, 'android'), { recursive: true })
+      const checks = checkNativeToolchain(dir, makeCheckers({ dirExists: d => d === join(dir, 'android') }))
+      expect(resultFor('android-sdk', checks).status).toBe('missing')
+      for (const id of ['node', 'android-sdk', 'android-emulator']) {
+        const fix = fixForMissing(resultFor(id, checks), dir)!
+        expect(fix.manual).toBe(true)
+      }
+    })
+
+    it('returns null for OK checks', () => {
+      const item = getEcosystemItem('zustand')!
+      const ok = checkEcosystemItem(item, dir, makeCheckers({ packageInstalled: () => true }))
+      expect(ok.status).toBe('ok')
+      expect(fixForMissing(ok, dir)).toBeNull()
+    })
+
+    it('runs auto-fixes, skips manual ones, and re-checks', () => {
+      mkdirSync(join(dir, '.vectalon'), { recursive: true })
+      writeFileSync(
+        join(dir, '.vectalon', 'ecosystem.json'),
+        JSON.stringify({ version: '1.0.0', enabled: ['zustand'] })
+      )
+      writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'app', version: '1.0.0' }))
+
+      const report = runDoctor(dir, makeCheckers())
+      const calls: Array<{ command: string; args: string[] }> = []
+      const fixer = makeFixer({
+        run: (command, args) => {
+          calls.push({ command, args })
+          return { success: true, output: 'ok' }
+        },
+      })
+
+      const { attempts, before, after } = runDoctorFixes(dir, report, fixer)
+      expect(before).toBeGreaterThan(0)
+      expect(calls.some(c => c.command === 'npm' && c.args.includes('zustand'))).toBe(true)
+      expect(attempts.some(a => a.status === 'fixed')).toBe(true)
+      expect(attempts.some(a => a.status === 'skipped-manual')).toBe(true)
+      expect(after).toBeLessThan(before)
+    })
+
+    it('reports failures with the first error line', () => {
+      const item = getEcosystemItem('zustand')!
+      const check = checkEcosystemItem(item, dir, makeCheckers())
+      const fix = fixForMissing(check, dir)!
+      const fixer = makeFixer({ run: () => ({ success: false, output: 'EACCES: permission denied\nline2' }) })
+      const result = fixer.run(fix.command, fix.args, dir)
+      expect(result.success).toBe(false)
+      expect(result.output.split(/\r?\n/)[0]).toContain('EACCES')
     })
   })
 })

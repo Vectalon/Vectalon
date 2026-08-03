@@ -114,6 +114,7 @@ export function runCLI(): void {
     .command('doctor [directory]')
     .description('Check that every enabled ecosystem item is installed and reachable')
     .option('--json', 'Print the report as JSON')
+    .option('--fix', 'Auto-install missing ecosystem items and toolchain components, then re-check')
     .action(doctorCommand)
 
   program

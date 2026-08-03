@@ -2,7 +2,11 @@ import { mkdirSync, writeFileSync, existsSync } from 'fs'
 import { join } from 'path'
 import { doctorCommand } from '../../src/cli/commands/doctor'
 import { createTempProject, cleanup } from '../helpers/tmp'
-import type { DoctorCheckers } from '../../src/ecosystem'
+import type { DoctorCheckers, DoctorFixer } from '../../src/ecosystem'
+
+function okFixer(): DoctorFixer {
+  return { run: () => ({ success: true, output: 'ok' }) }
+}
 
 /** All-green stubbed checkers: no real subprocesses, no network, no exit. */
 function okCheckers(): DoctorCheckers {
@@ -141,5 +145,71 @@ describe('doctorCommand', () => {
     expect(() => doctorCommand(dir, { checkers, toolchain: { metroPort: 8088 } })).not.toThrow()
     // The wider 26-char Check column fits the full "Metro (port 8088)" name.
     expect(out).toContain('Metro (port 8088)')
+  })
+
+  it('--fix runs install commands for missing items and re-checks', () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    writeFileSync(
+      join(dir, '.vectalon', 'ecosystem.json'),
+      JSON.stringify({ version: '1.0.0', enabled: ['zustand'] })
+    )
+
+    // logger.info writes the "Attempting to fix…" banner to stderr; tables go to
+    // stdout.
+    let out = ''
+    jest.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+    jest.spyOn(process.stderr, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+    const exit = jest.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('exit')
+    }) as unknown as (code?: string | number | null) => never)
+
+    // zustand missing (packageInstalled: false) → the fixer runs `npm install zustand`.
+    const calls: Array<{ command: string; args: string[] }> = []
+    const fixer = okFixer()
+    fixer.run = (command, args) => {
+      calls.push({ command, args })
+      return { success: true, output: 'ok' }
+    }
+
+    try {
+      doctorCommand(dir, {
+        fix: true,
+        checkers: { ...okCheckers(), packageInstalled: () => false },
+        fixer,
+      })
+    } catch {
+      // exit mocked to throw
+    }
+
+    expect(calls.some(c => c.command === 'npm' && c.args.includes('zustand'))).toBe(true)
+    expect(out).toContain('Attempting to fix missing checks')
+    expect(exit).toHaveBeenCalled()
+  })
+
+  it('--fix with everything OK runs nothing and exits 0', () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    writeFileSync(
+      join(dir, '.vectalon', 'ecosystem.json'),
+      JSON.stringify({ version: '1.0.0', enabled: ['zustand'] })
+    )
+    const exit = jest.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('exit')
+    }) as unknown as (code?: string | number | null) => never)
+    const fixer = okFixer()
+    const spy = jest.spyOn(fixer, 'run')
+
+    try {
+      doctorCommand(dir, { fix: true, json: true, checkers: okCheckers(), fixer })
+    } catch {
+      // exit mocked to throw (should be 0)
+    }
+    expect(spy).not.toHaveBeenCalled()
+    expect(exit).toHaveBeenCalledWith(0)
   })
 })

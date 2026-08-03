@@ -1281,14 +1281,15 @@ Areas we'd love help with:
   item is installed/reachable **and** checks the native toolchain (Node, JDK,
   Android SDK/emulator, Xcode/CocoaPods, Metro port) with actionable fix hints
   and `--json` output
+- ✅ **Doctor auto-remediation** — `vectalon doctor --fix` auto-installs missing
+  ecosystem items (npm packages, `npx skills add`, gem, brew cask for JDK) and
+  re-runs the checks, reporting `before → after` missing counts
 
 **Next up:**
 
 - **Live correctness scoring in CI** — run `vectalon bench --live` on a model
   matrix and comment the leaderboard on PRs
 - **Leaderboard artifacts** — timestamped run history comparing models and commits
-- **Doctor auto-remediation** — `vectalon doctor --fix` installs missing
-  ecosystem items / toolchain components and re-runs the checks
 - **CI/CD integration** — auto-fix PRs, draft release notes in CI
 - **VS Code extension** — inline suggestions against the harness
 - **v1.0** — Stable protocol, production-ready
