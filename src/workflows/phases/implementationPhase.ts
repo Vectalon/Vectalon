@@ -771,6 +771,38 @@ function generateRemoveDependencyImplementation(
   }
 }
 
+function generateUnknownImplementation(
+  ctx: {
+    snapshot: ContextSnapshot | null
+    prompt: string
+  }
+): { output: string; artifacts: WorkflowArtifact[] } {
+  const output = [
+    '## Request not classified',
+    '',
+    `The request could not be confidently classified by the model, so no files were created or modified.`,
+    '',
+    `Request: \`${ctx.prompt}\``,
+    '',
+    '### Why this happened',
+    '- The local model returned an unrecognized response for intent detection, or',
+    '- The request is ambiguous (mixes adding a feature with removing a dependency, etc.), or',
+    '- The model is too small / uncalibrated for this phrasing.',
+    '',
+    '### How to proceed',
+    '- Reword the request with an explicit verb: "Add a login screen", "Remove the appcenter dependency", "Fix lint issues", "Refactor the home screen".',
+    '- Run with a remote model: `vectalon feature --model openai "<request>"` (needs an API key).',
+    '- Describe the change you want as a single intent.',
+  ].join('\n')
+
+  return {
+    output,
+    artifacts: [
+      { type: 'engineering', title: 'Clarification needed', content: output },
+    ],
+  }
+}
+
 function generateRefactorImplementation(
   projectRoot: string | undefined,
   srcDir: string | undefined,
@@ -880,6 +912,12 @@ export const implementationPhase: WorkflowPhase = {
         prompt: ctx.prompt,
         area: intent.area,
         testRunner: ctx.adapters.testRunner,
+      })
+    } else if (intent.type === 'unknown') {
+      // Unclassified requests get a clarifying plan — never a generic scaffold.
+      result = generateUnknownImplementation({
+        snapshot: ctx.snapshot,
+        prompt: ctx.prompt,
       })
     } else {
       // Try to use the model for actual implementation generation

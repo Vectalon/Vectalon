@@ -51,6 +51,25 @@ describe('parseIntentPrediction', () => {
     // fix without area still parses (defaults to code)
     expect(parseIntentPrediction('{"intents":[{"type":"fix"}]}')).not.toBeNull()
   })
+
+  it('parses intent JSON wrapped in prose from a small local model', () => {
+    const parsed = parseIntentPrediction(
+      'Sure! Here is the intent JSON you asked for:\n{"intents":[{"type":"remove-dependency","dependency":"appcenter","confidence":0.95}]}\nHope that helps!'
+    )
+    expect(parsed?.intent).toEqual({ type: 'remove-dependency', dependency: 'appcenter', description: '' })
+  })
+
+  it('infers the intent when the model echoes the schema union verbatim', () => {
+    const parsed = parseIntentPrediction(
+      '{"intents":[{"type":"add-feature|remove-dependency|refactor|fix|unknown","dependency":"appcenter","confidence":0.9,"reasoning":"remove appcenter"}]}'
+    )
+    expect(parsed?.intent).toEqual({ type: 'remove-dependency', dependency: 'appcenter', description: '' })
+  })
+
+  it('infers add-feature from a populated feature field when type is missing', () => {
+    const parsed = parseIntentPrediction('{"intents":[{"feature":"login","confidence":0.9}]}')
+    expect(parsed?.intent).toEqual({ type: 'add-feature', feature: 'login', description: '' })
+  })
 })
 
 describe('predictIntent', () => {
@@ -68,6 +87,33 @@ describe('predictIntent', () => {
     expect(prediction.intent).toMatchObject({ type: 'unknown' })
     expect(prediction.reasoning).toBe('')
     expect(prediction.alternatives).toEqual([])
+  })
+
+  it('repairs a prose-wrapped first response with a corrective retry', async () => {
+    const router = new ModelRouter()
+    const mock = jest.spyOn(router, 'generate')
+    mock.mockResolvedValueOnce({ content: 'The intent is to remove appcenter from the project. Here is my analysis...', provider: 'mock' })
+    mock.mockResolvedValueOnce({
+      content: '{"intents":[{"type":"remove-dependency","dependency":"appcenter","confidence":0.98,"reasoning":"remove appcenter"}]}',
+      provider: 'mock',
+    })
+
+    const prediction = await predictIntent(router, { prompt: 'Remove appcenter safely from this project', snapshot: null })
+    expect(prediction.intent).toEqual({ type: 'remove-dependency', dependency: 'appcenter', description: '' })
+    expect(mock).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not repair when the first response is already valid JSON', async () => {
+    const router = new ModelRouter()
+    const mock = jest.spyOn(router, 'generate')
+    mock.mockResolvedValueOnce({
+      content: '{"intents":[{"type":"remove-dependency","dependency":"appcenter","confidence":0.97}]}',
+      provider: 'mock',
+    })
+
+    const prediction = await predictIntent(router, { prompt: 'Remove appcenter safely from this project', snapshot: null })
+    expect(prediction.intent).toMatchObject({ type: 'remove-dependency', dependency: 'appcenter' })
+    expect(mock).toHaveBeenCalledTimes(1)
   })
 
   it('returns the unknown default on the local-model fallback marker', async () => {
@@ -120,8 +166,27 @@ describe('getIntent', () => {
     const second = await getIntent({ prompt: 'create a login screen', snapshot: null, modelRouter: router, outputs })
 
     expect(first.intent.type).toBe('unknown')
-    expect(router.generate).toHaveBeenCalledTimes(1)
+    // First call fails to parse, so the repair retry fires (still memoized after).
+    expect(router.generate).toHaveBeenCalledTimes(2)
     expect(second.intent).toEqual(first.intent)
+  })
+
+  it('repairs trailing-comma JSON emitted by small local models', async () => {
+    const parsed = parseIntentPrediction(
+      '{"intents":[{"type":"remove-dependency","dependency":"appcenter","confidence":0.9,}]}'
+    )
+    expect(parsed?.intent).toEqual({ type: 'remove-dependency', dependency: 'appcenter', description: '' })
+  })
+
+  it('still retries once on prose and falls back to unknown', async () => {
+    const router = new ModelRouter()
+    const mock = jest.spyOn(router, 'generate')
+    mock.mockResolvedValue({ content: 'I do not know what you are asking', provider: 'mock' })
+
+    const prediction = await predictIntent(router, { prompt: 'hello?', snapshot: null })
+    expect(prediction.intent.type).toBe('unknown')
+    // One repair retry fires (prose can be salvaged), then unknown.
+    expect(mock).toHaveBeenCalledTimes(2)
   })
 })
 

@@ -54,6 +54,33 @@ interface RawIntentEntry {
   reasoning?: unknown
 }
 
+function inferTypeFromFields(entry: RawIntentEntry): string | null {
+  if (typeof entry.dependency === 'string' && entry.dependency.trim()) return 'remove-dependency'
+  if (typeof entry.feature === 'string' && entry.feature.trim()) return 'add-feature'
+  if (typeof entry.target === 'string' && entry.target.trim()) return 'refactor'
+  if (typeof entry.area === 'string' && entry.area.trim()) return 'fix'
+  return null
+}
+
+/**
+ * Small local models often echo the prompt's schema verbatim, producing a type
+ * like "add-feature|remove-dependency|refactor|fix|unknown" instead of picking
+ * one value. Resolve the intent from the entry's populated fields when the
+ * literal union is echoed.
+ */
+function resolveEntryType(entry: RawIntentEntry): string | null {
+  const raw = entry.type
+  if (typeof raw !== 'string') return inferTypeFromFields(entry)
+  const trimmed = raw.trim()
+  if (INTENT_TYPES.has(trimmed)) return trimmed
+  if (trimmed.includes('|')) {
+    const parts = trimmed.split('|').map(p => p.trim()).filter(p => INTENT_TYPES.has(p))
+    if (parts.length === 1) return parts[0]
+    if (parts.length > 1) return inferTypeFromFields(entry)
+  }
+  return inferTypeFromFields(entry)
+}
+
 function entryToIntent(entry: RawIntentEntry): WorkflowIntent | null {
   switch (entry.type) {
     case 'add-feature':
@@ -82,6 +109,44 @@ function entryToIntent(entry: RawIntentEntry): WorkflowIntent | null {
 }
 
 /**
+ * Extract the JSON payload from a model response. Small local models often wrap
+ * the JSON in prose ("Here is the JSON:\n{...}") or fenced blocks, so fall back
+ * to slicing the outermost { ... } object before giving up.
+ */
+function extractJsonPayload(content: string): string | null {
+  const trimmed = content.trim()
+  if (!trimmed) return null
+
+  const fence = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/)
+  const candidate = fence ? fence[1].trim() : trimmed
+  if (!candidate) return null
+
+  try {
+    JSON.parse(candidate)
+    return candidate
+  } catch {
+    const firstBrace = candidate.indexOf('{')
+    const lastBrace = candidate.lastIndexOf('}')
+    if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) return null
+    const sliced = candidate.slice(firstBrace, lastBrace + 1)
+    try {
+      JSON.parse(sliced)
+      return sliced
+    } catch {
+      // Small GGUF models frequently emit trailing commas (e.g. "confidence":0.9,}).
+      // Strip them and retry before giving up.
+      const repaired = sliced.replace(/,\s*([}\]])/g, '$1')
+      try {
+        JSON.parse(repaired)
+        return repaired
+      } catch {
+        return null
+      }
+    }
+  }
+}
+
+/**
  * Parse the structured-output JSON the model is asked to return for intent
  * detection. Mirrors the zod-style schema validation used in LLM intent
  * detection (see dswithmac.com/posts/intent-detection): only enum values are
@@ -89,12 +154,8 @@ function entryToIntent(entry: RawIntentEntry): WorkflowIntent | null {
  * return null so callers return the safe 'unknown' default.
  */
 export function parseIntentPrediction(content: string): IntentPrediction | null {
-  const trimmed = content.trim()
-  if (!trimmed) return null
-
-  let jsonText = trimmed
-  const fence = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/)
-  if (fence) jsonText = fence[1].trim()
+  const jsonText = extractJsonPayload(content)
+  if (!jsonText) return null
 
   let raw: unknown
   try {
@@ -111,8 +172,9 @@ export function parseIntentPrediction(content: string): IntentPrediction | null 
   for (const item of obj.intents) {
     if (typeof item !== 'object' || item === null) continue
     const entry = item as RawIntentEntry
-    if (typeof entry.type !== 'string' || !INTENT_TYPES.has(entry.type)) continue
-    const intent = entryToIntent(entry)
+    const resolvedType = resolveEntryType(entry)
+    if (!resolvedType) continue
+    const intent = entryToIntent({ ...entry, type: resolvedType })
     if (!intent) continue
     const confidence =
       typeof entry.confidence === 'number' && Number.isFinite(entry.confidence)
@@ -159,17 +221,20 @@ export function buildIntentDetectionPrompt(
     "Based on the provided project context and userQuery, predict the user's intent.",
     '',
     '# Instructions',
-    "1. Only use the 'type' values specified in the schema: add-feature, remove-dependency, refactor, fix, unknown.",
+    "1. The 'type' field must be EXACTLY ONE of: add-feature, remove-dependency, refactor, fix, unknown. Pick one, do not list alternatives.",
     "2. add-feature: the user wants NEW code (screen/hook/service). Extract a short 'feature' name (e.g. \"login\").",
     "3. remove-dependency: the user wants an npm package uninstalled. Extract the real package name as 'dependency'.",
     "4. refactor: the user wants existing code restructured. Extract the target module as 'target'.",
     "5. fix: the user wants existing code repaired (lint/type/test/build/bug). Extract 'area' from: lint, types, tests, build, code.",
     '6. A query may express MULTIPLE intents — list every distinct intent, ordered by importance, each with confidence (0..1) and a one-line reasoning.',
     "7. If the userQuery is uncertain, unclear, or irrelevant, return intent type 'unknown'.",
-    '8. Return ONLY valid JSON matching the schema below. No markdown, no commentary.',
+    '8. Return ONLY valid JSON. No markdown, no commentary, no extra text before or after.',
     '',
-    '# Schema',
-    '{"intents":[{"type":"add-feature|remove-dependency|refactor|fix|unknown","feature":null,"dependency":null,"target":null,"area":null,"confidence":0.95,"reasoning":"why"}]}',
+    '# Example (single intent)',
+    '{"intents":[{"type":"fix","feature":null,"dependency":null,"target":null,"area":"lint","confidence":0.95,"reasoning":"user wants lint violations repaired"}]}',
+    '',
+    '# Example (multiple intents)',
+    '{"intents":[{"type":"add-feature","feature":"login","dependency":null,"target":null,"area":null,"confidence":0.9,"reasoning":"new login screen"},{"type":"remove-dependency","feature":null,"dependency":"appcenter","target":null,"area":null,"confidence":0.4,"reasoning":"also mentioned removing appcenter"}]}',
   ].join('\n')
 
   const userPrompt = [
@@ -210,12 +275,13 @@ export async function predictIntent(
 
   try {
     const { systemPrompt, prompt } = buildIntentDetectionPrompt(ctx.prompt, ctx.snapshot)
+    const context = ctx.snapshot
+      ? `Project: ${ctx.snapshot.project.name}, React Native ${ctx.snapshot.project.reactNativeVersion || 'unknown'}`
+      : undefined
     const response = await modelRouter.generate({
       systemPrompt,
       prompt,
-      context: ctx.snapshot
-        ? `Project: ${ctx.snapshot.project.name}, React Native ${ctx.snapshot.project.reactNativeVersion || 'unknown'}`
-        : undefined,
+      context,
       maxTokens: 256,
       temperature: 0,
     })
@@ -223,7 +289,34 @@ export async function predictIntent(
     if (content.includes('[Local model fallback') || content.includes('no downloaded model')) {
       return unknown
     }
-    return parseIntentPrediction(content) ?? unknown
+    const parsed = parseIntentPrediction(content)
+    if (parsed) return parsed
+
+    // Repair retry: small local models often wrap the JSON in prose or echo the
+    // schema. Show the model its own invalid output and ask it to fix just the
+    // formatting — one cheap retry (256 tokens, memoized per run), still fully
+    // LLM-driven. Fire it for any unparseable non-fallback output; skipping it
+    // on "no '{'" would defeat prose-wrapped intent detection entirely.
+    const repairResponse = await modelRouter.generate({
+      systemPrompt,
+      prompt: [
+        'Your previous response was not valid intent JSON. Fix it to match the schema exactly.',
+        'Return ONLY the JSON object. No markdown, no commentary.',
+        '',
+        '# Previous (invalid) response',
+        '```',
+        content.slice(0, 1000),
+        '```',
+      ].join('\n'),
+      context,
+      maxTokens: 256,
+      temperature: 0,
+    })
+    const repairContent = repairResponse?.content || ''
+    if (repairContent.includes('[Local model fallback') || repairContent.includes('no downloaded model')) {
+      return unknown
+    }
+    return parseIntentPrediction(repairContent) ?? unknown
   } catch {
     return unknown
   }

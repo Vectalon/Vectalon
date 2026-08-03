@@ -5,10 +5,19 @@ import { implementationPhase } from '../../src/workflows/phases/implementationPh
 import { ModelRouter } from '../../src/model/ModelRouter'
 import type { WorkflowContext } from '../../src/adapters/types'
 
+// Intent always comes from the LLM, so the first generate() call is consumed
+// by intent detection. These legacy tests were written before intent routing
+// existed, so prepend an add-feature intent and let every subsequent call
+// return the model response under test.
 function createMockModelRouter(response: string): ModelRouter {
   const router = new ModelRouter()
   router.initialize({ provider: 'local' })
-  jest.spyOn(router, 'generate').mockResolvedValue({ content: response, provider: 'local' })
+  const mock = jest.spyOn(router, 'generate')
+  mock.mockResolvedValueOnce({
+    content: JSON.stringify({ intents: [{ type: 'add-feature', feature: 'login', confidence: 1, reasoning: 'new feature' }] }),
+    provider: 'mock',
+  })
+  mock.mockResolvedValue({ content: response, provider: 'local' })
   return router
 }
 
@@ -396,5 +405,20 @@ describe('implementationPhase', () => {
     expect(result.output).toContain('passes cleanly')
     expect(result.output).toContain('Nothing to fix')
     expect(existsSync(join(projectRoot, 'src'))).toBe(false)
+  })
+
+  it('produces a clarification plan and writes NO files when the intent is unknown', async () => {
+    const router = createMockModelRouterSequence([
+      JSON.stringify({ intents: [{ type: 'unknown', confidence: 0.5, reasoning: 'not sure' }] }),
+    ])
+    const result = await implementationPhase.run(createContext(router, 'Remove appcenter safely from this project', projectRoot))
+
+    expect(result.output).toContain('Request not classified')
+    expect(result.output).toContain('no files were created or modified')
+    // Nothing was written to disk at all
+    expect(existsSync(join(projectRoot, 'src'))).toBe(false)
+    // No scaffold artifacts for the unknown request
+    expect(result.artifacts.filter(a => a.type === 'engineering')).toHaveLength(1)
+    expect(result.artifacts[0].title).toBe('Clarification needed')
   })
 })
