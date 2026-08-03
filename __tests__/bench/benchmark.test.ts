@@ -219,6 +219,24 @@ describe('bench deterministic baseline runner', () => {
     expect(run.axes.correctness).toBeCloseTo(1, 5)
   })
 
+  it('installs deps in the temp project before live checks when install is set', async () => {
+    const calls: Array<{ cmd: string; args: string[] }> = []
+    const run = await runScenario(
+      validScenario({ correctness: { tests: true, typecheck: true, lint: true } }),
+      {
+        live: true,
+        install: true,
+        runCommand: async (cmd, args) => {
+          calls.push({ cmd, args })
+          return { success: true, exitCode: 0, stdout: '', stderr: '' }
+        },
+      }
+    )
+    expect(calls[0].cmd).toBe('npm')
+    expect(calls[0].args[0]).toBe('install')
+    expect(run.axes.correctness).toBeCloseTo(1, 5)
+  })
+
   it('respects filters and aggregates suites', async () => {
     const scenarios: BenchScenario[] = [
       validScenario({ id: 'rn-a', suite: 'core-ui' }),

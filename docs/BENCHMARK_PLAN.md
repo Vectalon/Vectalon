@@ -7,24 +7,25 @@
 
 ## Status
 
-> M1–M4 and M6 are **delivered** (committed on `main`). The harness lives in
-> `src/bench/` with scenarios in `bench/scenarios/` and reference solutions in
-> `bench/references/`; the CLI is `vectalon bench --model … --suite … --live`
-> (see [`CLI_REFERENCE.md`](CLI_REFERENCE.md)). M4 adds the **CI regression
-> gate**: `vectalon bench --baseline bench/baseline.json` compares the
-> deterministic run against the committed baseline and fails on any axis
-> regression (`.github/workflows/ci.yml` runs it on every PR). M5 (scheduled
-> real-model leaderboard) is next up — see the README
-> [`Roadmap`](README.md) and [`ENHANCEMENT_PLAN.md`](ENHANCEMENT_PLAN.md) V-5.
+> **M1–M6 are delivered** (committed on `main`). The harness lives in
+> `src/bench/` with scenarios in `bench/scenarios/`, reference solutions in
+> `bench/references/`, and per-model results in `bench/results/`; the CLI is
+> `vectalon bench --model … --suite … --live` (see
+> [`CLI_REFERENCE.md`](CLI_REFERENCE.md)). M4 adds the **CI regression gate**:
+> `vectalon bench --baseline bench/baseline.json` compares the deterministic
+> run against the committed baseline and fails on any axis regression
+> (`.github/workflows/ci.yml` runs it on every PR). M5 adds the **scheduled
+> leaderboard**: `.github/workflows/leaderboard.yml` runs `vectalon bench
+> --live --install --model` on a `[local, openai, anthropic]` matrix nightly,
+> merges the per-model results with `vectalon leaderboard`, and commits a
+> timestamped `BENCHMARK_RESULTS.md` back to the repo.
 
 | Milestone | Status |
 |---|---|
 | M1 — Scenario spec + 10 scenarios + deterministic baseline runner | ✅ Delivered (`src/bench/loader.ts` + `snapshot.ts`, `bench/scenarios/`)
 | M2 — Rubric (15 checks) + scoring + report | ✅ Delivered (`src/bench/rubric.ts`, `scoring.ts`, `report.ts`)
 | M3 — `vectalon bench` CLI + `--suite`/`--model`/`--live` flags | ✅ Delivered (`src/cli/commands/bench.ts`)
-| M4 — CI deterministic baseline + PR gate | ✅ Delivered (`bench/baseline.json`, `--baseline`/`--tolerance`, `.github/workflows/ci.yml` `bench` job)
-| M5 — Public leaderboard (scheduled real-model pass, `BENCHMARK_RESULTS.md`) | ⬜ Next up (`--live` seam delivered)
-| M6 — Reference solutions + relative-to-human scoring | ✅ Delivered (`bench/references/`, `src/bench/references.ts`)
+| M4 — CI deterministic baseline + PR gate | ✅ Delivered (`bench/baseline.json`, `--baseline`/`--tolerance`, `.github/workflows/ci.yml` `bench` job)| M5 — Public leaderboard (scheduled real-model pass, `BENCHMARK_RESULTS.md`) | ✅ Delivered (`src/bench/leaderboard.ts`, `vectalon leaderboard`, `.github/workflows/leaderboard.yml`) | M6 — Reference solutions + relative-to-human scoring | ✅ Delivered (`bench/references/`, `src/bench/references.ts`)
 
 ## 1. Why this is the proof-of-one-of-a-kind
 
@@ -213,8 +214,11 @@ what "passing" means.
 - **Repo:** `bench/` directory with scenarios, fixtures, and the deterministic
   baseline committed — anyone can `npm install` + `vectalon bench` and reproduce.
 - **Leaderboard:** CI (GitHub Actions) runs the deterministic baseline on every
-  PR; a scheduled workflow runs real-model passes and commits a
-  `BENCHMARK_RESULTS.md` table (scenario × model × axis).
+  PR; a **nightly scheduled workflow** (`.github/workflows/leaderboard.yml`,
+  03:00 UTC) runs real-model passes on a `[local, openai, anthropic]` matrix,
+  merges the results with `vectalon leaderboard bench/results`, and commits a
+  timestamped `BENCHMARK_RESULTS.md` table (scenario × model × axis) back to
+  the repo.
 - **Model comparison:** the same harness, many models — local Qwen, OpenAI,
   Anthropic, any custom endpoint via `ModelRouter`. The benchmark becomes the
   *only* public RN-specific model leaderboard.
@@ -236,7 +240,7 @@ what "passing" means.
 | M2 | Rubric (15 checks) + scoring + markdown report | ✅ Delivered |
 | M3 | `vectalon bench` CLI + `--suite`/`--model`/`--live` flags | ✅ Delivered |
 | M4 | CI deterministic baseline + PR gate | ✅ Delivered (committed `bench/baseline.json` + `--baseline` flag + CI job) |
-| M5 | Public leaderboard (scheduled real-model pass, BENCHMARK_RESULTS.md) | ⬜ Next up (`--live` seam delivered) |
+| M5 | Public leaderboard (scheduled real-model pass, BENCHMARK_RESULTS.md) | ✅ Delivered (`src/bench/leaderboard.ts`, `vectalon leaderboard`, `.github/workflows/leaderboard.yml`) |
 | M6 | Reference solutions + relative-to-human scoring | ✅ Delivered |
 
 **Definition of done:** `vectalon bench` runs offline in under 2 minutes,

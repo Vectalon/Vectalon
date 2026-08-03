@@ -368,7 +368,7 @@ After installing locally, you can use the shorter alias:
 npx vectalon
 ```
 
-Running `npx vectalon` with no arguments opens an interactive menu so you can pick init, feature, refresh, ecosystem, doctor, bench, sync, policy, serve, import, pull, models, or help without memorizing flags.
+Running `npx vectalon` with no arguments opens an interactive menu so you can pick init, feature, refresh, ecosystem, doctor, bench, leaderboard, sync, policy, serve, import, pull, models, or help without memorizing flags.
 
 For the full command reference — every command with its options, examples, and
 exit codes — see [docs/CLI_REFERENCE.md](docs/CLI_REFERENCE.md).
@@ -473,6 +473,7 @@ npx vectalon bench --model openai --json      # JSON summary for tooling
 npx vectalon bench -o report.md               # write the report to a file
 npx vectalon bench --scenarios ./my-evals     # run your own custom eval pack
 npx vectalon bench --baseline bench/baseline.json  # CI regression gate
+npx vectalon leaderboard bench/results              # merge runs into BENCHMARK_RESULTS.md
 ```
 
 - `--model <provider>` — `local` / `openai` / `anthropic`; runs the real-model
@@ -480,6 +481,8 @@ npx vectalon bench --baseline bench/baseline.json  # CI regression gate
 - `--suite <id>` — only scenarios in one suite
   (`core-ui`, `data-flow`, `forms-security`, `navigation`, `a11y`, `perf`, `refactor`)
 - `--live` — run real tests/typecheck/lint for the correctness axis (slow)
+- `--install` — `npm install` each temp project before the live checks (needed
+  when the fixture project has a `package.json` but no `node_modules`)
 - `--json` — machine-readable summary instead of markdown
 - `-o, --output <path>` — write the report to a file
 - `--scenarios <dir>` — override the scenarios directory (custom eval packs)
@@ -1103,6 +1106,7 @@ rn-vectalon/
 │   │   │   ├── policy.ts      # Project-specific guardrail policy
 │   │   │   ├── sync.ts        # Team brain sync to a git remote
 │   │   │   ├── bench.ts       # RN coding tests benchmark CLI
+│   │   │   ├── leaderboard.ts # Merge model runs into BENCHMARK_RESULTS.md
 │   │   │   ├── pull.ts        # Download a local model
 │   │   │   └── models.ts      # List local models
 │   │   └── index.ts       # CLI runner + interactive menu
@@ -1114,7 +1118,8 @@ rn-vectalon/
 │   │   ├── references.ts  # Human reference solution loader
 │   │   ├── loader.ts      # Versioned scenario spec loading
 │   │   ├── snapshot.ts    # Project snapshot capture
-│   │   └── report.ts      # Markdown/JSON report formatter
+│   │   ├── report.ts      # Markdown/JSON report formatter
+│   │   └── leaderboard.ts # Per-model result merge → BENCHMARK_RESULTS.md
 │   ├── ecosystem/         # External tooling catalog + doctor
 │   │   ├── catalog.ts     # MCP servers, skills, tools, hooks (Expo & RN-CLI)
 │   │   ├── config.ts      # ecosystem.json, recommendations, dependency detection
@@ -1278,6 +1283,10 @@ Areas we'd love help with:
   `vectalon bench --baseline`, run by the CI `bench` job on every PR so any
   axis regression fails the build; regenerate with
   `npx vectalon bench --json -o bench/baseline.json`
+- ✅ **Scheduled model leaderboard (M5)** — `.github/workflows/leaderboard.yml`
+  runs `vectalon bench --live --install --model` on a `[local, openai, anthropic]`
+  matrix nightly, merges per-model results with `vectalon leaderboard`, and
+  commits a timestamped `BENCHMARK_RESULTS.md` scenario × model × axis table
 - ✅ **Expo & RN-CLI separation** — `Scanner` detects `tooling` + Expo SDK
   version; context prompts, simulator runs, and dependency removal are
   flavor-aware
@@ -1306,9 +1315,7 @@ Areas we'd love help with:
 
 **Next up:**
 
-- **Live correctness scoring in CI** — run `vectalon bench --live` on a model
-  matrix and comment the leaderboard on PRs
-- **Leaderboard artifacts** — timestamped run history comparing models and commits
+- **PR leaderboard comments** — comment the nightly leaderboard comparison on PRs
 - **CI/CD integration** — auto-fix PRs, draft release notes in CI
 - **VS Code extension** — inline suggestions against the harness
 - **v1.0** — Stable protocol, production-ready
