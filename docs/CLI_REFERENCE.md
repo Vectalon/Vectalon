@@ -1,0 +1,441 @@
+# vectalon CLI Reference
+
+Complete reference for the `vectalon` command-line interface. Every command is
+available as `npx vectalon <command>` (or `vectalon <command>` when installed
+globally or linked).
+
+Running `npx vectalon` with no arguments opens an **interactive menu** covering
+the most common actions (init, feature, refresh, ecosystem, doctor, bench, sync,
+policy, serve, import, pull, models, help).
+
+---
+
+## Conventions
+
+- **Exit code `0`** — success.
+- **Exit code `1`** — error: missing `.vectalon/` directory, unknown argument
+  value, missing required input, or an operation that failed.
+- Most commands take an optional `[directory]` argument; when omitted they act
+  on the current working directory.
+- Several commands require a `.vectalon/` directory first — run
+  `vectalon init` to create it.
+
+---
+
+## `init`
+
+Initialize vectalon in a React Native project: scan the codebase, build the
+context snapshot, detect tooling (Expo vs bare RN-CLI), set up the model
+provider, and enable the recommended ecosystem items.
+
+```bash
+npx vectalon init                  # scan cwd and create .vectalon/
+npx vectalon init ./my-app         # scan a specific directory
+npx vectalon init --model local    # use the local Qwen2.5-Coder provider
+npx vectalon init --model openai   # remote OpenAI provider (reads OPENAI_API_KEY)
+npx vectalon init --model anthropic  # remote Anthropic provider (ANTHROPIC_API_KEY)
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root to scan (default: cwd) |
+| `--model <provider>` | Default model provider: `local` \| `openai` \| `anthropic` |
+
+**What it does**
+
+- Scans `package.json`, `src/`, metro config, TypeScript setup, navigation
+  patterns → writes `snapshot.json`, `context.md`, `memory.json`
+- Detects **Expo-managed vs bare RN CLI** (`tooling` + Expo SDK version) and
+  records it in `.vectalon/rn-vectalon.json`
+- Sets up the **model provider**: local download (Qwen2.5-Coder, ~1.1 GB,
+  offered interactively) or a remote provider with env-var API keys (keys are
+  never written to disk)
+- Enables the **flavor-appropriate ecosystem items** (Expo MCP/skills for Expo
+  projects; Upgrader MCP/rn-diff-purge for bare RN-CLI) plus the shared baseline
+- Scans `package.json` dependencies and **auto-enables matching ecosystem
+  items** (zustand, gesture-handler, reanimated, mmkv, flash-list, husky,
+  lint-staged, …), logging each detection
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Project initialized |
+| 1 | Unknown `--model` provider |
+
+**Output** — `.vectalon/` containing `snapshot.json`, `context.md`,
+`memory.json`, `rn-vectalon.json` (manifest), and `ecosystem.json`.
+
+---
+
+## `serve`
+
+Start the MCP server so any agent (Claude Code, OpenCode, Codex CLI, Cursor,
+Windsurf) can connect for project-aware assistance.
+
+```bash
+npx vectalon serve                    # MCP over stdio (default)
+npx vectalon serve --protocol stdio   # stdio
+npx vectalon serve --protocol http --port 8931   # HTTP for Codex CLI etc.
+npx vectalon serve --model openai     # override the model provider for this run
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `-p, --port <number>` | HTTP server port (default `0` = auto-assign) |
+| `--protocol <type>` | `mcp` \| `stdio` \| `sse` \| `http` (default `mcp`) |
+| `--model <provider>` | Model provider: `local` \| `openai` \| `anthropic` |
+
+**What it does**
+
+- Exposes **33 built-in MCP tools** (project context, SDLC modules, knowledge
+  base, team brain)
+- Reads `.vectalon/ecosystem.json` and exposes each **enabled ecosystem MCP
+  server as a first-class tool** (Metro MCP, Expo MCP, …) agents auto-discover
+- Loads the resolved model provider from the manifest (or `--model`) and logs
+  it at startup, warning when a remote API key is missing
+- Registers sibling projects from `.vectalon/team.json` (team brain)
+- Starts a **background knowledge refresh** scheduler (hourly) and runs an
+  immediate refresh when the cache is stale
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Server running (until stopped) |
+| 1 | No `.vectalon/` directory found |
+
+---
+
+## `feature`
+
+Run the end-to-end feature-development SDLC workflow from a single prompt.
+
+```bash
+npx vectalon feature "create a login screen and integrate the auth API"
+npx vectalon feature "remove unused imports" --dry-run     # safe preview
+npx vectalon feature "remove unused imports" --push        # commit, push, open PR
+npx vectalon feature "add login screen" --device           # include iOS/Android builds
+npx vectalon feature "fix all lint issues" --heal-attempts 5
+npx vectalon feature "fix all lint issues" --heal-interactive
+npx vectalon feature "add login screen" --resume <state-id> --from implementation
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `<prompt>` | The feature request (required) |
+| `--workflow <id>` | Workflow to run (default `feature-development`) |
+| `--resume <state-id>` | Resume a previous workflow state |
+| `--from <phase-id>` | Start from a specific phase when resuming |
+| `-o, --output <path>` | Write workflow output to a file |
+| `--json` | Output as JSON |
+| `--verbose` | Show full phase output |
+| `--dry-run` | Simulate adapters without running real commands |
+| `--model <provider>` | Model provider: `local` \| `openai` \| `anthropic` |
+| `--push` | Allow git push and PR creation (default: local branch/commit only) |
+| `--device` | Run device/simulator build checks during verification |
+| `--heal-interactive` | Prompt before applying each self-healing review fix |
+| `--heal-attempts <n>` | Max review→fix→re-review cycles (default 3) |
+| `--heal-severity <level>` | Lowest severity that heals: `error` \| `warning` \| `info` |
+
+**What it does**
+
+- Classifies the prompt with **LLM intent detection** (`add-feature` / `fix` /
+  `refactor` / `remove-dependency` / `unknown`), surfacing e.g.
+  `Detected intent: fix/lint — LLM, confidence 0.95`
+- Runs 13 phases: PRD → scope → design → architecture → tasks → **TDD tests**
+  → implementation → **self-healing code review** → verification →
+  readiness → PR → documentation → close
+- Applies **guardrails** (25 rules + `.vectalon/policy.json`) before writing
+  files, and streams **live diffs** for every code change
+- Runs the project's `test`/`lint`/`prettier`/`typecheck` scripts during
+  verification (device builds only with `--device`)
+- Prints an "upgrade suggestions available" section from
+  `.vectalon/knowledge/refresh/suggestions.json` when present
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Workflow completed successfully |
+| 1 | No `.vectalon/`, unknown workflow, unknown provider, or workflow failure |
+
+---
+
+## `ecosystem`
+
+Browse and manage the external tooling catalog — MCP servers, agent skills,
+developer tools, and git hooks for React Native / Expo.
+
+```bash
+npx vectalon ecosystem                      # list the full catalog
+npx vectalon ecosystem --category mcp       # only MCP servers
+npx vectalon ecosystem --flavor expo        # only Expo-flavored items
+npx vectalon ecosystem --enable metro-mcp   # enable an item
+npx vectalon ecosystem --disable maestro    # disable an item
+npx vectalon ecosystem --export             # emit MCP client config fragment
+npx vectalon ecosystem --export --json      # ... as JSON
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--category <type>` | `mcp` \| `skill` \| `tool` \| `hook` |
+| `--flavor <type>` | `expo` \| `rn-cli` |
+| `--enable <id>` | Enable an ecosystem item |
+| `--disable <id>` | Disable an enabled item |
+| `--export` | Export enabled items as an MCP client config fragment |
+| `--json` | Print the export as JSON |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Success (list / enable / disable / export) |
+| 1 | Unknown category, unknown flavor, or unknown item id |
+
+---
+
+## `doctor`
+
+Verify that every enabled ecosystem item is installed and reachable, and that
+the native toolchain is ready to build and run the project.
+
+```bash
+npx vectalon doctor                 # human-readable report
+npx vectalon doctor --json          # machine-readable report
+npx vectalon doctor ./my-app        # check a specific project
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print the report as JSON |
+
+**Checks**
+
+- **Ecosystem items** — MCP packages resolve locally or respond to a bounded
+  probe; tools/hooks resolve from `node_modules` or respond on `PATH`; skills
+  exist under `.vectalon/skills/` or `.agents/skills/`
+- **Native toolchain** — Node 20+ (18–19 warns), JDK 17+, Android SDK
+  (`ANDROID_HOME`/`adb`), Android emulator AVDs, Xcode & CocoaPods (macOS
+  only), Metro dev-server port 8081
+
+Every check prints a status (`OK`/`MISSING`/`WARN`) with an actionable fix
+hint. Toolchain checks run even without an ecosystem config.
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | No missing checks |
+| 1 | One or more checks are missing |
+
+---
+
+## `bench`
+
+Score the harness — or any model — on the RN coding tests benchmark.
+
+```bash
+npx vectalon bench                          # deterministic baseline (offline)
+npx vectalon bench --suite data-flow        # only the data-flow suite
+npx vectalon bench --live                   # run real tests/typecheck/lint
+npx vectalon bench --model local            # real-model leaderboard (all 10)
+npx vectalon bench --model openai --json    # JSON summary for tooling
+npx vectalon bench -o report.md             # write the report to a file
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `--model <provider>` | `local` \| `openai` \| `anthropic` — run the real-model pass |
+| `--suite <id>` | Only one suite: `core-ui` \| `data-flow` \| `forms-security` \| `navigation` \| `a11y` \| `perf` \| `refactor` |
+| `--live` | Run real tests/typecheck/lint for correctness (slow) |
+| `--json` | Print a JSON summary instead of markdown |
+| `-o, --output <path>` | Write the report to a file |
+| `--scenarios <dir>` | Override the scenarios directory (default `bench/scenarios`) |
+
+**What it does**
+
+- Runs **10 versioned RN coding test scenarios** (login screen, FlatList feeds,
+  typed navigation, secure forms, offline queues, image feeds, feature flags,
+  accessible forms, hooks refactors, …)
+- Scores on three axes: **correctness** (real test/typecheck/lint with
+  `--live`), a **15-check best-practice rubric**, and the **guardrail rules**
+- Reports scores **relative to the human reference solutions**
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Benchmark ran (report printed/written) |
+| 1 | Unknown provider, or no scenarios ran |
+
+---
+
+## `policy`
+
+Manage project-specific guardrail policy (`.vectalon/policy.json`).
+
+```bash
+npx vectalon policy --init                    # create a default policy file
+npx vectalon policy                           # show the current policy
+npx vectalon policy --check src/screens/Home.tsx   # run policy against a file
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--init` | Create a default `.vectalon/policy.json` |
+| `--check <file>` | Run the policy against a source file |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Policy initialized / shown, or check passed |
+| 1 | No `.vectalon/`, file not found, or check failed |
+
+---
+
+## `refresh`
+
+Refresh knowledge from web sources and generate improvement suggestions.
+
+```bash
+npx vectalon refresh              # refresh only if the cache is stale
+npx vectalon refresh --force      # refresh regardless
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--force` | Refresh even if the cache is still fresh |
+
+**What it does**
+
+- Retrieves latest React Native docs, library changelogs, and community best
+  practices; updates the knowledge graph and best-practices knowledge base
+- Compares your `package.json` dependencies against the fetched data and writes
+  **improvement suggestions** to
+  `.vectalon/knowledge/refresh/suggestions.json`
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Refresh completed (or cache was fresh) |
+| 1 | No `.vectalon/` directory found |
+
+---
+
+## `sync`
+
+Sync the team brain (`.vectalon/knowledge/`) to a hosted git remote.
+
+```bash
+npx vectalon sync --init --remote git@github.com:org/team-brain.git
+npx vectalon sync --push                       # push the local brain
+npx vectalon sync --pull                       # pull the remote brain
+npx vectalon sync --push --branch release      # different branch
+npx vectalon sync --push --force               # run even if disabled in config
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--push` | Push the knowledge base to the remote |
+| `--pull` | Pull the knowledge base from the remote |
+| `--init` | Create `.vectalon/sync.json` (requires `--remote`) |
+| `--remote <url>` | Git remote URL for the hosted artifact store |
+| `--branch <name>` | Branch to sync to/from (default `main`) |
+| `--force` | Override a disabled sync config (`"enabled": false`) |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Config created, or push/pull succeeded |
+| 1 | No `.vectalon/`, `--init` without `--remote`, no `sync.json`, or sync failed |
+
+---
+
+## `import`
+
+Import SDLC artifacts (markdown/JSON) into the knowledge base.
+
+```bash
+npx vectalon import docs/prd.md
+npx vectalon import docs/
+npx vectalon import docs/prd.md --type product --title "Mobile App PRD"
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `<target>` | File or directory to import (required) |
+| `--type <type>` | Artifact type: `business` \| `research` \| `product` \| `requirements` \| `design` \| `architecture` \| `engineering` \| `data` \| `security` \| `qa` \| `devops` \| `operations` \| `analytics` |
+| `--title <title>` | Artifact title |
+
+Type resolution order: `--type` flag → frontmatter `type:` → keyword detection.
+JSON files may be a single `{ title, type, content }` object or an array.
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Import completed (duplicates skipped by checksum) |
+| 1 | Invalid target or import failure |
+
+---
+
+## `pull`
+
+Download a local model preset (default: Qwen2.5-Coder-1.5B).
+
+```bash
+npx vectalon pull              # download the default model (~1.1 GB)
+npx vectalon pull <preset>     # download a specific preset
+```
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Model downloaded (or already exists) |
+| 1 | Unknown preset, or download failed |
+
+---
+
+## `models`
+
+List available and downloaded local models.
+
+```bash
+npx vectalon models
+```
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Always (list printed) |
