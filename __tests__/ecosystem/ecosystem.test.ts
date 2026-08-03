@@ -52,12 +52,12 @@ describe('ecosystem catalog', () => {
 
   it('recommends Expo-specific items for expo projects and RN-CLI items for bare projects', () => {
     const expoIds = recommendEcosystemSetup('expo').map(i => i.id)
-    expect(expoIds).toEqual(expect.arrayContaining(['expo-mcp', 'expo-skills', 'expo-doctor', 'metro-mcp']))
-    expect(expoIds).not.toEqual(expect.arrayContaining(['react-native-upgrader-mcp', 'rn-diff-purge']))
+    expect(expoIds).toEqual(expect.arrayContaining(['expo-mcp', 'expo-skills', 'expo-doctor', 'expo-router', 'expo-ui', 'eas-cli', 'metro-mcp']))
+    expect(expoIds).not.toEqual(expect.arrayContaining(['react-native-upgrader-mcp', 'rn-diff-purge', 'fastlane', 'flipper']))
 
     const rnCliIds = recommendEcosystemSetup('rn-cli').map(i => i.id)
-    expect(rnCliIds).toEqual(expect.arrayContaining(['react-native-upgrader-mcp', 'rn-diff-purge', 'metro-mcp']))
-    expect(rnCliIds).not.toEqual(expect.arrayContaining(['expo-mcp', 'expo-skills', 'expo-doctor']))
+    expect(rnCliIds).toEqual(expect.arrayContaining(['react-native-upgrader-mcp', 'rn-diff-purge', 'expo-brownfield', 'flipper', 'fastlane', 'metro-mcp']))
+    expect(rnCliIds).not.toEqual(expect.arrayContaining(['expo-mcp', 'expo-skills', 'expo-doctor', 'expo-router']))
   })
 })
 
@@ -106,7 +106,7 @@ describe('ecosystem config', () => {
     enableEcosystemItem(dir, 'flashlist')
 
     const result = applyEcosystemRecommendations(dir, 'expo')
-    expect(result.enabled).toEqual(expect.arrayContaining(['flashlist', 'expo-mcp', 'expo-skills', 'expo-doctor']))
+    expect(result.enabled).toEqual(expect.arrayContaining(['flashlist', 'expo-mcp', 'expo-skills', 'expo-doctor', 'expo-router', 'expo-ui', 'eas-cli']))
     expect(readEcosystemConfig(dir).enabled).toEqual(result.enabled)
   })
 })

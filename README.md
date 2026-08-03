@@ -134,25 +134,72 @@ they don't recommend RN-CLI-native edits for managed projects
 Expo-managed
 
 ### Ecosystem catalog (MCP servers, skills, tools, hooks)
-`vectalon ecosystem` indexes the external React Native / Expo MCP servers, agent
-skills, tools, and git hooks that make an AI agent (and this harness) competent
-on mobile projects. All items are **opt-in** — nothing is enabled without an
-explicit `vectalon ecosystem --enable <id>`:
+`vectalon ecosystem` indexes the full stack of React Native / Expo MCP servers,
+agent skills, developer tools, and git hooks. All items are **opt-in** — nothing
+is enabled without an explicit `vectalon ecosystem --enable <id>`.
 
-- **MCP servers** — Metro MCP (Hermes runtime inspection + test recording),
-  Expo MCP (official: docs, `expo install`, EAS builds, store data), React
-  Native MCP (Fiber-tree/hook-state inspection), React Native Guide MCP (code
-  remediation), React Native Upgrader MCP (upgrade diffs)
-- **Skills** — official Expo skills (`expo/skills`), Callstack agent skills
-  (best practices, upgrades, brownfield), SenaiVerse RN agent system
-- **Tools** — repomix (context packing), rn-diff-purge (upgrade diffs), Maestro
-  & Detox (E2E), FlashList, expo-doctor
-- **Hooks** — husky, lint-staged, lefthook (pre-commit validation for generated
-  code)
+### Official & Essential Expo MCP Tools
 
-`vectalon ecosystem --export` emits the enabled MCP servers as a config fragment
-ready to paste into Cursor/Claude Code, and `--flavor expo|rn-cli` filters items
-by project flavor.
+The official `@expo/mcp` server connects AI assistants directly to Expo
+documentation, project dependency management, and EAS workflows.
+
+- **`search_documentation`** / **`read_documentation`** — search and read official Expo docs
+- **`add_library`** — install Expo/React Native packages via `expo install`
+- **`workflow_create`** / **`workflow_validate`** / **`workflow_run`** — generate and check EAS CI/CD YAML
+- **`build_list`** / **`build_info`** / **`build_logs`** / **`build_submit`** — track, inspect, and submit EAS builds to App Store / Play Store
+
+### MCP Servers
+
+| Server | What it does | Flavor |
+|--------|-------------|--------|
+| **Metro MCP** | CDP-based runtime inspection (console, network, component tree, Redux, UI automation, test recording via Maestro/Detox/Appium) | Both |
+| **Expo MCP** | Official Expo: docs, `expo install`, EAS builds/workflows, TestFlight crash data, Play Store reviews, expo-router sitemap, device logs | Expo |
+| **React Native MCP** | React Fiber tree + hook state inspection, re-render profiler, network mocking, 49 automation tools via ADB/idb | Both |
+| **React Native Guide MCP** | Code quality enforcement: auto-remediation, StyleSheet/FlatList refactoring, test generation, dependency auditing | Both |
+| **React Native Upgrader MCP** | Track stable/RC RN versions and generate exact upgrade diffs with migration guidance | RN-CLI |
+
+### Agent Skills
+
+| Skill | What it covers | Flavor |
+|-------|---------------|--------|
+| **Expo Router** | File-based routing, dynamic paths, native stacks, tabs, modals, deep linking, typed routes | Expo |
+| **Expo UI / Native UI** | `@expo/ui` components (SwiftUI on iOS, Jetpack Compose on Android), semantic colors, platform styling | Expo |
+| **Expo Tailwind Setup** | NativeWind v5 + Tailwind CSS v4: Metro config, babel plugin, global CSS, design tokens | Expo |
+| **Expo Data Fetching** | TanStack Query, offline-first storage, caching strategies, optimistic updates | Expo |
+| **Expo Dev Client** | Custom development builds for native code testing, dev-launcher workflows | Expo |
+| **Expo DOM** | Embed web-only libraries natively using DOM components | Expo |
+| **Expo Upgrade** | SDK version migrations, cache clearing, breaking-change codemods, post-upgrade validation | Expo |
+| **Expo Project Structure** | File organization, app entry points, configuration standards | Expo |
+| **Expo Module** | Native module development via Swift, Kotlin, and C++ (Expo Modules API) — works in Expo and bare RN-CLI | Both |
+| **Expo Brownfield** | Integrate React Native screens into existing native Android/iOS codebases | RN-CLI |
+| **Expo Skills (all-in-one)** | Bulk install of all official Expo skills above | Expo |
+| **Callstack Agent Skills** | RN best practices: profiling, FlashList, React Compiler, Turbo Modules, bundle size, upgrades, brownfield | Both |
+| **React Native Expert** | Senior RN/Expo engineering: platform handling, FlashList/LegendList performance, native thread management, Hermes profiling | Both |
+| **Android E2E Testing** | Android emulator automation: ADB commands, UI Automator, emulator lifecycle, screenshot testing | Both |
+| **SenaiVerse RN Agent System** | 7-role agent system: design token guardian, a11y enforcer, performance budget enforcer, security auditor, /feature /review /test commands | Both |
+
+### Supporting Development Tools
+
+| Category | Recommended Tooling |
+|----------|-------------------|
+| **Debugging** | Reactotron (state/network inspection), Flipper (layout/network/database inspector), React Native DevTools (component tree, Hermes debugger) |
+| **State & Storage** | Zustand (hooks-based state), MMKV (>30x AsyncStorage, synchronous reads, encryption), React Native SecureStore (Keychain/EncryptedSharedPrefs) |
+| **Animations** | React Native Reanimated (UI-thread animations, worklets, layout animations), Gesture Handler (pan/pinch/tap/long-press) |
+| **Build & CI/CD** | EAS CLI (Expo: build, submit, update), Fastlane (bare RN-CLI: beta deployments, App Store/Google Play) |
+| **E2E Testing** | Maestro (YAML-based, simplest), Detox (gray-box, native sync) |
+| **Performance** | FlashList (Shopify, virtualized lists), Reactotron (profiling), RN DevTools (profiler) |
+
+### Git Hooks
+
+- **Husky** — lint/typecheck/tests before commits
+- **lint-staged** — run lint/format only on staged files
+- **Lefthook** — fast parallel git hooks (Go alternative to husky)
+
+### Ecosystem Export
+
+`vectalon ecosystem --export` emits the enabled MCP servers as a JSON config
+fragment ready to paste into Cursor/Claude Code, and `--flavor expo|rn-cli`
+filters items by project flavor.
 
 ### Framework-Native
 Zero lock-in. rn-vectalon is a standard npm package that integrates with your existing RN CLI workflow. No new build system, no proprietary DSL — just a `serve` command and your agent connects.
