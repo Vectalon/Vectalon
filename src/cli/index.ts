@@ -11,6 +11,7 @@ import { refreshCommand } from './commands/refresh'
 import { ecosystemCommand } from './commands/ecosystem'
 import { syncCommand } from './commands/sync'
 import { benchCommand } from './commands/bench'
+import { doctorCommand } from './commands/doctor'
 import { logger } from './logger'
 import pkg from '../../package.json'
 import { dynamicImport } from '../utils/dynamicImport'
@@ -110,6 +111,12 @@ export function runCLI(): void {
     .action(syncCommand)
 
   program
+    .command('doctor [directory]')
+    .description('Check that every enabled ecosystem item is installed and reachable')
+    .option('--json', 'Print the report as JSON')
+    .action(doctorCommand)
+
+  program
     .command('bench')
     .description('Run the RN coding tests benchmark (deterministic baseline or real-model leaderboard)')
     .option('--model <provider>', 'Model provider (local/openai/anthropic) — run the real-model leaderboard pass')
@@ -158,6 +165,7 @@ async function runInteractive(): Promise<void> {
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Refresh knowledge', hint: 'Update best practices and dependency suggestions from the web' },
       { value: 'ecosystem', label: 'Manage ecosystem', hint: 'Enable MCP servers, skills, tools, and hooks (Expo & RN-CLI)' },
+      { value: 'doctor', label: 'Run doctor', hint: 'Verify every enabled ecosystem item is installed and reachable' },
       { value: 'bench', label: 'Run benchmark', hint: 'Score the harness on the RN coding tests (10 scenarios)' },
       { value: 'sync', label: 'Sync team brain', hint: 'Push/pull .vectalon/knowledge to a hosted git remote' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
@@ -277,6 +285,12 @@ async function runInteractive(): Promise<void> {
     }
     ecosystemCommand('', { enable: enable as string })
     p.outro('Ecosystem updated')
+    return
+  }
+
+  if (action === 'doctor') {
+    doctorCommand('', {})
+    p.outro('Doctor complete')
     return
   }
 
