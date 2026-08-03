@@ -370,6 +370,9 @@ npx vectalon
 
 Running `npx vectalon` with no arguments opens an interactive menu so you can pick init, feature, refresh, ecosystem, doctor, bench, sync, policy, serve, import, pull, models, or help without memorizing flags.
 
+For the full command reference — every command with its options, examples, and
+exit codes — see [docs/CLI_REFERENCE.md](docs/CLI_REFERENCE.md).
+
 ### Initialize
 
 ```bash
@@ -1173,7 +1176,8 @@ rn-vectalon/
 │   └── rn-vectalon.js       # CLI entry
 ├── docs/
 │   ├── ENHANCEMENT_PLAN.md  # Phase roadmap (A–H delivered, I+ futuristic)
-│   └── BENCHMARK_PLAN.md    # RN coding tests benchmark plan (M1–M6)
+│   ├── BENCHMARK_PLAN.md    # RN coding tests benchmark plan (M1–M6)
+│   └── CLI_REFERENCE.md     # Full command reference (options, examples, exit codes)
 ├── package.json
 └── README.md
 ```
