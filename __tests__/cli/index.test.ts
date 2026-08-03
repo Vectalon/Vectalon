@@ -53,6 +53,48 @@ describe('initCommand', () => {
     expect(write).toHaveBeenCalledWith(expect.stringContaining('no react-native dependency detected'))
     cleanup(dirNoRN)
   })
+
+  it('detects a bare RN-CLI project and auto-enables RN-CLI ecosystem items', async () => {
+    const rnCliDir = createTempProject({
+      'package.json': JSON.stringify({
+        name: 'bare-app',
+        version: '1.0.0',
+        dependencies: { 'react-native': '0.76.0' },
+      }),
+    })
+
+    await initCommand(rnCliDir, {})
+
+    const manifest = JSON.parse(readFileSync(join(rnCliDir, '.vectalon', 'rn-vectalon.json'), 'utf-8'))
+    expect(manifest.tooling).toBe('rn-cli')
+    expect(manifest.expoSdkVersion).toBe('')
+
+    const ecosystem = JSON.parse(readFileSync(join(rnCliDir, '.vectalon', 'ecosystem.json'), 'utf-8'))
+    expect(ecosystem.enabled).toEqual(expect.arrayContaining(['react-native-upgrader-mcp', 'rn-diff-purge', 'metro-mcp']))
+    expect(ecosystem.enabled).not.toEqual(expect.arrayContaining(['expo-mcp', 'expo-skills', 'expo-doctor']))
+    cleanup(rnCliDir)
+  })
+
+  it('detects an Expo project and auto-enables Expo ecosystem items', async () => {
+    const expoDir = createTempProject({
+      'package.json': JSON.stringify({
+        name: 'expo-app',
+        version: '1.0.0',
+        dependencies: { 'react-native': '0.76.0', expo: '~52.0.0' },
+      }),
+    })
+
+    await initCommand(expoDir, {})
+
+    const manifest = JSON.parse(readFileSync(join(expoDir, '.vectalon', 'rn-vectalon.json'), 'utf-8'))
+    expect(manifest.tooling).toBe('expo')
+    expect(manifest.expoSdkVersion).toBe('~52.0.0')
+
+    const ecosystem = JSON.parse(readFileSync(join(expoDir, '.vectalon', 'ecosystem.json'), 'utf-8'))
+    expect(ecosystem.enabled).toEqual(expect.arrayContaining(['expo-mcp', 'expo-skills', 'expo-doctor', 'metro-mcp']))
+    expect(ecosystem.enabled).not.toEqual(expect.arrayContaining(['react-native-upgrader-mcp', 'rn-diff-purge']))
+    cleanup(expoDir)
+  })
 })
 
 describe('serveCommand', () => {

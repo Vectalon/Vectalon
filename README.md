@@ -119,6 +119,41 @@ human best-practice adherence”). Run the deterministic baseline offline, or pa
 `--model local|openai|anthropic` for a real-model leaderboard pass over all 10
 scenarios. See `docs/BENCHMARK_PLAN.md` for the full plan.
 
+### Expo & React Native CLI — explicit separation
+rn-vectalon detects whether your project is **Expo-managed** or a **bare React
+Native CLI** project and behaves accordingly:
+
+- `Scanner` records `tooling: 'expo' | 'rn-cli'` plus the Expo SDK version into
+the project snapshot
+- The context prompt tells agents the tooling (e.g. `Expo (SDK ~52.0.0)`) so
+they don't recommend RN-CLI-native edits for managed projects
+- The simulator adapter runs `npx expo run:ios/android` for Expo projects and
+`npx react-native run-ios/android` for bare projects
+- Dependency removal plans produce Expo-aware cleanup (`npx expo prebuild
+--clean`, `npx expo-doctor`) instead of `ios/Podfile` edits when the project is
+Expo-managed
+
+### Ecosystem catalog (MCP servers, skills, tools, hooks)
+`vectalon ecosystem` indexes the external React Native / Expo MCP servers, agent
+skills, tools, and git hooks that make an AI agent (and this harness) competent
+on mobile projects. All items are **opt-in** — nothing is enabled without an
+explicit `vectalon ecosystem --enable <id>`:
+
+- **MCP servers** — Metro MCP (Hermes runtime inspection + test recording),
+  Expo MCP (official: docs, `expo install`, EAS builds, store data), React
+  Native MCP (Fiber-tree/hook-state inspection), React Native Guide MCP (code
+  remediation), React Native Upgrader MCP (upgrade diffs)
+- **Skills** — official Expo skills (`expo/skills`), Callstack agent skills
+  (best practices, upgrades, brownfield), SenaiVerse RN agent system
+- **Tools** — repomix (context packing), rn-diff-purge (upgrade diffs), Maestro
+  & Detox (E2E), FlashList, expo-doctor
+- **Hooks** — husky, lint-staged, lefthook (pre-commit validation for generated
+  code)
+
+`vectalon ecosystem --export` emits the enabled MCP servers as a config fragment
+ready to paste into Cursor/Claude Code, and `--flavor expo|rn-cli` filters items
+by project flavor.
+
 ### Framework-Native
 Zero lock-in. rn-vectalon is a standard npm package that integrates with your existing RN CLI workflow. No new build system, no proprietary DSL — just a `serve` command and your agent connects.
 
@@ -208,6 +243,25 @@ This scans your project and creates a `.vectalon/` directory with:
 - `snapshot.json` — Full project context (components, structure, config)
 - `context.md` — Human-readable project summary for agent prompts
 - `memory.json` — Learned patterns and decision history
+- `rn-vectalon.json` — Manifest with the detected tooling
+- `ecosystem.json` — Enabled MCP servers, skills, and hooks
+
+`init` detects whether your project is **Expo-managed** or a **bare React Native
+CLI** project and sets up the tooling accordingly:
+
+- **Expo projects** (`expo` dependency) auto-enable the Expo MCP server, the
+  official Expo agent skills, and `expo-doctor` alongside the shared RN MCPs
+  and hooks
+- **Bare RN-CLI projects** auto-enable the React Native Upgrader MCP and
+  `rn-diff-purge` alongside the shared items
+- The detected `tooling` and Expo SDK version are stored in the manifest so
+  every later phase (context prompt, simulator runs, dependency removal) uses
+  the right commands
+- Run `vectalon ecosystem --export` afterwards to emit the enabled MCP servers
+  as a config fragment for your agent (Cursor/Claude Code)
+
+All ecosystem items are **opt-in** — `init` only enables the recommended set;
+add or remove anything with `vectalon ecosystem --enable <id>` / `--disable <id>`.
 
 ### Serve
 

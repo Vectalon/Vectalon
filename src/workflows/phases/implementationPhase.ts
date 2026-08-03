@@ -684,6 +684,7 @@ function generateRemoveDependencyImplementation(
 ): { output: string; artifacts: WorkflowArtifact[] } {
   const matches = findDependency(ctx.snapshot, ctx.dependency)
   const usages = findUsages(ctx.snapshot, ctx.dependency)
+  const isExpo = ctx.snapshot?.project.tooling === 'expo'
 
   const uninstallPackages = matches.length > 0 ? matches.map(m => m.name) : [ctx.dependency]
 
@@ -698,27 +699,30 @@ function generateRemoveDependencyImplementation(
     }
   })
 
-  const nativeCleanup = [
-    '### Android',
-    '1. Open `android/app/build.gradle` and remove any App Center configuration.',
-    '2. Open `android/settings.gradle` and remove related include entries if present.',
-    '3. Clean and rebuild: `cd android && ./gradlew clean`',
-    '',
-    '### iOS',
-    '1. Open `ios/Podfile` and remove any App Center pods.',
-    '2. Run `cd ios && pod install` to update the lockfile.',
-  ]
+  const nativeCleanup = isExpo
+    ? [
+        '### Expo managed workflow',
+        '1. If the package ships an Expo config plugin, remove its entry from `app.json` / `app.config.js` (`plugins` array).',
+        '2. Regenerate native projects if needed: `npx expo prebuild --clean` (only if you ejected).',
+        '3. Verify with `npx expo-doctor` that no dangling native config remains.',
+      ]
+    : [
+        '### Android',
+        '1. Open `android/app/build.gradle` and remove any package configuration.',
+        '2. Open `android/settings.gradle` and remove related include entries if present.',
+        '3. Clean and rebuild: `cd android && ./gradlew clean`',
+        '',
+        '### iOS',
+        '1. Open `ios/Podfile` and remove any package pods.',
+        '2. Run `cd ios && pod install` to update the lockfile.',
+      ]
 
   const removalScript = [
     '#!/bin/bash',
     '# Run this script after reviewing the code changes above',
     '',
     `npm uninstall ${uninstallPackages.join(' ')}`,
-    '',
-    '# iOS cleanup',
-    'cd ios || exit 0',
-    'pod install',
-    'cd ..',
+    ...(isExpo ? ['', '# Expo managed workflow: regenerate native projects if ejected', 'npx expo prebuild --clean', '', 'npx expo-doctor'] : ['', '# iOS cleanup', 'cd ios || exit 0', 'pod install', 'cd ..']),
     '',
     '# Verify no imports remain',
     `grep -R "${ctx.dependency}" src/ --include="*.ts" --include="*.tsx" || echo "No source imports found"`,
@@ -741,7 +745,7 @@ function generateRemoveDependencyImplementation(
     '### Uninstall commands',
     '```bash',
     `npm uninstall ${uninstallPackages.join(' ')}`,
-    'cd ios && pod install',
+    isExpo ? 'npx expo prebuild --clean (only if ejected)' : 'cd ios && pod install',
     '```',
     '',
     '### Code usages found',
@@ -755,9 +759,10 @@ function generateRemoveDependencyImplementation(
     '### Verification checklist',
     '- [ ] Package is removed from `package.json`',
     '- [ ] No imports remain in source files',
-    '- [ ] iOS Podfile.lock is updated',
-    '- [ ] Android build succeeds',
-    '- [ ] App launches without App Center errors',
+    ...(isExpo
+      ? ['- [ ] `npx expo-doctor` passes with no dangling native config']
+      : ['- [ ] iOS Podfile.lock is updated', '- [ ] Android build succeeds']),
+    '- [ ] App launches without package errors',
     '',
     writtenScriptPath ? `Cleanup script written to: \`${writtenScriptPath}\`` : '',
   ].join('\n')
