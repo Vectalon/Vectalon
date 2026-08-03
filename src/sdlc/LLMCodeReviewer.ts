@@ -26,6 +26,8 @@ export interface LLMReviewOptions {
   /** Optional project context (conventions, existing components, feature prompt). */
   context?: string
   maxTokens?: number
+  /** Detected lint/formatter configs or an explicit rules list to enforce. */
+  rules?: string[]
 }
 
 const SEVERITIES = new Set<ReviewSeverity>(['error', 'warning', 'info'])
@@ -85,9 +87,27 @@ export function parseLLMReview(content: string): LLMCodeReview | null {
 
 /** Build the nit-picking reviewer prompt: constrained schema + project context. */
 export function buildLLMReviewPrompt(options: LLMReviewOptions): { systemPrompt: string; prompt: string } {
+  const ruleLines: string[] = []
+  if (options.rules && options.rules.length > 0) {
+    ruleLines.push('The project enforces these rules — treat violations as findings at the severity shown:')
+    ruleLines.push(...options.rules)
+  } else {
+    ruleLines.push(
+      'Use comprehensive JS/TS/React Native best practices:',
+      '- Security: no eval, no innerHTML, no hardcoded secrets, no http:// URLs.',
+      '- TypeScript: no any, no non-null assertions (!), no @ts-ignore, explicit param types.',
+      '- React Native: missing key in .map, direct state mutation, setState in render, missing useEffect cleanup, missing accessibility props.',
+      '- Performance: avoid inline objects/arrays in useEffect deps, avoid inline styles.',
+      '- Code quality: no var, use === / !==, no magic numbers, no unreachable code after return.',
+      '- Error handling: no empty catch blocks, handle promises (await or .catch).',
+      '- Modern JS: prefer optional chaining, avoid delete on object props.'
+    )
+  }
+
   const systemPrompt = [
     'You are a nit-picking senior React Native code reviewer. Your job is to catch real problems that a thorough human reviewer would flag before merge.',
     'Look for: correctness bugs, race conditions, error handling gaps, React Native anti-patterns, missing keys in lists, memory leaks in effects, style/accessibility issues, TypeScript type-safety problems, dead code, security issues, and broken edge cases.',
+    ...ruleLines,
     'Be specific and actionable. Every finding needs a concrete rule id, a one-line message, and the 1-based line number it applies to.',
     'Only report findings you are confident about. If the code is genuinely clean, return verdict "approved" with an empty findings array.',
     'Return ONLY valid JSON matching this schema — no markdown, no commentary:',

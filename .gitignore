@@ -8,3 +8,4 @@ dist/
 *.log
 coverage/
 bench/results/*.json
+.freebuff/

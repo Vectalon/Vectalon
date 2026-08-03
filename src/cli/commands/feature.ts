@@ -326,6 +326,23 @@ export function renderUpgradeSuggestions(suggestions: ImprovementSuggestion[], l
   log.info(pc.dim('Run `vectalon refresh --force` to re-check for updates'))
 }
 
+function extractLLMFindings(output: string): string[] {
+  const findings: string[] = []
+  const fileBlocks = output.split(/###\s+/)
+  for (const block of fileBlocks) {
+    const lines = block.split('\n')
+    const fileLine = lines[0]?.trim()
+    if (!fileLine) continue
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (trimmed.startsWith('🔴') || trimmed.startsWith('🟡') || trimmed.startsWith('🔵')) {
+        findings.push(`  ${fileLine}: ${trimmed}`)
+      }
+    }
+  }
+  return findings.slice(0, 12)
+}
+
 function renderSummary(
   result: WorkflowState,
   workflowName: string,
@@ -335,17 +352,24 @@ function renderSummary(
   activeModel: string
 ): void {
   const phaseTable = new Table({
-    head: ['Phase', 'Status'],
+    head: ['Phase', 'Status', 'Files'],
     style: { head: ['cyan'] },
-    colWidths: [32, 16],
+    colWidths: [32, 16, 38],
   })
+  const fileArtifacts = result.phases.flatMap(p => p.artifacts).filter(a => a.path && a.type !== 'document')
   for (const p of result.phases) {
     const statusColor = p.status === 'completed' ? pc.green : p.status === 'failed' ? pc.red : pc.yellow
-    phaseTable.push([p.name, statusColor(p.status)])
+    const phaseFiles = p.artifacts
+      .filter(a => a.path && a.type !== 'document')
+      .map(a => {
+        const path = a.path ?? ''
+        return path.startsWith(root) ? path.slice(root.length + 1) : path
+      })
+    const filesCell = phaseFiles.length > 0 ? phaseFiles.join(', ') : '—'
+    phaseTable.push([p.name, statusColor(p.status), filesCell])
   }
 
   const docsDir = join(root, '.vectalon', 'docs', result.workflowId, result.id)
-  const fileArtifacts = result.phases.flatMap(p => p.artifacts).filter(a => a.path && a.type !== 'document')
 
   const lines: string[] = [
     `Workflow: ${workflowName}`,
@@ -362,6 +386,19 @@ function renderSummary(
     for (const artifact of fileArtifacts) {
       const displayPath = artifact.path?.startsWith(root) ? artifact.path.slice(root.length + 1) : artifact.path
       lines.push(`  ${pc.green('✔')} ${displayPath}`)
+    }
+  }
+
+  // Surface LLM review findings inline when code review fails.
+  const codeReviewPhase = result.phases.find(p => p.id === 'code-review')
+  if (codeReviewPhase?.status === 'failed') {
+    const findings = extractLLMFindings(codeReviewPhase.output)
+    if (findings.length > 0) {
+      lines.push('')
+      lines.push(pc.bold('Code review findings:'))
+      for (const f of findings) {
+        lines.push(pc.red(f))
+      }
     }
   }
 

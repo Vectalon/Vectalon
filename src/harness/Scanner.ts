@@ -1,6 +1,6 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'fs'
 import { join, relative, extname } from 'path'
-import type { ProjectInfo, FileNode, ComponentInfo } from './types'
+import type { ProjectInfo, FileNode, ComponentInfo, LintConfigInfo } from './types'
 
 export interface PackageJsonLike {
   dependencies?: Record<string, string>
@@ -47,6 +47,7 @@ export class Scanner {
       hasExpo: tooling === 'expo',
       tooling,
       expoSdkVersion: pkg.dependencies?.expo || '',
+      lintConfig: this.detectLintConfigs(),
     }
   }
 
@@ -144,5 +145,44 @@ export class Scanner {
       imports.push(match[1])
     }
     return imports
+  }
+
+  private detectLintConfigs(): LintConfigInfo {
+    const configs: LintConfigInfo = {}
+    const readIfExists = (name: string): string | undefined => {
+      const path = join(this.root, name)
+      if (existsSync(path)) {
+        try {
+          return readFileSync(path, 'utf-8').slice(0, 8000)
+        } catch {
+          return undefined
+        }
+      }
+      return undefined
+    }
+    const eslintNames = [
+      '.eslintrc', '.eslintrc.js', '.eslintrc.cjs', '.eslintrc.json',
+      '.eslintrc.yaml', '.eslintrc.yml', 'eslint.config.js', 'eslint.config.mjs',
+    ]
+    for (const name of eslintNames) {
+      const content = readIfExists(name)
+      if (content) {
+        configs.eslint = content
+        break
+      }
+    }
+    const biome = readIfExists('biome.json')
+    if (biome) configs.biome = biome
+    const prettierNames = ['.prettierrc', '.prettierrc.json', '.prettierrc.js', '.prettierrc.cjs']
+    for (const name of prettierNames) {
+      const content = readIfExists(name)
+      if (content) {
+        configs.prettier = content
+        break
+      }
+    }
+    const tsconfig = readIfExists('tsconfig.json')
+    if (tsconfig) configs.tsconfig = tsconfig
+    return configs
   }
 }

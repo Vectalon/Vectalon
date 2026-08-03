@@ -40,6 +40,7 @@ export function detectConventions(snapshot: import('../../harness/types').Contex
   usesStyleSheet: boolean
   packageName: string
   platforms: string[]
+  lintConfig?: import('../../harness/types').LintConfigInfo
 } {
   const components = snapshot?.components || []
   const project = snapshot?.project
@@ -49,6 +50,7 @@ export function detectConventions(snapshot: import('../../harness/types').Contex
     usesStyleSheet: components.some(c => c.usesStyleSheet),
     packageName: project?.name || 'app',
     platforms: project?.platforms || [],
+    lintConfig: project?.lintConfig,
   }
 }
 

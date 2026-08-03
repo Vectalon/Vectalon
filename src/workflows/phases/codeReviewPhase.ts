@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync, readFileSync } from 'fs'
 import { join, isAbsolute, dirname } from 'path'
 import type { WorkflowPhase, WorkflowArtifact, HealDecision } from '../../adapters/types'
 import { phaseResult, failedPhase, detectConventions } from './helpers'
-import { CodeReviewAnalyzer, ReviewFinding } from '../../sdlc/CodeReviewAnalyzer'
+import { CodeReviewAnalyzer, ReviewFinding, RULES } from '../../sdlc/CodeReviewAnalyzer'
 import {
   reviewCodeWithLLM,
   fixCodeWithLLM,
@@ -18,6 +18,44 @@ import { loadFailedHeals, recordFailedHeals, formatFailedHeals, type FailedHealR
 export const MAX_REVIEW_ATTEMPTS = defaultCodeReviewPolicy.maxAttempts
 
 const SEVERITY_RANK: Record<string, number> = { error: 3, warning: 2, info: 1 }
+
+/**
+ * Build a human-readable rules list for the LLM reviewer and the report.
+ * If the client repo has ESLint / Biome / Prettier / tsconfig configs,
+ * surface those; otherwise fall back to the built-in comprehensive rule set.
+ */
+function buildRulesList(
+  conventions: ReturnType<typeof detectConventions>
+): string[] {
+  const lintConfig = conventions.lintConfig
+  const rules: string[] = []
+
+  if (lintConfig?.eslint) {
+    rules.push('❌ ESLint config detected — follow project ESLint rules')
+    const lines = lintConfig.eslint.split('\n').slice(0, 30)
+    rules.push(...lines.map(l => `   ${l.trim()}`).filter(l => l.length > 3))
+  }
+  if (lintConfig?.biome) {
+    rules.push('❌ Biome config detected — follow project Biome rules')
+    const lines = lintConfig.biome.split('\n').slice(0, 30)
+    rules.push(...lines.map(l => `   ${l.trim()}`).filter(l => l.length > 3))
+  }
+  if (lintConfig?.prettier) {
+    rules.push('❌ Prettier config detected — follow project formatting rules')
+  }
+  if (lintConfig?.tsconfig) {
+    const strict = lintConfig.tsconfig.includes('"strict": true')
+    rules.push(`❌ TypeScript strict mode: ${strict ? 'enabled' : 'disabled or not found'} — ${strict ? 'enforce strict typing' : 'recommend enabling strict mode'}`)
+  }
+
+  // Always include the built-in comprehensive rule set as a baseline.
+  for (const rule of RULES) {
+    const emoji = rule.severity === 'error' ? '🔴' : rule.severity === 'warning' ? '🟡' : '🔵'
+    rules.push(`${emoji} \`${rule.id}\` — ${rule.severity}s: ${rule.message}`)
+  }
+
+  return rules
+}
 
 function severityAtLeast(severity: string, thresholdRank: number): boolean {
   return (SEVERITY_RANK[severity] ?? 0) >= thresholdRank
@@ -169,6 +207,7 @@ export const codeReviewPhase: WorkflowPhase = {
       ...priorContext,
     ].join('\n')
 
+    const reviewRules = buildRulesList(conventions)
     const modelAvailable = Boolean(ctx.modelRouter && typeof ctx.modelRouter.generate === 'function')
 
     // Self-healing loop: review, feed error findings back to the model, write
@@ -194,6 +233,7 @@ export const codeReviewPhase: WorkflowPhase = {
             code: content,
             fileName: artifact.path,
             context: projectContext,
+            rules: reviewRules,
           })
           if (ruleFindings.length > 0 || llmReview !== null) {
             reviewed.push({ file: artifact.path, artifact, ruleFindings, llmReview })
@@ -530,12 +570,7 @@ export const codeReviewPhase: WorkflowPhase = {
 
     outputParts.push('')
     outputParts.push('## Rules checked')
-    outputParts.push('- ❌ `console.log` / `console.debug` — warnings')
-    outputParts.push('- ❌ `any` type usage — warnings')
-    outputParts.push('- ❌ `@ts-ignore` — warnings')
-    outputParts.push('- ❌ Empty catch blocks — errors')
-    outputParts.push('- ❌ `TODO` / `FIXME` comments — info')
-    outputParts.push('- ❌ Inline styles (`style={{...}}`) — info')
+    outputParts.push(...reviewRules)
     outputParts.push('')
 
     if (totalErrors === 0) {

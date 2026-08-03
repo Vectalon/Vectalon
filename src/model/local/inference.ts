@@ -27,6 +27,41 @@ export function createChatSessionOptions<T>(
   return { contextSequence, systemPrompt }
 }
 
+/**
+ * The node-llama-cpp native addon prints tokenizer warnings (e.g.
+ * "control-looking token: 128247 '</s>' ...") directly to stderr, bypassing
+ * the JS logger callback. Override stderr.write for the duration of model
+ * load so these noisy lines don't corrupt the CLI spinner output.
+ */
+async function withSuppressedTokenizerWarnings<T>(fn: () => Promise<T>): Promise<T> {
+  const originalWrite = process.stderr.write.bind(process.stderr)
+  const patchedWrite = (
+    chunk: string | Uint8Array,
+    encodingOrCb?: BufferEncoding | ((err?: Error | null | undefined) => void),
+    cb?: (err?: Error | null | undefined) => void
+  ): boolean => {
+    const text = typeof chunk === 'string' ? chunk : Buffer.from(chunk).toString('utf-8')
+    if (text.includes('control-looking token')) {
+      if (typeof encodingOrCb === 'function') {
+        encodingOrCb(null)
+      } else if (typeof cb === 'function') {
+        cb(null)
+      }
+      return true
+    }
+    if (typeof encodingOrCb === 'function') {
+      return originalWrite(chunk, encodingOrCb)
+    }
+    return originalWrite(chunk, encodingOrCb, cb)
+  }
+  process.stderr.write = patchedWrite as typeof process.stderr.write
+  try {
+    return await fn()
+  } finally {
+    process.stderr.write = originalWrite
+  }
+}
+
 export async function runInference(modelId: string, options: InferenceOptions): Promise<InferenceResult> {
   const model = getDownloadedModel(modelId)
   if (!model) {
@@ -35,18 +70,22 @@ export async function runInference(modelId: string, options: InferenceOptions): 
 
   try {
     const nlc = await dynamicImport<typeof import('node-llama-cpp')>('node-llama-cpp')
-    const llama = await nlc.getLlama({
-      // Quiet llama.cpp's noisy tokenizer warnings (e.g. the "control-looking
-      // token" notice Qwen GGUF files emit on load) while keeping real errors.
-      logger: (level, message) => {
-        if (message.includes('control-looking token')) return
-        if (level <= nlc.LlamaLogLevel.warn) {
-          const sink = level <= nlc.LlamaLogLevel.error ? console.error : console.warn
-          sink(`[node-llama-cpp] ${message}`)
-        }
-      },
-    })
-    const llamaModel = await llama.loadModel({ modelPath: model.filePath })
+    const llama = await withSuppressedTokenizerWarnings(() =>
+      nlc.getLlama({
+        // Quiet llama.cpp's noisy tokenizer warnings (e.g. the "control-looking
+        // token" notice Qwen GGUF files emit on load) while keeping real errors.
+        logger: (level, message) => {
+          if (message.includes('control-looking token')) return
+          if (level <= nlc.LlamaLogLevel.warn) {
+            const sink = level <= nlc.LlamaLogLevel.error ? console.error : console.warn
+            sink(`[node-llama-cpp] ${message}`)
+          }
+        },
+      })
+    )
+    const llamaModel = await withSuppressedTokenizerWarnings(() =>
+      llama.loadModel({ modelPath: model.filePath })
+    )
     const context = await llamaModel.createContext()
     const session = new nlc.LlamaChatSession(
       createChatSessionOptions(context.getSequence(), options.systemPrompt)
