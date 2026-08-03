@@ -212,6 +212,7 @@ the native toolchain is ready to build and run the project.
 ```bash
 npx vectalon doctor                 # human-readable report
 npx vectalon doctor --json          # machine-readable report
+npx vectalon doctor --fix           # auto-install missing items, then re-check
 npx vectalon doctor ./my-app        # check a specific project
 ```
 
@@ -221,6 +222,7 @@ npx vectalon doctor ./my-app        # check a specific project
 |---|---|
 | `[directory]` | Project root (default: cwd) |
 | `--json` | Print the report as JSON |
+| `--fix` | Auto-install missing ecosystem items and toolchain components, then re-check |
 
 **Checks**
 
@@ -234,12 +236,30 @@ npx vectalon doctor ./my-app        # check a specific project
 Every check prints a status (`OK`/`MISSING`/`WARN`) with an actionable fix
 hint. Toolchain checks run even without an ecosystem config.
 
+**`--fix` auto-remediation**
+
+For every missing check, `doctor --fix` runs the install command and re-checks:
+
+- **npm tools/hooks** — `npm install <package>` (MCP servers install as
+  devDependencies with `-D`)
+- **Skills** — the catalog's `npx skills add …` command
+- **Expo MCP** — `npm install expo` (the CLI it runs through)
+- **JDK** — `brew install --cask temurin@17` (macOS)
+- **CocoaPods** — `brew install cocoapods`
+- **Fastlane** — `gem install fastlane`; **EAS CLI** — `npm install -g eas-cli`
+
+Checks that can't be safely automated (Node via nvm, Android Studio SDK,
+emulator AVDs, Xcode) are reported as `SKIPPED` with their manual hint. The
+fix summary prints `before missing → after missing`; install commands run in the
+project root with a generous timeout. Manual-only toolchain checks that fail
+still cause exit code 1.
+
 **Exit codes**
 
 | Code | When |
 |---|---|
-| 0 | No missing checks |
-| 1 | One or more checks are missing |
+| 0 | No missing checks (after `--fix`, if given) |
+| 1 | One or more checks are still missing |
 
 ---
 

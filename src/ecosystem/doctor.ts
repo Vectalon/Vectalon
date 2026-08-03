@@ -1,5 +1,6 @@
+import { existsSync } from 'fs'
 import { join } from 'path'
-import { listEcosystemItems } from './catalog'
+import { listEcosystemItems, getEcosystemItem } from './catalog'
 import { readEcosystemConfig } from './config'
 import type { EcosystemItem } from './types'
 
@@ -412,5 +413,184 @@ export function runDoctor(
     okCount: all.filter(c => c.status === 'ok').length,
     missingCount: all.filter(c => c.status === 'missing').length,
     warningCount: all.filter(c => c.status === 'warning').length,
+  }
+}
+
+/**
+ * A single auto-fixable repair: the shell command to run and how to display it.
+ * `manual` is true for checks that can't be safely auto-installed (GUI tools,
+ * system-wide changes) — the CLI prints the hint and asks the user to run it.
+ */
+export interface DoctorFix {
+  id: string
+  name: string
+  command: string
+  args: string[]
+  label: string
+  manual: boolean
+}
+
+/** Outcome of attempting one fix. */
+export interface FixAttempt {
+  id: string
+  name: string
+  label: string
+  status: 'fixed' | 'failed' | 'skipped-manual' | 'not-needed'
+  detail: string
+}
+
+/** Injectable fix runner so the fix logic is unit-testable without side effects. */
+export interface DoctorFixer {
+  run: (command: string, args: string[], cwd?: string) => { success: boolean; output: string }
+}
+
+/**
+ * Turn a missing check into an auto-installable command.
+ *
+ * - ecosystem mcp/tool/hook with a packageName → `npm install <pkg>` (MCPs
+ *   install with `-D` since they are dev-time servers)
+ * - ecosystem skill → the `npx skills add …` install string
+ * - global-binary tools (fastlane/maestro/eas-cli) → gem/curl/npm -g
+ * - toolchain JDK → `brew install --cask temurin@17` (macOS)
+ * - toolchain Xcode/CocoaPods → `xcode-select --install` / `brew install cocoapods`
+ * - Node / Android SDK / emulator / Metro → manual (GUI or system-wide change)
+ */
+export function fixForMissing(check: DoctorCheckResult, _root: string): DoctorFix | null {
+  if (check.status !== 'missing') return null
+
+  // ---- native toolchain fixes ----
+  if (check.category === 'toolchain') {
+    switch (check.id) {
+      case 'node':
+        return { id: check.id, name: check.name, command: 'nvm', args: ['install', '20'], label: 'nvm install 20 && nvm use 20', manual: true }
+      case 'jdk':
+        return { id: check.id, name: check.name, command: 'brew', args: ['install', '--cask', 'temurin@17'], label: 'brew install --cask temurin@17', manual: false }
+      case 'android-sdk':
+        return { id: check.id, name: check.name, command: '', args: [], label: 'Install Android Studio and export ANDROID_HOME', manual: true }
+      case 'android-emulator':
+        return { id: check.id, name: check.name, command: '', args: [], label: 'Install the emulator via Android Studio SDK Manager', manual: true }
+      case 'xcode':
+        return { id: check.id, name: check.name, command: 'xcode-select', args: ['--install'], label: 'xcode-select --install', manual: true }
+      case 'cocoapods':
+        return { id: check.id, name: check.name, command: 'brew', args: ['install', 'cocoapods'], label: 'brew install cocoapods', manual: false }
+      default:
+        return null
+    }
+  }
+
+  const item = getEcosystemItem(check.id)
+
+  // ---- skill: install directory missing → run the skills add command ----
+  if (item?.category === 'skill') {
+    const [command, ...rawArgs] = item.install.split(/\s+/)
+    const args = rawArgs.map(a => a.replace(/^['"]|['"]$/g, ''))
+    return { id: check.id, name: check.name, command, args, label: item.install, manual: false }
+  }
+
+  // ---- expo-mcp runs through the expo CLI, not a standalone package ----
+  if (item?.id === 'expo-mcp') {
+    return { id: check.id, name: check.name, command: 'npm', args: ['install', 'expo'], label: 'npm install expo', manual: false }
+  }
+
+  // ---- global binaries without an npm package ----
+  if (item && !item.packageName && !packageFromInstall(item.install)) {
+    const globals: Record<string, { command: string; args: string[]; label: string; manual?: boolean }> = {
+      fastlane: { command: 'gem', args: ['install', 'fastlane'], label: 'gem install fastlane' },
+      maestro: { command: 'curl', args: [], label: item.install, manual: true },
+      'eas-cli': { command: 'npm', args: ['install', '-g', 'eas-cli'], label: 'npm install -g eas-cli' },
+    }
+    const globalFix = globals[item.id]
+    if (globalFix) {
+      return { id: check.id, name: check.name, command: globalFix.command, args: globalFix.args, label: globalFix.label, manual: globalFix.manual ?? false }
+    }
+  }
+
+  // ---- npm package (mcp/tool/hook) ----
+  const packageName = item?.packageName || (item ? packageFromInstall(item.install) : null)
+  if (packageName) {
+    // Dev-time tooling installs with -D (MCPs, husky, lint-staged, detox, …)
+    // per the catalog's install string; -g for global CLIs (eas-cli).
+    const install = item?.install || ''
+    const flags: string[] = []
+    if (item?.category === 'mcp' || /npm install -D/.test(install)) flags.push('-D')
+    if (/npm install -g/.test(install)) flags.push('-g')
+    return {
+      id: check.id,
+      name: check.name,
+      command: 'npm',
+      args: ['install', ...flags, packageName],
+      label: `npm install ${flags.length > 0 ? flags.join(' ') + ' ' : ''}${packageName}`,
+      manual: false,
+    }
+  }
+
+  return null
+}
+
+/**
+ * Attempt to fix every missing check. Manual fixes are reported as
+ * `skipped-manual`; auto-fixes run through the injectable fixer and are
+ * recorded as `fixed` or `failed`. Re-runs the doctor afterwards and returns
+ * the before/after counts so the CLI can show what changed.
+ */
+export function runDoctorFixes(
+  root: string,
+  report: DoctorReport,
+  fixer: DoctorFixer
+): { attempts: FixAttempt[]; before: number; after: number } {
+  const all = [...report.checks, ...report.toolchain]
+  const attempts: FixAttempt[] = []
+
+  for (const check of all) {
+    if (check.status !== 'missing') continue
+    const fix = fixForMissing(check, root)
+    if (!fix) continue
+
+    if (fix.manual) {
+      attempts.push({ id: check.id, name: check.name, label: fix.label, status: 'skipped-manual', detail: 'Manual step — run it yourself' })
+      continue
+    }
+
+    const result = fixer.run(fix.command, fix.args, root)
+    attempts.push({
+      id: check.id,
+      name: check.name,
+      label: fix.label,
+      status: result.success ? 'fixed' : 'failed',
+      detail: result.success ? 'Installed' : `Failed: ${result.output.trim().split(/\r?\n/)[0].slice(0, 140)}`,
+    })
+  }
+
+  const before = report.missingCount
+  const afterReport = runDoctor(root, fixerCheckersProxy(root, fixer))
+  return { attempts, before, after: afterReport.missingCount }
+}
+
+/**
+ * The fixer doubles as the re-check checker where possible: after installing a
+ * package, `packageInstalled` resolves from node_modules at the project root.
+ * Binary probes re-run through the fixer's `run`. The CLI passes a richer
+ * checker that also knows about env/port; this proxy covers the common case and
+ * is used by runDoctorFixes when the CLI supplies only a fixer.
+ */
+function fixerCheckersProxy(root: string, fixer: DoctorFixer): DoctorCheckers {
+  return {
+    packageInstalled(packageName: string): boolean {
+      try {
+        require.resolve(`${packageName}/package.json`, { paths: [root] })
+        return true
+      } catch {
+        return false
+      }
+    },
+    run(command: string, args: string[]): { success: boolean; output: string } {
+      return fixer.run(command, args)
+    },
+    dirExists(dir: string): boolean {
+      return existsSync(dir)
+    },
+    env: () => undefined,
+    portOpen: () => false,
+    platform: process.platform,
   }
 }

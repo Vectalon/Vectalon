@@ -20,6 +20,8 @@ export {
   runEcosystemDoctor,
   checkNativeToolchain,
   runDoctor,
+  fixForMissing,
+  runDoctorFixes,
   TOOLCHAIN_ITEM_IDS,
 } from './doctor'
 export type {
@@ -30,6 +32,9 @@ export type {
   DoctorCategory,
   ToolchainItemId,
   ToolchainCheckOptions,
+  DoctorFix,
+  FixAttempt,
+  DoctorFixer,
 } from './doctor'
 export type { EcosystemConfig, EcosystemExport } from './config'
 export type {

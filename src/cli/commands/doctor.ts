@@ -4,12 +4,16 @@ import { spawnSync } from 'child_process'
 import Table from 'cli-table'
 import pc from 'picocolors'
 import { logger } from '../logger'
-import { runDoctor, type DoctorCheckers, type ToolchainCheckOptions } from '../../ecosystem'
+import { runDoctor, runDoctorFixes, type DoctorCheckers, type DoctorFixer, type FixAttempt, type ToolchainCheckOptions } from '../../ecosystem'
 
 export interface DoctorOptions {
   json?: boolean
+  /** Auto-install missing ecosystem items and toolchain components, then re-check. */
+  fix?: boolean
   /** Injectable checkers — tests pass stubs so no real subprocesses run. */
   checkers?: DoctorCheckers
+  /** Injectable fix runner — tests pass stubs so no real installs run. */
+  fixer?: DoctorFixer
   /** Overrides for toolchain thresholds/ports (e.g. a custom Metro port). */
   toolchain?: ToolchainCheckOptions
 }
@@ -76,10 +80,63 @@ function realCheckers(root: string): DoctorCheckers {
   }
 }
 
+/**
+ * Real fixer that runs install commands in the project root with a generous
+ * timeout (installs can take minutes). Bounded stdout capture keeps the report
+ * readable; failures carry the first error line.
+ */
+function realFixer(root: string): DoctorFixer {
+  return {
+    run(command: string, args: string[], cwd?: string): { success: boolean; output: string } {
+      try {
+        const result = spawnSync(command, args, {
+          cwd: cwd || root,
+          encoding: 'utf-8',
+          timeout: 10 * 60_000,
+          stdio: ['ignore', 'pipe', 'pipe'],
+        })
+        return {
+          success: result.status === 0,
+          output: (result.stdout || '') + (result.stderr || ''),
+        }
+      } catch (err) {
+        return { success: false, output: err instanceof Error ? err.message : String(err) }
+      }
+    },
+  }
+}
+
+function renderFixTable(attempts: FixAttempt[]): void {
+  const table = new Table({
+    head: ['Status', 'Item', 'Command', 'Detail'],
+    style: { head: ['cyan'] },
+    colWidths: [14, 22, 46, 44],
+  })
+  for (const attempt of attempts) {
+    const status =
+      attempt.status === 'fixed' ? pc.green('FIXED') : attempt.status === 'failed' ? pc.red('FAILED') : pc.yellow('SKIPPED')
+    table.push([status, attempt.name, attempt.label, attempt.detail])
+  }
+  process.stdout.write(table.toString() + '\n')
+}
+
 export function doctorCommand(directory: string, options: DoctorOptions): void {
   const root = resolve(directory || process.cwd())
   const hasEcosystem = existsSync(resolve(root, '.vectalon', 'ecosystem.json'))
-  const report = runDoctor(root, options.checkers || realCheckers(root), options.toolchain)
+  const checkers = options.checkers || realCheckers(root)
+  let report = runDoctor(root, checkers, options.toolchain)
+
+  if (options.fix && report.missingCount > 0) {
+    logger.info(pc.bold('Attempting to fix missing checks…'))
+    const { attempts, before, after } = runDoctorFixes(root, report, options.fixer || realFixer(root))
+    renderFixTable(attempts)
+    logger.info('')
+    logger.info(`Fix summary: ${before} missing → ${after} missing`)
+    logger.info('')
+    // Re-run the full doctor with the original (env-aware) checkers so the
+    // report reflects what the fixer installed.
+    report = runDoctor(root, checkers, options.toolchain)
+  }
 
   if (options.json) {
     process.stdout.write(JSON.stringify(report, null, 2) + '\n')
