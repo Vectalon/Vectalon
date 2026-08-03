@@ -12,6 +12,7 @@ import type { WorkflowState } from '../../adapters/types'
 import type { ModelProviderType } from '../../model/types'
 import type { ContextSnapshot } from '../../harness/types'
 import { getIntent, type WorkflowIntent, type IntentPrediction } from '../../workflows/phases/intent'
+import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
 import { dynamicImport } from '../../utils/dynamicImport'
 import { setFileChangeWriter, formatFileChange, computeFileChange, type FileChange } from '../../utils/fileDiff'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
@@ -143,8 +144,12 @@ export async function featureCommand(
   }
   engine.attachPatternStore(memory)
 
+  // The model provider comes from --model, else the project manifest set by
+  // `vectalon init` (which also records the model name + API-key env var).
   const modelRouter = new ModelRouter()
-  modelRouter.initialize({ provider: (options.model || 'local') as ModelProviderType })
+  const provider = resolveProjectModelProvider(root, options.model) as ModelProviderType
+  const modelConfig = resolveProjectModelConfig(root)
+  modelRouter.initialize({ provider, modelName: modelConfig?.modelName, apiKeyEnv: modelConfig?.apiKeyEnv })
 
   const adapters = createAdapters({ root, dryRun: options.dryRun, git: { push: options.push } })
   const deviceRun = options.device === true

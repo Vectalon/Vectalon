@@ -4,6 +4,8 @@ export interface ModelConfig {
   provider: ModelProviderType
   apiKey?: string
   modelName?: string
+  /** Environment variable that carries the API key (set by `vectalon init`). */
+  apiKeyEnv?: string
   endpoint?: string
   maxTokens?: number
   temperature?: number

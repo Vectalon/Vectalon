@@ -6,8 +6,18 @@ import { join } from 'path'
 import { logger } from '../logger'
 import { applyEcosystemRecommendations, recommendEcosystemSetup } from '../../ecosystem'
 import pc from 'picocolors'
+import { pullCommand } from './pull'
+import { getDefaultPreset } from '../../model/local/presets'
+import {
+  detectModelAvailability,
+  buildModelConfig,
+  isModelSetupProvider,
+  MODEL_PROVIDERS,
+} from '../../model/setup'
+import type { ModelSetupProvider, ProjectModelConfig } from '../../model/setup'
+import { dynamicImport } from '../../utils/dynamicImport'
 
-export async function initCommand(rootDir: string, _options: Record<string, unknown>): Promise<void> {
+export async function initCommand(rootDir: string, options: Record<string, unknown>): Promise<void> {
   const root = rootDir || process.cwd()
 
   logger.info('Scanning React Native project...')
@@ -28,6 +38,12 @@ export async function initCommand(rootDir: string, _options: Record<string, unkn
 
   const vectalonDir = join(root, '.vectalon')
 
+  // Model provider setup — the model side of initialization. Resolves the
+  // provider from --model, an interactive prompt (when TTY), or 'local', and
+  // returns the config to persist (remote providers store modelName + the env
+  // var that carries the API key — never the key itself).
+  const model = await setupModelProvider(options)
+
   writeFileSync(
     join(vectalonDir, 'rn-vectalon.json'),
     JSON.stringify({
@@ -37,7 +53,8 @@ export async function initCommand(rootDir: string, _options: Record<string, unkn
       tooling: snapshot.project.tooling,
       expoSdkVersion: snapshot.project.expoSdkVersion,
       initializedAt: Date.now(),
-      modelProvider: 'local',
+      modelProvider: model.provider,
+      ...(model.modelConfig ? { modelConfig: model.modelConfig } : {}),
       autoLearn: true,
     }, null, 2)
   )
@@ -71,10 +88,104 @@ export async function initCommand(rootDir: string, _options: Record<string, unkn
   if (toolIds.length > 0) {
     logger.info(pc.bold(`  Tools enabled (${toolIds.length}): ${toolIds.join(', ')}`))
   }
-  logger.dim('  Model: local provider configured — run `vectalon pull` to download Qwen2.5-Coder and enable code generation.')
+
+  logModelSetup(model)
+
   logger.dim(`  Config written to ${result.path}`)
   logger.dim('  Run `vectalon ecosystem --export` to emit the enabled MCP servers as an agent config fragment.')
 
   logger.success('rn-vectalon initialized.')
   logger.dim(`  Created .vectalon/ with project context, memory store, and ${result.enabled.length} enabled ecosystem item(s)`)
+}
+
+interface ResolvedModelSetup {
+  provider: ModelSetupProvider
+  modelConfig?: ProjectModelConfig
+}
+
+function logModelSetup(model: ResolvedModelSetup): void {
+  if (model.provider === 'local') {
+    const availability = detectModelAvailability()
+    if (availability.localDownloaded) {
+      logger.dim('  Model: local provider configured — Qwen2.5-Coder downloaded.')
+    } else {
+      logger.dim('  Model: local provider configured — run `vectalon pull` to download Qwen2.5-Coder and enable code generation.')
+    }
+    return
+  }
+  const config = model.modelConfig
+  const envSet = model.provider === 'openai'
+    ? !!process.env.OPENAI_API_KEY
+    : !!process.env.ANTHROPIC_API_KEY
+  const keyStatus = envSet ? 'set' : 'NOT set'
+  logger.dim(`  Model: ${model.provider} provider — ${config?.modelName || 'default'} via ${config?.apiKeyEnv || model.provider.toUpperCase() + '_API_KEY'} (${keyStatus}).`)
+  if (!envSet) {
+    logger.dim(`  Export your API key: export ${config?.apiKeyEnv || model.provider.toUpperCase() + '_API_KEY'}=sk-...`)
+  }
+}
+
+/**
+ * Resolve the model provider for initialization:
+ *  1. `--model <provider>` flag (local/openai/anthropic) wins.
+ *  2. Otherwise, when stdin is a TTY, prompt interactively — offering to
+ *     download the default Qwen model for local, or checking the env key for
+ *     OpenAI/Anthropic.
+ *  3. Otherwise default to 'local' (no download, no prompt).
+ */
+async function setupModelProvider(options: Record<string, unknown>): Promise<ResolvedModelSetup> {
+  const requested = typeof options.model === 'string' && options.model.trim() ? options.model.trim() : undefined
+
+  if (requested) {
+    if (!isModelSetupProvider(requested)) {
+      logger.error(`Unknown model provider: ${requested}`)
+      logger.info(`Valid providers: ${MODEL_PROVIDERS.join(', ')}`)
+      process.exit(1)
+    }
+    return finalizeModelSetup(requested)
+  }
+
+  const interactive = process.stdin.isTTY === true
+  if (!interactive) {
+    return { provider: 'local', modelConfig: undefined }
+  }
+
+  const p = await dynamicImport<typeof import('@clack/prompts')>('@clack/prompts')
+  const availability = detectModelAvailability()
+
+  const choice = await p.select({
+    message: 'Model provider',
+    options: [
+      {
+        value: 'local',
+        label: 'Local (Qwen2.5-Coder)',
+        hint: availability.localDownloaded ? 'downloaded' : `~${getDefaultPreset().sizeGb} GB download`,
+      },
+      { value: 'openai', label: 'OpenAI', hint: availability.openaiKeySet ? 'OPENAI_API_KEY set' : 'needs OPENAI_API_KEY' },
+      { value: 'anthropic', label: 'Anthropic', hint: availability.anthropicKeySet ? 'ANTHROPIC_API_KEY set' : 'needs ANTHROPIC_API_KEY' },
+    ],
+  })
+
+  if (p.isCancel(choice)) {
+    p.outro('Model setup skipped — using local provider')
+    return { provider: 'local', modelConfig: undefined }
+  }
+
+  const provider = choice as ModelSetupProvider
+
+  // Offer to download the default model when local is chosen and it's missing.
+  if (provider === 'local' && !availability.localDownloaded) {
+    const download = await p.confirm({
+      message: `Download ${getDefaultPreset().name} (~${getDefaultPreset().sizeGb} GB)?`,
+      initialValue: false,
+    })
+    if (!p.isCancel(download) && download) {
+      await pullCommand(undefined)
+    }
+  }
+
+  return finalizeModelSetup(provider)
+}
+
+function finalizeModelSetup(provider: ModelSetupProvider): ResolvedModelSetup {
+  return { provider, modelConfig: buildModelConfig(provider) }
 }
