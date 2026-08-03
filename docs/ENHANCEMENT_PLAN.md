@@ -30,9 +30,17 @@ self-corrects before it ever shows you a diff.
 ## Current state vs target
 
 > **Delivered so far:** Phases A–H (knowledge base, BA/QA/arch/UX/devops/ops
-> analytics modules, team brain, semantic retrieval, guardrails, self-healing
-> review, web-aware refresh, hosted sync, real embeddings, local model). The
-> rows below show where the roadmap goes next; see the
+> analytics modules, team brain, semantic retrieval, guardrails + policy
+> engine, self-healing review, web-aware refresh, hosted sync, real embeddings,
+> local model), plus the 2026 hardening track: LLM intent detection & smart
+> routing, the ecosystem catalog (MCP servers/skills/tools/hooks) with Expo &
+> RN-CLI separation, ecosystem MCP exposure in `serve`, init tooling & model
+> setup, resolved-model surfacing, the ecosystem & native-toolchain doctor with
+> `--fix` auto-remediation, and the RN coding-tests benchmark (V-5, M1–M3/M6
+> delivered). See the README
+> [`Roadmap`](README.md) for the authoritative delivered/next-up lists and
+> [`CLI_REFERENCE.md`](CLI_REFERENCE.md) for every command. The rows below show
+> where the roadmap goes next; see the
 > [Phase I+ roadmap](#phase-i--the-futuristic-roadmap-one-of-a-kind-rn-engineering)
 > for the futuristic track.
 
@@ -395,7 +403,9 @@ tools and drive regression-aware model/harness tuning. **Scoped in
 `vectalon bench` harness that reuses the temp-project fixtures, guardrail rules,
 and verification gate, plus the first 10 eval scenarios (login screen,
 FlatList fetch, dark-mode, typed navigation, form validation, offline queue,
-image feed, feature flags, accessible form, refactor-to-hooks).
+image feed, feature flags, accessible form, refactor-to-hooks). **Status:**
+M1–M3 and M6 are delivered (see the [Status tracker](#status-tracker)); M4 (CI
+baseline gate) and M5 (public leaderboard) are next up.
 
 ### Sequencing (why this order)
 
@@ -427,8 +437,14 @@ image feed, feature flags, accessible form, refactor-to-hooks).
 - [x] **Phase H — Local model** (Qwen2.5-Coder + node-llama-cpp, free for commercial use, deterministic fallback)
 - [x] **Phase H.2 — Ecosystem catalog** (`vectalon ecosystem` indexing external MCP servers, skills, tools, hooks; .vectalon/ecosystem.json enable/disable; `--export` emits an MCP config fragment for Cursor/Claude Code)
 - [x] **Phase H.3 — Expo / RN-CLI separation** (Scanner records `tooling: 'expo' | 'rn-cli'` + Expo SDK version; context prompt + intent prompt include tooling; simulator adapter runs `expo run:*` vs `react-native run:*`; dependency-removal plans are Expo-aware with `expo prebuild --clean` + `expo-doctor`)
+- [x] **Phase H.4 — LLM intent detection & smart routing** (five intents — `add-feature` / `fix` / `refactor` / `remove-dependency` / `unknown` — classified by the LLM with a surfaced confidence line in the CLI; fixes skip the add-feature scaffold path; unparseable responses log the truncated raw output and retry with correction)
+- [x] **Phase H.5 — Init tooling & model setup** (`vectalon init` detects Expo vs RN-CLI, auto-enables matching ecosystem items from `package.json` dependencies — zustand, gesture-handler, reanimated, … — and offers local Qwen download or remote OpenAI/Anthropic configuration written to `.vectalon/rn-vectalon.json`)
+- [x] **Phase H.6 — Ecosystem MCP exposure** (`vectalon serve` reads `.vectalon/ecosystem.json` and exposes each enabled MCP server as a first-class tool in the MCP tool list, so agents auto-discover Metro/Expo MCPs without manual config)
+- [x] **Phase H.7 — Resolved-model surfacing** (feature workflow summary and `serve` startup logs print the actual provider + model used, warning when a remote key is missing)
+- [x] **Phase H.8 — Ecosystem & toolchain doctor** (`vectalon doctor` verifies every enabled ecosystem item is installed/reachable, plus the native toolchain — Node, JDK, Android SDK/emulator, Xcode/CocoaPods, Metro port — with actionable fix hints and `--json`; `--fix` auto-installs missing items via npm/gem/brew/`npx skills add` and re-runs the checks, reporting `before → after` counts)
 - [ ] **Phase I — RN-native understanding** (RN knowledge graph, Metro sandbox, react-native-doctor, simulator control, perf/bundle budgets)
 - [ ] **Phase J — Autonomous mobile engineering team** (multi-agent squad, self-healing CI, durable sessions, ticket-to-PR)
 - [ ] **Phase K — Living knowledge brain** (runtime telemetry ingestion, auto-derivation from git, provenance scoring, team-brain v2)
 - [ ] **Phase L — DX magic** (IDE extension, MCP Apps, policy marketplace + PR guardrails, offline-first, preview environments)
-- [ ] **Phase M — Trust & scale** (sandboxed execution, secrets/supply-chain guardrails, audit trail, monorepo federation, RN benchmark suite)
+- [ ] **Phase M — Trust & scale** (sandboxed execution, secrets/supply-chain guardrails, audit trail, monorepo federation)
+- [x] **Phase V-5 (M1–M3, M6) — RN coding-tests benchmark** (versioned scenario spec + 10 eval scenarios in `bench/scenarios/`, deterministic baseline runner + 15-check best-practice rubric + scoring/report in `src/bench/`, `vectalon bench` CLI with `--model`/`--suite`/`--live`, human reference solutions with relative-to-human scoring; M4 CI gate and M5 public leaderboard pending — see [`docs/BENCHMARK_PLAN.md`](BENCHMARK_PLAN.md))

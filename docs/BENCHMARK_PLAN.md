@@ -5,6 +5,24 @@
 > generic benchmarks ignore. Three axes: **generated-code correctness**,
 > **RN best-practice adherence**, and **guardrail pass rate**.
 
+## Status
+
+> M1–M3 and M6 are **delivered** (committed on `main`). The harness lives in
+> `src/bench/` with scenarios in `bench/scenarios/` and reference solutions in
+> `bench/references/`; the CLI is `vectalon bench --model … --suite … --live`
+> (see [`CLI_REFERENCE.md`](CLI_REFERENCE.md)). M4 (CI deterministic baseline
+> gate) and M5 (scheduled real-model leaderboard) are next up — see the README
+> [`Roadmap`](README.md) and [`ENHANCEMENT_PLAN.md`](ENHANCEMENT_PLAN.md) V-5.
+
+| Milestone | Status |
+|---|---|
+| M1 — Scenario spec + 10 scenarios + deterministic baseline runner | ✅ Delivered (`src/bench/loader.ts` + `snapshot.ts`, `bench/scenarios/`)
+| M2 — Rubric (15 checks) + scoring + report | ✅ Delivered (`src/bench/rubric.ts`, `scoring.ts`, `report.ts`)
+| M3 — `vectalon bench` CLI + `--suite`/`--model`/`--live` flags | ✅ Delivered (`src/cli/commands/bench.ts`)
+| M4 — CI deterministic baseline + PR gate | ⬜ Next up
+| M5 — Public leaderboard (scheduled real-model pass, `BENCHMARK_RESULTS.md`) | ⬜ Next up (`--live` seam delivered)
+| M6 — Reference solutions + relative-to-human scoring | ✅ Delivered (`bench/references/`, `src/bench/references.ts`)
+
 ## 1. Why this is the proof-of-one-of-a-kind
 
 Every general-purpose coding benchmark (HumanEval, SWE-bench, …) treats a React
@@ -94,17 +112,23 @@ Scenarios are grouped into **suites** (e.g. `core-ui`, `data-flow`,
 ## 3. Harness architecture
 
 ```
-scenarios/                      # one file per scenario, JSON-ish spec
-  login-screen.json
-  flatlist-fetch.json
-  ...
+bench/
+  scenarios/                    # one JSON file per scenario (rn-01 … rn-10)
+  references/                   # human-authored reference solutions (M6)
 
 src/bench/
-  runner.ts            # orchestration: fixtures → generate → score → report
-  rubric.ts            # the 15 RN best-practice checks (regex/AST-lite)
-  scoring.ts           # composite math + suite aggregation
-  report.ts            # markdown/JSON leaderboard output
-  cli.ts               # `vectalon bench [--model local|openai] [--suite core-ui]`
+  loader.ts          # versioned scenario-spec load + validation
+  runner.ts          # orchestration: fixtures → generate → score → report
+  rubric.ts          # the 15 RN best-practice checks (regex/AST-lite)
+  scoring.ts         # composite math + suite aggregation
+  report.ts          # markdown/JSON leaderboard output
+  modelGenerate.ts   # ModelRouter generate seam (--model/--live pass)
+  references.ts      # reference solutions + relative-to-human scoring
+  snapshot.ts        # project snapshot for deterministic baseline
+  types.ts           # shared scenario/score/report types
+  index.ts           # public exports
+
+src/cli/commands/bench.ts       # `vectalon bench [--model …] [--suite core-ui] [--live]`
 ```
 
 **Scenario spec shape:**
@@ -196,14 +220,14 @@ what "passing" means.
 
 ## 6. Milestones
 
-| Milestone | Deliverable | Effort |
+| Milestone | Deliverable | Status |
 |---|---|---|
-| M1 | Scenario spec + 10 scenarios + deterministic baseline runner | M |
-| M2 | Rubric (15 checks) + scoring + markdown report | M |
-| M3 | `vectalon bench` CLI + `--suite`/`--model` flags | S |
-| M4 | CI deterministic baseline + PR gate | S |
-| M5 | Public leaderboard (scheduled real-model pass, BENCHMARK_RESULTS.md) | M |
-| M6 | Reference solutions + relative-to-human scoring | M |
+| M1 | Scenario spec + 10 scenarios + deterministic baseline runner | ✅ Delivered |
+| M2 | Rubric (15 checks) + scoring + markdown report | ✅ Delivered |
+| M3 | `vectalon bench` CLI + `--suite`/`--model`/`--live` flags | ✅ Delivered |
+| M4 | CI deterministic baseline + PR gate | ⬜ Next up |
+| M5 | Public leaderboard (scheduled real-model pass, BENCHMARK_RESULTS.md) | ⬜ Next up (`--live` seam delivered) |
+| M6 | Reference solutions + relative-to-human scoring | ✅ Delivered |
 
 **Definition of done:** `vectalon bench` runs offline in under 2 minutes,
 produces a reproducible markdown/JSON report, and a PR that worsens any axis on
