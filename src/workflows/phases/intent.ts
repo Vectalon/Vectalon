@@ -297,6 +297,9 @@ export async function predictIntent(
     // formatting — one cheap retry (256 tokens, memoized per run), still fully
     // LLM-driven. Fire it for any unparseable non-fallback output; skipping it
     // on "no '{'" would defeat prose-wrapped intent detection entirely.
+    const rawPreview = content.length > 300 ? `${content.slice(0, 300)}…` : content
+    const rawInline = rawPreview.trim() ? rawPreview.replace(/\s+/g, ' ').slice(0, 400) : '(empty response)'
+    process.stderr.write(`Intent JSON unparseable, retrying with correction…\n  Raw response: ${rawInline}\n`)
     const repairResponse = await modelRouter.generate({
       systemPrompt,
       prompt: [
