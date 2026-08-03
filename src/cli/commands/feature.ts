@@ -13,6 +13,7 @@ import type { ModelProviderType } from '../../model/types'
 import type { ContextSnapshot } from '../../harness/types'
 import { getIntent, type WorkflowIntent, type IntentPrediction } from '../../workflows/phases/intent'
 import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
+import { activeModelLabel, isRemoteKeyMissing } from '../../model/setup'
 import { dynamicImport } from '../../utils/dynamicImport'
 import { setFileChangeWriter, formatFileChange, computeFileChange, type FileChange } from '../../utils/fileDiff'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
@@ -151,6 +152,16 @@ export async function featureCommand(
   const modelConfig = resolveProjectModelConfig(root)
   modelRouter.initialize({ provider, modelName: modelConfig?.modelName, apiKeyEnv: modelConfig?.apiKeyEnv })
 
+  // Surface the model that will generate the code, warning when a remote
+  // provider is configured but its API key is missing from the environment.
+  const activeModel = activeModelLabel(provider, modelConfig)
+  if (!options.json) {
+    log.info(`Model: ${pc.bold(activeModel)}`)
+    if (isRemoteKeyMissing(provider, modelConfig)) {
+      log.warn(`No API key found for ${provider}. Set ${modelConfig?.apiKeyEnv || provider.toUpperCase() + '_API_KEY'} in your environment or export it before running.`)
+    }
+  }
+
   const adapters = createAdapters({ root, dryRun: options.dryRun, git: { push: options.push } })
   const deviceRun = options.device === true
 
@@ -257,7 +268,7 @@ export async function featureCommand(
     process.stdout.write(json + '\n')
   } else {
     s.stop(result.status === 'completed' ? 'Workflow completed' : 'Workflow failed')
-    renderSummary(result, workflow.name, root, note, log)
+    renderSummary(result, workflow.name, root, note, log, activeModel)
 
     if (options.verbose) {
       process.stdout.write('\n## Detailed output\n\n')
@@ -320,7 +331,8 @@ function renderSummary(
   workflowName: string,
   root: string,
   note: (message: string, title?: string) => void,
-  log: { error: (message: string) => void; info: (message: string) => void }
+  log: { error: (message: string) => void; info: (message: string) => void },
+  activeModel: string
 ): void {
   const phaseTable = new Table({
     head: ['Phase', 'Status'],
@@ -339,6 +351,7 @@ function renderSummary(
     `Workflow: ${workflowName}`,
     `ID: ${result.id}`,
     `Status: ${result.status === 'completed' ? 'completed' : 'failed'}`,
+    `Model: ${activeModel}`,
     '',
     phaseTable.toString(),
   ]
