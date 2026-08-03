@@ -19,10 +19,12 @@ export {
   checkEcosystemItem,
   runEcosystemDoctor,
   checkNativeToolchain,
+  checkLeaderboardReadiness,
   runDoctor,
   fixForMissing,
   runDoctorFixes,
   TOOLCHAIN_ITEM_IDS,
+  LEADERBOARD_ITEM_IDS,
 } from './doctor'
 export type {
   DoctorStatus,
@@ -31,7 +33,9 @@ export type {
   DoctorCheckers,
   DoctorCategory,
   ToolchainItemId,
+  LeaderboardItemId,
   ToolchainCheckOptions,
+  LeaderboardCheckOptions,
   DoctorFix,
   FixAttempt,
   DoctorFixer,

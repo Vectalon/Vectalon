@@ -285,11 +285,21 @@ and run:
 - **Metro port 8081** — warns (never fails) when no dev server is listening;
   honors a custom port via options
 
+It also checks the **nightly leaderboard readiness** so a failed scheduled
+leaderboard run is diagnosed before the cron fires:
+
+- **API-key secrets** — `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` set (warns
+  when unset: that matrix entry would be skipped)
+- **Local model** — the default Qwen preset is downloaded (warns with a
+  `vectalon pull` hint)
+- **Results directory** — `bench/results/` is present and writable (missing
+  when not, with a `mkdir -p bench/results` hint — auto-fixed by `--fix`)
+
 Each check prints a status (`OK`/`MISSING`/`WARN`) with an actionable fix hint
 (e.g. the `npm install` / `npx skills add` / `brew install` command to run).
 The command runs the toolchain checks even without an ecosystem config, exits
 non-zero when anything is missing — useful in CI — and `--json` emits the full
-report (ecosystem + toolchain) as machine-readable output.
+report (ecosystem + toolchain + leaderboard) as machine-readable output.
 
 ### Framework-Native
 Zero lock-in. rn-vectalon is a standard npm package that integrates with your existing RN CLI workflow. No new build system, no proprietary DSL — just a `serve` command and your agent connects.
@@ -1312,6 +1322,10 @@ Areas we'd love help with:
 - ✅ **Doctor auto-remediation** — `vectalon doctor --fix` auto-installs missing
   ecosystem items (npm packages, `npx skills add`, gem, brew cask for JDK) and
   re-runs the checks, reporting `before → after` missing counts
+- ✅ **Leaderboard readiness in doctor** — `vectalon doctor` verifies the
+  nightly leaderboard prerequisites (API-key secrets, local model downloaded,
+  `bench/results` writable) so a failed scheduled run is caught before the
+  cron fires
 
 **Next up:**
 

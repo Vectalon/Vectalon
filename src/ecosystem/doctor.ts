@@ -6,7 +6,7 @@ import type { EcosystemItem } from './types'
 
 export type DoctorStatus = 'ok' | 'missing' | 'warning'
 
-export type DoctorCategory = EcosystemItem['category'] | 'toolchain'
+export type DoctorCategory = EcosystemItem['category'] | 'toolchain' | 'leaderboard'
 
 export interface DoctorCheckResult {
   id: string
@@ -23,6 +23,9 @@ export interface DoctorReport {
   checks: DoctorCheckResult[]
   /** Native toolchain checks (Node, JDK, Android, iOS, Metro). */
   toolchain: DoctorCheckResult[]
+  /** Nightly-leaderboard readiness checks (M5): API-key secrets, local model,
+   * and the results directory the scheduled workflow writes to. */
+  leaderboard: DoctorCheckResult[]
   enabledCount: number
   okCount: number
   missingCount: number
@@ -49,6 +52,10 @@ export interface DoctorCheckers {
   portOpen: (port: number) => boolean
   /** Host platform (darwin/darwin for Xcode/CocoaPods gating). */
   platform: NodeJS.Platform
+  /** True when the given local model preset has been downloaded (leaderboard). */
+  hasModel: (presetId: string) => boolean
+  /** True when a directory exists and is writable (leaderboard results dir). */
+  writable: (dir: string) => boolean
 }
 
 /** Toolchain IDs and their human-readable names. */
@@ -71,6 +78,105 @@ export interface ToolchainCheckOptions {
   minJavaMajor?: number
   /** Metro dev-server port (default 8081). */
   metroPort?: number
+}
+
+/** Leaderboard readiness check ids (M5): the nightly model leaderboard. */
+export const LEADERBOARD_ITEM_IDS = [
+  'lb-openai-key',
+  'lb-anthropic-key',
+  'lb-local-model',
+  'lb-results-dir',
+] as const
+
+export type LeaderboardItemId = (typeof LEADERBOARD_ITEM_IDS)[number]
+
+export interface LeaderboardCheckOptions {
+  /** Local model preset id to verify is downloaded (default qwen2.5-coder-1.5b). */
+  localModelPresetId?: string
+}
+
+/**
+ * Check the prerequisites of the nightly leaderboard workflow
+ * (`.github/workflows/leaderboard.yml`) so a failed scheduled run is diagnosed
+ * before the cron fires:
+ * - remote-provider API-key secrets (OPENAI_API_KEY / ANTHROPIC_API_KEY)
+ * - the local model preset is downloaded (for the `local` matrix entry)
+ * - `bench/results/` is present and writable (the workflow writes per-model
+ *   result JSONs there, then merges them into BENCHMARK_RESULTS.md)
+ */
+export function checkLeaderboardReadiness(
+  root: string,
+  checkers: DoctorCheckers,
+  options: LeaderboardCheckOptions = {}
+): DoctorCheckResult[] {
+  const localModelId = options.localModelPresetId || 'qwen2.5-coder-1.5b'
+  const base = (id: string, name: string): Pick<DoctorCheckResult, 'id' | 'name' | 'category' | 'flavor'> =>
+    ({ id, name, category: 'leaderboard', flavor: 'both' })
+
+  const results: DoctorCheckResult[] = []
+
+  const openaiKey = checkers.env('OPENAI_API_KEY')
+  results.push(
+    openaiKey
+      ? { ...base('lb-openai-key', 'OPENAI_API_KEY secret'), status: 'ok', detail: 'set' }
+      : {
+          ...base('lb-openai-key', 'OPENAI_API_KEY secret'),
+          status: 'warning',
+          detail: 'unset — the nightly openai matrix entry will be skipped',
+          hint: 'Add OPENAI_API_KEY to the repo secrets (Settings → Secrets and variables → Actions)'
+        }
+  )
+
+  const anthropicKey = checkers.env('ANTHROPIC_API_KEY')
+  results.push(
+    anthropicKey
+      ? { ...base('lb-anthropic-key', 'ANTHROPIC_API_KEY secret'), status: 'ok', detail: 'set' }
+      : {
+          ...base('lb-anthropic-key', 'ANTHROPIC_API_KEY secret'),
+          status: 'warning',
+          detail: 'unset — the nightly anthropic matrix entry will be skipped',
+          hint: 'Add ANTHROPIC_API_KEY to the repo secrets (Settings → Secrets and variables → Actions)'
+        }
+  )
+
+  const hasModel = checkers.hasModel(localModelId)
+  results.push(
+    hasModel
+      ? { ...base('lb-local-model', 'Local model downloaded'), status: 'ok', detail: `${localModelId} present` }
+      : {
+          ...base('lb-local-model', 'Local model downloaded'),
+          status: 'warning',
+          detail: `${localModelId} not downloaded — the nightly local matrix entry will fall back`,
+          hint: 'Run `vectalon pull` to download the default Qwen model (or set an API key)'
+        }
+  )
+
+  // Only the benchmark host (this repo or a fork with bench/scenarios) runs the
+  // leaderboard workflow, so a missing results dir is a hard failure there but
+  // merely informational in ordinary RN projects — mirror the android-degrades-
+  // to-warning pattern in checkNativeToolchain.
+  const resultsDir = join(root, 'bench', 'results')
+  const isBenchmarkHost = checkers.dirExists(join(root, 'bench', 'scenarios'))
+  const writable = checkers.writable(resultsDir)
+  results.push(
+    writable
+      ? { ...base('lb-results-dir', 'Benchmark results directory'), status: 'ok', detail: `${resultsDir.replace(root, '.')} writable` }
+      : isBenchmarkHost
+        ? {
+            ...base('lb-results-dir', 'Benchmark results directory'),
+            status: 'missing',
+            detail: `${resultsDir.replace(root, '.')} missing or not writable — the nightly run cannot write result JSONs`,
+            hint: 'Create it: `mkdir -p bench/results` (or fix permissions)'
+          }
+        : {
+            ...base('lb-results-dir', 'Benchmark results directory'),
+            status: 'warning',
+            detail: `${resultsDir.replace(root, '.')} not present (not a benchmark host — no bench/scenarios)`,
+            hint: 'Only needed when running the nightly leaderboard: `mkdir -p bench/results`'
+          }
+  )
+
+  return results
 }
 
 /**
@@ -215,6 +321,7 @@ export function runEcosystemDoctor(root: string, checkers: DoctorCheckers): Doct
   return {
     checks,
     toolchain: [],
+    leaderboard: [],
     enabledCount: enabled.length,
     okCount: checks.filter(c => c.status === 'ok').length,
     missingCount: checks.filter(c => c.status === 'missing').length,
@@ -398,18 +505,21 @@ export function checkNativeToolchain(
   return results
 }
 
-/** Run the full doctor: enabled ecosystem items + the native toolchain. */
+/** Run the full doctor: enabled ecosystem items + native toolchain +
+ * nightly-leaderboard readiness. */
 export function runDoctor(
   root: string,
   checkers: DoctorCheckers,
-  options?: ToolchainCheckOptions
+  options?: ToolchainCheckOptions & LeaderboardCheckOptions
 ): DoctorReport {
   const ecosystem = runEcosystemDoctor(root, checkers)
   const toolchain = checkNativeToolchain(root, checkers, options)
-  const all = [...ecosystem.checks, ...toolchain]
+  const leaderboard = checkLeaderboardReadiness(root, checkers, options)
+  const all = [...ecosystem.checks, ...toolchain, ...leaderboard]
   return {
     ...ecosystem,
     toolchain,
+    leaderboard,
     okCount: all.filter(c => c.status === 'ok').length,
     missingCount: all.filter(c => c.status === 'missing').length,
     warningCount: all.filter(c => c.status === 'warning').length,
@@ -478,6 +588,25 @@ export function fixForMissing(check: DoctorCheckResult, _root: string): DoctorFi
     }
   }
 
+  // ---- nightly leaderboard readiness fixes ----
+  if (check.category === 'leaderboard') {
+    switch (check.id) {
+      case 'lb-results-dir':
+        return {
+          id: check.id,
+          name: check.name,
+          command: 'mkdir',
+          args: ['-p', 'bench/results'],
+          label: 'mkdir -p bench/results',
+          manual: false,
+        }
+      default:
+        // API-key secrets and the local model download are environment/user
+        // actions — surfaced as hints, not auto-run.
+        return null
+    }
+  }
+
   const item = getEcosystemItem(check.id)
 
   // ---- skill: install directory missing → run the skills add command ----
@@ -538,7 +667,7 @@ export function runDoctorFixes(
   report: DoctorReport,
   fixer: DoctorFixer
 ): { attempts: FixAttempt[]; before: number; after: number } {
-  const all = [...report.checks, ...report.toolchain]
+  const all = [...report.checks, ...report.toolchain, ...report.leaderboard]
   const attempts: FixAttempt[] = []
 
   for (const check of all) {
@@ -592,5 +721,11 @@ function fixerCheckersProxy(root: string, fixer: DoctorFixer): DoctorCheckers {
     env: () => undefined,
     portOpen: () => false,
     platform: process.platform,
+    // The fixer proxy has no model knowledge — report false so the local-model
+    // check stays a warning after fixes (the model download is manual anyway).
+    hasModel: () => false,
+    writable(dir: string): boolean {
+      return existsSync(dir)
+    },
   }
 }

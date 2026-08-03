@@ -206,8 +206,10 @@ npx vectalon ecosystem --export --json      # ... as JSON
 
 ## `doctor`
 
-Verify that every enabled ecosystem item is installed and reachable, and that
-the native toolchain is ready to build and run the project.
+Verify that every enabled ecosystem item is installed and reachable, that the
+native toolchain is ready to build and run the project, and that the **nightly
+leaderboard prerequisites** are met so a scheduled leaderboard run doesn't
+fail silently.
 
 ```bash
 npx vectalon doctor                 # human-readable report
@@ -232,6 +234,10 @@ npx vectalon doctor ./my-app        # check a specific project
 - **Native toolchain** — Node 20+ (18–19 warns), JDK 17+, Android SDK
   (`ANDROID_HOME`/`adb`), Android emulator AVDs, Xcode & CocoaPods (macOS
   only), Metro dev-server port 8081
+- **Nightly leaderboard readiness (M5)** — `OPENAI_API_KEY` and
+  `ANTHROPIC_API_KEY` secrets set (warn when unset), the default Qwen local
+  model downloaded (warn with a `vectalon pull` hint), and `bench/results/`
+  present + writable (missing with a `mkdir -p bench/results` hint)
 
 Every check prints a status (`OK`/`MISSING`/`WARN`) with an actionable fix
 hint. Toolchain checks run even without an ecosystem config.
@@ -247,9 +253,11 @@ For every missing check, `doctor --fix` runs the install command and re-checks:
 - **JDK** — `brew install --cask temurin@17` (macOS)
 - **CocoaPods** — `brew install cocoapods`
 - **Fastlane** — `gem install fastlane`; **EAS CLI** — `npm install -g eas-cli`
+- **Results directory** — `mkdir -p bench/results`
 
 Checks that can't be safely automated (Node via nvm, Android Studio SDK,
-emulator AVDs, Xcode) are reported as `SKIPPED` with their manual hint. The
+emulator AVDs, Xcode, API-key secrets, model downloads) are reported as
+`SKIPPED` with their manual hint. The
 fix summary prints `before missing → after missing`; install commands run in the
 project root with a generous timeout. Manual-only toolchain checks that fail
 still cause exit code 1.
