@@ -2,6 +2,19 @@ import { mkdirSync, writeFileSync, existsSync } from 'fs'
 import { join } from 'path'
 import { doctorCommand } from '../../src/cli/commands/doctor'
 import { createTempProject, cleanup } from '../helpers/tmp'
+import type { DoctorCheckers } from '../../src/ecosystem'
+
+/** All-green stubbed checkers: no real subprocesses, no network, no exit. */
+function okCheckers(): DoctorCheckers {
+  return {
+    packageInstalled: () => true,
+    run: () => ({ success: true, output: 'v20.11.0' }),
+    dirExists: () => false,
+    env: () => undefined,
+    portOpen: () => false,
+    platform: 'linux',
+  }
+}
 
 describe('doctorCommand', () => {
   let dir: string
@@ -22,13 +35,16 @@ describe('doctorCommand', () => {
     cleanup(dir)
   })
 
-  it('exits when the project has no ecosystem config', () => {
+  it('runs the native toolchain even when the project has no ecosystem config', () => {
     const exit = jest.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('exit')
     })
 
-    expect(() => doctorCommand(dir, {})).toThrow('exit')
-    expect(exit).toHaveBeenCalledWith(1)
+    // No .vectalon/ecosystem.json: doctor still runs toolchain checks and only
+    // exits non-zero if a toolchain check fails. With all-green stubs, it runs
+    // to completion without exiting.
+    expect(() => doctorCommand(dir, { checkers: okCheckers() })).not.toThrow()
+    expect(exit).not.toHaveBeenCalled()
   })
 
   it('runs and prints OK for a project with no enabled items', () => {
@@ -36,19 +52,36 @@ describe('doctorCommand', () => {
     writeFileSync(join(dir, '.vectalon', 'ecosystem.json'), JSON.stringify({ version: '1.0.0', enabled: [] }))
 
     // No enabled items -> no exit, just a warning.
-    expect(() => doctorCommand(dir, {})).not.toThrow()
+    expect(() => doctorCommand(dir, { checkers: okCheckers() })).not.toThrow()
   })
 
-  it('prints a JSON report with --json and does not exit when all items pass', () => {
+  it('prints a native toolchain section in the human-readable output', () => {
     mkdirSync(join(dir, '.vectalon'), { recursive: true })
-    // Only enable an item that is genuinely installed in the temp project.
+    writeFileSync(join(dir, '.vectalon', 'ecosystem.json'), JSON.stringify({ version: '1.0.0', enabled: [] }))
+
+    // logger.info writes headers to stderr; tables go to stdout.
+    let out = ''
+    jest.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+    jest.spyOn(process.stderr, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+
+    expect(() => doctorCommand(dir, { checkers: okCheckers() })).not.toThrow()
+    expect(out).toContain('Native toolchain')
+    expect(out).toContain('Node.js')
+  })
+
+  it('prints a JSON report with --json including the toolchain section', () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
     writeFileSync(
       join(dir, '.vectalon', 'ecosystem.json'),
       JSON.stringify({ version: '1.0.0', enabled: ['zustand'] })
     )
-    // zustand is in the temp project's package.json, but doctor's real checker
-    // resolves node_modules from the project root — it won't find it. So we
-    // only assert the command runs and emits JSON without throwing.
+
     let jsonOutput = ''
     const stdoutSpy = jest.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
       if (typeof chunk === 'string') jsonOutput += chunk
@@ -58,14 +91,55 @@ describe('doctorCommand', () => {
       throw new Error('exit')
     }) as unknown as (code?: string | number | null) => never)
 
+    // zustand resolves (packageInstalled: true), so nothing is missing -> exit 0.
     try {
-      doctorCommand(dir, { json: true })
+      doctorCommand(dir, { json: true, checkers: okCheckers() })
     } catch {
-      // Exit 1 expected: zustand won't resolve from the temp project root.
+      // no-op: exit mocked to throw
     }
     expect(stdoutSpy).toHaveBeenCalled()
     expect(jsonOutput).toContain('"checks"')
-    expect(exit).toHaveBeenCalledWith(1)
+    expect(jsonOutput).toContain('"toolchain"')
+    expect(exit).toHaveBeenCalledWith(0)
     expect(existsSync(join(dir, '.vectalon', 'ecosystem.json'))).toBe(true)
+  })
+
+  it('exits 1 when an ecosystem item is missing', () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    writeFileSync(
+      join(dir, '.vectalon', 'ecosystem.json'),
+      JSON.stringify({ version: '1.0.0', enabled: ['zustand'] })
+    )
+    const exit = jest.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('exit')
+    }) as unknown as (code?: string | number | null) => never)
+
+    // packageInstalled returns false -> zustand missing -> exit 1.
+    try {
+      doctorCommand(dir, {
+        json: true,
+        checkers: { ...okCheckers(), packageInstalled: () => false },
+      })
+    } catch {
+      // expected
+    }
+    expect(exit).toHaveBeenCalledWith(1)
+  })
+
+  it('honors a custom Metro port via the toolchain option', () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    writeFileSync(join(dir, '.vectalon', 'ecosystem.json'), JSON.stringify({ version: '1.0.0', enabled: [] }))
+
+    let out = ''
+    jest.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+
+    const checkers = okCheckers()
+    checkers.portOpen = p => p === 8088
+    expect(() => doctorCommand(dir, { checkers, toolchain: { metroPort: 8088 } })).not.toThrow()
+    // The wider 26-char Check column fits the full "Metro (port 8088)" name.
+    expect(out).toContain('Metro (port 8088)')
   })
 })
