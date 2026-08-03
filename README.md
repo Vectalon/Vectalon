@@ -243,8 +243,20 @@ This scans your project and creates a `.vectalon/` directory with:
 - `snapshot.json` — Full project context (components, structure, config)
 - `context.md` — Human-readable project summary for agent prompts
 - `memory.json` — Learned patterns and decision history
-- `rn-vectalon.json` — Manifest with the detected tooling
+- `rn-vectalon.json` — Manifest with the detected tooling and model choice
 - `ecosystem.json` — Enabled MCP servers, skills, and hooks
+
+`init` also completes the **model side** of the setup — the provider you choose
+is written to the manifest and used by `vectalon feature`/`serve` automatically:
+
+- `vectalon init --model local` (default) — the local Qwen2.5-Coder provider;
+  interactively, `init` offers to download the model (~1.1 GB) right away
+- `vectalon init --model openai` — remote OpenAI provider; `init` records the
+  model name and that it reads `OPENAI_API_KEY` from the environment
+- `vectalon init --model anthropic` — remote Anthropic provider via
+  `ANTHROPIC_API_KEY`
+- Without a flag on a TTY, `init` prompts you to pick a provider; API keys are
+  **never written to disk** — only the env var name is recorded
 
 `init` detects whether your project is **Expo-managed** or a **bare React Native
 CLI** project and sets up the tooling accordingly:

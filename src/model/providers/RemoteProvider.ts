@@ -1,5 +1,6 @@
 import type { ModelRequest, ModelResponse } from '../types'
 import { getConfig } from '../../config'
+import type { ProjectModelConfig } from '../setup'
 
 interface OpenAIResponse {
   choices?: { message?: { content?: string } }[]
@@ -28,14 +29,21 @@ export class RemoteProvider {
   private modelName: string
   private baseUrl: string
 
-  constructor(provider: string) {
+  /**
+   * @param config project-level overrides from .vectalon/rn-vectalon.json
+   *   (set by `vectalon init`) — modelName to use and which env var holds the
+   *   API key. Falls back to the global config, then provider defaults.
+   */
+  constructor(provider: string, config?: ProjectModelConfig) {
     this.provider = provider
-    const config = PROVIDER_CONFIGS[provider]
-    if (!config) throw new Error(`Unknown provider: ${provider}`)
+    const providerConfig = PROVIDER_CONFIGS[provider]
+    if (!providerConfig) throw new Error(`Unknown provider: ${provider}`)
 
-    this.baseUrl = config.baseUrl
-    this.modelName = (getConfig('modelConfig') as { modelName?: string })?.modelName || config.defaultModel
-    this.apiKey = (getConfig('modelConfig') as { apiKey?: string })?.apiKey || process.env[`${provider.toUpperCase()}_API_KEY`] || ''
+    this.baseUrl = providerConfig.baseUrl
+    const globalConfig = getConfig('modelConfig') as { modelName?: string; apiKey?: string } | undefined
+    this.modelName = config?.modelName || globalConfig?.modelName || providerConfig.defaultModel
+    const keyEnv = config?.apiKeyEnv || `${provider.toUpperCase()}_API_KEY`
+    this.apiKey = globalConfig?.apiKey || process.env[keyEnv] || ''
   }
 
   async generate(request: ModelRequest): Promise<ModelResponse> {

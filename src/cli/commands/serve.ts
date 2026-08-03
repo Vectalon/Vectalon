@@ -8,6 +8,7 @@ import { TeamStore } from '../../knowledge/TeamStore'
 import { HashEmbeddingProvider } from '../../knowledge/embeddings'
 import { createRemoteEmbeddingProvider } from '../../knowledge/remoteEmbeddings'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
+import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
 import { printSyncStatus } from './sync'
 import { existsSync, readFileSync } from 'fs'
 import { join, basename, resolve } from 'path'
@@ -42,9 +43,12 @@ export async function serveCommand(options: {
   }
   engine.attachPatternStore(memory)
 
+  // The model provider comes from --model, else the project manifest set by
+  // `vectalon init` (which also records the model name + API-key env var).
   const modelRouter = new ModelRouter()
-  const modelProvider = options.modelProvider || 'local'
-  modelRouter.initialize({ provider: modelProvider as 'local' | 'openai' | 'anthropic' })
+  const modelProvider = resolveProjectModelProvider(root, options.modelProvider) as 'local' | 'openai' | 'anthropic'
+  const modelConfig = resolveProjectModelConfig(root)
+  modelRouter.initialize({ provider: modelProvider, modelName: modelConfig?.modelName, apiKeyEnv: modelConfig?.apiKeyEnv })
 
   const protocol = options.protocol || 'mcp'
   const artifactStore = new ArtifactStore(root)

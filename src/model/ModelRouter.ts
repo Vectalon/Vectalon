@@ -8,6 +8,10 @@ export class ModelRouter {
   private localProvider: LocalProvider | null = null
   private remoteProviders: Map<string, RemoteProvider> = new Map()
 
+  /**
+   * @param config provider choice plus optional project-level model settings
+   *   (modelName / apiKeyEnv from .vectalon/rn-vectalon.json via init).
+   */
   initialize(config?: Partial<ModelConfig>): void {
     this.provider = config?.provider || (getConfig('modelProvider') as ModelProviderType) || 'local'
 
@@ -15,7 +19,10 @@ export class ModelRouter {
       this.localProvider = new LocalProvider()
       void this.localProvider.initialize()
     } else {
-      this.remoteProviders.set(this.provider, new RemoteProvider(this.provider))
+      this.remoteProviders.set(this.provider, new RemoteProvider(this.provider, {
+        modelName: config?.modelName,
+        apiKeyEnv: config?.apiKeyEnv,
+      }))
     }
   }
 

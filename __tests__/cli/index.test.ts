@@ -6,6 +6,7 @@ import { createTempProject, cleanup, useTempConfig } from '../helpers/tmp'
 
 describe('initCommand', () => {
   let dir: string
+  let configDir: string
 
   beforeEach(() => {
     dir = createTempProject({
@@ -16,11 +17,13 @@ describe('initCommand', () => {
       }),
       '.gitignore': 'node_modules\n',
     })
+    configDir = useTempConfig()
     jest.spyOn(process.stderr, 'write').mockImplementation(() => true)
   })
 
   afterEach(() => {
     cleanup(dir)
+    cleanup(configDir)
   })
 
   it('scans the project and writes snapshot, context, and manifest files', async () => {
@@ -94,6 +97,36 @@ describe('initCommand', () => {
     expect(ecosystem.enabled).toEqual(expect.arrayContaining(['expo-mcp', 'expo-skills', 'expo-doctor', 'metro-mcp']))
     expect(ecosystem.enabled).not.toEqual(expect.arrayContaining(['react-native-upgrader-mcp', 'rn-diff-purge']))
     cleanup(expoDir)
+  })
+
+  it('defaults the model provider to local and records it in the manifest', async () => {
+    await initCommand(dir, {})
+    const manifest = JSON.parse(readFileSync(join(dir, '.vectalon', 'rn-vectalon.json'), 'utf-8'))
+    expect(manifest.modelProvider).toBe('local')
+    expect(manifest.modelConfig).toBeUndefined()
+  })
+
+  it('writes the remote model provider and env-key config when --model is passed', async () => {
+    await initCommand(dir, { model: 'openai' })
+    const manifest = JSON.parse(readFileSync(join(dir, '.vectalon', 'rn-vectalon.json'), 'utf-8'))
+    expect(manifest.modelProvider).toBe('openai')
+    expect(manifest.modelConfig).toEqual({ modelName: 'gpt-4o', apiKeyEnv: 'OPENAI_API_KEY' })
+  })
+
+  it('writes the anthropic provider config when --model anthropic is passed', async () => {
+    await initCommand(dir, { model: 'anthropic' })
+    const manifest = JSON.parse(readFileSync(join(dir, '.vectalon', 'rn-vectalon.json'), 'utf-8'))
+    expect(manifest.modelProvider).toBe('anthropic')
+    expect(manifest.modelConfig).toEqual({ modelName: 'claude-sonnet-4-20250514', apiKeyEnv: 'ANTHROPIC_API_KEY' })
+  })
+
+  it('exits with code 1 on an unknown --model provider', async () => {
+    const exitSpy = jest
+      .spyOn(process, 'exit')
+      .mockImplementation((() => { throw new Error('exit called') }) as unknown as (code?: string | number | null) => never)
+
+    await expect(initCommand(dir, { model: 'gemini' })).rejects.toThrow('exit called')
+    expect(exitSpy).toHaveBeenCalledWith(1)
   })
 })
 
