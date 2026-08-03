@@ -4,16 +4,21 @@ import { spawnSync } from 'child_process'
 import Table from 'cli-table'
 import pc from 'picocolors'
 import { logger } from '../logger'
-import { runEcosystemDoctor, type DoctorCheckers } from '../../ecosystem'
+import { runDoctor, type DoctorCheckers, type ToolchainCheckOptions } from '../../ecosystem'
 
 export interface DoctorOptions {
   json?: boolean
+  /** Injectable checkers — tests pass stubs so no real subprocesses run. */
+  checkers?: DoctorCheckers
+  /** Overrides for toolchain thresholds/ports (e.g. a custom Metro port). */
+  toolchain?: ToolchainCheckOptions
 }
 
 /**
- * Real checkers backed by the local filesystem and PATH probes. Package
- * resolution checks node_modules from the project root; binary probes are
- * bounded (5s) so a missing npx package never hangs the command.
+ * Real checkers backed by the local filesystem, PATH probes, and the
+ * environment. Package resolution checks node_modules from the project root;
+ * binary probes are bounded (5s) so a missing npx package never hangs the
+ * command; the Metro port probe is bounded to 1s.
  */
 function realCheckers(root: string): DoctorCheckers {
   return {
@@ -43,61 +48,94 @@ function realCheckers(root: string): DoctorCheckers {
     dirExists(dir: string): boolean {
       return existsSync(dir)
     },
+    env(name: string): string | undefined {
+      return process.env[name]
+    },
+    portOpen(port: number): boolean {
+      // Bounded synchronous probe: a tiny child node process tries to connect
+      // to 127.0.0.1:port and exits 0 on success, 1 on error/timeout.
+      const probe = [
+        `const net=require('net');`,
+        `const s=net.connect(${port},'127.0.0.1');`,
+        `s.setTimeout(1000);`,
+        `s.on('connect',()=>{s.destroy();process.exit(0)});`,
+        `s.on('error',()=>process.exit(1));`,
+        `s.on('timeout',()=>process.exit(1));`,
+      ].join('')
+      try {
+        const result = spawnSync(process.execPath, ['-e', probe], {
+          timeout: 3_000,
+          stdio: 'ignore',
+        })
+        return result.status === 0
+      } catch {
+        return false
+      }
+    },
+    platform: process.platform,
   }
 }
 
 export function doctorCommand(directory: string, options: DoctorOptions): void {
   const root = resolve(directory || process.cwd())
-
-  if (!existsSync(resolve(root, '.vectalon', 'ecosystem.json'))) {
-    logger.error('No .vectalon/ecosystem.json found. Run `vectalon init` or `vectalon ecosystem --enable <id>` first.')
-    process.exit(1)
-  }
-
-  const report = runEcosystemDoctor(root, realCheckers(root))
+  const hasEcosystem = existsSync(resolve(root, '.vectalon', 'ecosystem.json'))
+  const report = runDoctor(root, options.checkers || realCheckers(root), options.toolchain)
 
   if (options.json) {
     process.stdout.write(JSON.stringify(report, null, 2) + '\n')
     process.exit(report.missingCount > 0 ? 1 : 0)
   }
 
-  if (report.enabledCount === 0) {
+  if (!hasEcosystem) {
+    logger.warn('No .vectalon/ecosystem.json found — skipping ecosystem checks. Run `vectalon init` to enable them.')
+  } else if (report.enabledCount === 0) {
     logger.warn('No ecosystem items enabled. Run `vectalon ecosystem --enable <id>` to opt in.')
-    return
   }
 
-  logger.info(pc.bold(`vectalon doctor — ${report.enabledCount} enabled ecosystem item(s)`))
+  logger.info(pc.bold(`vectalon doctor — ${report.enabledCount} enabled ecosystem item(s) + native toolchain`))
   logger.info('')
 
-  const table = new Table({
-    head: ['Status', 'ID', 'Category', 'Detail', 'Hint'],
+  if (report.checks.length > 0) {
+    const table = new Table({
+      head: ['Status', 'ID', 'Category', 'Detail', 'Hint'],
+      style: { head: ['cyan'] },
+      colWidths: [10, 22, 10, 52, 44],
+    })
+
+    for (const check of report.checks) {
+      const statusColor =
+        check.status === 'ok' ? pc.green('OK') : check.status === 'missing' ? pc.red('MISSING') : pc.yellow('WARN')
+      table.push([statusColor, check.id, check.category, check.detail, check.hint || ''])
+    }
+
+    process.stdout.write(table.toString() + '\n')
+    logger.info('')
+  }
+
+  logger.info(pc.bold('Native toolchain'))
+  const toolchainTable = new Table({
+    head: ['Status', 'Check', 'Detail', 'Hint'],
     style: { head: ['cyan'] },
-    colWidths: [10, 22, 10, 52, 44],
+    colWidths: [10, 26, 50, 46],
   })
 
-  for (const check of report.checks) {
+  for (const check of report.toolchain) {
     const statusColor =
       check.status === 'ok' ? pc.green('OK') : check.status === 'missing' ? pc.red('MISSING') : pc.yellow('WARN')
-    table.push([
-      statusColor,
-      check.id,
-      check.category,
-      check.detail,
-      check.hint || '',
-    ])
+    toolchainTable.push([statusColor, check.name, check.detail, check.hint || ''])
   }
 
-  process.stdout.write(table.toString() + '\n')
-
+  process.stdout.write(toolchainTable.toString() + '\n')
   logger.info('')
+
   if (report.missingCount === 0 && report.warningCount === 0) {
-    logger.success(`All ${report.okCount} enabled item(s) are installed and reachable.`)
+    logger.success(`All ${report.okCount} check(s) passed — toolchain and ecosystem are ready.`)
   } else {
     if (report.missingCount > 0) {
-      logger.error(`${report.missingCount} item(s) missing: run the hinted install command, then re-run \`vectalon doctor\`.`)
+      logger.error(`${report.missingCount} check(s) missing: follow the hinted commands, then re-run \`vectalon doctor\`.`)
     }
     if (report.warningCount > 0) {
-      logger.warn(`${report.warningCount} item(s) could not be fully verified.`)
+      logger.warn(`${report.warningCount} check(s) could not be fully verified (or are optional on this platform).`)
     }
   }
 

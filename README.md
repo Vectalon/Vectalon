@@ -214,10 +214,25 @@ installed and reachable, so agents never discover tooling that isn't there:
 - **Skills** — the skill install directory exists under `.vectalon/skills/` or
   `.agents/skills/`
 
+It also checks the **native toolchain** a React Native project needs to build
+and run:
+
+- **Node.js** — version 20+ (18-19 warns, older is flagged) with an `nvm`
+  upgrade hint
+- **JDK** — 17+ required for RN Android builds
+- **Android SDK** — resolved from `ANDROID_HOME`/`ANDROID_SDK_ROOT`, or via
+  `adb` on `PATH` (warns when the project has no `android/` dir)
+- **Android emulator** — lists configured AVDs when the `emulator` binary
+  responds
+- **Xcode & CocoaPods** — verified on macOS only (skipped elsewhere)
+- **Metro port 8081** — warns (never fails) when no dev server is listening;
+  honors a custom port via options
+
 Each check prints a status (`OK`/`MISSING`/`WARN`) with an actionable fix hint
-(e.g. the `npm install` / `npx skills add` command to run). The command exits
+(e.g. the `npm install` / `npx skills add` / `brew install` command to run).
+The command runs the toolchain checks even without an ecosystem config, exits
 non-zero when anything is missing — useful in CI — and `--json` emits the full
-report as machine-readable output.
+report (ecosystem + toolchain) as machine-readable output.
 
 ### Framework-Native
 Zero lock-in. rn-vectalon is a standard npm package that integrates with your existing RN CLI workflow. No new build system, no proprietary DSL — just a `serve` command and your agent connects.
