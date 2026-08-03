@@ -1,5 +1,12 @@
 export type ProjectTooling = 'expo' | 'rn-cli'
 
+export interface LintConfigInfo {
+  eslint?: string
+  biome?: string
+  prettier?: string
+  tsconfig?: string
+}
+
 export interface ProjectInfo {
   root: string
   name: string
@@ -16,6 +23,8 @@ export interface ProjectInfo {
   tooling: ProjectTooling
   /** Expo SDK version when tooling is 'expo', otherwise ''. */
   expoSdkVersion: string
+  /** Detected lint / formatter / TypeScript configuration content. */
+  lintConfig?: LintConfigInfo
 }
 
 export interface FileNode {

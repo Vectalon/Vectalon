@@ -720,12 +720,26 @@ function generateRemoveDependencyImplementation(
   const removalScript = [
     '#!/bin/bash',
     '# Run this script after reviewing the code changes above',
+    'set -euo pipefail',
     '',
     `npm uninstall ${uninstallPackages.join(' ')}`,
     ...(isExpo ? ['', '# Expo managed workflow: regenerate native projects if ejected', 'npx expo prebuild --clean', '', 'npx expo-doctor'] : ['', '# iOS cleanup', 'cd ios || exit 0', 'pod install', 'cd ..']),
     '',
-    '# Verify no imports remain',
-    `grep -R "${ctx.dependency}" src/ --include="*.ts" --include="*.tsx" || echo "No source imports found"`,
+    '# Verify no imports remain in source files',
+    `IMPORTS=$(grep -R -E "from ['\"]${ctx.dependency}['\"]|require\\(['\"]${ctx.dependency}['\"]\\)" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" 2>/dev/null || true)`,
+    `if [ -n "$IMPORTS" ]; then`,
+    `  echo "Error: found remaining imports of ${ctx.dependency}:"`,
+    `  echo "$IMPORTS"`,
+    `  exit 1`,
+    `fi`,
+    `echo "No source imports remain for ${ctx.dependency}"`,
+    '',
+    '# Verify package.json no longer lists the dependency',
+    `if grep -q "\\"${ctx.dependency}\\"" package.json; then`,
+    `  echo "Error: ${ctx.dependency} still listed in package.json"`,
+    `  exit 1`,
+    `fi`,
+    `echo "${ctx.dependency} removed from package.json"`,
   ].join('\n')
 
   const scriptPath = 'scripts/remove-appcenter.sh'
