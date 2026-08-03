@@ -19,6 +19,24 @@ jest.mock('../../src/utils/dynamicImport', () => ({
   })),
 }))
 
+// The workflow routes on LLM intent detection, and this suite has no model —
+// so feed a deterministic add-feature prediction. This mirrors how
+// featureDevelopment.test.ts stubs modelRouter.generate for the same reason.
+jest.mock('../../src/workflows/phases/intent', () => {
+  const actual = jest.requireActual('../../src/workflows/phases/intent')
+  return {
+    ...actual,
+    getIntent: jest.fn(async () => ({
+      intent: { type: 'add-feature', feature: 'Login', description: '' },
+      alternatives: [
+        { intent: { type: 'add-feature', feature: 'Login', description: '' }, confidence: 0.99, reasoning: 'new feature' },
+      ],
+      reasoning: 'The user wants a login feature.',
+      source: 'llm',
+    })),
+  }
+})
+
 import { featureCommand, formatUpgradeSuggestions, renderUpgradeSuggestions, formatIntentSummary, formatIntentLabel } from '../../src/cli/commands/feature'
 import type { ImprovementSuggestion } from '../../src/knowledge/refresh'
 import type { IntentPrediction } from '../../src/workflows/phases/intent'

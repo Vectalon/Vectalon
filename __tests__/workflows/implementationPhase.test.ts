@@ -50,6 +50,8 @@ function createContext(modelRouter: ModelRouter, prompt: string, projectRoot: st
         hasTypeScript: true,
         hasMetro: true,
         hasExpo: false,
+        tooling: 'rn-cli',
+        expoSdkVersion: '',
       },
       structure: [],
       components: [],

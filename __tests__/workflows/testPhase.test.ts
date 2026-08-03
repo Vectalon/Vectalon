@@ -37,6 +37,8 @@ function makeContext(projectRoot: string | undefined, prompt: string): WorkflowC
         hasTypeScript: true,
         hasMetro: true,
         hasExpo: false,
+        tooling: 'rn-cli',
+        expoSdkVersion: '',
       },
       structure: [],
       components: [],

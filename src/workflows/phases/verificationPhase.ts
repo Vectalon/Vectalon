@@ -104,7 +104,10 @@ export const verificationPhase: WorkflowPhase = {
     const hasTests = !!testPhase && testPhase.artifacts.some(a => a.type === 'qa')
     const hasImplementation = !!implementationPhase && implementationPhase.artifacts.length > 0
 
-    if (isRemoveDependency(intent) || isRefactor(intent) || isFix(intent)) {
+    // Unknown requests produce a clarification plan (never new code), and
+    // testPhase explicitly skips generation for them — so the TDD gate must not
+    // fail the run for a missing scaffold that was never supposed to exist.
+    if (isRemoveDependency(intent) || isRefactor(intent) || isFix(intent) || intent.type === 'unknown') {
       results.push('- TDD validation: skipped (no new scaffold tests required for this intent)')
     } else if (hasImplementation && !hasTests) {
       results.push('- TDD validation: FAIL — no tests were written before implementation')
