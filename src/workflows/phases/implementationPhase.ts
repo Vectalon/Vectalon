@@ -726,7 +726,7 @@ function generateRemoveDependencyImplementation(
     ...(isExpo ? ['', '# Expo managed workflow: regenerate native projects if ejected', 'npx expo prebuild --clean', '', 'npx expo-doctor'] : ['', '# iOS cleanup', 'cd ios || exit 0', 'pod install', 'cd ..']),
     '',
     '# Verify no imports remain in source files',
-    `IMPORTS=$(grep -R -E "from ['\"]${ctx.dependency}['\"]|require\\(['\"]${ctx.dependency}['\"]\\)" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" 2>/dev/null || true)`,
+    `IMPORTS=$(grep -R -E "from ['"]${ctx.dependency}['"]|require\\(['"]${ctx.dependency}['"]\\)" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" 2>/dev/null || true)`,
     `if [ -n "$IMPORTS" ]; then`,
     `  echo "Error: found remaining imports of ${ctx.dependency}:"`,
     `  echo "$IMPORTS"`,
