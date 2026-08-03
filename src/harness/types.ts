@@ -1,3 +1,5 @@
+export type ProjectTooling = 'expo' | 'rn-cli'
+
 export interface ProjectInfo {
   root: string
   name: string
@@ -10,6 +12,10 @@ export interface ProjectInfo {
   hasTypeScript: boolean
   hasMetro: boolean
   hasExpo: boolean
+  /** Distinguishes Expo-managed projects from bare React Native CLI projects. */
+  tooling: ProjectTooling
+  /** Expo SDK version when tooling is 'expo', otherwise ''. */
+  expoSdkVersion: string
 }
 
 export interface FileNode {

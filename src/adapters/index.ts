@@ -6,6 +6,7 @@ import { createSimulatorAdapter } from './simulator'
 import { createDesignAdapter } from './design'
 
 export * from './types'
+export { detectProjectTooling } from './simulator'
 
 export interface CreateAdaptersOptions {
   root?: string

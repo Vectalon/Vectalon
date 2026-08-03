@@ -8,6 +8,7 @@ import { pullCommand } from './commands/pull'
 import { modelsCommand } from './commands/models'
 import { policyCommand } from './commands/policy'
 import { refreshCommand } from './commands/refresh'
+import { ecosystemCommand } from './commands/ecosystem'
 import { syncCommand } from './commands/sync'
 import { benchCommand } from './commands/bench'
 import { logger } from './logger'
@@ -87,6 +88,17 @@ export function runCLI(): void {
     .action(refreshCommand)
 
   program
+    .command('ecosystem [directory]')
+    .description('Browse and enable external MCP servers, skills, tools, and hooks for React Native / Expo projects')
+    .option('--category <type>', 'Filter by category (mcp|skill|tool|hook)')
+    .option('--flavor <type>', 'Filter by project flavor (expo|rn-cli)')
+    .option('--enable <id>', 'Enable an ecosystem item and record it in .vectalon/ecosystem.json')
+    .option('--disable <id>', 'Disable an enabled ecosystem item')
+    .option('--export', 'Export enabled items as an MCP client config fragment')
+    .option('--json', 'Print the export as JSON')
+    .action(ecosystemCommand)
+
+  program
     .command('sync [directory]')
     .description('Sync the team brain (.vectalon/knowledge) to a hosted git remote')
     .option('--push', 'Push the knowledge base to the remote')
@@ -145,6 +157,7 @@ async function runInteractive(): Promise<void> {
       { value: 'init', label: 'Initialize a project', hint: 'Scan React Native project and create .vectalon/' },
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Refresh knowledge', hint: 'Update best practices and dependency suggestions from the web' },
+      { value: 'ecosystem', label: 'Manage ecosystem', hint: 'Enable MCP servers, skills, tools, and hooks (Expo & RN-CLI)' },
       { value: 'bench', label: 'Run benchmark', hint: 'Score the harness on the RN coding tests (10 scenarios)' },
       { value: 'sync', label: 'Sync team brain', hint: 'Push/pull .vectalon/knowledge to a hosted git remote' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
@@ -230,6 +243,40 @@ async function runInteractive(): Promise<void> {
   if (action === 'refresh') {
     await refreshCommand('', { force: true })
     p.outro('Knowledge refreshed')
+    return
+  }
+
+  if (action === 'ecosystem') {
+    const item = await p.select({
+      message: 'Ecosystem action',
+      options: [
+        { value: 'list', label: 'List catalog', hint: 'Show all MCPs, skills, tools, hooks' },
+        { value: 'enable', label: 'Enable an item', hint: 'Pick from the catalog and record it in .vectalon/ecosystem.json' },
+        { value: 'export', label: 'Export MCP config', hint: 'Print enabled MCP servers as an agent config fragment' },
+      ],
+    })
+    if (p.isCancel(item)) {
+      p.outro('Cancelled')
+      return
+    }
+    if (item === 'list') {
+      ecosystemCommand('', {})
+      return
+    }
+    if (item === 'export') {
+      ecosystemCommand('', { export: true })
+      return
+    }
+    const enable = await p.text({
+      message: 'Ecosystem item id to enable',
+      placeholder: 'e.g. metro-mcp, expo-skills, maestro',
+    })
+    if (p.isCancel(enable)) {
+      p.outro('Cancelled')
+      return
+    }
+    ecosystemCommand('', { enable: enable as string })
+    p.outro('Ecosystem updated')
     return
   }
 

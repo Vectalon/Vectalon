@@ -55,7 +55,7 @@ export class ContextEngine {
       `- Platforms: ${project.platforms.join(', ')}`,
       `- TypeScript: ${project.hasTypeScript ? 'Yes' : 'No'}`,
       `- Metro: ${project.hasMetro ? 'Yes' : 'No'}`,
-      `- Expo: ${project.hasExpo ? 'Yes' : 'No'}`,
+      `- Tooling: ${project.tooling === 'expo' ? `Expo (SDK ${project.expoSdkVersion || 'unknown'})` : 'React Native CLI (bare)'}`,
     ]
 
     if (components.length > 0) {

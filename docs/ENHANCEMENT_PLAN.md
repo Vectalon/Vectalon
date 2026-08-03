@@ -425,6 +425,8 @@ image feed, feature flags, accessible form, refactor-to-hooks).
 - [x] **Phase G.2 — Real embedding APIs** (RemoteEmbeddingProvider seam + OpenAI/OpenAI-compatible providers from config/env; async searchRemote in KnowledgeIndex + TeamStore; MCP search_knowledge uses real vectors when configured)
 - [x] **Phase G.3 — Hosted artifact store** (ArtifactSync push/pull via git remote, `.vectalon/sync.json` config, `vectalon sync` CLI command; serve logs sync status)
 - [x] **Phase H — Local model** (Qwen2.5-Coder + node-llama-cpp, free for commercial use, deterministic fallback)
+- [x] **Phase H.2 — Ecosystem catalog** (`vectalon ecosystem` indexing external MCP servers, skills, tools, hooks; .vectalon/ecosystem.json enable/disable; `--export` emits an MCP config fragment for Cursor/Claude Code)
+- [x] **Phase H.3 — Expo / RN-CLI separation** (Scanner records `tooling: 'expo' | 'rn-cli'` + Expo SDK version; context prompt + intent prompt include tooling; simulator adapter runs `expo run:*` vs `react-native run:*`; dependency-removal plans are Expo-aware with `expo prebuild --clean` + `expo-doctor`)
 - [ ] **Phase I — RN-native understanding** (RN knowledge graph, Metro sandbox, react-native-doctor, simulator control, perf/bundle budgets)
 - [ ] **Phase J — Autonomous mobile engineering team** (multi-agent squad, self-healing CI, durable sessions, ticket-to-PR)
 - [ ] **Phase K — Living knowledge brain** (runtime telemetry ingestion, auto-derivation from git, provenance scoring, team-brain v2)

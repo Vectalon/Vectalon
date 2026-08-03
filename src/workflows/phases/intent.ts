@@ -237,11 +237,16 @@ export function buildIntentDetectionPrompt(
     '{"intents":[{"type":"add-feature","feature":"login","dependency":null,"target":null,"area":null,"confidence":0.9,"reasoning":"new login screen"},{"type":"remove-dependency","feature":null,"dependency":"appcenter","target":null,"area":null,"confidence":0.4,"reasoning":"also mentioned removing appcenter"}]}',
   ].join('\n')
 
+  const tooling = snapshot?.project.tooling === 'expo'
+    ? `Expo (SDK ${snapshot.project.expoSdkVersion || 'unknown'})`
+    : 'React Native CLI (bare)'
+
   const userPrompt = [
     '# Project context',
     `- TypeScript: ${conventions.hasTypeScript ? 'yes' : 'no'}`,
     `- React Navigation: ${conventions.hasNavigation ? 'yes' : 'no'}`,
     `- StyleSheet usage: ${conventions.usesStyleSheet ? 'yes' : 'no'}`,
+    `- Tooling: ${tooling}`,
     `- Existing components: ${components}`,
     '',
     '# User Query',

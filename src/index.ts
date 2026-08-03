@@ -128,6 +128,21 @@ export type {
 
 export { getConfig, setConfig } from './config'
 
+export {
+  ECOSYSTEM_CATALOG,
+  ECOSYSTEM_ITEMS,
+  getEcosystemItem,
+  listEcosystemItems,
+  readEcosystemConfig,
+  writeEcosystemConfig,
+  enableEcosystemItem,
+  disableEcosystemItem,
+  exportEcosystemConfig,
+} from './ecosystem'
+export type { EcosystemCategory, EcosystemItem, EcosystemCatalog, ProjectFlavor, EcosystemConfig, EcosystemExport } from './ecosystem'
+
+export { detectProjectTooling } from './adapters'
+
 export { WorkflowEngine, getWorkflow, listWorkflows, createWorkflowState, featureDevelopmentWorkflow } from './workflows'
 export { MAX_REVIEW_ATTEMPTS } from './workflows/phases/codeReviewPhase'
 export { loadFailedHeals, recordFailedHeals, formatFailedHeals } from './workflows/phases/healMemory'

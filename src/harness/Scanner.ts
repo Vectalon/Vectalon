@@ -2,6 +2,20 @@ import { readFileSync, existsSync, readdirSync, statSync } from 'fs'
 import { join, relative, extname } from 'path'
 import type { ProjectInfo, FileNode, ComponentInfo } from './types'
 
+export interface PackageJsonLike {
+  dependencies?: Record<string, string>
+  devDependencies?: Record<string, string>
+}
+
+/**
+ * Single source of truth for Expo vs bare React Native CLI detection.
+ * A project is Expo-managed when `expo` is a dependency or `@expo/config`
+ * is present (the config package is what Expo-managed projects use).
+ */
+export function detectProjectTooling(pkg: PackageJsonLike): 'expo' | 'rn-cli' {
+  return pkg.dependencies?.expo || pkg.devDependencies?.['@expo/config'] ? 'expo' : 'rn-cli'
+}
+
 export class Scanner {
   private root: string
 
@@ -17,6 +31,7 @@ export class Scanner {
 
     const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
     const rnVersion = pkg.dependencies?.['react-native'] || ''
+    const tooling = detectProjectTooling(pkg)
 
     return {
       root: this.root,
@@ -29,7 +44,9 @@ export class Scanner {
       platforms: this.detectPlatforms(pkg),
       hasTypeScript: existsSync(join(this.root, 'tsconfig.json')),
       hasMetro: existsSync(join(this.root, 'metro.config.js')) || existsSync(join(this.root, 'metro.config.cjs')),
-      hasExpo: !!pkg.dependencies?.expo || !!pkg.devDependencies?.['@expo/config'],
+      hasExpo: tooling === 'expo',
+      tooling,
+      expoSdkVersion: pkg.dependencies?.expo || '',
     }
   }
 

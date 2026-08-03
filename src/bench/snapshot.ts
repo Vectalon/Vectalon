@@ -22,6 +22,8 @@ export function benchmarkSnapshot(): ContextSnapshot {
       hasTypeScript: true,
       hasMetro: true,
       hasExpo: false,
+      tooling: 'rn-cli',
+      expoSdkVersion: '',
     },
     structure: [],
     components: [],
