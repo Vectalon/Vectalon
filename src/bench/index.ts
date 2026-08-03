@@ -26,6 +26,13 @@ export { rubricChecks, runRubric, rubricAdherence, formatRubricResult } from './
 export type { RubricCheck, RubricCheckResult, RubricFileResult, RubricResult } from './rubric'
 export { formatBenchmarkReport } from './report'
 export {
+  defaultLeaderboardResultsDir,
+  loadLeaderboardRuns,
+  renderLeaderboard,
+  writeLeaderboard,
+} from './leaderboard'
+export type { LeaderboardRun } from './leaderboard'
+export {
   DEFAULT_BASELINE_TOLERANCE,
   loadBaselineFile,
   compareToBaseline,

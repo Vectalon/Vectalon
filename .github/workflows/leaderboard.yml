@@ -1,0 +1,116 @@
+name: Benchmark leaderboard (nightly)
+
+on:
+  schedule:
+    # Nightly at 03:00 UTC — run the real-model leaderboard pass on a model matrix.
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        model: [local, openai, anthropic]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Cache local model
+        if: matrix.model == 'local'
+        uses: actions/cache@v4
+        with:
+          path: ~/.config/rn-vectalon/models
+          key: qwen-model-${{ runner.os }}-${{ hashFiles('src/model/local/presets.ts') }}
+
+      - name: Download local model
+        if: matrix.model == 'local'
+        run: node bin/rn-vectalon.js pull
+
+      - name: Run benchmark pass
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          mkdir -p bench/results
+          # Remote providers need a configured key; skip cleanly when missing so
+          # one missing secret does not fail the whole nightly run.
+          if [ "${{ matrix.model }}" = "openai" ] && [ -z "$OPENAI_API_KEY" ]; then
+            echo "::warning::OPENAI_API_KEY not set — skipping openai pass"
+            exit 0
+          fi
+          if [ "${{ matrix.model }}" = "anthropic" ] && [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::warning::ANTHROPIC_API_KEY not set — skipping anthropic pass"
+            exit 0
+          fi
+          node bin/rn-vectalon.js bench --live --install --model "${{ matrix.model }}" \
+            --json -o "bench/results/${{ matrix.model }}.json"
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-results-${{ matrix.model }}
+          path: bench/results/${{ matrix.model }}.json
+          if-no-files-found: warn
+
+  leaderboard:
+    runs-on: ubuntu-latest
+    needs: bench
+    if: always()
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Download model results
+        uses: actions/download-artifact@v4
+        with:
+          path: bench/results
+          merge-multiple: true
+
+      - name: Generate BENCHMARK_RESULTS.md
+        run: node bin/rn-vectalon.js leaderboard bench/results --out BENCHMARK_RESULTS.md
+
+      - name: Commit and push leaderboard
+        run: |
+          # Stage first: on the first run BENCHMARK_RESULTS.md is untracked, so
+          # `git diff --quiet` alone would see no tracked changes and skip the
+          # commit. Checking the index handles both the first and later runs.
+          git add BENCHMARK_RESULTS.md
+          if git diff --cached --quiet; then
+            echo "No leaderboard changes — nothing to commit"
+            exit 0
+          fi
+          git config user.name "vectalon-benchmark[bot]"
+          git config user.email "vectalon-benchmark[bot]@users.noreply.github.com"
+          git commit -m "chore(bench): update nightly leaderboard"
+          git push

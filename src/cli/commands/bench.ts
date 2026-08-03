@@ -15,6 +15,8 @@ export interface BenchCommandOptions {
   suite?: string
   /** Run real tests/typecheck/lint for correctness scoring (slow). */
   live?: boolean
+  /** Run `npm install` in each temp project before live correctness checks. */
+  install?: boolean
   /** Print the summary as JSON instead of markdown. */
   json?: boolean
   /** Write the report to a file instead of stdout. */
@@ -43,6 +45,10 @@ export async function benchCommand(options: BenchCommandOptions): Promise<void> 
     process.exit(1)
   }
 
+  if (options.install && !options.live) {
+    logger.warn('--install has no effect without --live (it installs deps before live correctness checks)')
+  }
+
   const tolerance = options.tolerance ?? DEFAULT_BASELINE_TOLERANCE
   if (!Number.isFinite(tolerance) || tolerance < 0) {
     logger.error(`Invalid tolerance: ${String(options.tolerance)}`)
@@ -66,6 +72,7 @@ export async function benchCommand(options: BenchCommandOptions): Promise<void> 
   const { summary, problems, referenceProblems } = await runBenchmarkFromDir({
     modelRouter,
     live: options.live,
+    install: options.install,
     filter: options.suite ? { suite: options.suite } : undefined,
     scenariosDir: options.scenarios,
     referencesDir: options.references,

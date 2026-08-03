@@ -5,8 +5,8 @@ available as `npx vectalon <command>` (or `vectalon <command>` when installed
 globally or linked).
 
 Running `npx vectalon` with no arguments opens an **interactive menu** covering
-the most common actions (init, feature, refresh, ecosystem, doctor, bench, sync,
-policy, serve, import, pull, models, help).
+the most common actions (init, feature, refresh, ecosystem, doctor, bench,
+leaderboard, sync, policy, serve, import, pull, models, help).
 
 ---
 
@@ -271,6 +271,7 @@ Score the harness — or any model — on the RN coding tests benchmark.
 npx vectalon bench                          # deterministic baseline (offline)
 npx vectalon bench --suite data-flow        # only the data-flow suite
 npx vectalon bench --live                   # run real tests/typecheck/lint
+npx vectalon bench --live --install         # ... installing deps in each temp project first
 npx vectalon bench --model local            # real-model leaderboard (all 10)
 npx vectalon bench --model openai --json    # JSON summary for tooling
 npx vectalon bench -o report.md             # write the report to a file
@@ -286,6 +287,7 @@ npx vectalon bench --baseline bench/baseline.json  # CI regression gate (exit 1 
 | `--model <provider>` | `local` \| `openai` \| `anthropic` — run the real-model pass |
 | `--suite <id>` | Only one suite: `core-ui` \| `data-flow` \| `forms-security` \| `navigation` \| `a11y` \| `perf` \| `refactor` |
 | `--live` | Run real tests/typecheck/lint for correctness (slow) |
+| `--install` | `npm install` each temp project before the live checks (use with `--live` when the fixture project has a `package.json` but no `node_modules`) |
 | `--json` | Print a JSON summary instead of markdown |
 | `-o, --output <path>` | Write the report to a file |
 | `--scenarios <dir>` | Override the scenarios directory (default `bench/scenarios`) |
@@ -326,6 +328,53 @@ npx vectalon bench --json -o bench/baseline.json
 |---|---|
 | 0 | Benchmark ran (report printed/written) |
 | 1 | Unknown provider, or no scenarios ran |
+
+---
+
+## `leaderboard`
+
+Merge per-model benchmark results into a timestamped `BENCHMARK_RESULTS.md`
+leaderboard — the public scenario × model × axis comparison table.
+
+```bash
+npx vectalon leaderboard bench/results                # merge bench/results/*.json
+npx vectalon leaderboard bench/results --out LEADERBOARD.md
+npx vectalon leaderboard bench/results --json         # merged runs as JSON
+npx vectalon leaderboard bench/results --timestamp 2026-08-03T03:00:00.000Z
+```
+
+**What it does**
+
+- Reads every `BenchSummary` JSON in the directory (each written by
+  `vectalon bench --model <m> --json -o bench/results/<m>.json`), one per model
+- Renders a **timestamped markdown leaderboard** with a scenario × model table
+  per axis (composite, correctness, adherence, guardrails), an overall row, and
+  a relative-to-human summary when references are present
+- Writes `BENCHMARK_RESULTS.md` (default) — the nightly workflow commits this
+  back to the repo
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Results dir containing one JSON per model (default `bench/results`) |
+| `--out <path>` | Output file (default `BENCHMARK_RESULTS.md`) |
+| `--json` | Print the merged runs as JSON instead of writing markdown |
+| `--timestamp <iso>` | Override the leaderboard timestamp (default now) |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Leaderboard written (or JSON printed) |
+| 1 | No result files found in the directory |
+
+**Nightly leaderboard (M5)** — `.github/workflows/leaderboard.yml` runs
+`vectalon bench --live --install --model` on a `[local, openai, anthropic]`
+matrix at 03:00 UTC daily (or on `workflow_dispatch`), skips remote providers
+whose API key secret is unset, uploads each model's result as an artifact, then
+merges them with this command and commits the timestamped
+`BENCHMARK_RESULTS.md` back to the repo.
 
 ---
 

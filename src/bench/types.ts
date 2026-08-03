@@ -122,6 +122,10 @@ export interface BenchRunOptions {
   /** When true, correctness runs real tests/typecheck/lint in the temp project
    * (requires installed deps). Default false → correctness is N/A. */
   live?: boolean
+  /** When true (with `live`), run `npm install` in the temp project before the
+   * correctness checks — needed for the nightly CI leaderboard, where the
+   * fixture project has a package.json but no node_modules yet. */
+  install?: boolean
   /** Rubric seam (M2): score RN best-practice adherence for generated files. */
   rubric?: (files: BenchGeneratedFile[]) => number | null
   /** Override the deterministic scaffold generator (e.g. a real model). */

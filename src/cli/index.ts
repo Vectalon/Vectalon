@@ -11,6 +11,7 @@ import { refreshCommand } from './commands/refresh'
 import { ecosystemCommand } from './commands/ecosystem'
 import { syncCommand } from './commands/sync'
 import { benchCommand } from './commands/bench'
+import { leaderboardCommand } from './commands/leaderboard'
 import { doctorCommand } from './commands/doctor'
 import { logger } from './logger'
 import pkg from '../../package.json'
@@ -123,6 +124,7 @@ export function runCLI(): void {
     .option('--model <provider>', 'Model provider (local/openai/anthropic) — run the real-model leaderboard pass')
     .option('--suite <id>', 'Only run scenarios in the given suite (core-ui, data-flow, forms-security, navigation, a11y, perf, refactor)')
     .option('--live', 'Run real tests/typecheck/lint for correctness scoring (slow)')
+    .option('--install', 'Run npm install in each temp project before live correctness checks')
     .option('--json', 'Print the summary as JSON instead of markdown')
     .option('-o, --output <path>', 'Write the report to a file instead of stdout')
     .option('--scenarios <dir>', 'Override the scenarios directory (default: bench/scenarios)')
@@ -130,6 +132,14 @@ export function runCLI(): void {
     .option('--baseline <file>', 'Compare the deterministic run against a stored baseline JSON (CI regression gate; the gate runs only when this flag is passed)')
     .option('--tolerance <fraction>', 'Max allowed axis drop before a regression is flagged (default 0.01)')
     .action(benchCommand)
+
+  program
+    .command('leaderboard [directory]')
+    .description('Merge per-model benchmark results into a timestamped BENCHMARK_RESULTS.md leaderboard')
+    .option('--out <path>', 'Output file (default BENCHMARK_RESULTS.md)')
+    .option('--json', 'Print the merged runs as JSON instead of markdown')
+    .option('--timestamp <iso>', 'Override the leaderboard timestamp (default now)')
+    .action(leaderboardCommand)
 
   const argv = process.argv
   const supportsClack = majorNode() > 20 || (majorNode() === 20 && (minorNode() > 12 || (minorNode() === 12 && patchNode() >= 0)))
@@ -171,6 +181,7 @@ async function runInteractive(): Promise<void> {
       { value: 'ecosystem', label: 'Manage ecosystem', hint: 'Enable MCP servers, skills, tools, and hooks (Expo & RN-CLI)' },
       { value: 'doctor', label: 'Run doctor', hint: 'Verify every enabled ecosystem item is installed and reachable' },
       { value: 'bench', label: 'Run benchmark', hint: 'Score the harness on the RN coding tests (10 scenarios)' },
+      { value: 'leaderboard', label: 'Update leaderboard', hint: 'Merge bench/results into BENCHMARK_RESULTS.md' },
       { value: 'sync', label: 'Sync team brain', hint: 'Push/pull .vectalon/knowledge to a hosted git remote' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
       { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
@@ -312,6 +323,12 @@ async function runInteractive(): Promise<void> {
     }
     await benchCommand({ model: scope === 'local' ? 'local' : undefined })
     p.outro('Benchmark complete')
+    return
+  }
+
+  if (action === 'leaderboard') {
+    leaderboardCommand({})
+    p.outro('Leaderboard updated')
     return
   }
 

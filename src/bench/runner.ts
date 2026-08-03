@@ -118,6 +118,10 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
         mkdirSync(dirname(fullPath), { recursive: true })
         writeFileSync(fullPath, file.content)
       }
+      const executor = options.runCommand || runCommand
+      if (options.install) {
+        await executor('npm', ['install', '--no-audit', '--no-fund'], { cwd: temp.dir })
+      }
       const live = await runLiveCorrectness(scenario, temp.dir, options)
       correctness = live.score
       correctnessDetails = live.details
