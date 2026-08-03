@@ -12,6 +12,8 @@ export {
   exportEcosystemConfig,
   recommendEcosystemSetup,
   applyEcosystemRecommendations,
+  detectEcosystemItemsFromDependencies,
+  enableEcosystemItems,
 } from './config'
 export type { EcosystemConfig, EcosystemExport } from './config'
 export type {

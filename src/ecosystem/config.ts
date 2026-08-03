@@ -138,6 +138,33 @@ export function applyEcosystemRecommendations(root: string, flavor: ProjectFlavo
   return { enabled: config.enabled, path }
 }
 
+/**
+ * Match installed npm packages against the ecosystem catalog's packageName
+ * fields. Items like Zustand, MMKV, Gesture Handler, Reanimated, FlashList,
+ * Detox, Husky etc. are auto-detected from package.json so init can enable
+ * exactly the tooling the project already uses.
+ */
+export function detectEcosystemItemsFromDependencies(
+  dependencies: Record<string, string>,
+  devDependencies: Record<string, string>
+): EcosystemItem[] {
+  const installed = new Set([
+    ...Object.keys(dependencies || {}),
+    ...Object.keys(devDependencies || {}),
+  ])
+  return listEcosystemItems().filter(i => !!i.packageName && installed.has(i.packageName))
+}
+
+/** Batch-enable a list of item ids in one write, preserving existing items. */
+export function enableEcosystemItems(root: string, ids: string[]): { enabled: string[]; path: string } {
+  const config = readEcosystemConfig(root)
+  for (const id of ids) {
+    if (!config.enabled.includes(id)) config.enabled.push(id)
+  }
+  const path = writeEcosystemConfig(root, config)
+  return { enabled: config.enabled, path }
+}
+
 export interface EcosystemExport {
   mcpServers: Record<string, { command: string; args?: string[] }>
   skills: string[]

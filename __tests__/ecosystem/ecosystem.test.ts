@@ -12,6 +12,8 @@ import {
   exportEcosystemConfig,
   recommendEcosystemSetup,
   applyEcosystemRecommendations,
+  detectEcosystemItemsFromDependencies,
+  enableEcosystemItems,
 } from '../../src/ecosystem'
 
 describe('ecosystem catalog', () => {
@@ -107,6 +109,30 @@ describe('ecosystem config', () => {
 
     const result = applyEcosystemRecommendations(dir, 'expo')
     expect(result.enabled).toEqual(expect.arrayContaining(['flashlist', 'expo-mcp', 'expo-skills', 'expo-doctor', 'expo-router', 'expo-ui', 'eas-cli']))
+    expect(readEcosystemConfig(dir).enabled).toEqual(result.enabled)
+  })
+
+  it('detects ecosystem items from installed dependencies and devDependencies', () => {
+    const detected = detectEcosystemItemsFromDependencies(
+      { zustand: '5.0.0', 'react-native-gesture-handler': '2.20.0', 'react-native-mmkv': '3.2.0' },
+      { husky: '9.1.0', 'lint-staged': '15.2.0', 'react-native-reanimated': '3.16.0' }
+    )
+    const ids = detected.map(i => i.id)
+    expect(ids).toEqual(expect.arrayContaining(['zustand', 'gesture-handler', 'mmkv', 'husky', 'lint-staged', 'reanimated']))
+    // Items not installed are not detected
+    expect(ids).not.toEqual(expect.arrayContaining(['detox', 'maestro', 'flashlist']))
+  })
+
+  it('detects nothing when no catalog package matches', () => {
+    const detected = detectEcosystemItemsFromDependencies({ 'react-native': '0.76.0', expo: '~52.0.0' }, { typescript: '5.5.0' })
+    expect(detected).toEqual([])
+  })
+
+  it('batch-enables items in one write, preserving existing ones', () => {
+    enableEcosystemItem(dir, 'metro-mcp')
+
+    const result = enableEcosystemItems(dir, ['zustand', 'gesture-handler', 'metro-mcp'])
+    expect(result.enabled).toEqual(expect.arrayContaining(['metro-mcp', 'zustand', 'gesture-handler']))
     expect(readEcosystemConfig(dir).enabled).toEqual(result.enabled)
   })
 })

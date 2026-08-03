@@ -99,6 +99,35 @@ describe('initCommand', () => {
     cleanup(expoDir)
   })
 
+  it('auto-enables ecosystem items that match installed package.json dependencies', async () => {
+    const depDir = createTempProject({
+      'package.json': JSON.stringify({
+        name: 'dep-app',
+        version: '1.0.0',
+        dependencies: {
+          'react-native': '0.76.0',
+          zustand: '5.0.0',
+          'react-native-gesture-handler': '2.20.0',
+          'react-native-reanimated': '3.16.0',
+          '@shopify/flash-list': '1.7.0',
+        },
+        devDependencies: {
+          husky: '9.1.0',
+          'lint-staged': '15.2.0',
+        },
+      }),
+    })
+
+    await initCommand(depDir, {})
+
+    const ecosystem = JSON.parse(readFileSync(join(depDir, '.vectalon', 'ecosystem.json'), 'utf-8'))
+    expect(ecosystem.enabled).toEqual(expect.arrayContaining(['zustand', 'gesture-handler', 'reanimated', 'flashlist', 'husky', 'lint-staged']))
+    // A bare RN-CLI project never gets Expo-only items — even when the catalog
+    // contains them, flavor + dependency matching keep them out.
+    expect(ecosystem.enabled).not.toEqual(expect.arrayContaining(['expo-router', 'expo-ui', 'eas-cli', 'expo-mcp', 'expo-skills', 'expo-doctor']))
+    cleanup(depDir)
+  })
+
   it('defaults the model provider to local and records it in the manifest', async () => {
     await initCommand(dir, {})
     const manifest = JSON.parse(readFileSync(join(dir, '.vectalon', 'rn-vectalon.json'), 'utf-8'))
