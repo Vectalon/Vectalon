@@ -1,10 +1,10 @@
 import { ContextEngine } from '../../harness/ContextEngine'
 import { ProjectMemory } from '../../memory/ProjectMemory'
 import { PatternLearner } from '../../memory/PatternLearner'
-import { writeFileSync } from 'fs'
+import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { logger } from '../logger'
-import { applyEcosystemRecommendations, recommendEcosystemSetup } from '../../ecosystem'
+import { applyEcosystemRecommendations, recommendEcosystemSetup, detectEcosystemItemsFromDependencies, enableEcosystemItems } from '../../ecosystem'
 import pc from 'picocolors'
 import { pullCommand } from './pull'
 import { getDefaultPreset } from '../../model/local/presets'
@@ -87,6 +87,37 @@ export async function initCommand(rootDir: string, options: Record<string, unkno
   }
   if (toolIds.length > 0) {
     logger.info(pc.bold(`  Tools enabled (${toolIds.length}): ${toolIds.join(', ')}`))
+  }
+
+  // Auto-detect ecosystem items from installed packages: if the project already
+  // depends on zustand, MMKV, Reanimated, Gesture Handler, FlashList, Detox,
+  // husky, etc., enable the matching catalog item and surface each detection.
+  const packageJsonPath = join(root, 'package.json')
+  let dependencies: Record<string, string> = {}
+  let devDependencies: Record<string, string> = {}
+  if (existsSync(packageJsonPath)) {
+    try {
+      const pkg = JSON.parse(readFileSync(packageJsonPath, 'utf-8')) as {
+        dependencies?: Record<string, string>
+        devDependencies?: Record<string, string>
+      }
+      dependencies = pkg.dependencies || {}
+      devDependencies = pkg.devDependencies || {}
+    } catch {
+      logger.warn('package.json is not valid JSON; skipping dependency-based ecosystem detection.')
+    }
+  }
+  const detected = detectEcosystemItemsFromDependencies(dependencies, devDependencies)
+  const newlyDetected = detected.filter(i => !result.enabled.includes(i.id))
+  if (newlyDetected.length > 0) {
+    enableEcosystemItems(root, newlyDetected.map(i => i.id))
+  }
+  if (detected.length > 0) {
+    logger.info(pc.bold(`Dependencies matched (${detected.length}):`))
+    for (const item of detected) {
+      const already = newlyDetected.includes(item) ? '' : ' (already enabled)'
+      logger.info(`  ${pc.green('✓')} ${item.packageName} → ${item.id}${already}`)
+    }
   }
 
   logModelSetup(model)
