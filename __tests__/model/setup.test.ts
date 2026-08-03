@@ -3,6 +3,8 @@ import {
   apiKeyEnvFor,
   isModelSetupProvider,
   detectModelAvailability,
+  activeModelLabel,
+  isRemoteKeyMissing,
   REMOTE_MODEL_DEFAULTS,
   MODEL_PROVIDERS,
 } from '../../src/model/setup'
@@ -57,5 +59,25 @@ describe('model setup helpers', () => {
     const availability = detectModelAvailability()
     expect(availability.localPresetId).toBe('qwen2.5-coder-1.5b')
     expect(typeof availability.localDownloaded).toBe('boolean')
+  })
+
+  it('labels the active model with provider and model name', () => {
+    expect(activeModelLabel('local')).toBe('local (qwen2.5-coder-1.5b)')
+    expect(activeModelLabel('openai', { modelName: 'gpt-4o', apiKeyEnv: 'OPENAI_API_KEY' })).toBe('openai (gpt-4o)')
+    expect(activeModelLabel('anthropic')).toBe('anthropic (claude-sonnet-4-20250514)')
+    expect(activeModelLabel('custom')).toBe('custom')
+  })
+
+  it('flags missing remote keys, honoring a custom apiKeyEnv', () => {
+    expect(isRemoteKeyMissing('local')).toBe(false)
+    expect(isRemoteKeyMissing('openai', { modelName: 'gpt-4o', apiKeyEnv: 'OPENAI_API_KEY' })).toBe(true)
+
+    process.env.OPENAI_API_KEY = 'sk-test'
+    expect(isRemoteKeyMissing('openai', { modelName: 'gpt-4o', apiKeyEnv: 'OPENAI_API_KEY' })).toBe(false)
+    delete process.env.OPENAI_API_KEY
+
+    process.env.MY_OPENAI_KEY = 'sk-custom'
+    expect(isRemoteKeyMissing('openai', { modelName: 'gpt-4o', apiKeyEnv: 'MY_OPENAI_KEY' })).toBe(false)
+    delete process.env.MY_OPENAI_KEY
   })
 })

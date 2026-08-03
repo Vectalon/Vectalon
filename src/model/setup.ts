@@ -54,3 +54,29 @@ export function buildModelConfig(provider: ModelSetupProvider): ProjectModelConf
 export function isModelSetupProvider(value: string): value is ModelSetupProvider {
   return (MODEL_PROVIDERS as readonly string[]).includes(value)
 }
+
+/**
+ * Human-readable label for the active model — e.g. `openai (gpt-4o)` or
+ * `local (qwen2.5-coder-1.5b)`. Used in the feature summary and serve logs so
+ * users can see which model actually generated code.
+ */
+export function activeModelLabel(provider: string, config?: ProjectModelConfig): string {
+  if (provider === 'local') {
+    return `local (${getDefaultPreset().id})`
+  }
+  if (provider === 'openai' || provider === 'anthropic') {
+    const model = config?.modelName || REMOTE_MODEL_DEFAULTS[provider]
+    return `${provider} (${model})`
+  }
+  return provider
+}
+
+/**
+ * Whether a remote provider is missing its API key in the environment.
+ * Returns false for local and unknown providers.
+ */
+export function isRemoteKeyMissing(provider: string, config?: ProjectModelConfig): boolean {
+  if (provider !== 'openai' && provider !== 'anthropic') return false
+  const env = config?.apiKeyEnv || apiKeyEnvFor(provider)
+  return !process.env[env]
+}

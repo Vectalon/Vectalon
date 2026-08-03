@@ -9,6 +9,7 @@ import { HashEmbeddingProvider } from '../../knowledge/embeddings'
 import { createRemoteEmbeddingProvider } from '../../knowledge/remoteEmbeddings'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
 import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
+import { activeModelLabel, isRemoteKeyMissing } from '../../model/setup'
 import { printSyncStatus } from './sync'
 import { existsSync, readFileSync } from 'fs'
 import { join, basename, resolve } from 'path'
@@ -49,6 +50,12 @@ export async function serveCommand(options: {
   const modelProvider = resolveProjectModelProvider(root, options.modelProvider) as 'local' | 'openai' | 'anthropic'
   const modelConfig = resolveProjectModelConfig(root)
   modelRouter.initialize({ provider: modelProvider, modelName: modelConfig?.modelName, apiKeyEnv: modelConfig?.apiKeyEnv })
+
+  const activeModel = activeModelLabel(modelProvider, modelConfig)
+  logger.info(`Model: ${activeModel}`)
+  if (isRemoteKeyMissing(modelProvider, modelConfig)) {
+    logger.warn(`No API key found for ${modelProvider}. Set ${modelConfig?.apiKeyEnv || modelProvider.toUpperCase() + '_API_KEY'} in your environment or export it before connecting agents.`)
+  }
 
   const protocol = options.protocol || 'mcp'
   const artifactStore = new ArtifactStore(root)
