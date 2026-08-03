@@ -61,7 +61,7 @@ export async function serveCommand(options: {
   const artifactStore = new ArtifactStore(root)
   const teamStore = buildTeamStore(root, artifactStore)
   printSyncStatus(root)
-  const server = new MCPServer(engine, modelRouter, protocol as 'mcp' | 'stdio' | 'sse' | 'http', artifactStore, teamStore)
+  const server = new MCPServer(engine, modelRouter, protocol as 'mcp' | 'stdio' | 'sse' | 'http', artifactStore, teamStore, root)
 
   logger.success(`rn-vectalon serving via ${protocol.toUpperCase()}`)
   logger.info('Agents can connect and use project-aware tools')

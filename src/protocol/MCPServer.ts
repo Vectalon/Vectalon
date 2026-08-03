@@ -32,6 +32,7 @@ import { IncidentAnalyzer } from '../sdlc/IncidentAnalyzer'
 import { RunbookWriter } from '../sdlc/RunbookWriter'
 import { KpiReportAnalyzer } from '../sdlc/KpiReportAnalyzer'
 import type { KpiMetric } from '../sdlc/KpiReportAnalyzer'
+import { readEcosystemConfig, listEcosystemItems } from '../ecosystem'
 
 type ToolHandler = (args: Record<string, unknown>) => Promise<string>
 
@@ -50,19 +51,22 @@ export class MCPServer {
   private modelRouter: ModelRouter
   private artifactStore: ArtifactStore | null
   private teamStore: TeamStore | null
+  private projectRoot: string
 
   constructor(
     engine: ContextEngine,
     modelRouter: ModelRouter,
     protocol: ProtocolType = 'mcp',
     artifactStore: ArtifactStore | null = null,
-    teamStore: TeamStore | null = null
+    teamStore: TeamStore | null = null,
+    projectRoot: string = ''
   ) {
     this.engine = engine
     this.modelRouter = modelRouter
     this.protocol = protocol
     this.artifactStore = artifactStore
     this.teamStore = teamStore
+    this.projectRoot = projectRoot
     this.registerDefaultTools()
   }
 
@@ -99,7 +103,19 @@ export class MCPServer {
   }
 
   getToolList(): AgentTool[] {
+    const ecosystemTools: AgentTool[] = this.getEcosystemToolDescriptors().map(d => ({
+      name: d.id,
+      description: `[Ecosystem MCP] ${d.description} — install: ${d.install}`,
+      inputSchema: {
+        type: 'object',
+        properties: {
+          args: { type: 'string', description: 'Optional JSON arguments to pass to the sub-MCP server' },
+        },
+      },
+    }))
+
     return [
+      ...ecosystemTools,
       {
         name: 'get_project_context',
         description: 'Get the full project context including structure, components, and patterns',
@@ -487,6 +503,24 @@ export class MCPServer {
           ]
         : []),
     ]
+  }  /**
+   * Collect advisory tool descriptors for every enabled ecosystem MCP server.
+   * These appear in the tool list so connected agents auto-discover the
+   * sub-MCP servers (Metro MCP, Expo MCP, etc.) without manual config.
+   * The agent must add each sub-MCP to its own MCP configuration via the
+   * install command — this server does not proxy JSON-RPC for them.
+   */
+  private getEcosystemToolDescriptors(): { id: string; description: string; install: string; capabilities: string[] }[] {
+    if (!this.projectRoot) return []
+    const config = readEcosystemConfig(this.projectRoot)
+    return listEcosystemItems({ category: 'mcp' })
+      .filter(i => config.enabled.includes(i.id))
+      .map(i => ({
+        id: i.id,
+        description: i.description,
+        install: i.install,
+        capabilities: i.capabilities,
+      }))
   }
 
   private registerDefaultTools(): void {
