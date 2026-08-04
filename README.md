@@ -273,8 +273,9 @@ covered it.
 its best-practice content is inlined into the system prompt of every **local**
 generation — intent detection, implementation, MCP tools, and fixes — so the
 local LLM follows the same guidance external agents load from the skills
-(capped at 4k chars per skill, 8 skills, 16k total). `vectalon feature` logs how
-many skills were inlined.
+(capped at 4k chars per skill, 8 skills, 16k total). `vectalon feature` prints the
+**inlined skills audit** — how many skills were inlined plus the first few lines
+of each — so you can see exactly what guidance the local model received.
 
 ### Ecosystem Doctor
 

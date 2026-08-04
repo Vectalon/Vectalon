@@ -181,3 +181,42 @@ export function buildSkillsSystemPrompt(
   if (!systemPrompt) return section
   return `${systemPrompt}\n\n${section}`
 }
+
+export interface SkillsPreviewOptions {
+  /** Content lines shown per skill (default 6). */
+  linesPerSkill?: number
+  /** Per-line character cap (default 140). */
+  maxLineLength?: number
+}
+
+/**
+ * A compact, human-readable audit of the skills inlined into the model prompt:
+ * one `### name (id)` header per skill followed by its first few non-blank
+ * lines, with an ellipsis when more content was truncated.
+ */
+export function formatSkillsPreview(
+  sources: SkillSource[],
+  options: SkillsPreviewOptions = {}
+): string {
+  const linesPerSkill = options.linesPerSkill ?? 6
+  const maxLineLength = options.maxLineLength ?? 140
+  const parts: string[] = []
+
+  for (const source of sources) {
+    parts.push(`### ${source.name} (${source.id})`)
+    const lines = source.content
+      .split(/\r?\n/)
+      .map(l => l.trim())
+      .filter(Boolean)
+    const shown = lines.slice(0, linesPerSkill).map(l => {
+      const clipped = l.slice(0, maxLineLength)
+      return `  ${clipped}${l.length > maxLineLength ? '…' : ''}`
+    })
+    parts.push(...shown)
+    if (lines.length > shown.length) {
+      parts.push(`  … ${lines.length - shown.length} more line(s) omitted`)
+    }
+  }
+
+  return parts.join('\n')
+}

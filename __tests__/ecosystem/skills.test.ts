@@ -2,6 +2,7 @@ import {
   readSkillContent,
   readEnabledSkills,
   formatSkillsContext,
+  formatSkillsPreview,
   buildSkillsSystemPrompt,
 } from '../../src/ecosystem/skills'
 import { getEcosystemItem } from '../../src/ecosystem'
@@ -147,6 +148,39 @@ describe('formatSkillsContext', () => {
     )
     expect(section).toContain('### A (a)')
     expect(section).not.toContain('### B (b)')
+  })
+})
+
+describe('formatSkillsPreview', () => {
+  it('renders a header and the first content lines per skill', () => {
+    const preview = formatSkillsPreview([
+      { id: 'expo-router', name: 'Expo Router', content: '# Expo Router\nUse file-based routes.\nTyped routes are on by default.' },
+    ])
+    expect(preview).toContain('### Expo Router (expo-router)')
+    expect(preview).toContain('Use file-based routes.')
+    expect(preview).toContain('Typed routes are on by default.')
+  })
+
+  it('truncates to a few lines per skill with an ellipsis', () => {
+    const content = Array.from({ length: 10 }, (_, i) => `line ${i + 1}`).join('\n')
+    const preview = formatSkillsPreview([{ id: 'a', name: 'A', content }], { linesPerSkill: 3 })
+    expect(preview).toContain('  line 1')
+    expect(preview).toContain('  line 3')
+    expect(preview).not.toContain('  line 4')
+    expect(preview).toContain('7 more line(s) omitted')
+  })
+
+  it('caps long lines with a truncation marker and skips blank lines', () => {
+    const preview = formatSkillsPreview(
+      [{ id: 'a', name: 'A', content: '\n  \n' + 'x'.repeat(300) }],
+      { maxLineLength: 20 }
+    )
+    expect(preview).toContain('  ' + 'x'.repeat(20) + '…')
+    expect(preview).not.toContain(''.padEnd(30, 'x'))
+  })
+
+  it('returns an empty string for no skills', () => {
+    expect(formatSkillsPreview([])).toBe('')
   })
 })
 

@@ -19,9 +19,10 @@ export {
   readSkillContent,
   readEnabledSkills,
   formatSkillsContext,
+  formatSkillsPreview,
   buildSkillsSystemPrompt,
 } from './skills'
-export type { SkillSource, SkillsContextOptions } from './skills'
+export type { SkillSource, SkillsContextOptions, SkillsPreviewOptions } from './skills'
 export {
   checkEcosystemItem,
   runEcosystemDoctor,
