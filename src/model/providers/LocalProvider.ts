@@ -3,6 +3,7 @@ import { getDefaultPreset } from '../local/presets'
 import { runInference } from '../local/inference'
 import { hasDownloadedModel } from '../local/ModelStore'
 import { buildSkillsSystemPrompt } from '../../ecosystem/skills'
+import { TOOL_CALL_SCHEMA } from '../toolCalling'
 
 export interface LocalProviderOptions {
   /**
@@ -49,6 +50,9 @@ export class LocalProvider {
           prompt: request.prompt,
           temperature: request.temperature ?? 0.2,
           maxTokens: request.maxTokens || 2048,
+          // Tool-enabled requests run in JSON mode so the model can only emit
+          // the { tool, arguments } / { answer } envelope the loop parses.
+          ...(request.tools && request.tools.length > 0 ? { grammarSchema: TOOL_CALL_SCHEMA } : {}),
         })
         return {
           content: result.content,

@@ -1,4 +1,5 @@
 import type { AgentTool, ToolCall, ToolResult, ProtocolType } from './types'
+import type { McpClientHandle } from './subMcp'
 import { ContextEngine } from '../harness/ContextEngine'
 import { ModelRouter } from '../model/ModelRouter'
 import { ArtifactStore } from '../knowledge/ArtifactStore'
@@ -7,6 +8,7 @@ import { RoleEngine } from '../knowledge/RoleEngine'
 import { ARTIFACT_ROLES, ARTIFACT_TYPES } from '../knowledge/artifactTypes'
 import type { Artifact, ArtifactRole, ArtifactType } from '../knowledge/artifactTypes'
 import { WorkflowEngine, getWorkflow, listWorkflows, createWorkflowState } from '../workflows'
+import { runAgentLoop } from '../model/toolCalling'
 import { createAdapters } from '../adapters'
 import { RequirementWriter } from '../sdlc/RequirementWriter'
 import { StoryWriter } from '../sdlc/StoryWriter'
@@ -32,8 +34,6 @@ import { IncidentAnalyzer } from '../sdlc/IncidentAnalyzer'
 import { RunbookWriter } from '../sdlc/RunbookWriter'
 import { KpiReportAnalyzer } from '../sdlc/KpiReportAnalyzer'
 import type { KpiMetric } from '../sdlc/KpiReportAnalyzer'
-import { readEcosystemConfig, listEcosystemItems } from '../ecosystem'
-
 type ToolHandler = (args: Record<string, unknown>) => Promise<string>
 
 const LATEST_KNOWN: Record<string, string> = {
@@ -51,7 +51,7 @@ export class MCPServer {
   private modelRouter: ModelRouter
   private artifactStore: ArtifactStore | null
   private teamStore: TeamStore | null
-  private projectRoot: string
+  private subMcpClients: McpClientHandle[]
 
   constructor(
     engine: ContextEngine,
@@ -59,14 +59,14 @@ export class MCPServer {
     protocol: ProtocolType = 'mcp',
     artifactStore: ArtifactStore | null = null,
     teamStore: TeamStore | null = null,
-    projectRoot: string = ''
+    subMcpClients: McpClientHandle[] = []
   ) {
     this.engine = engine
     this.modelRouter = modelRouter
     this.protocol = protocol
     this.artifactStore = artifactStore
     this.teamStore = teamStore
-    this.projectRoot = projectRoot
+    this.subMcpClients = subMcpClients
     this.registerDefaultTools()
   }
 
@@ -84,6 +84,9 @@ export class MCPServer {
   }
 
   async handleToolCall(call: ToolCall): Promise<ToolResult> {
+    const proxied = await this.tryHandleProxiedCall(call)
+    if (proxied) return proxied
+
     const handler = this.tools.get(call.name)
 
     if (!handler) {
@@ -103,19 +106,19 @@ export class MCPServer {
   }
 
   getToolList(): AgentTool[] {
-    const ecosystemTools: AgentTool[] = this.getEcosystemToolDescriptors().map(d => ({
-      name: d.id,
-      description: `[Ecosystem MCP] ${d.description} — install: ${d.install}`,
-      inputSchema: {
-        type: 'object',
-        properties: {
-          args: { type: 'string', description: 'Optional JSON arguments to pass to the sub-MCP server' },
-        },
-      },
-    }))
+    // Real proxied tools from every started sub-MCP server (spawned by
+    // `vectalon serve` via startEnabledMcpClients), namespaced by item id so
+    // `metro-mcp__get_console_logs` can't collide with parent tool names.
+    const proxiedTools: AgentTool[] = this.subMcpClients.flatMap(client =>
+      client.tools.map(tool => ({
+        name: `${client.item.id}__${tool.name}`,
+        description: `[${client.item.name}] ${tool.description}`,
+        inputSchema: tool.inputSchema,
+      }))
+    )
 
     return [
-      ...ecosystemTools,
+      ...proxiedTools,
       {
         name: 'get_project_context',
         description: 'Get the full project context including structure, components, and patterns',
@@ -174,6 +177,17 @@ export class MCPServer {
         name: 'get_learned_patterns',
         description: 'View patterns the harness has learned about this project',
         inputSchema: { type: 'object', properties: {} },
+      },
+      {
+        name: 'run_agent',
+        description: 'Run the local model as an agent over the SDK tools: it can call any listed tool (including proxied MCP tools) and returns a final answer',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            prompt: { type: 'string' },
+          },
+          required: ['prompt'],
+        },
       },
       {
         name: 'execute_workflow',
@@ -503,24 +517,31 @@ export class MCPServer {
           ]
         : []),
     ]
-  }  /**
-   * Collect advisory tool descriptors for every enabled ecosystem MCP server.
-   * These appear in the tool list so connected agents auto-discover the
-   * sub-MCP servers (Metro MCP, Expo MCP, etc.) without manual config.
-   * The agent must add each sub-MCP to its own MCP configuration via the
-   * install command — this server does not proxy JSON-RPC for them.
-   */
-  private getEcosystemToolDescriptors(): { id: string; description: string; install: string; capabilities: string[] }[] {
-    if (!this.projectRoot) return []
-    const config = readEcosystemConfig(this.projectRoot)
-    return listEcosystemItems({ category: 'mcp' })
-      .filter(i => config.enabled.includes(i.id))
-      .map(i => ({
-        id: i.id,
-        description: i.description,
-        install: i.install,
-        capabilities: i.capabilities,
-      }))
+  }
+
+  /** Route `itemId__toolName` calls to the matching proxied sub-MCP client. */
+  private async tryHandleProxiedCall(call: ToolCall): Promise<ToolResult | null> {
+    const sep = call.name.indexOf('__')
+    if (sep === -1) return null
+    const itemId = call.name.slice(0, sep)
+    const toolName = call.name.slice(sep + 2)
+    const client = this.subMcpClients.find(c => c.item.id === itemId)
+    if (!client) return null
+    try {
+      const result = await client.callTool(toolName, call.arguments)
+      return { id: call.id, content: result.content, isError: result.isError }
+    } catch (err) {
+      return {
+        id: call.id,
+        content: `Error from ${itemId}: ${err instanceof Error ? err.message : String(err)}`,
+        isError: true,
+      }
+    }
+  }
+
+  /** Close every proxied sub-MCP server (shutdown cleanup). */
+  close(): void {
+    for (const client of this.subMcpClients) client.close()
   }
 
   private registerDefaultTools(): void {
@@ -534,6 +555,42 @@ export class MCPServer {
       const store = this.engine.getPatternStore()
       if (!store) return 'No learned patterns available.'
       return JSON.stringify(store.getActivePatterns(), null, 2)
+    })
+
+    this.tools.set('run_agent', async (args: Record<string, unknown>) => {
+      const prompt = (args.prompt as string) || ''
+      if (!prompt) return 'Missing prompt'
+
+      // Exclude run_agent itself so the loop can't recursively spawn nested
+      // agent loops (bounded nesting would still multiply model calls).
+      const tools = this.getToolList()
+        .filter(t => t.name !== 'run_agent')
+        .map(t => ({ name: t.name, description: t.description, inputSchema: t.inputSchema }))
+      const snapshot = this.engine.getSnapshot()
+      const result = await runAgentLoop({
+        modelRouter: this.modelRouter,
+        prompt,
+        tools,
+        context: snapshot ? this.engine.buildContextPrompt() : undefined,
+        execute: async (name, toolArgs) => {
+          const toolResult = await this.handleToolCall({
+            id: `agent-${Date.now()}`,
+            name,
+            arguments: toolArgs || {},
+          })
+          return toolResult.isError ? `Error: ${toolResult.content}` : toolResult.content
+        },
+      })
+
+      const calls = result.calls.map(c => `- \`${c.tool}\` → ${c.result.slice(0, 200)}`).join('\n')
+      return [
+        '## Agent result',
+        '',
+        result.answer,
+        '',
+        `_Tool calls: ${result.calls.length} across ${result.iterations} iteration(s)_`,
+        ...(result.calls.length > 0 ? ['', '### Tool call log', '', calls] : []),
+      ].join('\n')
     })
 
     this.tools.set('execute_workflow', async (args: Record<string, unknown>) => {
