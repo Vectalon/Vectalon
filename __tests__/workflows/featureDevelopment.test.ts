@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync } from 'fs'
+import { tmpdir } from 'os'
+import { join } from 'path'
 import { featureDevelopmentWorkflow } from '../../src/workflows/definitions/featureDevelopment'
 import { WorkflowEngine } from '../../src/workflows/WorkflowEngine'
 import { createWorkflowState } from '../../src/workflows/WorkflowState'
@@ -5,9 +8,18 @@ import type { WorkflowContext } from '../../src/adapters/types'
 import { createAdapters } from '../../src/adapters'
 import { ModelRouter } from '../../src/model/ModelRouter'
 
+// Real temp dir (not /tmp): the remove-dependency implementation edits
+// package.json and writes cleanup scripts into the project root, so the
+// context must point at an isolated directory.
+const projectRoot = mkdtempSync(join(tmpdir(), 'vectalon-featdev-'))
+
+afterAll(() => {
+  rmSync(projectRoot, { recursive: true, force: true })
+})
+
 function makeContext(prompt: string): WorkflowContext {
   return {
-    projectRoot: '/tmp',
+    projectRoot,
     snapshot: {
       project: {
         root: '/tmp',

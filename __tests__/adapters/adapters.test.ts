@@ -7,6 +7,7 @@ import { createGitAdapter } from '../../src/adapters/git'
 import { createTestRunnerAdapter } from '../../src/adapters/testRunner'
 import { createSimulatorAdapter } from '../../src/adapters/simulator'
 import { createDesignAdapter } from '../../src/adapters/design'
+import * as runCommandModule from '../../src/adapters/runCommand'
 
 describe('Adapters', () => {
   describe('project management', () => {
@@ -95,6 +96,30 @@ describe('Adapters', () => {
       const result = await adapter.runTests()
       expect(result.success).toBe(true)
       expect(result.stdout).toContain('all tests passed')
+    })
+
+    it('never passes the --silent flag for yarn (yarn 2+ rejects it)', async () => {
+      const tmpDir = mkdtempSync(join(tmpdir(), 'vectalon-yarn-'))
+      writeFileSync(
+        join(tmpDir, 'package.json'),
+        JSON.stringify({ name: 'test', version: '1.0.0', scripts: { test: 'echo hi' } })
+      )
+      writeFileSync(join(tmpDir, 'yarn.lock'), '')
+
+      const spy = jest.spyOn(runCommandModule, 'runCommand').mockResolvedValue({
+        success: true,
+        stdout: 'hi',
+        stderr: '',
+        exitCode: 0,
+      })
+      const adapter = createTestRunnerAdapter({ root: tmpDir })
+      await adapter.runTests()
+
+      const [cmd, args] = spy.mock.calls[0]
+      expect(cmd).toBe('yarn')
+      expect(args).toEqual(['test'])
+      expect(args).not.toContain('--silent')
+      spy.mockRestore()
     })
   })
 

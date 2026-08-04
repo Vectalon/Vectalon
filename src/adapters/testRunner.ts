@@ -11,7 +11,9 @@ function detectPackageManager(root: string): 'npm' | 'yarn' | 'pnpm' {
 }
 
 function getRunArgs(pm: 'npm' | 'yarn' | 'pnpm', script: string, extraArgs: string[] = [], silent = false): [string, string[]] {
-  if (pm === 'yarn') return silent ? ['yarn', ['--silent', script, ...extraArgs]] : ['yarn', [script, ...extraArgs]]
+  // Yarn 2+ (berry) rejects the `--silent` global flag with "Unknown Syntax
+  // Error" — the flag must never be passed for yarn.
+  if (pm === 'yarn') return ['yarn', [script, ...extraArgs]]
   if (pm === 'pnpm') return silent ? ['pnpm', ['run', '--silent', script, ...extraArgs]] : ['pnpm', ['run', script, ...extraArgs]]
   return silent ? ['npm', ['run', '--silent', script, '--', ...extraArgs]] : ['npm', ['run', script, '--', ...extraArgs]]
 }
