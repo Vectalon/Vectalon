@@ -18,7 +18,7 @@ import { dynamicImport } from '../../utils/dynamicImport'
 import { setFileChangeWriter, formatFileChange, computeFileChange, type FileChange } from '../../utils/fileDiff'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
 import type { ImprovementSuggestion } from '../../knowledge/refresh'
-import { readEnabledSkills } from '../../ecosystem'
+import { readEnabledSkills, formatSkillsPreview } from '../../ecosystem'
 import type { HealDecision } from '../../adapters/types'
 
 export interface FeatureCommandOptions {
@@ -155,11 +155,16 @@ export async function featureCommand(
   // the system prompt of every local generation (incl. intent detection).
   modelRouter.initialize({ provider, modelName: modelConfig?.modelName, apiKeyEnv: modelConfig?.apiKeyEnv, projectRoot: root })
 
-  // Surface how many project skills the local model will follow.
+  // Audit the guidance the local model will actually receive: print the
+  // inlined skills (truncated to a few lines per skill) so users can see what
+  // best-practice content is in the system prompt.
   if (provider === 'local' && !options.json) {
-    const skillCount = readEnabledSkills(root).length
-    if (skillCount > 0) {
-      log.info(pc.dim(`Inlined ${skillCount} project skill(s) into the local model prompt`))
+    const skills = readEnabledSkills(root)
+    if (skills.length > 0) {
+      log.info(pc.dim(`Inlined ${skills.length} project skill(s) into the local model prompt:`))
+      for (const line of formatSkillsPreview(skills).split('\n')) {
+        log.info(pc.dim(line))
+      }
     }
   }
 
