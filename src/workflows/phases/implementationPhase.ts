@@ -6,7 +6,7 @@ import type { ContextSnapshot } from '../../harness/types'
 import type { ModelRouter } from '../../model/ModelRouter'
 import { removeUnusedImportsFromProject, findSourceFiles } from '../../utils/unusedImports'
 import { reportPathChange } from '../../utils/fileDiff'
-import { scanNativeReferences, stripNativeReferences, type NativeReference } from '../../utils/nativeScan'
+import { scanNativeReferences, stripNativeReferences, scanDeadNativeConfig, isRemoveUnusedNativeConfigTarget, type NativeReference, type DeadNativeConfig } from '../../utils/nativeScan'
 import { detectConventions, phaseResult, sanitizeFileName, fileExtension, jsxExtension } from './helpers'
 import { getIntent, intentTitle, isRemoveDependency, isRefactor, isFix, type WorkflowIntent } from './intent'
 import { runGuardrails, formatGuardrailResult, GuardrailResult, PolicyEngine } from '../../guardrails'
@@ -1217,6 +1217,56 @@ function generateRefactorImplementation(
         content: `Removed ${r.removed.length} unused import(s):\n${r.removed.map(i => `- ${i}`).join('\n')}`,
         path: r.file,
       })),
+    }
+  }
+
+  if (isRemoveUnusedNativeConfigTarget(ctx.target)) {
+    if (!projectRoot) {
+      return {
+        output: '## Refactor: remove unused native config\n\nNo project root — cannot scan ios/ and android/ configuration.',
+        artifacts: [],
+      }
+    }
+
+    const scan = scanDeadNativeConfig(projectRoot)
+    const group = (kind: string, platform: string, heading: string) => {
+      const refs = scan.findings.filter(f => f.kind === kind && f.platform === platform)
+      return refs.length > 0
+        ? [`### ${heading}`, ...refs.map(r => `- ${r.file}:${r.line} — ${r.text}\n  ↳ ${r.reasoning}`)]
+        : []
+    }
+
+    const output = [
+      '## Refactor: remove unused native config',
+      '',
+      `Scanned ${scan.scannedFiles} native source file(s) across \`ios/\` and \`android/\` for configuration that nothing references anymore.`,
+      '',
+      scan.findings.length === 0
+        ? '✅ No candidate dead native configuration found — pods, gradle includes/dependencies, and imports all have live references.'
+        : [`### Findings (${scan.findings.length})`, ...group('pod', 'ios', 'iOS — dead pods'), ...group('import', 'ios', 'iOS — unused imports'), ...group('gradle-include', 'android', 'Android — dead gradle includes'), ...group('gradle-dep', 'android', 'Android — dead gradle dependencies'), ...group('import', 'android', 'Android — unused imports')].join('\n'),
+      '',
+      '### Advisory only — nothing was deleted',
+      'This scan reports candidates; a "dead" pod may still be a transitive dependency of another pod, and maven artifacts can be referenced via reflection or resource names. Review each `file:line`, confirm the reference is truly gone, then remove it (or run the dependency-removal workflow when the target is an npm package).',
+    ].join('\n')
+
+    const byFile = new Map<string, DeadNativeConfig[]>()
+    for (const f of scan.findings) {
+      if (!byFile.has(f.file)) byFile.set(f.file, [])
+      byFile.get(f.file)!.push(f)
+    }
+
+    // Report-only: no `path` on artifacts, so the CLI summary never claims a
+    // file was created or modified — nothing was touched.
+    return {
+      output,
+      artifacts: [
+        { type: 'engineering', title: 'Dead native config report', content: output },
+        ...[...byFile.entries()].map(([file, refs]) => ({
+          type: 'engineering' as const,
+          title: `Dead config: ${file}`,
+          content: refs.map(r => `${file}:${r.line} (${r.kind}) — ${r.text}\n↳ ${r.reasoning}`).join('\n'),
+        })),
+      ],
     }
   }
 

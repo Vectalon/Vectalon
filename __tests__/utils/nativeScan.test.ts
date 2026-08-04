@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
-import { scanNativeReferences, stripNativeReferences, nativePackageTokens } from '../../src/utils/nativeScan'
+import { scanNativeReferences, stripNativeReferences, nativePackageTokens, scanDeadNativeConfig, isRemoveUnusedNativeConfigTarget } from '../../src/utils/nativeScan'
 
 function makeProject(files: Record<string, string>): string {
   const dir = join(tmpdir(), `vectalon-native-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`)
@@ -137,6 +137,157 @@ describe('stripNativeReferences', () => {
     expect(result.remaining.some(r => r.kind === 'plist')).toBe(true)
     // Files unchanged on disk
     expect(existsSync(join(dir, 'android/app/src/main/AndroidManifest.xml'))).toBe(true)
+    rmSync(dir, { recursive: true, force: true })
+  })
+})
+
+describe('isRemoveUnusedNativeConfigTarget', () => {
+  it('matches canonical and natural dead-native-config phrasings', () => {
+    expect(isRemoveUnusedNativeConfigTarget('remove-unused-native-config')).toBe(true)
+    expect(isRemoveUnusedNativeConfigTarget('remove dead pods')).toBe(true)
+    expect(isRemoveUnusedNativeConfigTarget('clean up unused gradle dependencies')).toBe(true)
+    expect(isRemoveUnusedNativeConfigTarget('remove unused ios android config')).toBe(true)
+  })
+
+  it('does not route generic refactors or unrelated cleanups here', () => {
+    expect(isRemoveUnusedNativeConfigTarget('refactor the home screen')).toBe(false)
+    expect(isRemoveUnusedNativeConfigTarget('clean my config')).toBe(false)
+    expect(isRemoveUnusedNativeConfigTarget('')).toBe(false)
+  })
+})
+
+describe('scanDeadNativeConfig', () => {
+  it('flags a bare Podfile pod that is not in package.json and never used natively', () => {
+    const dir = makeProject({
+      'package.json': JSON.stringify({ name: 'app', dependencies: { 'react-native': '0.72.0' } }),
+      'ios/Podfile': "pod 'AppCenter'\npod 'React', :path => '../node_modules/react-native/ReactCommon'\n",
+      'ios/MyApp/AppDelegate.mm': '@implementation AppDelegate\n@end\n',
+    })
+    const scan = scanDeadNativeConfig(dir)
+    const pods = scan.findings.filter(f => f.kind === 'pod')
+    expect(pods).toHaveLength(1)
+    expect(pods[0].file).toBe('ios/Podfile')
+    expect(pods[0].reasoning).toContain('not in package.json')
+    // The autolinked React pod is live (react-native is installed), so only the
+    // bare AppCenter pod is flagged.
+    expect(pods[0].text).toContain('AppCenter')
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('does not flag a pod that native code imports and uses (MSACAppCenter embeds AppCenter)', () => {
+    const dir = makeProject({
+      'ios/Podfile': "pod 'AppCenter'\n",
+      'ios/MyApp/AppDelegate.mm': [
+        '#import <AppCenter/AppCenter.h>',
+        '@implementation AppDelegate',
+        '- (void)start { [MSACAppCenter startWithAppCenterSecret:@"secret"]; }',
+        '@end',
+      ].join('\n'),
+    })
+    const scan = scanDeadNativeConfig(dir)
+    expect(scan.findings).toHaveLength(0)
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('flags an autolinked pod whose node_modules package is gone from package.json', () => {
+    const dir = makeProject({
+      'package.json': JSON.stringify({ name: 'app', dependencies: { 'react-native': '0.72.0' } }),
+      'ios/Podfile': "pod 'GoneSDK', :path => '../node_modules/gone-sdk/ios'\npod 'React', :path => '../node_modules/react-native/ReactCommon'\n",
+    })
+    const scan = scanDeadNativeConfig(dir)
+    const pods = scan.findings.filter(f => f.kind === 'pod')
+    expect(pods).toHaveLength(1)
+    expect(pods[0].reasoning).toContain('gone-sdk')
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('keeps autolinked pods whose package is still installed', () => {
+    const dir = makeProject({
+      'package.json': JSON.stringify({ name: 'app', dependencies: { 'react-native-config': '1.4.11' } }),
+      'ios/Podfile': "pod 'ReactNativeConfig', :path => '../node_modules/react-native-config/ios'\n",
+    })
+    const scan = scanDeadNativeConfig(dir)
+    expect(scan.findings.filter(f => f.kind === 'pod')).toHaveLength(0)
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('flags a dangling settings.gradle include for an uninstalled autolinked module', () => {
+    const dir = makeProject({
+      'android/settings.gradle': [
+        "include ':app'",
+        "include ':react-native-gone'",
+        "project(':react-native-gone').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-gone/android')",
+      ].join('\n'),
+    })
+    const scan = scanDeadNativeConfig(dir)
+    const includes = scan.findings.filter(f => f.kind === 'gradle-include')
+    expect(includes).toHaveLength(1)
+    expect(includes[0].file).toBe('android/settings.gradle')
+    expect(includes[0].reasoning).toContain('react-native-gone')
+    // The app module itself is never flagged
+    expect(includes[0].text).toContain('react-native-gone')
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('flags a gradle maven dependency never referenced in android source', () => {
+    const dir = makeProject({
+      'android/app/build.gradle': "dependencies {\n  implementation 'com.example:ghostlib:1.0.0'\n  implementation 'com.google.android.material:material:1.9.0'\n}\n",
+      'android/app/src/main/java/com/app/MainActivity.kt': 'import com.google.android.material.button.MaterialButton\nclass MainActivity {\n  fun use(b: MaterialButton) {}\n}\n',
+    })
+    const scan = scanDeadNativeConfig(dir)
+    const deps = scan.findings.filter(f => f.kind === 'gradle-dep')
+    expect(deps).toHaveLength(1)
+    expect(deps[0].reasoning).toContain('ghostlib')
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('never flags system-framework angle imports (UIKit etc.) and never flags classpath/kotlin build tooling', () => {
+    const dir = makeProject({
+      'ios/MyApp/ViewController.m': [
+        '#import <UIKit/UIKit.h>',
+        '@implementation ViewController',
+        '- (void)viewDidLoad { UIView *v = [[UIView alloc] init]; }',
+        '@end',
+      ].join('\n'),
+      'android/build.gradle': "buildscript {\n  dependencies {\n    classpath 'com.android.tools.build:gradle:8.1.1'\n  }\n}\n",
+      'android/app/build.gradle': "dependencies {\n  implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.0'\n  implementation 'com.example:ghostlib:1.0.0'\n}\n",
+    })
+    const scan = scanDeadNativeConfig(dir)
+    // UIKit is not a declared pod and never used literally — must not be flagged.
+    expect(scan.findings.filter(f => f.kind === 'import' && f.platform === 'ios')).toHaveLength(0)
+    // Build tooling (AGP classpath, kotlin-stdlib) must never be flagged.
+    expect(scan.findings.filter(f => f.kind === 'gradle-dep')).toHaveLength(1)
+    expect(scan.findings.find(f => f.kind === 'gradle-dep')!.reasoning).toContain('ghostlib')
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('flags an unused local-header #import and an unused java import; skips live ones', () => {
+    const dir = makeProject({
+      'ios/MyApp/AppDelegate.mm': [
+        '#import "AppDelegate.h"',
+        '#import "DeadHelper.h"',
+        '@implementation AppDelegate',
+        '@end',
+      ].join('\n'),
+      'ios/MyApp/AppDelegate.h': '@interface AppDelegate\n@end\n',
+      'android/app/src/main/java/com/app/Thing.kt': [
+        'import com.example.util.Helper',
+        'import com.example.ghost.Ghost',
+        'class Thing {',
+        '  fun run() { Helper.doThing() }',
+        '}',
+      ].join('\n'),
+    })
+    const scan = scanDeadNativeConfig(dir)
+    const iosImports = scan.findings.filter(f => f.kind === 'import' && f.platform === 'ios')
+    const androidImports = scan.findings.filter(f => f.kind === 'import' && f.platform === 'android')
+    // Live local header import is fine; the dangling header is flagged.
+    expect(iosImports).toHaveLength(1)
+    expect(iosImports[0].text).toContain('DeadHelper.h')
+    expect(iosImports[0].reasoning).toContain('does not exist')
+    // Live import used; dead import flagged.
+    expect(androidImports).toHaveLength(1)
+    expect(androidImports[0].text).toContain('Ghost')
     rmSync(dir, { recursive: true, force: true })
   })
 })

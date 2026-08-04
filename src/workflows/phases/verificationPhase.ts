@@ -7,7 +7,7 @@ import { findSourceFiles } from '../../utils/unusedImports'
 import { phaseResult, failedPhase } from './helpers'
 import { getIntent, isRemoveDependency, isRefactor, isFix } from './intent'
 import { referenceTokens } from './implementationPhase'
-import { scanNativeReferences } from '../../utils/nativeScan'
+import { scanNativeReferences, scanDeadNativeConfig, isRemoveUnusedNativeConfigTarget } from '../../utils/nativeScan'
 
 function isCommentLine(line: string): boolean {
   return /^(?:\/\/|\*|\/\*|#)/.test(line)
@@ -183,6 +183,19 @@ export const verificationPhase: WorkflowPhase = {
         }
       } else {
         results.push('- Native scan: skipped (no project root)')
+      }
+    }
+
+    // Dead native config scan — advisory only (never gates): a "remove unused
+    // native config" refactor reports candidate dead pods/gradle deps/imports so
+    // the user can review them before deleting anything.
+    if (isRefactor(intent) && isRemoveUnusedNativeConfigTarget(intent.target) && ctx.projectRoot) {
+      const deadScan = scanDeadNativeConfig(ctx.projectRoot)
+      if (deadScan.findings.length > 0) {
+        const sample = deadScan.findings.slice(0, 5).map(f => `${f.platform} ${f.file}:${f.line} (${f.kind})`).join(', ')
+        results.push(`- Dead native config scan: ${deadScan.findings.length} candidate(s) (advisory — nothing deleted): ${sample}`)
+      } else {
+        results.push('- Dead native config scan: pass — no candidate dead pods/gradle deps/imports found')
       }
     }
 
