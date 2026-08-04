@@ -140,9 +140,14 @@ the project snapshot
 they don't recommend RN-CLI-native edits for managed projects
 - The simulator adapter runs `npx expo run:ios/android` for Expo projects and
 `npx react-native run-ios/android` for bare projects
-- Dependency removal plans produce Expo-aware cleanup (`npx expo prebuild
+- Dependency removal produces Expo-aware cleanup (`npx expo prebuild
 --clean`, `npx expo-doctor`) instead of `ios/Podfile` edits when the project is
-Expo-managed
+Expo-managed, and **identifies native changes** for bare RN-CLI projects:
+  deterministic removal of `Podfile` pod lines, `Podfile.lock` entries, gradle
+  `include`/`project()`/`implementation` lines, and native `#import` statements
+  in `AppDelegate`/`MainApplication`; remaining runtime usages (e.g.
+  `AppCenter.start(...)`), manifest providers, plist keys, and `.pbxproj`
+  entries are reported file:line for review and fed to the model cleanup pass
 
 ### LLM intent detection & smart routing
 
@@ -158,7 +163,10 @@ output — e.g. `Detected intent: fix/lint — LLM, confidence 0.95` — so you 
   generates a targeted repair, and re-runs the check instead of scaffolding a
   new feature
 - **`refactor`** — restructure path without adding user-facing features
-- **`remove-dependency`** — planned dependency removal with Expo-aware cleanup
+- **`remove-dependency`** — full removal: edits `package.json`, strips JS
+  imports/usages, **detects and removes iOS/Android native references** (pods,
+  gradle includes/deps, native imports, manifest/plist/pbxproj), and gates
+  verification on a native scan — with Expo-aware cleanup for managed projects
 - **`unknown`** — completes with a clarification plan instead of hard-failing
 
 When the model can't produce parseable intent JSON, the raw (truncated) response
