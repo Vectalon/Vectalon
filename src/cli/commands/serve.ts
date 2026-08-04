@@ -49,7 +49,9 @@ export async function serveCommand(options: {
   const modelRouter = new ModelRouter()
   const modelProvider = resolveProjectModelProvider(root, options.modelProvider) as 'local' | 'openai' | 'anthropic'
   const modelConfig = resolveProjectModelConfig(root)
-  modelRouter.initialize({ provider: modelProvider, modelName: modelConfig?.modelName, apiKeyEnv: modelConfig?.apiKeyEnv })
+  // projectRoot lets the local provider inline enabled ecosystem skills into
+  // the system prompt of local generations behind every tool that uses the model.
+  modelRouter.initialize({ provider: modelProvider, modelName: modelConfig?.modelName, apiKeyEnv: modelConfig?.apiKeyEnv, projectRoot: root })
 
   const activeModel = activeModelLabel(modelProvider, modelConfig)
   logger.info(`Model: ${activeModel}`)

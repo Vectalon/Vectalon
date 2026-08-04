@@ -18,6 +18,7 @@ import { dynamicImport } from '../../utils/dynamicImport'
 import { setFileChangeWriter, formatFileChange, computeFileChange, type FileChange } from '../../utils/fileDiff'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
 import type { ImprovementSuggestion } from '../../knowledge/refresh'
+import { readEnabledSkills } from '../../ecosystem'
 import type { HealDecision } from '../../adapters/types'
 
 export interface FeatureCommandOptions {
@@ -150,7 +151,17 @@ export async function featureCommand(
   const modelRouter = new ModelRouter()
   const provider = resolveProjectModelProvider(root, options.model) as ModelProviderType
   const modelConfig = resolveProjectModelConfig(root)
-  modelRouter.initialize({ provider, modelName: modelConfig?.modelName, apiKeyEnv: modelConfig?.apiKeyEnv })
+  // projectRoot lets the local provider inline enabled ecosystem skills into
+  // the system prompt of every local generation (incl. intent detection).
+  modelRouter.initialize({ provider, modelName: modelConfig?.modelName, apiKeyEnv: modelConfig?.apiKeyEnv, projectRoot: root })
+
+  // Surface how many project skills the local model will follow.
+  if (provider === 'local' && !options.json) {
+    const skillCount = readEnabledSkills(root).length
+    if (skillCount > 0) {
+      log.info(pc.dim(`Inlined ${skillCount} project skill(s) into the local model prompt`))
+    }
+  }
 
   // Surface the model that will generate the code, warning when a remote
   // provider is configured but its API key is missing from the environment.

@@ -16,7 +16,7 @@ export class ModelRouter {
     this.provider = config?.provider || (getConfig('modelProvider') as ModelProviderType) || 'local'
 
     if (this.provider === 'local') {
-      this.localProvider = new LocalProvider()
+      this.localProvider = new LocalProvider({ projectRoot: config?.projectRoot })
       void this.localProvider.initialize()
     } else {
       this.remoteProviders.set(this.provider, new RemoteProvider(this.provider, {

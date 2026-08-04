@@ -258,6 +258,14 @@ server list.)
 log with `(already enabled)` markers when the flavor recommendations already
 covered it.
 
+**Enabled skills also feed the local model.** When a skill is installed
+(`.vectalon/skills/<id>/SKILL.md` or `.agents/skills/<id>/SKILL.md`) and enabled,
+its best-practice content is inlined into the system prompt of every **local**
+generation — intent detection, implementation, MCP tools, and fixes — so the
+local LLM follows the same guidance external agents load from the skills
+(capped at 4k chars per skill, 8 skills, 16k total). `vectalon feature` logs how
+many skills were inlined.
+
 ### Ecosystem Doctor
 
 `vectalon doctor` verifies that every enabled ecosystem item is actually
