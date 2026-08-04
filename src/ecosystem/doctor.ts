@@ -6,7 +6,7 @@ import type { EcosystemItem } from './types'
 
 export type DoctorStatus = 'ok' | 'missing' | 'warning'
 
-export type DoctorCategory = EcosystemItem['category'] | 'toolchain' | 'leaderboard'
+export type DoctorCategory = EcosystemItem['category'] | 'toolchain' | 'leaderboard' | 'model'
 
 export interface DoctorCheckResult {
   id: string
@@ -26,6 +26,8 @@ export interface DoctorReport {
   /** Nightly-leaderboard readiness checks (M5): API-key secrets, local model,
    * and the results directory the scheduled workflow writes to. */
   leaderboard: DoctorCheckResult[]
+  /** Model-access checks: can the configured model reach tools/MCPs/skills. */
+  model: DoctorCheckResult[]
   enabledCount: number
   okCount: number
   missingCount: number
@@ -179,6 +181,140 @@ export function checkLeaderboardReadiness(
   return results
 }
 
+/** Model-access check ids: can the configured model reach tools/MCPs/skills. */
+export const MODEL_ACCESS_ITEM_IDS = ['ma-model', 'ma-ecosystem', 'ma-skills', 'ma-mcp'] as const
+
+export type ModelAccessItemId = (typeof MODEL_ACCESS_ITEM_IDS)[number]
+
+export interface ModelAccessCheckOptions {
+  /** Configured provider ('local' when unset — the default). */
+  provider?: 'local' | 'openai' | 'anthropic'
+  /** Local model preset id to verify is downloaded (default qwen2.5-coder-1.5b). */
+  modelPresetId?: string
+  /** Env var carrying the remote API key (default per provider). */
+  apiKeyEnv?: string
+}
+
+/**
+ * Check whether the configured model can actually reach the toolchain:
+ * - the model itself is usable (local preset downloaded / remote API key set)
+ * - ecosystem items are enabled at all (run_agent, skill injection, and the
+ *   proxied MCP tools all need .vectalon/ecosystem.json entries)
+ * - enabled skills are installed on disk (their SKILL.md is what gets inlined)
+ * - enabled MCP servers are reachable (the agent loop calls them through
+ *   `vectalon serve` sub-MCP proxying)
+ *
+ * All checks warn (except a missing local model, which blocks everything), so
+ * ordinary projects without the optional tooling still pass doctor.
+ */
+export function checkModelAccess(
+  root: string,
+  checkers: DoctorCheckers,
+  options: ModelAccessCheckOptions = {},
+  ecosystemChecks?: DoctorCheckResult[]
+): DoctorCheckResult[] {
+  const provider = options.provider || 'local'
+  const base = (id: string, name: string): Pick<DoctorCheckResult, 'id' | 'name' | 'category' | 'flavor'> =>
+    ({ id, name, category: 'model', flavor: 'both' })
+  const results: DoctorCheckResult[] = []
+
+  // 1. ma-model — is the configured model usable at all?
+  if (provider === 'local') {
+    const presetId = options.modelPresetId || 'qwen2.5-coder-1.5b'
+    if (checkers.hasModel(presetId)) {
+      results.push({ ...base('ma-model', 'Configured model'), status: 'ok', detail: `local ${presetId} downloaded — tool calling (run_agent) available` })
+    } else {
+      results.push({
+        ...base('ma-model', 'Configured model'),
+        status: 'missing',
+        detail: `local provider configured but ${presetId} is not downloaded — run_agent and intent detection fall back to echoing prompts`,
+        hint: 'Download the model: `vectalon pull` (or pick a remote provider with `vectalon init`)',
+      })
+    }
+  } else {
+    const apiKeyEnv = options.apiKeyEnv || (provider === 'openai' ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY')
+    if (checkers.env(apiKeyEnv)) {
+      results.push({ ...base('ma-model', 'Configured model'), status: 'ok', detail: `${provider} provider ready (${apiKeyEnv} set)` })
+    } else {
+      results.push({
+        ...base('ma-model', 'Configured model'),
+        status: 'warning',
+        detail: `${provider} provider configured but ${apiKeyEnv} is not set — tool calling will fail`,
+        hint: `Export ${apiKeyEnv} in your environment (or run \`vectalon init\` to switch to the local model)`,
+      })
+    }
+  }
+
+  // 2. ma-ecosystem — are any items enabled at all?
+  const config = readEcosystemConfig(root)
+  const enabled = listEcosystemItems().filter(i => config.enabled.includes(i.id))
+  if (enabled.length === 0) {
+    results.push({
+      ...base('ma-ecosystem', 'Ecosystem items enabled'),
+      status: 'warning',
+      detail: 'no ecosystem items enabled — the model has no MCP servers or skills to reach',
+      hint: 'Enable the recommended set: `vectalon ecosystem --enable <id>` (or `vectalon init`)',
+    })
+  } else {
+    const mcps = enabled.filter(i => i.category === 'mcp').length
+    const skills = enabled.filter(i => i.category === 'skill').length
+    results.push({
+      ...base('ma-ecosystem', 'Ecosystem items enabled'),
+      status: 'ok',
+      detail: `${enabled.length} enabled (${mcps} MCP, ${skills} skill, ${enabled.length - mcps - skills} tool/hook)`,
+    })
+  }
+
+  // 3. ma-skills — enabled skills must be installed for their contents to reach
+  //    the model (they are inlined into the system prompt).
+  const enabledSkills = enabled.filter(i => i.category === 'skill')
+  const installedSkills = enabledSkills.filter(i => skillInstallDirs(root, i).some(d => checkers.dirExists(d)))
+  if (enabledSkills.length === 0) {
+    results.push({ ...base('ma-skills', 'Skills installed'), status: 'ok', detail: 'no skills enabled (optional)' })
+  } else if (installedSkills.length === enabledSkills.length) {
+    results.push({
+      ...base('ma-skills', 'Skills installed'),
+      status: 'ok',
+      detail: `${installedSkills.length}/${enabledSkills.length} skills installed — their best practices are inlined into local prompts`,
+    })
+  } else {
+    const missing = enabledSkills.find(i => !installedSkills.includes(i))
+    results.push({
+      ...base('ma-skills', 'Skills installed'),
+      status: 'warning',
+      detail: `${installedSkills.length}/${enabledSkills.length} skills installed — uninstalled skills never reach the model`,
+      hint: missing ? `Install with: ${missing.install}` : 'Run the `npx skills add …` commands for each enabled skill',
+    })
+  }
+
+  // 4. ma-mcp — enabled MCP servers must be spawnable for the agent loop to
+  //    call them. Reuse the ecosystem doctor's per-item status when available
+  //    (avoids re-running npx probes).
+  const enabledMcps = enabled.filter(i => i.category === 'mcp')
+  const statusOf = (item: EcosystemItem): DoctorStatus =>
+    ecosystemChecks?.find(c => c.id === item.id)?.status ?? checkEcosystemItem(item, root, checkers).status
+  const reachableMcps = enabledMcps.filter(i => statusOf(i) === 'ok')
+  if (enabledMcps.length === 0) {
+    results.push({ ...base('ma-mcp', 'MCP servers reachable'), status: 'ok', detail: 'no MCP servers enabled (optional)' })
+  } else if (reachableMcps.length === enabledMcps.length) {
+    results.push({
+      ...base('ma-mcp', 'MCP servers reachable'),
+      status: 'ok',
+      detail: `${reachableMcps.length}/${enabledMcps.length} MCP servers reachable — the agent loop can call them`,
+    })
+  } else {
+    const missing = enabledMcps.find(i => statusOf(i) !== 'ok')
+    results.push({
+      ...base('ma-mcp', 'MCP servers reachable'),
+      status: 'warning',
+      detail: `${reachableMcps.length}/${enabledMcps.length} MCP servers reachable — the rest are skipped by run_agent`,
+      hint: missing ? `Install with: ${missing.install}` : 'Install each MCP server with its catalog install command',
+    })
+  }
+
+  return results
+}
+
 /**
  * Binaries that are installed globally / via gem / via curl (no npm package
  * resolvable from the project), probed by name with `--version` or `--help`.
@@ -322,6 +458,7 @@ export function runEcosystemDoctor(root: string, checkers: DoctorCheckers): Doct
     checks,
     toolchain: [],
     leaderboard: [],
+    model: [],
     enabledCount: enabled.length,
     okCount: checks.filter(c => c.status === 'ok').length,
     missingCount: checks.filter(c => c.status === 'missing').length,
@@ -506,20 +643,22 @@ export function checkNativeToolchain(
 }
 
 /** Run the full doctor: enabled ecosystem items + native toolchain +
- * nightly-leaderboard readiness. */
+ * nightly-leaderboard readiness + model access. */
 export function runDoctor(
   root: string,
   checkers: DoctorCheckers,
-  options?: ToolchainCheckOptions & LeaderboardCheckOptions
+  options?: ToolchainCheckOptions & LeaderboardCheckOptions & ModelAccessCheckOptions
 ): DoctorReport {
   const ecosystem = runEcosystemDoctor(root, checkers)
   const toolchain = checkNativeToolchain(root, checkers, options)
   const leaderboard = checkLeaderboardReadiness(root, checkers, options)
-  const all = [...ecosystem.checks, ...toolchain, ...leaderboard]
+  const model = checkModelAccess(root, checkers, options, ecosystem.checks)
+  const all = [...ecosystem.checks, ...toolchain, ...leaderboard, ...model]
   return {
     ...ecosystem,
     toolchain,
     leaderboard,
+    model,
     okCount: all.filter(c => c.status === 'ok').length,
     missingCount: all.filter(c => c.status === 'missing').length,
     warningCount: all.filter(c => c.status === 'warning').length,
@@ -667,7 +806,7 @@ export function runDoctorFixes(
   report: DoctorReport,
   fixer: DoctorFixer
 ): { attempts: FixAttempt[]; before: number; after: number } {
-  const all = [...report.checks, ...report.toolchain, ...report.leaderboard]
+  const all = [...report.checks, ...report.toolchain, ...report.leaderboard, ...report.model]
   const attempts: FixAttempt[] = []
 
   for (const check of all) {

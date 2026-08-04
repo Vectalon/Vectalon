@@ -1,4 +1,4 @@
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'fs'
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import {
@@ -7,8 +7,10 @@ import {
   checkEcosystemItem,
   checkNativeToolchain,
   checkLeaderboardReadiness,
+  checkModelAccess,
   fixForMissing,
   runDoctorFixes,
+  MODEL_ACCESS_ITEM_IDS,
   type DoctorCheckers,
   type DoctorFixer,
 } from '../../src/ecosystem'
@@ -359,6 +361,93 @@ describe('ecosystem doctor', () => {
       }))
       expect(report.leaderboard.map(c => c.id)).toEqual(['lb-openai-key', 'lb-anthropic-key', 'lb-local-model', 'lb-results-dir'])
       expect(report.missingCount).toBeGreaterThanOrEqual(1)
+    })
+  })
+
+  describe('model access', () => {
+    it('reports the local model as missing when it is not downloaded', () => {
+      const checks = checkModelAccess(dir, makeCheckers()) // hasModel: false, default provider local
+      const model = checks.find(c => c.id === 'ma-model')!
+      expect(model.status).toBe('missing')
+      expect(model.hint).toContain('vectalon pull')
+    })
+
+    it('reports the local model as OK when downloaded', () => {
+      const checks = checkModelAccess(dir, makeCheckers({ hasModel: () => true }))
+      expect(checks.find(c => c.id === 'ma-model')!.status).toBe('ok')
+    })
+
+    it('warns for a remote provider without its API key and passes with one', () => {
+      const without = checkModelAccess(dir, makeCheckers(), { provider: 'openai' })
+      const missing = without.find(c => c.id === 'ma-model')!
+      expect(missing.status).toBe('warning')
+      expect(missing.hint).toContain('OPENAI_API_KEY')
+
+      const withKey = checkModelAccess(dir, makeCheckers({ env: n => (n === 'OPENAI_API_KEY' ? 'sk-' : undefined) }), { provider: 'openai' })
+      expect(withKey.find(c => c.id === 'ma-model')!.status).toBe('ok')
+    })
+
+    it('warns when no ecosystem items are enabled', () => {
+      const checks = checkModelAccess(dir, makeCheckers({ hasModel: () => true }))
+      expect(checks.find(c => c.id === 'ma-ecosystem')!.status).toBe('warning')
+    })
+
+    it('reports enabled skills as OK only when their install dirs exist', () => {
+      const dirWithConfig = mkdtempSync(join(tmpdir(), 'vectalon-ma-'))
+      try {
+        mkdirSync(join(dirWithConfig, '.vectalon', 'skills', 'expo-router'), { recursive: true })
+        writeFileSync(join(dirWithConfig, '.vectalon', 'ecosystem.json'), JSON.stringify({ enabled: ['expo-router'] }))
+        const checkers = makeCheckers({ hasModel: () => true, dirExists: d => existsSync(d) })
+
+        const checks = checkModelAccess(dirWithConfig, checkers)
+        expect(checks.find(c => c.id === 'ma-skills')!.status).toBe('ok')
+      } finally {
+        rmSync(dirWithConfig, { recursive: true, force: true })
+      }
+    })
+
+    it('warns when an enabled skill is not installed', () => {
+      const dirWithConfig = mkdtempSync(join(tmpdir(), 'vectalon-ma-'))
+      try {
+        mkdirSync(join(dirWithConfig, '.vectalon'), { recursive: true })
+        writeFileSync(join(dirWithConfig, '.vectalon', 'ecosystem.json'), JSON.stringify({ enabled: ['expo-router'] }))
+        const checks = checkModelAccess(dirWithConfig, makeCheckers({ hasModel: () => true })) // dirExists: false
+        const skills = checks.find(c => c.id === 'ma-skills')!
+        expect(skills.status).toBe('warning')
+        expect(skills.hint).toContain('npx skills')
+      } finally {
+        rmSync(dirWithConfig, { recursive: true, force: true })
+      }
+    })
+
+    it('reports MCP reachability from the ecosystem checks when provided', () => {
+      const dirWithConfig = mkdtempSync(join(tmpdir(), 'vectalon-ma-'))
+      try {
+        mkdirSync(join(dirWithConfig, '.vectalon'), { recursive: true })
+        writeFileSync(join(dirWithConfig, '.vectalon', 'ecosystem.json'), JSON.stringify({ enabled: ['metro-mcp', 'expo-mcp'] }))
+        const checkers = makeCheckers({ hasModel: () => true })
+
+        // metro-mcp ok, expo-mcp missing — the summary warns and names one.
+        const checks = checkModelAccess(dirWithConfig, checkers, {}, [
+          { id: 'metro-mcp', status: 'ok' } as never,
+          { id: 'expo-mcp', status: 'missing' } as never,
+        ])
+        const mcps = checks.find(c => c.id === 'ma-mcp')!
+        expect(mcps.status).toBe('warning')
+        expect(mcps.detail).toContain('1/2')
+      } finally {
+        rmSync(dirWithConfig, { recursive: true, force: true })
+      }
+    })
+
+    it('exposes exactly the four model-access check ids', () => {
+      expect(MODEL_ACCESS_ITEM_IDS).toEqual(['ma-model', 'ma-ecosystem', 'ma-skills', 'ma-mcp'])
+    })
+
+    it('runDoctor includes the model section in its report', () => {
+      const report = runDoctor(dir, makeCheckers())
+      expect(report.model.map(c => c.id)).toEqual(['ma-model', 'ma-ecosystem', 'ma-skills', 'ma-mcp'])
+      expect(report.missingCount).toBeGreaterThanOrEqual(1) // ma-model missing
     })
   })
 

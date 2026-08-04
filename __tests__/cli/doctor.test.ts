@@ -102,6 +102,82 @@ describe('doctorCommand', () => {
     expect(out).toContain('Benchmark results directory')
   })
 
+  it('prints a model access section', () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    writeFileSync(join(dir, '.vectalon', 'ecosystem.json'), JSON.stringify({ version: '1.0.0', enabled: [] }))
+
+    let out = ''
+    jest.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+    jest.spyOn(process.stderr, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+
+    expect(() => doctorCommand(dir, { checkers: okCheckers() })).not.toThrow()
+    expect(out).toContain('Model access (tools / MCP / skills)')
+    expect(out).toContain('Configured model')
+    expect(out).toContain('Ecosystem items enabled')
+  })
+
+  it('model access reflects the provider declared in .vectalon/rn-vectalon.json', () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    writeFileSync(join(dir, '.vectalon', 'ecosystem.json'), JSON.stringify({ version: '1.0.0', enabled: [] }))
+    writeFileSync(
+      join(dir, '.vectalon', 'rn-vectalon.json'),
+      JSON.stringify({ modelProvider: 'openai', modelConfig: { modelName: 'gpt-4o-mini', apiKeyEnv: 'OPENAI_API_KEY' } })
+    )
+
+    let jsonOutput = ''
+    jest.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') jsonOutput += chunk
+      return true
+    })
+    const exit = jest.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('exit')
+    }) as unknown as (code?: string | number | null) => never)
+
+    // No OPENAI_API_KEY in the env -> ma-model warns (not missing, so exit 0).
+    try {
+      doctorCommand(dir, { json: true, checkers: okCheckers() }) // okCheckers.env -> undefined
+    } catch {
+      // no-op
+    }
+    const parsed = JSON.parse(jsonOutput) as { model: Array<{ id: string; status: string; detail: string }> }
+    const model = parsed.model.find(c => c.id === 'ma-model')!
+    expect(model.status).toBe('warning')
+    expect(model.detail).toContain('openai')
+    expect(model.detail).toContain('OPENAI_API_KEY')
+    expect(exit).toHaveBeenCalledWith(0)
+  })
+
+  it('--json report includes the model access section', () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    writeFileSync(join(dir, '.vectalon', 'ecosystem.json'), JSON.stringify({ version: '1.0.0', enabled: [] }))
+
+    let jsonOutput = ''
+    jest.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') jsonOutput += chunk
+      return true
+    })
+    const exit = jest.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('exit')
+    }) as unknown as (code?: string | number | null) => never)
+
+    try {
+      doctorCommand(dir, { json: true, checkers: okCheckers() })
+    } catch {
+      // no-op: exit mocked to throw
+    }
+    const parsed = JSON.parse(jsonOutput) as { model: Array<{ id: string; status: string }> }
+    expect(parsed.model.map(c => c.id)).toEqual(['ma-model', 'ma-ecosystem', 'ma-skills', 'ma-mcp'])
+    // ma-model is ok (okCheckers.hasModel -> true); warnings don't exit non-zero.
+    expect(parsed.model.find(c => c.id === 'ma-model')!.status).toBe('ok')
+    expect(exit).toHaveBeenCalledWith(0)
+  })
+
   it('includes leaderboard checks in the --json report and honors a custom model id', () => {
     mkdirSync(join(dir, '.vectalon'), { recursive: true })
     writeFileSync(join(dir, '.vectalon', 'ecosystem.json'), JSON.stringify({ version: '1.0.0', enabled: [] }))
