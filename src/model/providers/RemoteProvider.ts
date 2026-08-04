@@ -1,6 +1,19 @@
 import type { ModelRequest, ModelResponse } from '../types'
 import { getConfig } from '../../config'
+import { buildSkillsSystemPrompt, enrichWithSkills } from '../../ecosystem/skills'
 import type { ProjectModelConfig } from '../setup'
+
+export interface RemoteProviderOptions {
+  /**
+   * Project root — when set, enabled ecosystem skills
+   * (.vectalon/skills/<id>/SKILL.md) are inlined into the system prompt of
+   * every remote generation, mirroring the local provider.
+   */
+  projectRoot?: string
+  /** Injectable skills-to-system-prompt builder (defaults to the ecosystem
+   * loader). Tests inject a stub to verify the wiring without touching disk. */
+  skillsLoader?: (root: string, systemPrompt?: string) => string | undefined
+}
 
 interface OpenAIResponse {
   choices?: { message?: { content?: string } }[]
@@ -28,13 +41,17 @@ export class RemoteProvider {
   private apiKey: string
   private modelName: string
   private baseUrl: string
+  private readonly projectRoot?: string
+  private readonly skillsLoader: (root: string, systemPrompt?: string) => string | undefined
 
   /**
    * @param config project-level overrides from .vectalon/rn-vectalon.json
    *   (set by `vectalon init`) — modelName to use and which env var holds the
    *   API key. Falls back to the global config, then provider defaults.
+   * @param options project root + injectable skills loader so remote
+   *   generations follow the project's enabled skills like the local model.
    */
-  constructor(provider: string, config?: ProjectModelConfig) {
+  constructor(provider: string, config?: ProjectModelConfig, options: RemoteProviderOptions = {}) {
     this.provider = provider
     const providerConfig = PROVIDER_CONFIGS[provider]
     if (!providerConfig) throw new Error(`Unknown provider: ${provider}`)
@@ -44,11 +61,16 @@ export class RemoteProvider {
     this.modelName = config?.modelName || globalConfig?.modelName || providerConfig.defaultModel
     const keyEnv = config?.apiKeyEnv || `${provider.toUpperCase()}_API_KEY`
     this.apiKey = globalConfig?.apiKey || process.env[keyEnv] || ''
+    this.projectRoot = options.projectRoot
+    this.skillsLoader = options.skillsLoader || buildSkillsSystemPrompt
   }
 
   async generate(request: ModelRequest): Promise<ModelResponse> {
     const context = request.context ? `\nContext:\n${request.context}\n` : ''
-    const systemPrompt = request.systemPrompt || 'You are an expert React Native developer assistant.'
+    const baseSystem = request.systemPrompt || 'You are an expert React Native developer assistant.'
+    // Enrich with the project's enabled skills (mirrors LocalProvider) so
+    // remote generations follow the same best-practice guidance.
+    const systemPrompt = enrichWithSkills(this.projectRoot, this.skillsLoader, baseSystem) ?? baseSystem
     const fullPrompt = `${context}${request.prompt}`
 
     if (this.provider === 'openai') {

@@ -182,6 +182,21 @@ export function buildSkillsSystemPrompt(
   return `${systemPrompt}\n\n${section}`
 }
 
+/**
+ * Apply the skills loader when a project root is set; otherwise return the
+ * system prompt unchanged. Shared by the local and remote providers so the
+ * enrichment behavior stays in lockstep (and the loader's fallback contract
+ * is enforced in one place).
+ */
+export function enrichWithSkills(
+  projectRoot: string | undefined,
+  skillsLoader: (root: string, systemPrompt?: string) => string | undefined,
+  systemPrompt?: string
+): string | undefined {
+  if (!projectRoot) return systemPrompt
+  return skillsLoader(projectRoot, systemPrompt) ?? systemPrompt
+}
+
 export interface SkillsPreviewOptions {
   /** Content lines shown per skill (default 6). */
   linesPerSkill?: number

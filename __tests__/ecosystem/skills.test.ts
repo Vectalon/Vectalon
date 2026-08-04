@@ -4,6 +4,7 @@ import {
   formatSkillsContext,
   formatSkillsPreview,
   buildSkillsSystemPrompt,
+  enrichWithSkills,
 } from '../../src/ecosystem/skills'
 import { getEcosystemItem } from '../../src/ecosystem'
 import { createTempProject, cleanup } from '../helpers/tmp'
@@ -181,6 +182,20 @@ describe('formatSkillsPreview', () => {
 
   it('returns an empty string for no skills', () => {
     expect(formatSkillsPreview([])).toBe('')
+  })
+})
+
+describe('enrichWithSkills', () => {
+  it('applies the loader only when a project root is set', () => {
+    const loader = jest.fn((_root: string, base?: string) => `enriched: ${base}`)
+    expect(enrichWithSkills('/project', loader, 'base')).toBe('enriched: base')
+    expect(loader).toHaveBeenCalledWith('/project', 'base')
+    expect(enrichWithSkills(undefined, loader, 'base')).toBe('base')
+    expect(loader).toHaveBeenCalledTimes(1)
+  })
+
+  it('falls back to the base prompt when the loader returns undefined', () => {
+    expect(enrichWithSkills('/project', () => undefined, 'base')).toBe('base')
   })
 })
 

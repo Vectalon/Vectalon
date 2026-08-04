@@ -155,13 +155,13 @@ export async function featureCommand(
   // the system prompt of every local generation (incl. intent detection).
   modelRouter.initialize({ provider, modelName: modelConfig?.modelName, apiKeyEnv: modelConfig?.apiKeyEnv, projectRoot: root })
 
-  // Audit the guidance the local model will actually receive: print the
-  // inlined skills (truncated to a few lines per skill) so users can see what
-  // best-practice content is in the system prompt.
-  if (provider === 'local' && !options.json) {
+  // Audit the guidance the model will actually receive: print the inlined
+  // skills (truncated to a few lines per skill) so users can see what
+  // best-practice content is in the system prompt (local and remote alike).
+  if (!options.json) {
     const skills = readEnabledSkills(root)
     if (skills.length > 0) {
-      log.info(pc.dim(`Inlined ${skills.length} project skill(s) into the local model prompt:`))
+      log.info(pc.dim(`Inlined ${skills.length} project skill(s) into the model prompt:`))
       for (const line of formatSkillsPreview(skills).split('\n')) {
         log.info(pc.dim(line))
       }

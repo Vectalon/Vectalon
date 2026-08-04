@@ -21,6 +21,7 @@ export {
   formatSkillsContext,
   formatSkillsPreview,
   buildSkillsSystemPrompt,
+  enrichWithSkills,
 } from './skills'
 export type { SkillSource, SkillsContextOptions, SkillsPreviewOptions } from './skills'
 export {

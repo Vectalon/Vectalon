@@ -1,6 +1,6 @@
 import { RemoteProvider } from '../../src/model/providers/RemoteProvider'
 import { setConfig, resetConfig } from '../../src/config'
-import { useTempConfig, cleanup } from '../helpers/tmp'
+import { createTempProject, useTempConfig, cleanup } from '../helpers/tmp'
 
 describe('RemoteProvider', () => {
   const originalFetch = global.fetch
@@ -58,6 +58,56 @@ describe('RemoteProvider', () => {
     mockFetchResponse({ error: 'bad key' }, false, 401, 'Unauthorized')
     const provider = new RemoteProvider('openai')
     await expect(provider.generate({ prompt: 'hi' })).rejects.toThrow('OpenAI API error: 401 Unauthorized')
+  })
+
+  it('inlines enabled project skills into the OpenAI system message', async () => {
+    const dir = createTempProject({
+      '.vectalon/ecosystem.json': JSON.stringify({ enabled: ['expo-router'] }),
+      '.vectalon/skills/expo-router/SKILL.md': 'ALWAYS use file-based routes with typed routes enabled.',
+    })
+    try {
+      mockFetchResponse({ choices: [{ message: { content: 'ok' } }] })
+
+      const provider = new RemoteProvider('openai', undefined, { projectRoot: dir })
+      await provider.generate({ prompt: 'build a screen', systemPrompt: 'be concise' })
+
+      const [, init] = (global.fetch as jest.Mock).mock.calls[0]
+      const body = JSON.parse(init.body)
+      const system = body.messages.find((m: { role: string }) => m.role === 'system')
+      expect(system.content).toContain('be concise')
+      expect(system.content).toContain('## Enabled project skills (best practices)')
+      expect(system.content).toContain('ALWAYS use file-based routes with typed routes enabled.')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('uses an injected skills loader for Anthropic', async () => {
+    mockFetchResponse({ content: [{ text: 'ok' }] })
+
+    const provider = new RemoteProvider('anthropic', undefined, {
+      projectRoot: '/tmp/irrelevant',
+      skillsLoader: (_root, systemPrompt) => `${systemPrompt}\n\n## Injected skills\n\nCUSTOM SKILL GUIDANCE`,
+    })
+    await provider.generate({ prompt: 'hi', systemPrompt: 'base' })
+
+    const [, init] = (global.fetch as jest.Mock).mock.calls[0]
+    const body = JSON.parse(init.body)
+    expect(body.system).toContain('CUSTOM SKILL GUIDANCE')
+    expect(body.system).toContain('base')
+  })
+
+  it('does not load skills without a projectRoot', async () => {
+    mockFetchResponse({ choices: [{ message: { content: 'ok' } }] })
+
+    const provider = new RemoteProvider('openai')
+    await provider.generate({ prompt: 'hi', systemPrompt: 'base' })
+
+    const [, init] = (global.fetch as jest.Mock).mock.calls[0]
+    const body = JSON.parse(init.body)
+    const system = body.messages.find((m: { role: string }) => m.role === 'system')
+    expect(system.content).toBe('base')
+    expect(system.content).not.toContain('## Enabled project skills')
   })
 
   it('calls the Anthropic messages endpoint', async () => {
