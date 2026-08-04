@@ -268,14 +268,15 @@ fragment for agents that manage their own MCP server list.)
 log with `(already enabled)` markers when the flavor recommendations already
 covered it.
 
-**Enabled skills also feed the local model.** When a skill is installed
+**Enabled skills also feed the model.** When a skill is installed
 (`.vectalon/skills/<id>/SKILL.md` or `.agents/skills/<id>/SKILL.md`) and enabled,
-its best-practice content is inlined into the system prompt of every **local**
-generation — intent detection, implementation, MCP tools, and fixes — so the
-local LLM follows the same guidance external agents load from the skills
-(capped at 4k chars per skill, 8 skills, 16k total). `vectalon feature` prints the
-**inlined skills audit** — how many skills were inlined plus the first few lines
-of each — so you can see exactly what guidance the local model received.
+its best-practice content is inlined into the system prompt of every generation
+— intent detection, implementation, MCP tools, and fixes — for both the **local**
+Qwen model and the **remote** OpenAI/Anthropic providers, so every model follows
+the same guidance external agents load from the skills (capped at 4k chars per
+skill, 8 skills, 16k total). `vectalon feature` prints the **inlined skills
+audit** — how many skills were inlined plus the first few lines of each — so you
+can see exactly what guidance the model received.
 
 ### Ecosystem Doctor
 

@@ -22,6 +22,8 @@ export class ModelRouter {
       this.remoteProviders.set(this.provider, new RemoteProvider(this.provider, {
         modelName: config?.modelName,
         apiKeyEnv: config?.apiKeyEnv,
+      }, {
+        projectRoot: config?.projectRoot,
       }))
     }
   }

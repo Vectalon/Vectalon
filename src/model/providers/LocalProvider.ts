@@ -2,7 +2,7 @@ import type { ModelRequest, ModelResponse } from '../types'
 import { getDefaultPreset } from '../local/presets'
 import { runInference } from '../local/inference'
 import { hasDownloadedModel } from '../local/ModelStore'
-import { buildSkillsSystemPrompt } from '../../ecosystem/skills'
+import { buildSkillsSystemPrompt, enrichWithSkills } from '../../ecosystem/skills'
 import { TOOL_CALL_SCHEMA } from '../toolCalling'
 
 export interface LocalProviderOptions {
@@ -38,9 +38,7 @@ export class LocalProvider {
     // Enrich the system prompt with the project's enabled skills when we know
     // the project root. The enriched prompt flows to both the real inference
     // path and the no-model fallback so the skills are always visible.
-    const systemPrompt = this.projectRoot
-      ? this.skillsLoader(this.projectRoot, request.systemPrompt)
-      : request.systemPrompt
+    const systemPrompt = enrichWithSkills(this.projectRoot, this.skillsLoader, request.systemPrompt)
 
     const preset = getDefaultPreset()
     if (hasDownloadedModel(preset.id)) {
