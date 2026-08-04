@@ -38,6 +38,10 @@ export interface BenchScenario {
   /** When true, the deterministic scaffold baseline can generate output for
    * this scenario; when false the scenario is model-only. */
   scaffoldable: boolean
+  /** Package names this scenario removes (dependency-removal evals). The
+   * `no-removed-native-traces` rubric check scores generated native config
+   * against these. */
+  removedDependencies?: string[]
   /** Files written into the throwaway temp project before generation. */
   fixtures: Record<string, string>
   expect: BenchScenarioExpect
@@ -190,6 +194,16 @@ export function validateScenario(raw: unknown): string[] {
     const valid: BenchAxes[] = ['correctness', 'adherence', 'guardrails']
     for (const axis of s.axes) {
       if (!valid.includes(axis as BenchAxes)) problems.push(`unknown axis: ${String(axis)}`)
+    }
+  }
+
+  if (s.removedDependencies !== undefined) {
+    if (
+      !Array.isArray(s.removedDependencies) ||
+      s.removedDependencies.length === 0 ||
+      s.removedDependencies.some(d => typeof d !== 'string' || !d.trim())
+    ) {
+      problems.push('removedDependencies must be a non-empty string array when present')
     }
   }
 

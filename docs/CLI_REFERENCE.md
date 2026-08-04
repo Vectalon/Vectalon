@@ -280,7 +280,7 @@ npx vectalon bench                          # deterministic baseline (offline)
 npx vectalon bench --suite data-flow        # only the data-flow suite
 npx vectalon bench --live                   # run real tests/typecheck/lint
 npx vectalon bench --live --install         # ... installing deps in each temp project first
-npx vectalon bench --model local            # real-model leaderboard (all 10)
+npx vectalon bench --model local            # real-model leaderboard (all 11)
 npx vectalon bench --model openai --json    # JSON summary for tooling
 npx vectalon bench -o report.md             # write the report to a file
 npx vectalon bench --scenarios ./my-evals   # run your own custom eval pack
@@ -327,7 +327,7 @@ npx vectalon bench --json -o bench/baseline.json
   typed navigation, secure forms, offline queues, image feeds, feature flags,
   accessible forms, hooks refactors, …)
 - Scores on three axes: **correctness** (real test/typecheck/lint with
-  `--live`), a **15-check best-practice rubric**, and the **guardrail rules**
+  `--live`), a **16-check best-practice rubric**, and the **guardrail rules**
 - Reports scores **relative to the human reference solutions**
 
 **Exit codes**

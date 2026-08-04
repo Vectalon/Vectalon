@@ -22,8 +22,8 @@
 
 | Milestone | Status |
 |---|---|
-| M1 — Scenario spec + 10 scenarios + deterministic baseline runner | ✅ Delivered (`src/bench/loader.ts` + `snapshot.ts`, `bench/scenarios/`)
-| M2 — Rubric (15 checks) + scoring + report | ✅ Delivered (`src/bench/rubric.ts`, `scoring.ts`, `report.ts`)
+| M1 — Scenario spec + 11 scenarios + deterministic baseline runner | ✅ Delivered (`src/bench/loader.ts` + `snapshot.ts`, `bench/scenarios/`)
+| M2 — Rubric (16 checks) + scoring + report | ✅ Delivered (`src/bench/rubric.ts`, `scoring.ts`, `report.ts`)
 | M3 — `vectalon bench` CLI + `--suite`/`--model`/`--live` flags | ✅ Delivered (`src/cli/commands/bench.ts`)
 | M4 — CI deterministic baseline + PR gate | ✅ Delivered (`bench/baseline.json`, `--baseline`/`--tolerance`, `.github/workflows/ci.yml` `bench` job)| M5 — Public leaderboard (scheduled real-model pass, `BENCHMARK_RESULTS.md`) | ✅ Delivered (`src/bench/leaderboard.ts`, `vectalon leaderboard`, `.github/workflows/leaderboard.yml`) | M6 — Reference solutions + relative-to-human scoring | ✅ Delivered (`bench/references/`, `src/bench/references.ts`)
 
@@ -90,8 +90,15 @@ these assert *positive* best practices, not just absence of violations):
 13. Colors/tokens come from the design system, not hardcoded hex literals
 14. Deep links are declared and handled via a routing table, not ad-hoc
 15. Data fetching has loading / empty / error states
+16. Removed dependencies leave no pod/gradle/manifest traces (native equivalent of the
+    JS reference-scan; scenarios declare `removedDependencies`, N/A otherwise)
 
 `adherence = applicableChecksPassed / applicableChecksTotal`.
+
+Check 16 scores the **native config files the generator emits** (Podfile, gradle,
+manifest, plist, pbxproj): a removal eval must return the *edited* native files
+for the check to apply — a generator that emits no native config earns no credit
+on this axis either way (its correctness/guardrail axes still score).
 
 ### Axis 3 — Guardrail pass rate (weight 0.3)
 
@@ -117,13 +124,13 @@ Scenarios are grouped into **suites** (e.g. `core-ui`, `data-flow`,
 
 ```
 bench/
-  scenarios/                    # one JSON file per scenario (rn-01 … rn-10)
+  scenarios/                    # one JSON file per scenario (rn-01 … rn-11)
   references/                   # human-authored reference solutions (M6)
 
 src/bench/
   loader.ts          # versioned scenario-spec load + validation
   runner.ts          # orchestration: fixtures → generate → score → report
-  rubric.ts          # the 15 RN best-practice checks (regex/AST-lite)
+  rubric.ts          # the 16 RN best-practice checks (regex/AST-lite)
   scoring.ts         # composite math + suite aggregation
   report.ts          # markdown/JSON leaderboard output
   modelGenerate.ts   # ModelRouter generate seam (--model/--live pass)
@@ -143,6 +150,7 @@ src/cli/commands/bench.ts       # `vectalon bench [--model …] [--suite core-ui
   "suite": "forms-security",
   "title": "Login screen with auth API",
   "prompt": "Create a login screen that calls POST /auth/login ...",
+  "removedDependencies": ["appcenter"],   // optional: dependency-removal evals
   "fixtures": {
     "package.json": "{ ... }",        // deps the scenario needs
     "src/config/api.ts": "export const API_BASE_URL = ...",
@@ -169,7 +177,8 @@ feature" trio, so the **no-model baseline covers the scaffold-able subset** —
 `rn-01` (login), `rn-02` (FlatList fetch), `rn-05` (form validation), `rn-06`
 (offline queue). The remaining scenarios (`rn-03` dark-mode tokens, `rn-04`
 typed navigation, `rn-07` image feed, `rn-08` feature flags, `rn-09` accessible
-form, `rn-10` refactor-to-hooks) are **model-only** and reported separately so
+form, `rn-10` refactor-to-hooks, `rn-11` dependency-removal-with-native-cleanup)
+are **model-only** and reported separately so
 their scores are never confused with scaffold quality. The scaffold-able subset
 is the CI regression gate; model-only scenarios gate on the real-model
 leaderboard.
@@ -179,7 +188,7 @@ change must move the benchmark — a PR that improves `no-inline-styles` should
 raise adherence on `core-ui` scenarios; a PR that breaks typecheck detection
 must show up here.
 
-## 4. The first 10 eval scenarios
+## 4. The first 11 eval scenarios
 
 | # | ID | Suite | Prompt (abridged) | Checks the generated code must pass |
 |---|---|---|---|---|
@@ -193,10 +202,11 @@ must show up here.
 | 8 | `rn-08-feature-flags` | core-ui | A feature-flag wrapper component and hook | config-driven flags (no hardcoded URLs), typed props, no `any`, proper hook deps, named export |
 | 9 | `rn-09-accessible-form` | a11y | A fully screen-reader-friendly onboarding form | `accessibilityLabel`/`role`/`state` on every interactive element, `accessibilityHint`, focus handling, `KeyboardAvoidingView` |
 | 10 | `rn-10-refactor-hooks-ts` | refactor | Convert a class/JS component to typed hooks | no unused imports, no `any`, named export, explicit return types, strict equality, no `var`, typecheck + lint pass |
+| 11 | `rn-11-remove-dependency-native` | refactor | Remove a dependency with full native cleanup (Podfile, settings.gradle, manifest) | no appcenter in `package.json`, no appcenter pod, no appcenter gradle include, no appcenter manifest provider (the `no-removed-native-traces` rubric check) |
 
 **Baseline mode:** `rn-01`, `rn-02`, `rn-05`, `rn-06` run with the deterministic
 scaffold (no model) as the CI regression gate; `rn-03`, `rn-04`, `rn-07`,
-`rn-08`, `rn-09`, `rn-10` are model-only.
+`rn-08`, `rn-09`, `rn-10`, `rn-11` are model-only.
 
 Each scenario ships with a **reference solution** (human-authored) so scores can
 also be reported as **relative to the human baseline** (e.g. "generated code is
@@ -236,8 +246,8 @@ what "passing" means.
 
 | Milestone | Deliverable | Status |
 |---|---|---|
-| M1 | Scenario spec + 10 scenarios + deterministic baseline runner | ✅ Delivered |
-| M2 | Rubric (15 checks) + scoring + markdown report | ✅ Delivered |
+| M1 | Scenario spec + 11 scenarios + deterministic baseline runner | ✅ Delivered |
+| M2 | Rubric (16 checks) + scoring + markdown report | ✅ Delivered |
 | M3 | `vectalon bench` CLI + `--suite`/`--model`/`--live` flags | ✅ Delivered |
 | M4 | CI deterministic baseline + PR gate | ✅ Delivered (committed `bench/baseline.json` + `--baseline` flag + CI job) |
 | M5 | Public leaderboard (scheduled real-model pass, BENCHMARK_RESULTS.md) | ✅ Delivered (`src/bench/leaderboard.ts`, `vectalon leaderboard`, `.github/workflows/leaderboard.yml`) |

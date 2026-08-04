@@ -35,17 +35,17 @@ const checkById = (id: string): RubricCheck => {
 }
 
 describe('rubric check inventory', () => {
-  it('has exactly 15 checks with unique ids', () => {
-    expect(rubricChecks.length).toBe(15)
+  it('has exactly 16 checks with unique ids', () => {
+    expect(rubricChecks.length).toBe(16)
     const ids = rubricChecks.map(c => c.id)
-    expect(new Set(ids).size).toBe(15)
+    expect(new Set(ids).size).toBe(16)
     for (const c of rubricChecks) {
       expect(c.name).toBeTruthy()
       expect(c.description).toBeTruthy()
     }
   })
 
-  it('covers the plan items 1-15', () => {
+  it('covers the plan items 1-16', () => {
     const ids = rubricChecks.map(c => c.id).sort()
     expect(ids).toContain('keyboard-avoiding-view')
     expect(ids).toContain('virtualized-lists')
@@ -62,6 +62,7 @@ describe('rubric check inventory', () => {
     expect(ids).toContain('design-tokens')
     expect(ids).toContain('deep-links')
     expect(ids).toContain('fetch-states')
+    expect(ids).toContain('no-removed-native-traces')
   })
 })
 
@@ -202,6 +203,82 @@ describe('rubric per-check behavior', () => {
     const good = tsxFile("export function F() { const { data, isLoading, isError } = useQuery('k', fetchData); return isLoading ? <Spinner/> : data.length === 0 ? <Empty/> : isError ? <ErrorView/> : <List/>; }")
     expect(check.check({ filePath: bad.path, content: bad.content }).passed).toBe(false)
     expect(check.check({ filePath: good.path, content: good.content }).passed).toBe(true)
+  })
+
+  it('no-removed-native-traces: fails native config that still references a removed dependency', () => {
+    const check = checkById('no-removed-native-traces')
+    const opts = { filePath: 'ios/Podfile', content: "pod 'AppCenter', :path => '../node_modules/appcenter/ios'\npod 'React', :path => '../node_modules/react-native/ReactCommon'\n", removedDependencies: ['appcenter'] }
+    const result = check.check(opts)
+    expect(result.passed).toBe(false)
+    expect(result.message).toContain('appcenter')
+    expect(result.line).toBe(1)
+  })
+
+  it('no-removed-native-traces: fails gradle includes, maven deps, and manifest providers', () => {
+    const check = checkById('no-removed-native-traces')
+    const settings = check.check({ filePath: 'android/settings.gradle', content: "include ':app'\ninclude ':appcenter'\n", removedDependencies: ['appcenter'] })
+    const build = check.check({ filePath: 'android/app/build.gradle', content: "dependencies {\n  implementation 'com.microsoft.appcenter:appcenter:5.0.3'\n}\n", removedDependencies: ['appcenter'] })
+    const manifest = check.check({ filePath: 'android/app/src/main/AndroidManifest.xml', content: '<provider android:name="com.microsoft.appcenter.utils.AppCenterInitializer" />\n', removedDependencies: ['appcenter'] })
+    expect(settings.passed).toBe(false)
+    expect(build.passed).toBe(false)
+    expect(manifest.passed).toBe(false)
+  })
+
+  it('no-removed-native-traces: passes clean config and is N/A without removedDependencies or on JS files', () => {
+    const check = checkById('no-removed-native-traces')
+    const cleanPodfile = check.check({ filePath: 'ios/Podfile', content: "pod 'React', :path => '../node_modules/react-native/ReactCommon'\n", removedDependencies: ['appcenter'] })
+    expect(cleanPodfile.passed).toBe(true)
+
+    // No removed dependencies declared → not applicable.
+    expect(check.applicable ? check.applicable({ filePath: 'ios/Podfile', content: "pod 'AppCenter'\n" }) : false).toBe(false)
+    // JS files are not native config → never applicable.
+    expect(check.applicable ? check.applicable({ filePath: 'src/App.tsx', content: "import AppCenter from 'appcenter';\n", removedDependencies: ['appcenter'] }) : false).toBe(false)
+    // Comment mentions don't count as traces.
+    const commented = check.check({ filePath: 'ios/Podfile', content: "# pod 'AppCenter' removed\npod 'React', :path => '../node_modules/react-native/ReactCommon'\n", removedDependencies: ['appcenter'] })
+    expect(commented.passed).toBe(true)
+  })
+
+  it('no-removed-native-traces: skips block-comment continuation lines mentioning the dep', () => {
+    const check = checkById('no-removed-native-traces')
+    const gradle = [
+      '/*',
+      'this comment mentions appcenter',
+      '*/',
+      'dependencies {',
+      "  implementation 'com.example:ghostlib:1.0.0'",
+      '}',
+    ].join('\n')
+    const commented = check.check({ filePath: 'android/app/build.gradle', content: gradle, removedDependencies: ['appcenter'] })
+    expect(commented.passed).toBe(true)
+
+    const xml = [
+      '<!--',
+      '  appcenter provider removed by cleanup',
+      '-->',
+      '<provider android:name="com.example.Other" />',
+    ].join('\n')
+    const xmlCommented = check.check({ filePath: 'android/app/src/main/AndroidManifest.xml', content: xml, removedDependencies: ['appcenter'] })
+    expect(xmlCommented.passed).toBe(true)
+
+    // A real trace outside comments still fails.
+    const realTrace = check.check({ filePath: 'android/app/build.gradle', content: "dependencies {\n  implementation 'com.microsoft.appcenter:appcenter:5.0.3'\n}\n", removedDependencies: ['appcenter'] })
+    expect(realTrace.passed).toBe(false)
+  })
+
+  it('runRubric threads removedDependencies into the native-traces check', () => {
+    const dirty = runRubric(
+      [{ path: 'ios/Podfile', content: "pod 'AppCenter', :path => '../node_modules/appcenter/ios'\n" }],
+      { removedDependencies: ['appcenter'] }
+    )
+    expect(dirty.overall).toBe(0)
+    expect(dirty.files[0].failed).toBe(1)
+    expect(dirty.files[0].checks[0].id).toBe('no-removed-native-traces')
+
+    const clean = runRubric(
+      [{ path: 'ios/Podfile', content: "pod 'React', :path => '../node_modules/react-native/ReactCommon'\n" }],
+      { removedDependencies: ['appcenter'] }
+    )
+    expect(clean.overall).toBe(1)
   })
 })
 

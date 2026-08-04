@@ -90,12 +90,15 @@ async function runLiveCorrectness(
 /** Score a set of files on the non-live axes (adherence + guardrails). */
 function scoreFilesOffline(
   files: BenchGeneratedFile[],
-  options: BenchRunOptions
+  options: BenchRunOptions,
+  removedDependencies?: string[]
 ): { axes: BenchAxisScores; composite: number | null } {
   const guardrails = guardrailPassRate(files)
   let adherence: number | null = null
   if (files.length > 0) {
-    adherence = options.rubric ? options.rubric(files) : rubricAdherence(files)
+    adherence = options.rubric
+      ? options.rubric(files)
+      : rubricAdherence(files, { removedDependencies })
   }
   const axes = { correctness: null, adherence, guardrails }
   return { axes, composite: compositeScore(axes) }
@@ -104,6 +107,7 @@ function scoreFilesOffline(
 export async function runScenario(scenario: BenchScenario, options: BenchRunOptions = {}): Promise<BenchScenarioRun> {
   const generate = options.generate || deterministicGenerate
   const files = await generate(scenario)
+  const removedDependencies = scenario.removedDependencies
 
   const guardrail = guardrailPerFile(files)
   const guardrails = guardrailPassRate(files)
@@ -132,7 +136,9 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
 
   let adherence: number | null = null
   if (files.length > 0) {
-    adherence = options.rubric ? options.rubric(files) : rubricAdherence(files)
+    adherence = options.rubric
+      ? options.rubric(files)
+      : rubricAdherence(files, { removedDependencies })
   }
 
   const axes = { correctness, adherence, guardrails }
@@ -142,7 +148,7 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
   const referenceFiles = options.references?.[scenario.id]
   let reference: BenchScenarioRun['reference']
   if (referenceFiles && referenceFiles.length > 0) {
-    const ref = scoreFilesOffline(referenceFiles, options)
+    const ref = scoreFilesOffline(referenceFiles, options, removedDependencies)
     const relative = relativeToReference(axes, composite, ref.axes, ref.composite)
     reference = {
       files: referenceFiles.map(f => f.path),
@@ -248,7 +254,7 @@ export async function runBenchmark(scenarios: BenchScenario[], options: BenchRun
  * - The deterministic baseline (no `generate` seam and no `modelRouter`) scores
  *   only the scaffold-able subset (rn-01/02/05/06).
  * - Passing `modelRouter` (M5) builds a ModelRouter-backed generate seam so all
- *   10 scenarios run through the real model (the leaderboard pass).
+ *   11 scenarios run through the real model (the leaderboard pass).
  * - Human references (M6) are loaded from `referencesDir` (default
  *   bench/references) and scored relative-to-human per run.
  */
