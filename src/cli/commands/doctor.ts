@@ -4,9 +4,10 @@ import { spawnSync } from 'child_process'
 import Table from 'cli-table'
 import pc from 'picocolors'
 import { logger } from '../logger'
-import { runDoctor, runDoctorFixes, type DoctorCheckers, type DoctorFixer, type FixAttempt, type ToolchainCheckOptions, type LeaderboardCheckOptions } from '../../ecosystem'
+import { runDoctor, runDoctorFixes, type DoctorCheckers, type DoctorFixer, type FixAttempt, type ToolchainCheckOptions, type LeaderboardCheckOptions, type ModelAccessCheckOptions } from '../../ecosystem'
 import { hasDownloadedModel } from '../../model/local/ModelStore'
 import { getDefaultPreset } from '../../model/local/presets'
+import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
 
 export interface DoctorOptions {
   json?: boolean
@@ -20,6 +21,8 @@ export interface DoctorOptions {
   toolchain?: ToolchainCheckOptions
   /** Overrides for nightly-leaderboard readiness (e.g. a custom local model). */
   leaderboard?: LeaderboardCheckOptions
+  /** Overrides for model-access checks (e.g. a custom provider/preset). */
+  model?: ModelAccessCheckOptions
 }
 
 /**
@@ -140,7 +143,17 @@ export function doctorCommand(directory: string, options: DoctorOptions): void {
   const hasEcosystem = existsSync(resolve(root, '.vectalon', 'ecosystem.json'))
   const checkers = options.checkers || realCheckers(root)
   const leaderboardOptions = { localModelPresetId: getDefaultPreset().id, ...(options.leaderboard || {}) }
-  const doctorOptions = { ...(options.toolchain || {}), ...leaderboardOptions }
+  // The configured model provider comes from .vectalon/rn-vectalon.json (set by
+  // `vectalon init`); the doctor warns when that model can't reach tools.
+  const resolvedProvider = resolveProjectModelProvider(root) as 'local' | 'openai' | 'anthropic'
+  const projectModelConfig = resolveProjectModelConfig(root)
+  const modelOptions: ModelAccessCheckOptions = {
+    provider: resolvedProvider,
+    modelPresetId: getDefaultPreset().id,
+    ...(projectModelConfig?.apiKeyEnv ? { apiKeyEnv: projectModelConfig.apiKeyEnv } : {}),
+    ...(options.model || {}),
+  }
+  const doctorOptions = { ...(options.toolchain || {}), ...leaderboardOptions, ...modelOptions }
   let report = runDoctor(root, checkers, doctorOptions)
 
   if (options.fix && report.missingCount > 0) {
@@ -166,7 +179,7 @@ export function doctorCommand(directory: string, options: DoctorOptions): void {
     logger.warn('No ecosystem items enabled. Run `vectalon ecosystem --enable <id>` to opt in.')
   }
 
-  logger.info(pc.bold(`vectalon doctor — ${report.enabledCount} enabled ecosystem item(s) + native toolchain + nightly leaderboard`))
+  logger.info(pc.bold(`vectalon doctor — ${report.enabledCount} enabled ecosystem item(s) + native toolchain + nightly leaderboard + model access`))
   logger.info('')
 
   if (report.checks.length > 0) {
@@ -216,6 +229,22 @@ export function doctorCommand(directory: string, options: DoctorOptions): void {
   }
 
   process.stdout.write(leaderboardTable.toString() + '\n')
+  logger.info('')
+
+  logger.info(pc.bold('Model access (tools / MCP / skills)'))
+  const modelTable = new Table({
+    head: ['Status', 'Check', 'Detail', 'Hint'],
+    style: { head: ['cyan'] },
+    colWidths: [10, 26, 56, 46],
+  })
+
+  for (const check of report.model) {
+    const statusColor =
+      check.status === 'ok' ? pc.green('OK') : check.status === 'missing' ? pc.red('MISSING') : pc.yellow('WARN')
+    modelTable.push([statusColor, check.name, check.detail, check.hint || ''])
+  }
+
+  process.stdout.write(modelTable.toString() + '\n')
   logger.info('')
 
   if (report.missingCount === 0 && report.warningCount === 0) {
