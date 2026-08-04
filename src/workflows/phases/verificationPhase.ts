@@ -1,8 +1,16 @@
+import { existsSync, readFileSync } from 'fs'
+import { join, relative } from 'path'
 import type { WorkflowPhase } from '../../adapters/types'
 import { runCommand } from '../../adapters/runCommand'
 import { detectValidationCommands } from '../../utils/validationCommands'
+import { findSourceFiles } from '../../utils/unusedImports'
 import { phaseResult, failedPhase } from './helpers'
 import { getIntent, isRemoveDependency, isRefactor, isFix } from './intent'
+import { referenceTokens } from './implementationPhase'
+
+function isCommentLine(line: string): boolean {
+  return /^(?:\/\/|\*|\/\*|#)/.test(line)
+}
 
 function formatOutput(stdout: string, stderr: string, limit = 4000): string {
   const out = stdout.trim()
@@ -88,13 +96,77 @@ export const verificationPhase: WorkflowPhase = {
     }
 
     const intent = (await getIntent(ctx)).intent
-    if (isRemoveDependency(intent) && ctx.snapshot) {
-      const deps = { ...ctx.snapshot.project.dependencies, ...ctx.snapshot.project.devDependencies }
-      const stillInstalled = Object.keys(deps).some(name =>
-        name.toLowerCase().includes(intent.dependency.toLowerCase())
-      )
-      results.push(`- Dependency check: ${stillInstalled ? 'FAIL — package still in package.json' : 'pass — no matching package in package.json'}`)
+    if (isRemoveDependency(intent)) {
+      // Live check — re-read package.json from disk, because the scan snapshot
+      // was captured BEFORE the implementation phase ran (and edited it).
+      const pkgPath = ctx.projectRoot ? join(ctx.projectRoot, 'package.json') : undefined
+      let stillInstalled = false
+      let note = ''
+      let scanned = false
+      if (pkgPath && existsSync(pkgPath)) {
+        try {
+          const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as {
+            dependencies?: Record<string, string>
+            devDependencies?: Record<string, string>
+          }
+          const deps = { ...(pkg.dependencies || {}), ...(pkg.devDependencies || {}) }
+          stillInstalled = Object.keys(deps).some(name =>
+            name.toLowerCase().includes(intent.dependency.toLowerCase())
+          )
+          scanned = true
+        } catch (err) {
+          note = ` (could not read package.json: ${err instanceof Error ? err.message : String(err)})`
+        }
+      }
+      if (!scanned && !note && ctx.snapshot) {
+        // No manifest on disk — fall back to the scan-time snapshot.
+        const deps = { ...ctx.snapshot.project.dependencies, ...ctx.snapshot.project.devDependencies }
+        stillInstalled = Object.keys(deps).some(name =>
+          name.toLowerCase().includes(intent.dependency.toLowerCase())
+        )
+        note = ' (no package.json found; checked scan-time snapshot)'
+      }
+      results.push(`- Dependency check: ${stillInstalled ? 'FAIL — package still in package.json' : 'pass — no matching package in package.json'}${note}`)
       if (stillInstalled) allPassed = false
+
+      // Import + reference scan — a "safe" removal means no source file still
+      // imports the package AND no code still calls it at runtime.
+      const srcDir = ctx.projectRoot ? join(ctx.projectRoot, 'src') : undefined
+      const remainingImports: string[] = []
+      const remainingUsages: { file: string; line: number }[] = []
+      if (srcDir && existsSync(srcDir)) {
+        const escaped = intent.dependency.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const importRe = new RegExp(`(?:from\\s+|import\\s*\\(\\s*|require\\(\\s*)['"]${escaped}(?:\\/[^'"]+)?['"]`, 'i')
+        const tokens = referenceTokens(intent.dependency, [])
+        for (const file of findSourceFiles(srcDir)) {
+          const rel = relative(ctx.projectRoot, file)
+          readFileSync(file, 'utf-8').split('\n').forEach((line, idx) => {
+            const trimmed = line.trim()
+            if (!trimmed || isCommentLine(trimmed)) return
+            if (importRe.test(line)) {
+              remainingImports.push(`${rel}:${idx + 1}`)
+            } else if (tokens.some(t => new RegExp(`\\b${t}\\b`, 'i').test(line))) {
+              remainingUsages.push({ file: rel, line: idx + 1 })
+            }
+          })
+        }
+      }
+      if (remainingImports.length > 0) {
+        results.push(`- Import scan: FAIL — ${remainingImports.length} line(s) still import "${intent.dependency}": ${remainingImports.slice(0, 10).join(', ')}`)
+        allPassed = false
+      } else if (srcDir && existsSync(srcDir)) {
+        results.push('- Import scan: pass — no source imports of the removed package remain')
+      } else {
+        results.push('- Import scan: skipped (no src/ directory)')
+      }
+      if (remainingUsages.length > 0) {
+        results.push(`- Reference scan: FAIL — ${remainingUsages.length} line(s) still call or reference "${intent.dependency}" (e.g. ${remainingUsages[0].file}:${remainingUsages[0].line}). Removing the package is not safe until these are resolved.`)
+        allPassed = false
+      } else if (srcDir && existsSync(srcDir)) {
+        results.push('- Reference scan: pass — no non-import usages of the removed package remain')
+      } else {
+        results.push('- Reference scan: skipped (no src/ directory)')
+      }
     }
 
     // Validate that tests exist for the new implementation. The engine appends a

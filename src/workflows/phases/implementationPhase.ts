@@ -1,9 +1,11 @@
-import { join } from 'path'
+import { existsSync, readFileSync, writeFileSync } from 'fs'
+import { join, relative } from 'path'
 import type { WorkflowPhase, WorkflowArtifact, TestRunnerAdapter, TestResult } from '../../adapters/types'
 import { isSafeProjectPath, isSelfPackageRepo, writeProjectFile, GENERATED_OUTPUT_DIR } from './fileOutput'
 import type { ContextSnapshot } from '../../harness/types'
 import type { ModelRouter } from '../../model/ModelRouter'
 import { removeUnusedImportsFromProject, findSourceFiles } from '../../utils/unusedImports'
+import { reportPathChange } from '../../utils/fileDiff'
 import { detectConventions, phaseResult, sanitizeFileName, fileExtension, jsxExtension } from './helpers'
 import { getIntent, intentTitle, isRemoveDependency, isRefactor, isFix, type WorkflowIntent } from './intent'
 import { runGuardrails, formatGuardrailResult, GuardrailResult, PolicyEngine } from '../../guardrails'
@@ -674,19 +676,285 @@ export function generateAddFeatureImplementation(
   }
 }
 
-function generateRemoveDependencyImplementation(
+function escapeRegExpToken(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/**
+ * Deterministically remove every import / require statement that references any
+ * of the given package names (exact match or subpath import), including
+ * multi-line named imports and dynamic `import('pkg')`. Collapses the blank
+ * lines left behind. Usage code is intentionally NOT touched here — remaining
+ * references are reported (and optionally handed to the model) separately.
+ */
+function stripPackageImports(source: string, packageNames: string[]): string {
+  let out = source
+  for (const pkg of packageNames) {
+    const escaped = escapeRegExpToken(pkg)
+    const moduleRef = `['"]${escaped}(?:\\/[^'"]+)?['"]`
+    // import X from 'pkg' | import { a } from 'pkg' | import X, { a } from 'pkg'
+    // | import * as X from 'pkg' | import type { A } from 'pkg' (single or multi-line)
+    const specifier = `(?:\\*\\s+as\\s+[\\w$]+|\\{[^}]*\\}|[\\w$]+(?:\\s*,\\s*\\{[^}]*\\})?)`
+    const importFrom = new RegExp(`import\\s+(?:type\\s+)?${specifier}\\s+from\\s+${moduleRef}\\s*;?`, 'g')
+    const sideEffect = new RegExp(`import\\s+${moduleRef}\\s*;?`, 'g')
+    // Handles: const X = require('pkg'), const { X } = require('pkg'),
+    // require('pkg').default, and bare require('pkg').
+    const requireCall = new RegExp(`(?:const\\s+(?:\\{[^}]*\\}|[\\w$]+)\\s*=\\s*)?require\\(\\s*${moduleRef}\\s*\\)(?:\\.[\\w$]+)*\\s*;?`, 'g')
+    const dynamicImport = new RegExp(`import\\(\\s*${moduleRef}\\s*\\)\\s*;?`, 'g')
+    const reExport = new RegExp(`export\\s+(?:\\*\\s+from|\\{[^}]*\\}\\s+from)\\s+${moduleRef}\\s*;?`, 'g')
+    out = out
+      .replace(importFrom, '')
+      .replace(sideEffect, '')
+      .replace(requireCall, '')
+      .replace(dynamicImport, '')
+      .replace(reExport, '')
+  }
+  return out.replace(/\n{3,}/g, '\n\n')
+}
+
+/**
+ * Identifier / string tokens that could reference a package in code: the bare
+ * name plus common casing variants (AppCenter, appcenter, APPCENTER, ...) for
+ * the dependency and every matched sub-package.
+ */
+export function referenceTokens(dep: string, packageNames: string[]): string[] {
+  const tokens = new Set<string>()
+  for (const name of [dep, ...packageNames]) {
+    const base = name.split('/').pop() || name
+    const clean = base.replace(/[^a-zA-Z0-9]/g, '')
+    if (clean.length < 3) continue
+    tokens.add(clean.toLowerCase())
+    tokens.add(clean.charAt(0).toUpperCase() + clean.slice(1))
+    tokens.add(clean.toUpperCase())
+  }
+  return [...tokens]
+}
+
+/**
+ * Scan a file for lines that still reference the package (non-import usages
+ * such as AppCenter.startWithAppCenterSecret(...) or 'appcenter' in strings).
+ */
+function findPackageReferences(
+  file: string,
+  content: string,
+  dep: string,
+  packageNames: string[]
+): { file: string; line: number; text: string }[] {
+  const tokens = referenceTokens(dep, packageNames)
+  const refs: { file: string; line: number; text: string }[] = []
+  content.split('\n').forEach((line, idx) => {
+    const trimmed = line.trim()
+    if (!trimmed) return
+    // Skip comment-only lines so audit output stays about real code, not
+    // prose mentions (e.g. a `// https://appcenter.ms` comment).
+    if (/^(?:\/\/|\*|\/\*|#)/.test(trimmed)) return
+    for (const token of tokens) {
+      if (token.length < 3) continue
+      if (new RegExp(`\\b${escapeRegExpToken(token)}\\b`, 'i').test(line)) {
+        refs.push({ file, line: idx + 1, text: trimmed.slice(0, 120) })
+        return
+      }
+    }
+  })
+  return refs
+}
+
+function detectPackageManager(root: string): 'npm' | 'yarn' | 'pnpm' {
+  if (existsSync(join(root, 'pnpm-lock.yaml'))) return 'pnpm'
+  if (existsSync(join(root, 'yarn.lock'))) return 'yarn'
+  return 'npm'
+}
+
+function uninstallCommand(pm: 'npm' | 'yarn' | 'pnpm', packages: string[]): string {
+  const pkgs = packages.join(' ')
+  if (pm === 'yarn') return `yarn remove ${pkgs}`
+  if (pm === 'pnpm') return `pnpm remove ${pkgs}`
+  return `npm uninstall ${pkgs}`
+}
+
+function looksLikeCode(content: string): boolean {
+  const trimmed = content.trim()
+  if (trimmed.length < 20) return false
+  return ['{', '}', ';', '=>', 'function', 'const ', 'import ', 'export ', 'return '].some(m => trimmed.includes(m))
+}
+
+/**
+ * Ask the model to remove every remaining usage of a package from the files
+ * that still reference it after the deterministic import strip. Returns the
+ * parseable, code-like files the model produced — callers apply them only when
+ * non-empty, so a confused small model can never clobber files with garbage.
+ */
+async function modelCleanPackageUsages(
+  modelRouter: ModelRouter,
+  projectRoot: string,
+  dep: string,
+  refFiles: string[],
+  packageNames: string[]
+): Promise<{ files: GeneratedFile[]; rawOutput?: string }> {
+  const candidates = refFiles.slice(0, 5)
+  const snippets = candidates
+    .map(f => {
+      const full = join(projectRoot, f)
+      const content = existsSync(full) ? readFileSync(full, 'utf-8').slice(0, 8000) : ''
+      return [`### ${f}`, '```typescript', content, '```'].join('\n')
+    })
+    .join('\n\n')
+
+  const systemPrompt = [
+    `You are a senior React Native engineer uninstalling the package "${dep}".`,
+    `Remove ALL imports and every usage of "${dep}"${packageNames.length > 0 ? ` and its sub-packages (${packageNames.join(', ')})` : ''} from the files below:`,
+    '- Delete import/require statements and any code that exists only to use the package (init calls, analytics/crash/push setup, config).',
+    '- Keep every other export, function, prop, and style identical.',
+    '- Only include files you actually changed.',
+    'Return ONLY a JSON object with no markdown outside the JSON block:',
+    '{"files":[{"path":"src/...","content":"FULL new content of each changed file"}]}',
+  ].join('\n')
+
+  const prompt = [
+    `### Files still referencing ${dep}`,
+    snippets,
+    '',
+    'Remove the package usage from each file above and return the changed files as JSON.',
+  ].join('\n')
+
+  let raw = ''
+  try {
+    const response = await modelRouter.generate({
+      systemPrompt,
+      prompt,
+      maxTokens: 4096,
+      temperature: 0.2,
+    })
+    raw = response.content
+  } catch {
+    raw = ''
+  }
+
+  if (raw && !isFallbackResponse(raw)) {
+    const parsed = parseModelOutput(raw)
+    if (parsed) {
+      const files = parsed.files.filter(f => looksLikeCode(f.content))
+      if (files.length > 0) return { files, rawOutput: raw }
+    }
+  }
+  return { files: [], rawOutput: raw }
+}
+
+async function generateRemoveDependencyImplementation(
+  modelRouter: ModelRouter,
   projectRoot: string | undefined,
   ctx: {
     snapshot: ContextSnapshot | null
     dependency: string
     prompt: string
   }
-): { output: string; artifacts: WorkflowArtifact[] } {
-  const matches = findDependency(ctx.snapshot, ctx.dependency)
-  const usages = findUsages(ctx.snapshot, ctx.dependency)
+): Promise<{ output: string; artifacts: WorkflowArtifact[] }> {
+  const dep = ctx.dependency
+  const matches = findDependency(ctx.snapshot, dep)
+  const usages = findUsages(ctx.snapshot, dep)
   const isExpo = ctx.snapshot?.project.tooling === 'expo'
+  const pm = projectRoot ? detectPackageManager(projectRoot) : 'npm'
+  const redirectToGenerated = projectRoot ? isSelfPackageRepo(projectRoot) : false
 
-  const uninstallPackages = matches.length > 0 ? matches.map(m => m.name) : [ctx.dependency]
+  // --- 1. Edit package.json on disk: drop the package from every dep section. ---
+  const packageNames = new Set(matches.map(m => m.name))
+  const pkgRemoved: string[] = []
+  let pkgChangeNote = ''
+  const pkgPath = projectRoot ? join(projectRoot, 'package.json') : undefined
+  if (pkgPath && existsSync(pkgPath)) {
+    try {
+      const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as Record<string, Record<string, string>>
+      // Union snapshot matches with whatever actually matches on disk, so a
+      // stale scan snapshot can't cause us to miss packages (or keep extras).
+      for (const section of ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies']) {
+        for (const name of Object.keys(pkg[section] || {})) {
+          if (name.toLowerCase().includes(dep.toLowerCase())) packageNames.add(name)
+        }
+      }
+      const before = JSON.stringify(pkg, null, 2)
+      for (const section of ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies']) {
+        if (!pkg[section]) continue
+        for (const name of packageNames) {
+          if (pkg[section][name] !== undefined) {
+            delete pkg[section][name]
+            pkgRemoved.push(name)
+          }
+        }
+      }
+      if (pkgRemoved.length > 0) {
+        const after = JSON.stringify(pkg, null, 2)
+        writeFileSync(pkgPath, after + '\n', 'utf-8')
+        reportPathChange('package.json', before, after)
+        pkgChangeNote = `- package.json: removed ${pkgRemoved.join(', ')}`
+      } else {
+        pkgChangeNote = `- package.json: ${dep} was not listed (nothing to remove)`
+      }
+    } catch (err) {
+      pkgChangeNote = `- package.json: could not be updated (${err instanceof Error ? err.message : String(err)})`
+    }
+  } else if (redirectToGenerated) {
+    pkgChangeNote = '- package.json: skipped (this project is the rn-vectalon package itself)'
+  } else if (pkgPath) {
+    pkgChangeNote = '- package.json: not found — skipping manifest edit'
+  } else {
+    pkgChangeNote = '- package.json: no project root — skipping manifest edit'
+  }
+
+  // --- 2. Strip import / require statements from source files (deterministic). ---
+  const uninstallPackages = packageNames.size > 0 ? [...packageNames] : [dep]
+  const srcDir = projectRoot && !redirectToGenerated ? join(projectRoot, 'src') : undefined
+  const strippedFiles: string[] = []
+  const scanTargets = srcDir && existsSync(srcDir) ? findSourceFiles(srcDir) : []
+  for (const file of scanTargets) {
+    const original = readFileSync(file, 'utf-8')
+    const cleaned = stripPackageImports(original, uninstallPackages)
+    if (cleaned !== original) {
+      writeFileSync(file, cleaned, 'utf-8')
+      reportPathChange(relative(projectRoot || '', file), original, cleaned)
+      strippedFiles.push(relative(projectRoot || '', file))
+    }
+  }
+
+  // --- 3. Find remaining (non-import) references and let the model clean them. ---
+  let remainingReferences: { file: string; line: number; text: string }[] = []
+  for (const file of scanTargets) {
+    const rel = relative(projectRoot || '', file)
+    remainingReferences.push(...findPackageReferences(rel, readFileSync(file, 'utf-8'), dep, uninstallPackages))
+  }
+
+  const affectedFiles = [...strippedFiles]
+  const modelCleaned: string[] = []
+  let modelNotes = ''
+  const refFiles = [...new Set(remainingReferences.map(r => r.file))]
+  if (refFiles.length > 0 && projectRoot && !redirectToGenerated) {
+    const cleaned = await modelCleanPackageUsages(modelRouter, projectRoot, dep, refFiles, uninstallPackages)
+    // Only apply model output to files that actually reference the package — a
+    // confused model must never be able to rewrite unrelated files.
+    const scoped = cleaned.files.filter(f => refFiles.includes(f.path))
+    if (scoped.length > 0) {
+      for (const file of scoped) {
+        const writtenPath = writeProjectFile(projectRoot, file.path, file.content)
+        if (writtenPath) {
+          modelCleaned.push(file.path)
+          if (!affectedFiles.includes(file.path)) affectedFiles.push(file.path)
+        }
+      }
+      // Re-scan the touched files so the report reflects the final state.
+      remainingReferences = remainingReferences.filter(r => !affectedFiles.includes(r.file))
+      for (const rel of affectedFiles) {
+        const full = join(projectRoot, rel)
+        if (existsSync(full)) {
+          remainingReferences.push(...findPackageReferences(rel, readFileSync(full, 'utf-8'), dep, uninstallPackages))
+        }
+      }
+    } else {
+      modelNotes = [
+        `- The model could not produce a parseable cleanup for ${refFiles.length} file(s) still referencing ${dep}:`,
+        ...refFiles.map(f => `  - ${f}`),
+        '- Remove the remaining usages manually (search for the package name in those files).',
+      ].join('\n')
+    }
+  }
 
   const codeChanges = usages.map(u => {
     const removedImports = u.imports.filter(imp =>
@@ -717,12 +985,14 @@ function generateRemoveDependencyImplementation(
         '2. Run `cd ios && pod install` to update the lockfile.',
       ]
 
+  const installCmd = pm === 'yarn' ? 'yarn install' : pm === 'pnpm' ? 'pnpm install' : 'npm install'
   const removalScript = [
     '#!/bin/bash',
-    '# Run this script after reviewing the code changes above',
+    `# Sync the lockfile + native cleanup after removing ${dep} from package.json`,
     'set -euo pipefail',
     '',
-    `npm uninstall ${uninstallPackages.join(' ')}`,
+    '# 1. Prune the removed package from the lockfile (package.json was already edited)',
+    installCmd,
     ...(isExpo ? ['', '# Expo managed workflow: regenerate native projects if ejected', 'npx expo prebuild --clean', '', 'npx expo-doctor'] : ['', '# iOS cleanup', 'cd ios || exit 0', 'pod install', 'cd ..']),
     '',
     '# Verify no imports remain in source files',
@@ -742,7 +1012,8 @@ function generateRemoveDependencyImplementation(
     `echo "${ctx.dependency} removed from package.json"`,
   ].join('\n')
 
-  const scriptPath = 'scripts/remove-appcenter.sh'
+  const scriptName = sanitizeFileName(dep).toLowerCase() || 'dependency'
+  const scriptPath = `scripts/remove-${scriptName}.sh`
   let writtenScriptPath: string | undefined
   if (projectRoot) {
     writtenScriptPath = writeProjectFile(projectRoot, scriptPath, removalScript) ?? undefined
@@ -756,9 +1027,21 @@ function generateRemoveDependencyImplementation(
       ? matches.map(m => `- ${m.name}@${m.version}${m.isDev ? ' (devDependency)' : ''}`).join('\n')
       : `- No installed package matching "${ctx.dependency}" was found in package.json.`,
     '',
-    '### Uninstall commands',
+    '### Changes applied',
+    pkgChangeNote,
+    ...strippedFiles.map(f => `- ${f}: stripped ${dep} import(s)`),
+    ...modelCleaned.map(f => `- ${f}: model removed remaining ${dep} usage(s)`),
+    ...(pkgRemoved.length === 0 && strippedFiles.length === 0 && modelCleaned.length === 0 ? ['- Nothing to change — the dependency was already absent.'] : []),
+    '',
+    '### Remaining references (review manually)',
+    remainingReferences.length > 0
+      ? remainingReferences.map(r => `- ${r.file}:${r.line} — \`${r.text}\``).join('\n')
+      : '- None — no non-import references remain in the scanned source files.',
+    '',
+    ...(modelNotes ? [modelNotes, ''] : []),
+    '### Uninstall / lockfile sync',
     '```bash',
-    `npm uninstall ${uninstallPackages.join(' ')}`,
+    uninstallCommand(pm, uninstallPackages),
     isExpo ? 'npx expo prebuild --clean (only if ejected)' : 'cd ios && pod install',
     '```',
     '',
@@ -784,8 +1067,18 @@ function generateRemoveDependencyImplementation(
   return {
     output,
     artifacts: [
-      { type: 'engineering', title: `Removal plan: ${ctx.dependency}`, content: output },
-      { type: 'engineering', title: `Cleanup script: ${ctx.dependency}`, content: removalScript, path: scriptPath },
+      { type: 'engineering', title: `Removal plan: ${dep}`, content: output },
+      ...strippedFiles.map(f => {
+        const full = join(projectRoot || '', f)
+        const content = existsSync(full) ? readFileSync(full, 'utf-8') : ''
+        return { type: 'engineering' as const, title: `Stripped imports: ${f}`, content, path: f }
+      }),
+      ...modelCleaned.map(f => {
+        const full = join(projectRoot || '', f)
+        const content = existsSync(full) ? readFileSync(full, 'utf-8') : ''
+        return { type: 'engineering' as const, title: `Removed usage: ${f}`, content, path: f }
+      }),
+      { type: 'engineering', title: `Cleanup script: ${dep}`, content: removalScript, path: scriptPath },
     ],
   }
 }
@@ -912,7 +1205,7 @@ export const implementationPhase: WorkflowPhase = {
     let result: { output: string; artifacts: WorkflowArtifact[] }
 
     if (isRemoveDependency(intent)) {
-      result = generateRemoveDependencyImplementation(projectRoot, {
+      result = await generateRemoveDependencyImplementation(ctx.modelRouter, projectRoot, {
         snapshot: ctx.snapshot,
         dependency: intent.dependency,
         prompt: ctx.prompt,

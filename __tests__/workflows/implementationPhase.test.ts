@@ -409,6 +409,91 @@ describe('implementationPhase', () => {
     expect(existsSync(join(projectRoot, 'src'))).toBe(false)
   })
 
+  it('removes a dependency from package.json and strips its imports from source files', async () => {
+    const srcDir = join(projectRoot, 'src')
+    mkdirSync(srcDir, { recursive: true })
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify(
+        {
+          name: 'my-app',
+          version: '1.0.0',
+          dependencies: {
+            'react-native': '0.72.0',
+            appcenter: '4.4.5',
+            'appcenter-analytics': '4.4.5',
+            'appcenter-crashes': '4.4.5',
+            'appcenter-push': '4.4.5',
+          },
+        },
+        null,
+        2
+      )
+    )
+    writeFileSync(
+      join(srcDir, 'App.tsx'),
+      [
+        "import React from 'react';",
+        "import AppCenter from 'appcenter';",
+        "import { AppCenterAnalytics } from 'appcenter-analytics';",
+        "const { AppCenterCrashes } = require('appcenter-crashes');",
+        "export { AppCenterPush } from 'appcenter-push';",
+        '',
+        'export function App() { return null }',
+      ].join('\n')
+    )
+
+    const router = createMockModelRouterSequence([
+      JSON.stringify({ intents: [{ type: 'remove-dependency', dependency: 'appcenter', confidence: 1, reasoning: 'remove appcenter' }] }),
+    ])
+    const result = await implementationPhase.run(createContext(router, 'Remove appcenter safely from this project', projectRoot))
+
+    // package.json edited on disk — the dependency is gone, unrelated deps stay.
+    const pkg = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf-8'))
+    expect(pkg.dependencies).not.toHaveProperty('appcenter')
+    expect(pkg.dependencies).not.toHaveProperty('appcenter-analytics')
+    expect(pkg.dependencies).toHaveProperty('react-native')
+
+    // Source imports stripped (including destructured require + re-exports).
+    const app = readFileSync(join(srcDir, 'App.tsx'), 'utf-8')
+    expect(app).not.toContain("from 'appcenter'")
+    expect(app).not.toContain('require(')
+    expect(app).not.toContain('appcenter-push')
+    expect(app).toContain('export function App()')
+
+    expect(result.output).toContain('Remove dependency: appcenter')
+    expect(result.output).toContain('Changes applied')
+    expect(result.output).toContain('package.json: removed appcenter, appcenter-analytics')
+    expect(result.output).toContain('src/App.tsx: stripped appcenter import(s)')
+    expect(existsSync(join(projectRoot, 'scripts/remove-appcenter.sh'))).toBe(true)
+  })
+
+  it('asks the model to clean remaining usages after stripping imports', async () => {
+    const srcDir = join(projectRoot, 'src')
+    mkdirSync(srcDir, { recursive: true })
+    writeFileSync(
+      join(srcDir, 'index.ts'),
+      [
+        "import AppCenter from 'appcenter';",
+        '',
+        'export function start() {',
+        "  AppCenter.startWithAppCenterSecret('secret');",
+        '}',
+      ].join('\n')
+    )
+
+    const router = createMockModelRouterSequence([
+      JSON.stringify({ intents: [{ type: 'remove-dependency', dependency: 'appcenter', confidence: 1, reasoning: 'remove appcenter' }] }),
+      JSON.stringify({ files: [{ path: 'src/index.ts', content: 'export function start() {\n  // analytics setup removed\n}' }] }),
+    ])
+    const result = await implementationPhase.run(createContext(router, 'Remove appcenter from this project', projectRoot))
+
+    const updated = readFileSync(join(srcDir, 'index.ts'), 'utf-8')
+    expect(updated).not.toContain('AppCenter')
+    expect(result.output).toContain('model removed remaining appcenter usage')
+    expect(result.output).toContain('None — no non-import references remain')
+  })
+
   it('produces a clarification plan and writes NO files when the intent is unknown', async () => {
     const router = createMockModelRouterSequence([
       JSON.stringify({ intents: [{ type: 'unknown', confidence: 0.5, reasoning: 'not sure' }] }),
