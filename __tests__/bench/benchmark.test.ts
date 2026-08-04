@@ -65,6 +65,12 @@ describe('bench scenario spec validation', () => {
     const problems = validateScenario(validScenario({ fixtures: { 'a.ts': 42 as never } }))
     expect(problems.some(p => p.includes('must be a string'))).toBe(true)
   })
+
+  it('accepts a removedDependencies string array and rejects bad shapes', () => {
+    expect(validateScenario(validScenario({ removedDependencies: ['appcenter'] }))).toEqual([])
+    const bad = validateScenario(validScenario({ removedDependencies: ['appcenter', 42] as never }))
+    expect(bad.some(p => p.includes('removedDependencies'))).toBe(true)
+  })
 })
 
 describe('bench scenario loader', () => {
@@ -72,13 +78,15 @@ describe('bench scenario loader', () => {
     const dir = defaultScenariosDir()
     const loaded = loadScenarios(dir)
     expect(loaded.problems).toEqual([])
-    expect(loaded.scenarios.length).toBe(10)
+    expect(loaded.scenarios.length).toBe(11)
     for (const s of loaded.scenarios) {
       expect(validateScenario(s)).toEqual([])
     }
     // The deterministic baseline covers the scaffold-able subset (rn-01/02/05/06).
     const scaffoldable = loaded.scenarios.filter(s => s.scaffoldable).map(s => s.id)
     expect(isScaffoldableSubset(scaffoldable)).toBe(true)
+    // The dependency-removal scenario declares what it removes.
+    expect(loaded.scenarios.find(s => s.id === 'rn-11-remove-dependency-native')?.removedDependencies).toEqual(['appcenter'])
   })
 
   it('returns a problem for a missing directory', () => {
@@ -265,13 +273,40 @@ describe('bench deterministic baseline runner', () => {
     const { summary } = await runBenchmarkFromDir({
       generate: scenario => [{ path: `src/${scenario.id}.tsx`, content: 'export const x = 1;' }],
     })
-    expect(summary.runs.length).toBe(10)
+    expect(summary.runs.length).toBe(11)
   })
 
   it('runBenchmarkFromDir honors an explicit scaffoldable filter override', async () => {
     const { summary } = await runBenchmarkFromDir({ filter: { scaffoldable: false } })
-    expect(summary.runs.length).toBe(6)
+    expect(summary.runs.length).toBe(7)
     expect(summary.runs.every(r => !r.scaffoldable)).toBe(true)
+  })
+
+  it('scores removed-dependency scenarios on native traces via the rubric', async () => {
+    const removal = validScenario({
+      id: 'rn-remove',
+      suite: 'refactor',
+      scaffoldable: false,
+      removedDependencies: ['appcenter'],
+    })
+
+    // A generator that leaves the pod behind → the native-traces check fails.
+    const dirty = await runScenario(removal, {
+      generate: () => [{ path: 'ios/Podfile', content: "pod 'AppCenter', :path => '../node_modules/appcenter/ios'\n" }],
+    })
+    expect(dirty.axes.adherence).toBe(0)
+
+    // A generator that cleans the native side → the check passes.
+    const clean = await runScenario(removal, {
+      generate: () => [{ path: 'ios/Podfile', content: "pod 'React', :path => '../node_modules/react-native/ReactCommon'\n" }],
+    })
+    expect(clean.axes.adherence).toBe(1)
+
+    // Without removedDependencies the check is N/A and cannot tank adherence.
+    const noDeps = await runScenario(validScenario({ id: 'rn-no-deps', scaffoldable: false }), {
+      generate: () => [{ path: 'ios/Podfile', content: "pod 'AppCenter'\n" }],
+    })
+    expect(noDeps.axes.adherence).not.toBe(0)
   })
 })
 

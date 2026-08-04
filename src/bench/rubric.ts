@@ -1,14 +1,15 @@
 /**
  * Phase V-5 benchmark — RN best-practice rubric (M2).
  *
- * Axis 2 of the benchmark (docs/BENCHMARK_PLAN.md): 15 positive, RN-specific
+ * Axis 2 of the benchmark (docs/BENCHMARK_PLAN.md): 16 positive, RN-specific
  * best-practice checks. Unlike the guardrails (which assert the *absence* of
  * violations), these checks assert that generated code *follows* RN idioms:
  * KeyboardAvoidingView on input screens, FlatList over ScrollView + .map,
  * typed navigation props, Platform.OS, StyleSheet.create, remote-image error
  * handling, a11y labels, try/catch with error states, immutable updates, hook
- * dependency arrays, memoization, design tokens, deep-link routing tables, and
- * loading/empty/error fetch states.
+ * dependency arrays, memoization, design tokens, deep-link routing tables,
+ * loading/empty/error fetch states, and — for dependency-removal scenarios —
+ * no leftover pod/gradle/manifest traces of the removed packages.
  *
  * Pattern mirrors src/guardrails/rules.ts: each check has an optional
  * `applicable` predicate and a `check` returning { passed, message?, line? }.
@@ -18,13 +19,25 @@
  */
 
 import { BenchGeneratedFile } from './types'
+import { nativePackageTokens, isReferenceLine } from '../utils/nativeScan'
+
+export interface RubricCheckOptions {
+  filePath: string
+  content: string
+  /** Package names this scenario removed; only the native-traces check reads it. */
+  removedDependencies?: string[]
+}
 
 export interface RubricCheck {
   id: string
   name: string
   description: string
-  applicable?: (options: { filePath: string; content: string }) => boolean
-  check: (options: { filePath: string; content: string }) => { passed: boolean; message?: string; line?: number }
+  applicable?: (options: RubricCheckOptions) => boolean
+  check: (options: RubricCheckOptions) => { passed: boolean; message?: string; line?: number }
+}
+
+export interface RubricRunOptions {
+  removedDependencies?: string[]
 }
 
 export interface RubricCheckResult {
@@ -314,10 +327,54 @@ export const rubricChecks: RubricCheck[] = [
       return { passed: true }
     },
   },
+  {
+    id: 'no-removed-native-traces',
+    name: 'Removed dependencies leave no pod/gradle/manifest traces',
+    description: 'After a dependency removal, native config must not retain the package: Podfile pods, gradle includes/deps, AndroidManifest providers, Info.plist keys, or pbxproj entries. Scenarios declare the removed packages via `removedDependencies`; the check is N/A otherwise.',
+    applicable: ({ filePath, removedDependencies }) =>
+      isNativeConfigFile(filePath) && (removedDependencies?.length ?? 0) > 0,
+    check: ({ content, removedDependencies }) => {
+      const deps = removedDependencies || []
+      const lines = content.split('\n')
+      // Precompute lines inside /* */ or <!-- --> block comments so their
+      // continuation lines (which don't repeat the opener) can't false-positive.
+      const inComment = new Array<boolean>(lines.length).fill(false)
+      let inBlock = false
+      lines.forEach((line, i) => {
+        const trimmed = line.trim()
+        if (inBlock) {
+          inComment[i] = true
+          if (/\*\/\s*$/.test(trimmed) || /-->\s*$/.test(trimmed)) inBlock = false
+        } else if ((/^\/\*/.test(trimmed) && !/\*\/\s*$/.test(trimmed)) || (/^<!--/.test(trimmed) && !/-->\s*$/.test(trimmed))) {
+          inComment[i] = true
+          inBlock = true
+        }
+      })
+      for (const dep of deps) {
+        const tokens = nativePackageTokens(dep)
+        for (let i = 0; i < lines.length; i++) {
+          const trimmed = lines[i].trim()
+          if (inComment[i] || !trimmed || /^(?:\/\/|\*|\/\*|#|<!--)/.test(trimmed)) continue
+          if (tokens.some(t => isReferenceLine(lines[i], [t]))) {
+            return { passed: false, message: `Native trace of removed dependency '${dep}' remains`, line: i + 1 }
+          }
+        }
+      }
+      return { passed: true }
+    },
+  },
 ]
 
+/** True for files that can carry traces of a native dependency: Podfile,
+ * gradle files, AndroidManifest, Info.plist, pbxproj, xcconfig. */
+function isNativeConfigFile(filePath: string): boolean {
+  const base = filePath.split('/').pop() || filePath
+  if (base === 'Podfile' || base === 'Podfile.lock' || base === 'AndroidManifest.xml') return true
+  return /\.(?:gradle|kts|pbxproj|plist|xcconfig)$/.test(base)
+}
+
 /** Run the rubric over generated files and aggregate adherence per file + overall. */
-export function runRubric(files: BenchGeneratedFile[]): RubricResult {
+export function runRubric(files: BenchGeneratedFile[], opts?: RubricRunOptions): RubricResult {
   const fileResults: RubricFileResult[] = []
   let applicableTotal = 0
   let passedTotal = 0
@@ -326,9 +383,14 @@ export function runRubric(files: BenchGeneratedFile[]): RubricResult {
     const checks: RubricCheckResult[] = []
     let applicable = 0
     let passed = 0
+    const checkOptions: RubricCheckOptions = {
+      filePath: file.path,
+      content: file.content,
+      removedDependencies: opts?.removedDependencies,
+    }
     for (const check of rubricChecks) {
-      if (check.applicable && !check.applicable({ filePath: file.path, content: file.content })) continue
-      const outcome = check.check({ filePath: file.path, content: file.content })
+      if (check.applicable && !check.applicable(checkOptions)) continue
+      const outcome = check.check(checkOptions)
       applicable++
       if (outcome.passed) passed++
       checks.push({ id: check.id, name: check.name, passed: outcome.passed, message: outcome.message, line: outcome.line })
@@ -342,8 +404,8 @@ export function runRubric(files: BenchGeneratedFile[]): RubricResult {
 }
 
 /** Adherence seam for the runner: applicableChecksPassed / applicableChecksTotal, null when N/A. */
-export function rubricAdherence(files: BenchGeneratedFile[]): number | null {
-  return runRubric(files).overall
+export function rubricAdherence(files: BenchGeneratedFile[], opts?: RubricRunOptions): number | null {
+  return runRubric(files, opts).overall
 }
 
 /** Markdown summary of the rubric result for reports and the bench CLI. */

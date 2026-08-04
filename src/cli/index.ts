@@ -180,7 +180,7 @@ async function runInteractive(): Promise<void> {
       { value: 'refresh', label: 'Refresh knowledge', hint: 'Update best practices and dependency suggestions from the web' },
       { value: 'ecosystem', label: 'Manage ecosystem', hint: 'Enable MCP servers, skills, tools, and hooks (Expo & RN-CLI)' },
       { value: 'doctor', label: 'Run doctor', hint: 'Verify every enabled ecosystem item is installed and reachable' },
-      { value: 'bench', label: 'Run benchmark', hint: 'Score the harness on the RN coding tests (10 scenarios)' },
+      { value: 'bench', label: 'Run benchmark', hint: 'Score the harness on the RN coding tests (11 scenarios)' },
       { value: 'leaderboard', label: 'Update leaderboard', hint: 'Merge bench/results into BENCHMARK_RESULTS.md' },
       { value: 'sync', label: 'Sync team brain', hint: 'Push/pull .vectalon/knowledge to a hosted git remote' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
@@ -314,7 +314,7 @@ async function runInteractive(): Promise<void> {
       message: 'Benchmark scope',
       options: [
         { value: 'default', label: 'Deterministic baseline', hint: 'Scaffold-able scenarios (rn-01/02/05/06), offline' },
-        { value: 'local', label: 'Local model leaderboard', hint: 'All 10 scenarios through the local model' },
+        { value: 'local', label: 'Local model leaderboard', hint: 'All 11 scenarios through the local model' },
       ],
     })
     if (p.isCancel(scope)) {

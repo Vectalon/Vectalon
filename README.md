@@ -112,16 +112,18 @@ To improve output quality you can:
 ### RN Coding Tests Benchmark
 
 Measure how well the harness — or any model — writes React Native code.
-`vectalon bench` runs a **versioned suite of 10 RN coding tests** (login screen,
+`vectalon bench` runs a **versioned suite of 11 RN coding tests** (login screen,
 FlatList feeds, typed navigation, secure forms, offline queues, image feeds,
-feature flags, accessible forms, hooks refactors, …), scoring generated code on
-three axes:
+feature flags, accessible forms, hooks refactors, dependency removal with native
+cleanup, …), scoring generated code on three axes:
 
 - **Correctness** — real `test` / `typecheck` / `lint` runs in a throwaway temp
   project (`--live`)
-- **Best-practice adherence** — a 15-check RN rubric (KeyboardAvoidingView,
+- **Best-practice adherence** — a 16-check RN rubric (KeyboardAvoidingView,
   FlatList over `.map`, safe areas, typed nav props, `Platform.OS`, style tokens,
-  hook deps, a11y labels, …)
+  hook deps, a11y labels, and — for dependency-removal scenarios — no leftover
+  pod/gradle/manifest traces of the removed packages, the native equivalent of
+  the JS reference-scan)
 - **Guardrails** — the same project guardrail rules the implementation phase runs
 
 Every scenario ships with a **human-authored reference solution**, so scores are
@@ -528,7 +530,7 @@ Score the harness on the RN coding tests — no project setup required:
 npx vectalon bench                            # deterministic baseline (offline)
 npx vectalon bench --suite data-flow          # only the data-flow scenarios
 npx vectalon bench --live                     # run real tests/typecheck/lint
-npx vectalon bench --model local              # real-model leaderboard (all 10 scenarios)
+npx vectalon bench --model local              # real-model leaderboard (all 11 scenarios)
 npx vectalon bench --model openai --json      # JSON summary for tooling
 npx vectalon bench -o report.md               # write the report to a file
 npx vectalon bench --scenarios ./my-evals     # run your own custom eval pack
@@ -537,7 +539,7 @@ npx vectalon leaderboard bench/results              # merge runs into BENCHMARK_
 ```
 
 - `--model <provider>` — `local` / `openai` / `anthropic`; runs the real-model
-  leaderboard pass over all 10 scenarios
+  leaderboard pass over all 11 scenarios
 - `--suite <id>` — only scenarios in one suite
   (`core-ui`, `data-flow`, `forms-security`, `navigation`, `a11y`, `perf`, `refactor`)
 - `--live` — run real tests/typecheck/lint for the correctness axis (slow)
@@ -1172,7 +1174,7 @@ rn-vectalon/
 │   │   └── index.ts       # CLI runner + interactive menu
 │   ├── bench/             # RN coding tests benchmark
 │   │   ├── runner.ts      # Scenario runner + scoring aggregation
-│   │   ├── rubric.ts      # 15-check RN best-practice rubric
+│   │   ├── rubric.ts      # 16-check RN best-practice rubric
 │   │   ├── scoring.ts     # Correctness / rubric / guardrails scoring
 │   │   ├── modelGenerate.ts  # ModelRouter-backed generate seam
 │   │   ├── references.ts  # Human reference solution loader
@@ -1335,7 +1337,7 @@ Areas we'd love help with:
 - ✅ **Real embedding APIs** — OpenAI & OpenAI-compatible embedding providers behind the
   `EmbeddingProvider` seam (async semantic search in `search_knowledge`)
 - ✅ **RN coding tests benchmark** — versioned scenario spec, 10 eval scenarios,
-  deterministic baseline runner, 15-check best-practice rubric, human reference
+  deterministic baseline runner, 16-check best-practice rubric, human reference
   solutions with relative-to-human scoring, custom eval packs
   (`--scenarios`/`--references`), and the `vectalon bench` CLI
   (`--model`/`--suite`/`--live`) for deterministic or real-model leaderboard runs

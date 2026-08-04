@@ -1,0 +1,32 @@
+{
+  "id": "rn-11-remove-dependency-native",
+  "specVersion": 1,
+  "suite": "refactor",
+  "title": "Remove a dependency with full native cleanup",
+  "prompt": "Remove the appcenter package from this project safely and completely. Return each changed file with its complete new content: remove appcenter from package.json dependencies, remove its pod from ios/Podfile, remove its include and projectDir from android/settings.gradle, and remove its provider from android/app/src/main/AndroidManifest.xml.",
+  "scaffoldable": false,
+  "removedDependencies": ["appcenter"],
+  "fixtures": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.3.1\",\n    \"react-native\": \"0.74.0\",\n    \"appcenter\": \"5.0.3\",\n    \"appcenter-analytics\": \"5.0.3\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.0\",\n    \"jest\": \"29.7.0\"\n  }\n}",
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"jsx\": \"react-native\",\n    \"esModuleInterop\": true,\n    \"skipLibCheck\": true\n  }\n}",
+    "ios/Podfile": "require_relative '../node_modules/react-native/scripts/react_native_pods'\n\npod 'AppCenter', :path => '../node_modules/appcenter/ios'\npod 'React', :path => '../node_modules/react-native/ReactCommon'\n",
+    "android/settings.gradle": "rootProject.name = 'rn-bench-app'\ninclude ':app'\ninclude ':appcenter'\nproject(':appcenter').projectDir = new File(rootProject.projectDir, '../node_modules/appcenter/android')\n",
+    "android/app/src/main/AndroidManifest.xml": "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">\n  <application android:label=\"rn-bench-app\">\n    <provider android:name=\"com.microsoft.appcenter.utils.AppCenterInitializer\" android:exported=\"false\" />\n  </application>\n</manifest>\n"
+  },
+  "expect": {
+    "files": [
+      "package.json",
+      "ios/Podfile",
+      "android/settings.gradle",
+      "android/app/src/main/AndroidManifest.xml"
+    ],
+    "behaviors": [
+      "appcenter absent from package.json dependencies",
+      "no appcenter pod in ios/Podfile",
+      "no appcenter include or projectDir in android/settings.gradle",
+      "no appcenter provider in AndroidManifest.xml"
+    ]
+  },
+  "correctness": { "tests": false, "typecheck": false, "lint": false },
+  "axes": ["adherence", "guardrails"]
+}

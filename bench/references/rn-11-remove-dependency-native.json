@@ -1,0 +1,21 @@
+{
+  "id": "rn-11-remove-dependency-native",
+  "files": [
+    {
+      "path": "package.json",
+      "content": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.3.1\",\n    \"react-native\": \"0.74.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.0\",\n    \"jest\": \"29.7.0\"\n  }\n}\n"
+    },
+    {
+      "path": "ios/Podfile",
+      "content": "require_relative '../node_modules/react-native/scripts/react_native_pods'\n\npod 'React', :path => '../node_modules/react-native/ReactCommon'\n"
+    },
+    {
+      "path": "android/settings.gradle",
+      "content": "rootProject.name = 'rn-bench-app'\ninclude ':app'\n"
+    },
+    {
+      "path": "android/app/src/main/AndroidManifest.xml",
+      "content": "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">\n  <application android:label=\"rn-bench-app\">\n  </application>\n</manifest>\n"
+    }
+  ]
+}
