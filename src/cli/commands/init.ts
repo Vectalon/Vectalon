@@ -38,6 +38,11 @@ export async function initCommand(rootDir: string, options: Record<string, unkno
 
   const vectalonDir = join(root, '.vectalon')
 
+  // The `.vectalon/` workspace is per-machine runtime state (memory, knowledge
+  // caches, generated code, workflow states). Keep it out of version control:
+  // team-visible outputs (workflow documents) land in `docs/vectalon/` instead.
+  ensureGitignored(root, '.vectalon/')
+
   // Model provider setup — the model side of initialization. Resolves the
   // provider from --model, an interactive prompt (when TTY), or 'local', and
   // returns the config to persist (remote providers store modelName + the env
@@ -126,12 +131,34 @@ export async function initCommand(rootDir: string, options: Record<string, unkno
   logger.dim('  Run `vectalon ecosystem --export` to emit the enabled MCP servers as an agent config fragment.')
 
   logger.success('rn-vectalon initialized.')
-  logger.dim(`  Created .vectalon/ with project context, memory store, and ${result.enabled.length} enabled ecosystem item(s)`)
+  logger.dim(`  Created .vectalon/ (gitignored runtime workspace) with project context, memory store, and ${result.enabled.length} enabled ecosystem item(s)`)
+  logger.dim('  Workflow documents are written to docs/vectalon/ so the team sees them in version control.')
 }
 
 interface ResolvedModelSetup {
   provider: ModelSetupProvider
   modelConfig?: ProjectModelConfig
+}
+
+/**
+ * Ensure an entry (e.g. `.vectalon/`) is present in the project's `.gitignore`,
+ * creating the file if missing and appending without duplicating entries.
+ */
+export function ensureGitignored(root: string, entry: string): boolean {
+  const gitignorePath = join(root, '.gitignore')
+  const existing = existsSync(gitignorePath) ? readFileSync(gitignorePath, 'utf-8') : ''
+  const lines = existing.split('\n')
+  const normalized = entry.replace(/\/$/, '')
+  const alreadyIgnored = lines.some(line => {
+    const trimmed = line.trim().replace(/\r$/, '')
+    return trimmed === entry.trim() || trimmed === normalized
+  })
+  if (alreadyIgnored) {
+    return false
+  }
+  const addition = existing.length > 0 && !existing.endsWith('\n') ? '\n' : ''
+  writeFileSync(gitignorePath, existing + addition + entry + '\n')
+  return true
 }
 
 function logModelSetup(model: ResolvedModelSetup): void {

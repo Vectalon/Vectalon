@@ -14,7 +14,7 @@ describe('documentWriter', () => {
     rmSync(tmpDir, { recursive: true, force: true })
   })
 
-  it('writes multiple workflow documents as markdown files', () => {
+  it('writes multiple workflow documents as markdown files under docs/vectalon/', () => {
     const paths = writeWorkflowDocuments(tmpDir, 'feature', 'run-1', [
       { phase: 'prd', title: 'Product Requirements', content: '## Goals\n\nBuild login.' },
       { phase: 'design', title: 'Design Document', content: '## Colors\n\nBlue.' },
@@ -24,6 +24,10 @@ describe('documentWriter', () => {
     expect(paths[0]).toContain('prd.md')
     expect(paths[1]).toContain('design.md')
 
+    // Team-visible location: project docs/, never the gitignored .vectalon/ workspace
+    expect(paths[0]).toContain(join('docs', 'vectalon', 'feature', 'run-1'))
+    expect(paths[0]).not.toContain('.vectalon')
+
     const prd = readFileSync(paths[0], 'utf-8')
     expect(prd).toContain('# Product Requirements')
     expect(prd).toContain('## Goals')
@@ -32,6 +36,8 @@ describe('documentWriter', () => {
   it('writes a single phase document', () => {
     const path = writePhaseDocument(tmpDir, 'feature', 'run-2', 'implementation', 'Implementation', 'code goes here')
     expect(path).toContain('implementation.md')
+    expect(path).toContain(join('docs', 'vectalon', 'feature', 'run-2'))
+    expect(path).not.toContain('.vectalon')
     const content = readFileSync(path, 'utf-8')
     expect(content).toContain('# Implementation')
     expect(content).toContain('code goes here')
