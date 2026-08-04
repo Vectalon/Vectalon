@@ -538,6 +538,80 @@ describe('implementationPhase', () => {
     expect(result.output).toContain('Native references remaining')
   })
 
+  it('reports dead native configuration for a remove-unused-native-config refactor (advisory, no edits)', async () => {
+    mkdirSync(join(projectRoot, 'ios/MyApp'), { recursive: true })
+    mkdirSync(join(projectRoot, 'android/app/src/main/java/com/app'), { recursive: true })
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({ name: 'my-app', version: '1.0.0', dependencies: { 'react-native': '0.72.0' } }, null, 2)
+    )
+    writeFileSync(
+      join(projectRoot, 'ios/Podfile'),
+      [
+        "pod 'AppCenter'",
+        "pod 'React', :path => '../node_modules/react-native/ReactCommon'",
+      ].join('\n')
+    )
+    writeFileSync(
+      join(projectRoot, 'ios/MyApp/AppDelegate.mm'),
+      '@implementation AppDelegate\n@end\n'
+    )
+    writeFileSync(
+      join(projectRoot, 'android/settings.gradle'),
+      "include ':app'\ninclude ':react-native-gone'\nproject(':react-native-gone').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-gone/android')\n"
+    )
+    writeFileSync(
+      join(projectRoot, 'android/app/build.gradle'),
+      "dependencies {\n  implementation 'com.example:ghostlib:1.0.0'\n}\n"
+    )
+    writeFileSync(
+      join(projectRoot, 'android/app/src/main/java/com/app/Thing.kt'),
+      'import com.acme.ghost.Ghost\nclass Thing {}\n'
+    )
+
+    const router = createMockModelRouterSequence([
+      JSON.stringify({ intents: [{ type: 'refactor', target: 'remove-unused-native-config', confidence: 1, reasoning: 'dead native config' }] }),
+    ])
+    const result = await implementationPhase.run(createContext(router, 'remove unused native config from the project', projectRoot))
+
+    expect(result.output).toContain('Refactor: remove unused native config')
+    expect(result.output).toContain('Findings (4)')
+    expect(result.output).toContain('iOS — dead pods')
+    expect(result.output).toContain('ios/Podfile')
+    expect(result.output).toContain('Android — dead gradle includes')
+    expect(result.output).toContain('android/settings.gradle')
+    expect(result.output).toContain('Android — dead gradle dependencies')
+    expect(result.output).toContain('Android — unused imports')
+    expect(result.output).toContain('Advisory only — nothing was deleted')
+    expect(result.artifacts[0].title).toBe('Dead native config report')
+    // Nothing was written or modified.
+    const podfile = readFileSync(join(projectRoot, 'ios/Podfile'), 'utf-8')
+    expect(podfile).toContain("pod 'AppCenter'")
+    expect(existsSync(join(projectRoot, 'scripts'))).toBe(false)
+  })
+
+  it('reports a clean dead-native-config scan when nothing is dead (no findings)', async () => {
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify({ name: 'my-app', version: '1.0.0', dependencies: { 'react-native': '0.72.0' } }, null, 2)
+    )
+    mkdirSync(join(projectRoot, 'ios'), { recursive: true })
+    writeFileSync(
+      join(projectRoot, 'ios/Podfile'),
+      "pod 'React', :path => '../node_modules/react-native/ReactCommon'\n"
+    )
+
+    const router = createMockModelRouterSequence([
+      JSON.stringify({ intents: [{ type: 'refactor', target: 'remove-unused-native-config', confidence: 1, reasoning: 'dead native config' }] }),
+    ])
+    const result = await implementationPhase.run(createContext(router, 'remove unused native config', projectRoot))
+
+    expect(result.output).toContain('Refactor: remove unused native config')
+    expect(result.output).toContain('No candidate dead native configuration found')
+    expect(result.artifacts).toHaveLength(1)
+    expect(result.artifacts[0].title).toBe('Dead native config report')
+  })
+
   it('asks the model to clean remaining usages after stripping imports', async () => {
     const srcDir = join(projectRoot, 'src')
     mkdirSync(srcDir, { recursive: true })

@@ -172,6 +172,52 @@ describe('verificationPhase remove-dependency checks', () => {
     expect(result.output).toContain('Native scan: pass')
   })
 
+  it('reports dead native config candidates for refactor intents without gating the run', async () => {
+    const router = new ModelRouter()
+    router.initialize({ provider: 'local' })
+    jest.spyOn(router, 'generate').mockResolvedValue({
+      content: JSON.stringify({ intents: [{ type: 'refactor', target: 'remove-unused-native-config', confidence: 1, reasoning: 'dead native config' }] }),
+      provider: 'mock',
+    })
+    const ctx = createContext(projectRoot)
+    ctx.modelRouter = router
+    ctx.prompt = 'remove unused native config'
+
+    writeFileSync(join(projectRoot, 'package.json'), JSON.stringify({ name: 'app', dependencies: { 'react-native': '0.72.0' } }, null, 2))
+    mkdirSync(join(projectRoot, 'ios'), { recursive: true })
+    writeFileSync(join(projectRoot, 'ios/Podfile'), "pod 'AppCenter'\n")
+
+    const result = await verificationPhase.run(ctx)
+
+    expect(result.output).toContain('Dead native config scan: 1 candidate(s)')
+    expect(result.output).toContain('advisory — nothing deleted')
+    // Advisory only — the run still passes.
+    expect(result.status).toBe('completed')
+  })
+
+  it('passes the dead native config scan when no candidates are found', async () => {
+    const router = new ModelRouter()
+    router.initialize({ provider: 'local' })
+    jest.spyOn(router, 'generate').mockResolvedValue({
+      content: JSON.stringify({ intents: [{ type: 'refactor', target: 'remove-unused-native-config', confidence: 1, reasoning: 'dead native config' }] }),
+      provider: 'mock',
+    })
+    const ctx = createContext(projectRoot)
+    ctx.modelRouter = router
+    ctx.prompt = 'remove unused native config'
+
+    writeFileSync(join(projectRoot, 'package.json'), JSON.stringify({ name: 'app', dependencies: { 'react-native': '0.72.0' } }, null, 2))
+    mkdirSync(join(projectRoot, 'ios'), { recursive: true })
+    writeFileSync(
+      join(projectRoot, 'ios/Podfile'),
+      "pod 'React', :path => '../node_modules/react-native/ReactCommon'\n"
+    )
+
+    const result = await verificationPhase.run(ctx)
+
+    expect(result.output).toContain('Dead native config scan: pass')
+  })
+
   it('falls back to the scan-time snapshot when no package.json exists on disk', async () => {
     const ctx = createContext(projectRoot)
     ctx.snapshot = {

@@ -162,7 +162,16 @@ output — e.g. `Detected intent: fix/lint — LLM, confidence 0.95` — so you 
 - **`fix` / `lint`** — diagnoses the failing check (lint/typecheck/test),
   generates a targeted repair, and re-runs the check instead of scaffolding a
   new feature
-- **`refactor`** — restructure path without adding user-facing features
+- **`refactor`** — restructure path without adding user-facing features. When the
+  target asks for dead native config cleanup ("remove unused native config",
+  "remove dead pods", "clean up unused gradle dependencies"), it scans `ios/`
+  and `android/` for **dead native configuration** — Podfile pods (and
+  autolinked `node_modules` pods whose package is gone from `package.json`),
+  `settings.gradle` includes and gradle maven dependencies that no source
+  references, plus unused `#import` / `import` statements — and reports every
+  `file:line` with the reason. The scan is **advisory**: nothing is deleted, and
+  verification surfaces the candidates without gating the run, so you review
+  and remove them yourself
 - **`remove-dependency`** — full removal: edits `package.json`, strips JS
   imports/usages, **detects and removes iOS/Android native references** (pods,
   gradle includes/deps, native imports, manifest/plist/pbxproj), and gates

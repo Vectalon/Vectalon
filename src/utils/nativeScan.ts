@@ -71,7 +71,15 @@ export function nativePackageTokens(pkg: string): string[] {
   return [...tokens].filter(t => t.length >= 4)
 }
 
-function isReferenceLine(line: string, tokens: string[]): boolean {
+/**
+ * True when a single line references any of the package tokens (Podfile pods,
+ * gradle includes/deps, native imports, manifest providers, plist keys).
+ * PascalCase tokens match on a start boundary so `AppCenter` catches
+ * `AppCenter.start`, `AppCenterSecret`, and `AppCenterAnalytics`; lowercase
+ * tokens match on full word boundaries so `appcenter` catches
+ * `com.microsoft.appcenter.utils` but not `appcenterfoo`.
+ */
+export function isReferenceLine(line: string, tokens: string[]): boolean {
   for (const token of tokens) {
     const escaped = escapeRegExp(token)
     if (/^[A-Z]/.test(token)) {
@@ -260,4 +268,403 @@ export function stripNativeReferences(
   }
 
   return { removed, remaining }
+}
+
+// ---------------------------------------------------------------------------
+// Dead native configuration scan ("remove unused native config" refactor)
+// ---------------------------------------------------------------------------
+
+export type DeadNativeKind = 'pod' | 'gradle-include' | 'gradle-dep' | 'import'
+
+export interface DeadNativeConfig {
+  platform: NativePlatform
+  file: string
+  line: number
+  kind: DeadNativeKind
+  text: string
+  reasoning: string
+}
+
+export interface DeadNativeScanResult {
+  findings: DeadNativeConfig[]
+  scannedFiles: number
+}
+
+const UNUSED_NATIVE_TARGET_RE = /(unused|dead|orphan|dangling|leftover|stale|redundant)/
+const NATIVE_TARGET_RE = /(native|pod|gradle|maven|ios|android)/
+
+/**
+ * True when a refactor `target` asks for dead native config cleanup — e.g.
+ * "remove unused native config", "remove dead pods", "clean up unused gradle
+ * dependencies". Canonical spellings match exactly; anything else needs an
+ * unused/dead-ish word AND a native-ish word, so generic refactors ("clean up
+ * the home screen") never route here.
+ */
+export function isRemoveUnusedNativeConfigTarget(target: string): boolean {
+  const t = target.toLowerCase().trim()
+  if (!t) return false
+  const canonical = new Set([
+    'remove-unused-native-config',
+    'remove-unused-native',
+    'unused-native-config',
+    'dead-native-config',
+    'clean-native-config',
+    'remove-dead-native-config',
+  ])
+  if (canonical.has(t)) return true
+  return UNUSED_NATIVE_TARGET_RE.test(t) && NATIVE_TARGET_RE.test(t)
+}
+
+interface InstalledDependency {
+  name: string
+  version: string
+}
+
+function readInstalledDependencies(projectRoot: string): InstalledDependency[] {
+  try {
+    const pkg = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf-8')) as Record<string, Record<string, unknown>>
+    const out: InstalledDependency[] = []
+    for (const section of ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies']) {
+      for (const [name, version] of Object.entries(pkg[section] || {})) {
+        out.push({ name, version: String(version) })
+      }
+    }
+    return out
+  } catch {
+    return []
+  }
+}
+
+function isInstalled(deps: InstalledDependency[], name: string): boolean {
+  const n = name.toLowerCase()
+  return deps.some(d => d.name.toLowerCase() === n)
+}
+
+interface PodfilePod {
+  name: string
+  line: number
+  raw: string
+  nodeModulesPath?: string
+}
+
+function parsePodfile(content: string): PodfilePod[] {
+  const pods: PodfilePod[] = []
+  const re = /pod\s+['"]([^'"]+)['"]\s*(?:,\s*([^\n]*))?/g
+  let match: RegExpExecArray | null
+  while ((match = re.exec(content)) !== null) {
+    const nodeModulesPath = (match[2] || '').match(/:path\s*=>\s*['"]([^'"]*node_modules[^'"]*)['"]/)?.[1]
+    const line = content.slice(0, match.index).split('\n').length
+    pods.push({ name: match[1], line, raw: match[0].trim(), nodeModulesPath })
+  }
+  return pods
+}
+
+/** `../node_modules/@sentry/react-native/ios` -> `@sentry/react-native` */
+function packageFromNodeModulesPath(path: string): string | null {
+  const m = path.match(/node_modules\/(@[^/]+\/[^/]+|[^/]+)/)
+  return m ? m[1] : null
+}
+
+function contentReferencesTokens(content: string, tokens: string[]): boolean {
+  return content.split('\n').some(line => isReferenceLine(line, tokens))
+}
+
+/**
+ * Case-insensitive substring match — used for the dead-config scan where
+ * usage often embeds the module name mid-identifier (MSACAppCenter uses
+ * AppCenter, okhttp3 uses okhttp). Boundary matching would false-positive.
+ */
+function contentMentionsToken(content: string, token: string): boolean {
+  return token.length > 0 && content.toLowerCase().includes(token.toLowerCase())
+}
+
+/**
+ * iOS-only: does any native source file (excluding Podfile / Podfile.lock)
+ * reference the given tokens? Used to decide whether a Podfile pod is dead.
+ */
+function iosNativeFilesReference(root: string, tokens: string[]): boolean {
+  const candidates: { file: string; platform: NativePlatform }[] = []
+  walkNativeDirs(join(root, 'ios'), 'ios', candidates)
+  for (const { file } of candidates) {
+    const base = file.split('/').pop() || file
+    if (base === 'Podfile' || base === 'Podfile.lock') continue
+    try {
+      const content = readFileSync(file, 'utf-8')
+      if (tokens.some(t => contentMentionsToken(content, t))) return true
+    } catch {
+      // unreadable file — skip
+    }
+  }
+  return false
+}
+
+const LOCAL_HEADER_IMPORT_RE = /^\s*#\s*import\s+"([^"]+)"/
+const ANGLE_IMPORT_RE = /^\s*#\s*import\s+<([^>]+)>/
+const COMMENT_OR_BLANK_RE = /^\s*(?:\/\/|\*|\/\*|#\s*!|$)/
+
+function headerStem(path: string): string {
+  return (path.split('/').pop() || path).replace(/\.h$/i, '')
+}
+
+function isAndroidImport(line: string): string | null {
+  const m = line.match(/^\s*import\s+(?:static\s+)?([\w.]+)(?:\.\*)?;?/)
+  return m ? m[1] : null
+}
+
+const DEP_STOPWORDS = new Set([
+  'android', 'core', 'common', 'lib', 'libs', 'sdk', 'java', 'google',
+  'androidx', 'ktx', 'kotlin', 'annotation', 'annotations', 'ext',
+  'support', 'compat', 'api',
+])
+
+/** Non-generic artifact tokens that could appear in source as imports/usages. */
+function artifactTokens(artifact: string): string[] {
+  const parts = artifact.split(/[^a-zA-Z0-9]+/).filter(Boolean)
+  const tokens: string[] = [artifact]
+  for (const part of parts) {
+    if (part.length >= 4 && !DEP_STOPWORDS.has(part.toLowerCase())) tokens.push(part)
+  }
+  return tokens
+}
+
+/**
+ * Build/runtime tooling dependencies are resolved by Gradle or the Kotlin
+ * plugin and never appear in app source — flagging them is a guaranteed false
+ * positive (com.android.tools.build:gradle, kotlin-stdlib, ...).
+ */
+function isBuildToolingDependency(group: string, artifact: string): boolean {
+  const g = group.toLowerCase()
+  const a = artifact.toLowerCase()
+  if (g.startsWith('com.android.tools')) return true
+  if (g.startsWith('org.jetbrains.kotlin')) return true
+  if (a === 'kotlin-stdlib' || a === 'kotlin-reflect' || a === 'kotlin-test') return true
+  return false
+}
+
+/**
+ * Scan the project's ios/ and android/ trees for native configuration that
+ * nothing references anymore: Podfile pods (or autolinked `node_modules` pods
+ * whose package is gone), `settings.gradle` includes and gradle maven
+ * dependencies with no source references, and unused `#import` / `import`
+ * statements. Report-only — nothing is deleted.
+ */
+export function scanDeadNativeConfig(projectRoot: string): DeadNativeScanResult {
+  const findings: DeadNativeConfig[] = []
+  let scannedFiles = 0
+  const deps = readInstalledDependencies(projectRoot)
+  const iosRoot = join(projectRoot, 'ios')
+  const androidRoot = join(projectRoot, 'android')
+
+  // --- iOS: dead pods + unused imports ---
+  const iosCandidates: { file: string; platform: NativePlatform }[] = []
+  walkNativeDirs(iosRoot, 'ios', iosCandidates)
+  const podfileFull = join(iosRoot, 'Podfile')
+  const podfilePods = existsSync(podfileFull)
+    ? parsePodfile(readFileSync(podfileFull, 'utf-8'))
+    : []
+  const podModules = new Set(podfilePods.map(p => p.name.split('/')[0]))
+
+  for (const pod of podfilePods) {
+    let reasoning: string | null = null
+    if (pod.nodeModulesPath) {
+      const pkg = packageFromNodeModulesPath(pod.nodeModulesPath)
+      if (pkg && !isInstalled(deps, pkg)) {
+        reasoning = `pod '${pod.name}' points at node_modules package '${pkg}', which is no longer in package.json — nothing references it anymore`
+      }
+    } else if (!isInstalled(deps, pod.name)) {
+      const tokens = nativePackageTokens(pod.name)
+      // Very short pod names (e.g. `App`) produce no tokens, so usage cannot be
+      // verified — skip rather than accuse.
+      if (tokens.length > 0 && !iosNativeFilesReference(projectRoot, tokens)) {
+        reasoning = `pod '${pod.name}' is not in package.json and no iOS native source imports or uses it`
+      }
+    }
+    if (reasoning) {
+      findings.push({ platform: 'ios', file: 'ios/Podfile', line: pod.line, kind: 'pod', text: pod.raw, reasoning })
+    }
+  }
+
+  for (const { file } of iosCandidates) {
+    const base = file.split('/').pop() || file
+    const ext = extname(base).toLowerCase()
+    if (ext !== '.m' && ext !== '.mm') continue
+    let content: string
+    try {
+      content = readFileSync(file, 'utf-8')
+    } catch {
+      continue
+    }
+    scannedFiles++
+    const lines = content.split('\n')
+    lines.forEach((line, idx) => {
+      const trimmed = line.trim()
+      const angle = trimmed.match(ANGLE_IMPORT_RE)
+      const local = trimmed.match(LOCAL_HEADER_IMPORT_RE)
+      if (!angle && !local) return
+      const importPath = (angle || local)![1]
+      const stem = headerStem(importPath)
+      if (!stem || stem.length < 2) return
+      const body = lines
+        .filter((l, i) => i !== idx && !COMMENT_OR_BLANK_RE.test(l))
+        .join('\n')
+      const tokens = new Set([stem])
+      if (angle) {
+        const module = importPath.split('/')[0]
+        if (module && module !== stem) tokens.add(module)
+      }
+      const used = [...tokens].some(t => contentMentionsToken(body, t))
+      if (used) return
+      // Angle imports of system frameworks (UIKit, Foundation, ...) are
+      // skipped — their module name rarely appears literally in code. Only
+      // flag angle imports when the module is a pod declared in the Podfile.
+      if (angle && !podModules.has(importPath.split('/')[0])) return
+      const rel = relative(projectRoot, file)
+      if (local) {
+        const headerExists = iosCandidates.some(c => (c.file.split('/').pop() || '') === `${stem}.h`)
+        if (!headerExists) {
+          findings.push({ platform: 'ios', file: rel, line: idx + 1, kind: 'import', text: trimmed.slice(0, 140), reasoning: `'${stem}.h' does not exist anywhere in ios/ (dangling import)` })
+        } else {
+          findings.push({ platform: 'ios', file: rel, line: idx + 1, kind: 'import', text: trimmed.slice(0, 140), reasoning: `'${stem}' is never referenced in this file` })
+        }
+      } else {
+        findings.push({ platform: 'ios', file: rel, line: idx + 1, kind: 'import', text: trimmed.slice(0, 140), reasoning: `imports pod module '${importPath.split('/')[0]}' but never uses it in this file` })
+      }
+    })
+  }
+
+  // --- Android: dead gradle includes/deps + unused imports ---
+  const androidCandidates: { file: string; platform: NativePlatform }[] = []
+  walkNativeDirs(androidRoot, 'android', androidCandidates)
+
+  // settings.gradle / settings.gradle.kts includes
+  for (const settingsFile of ['settings.gradle', 'settings.gradle.kts']) {
+    const full = join(androidRoot, settingsFile)
+    if (!existsSync(full)) continue
+    const rel = relative(projectRoot, full)
+    const content = readFileSync(full, 'utf-8')
+    content.split('\n').forEach((line, idx) => {
+      if (!/^\s*include\b/.test(line)) return
+      const names = [...line.matchAll(/['"]:([^'"]+)['"]/g)].map(m => m[1])
+      for (const name of names) {
+        // Find projectDir override: project(':name').projectDir = new File(rootProject.projectDir, 'PATH')
+        const dirMatch = content.match(new RegExp(`project\\(['"]:?${escapeRegExp(name)}['"]\\)\\.projectDir\\s*=\\s*[^,]*,\\s*['"]([^'"]+)['"]`))
+        const relPath = dirMatch ? dirMatch[1] : null
+        let reasoning: string | null = null
+        if (relPath && relPath.includes('node_modules')) {
+          const pkg = packageFromNodeModulesPath(relPath)
+          if (pkg && !isInstalled(deps, pkg)) {
+            reasoning = `include ':${name}' points at node_modules package '${pkg}', which is no longer in package.json — nothing references it anymore`
+          }
+        } else if (relPath && !existsSync(join(androidRoot, relPath))) {
+          reasoning = `include ':${name}' points at '${relPath}', which does not exist on disk (dangling include)`
+        } else if (relPath) {
+          // Module exists — check no build.gradle references it and it isn't the
+          // application module (recognized by its com.android.application plugin).
+          const moduleDir = join(androidRoot, relPath)
+          const moduleIsApp = [
+            join(moduleDir, 'build.gradle'),
+            join(moduleDir, 'build.gradle.kts'),
+          ].some(f => {
+            try {
+              return existsSync(f) && readFileSync(f, 'utf-8').includes('com.android.application')
+            } catch {
+              return false
+            }
+          })
+          if (!moduleIsApp) {
+            const gradleFiles = androidCandidates.filter(c => /\.[gk]ts$/.test(c.file))
+            const referenced = gradleFiles.some(c => {
+              if (c.file.endsWith('settings.gradle') || c.file.endsWith('settings.gradle.kts')) return false
+              try {
+                return contentReferencesTokens(readFileSync(c.file, 'utf-8'), [`project(':${name}')`, `:${name}`])
+              } catch {
+                return false
+              }
+            })
+            if (!referenced) {
+              reasoning = `include ':${name}' exists at '${relPath}' but no build.gradle references it (unused local module)`
+            }
+          }
+        }
+        if (reasoning) {
+          findings.push({ platform: 'android', file: rel, line: idx + 1, kind: 'gradle-include', text: line.trim().slice(0, 140), reasoning })
+        }
+      }
+    })
+  }
+
+  // Build a corpus of android source (java/kt/xml) for maven-dep + group checks.
+  const androidSourceFiles = androidCandidates.filter(c => /\.(java|kt|xml)$/.test(c.file))
+  const corpus = androidSourceFiles.map(c => {
+    try {
+      return readFileSync(c.file, 'utf-8')
+    } catch {
+      return ''
+    }
+  }).join('\n')
+
+  // build.gradle maven dependencies never referenced in source
+  for (const { file } of androidCandidates) {
+    if (!/build\.gradle(?:\.kts)?$/.test(file)) continue
+    let content: string
+    try {
+      content = readFileSync(file, 'utf-8')
+    } catch {
+      continue
+    }
+    const rel = relative(projectRoot, file)
+    // Note: `classpath` deps (Android Gradle plugin etc.) are build-time
+    // tooling, never referenced in app source — excluded to avoid false
+    // positives on every project's root build.gradle.
+    const depRe = /(?:implementation|api|compile|testImplementation|androidTestImplementation|debugImplementation|releaseImplementation|annotationProcessor|kapt|ksp)\s*\(?\s*['"]([^:'"]+):([^:'"]+):[^'"]*['"]/g
+    let match: RegExpExecArray | null
+    while ((match = depRe.exec(content)) !== null) {
+      const group = match[1]
+      const artifact = match[2]
+      const line = content.slice(0, match.index).split('\n').length
+      if (isBuildToolingDependency(group, artifact)) continue
+      const groupUsed = group && corpus.toLowerCase().includes(group.toLowerCase())
+      const tokens = artifactTokens(artifact)
+      const artifactUsed = tokens.some(t => contentMentionsToken(corpus, t))
+      if (!groupUsed && !artifactUsed) {
+        findings.push({
+          platform: 'android',
+          file: rel,
+          line,
+          kind: 'gradle-dep',
+          text: match[0].trim().slice(0, 140),
+          reasoning: `maven dependency '${group}:${artifact}' never appears in android/ source (imports or usages)`,
+        })
+      }
+    }
+  }
+
+  // Unused java/kotlin imports
+  for (const { file } of androidSourceFiles) {
+    if (!/\.(java|kt)$/.test(file)) continue
+    let content: string
+    try {
+      content = readFileSync(file, 'utf-8')
+    } catch {
+      continue
+    }
+    scannedFiles++
+    const rel = relative(projectRoot, file)
+    const lines = content.split('\n')
+    lines.forEach((line, idx) => {
+      const imported = isAndroidImport(line)
+      if (!imported) return
+      if (imported.endsWith('.*')) return // wildcard imports are too risky to judge
+      const simple = imported.split('.').pop() || ''
+      if (!simple || simple.length < 2) return
+      const body = lines
+        .filter((l, i) => i !== idx && !COMMENT_OR_BLANK_RE.test(l))
+        .join('\n')
+      if (!contentMentionsToken(body, simple)) {
+        findings.push({ platform: 'android', file: rel, line: idx + 1, kind: 'import', text: line.trim().slice(0, 140), reasoning: `'${simple}' is never referenced in this file` })
+      }
+    })
+  }
+
+  return { findings, scannedFiles }
 }
