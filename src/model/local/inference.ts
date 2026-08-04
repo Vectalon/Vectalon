@@ -34,20 +34,46 @@ export function createChatSessionOptions<T>(
 }
 
 /**
+ * Known-harmless tokenizer noise that must never reach the CLI output. Qwen
+ * GGUF files emit a "control-looking token" notice on load (the tokenizer
+ * marks 128247 '</s>' as non-control; node-llama-cpp overrides the type).
+ * The model works fine — the line just corrupts the spinner output.
+ */
+export function shouldSuppressStderrLine(line: string): boolean {
+  return line.includes('control-looking token')
+}
+
+/**
  * The node-llama-cpp native addon prints tokenizer warnings (e.g.
  * "control-looking token: 128247 '</s>' ...") directly to stderr, bypassing
- * the JS logger callback. Override stderr.write for the duration of model
- * load so these noisy lines don't corrupt the CLI spinner output.
+ * the JS logger callback, and it can fire at load time OR lazily at the first
+ * prompt (chat-wrapper resolution). Override stderr.write for the duration of
+ * the whole inference so these noisy lines never corrupt the CLI spinner
+ * output. Everything else passes through unchanged.
  */
-async function withSuppressedTokenizerWarnings<T>(fn: () => Promise<T>): Promise<T> {
-  const originalWrite = process.stderr.write.bind(process.stderr)
+// Reentrancy guard: if two suppressions overlap (e.g. concurrent model calls
+// via the MCP server), only the outermost call patches stderr. Without this, a
+// call that finishes while another is mid-flight could restore a stale patch
+// object and leave every future stderr write going through a dead wrapper.
+let suppressionActive = false
+
+export async function withSuppressedTokenizerWarnings<T>(fn: () => Promise<T>): Promise<T> {
+  if (suppressionActive) {
+    // Nested/concurrent call — the outer wrapper already has the patch installed.
+    return fn()
+  }
+  suppressionActive = true
+  const originalWrite = process.stderr.write
+  // Bound copy for invocation (full overload set); the unbound original is
+  // restored afterwards so the property identity is unchanged.
+  const boundWrite = originalWrite.bind(process.stderr)
   const patchedWrite = (
     chunk: string | Uint8Array,
     encodingOrCb?: BufferEncoding | ((err?: Error | null | undefined) => void),
     cb?: (err?: Error | null | undefined) => void
   ): boolean => {
     const text = typeof chunk === 'string' ? chunk : Buffer.from(chunk).toString('utf-8')
-    if (text.includes('control-looking token')) {
+    if (shouldSuppressStderrLine(text)) {
       if (typeof encodingOrCb === 'function') {
         encodingOrCb(null)
       } else if (typeof cb === 'function') {
@@ -56,15 +82,16 @@ async function withSuppressedTokenizerWarnings<T>(fn: () => Promise<T>): Promise
       return true
     }
     if (typeof encodingOrCb === 'function') {
-      return originalWrite(chunk, encodingOrCb)
+      return boundWrite(chunk, encodingOrCb)
     }
-    return originalWrite(chunk, encodingOrCb, cb)
+    return boundWrite(chunk, encodingOrCb, cb)
   }
   process.stderr.write = patchedWrite as typeof process.stderr.write
   try {
     return await fn()
   } finally {
     process.stderr.write = originalWrite
+    suppressionActive = false
   }
 }
 
@@ -76,45 +103,45 @@ export async function runInference(modelId: string, options: InferenceOptions): 
 
   try {
     const nlc = await dynamicImport<typeof import('node-llama-cpp')>('node-llama-cpp')
-    const llama = await withSuppressedTokenizerWarnings(() =>
-      nlc.getLlama({
-        // Quiet llama.cpp's noisy tokenizer warnings (e.g. the "control-looking
-        // token" notice Qwen GGUF files emit on load) while keeping real errors.
+    // Suppress the known-harmless tokenizer warning for the ENTIRE inference:
+    // it can fire at getLlama/loadModel time OR lazily at the first prompt when
+    // the chat wrapper resolves. The logger callback also filters it for the
+    // JS-level log path (belt and braces — some builds emit via console).
+    return await withSuppressedTokenizerWarnings(async () => {
+      const llama = await nlc.getLlama({
         logger: (level, message) => {
-          if (message.includes('control-looking token')) return
+          if (shouldSuppressStderrLine(message)) return
           if (level <= nlc.LlamaLogLevel.warn) {
             const sink = level <= nlc.LlamaLogLevel.error ? console.error : console.warn
             sink(`[node-llama-cpp] ${message}`)
           }
         },
       })
-    )
-    const llamaModel = await withSuppressedTokenizerWarnings(() =>
-      llama.loadModel({ modelPath: model.filePath })
-    )
-    const context = await llamaModel.createContext()
-    const session = new nlc.LlamaChatSession(
-      createChatSessionOptions(context.getSequence(), options.systemPrompt)
-    )
+      const llamaModel = await llama.loadModel({ modelPath: model.filePath })
+      const context = await llamaModel.createContext()
+      const session = new nlc.LlamaChatSession(
+        createChatSessionOptions(context.getSequence(), options.systemPrompt)
+      )
 
-    // Constrained decoding: force the model to emit JSON matching the schema
-    // (tool-call envelopes). LlamaJsonSchemaGrammar needs the llama instance;
-    // the generic class defeats Parameters<>, so cast the constructor.
-    type LlamaGrammarInstance = InstanceType<typeof nlc.LlamaGrammar>
-    type GrammarCtor = new (llama: unknown, schema: Record<string, unknown>) => LlamaGrammarInstance
-    const Grammar = nlc.LlamaJsonSchemaGrammar as unknown as GrammarCtor
-    const grammar = options.grammarSchema ? new Grammar(llama, options.grammarSchema) : undefined
+      // Constrained decoding: force the model to emit JSON matching the schema
+      // (tool-call envelopes). LlamaJsonSchemaGrammar needs the llama instance;
+      // the generic class defeats Parameters<>, so cast the constructor.
+      type LlamaGrammarInstance = InstanceType<typeof nlc.LlamaGrammar>
+      type GrammarCtor = new (llama: unknown, schema: Record<string, unknown>) => LlamaGrammarInstance
+      const Grammar = nlc.LlamaJsonSchemaGrammar as unknown as GrammarCtor
+      const grammar = options.grammarSchema ? new Grammar(llama, options.grammarSchema) : undefined
 
-    const response = await session.prompt(options.prompt, {
-      temperature: options.temperature ?? 0.2,
-      maxTokens: options.maxTokens ?? 2048,
-      ...(grammar ? { grammar } : {}),
+      const response = await session.prompt(options.prompt, {
+        temperature: options.temperature ?? 0.2,
+        maxTokens: options.maxTokens ?? 2048,
+        ...(grammar ? { grammar } : {}),
+      })
+
+      return {
+        content: response,
+        modelId,
+      }
     })
-
-    return {
-      content: response,
-      modelId,
-    }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     throw new Error(`Inference failed for model ${modelId}: ${message}`)
