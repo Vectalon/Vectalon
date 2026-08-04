@@ -37,11 +37,27 @@ describe('initCommand', () => {
     expect(manifest.rnVersion).toBe('0.72.0')
   })
 
-  it('does not modify .gitignore', async () => {
+  it('adds .vectalon/ to the project .gitignore so the runtime workspace stays untracked', async () => {
     await initCommand(dir, {})
     const gitignore = readFileSync(join(dir, '.gitignore'), 'utf-8')
-    expect(gitignore).not.toContain('.vectalon/')
-    expect(gitignore).toBe('node_modules\n')
+    expect(gitignore).toContain('.vectalon/')
+    // existing entries are preserved
+    expect(gitignore).toContain('node_modules')
+  })
+
+  it('creates a .gitignore when the project has none and does not duplicate entries', async () => {
+    const noIgnoreDir = createTempProject({
+      'package.json': JSON.stringify({ name: 'bare', version: '1.0.0', dependencies: {} }),
+    })
+    await initCommand(noIgnoreDir, {})
+    const gitignore = readFileSync(join(noIgnoreDir, '.gitignore'), 'utf-8')
+    expect(gitignore).toContain('.vectalon/')
+    // idempotent: a second init does not append a duplicate
+    await initCommand(noIgnoreDir, {})
+    const again = readFileSync(join(noIgnoreDir, '.gitignore'), 'utf-8')
+    const matches = again.split('\n').filter(l => l.trim() === '.vectalon/').length
+    expect(matches).toBe(1)
+    cleanup(noIgnoreDir)
   })
 
   it('warns when the target project does not have react-native in dependencies', async () => {

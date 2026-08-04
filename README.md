@@ -448,6 +448,13 @@ This scans your project and creates a `.vectalon/` directory with:
 - `rn-vectalon.json` — Manifest with the detected tooling and model choice
 - `ecosystem.json` — Enabled MCP servers, skills, and hooks
 
+The `.vectalon/` workspace is **per-machine runtime state** (memory, knowledge
+caches, generated code, workflow states) — `init` automatically adds it to your
+project's `.gitignore` (creating the file when missing), so it never pollutes
+version control. Anything the team should see — PRDs, design docs, verification
+reports — is written under **`docs/vectalon/`** instead, so it's committed and
+visible to everyone.
+
 `init` also completes the **model side** of the setup — the provider you choose
 is written to the manifest and used by `vectalon feature`/`serve` automatically:
 
@@ -650,9 +657,10 @@ This executes 13 phases in sequence, gating each one on the previous:
 13. **Close feature board** — mark tasks as complete
 
 The workflow is deterministic-first, project-aware, and observable. Each phase
-produces artifacts and the full state is persisted to
-`.vectalon/workflows/feature-development/<id>.json` so you can resume, audit, or
-re-run iterations.
+produces a markdown document under **`docs/vectalon/feature-development/<id>/`**
+(so the team sees them in version control), and the full machine-readable state
+is persisted to `.vectalon/workflows/feature-development/<id>.json` (gitignored
+runtime state) so you can resume, audit, or re-run iterations.
 
 ### Iterations
 

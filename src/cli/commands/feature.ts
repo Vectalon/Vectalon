@@ -19,6 +19,7 @@ import { setFileChangeWriter, formatFileChange, computeFileChange, type FileChan
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
 import type { ImprovementSuggestion } from '../../knowledge/refresh'
 import { readEnabledSkills, formatSkillsPreview } from '../../ecosystem'
+import { workflowDocsDir } from '../../workflows/phases/documentWriter'
 import type { HealDecision } from '../../adapters/types'
 
 export interface FeatureCommandOptions {
@@ -385,7 +386,7 @@ function renderSummary(
     phaseTable.push([p.name, statusColor(p.status), filesCell])
   }
 
-  const docsDir = join(root, '.vectalon', 'docs', result.workflowId, result.id)
+  const docsDir = workflowDocsDir(root, result.workflowId, result.id)
 
   const lines: string[] = [
     `Workflow: ${workflowName}`,

@@ -7,13 +7,22 @@ export interface DocumentEntry {
   content: string
 }
 
+/**
+ * Workflow documents land in the project's `docs/vectalon/<workflow>/<run>/`
+ * directory so the team sees them in version control — the `.vectalon/`
+ * workspace is gitignored runtime state.
+ */
+export function workflowDocsDir(projectRoot: string, workflowId: string, workflowRunId: string): string {
+  return join(projectRoot, 'docs', 'vectalon', workflowId, workflowRunId)
+}
+
 export function writeWorkflowDocuments(
   projectRoot: string,
   workflowId: string,
   workflowRunId: string,
   documents: DocumentEntry[]
 ): string[] {
-  const docsDir = join(projectRoot, '.vectalon', 'docs', workflowId, workflowRunId)
+  const docsDir = workflowDocsDir(projectRoot, workflowId, workflowRunId)
   mkdirSync(docsDir, { recursive: true })
 
   const written: string[] = []
@@ -36,7 +45,7 @@ export function writePhaseDocument(
   title: string,
   content: string
 ): string {
-  const docsDir = join(projectRoot, '.vectalon', 'docs', workflowId, workflowRunId)
+  const docsDir = workflowDocsDir(projectRoot, workflowId, workflowRunId)
   mkdirSync(docsDir, { recursive: true })
 
   const fileName = `${phase.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.md`

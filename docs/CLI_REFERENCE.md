@@ -47,6 +47,8 @@ npx vectalon init --model anthropic  # remote Anthropic provider (ANTHROPIC_API_
 
 - Scans `package.json`, `src/`, metro config, TypeScript setup, navigation
   patterns → writes `snapshot.json`, `context.md`, `memory.json`
+- Adds **`.vectalon/` to the project's `.gitignore`** (creating the file when
+  missing) — the workspace is per-machine runtime state and stays untracked
 - Detects **Expo-managed vs bare RN CLI** (`tooling` + Expo SDK version) and
   records it in `.vectalon/rn-vectalon.json`
 - Sets up the **model provider**: local download (Qwen2.5-Coder, ~1.1 GB,
@@ -66,7 +68,9 @@ npx vectalon init --model anthropic  # remote Anthropic provider (ANTHROPIC_API_
 | 1 | Unknown `--model` provider |
 
 **Output** — `.vectalon/` containing `snapshot.json`, `context.md`,
-`memory.json`, `rn-vectalon.json` (manifest), and `ecosystem.json`.
+`memory.json`, `rn-vectalon.json` (manifest), and `ecosystem.json`. The
+workspace is **gitignored**; team-visible workflow documents are written to
+`docs/vectalon/<workflow>/<run>/` instead.
 
 ---
 
@@ -152,6 +156,9 @@ npx vectalon feature "add login screen" --resume <state-id> --from implementatio
 - Runs 13 phases: PRD → scope → design → architecture → tasks → **TDD tests**
   → implementation → **self-healing code review** → verification →
   readiness → PR → documentation → close
+- Writes each phase's document to **`docs/vectalon/<workflow>/<run>/`** (under
+  the project's `docs/`, so the team sees them in version control — not in the
+  gitignored `.vectalon/` workspace)
 - Applies **guardrails** (25 rules + `.vectalon/policy.json`) before writing
   files, and streams **live diffs** for every code change
 - Runs the project's `test`/`lint`/`prettier`/`typecheck` scripts during
