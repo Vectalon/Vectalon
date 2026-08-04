@@ -51,6 +51,63 @@ function pct(value: number | null | undefined): string {
   return value === null || value === undefined ? 'n/a' : `${(value * 100).toFixed(0)}%`
 }
 
+/**
+ * Marker that identifies this comment for upserting — the PR workflow finds an
+ * existing comment containing it and updates it instead of spamming new ones on
+ * every push.
+ */
+export const LEADERBOARD_PR_COMMENT_MARKER = '<!-- vectalon-leaderboard -->'
+
+/**
+ * Render a compact, PR-friendly leaderboard comment: the overall composite +
+ * guardrail pass rates per model (plus relative-to-human when references are
+ * present) and a link to the full `BENCHMARK_RESULTS.md`. This is what the PR
+ * workflow posts/updates on pull requests.
+ */
+export function renderLeaderboardPrComment(runs: LeaderboardRun[], timestamp: string): string {
+  if (runs.length === 0) {
+    return `${LEADERBOARD_PR_COMMENT_MARKER}\n` +
+      'No leaderboard results available yet — the nightly benchmark has not produced results for this branch.'
+  }
+
+  const models = runs.map(r => r.model)
+  const scenarioCount = new Set(runs.flatMap(r => (r.summary.runs || []).map(x => x.id))).size
+  const hasReferences = runs.some(r => r.summary.overallReferenceComposite !== null)
+
+  const lines: string[] = []
+  lines.push(LEADERBOARD_PR_COMMENT_MARKER)
+  lines.push('## 📊 RN coding tests — model leaderboard')
+  lines.push('')
+  lines.push(
+    `_Generated: ${timestamp} · spec v${runs[0]?.summary.specVersion ?? 0} · ` +
+      `${models.length} model(s) · ${scenarioCount} scenario(s) · ` +
+      `[full results](BENCHMARK_RESULTS.md)_`
+  )
+  lines.push('')
+  if (hasReferences) {
+    lines.push('| Model | Overall | Guardrails | vs Human |')
+    lines.push('| --- | --- | --- | --- |')
+    for (const run of runs) {
+      lines.push(
+        `| ${run.model} | ${pct(run.summary.overallComposite)} | ${pct(run.summary.overallGuardrails)} | ` +
+          `${pct(run.summary.overallRelativeComposite)} |`
+      )
+    }
+  } else {
+    lines.push('| Model | Overall | Guardrails |')
+    lines.push('| --- | --- | --- |')
+    for (const run of runs) {
+      lines.push(`| ${run.model} | ${pct(run.summary.overallComposite)} | ${pct(run.summary.overallGuardrails)} |`)
+    }
+  }
+  lines.push('')
+  lines.push(
+    'The nightly workflow benchmarks each provider on the RN coding-test suite; higher is better. ' +
+      '“vs Human” is the generated composite relative to the human reference solutions (M6).'
+  )
+  return lines.join('\n')
+}
+
 type LeaderboardAxis = 'composite' | 'correctness' | 'adherence' | 'guardrails'
 
 function scenarioValue(run: BenchScenarioRun, axis: LeaderboardAxis): number | null {

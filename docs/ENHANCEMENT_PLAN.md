@@ -262,37 +262,62 @@ so none requires a rewrite — each is a bounded, shippable phase.
 
 ### I. RN-native understanding (the moat)
 
-**I-1. RN Architecture Knowledge Graph (AST-grade).** Extend the code-dependency
-graph into a true RN-aware graph that tracks components, hooks, navigation trees
-(React Navigation / Expo Router), native modules (TurboModules/JSI), bridge
-boundaries, StyleSheet usage, and state stores. When an agent touches a shared
+**I-1. RN Architecture Knowledge Graph (AST-grade).** Replace regex scanning
+with a TypeScript/Babel AST graph that tracks components, hooks, navigation
+trees (React Navigation + Expo Router v4 file-based routes), native module
+boundaries (JSI vs TurboModule vs legacy bridge), state management boundaries
+(Zustand/Jotai/Context), and StyleSheet usage. When an agent touches a shared
 component, the graph tells it *which native bridges serialize on the JS thread*,
-*which screens re-render*, and *which podspecs break*. This kills the #1
-RN-hallucination source in general-purpose models.
+*which screens re-render*, and *which podspecs break*.
 
-**I-2. Metro-aware execution sandbox + live preview.** Instead of generating code
+**I-2. React Native New Architecture & React Compiler Native Awareness.** Upgrade
+the scanner to detect `bridgelessEnabled`, `fabricEnabled`, `newArchEnabled`,
+`turboModules`, and Interop Layer flags from `gradle.properties`, `Podfile`, and
+`react-native.config.js`. Extend the context engine so agents receive a "New
+Architecture impact summary" (e.g., "this project uses Fabric — do not suggest
+`setNativeProps`"). Add guardrails that flag synchronous legacy `NativeModules`
+calls and missing TurboModule TypeScript specs. Detect React Compiler
+(`babel-plugin-react-compiler`) setup and explain memoization implications to
+agents, ensuring generated code is aligned with RN 0.76+ defaults.
+
+**I-3. TurboModule & Fabric Component Scaffolding.** Deterministic code
+generation for the full New Architecture native module stack: TypeScript spec →
+C++ JSI bindings → iOS Objective-C++ / Android Java-Kotlin implementation →
+`podspec` / `build.gradle` entries → codegen config. Support both bare RN-CLI
+and Expo Modules API variants. This is a high-leverage "one-of-a-kind"
+feature no generalist AI tool has.
+
+**I-4. Metro-aware execution sandbox + live preview.** Instead of generating code
 blind, the harness compiles the generated file through Metro, hot-reloads it into
 an isolated simulator / headless RN-web container, and *reads the result* —
 console logs, render output, and runtime errors — before presenting the diff.
 Agents become self-correcting on JSX/TS errors, not just lint-syntax aware.
 
-**I-3. `react-native-doctor` MCP tool.** A built-in doctor that scans CocoaPods vs
-Gradle mismatches, autolinking breakage, RN version vs library version
-conflicts, Hermes/JSC flags, and native build failures — the same checks a senior
-RN engineer runs by hand — exposed as a tool agents call before finalizing a PR.
-
-**I-4. Simulator control tool (`simulator-control`).** Drive the iOS Simulator /
+**I-5. Simulator control tool + Maestro E2E generation.** Drive the iOS Simulator /
 Android Emulator from MCP: boot, screenshot, tap, swipe, deep-link. Agents
 visually verify UI (screenshots attached to PRs), test deep links, and record
 screen flows — closing the loop between "code compiles" and "app actually
-looks/behaves right."
+looks/behaves right." Additionally, generate **Maestro YAML flows from
+acceptance criteria** during the test-writing phase, and integrate them into
+the verification phase so E2E tests run and attach screenshots to the PR artifact.
 
-**I-5. Bundle-size & performance budgets in code review.** Wire the review
-phase to flag bundle bloat (new heavy deps), re-render storms, missing
-list virtualization, inline styles on hot paths, and synchronous bridge calls on
-the JS thread — a performance review that ships with every code review.
+**I-6. Metro Bundler Intelligence & Performance Budgets.** Integrate
+`metro-bundle-analyzer` to snapshot bundle composition per build. Enforce
+**performance budgets** in the code-review phase: flag new heavy libraries
+(>100KB), missing `sideEffects: false`, unoptimized images, and large static
+assets. Store bundle-size history in the Knowledge Base so `vectalon feature`
+can warn "this PR increases the bundle by 12% — consider `react-native-svg`
+instead of `lottie-react-native`."
 
-**I-6. RN upgrade planner.** A workflow that reads the project's RN version and
+**I-7. Hermes Performance Profiling & Runtime Regression Detection.** Parse
+Hermes `.cpuprofile` and heap snapshots to detect JS thread blocking events,
+large retained objects, and memory leaks. Integrate re-render profiler data from
+ecosystem MCPs (`react-native-mcp`, `metro-mcp`). Surface concrete metrics in
+code review: "This `useEffect` runs a 500ms JSON parse on the JS thread — move to
+a worklet or native module." Store performance baselines in the Knowledge Base
+and flag regressions.
+
+**I-8. RN upgrade planner.** A workflow that reads the project's RN version and
 diffs a curated migration catalog (0.7x → 0.8x → new architecture), producing a
 step-by-step upgrade plan, breaking-change impact analysis on the code graph,
 and auto-applying safe migrations.
@@ -313,10 +338,14 @@ real RN teams):
 Each role owns a phase or review pass and reports into the workflow, giving
 agents *depth* instead of breadth.
 
-**II-2. Self-healing CI (auto-fix PRs).** A CI mode that runs the code-review +
-verification pipeline on every PR, *writes fixes back to the branch*, re-runs
-verification, and leaves a review comment describing what it changed and why —
-the workflow engine's existing heal loop, pointed at GitHub Actions.
+**II-2. Self-healing CI (auto-fix PRs) + EAS Workflows Integration.** A CI mode
+that runs the code-review + verification pipeline on every PR, *writes fixes back
+to the branch*, re-runs verification, and leaves a review comment describing
+what it changed and why — the workflow engine's existing heal loop, pointed at
+GitHub Actions. For Expo projects, add deep **EAS Workflows** integration
+(build, submit, update, Maestro test flows). For bare RN CLI: generate GitHub
+Actions / Bitrise templates with proper caching, emulator setup, and Maestro E2E
+steps.
 
 **II-3. Durable, resumable agent sessions.** SQLite-backed session persistence
 with context compaction (inspired by the latest durable-agent patterns): long
@@ -361,10 +390,16 @@ diff viewers, checklists, charts — from tools instead of raw text, so agents a
 IDE panels render rich, actionable results (the ecosystem is moving exactly here
 in 2026).
 
-**IV-3. Guardrail policy marketplace + PR guardrails.** Ship curated policy
-packs (accessibility, security, performance, architecture) in `vectalon policy`
-and enforce guardrails as *PR checks* via the hosted artifact store / CI hook —
-policies that travel with the repo.
+**IV-3. Guardrail policy marketplace + PR guardrails + Accessibility Automation.**
+Ship curated policy packs (accessibility, security, performance, architecture) in
+`vectalon policy` and enforce guardrails as *PR checks* via the hosted artifact
+store / CI hook — policies that travel with the repo. Extend
+`AccessibilityChecker` with automated screen-reader flow validation (using
+simulator control to drive VoiceOver/TalkBack and verify announcements). Add
+contrast-ratio guardrails for color tokens. Generate accessibility test cases
+from PRDs. Enforce `accessibilityRole`, `accessibilityState`, and
+`accessibilityActions` completeness. This turns a11y from a "check for labels"
+into a full compliance gate.
 
 **IV-4. Offline-first everything.** Real local embeddings + local model already
 in place; make the whole harness fully functional in air-gapped environments
@@ -392,7 +427,12 @@ state persistence; make it a first-class, queryable log).
 
 **V-4. Horizontal scale: monorepo & federated teams.** Let one harness serve a
 monorepo (workspace-aware scanning) and federate multiple harness instances
-behind one team brain so the org grows without per-project silos.
+behind one team brain so the org grows without per-project silos. Extend
+`Scanner` to detect workspace roots (`pnpm-workspace.yaml`, `turbo.json`),
+internal package dependencies, and shared UI libraries. Map Metro resolution
+paths and flag hoisting conflicts. Generate monorepo-aware context prompts
+("This app is in a pnpm workspace — `react-native` is hoisted to root; do not
+add it to sub-package `devDependencies`").
 
 **V-5. Benchmark suite for RN generation.** Build a public eval harness — "RN
 coding tests" — measuring generated code correctness, RN best-practice
@@ -413,20 +453,37 @@ scheduled workflow (`.github/workflows/leaderboard.yml`) runs `vectalon bench
 per-model results with `vectalon leaderboard`, and commits a timestamped
 `BENCHMARK_RESULTS.md` back to the repo.
 
+### VI. React 19 / React Compiler Guardrails & Pattern Enforcement
+
+**VI-1. React 19 Modernization Guardrails.** React 19 introduces `use()`, `ref` as
+a prop, new `useEffect` cleanup semantics, and React Compiler auto-memoization.
+Agents trained on older patterns generate incompatible code. Add guardrail rules
+that flag `ref` mutation during render (breaks React Compiler), missing cleanup
+in `useEffect`, incorrect `use` hook usage outside Suspense boundaries, and
+unstable dependency arrays that defeat memoization. Detect `react-compiler`
+health (are there `"use no memo"` escapes that should be fixed?). This keeps
+generated code aligned with the latest React 19 + RN best practices.
+
 ### Sequencing (why this order)
 
 | Phase | Why now | Effort |
 |---|---|---|
-| I-3 doctor + I-5 perf review | Small, high-visibility, pure deterministic wins on existing seams | S |
-| I-1 RN knowledge graph | Foundation for I-2, II-1, and upgrade planner | L |
-| I-2 Metro sandbox | The single most "one-of-a-kind" differentiator | L |
-| I-4 simulator control | Unlocks visual verification and previews (IV-5) | M |
-| II-2 self-healing CI | Sells the SDK to CI-heavy teams | M |
-| II-4 ticket-to-PR | The flagship demo of full autonomy | M |
-| III-1 runtime ingestion | Turns the brain from static to live | M |
+| I-2 New Architecture awareness | Foundation for everything else; agents must stop hallucinating bridge patterns | M |
+| I-1 RN knowledge graph | Foundation for I-3, I-4, I-7, and upgrade planner | L |
+| I-3 TurboModule scaffolding | High-leverage moat feature no generalist tool has | L |
+| I-6 Metro bundle budgets | Small, high-visibility, pure deterministic win on existing review seam | S |
+| I-5 Simulator + Maestro | Unlocks visual verification and E2E generation | M |
+| VI-1 React 19 guardrails | Small effort, immediate impact on generated code quality | S |
+| V-4 Monorepo context | Daily pain point for teams at scale; brings forward existing V-4 plan | M |
+| II-2 Self-healing CI + EAS | Sells the SDK to CI-heavy teams and Expo users | M |
+| I-7 Hermes profiling | Deepens existing performance review (I-6) with runtime data | M |
+| IV-3 A11y automation + policy marketplace | Completes guardrails as a full compliance gate | M |
+| I-8 Upgrade planner | Requires I-1 + I-2 to be mature first | M |
+| II-4 Ticket-to-PR | The flagship demo of full autonomy; needs II-2 + I-5 | M |
+| II-1 Multi-agent squad | Needs I-1 and I-7 for performance-agent depth | L |
+| III-1 Runtime ingestion | Turns the brain from static to live | M |
 | IV-1 IDE extension | Distribution & adoption multiplier | M |
-| V-1 sandboxing | Prerequisite for any trust-heavy automation | M |
-| V-5 benchmark suite | Proof, community, and regression safety | S |
+| V-1 Sandboxing | Prerequisite for any trust-heavy automation | M |
 
 ## Status tracker
 
@@ -453,4 +510,4 @@ per-model results with `vectalon leaderboard`, and commits a timestamped
 - [ ] **Phase K — Living knowledge brain** (runtime telemetry ingestion, auto-derivation from git, provenance scoring, team-brain v2)
 - [ ] **Phase L — DX magic** (IDE extension, MCP Apps, policy marketplace + PR guardrails, offline-first, preview environments)
 - [ ] **Phase M — Trust & scale** (sandboxed execution, secrets/supply-chain guardrails, audit trail, monorepo federation)
-- [x] **Phase V-5 (M1–M6) — RN coding-tests benchmark** (versioned scenario spec + 11 eval scenarios in `bench/scenarios/`, deterministic baseline runner + 16-check best-practice rubric + scoring/report in `src/bench/`, `vectalon bench` CLI with `--model`/`--suite`/`--live`/`--install`/`--baseline`, human reference solutions with relative-to-human scoring, committed `bench/baseline.json` + CI regression gate on every PR, plus a nightly scheduled leaderboard workflow that runs the model matrix and commits a timestamped `BENCHMARK_RESULTS.md` — see [`docs/BENCHMARK_PLAN.md`](BENCHMARK_PLAN.md))
+- [x] **Phase V-5 (M1–M6) — RN coding-tests benchmark** (versioned scenario spec + 11 eval scenarios in `bench/scenarios/`, deterministic baseline runner + 16-check best-practice rubric + scoring/report in `src/bench/`, `vectalon bench` CLI with `--model`/`--suite`/`--live`/`--install`/`--baseline`, human reference solutions with relative-to-human scoring, committed `bench/baseline.json` + CI regression gate on every PR, a nightly scheduled leaderboard workflow that runs the model matrix and commits a timestamped `BENCHMARK_RESULTS.md`, and **PR leaderboard comments**: a `pull_request` workflow renders the committed nightly results into a compact per-model comparison (`vectalon leaderboard --pr-comment`, marker-upserted so it updates in place) on every PR — see [`docs/BENCHMARK_PLAN.md`](BENCHMARK_PLAN.md))

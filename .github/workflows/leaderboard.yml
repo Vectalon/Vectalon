@@ -106,6 +106,14 @@ jobs:
           # `git diff --quiet` alone would see no tracked changes and skip the
           # commit. Checking the index handles both the first and later runs.
           git add BENCHMARK_RESULTS.md
+          # Force-add the per-model result JSONs too (the repo gitignores
+          # bench/results/*.json locally) so PR workflows can render leaderboard
+          # comments from structured data without re-running the model matrix.
+          # Guard the glob: a fully-skipped matrix (no API keys) produces no
+          # files and a bare pathspec would error the commit step.
+          if ls bench/results/*.json >/dev/null 2>&1; then
+            git add -f bench/results/*.json
+          fi
           if git diff --cached --quiet; then
             echo "No leaderboard changes — nothing to commit"
             exit 0

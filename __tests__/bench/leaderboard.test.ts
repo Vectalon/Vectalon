@@ -2,6 +2,8 @@ import { readFileSync } from 'fs'
 import {
   loadLeaderboardRuns,
   renderLeaderboard,
+  renderLeaderboardPrComment,
+  LEADERBOARD_PR_COMMENT_MARKER,
   writeLeaderboard,
   defaultLeaderboardResultsDir,
 } from '../../src/bench/leaderboard'
@@ -127,5 +129,47 @@ describe('leaderboard rendering', () => {
     } finally {
       cleanup(dir)
     }
+  })
+})
+
+describe('leaderboard PR comment', () => {
+  const prRuns = [
+    {
+      model: 'openai',
+      summary: summary({ overallComposite: 0.88, overallGuardrails: 1, overallReferenceComposite: 0.92, overallRelativeComposite: 0.96 }),
+    },
+    {
+      model: 'local',
+      summary: summary({ overallComposite: 0.7, overallGuardrails: 0.65, overallReferenceComposite: 0.92, overallRelativeComposite: 0.76 }),
+    },
+  ]
+
+  it('renders a compact comment with the upsert marker and overall rows', () => {
+    const comment = renderLeaderboardPrComment(prRuns, '2026-08-03T03:00:00.000Z')
+    expect(comment).toContain(LEADERBOARD_PR_COMMENT_MARKER)
+    expect(comment).toContain('## 📊 RN coding tests — model leaderboard')
+    expect(comment).toContain('Generated: 2026-08-03T03:00:00.000Z')
+    expect(comment).toContain('2 model(s)')
+    expect(comment).toContain('1 scenario(s)')
+    expect(comment).toContain('| Model | Overall | Guardrails | vs Human |')
+    expect(comment).toContain('| openai | 88% | 100% | 96% |')
+    expect(comment).toContain('| local | 70% | 65% | 76% |')
+    // Links the full leaderboard rather than duplicating it
+    expect(comment).toContain('[full results](BENCHMARK_RESULTS.md)')
+  })
+
+  it('omits the vs-human column when no run has references', () => {
+    const noRefs = [{ model: 'openai', summary: summary({ overallReferenceComposite: null, overallRelativeComposite: null }) }]
+    const comment = renderLeaderboardPrComment(noRefs, 't')
+    expect(comment).toContain('| Model | Overall | Guardrails |')
+    expect(comment).not.toContain('| Model | Overall | Guardrails | vs Human |')
+    expect(comment).not.toContain('| openai | 88% | 100% | 96% |')
+    expect(comment).toContain('| openai | 88% | 100% |')
+  })
+
+  it('renders a friendly notice when there are no runs', () => {
+    const comment = renderLeaderboardPrComment([], 't')
+    expect(comment).toContain(LEADERBOARD_PR_COMMENT_MARKER)
+    expect(comment).toContain('No leaderboard results available yet')
   })
 })
