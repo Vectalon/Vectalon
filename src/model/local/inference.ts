@@ -7,6 +7,12 @@ export interface InferenceOptions {
   prompt: string
   temperature?: number
   maxTokens?: number
+  /**
+   * JSON Schema for constrained (grammar) decoding. When present, a
+   * LlamaJsonSchemaGrammar is built from it so the model can only emit JSON
+   * matching the schema (used for tool-calling envelopes).
+   */
+  grammarSchema?: Record<string, unknown>
 }
 
 export interface InferenceResult {
@@ -91,9 +97,18 @@ export async function runInference(modelId: string, options: InferenceOptions): 
       createChatSessionOptions(context.getSequence(), options.systemPrompt)
     )
 
+    // Constrained decoding: force the model to emit JSON matching the schema
+    // (tool-call envelopes). LlamaJsonSchemaGrammar needs the llama instance;
+    // the generic class defeats Parameters<>, so cast the constructor.
+    type LlamaGrammarInstance = InstanceType<typeof nlc.LlamaGrammar>
+    type GrammarCtor = new (llama: unknown, schema: Record<string, unknown>) => LlamaGrammarInstance
+    const Grammar = nlc.LlamaJsonSchemaGrammar as unknown as GrammarCtor
+    const grammar = options.grammarSchema ? new Grammar(llama, options.grammarSchema) : undefined
+
     const response = await session.prompt(options.prompt, {
       temperature: options.temperature ?? 0.2,
       maxTokens: options.maxTokens ?? 2048,
+      ...(grammar ? { grammar } : {}),
     })
 
     return {

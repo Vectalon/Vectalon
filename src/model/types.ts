@@ -1,5 +1,12 @@
 export type ModelProviderType = 'local' | 'openai' | 'anthropic' | 'custom'
 
+/** A tool the model may call (OpenAI-style function shape). */
+export interface ToolDefinition {
+  name: string
+  description: string
+  inputSchema: Record<string, unknown>
+}
+
 export interface ModelConfig {
   provider: ModelProviderType
   apiKey?: string
@@ -23,6 +30,13 @@ export interface ModelRequest {
   context?: string
   maxTokens?: number
   temperature?: number
+  /**
+   * Tools the model may call. When present, the local provider runs the
+   * request in JSON-mode (LlamaJsonSchemaGrammar) so the model replies with a
+   * structured `{ tool, arguments }` / `{ answer }` envelope — the caller
+   * drives the loop and feeds results back (see src/model/toolCalling.ts).
+   */
+  tools?: ToolDefinition[]
 }
 
 export interface ModelResponse {

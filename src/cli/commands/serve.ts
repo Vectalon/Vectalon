@@ -8,6 +8,8 @@ import { TeamStore } from '../../knowledge/TeamStore'
 import { HashEmbeddingProvider } from '../../knowledge/embeddings'
 import { createRemoteEmbeddingProvider } from '../../knowledge/remoteEmbeddings'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
+import { startEnabledMcpClients } from '../../protocol/subMcp'
+import type { McpClientHandle } from '../../protocol/subMcp'
 import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
 import { activeModelLabel, isRemoteKeyMissing } from '../../model/setup'
 import { printSyncStatus } from './sync'
@@ -63,7 +65,35 @@ export async function serveCommand(options: {
   const artifactStore = new ArtifactStore(root)
   const teamStore = buildTeamStore(root, artifactStore)
   printSyncStatus(root)
-  const server = new MCPServer(engine, modelRouter, protocol as 'mcp' | 'stdio' | 'sse' | 'http', artifactStore, teamStore, root)
+
+  // Spawn each enabled ecosystem MCP server (Metro MCP, Expo MCP, …) as a
+  // child process and proxy its real tools through the parent tool list.
+  // Failed servers are skipped with a warning; serve keeps running either way.
+  let subMcpClients: McpClientHandle[] = []
+  if (process.env.NODE_ENV !== 'test') {
+    subMcpClients = await startEnabledMcpClients(root, {
+      log: { info: message => logger.info(message), warn: message => logger.warn(message) },
+      stderr: (item, line) => logger.dim(`[${item.id}] ${line}`),
+    })
+  }
+
+  const server = new MCPServer(engine, modelRouter, protocol as 'mcp' | 'stdio' | 'sse' | 'http', artifactStore, teamStore, subMcpClients)
+
+  // Kill spawned sub-MCP servers (and their npx grandchildren) on shutdown.
+  const shutdown = (): void => {
+    for (const client of subMcpClients) client.close()
+  }
+  if (subMcpClients.length > 0) {
+    process.on('exit', shutdown)
+    process.on('SIGINT', () => {
+      shutdown()
+      process.exit(130)
+    })
+    process.on('SIGTERM', () => {
+      shutdown()
+      process.exit(143)
+    })
+  }
 
   logger.success(`rn-vectalon serving via ${protocol.toUpperCase()}`)
   logger.info('Agents can connect and use project-aware tools')

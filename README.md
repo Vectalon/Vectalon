@@ -87,6 +87,13 @@ scheduler in `vectalon serve`): it periodically retrieves React Native docs,
 library changelogs, and community best practices, caches them, updates the
 knowledge graph, and surfaces dependency upgrade suggestions — so the model's
 stale training data is supplemented by fresh, project-relevant knowledge.
+- **The local model can call tools.** Tool-enabled requests run in JSON mode via
+node-llama-cpp's `LlamaJsonSchemaGrammar`, forcing a structured
+`{ "tool", "arguments" }` / `{ "answer" }` envelope. The `run_agent` MCP tool
+drives a small loop that lets the local LLM call the SDK's own tools (project
+context, code review, workflows, and any proxied Metro/Expo MCP tools) and feeds
+each result back until it answers — so the local model becomes a real agent over
+your toolchain, not just a text generator.
 - **Guardrails are applied before generated code is written.** The implementation phase runs an exhaustive rule set over every generated file and reports the results in the workflow output. Rules cover: `console.log`, inline styles, hardcoded URLs, secrets, `any`, missing error handling, unused imports, state mutation, missing hook deps, heavy work in render, missing accessibility labels, deprecated APIs, platform-specific code, navigation types, naming conventions, safe-area usage, TODO/FIXME comments, TypeScript return types, remote image assets, list virtualization, mutation in hooks/Reducers, `==`/`!=`, `var`, and default component exports.
   - System prompts that require real, runnable code and forbid TODOs/placeholders
   - Convention detection (TypeScript, navigation, StyleSheet) that shapes generated code
@@ -244,12 +251,15 @@ fragment ready to paste into Cursor/Claude Code, and `--flavor expo|rn-cli`
 filters items by project flavor.
 
 When `vectalon serve` starts, it reads the enabled ecosystem items from
-`.vectalon/ecosystem.json` and exposes **each enabled MCP server as a first-class
-tool** in the MCP tool list — so connected agents auto-discover the Metro MCP,
-Expo MCP, etc. without manual config. The descriptors carry the install command,
-so the agent knows exactly how to connect. (`vectalon ecosystem --export` still
-produces the ready-to-paste config fragment for agents that manage their own MCP
-server list.)
+`.vectalon/ecosystem.json` and **spawns each enabled MCP server as a child
+process, completing the MCP `initialize` handshake and proxying its real tools**
+into the parent tool list — namespaced as `<id>__<tool>`, e.g.
+`metro-mcp__get_console_logs` — so connected agents call the Metro MCP, Expo
+MCP, etc. directly through rn-vectalon with zero manual MCP config. Servers that
+fail to start (package not installed, handshake timeout) are skipped with a
+warning plus the install command, and every spawned server is terminated on
+shutdown. (`vectalon ecosystem --export` still emits the ready-to-paste config
+fragment for agents that manage their own MCP server list.)
 
 `vectalon init` **auto-enables ecosystem items from your installed dependencies**
 — scanning `package.json` and matching package names against the catalog
@@ -303,6 +313,19 @@ leaderboard run is diagnosed before the cron fires:
 - **Results directory** — `bench/results/` is present and writable (missing
   when not, with a `mkdir -p bench/results` hint — auto-fixed by `--fix`)
 
+Finally, it checks **model access** — whether the configured model can actually
+reach the toolchain:
+
+- **Configured model** — the local Qwen preset is downloaded (missing, with a
+  `vectalon pull` hint), or the remote provider's API key env var is set
+  (warns when missing)
+- **Ecosystem items enabled** — at least one item in `.vectalon/ecosystem.json`
+  (warns when none: the model has no MCP servers or skills to reach)
+- **Skills installed** — every enabled skill's install dir exists (warns when
+  uninstalled skills won't reach the model via prompt inlining)
+- **MCP servers reachable** — every enabled MCP server passes the ecosystem
+  check (warns when the agent loop would skip some)
+
 Each check prints a status (`OK`/`MISSING`/`WARN`) with an actionable fix hint
 (e.g. the `npm install` / `npx skills add` / `brew install` command to run).
 The command runs the toolchain checks even without an ecosystem config, exits
@@ -355,7 +378,7 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 ### Flow
 
 1. **`vectalon init`** — Scans your project, catalogues components, detects patterns, stores context in `.vectalon/`
-2. **`vectalon serve`** — Starts a local server exposing 33 MCP tools (plus the Company Brain tools when a knowledge base is present, and any enabled ecosystem MCP servers as first-class tools)
+2. **`vectalon serve`** — Starts a local server exposing 33 MCP tools (plus the Company Brain tools when a knowledge base is present, and the **real proxied tools of every enabled ecosystem MCP server**, namespaced as `<id>__<tool>`)
 3. **`vectalon import`** — Feeds the Company Brain: PRDs, Jira exports, postmortems, any SDLC artifact
 4. **Agent connects** — Your AI agent (Claude Code, OpenCode, etc.) connects to the MCP server and gets full project awareness
 5. **Agent acts** — The agent uses the harness tools to generate code, fix bugs, write tests, produce PRDs/ADRs/test plans — all in your project's style

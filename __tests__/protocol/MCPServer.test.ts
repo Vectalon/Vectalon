@@ -66,7 +66,7 @@ describe('MCPServer', () => {
 
   it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(27)
+    expect(names).toHaveLength(28)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -75,6 +75,7 @@ describe('MCPServer', () => {
         'analyze_error',
         'suggest_dependency_update',
         'get_learned_patterns',
+        'run_agent',
         'execute_workflow',
         'write_prd',
         'write_user_stories',
@@ -105,6 +106,7 @@ describe('MCPServer', () => {
     for (const tool of server.getToolList()) {
       const args: Record<string, unknown> = {}
       if (tool.name === 'generate_component') args.name = 'Button'
+      if (tool.name === 'run_agent') args.prompt = 'Test'
       if (tool.name === 'execute_workflow') {
         args.workflowId = 'feature-development'
         args.prompt = 'Create a login screen'
@@ -148,6 +150,23 @@ describe('MCPServer', () => {
       expect(result.isError).not.toBe(true)
       expect(result.content.length).toBeGreaterThan(0)
     }
+  })
+
+  it('run_agent runs the local agent loop over the SDK tools', async () => {
+    const server = createServer()
+    const missing = await server.handleToolCall({ id: '0', name: 'run_agent', arguments: {} })
+    expect(missing.content).toContain('Missing prompt')
+
+    const result = await server.handleToolCall({
+      id: '1',
+      name: 'run_agent',
+      arguments: { prompt: 'Summarize the project' },
+    })
+    expect(result.isError).not.toBe(true)
+    expect(result.content).toContain('## Agent result')
+    // No model is downloaded in tests, so the loop reports the unparseable
+    // fallback output instead of hallucinating tools.
+    expect(result.content).toContain('parseable tool call or answer')
   })
 
   it('returns an error result for unknown tools', async () => {
