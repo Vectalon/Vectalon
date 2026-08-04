@@ -356,6 +356,7 @@ npx vectalon leaderboard bench/results                # merge bench/results/*.js
 npx vectalon leaderboard bench/results --out LEADERBOARD.md
 npx vectalon leaderboard bench/results --json         # merged runs as JSON
 npx vectalon leaderboard bench/results --timestamp 2026-08-03T03:00:00.000Z
+npx vectalon leaderboard bench/results --pr-comment   # compact PR comment to stdout
 ```
 
 **What it does**
@@ -376,12 +377,13 @@ npx vectalon leaderboard bench/results --timestamp 2026-08-03T03:00:00.000Z
 | `--out <path>` | Output file (default `BENCHMARK_RESULTS.md`) |
 | `--json` | Print the merged runs as JSON instead of writing markdown |
 | `--timestamp <iso>` | Override the leaderboard timestamp (default now) |
+| `--pr-comment` | Print a compact PR comment (with the `<!-- vectalon-leaderboard -->` upsert marker) to stdout instead of writing markdown |
 
 **Exit codes**
 
 | Code | When |
 |---|---|
-| 0 | Leaderboard written (or JSON printed) |
+| 0 | Leaderboard written (or JSON / PR comment printed) |
 | 1 | No result files found in the directory |
 
 **Nightly leaderboard (M5)** — `.github/workflows/leaderboard.yml` runs
@@ -389,7 +391,15 @@ npx vectalon leaderboard bench/results --timestamp 2026-08-03T03:00:00.000Z
 matrix at 03:00 UTC daily (or on `workflow_dispatch`), skips remote providers
 whose API key secret is unset, uploads each model's result as an artifact, then
 merges them with this command and commits the timestamped
-`BENCHMARK_RESULTS.md` back to the repo.
+`BENCHMARK_RESULTS.md` — and the per-model result JSONs (force-added, since the
+repo gitignores `bench/results/*.json` locally) — back to the repo.
+
+**PR leaderboard comments** — `.github/workflows/pr-leaderboard.yml` runs on
+`pull_request` (`opened` / `synchronize` / `reopened`): it builds, renders the
+compact comparison with `--pr-comment` from the committed results, and upserts a
+single comment (located by the marker) so the leaderboard stays current as the
+branch evolves. When no results are committed yet (e.g. before the first nightly
+run), the workflow skips gracefully without failing the PR check.
 
 ---
 

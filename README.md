@@ -543,6 +543,7 @@ npx vectalon bench -o report.md               # write the report to a file
 npx vectalon bench --scenarios ./my-evals     # run your own custom eval pack
 npx vectalon bench --baseline bench/baseline.json  # CI regression gate
 npx vectalon leaderboard bench/results              # merge runs into BENCHMARK_RESULTS.md
+npx vectalon leaderboard bench/results --pr-comment  # compact comment for PRs (upsert marker)
 ```
 
 - `--model <provider>` — `local` / `openai` / `anthropic`; runs the real-model
@@ -560,6 +561,12 @@ npx vectalon leaderboard bench/results              # merge runs into BENCHMARK_
   JSON and **exit 1 on any axis regression** (the CI gate; pass
   `bench/baseline.json` to run it — without the flag the gate is off);
   `--tolerance <fraction>` tunes the allowed drop (default `0.01`)
+
+On every PR, `.github/workflows/pr-leaderboard.yml` posts a **leaderboard
+comment** — the nightly per-model comparison (overall composite, guardrails,
+and relative-to-human per model) rendered from the committed `bench/results/*.json`
+with `vectalon leaderboard --pr-comment`, upserted under a stable marker so it
+updates as the branch evolves rather than spamming duplicates.
 
 **Custom eval packs** — teams can author their own RN evals without a PR.
 Point `--scenarios` at any directory of versioned scenario JSON files (nested
@@ -1386,10 +1393,14 @@ Areas we'd love help with:
   nightly leaderboard prerequisites (API-key secrets, local model downloaded,
   `bench/results` writable) so a failed scheduled run is caught before the
   cron fires
+- ✅ **PR leaderboard comments** — `.github/workflows/pr-leaderboard.yml`
+  renders the committed nightly results into a compact per-model comparison
+  (`vectalon leaderboard --pr-comment`) and posts it as a marker-identified
+  comment on every PR, updating it in place as the branch evolves instead of
+  spamming new comments
 
 **Next up:**
 
-- **PR leaderboard comments** — comment the nightly leaderboard comparison on PRs
 - **CI/CD integration** — auto-fix PRs, draft release notes in CI
 - **VS Code extension** — inline suggestions against the harness
 - **v1.0** — Stable protocol, production-ready

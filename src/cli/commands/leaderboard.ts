@@ -2,6 +2,7 @@ import { logger } from '../logger'
 import {
   defaultLeaderboardResultsDir,
   loadLeaderboardRuns,
+  renderLeaderboardPrComment,
   writeLeaderboard,
 } from '../../bench/leaderboard'
 
@@ -14,6 +15,8 @@ export interface LeaderboardCommandOptions {
   json?: boolean
   /** Override the leaderboard timestamp (ISO string; default now). */
   timestamp?: string
+  /** Print the compact PR comment (with upsert marker) to stdout instead of writing markdown. */
+  prComment?: boolean
 }
 
 export function leaderboardCommand(options: LeaderboardCommandOptions): void {
@@ -25,6 +28,12 @@ export function leaderboardCommand(options: LeaderboardCommandOptions): void {
     logger.info('Run per-model passes first, e.g.:')
     logger.dim('  npx vectalon bench --model openai --live --json -o bench/results/openai.json')
     process.exit(1)
+  }
+
+  if (options.prComment) {
+    const timestamp = options.timestamp || new Date().toISOString()
+    logger.out(renderLeaderboardPrComment(runs, timestamp) + '\n')
+    return
   }
 
   if (options.json) {

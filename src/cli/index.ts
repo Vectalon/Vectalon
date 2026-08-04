@@ -139,6 +139,7 @@ export function runCLI(): void {
     .option('--out <path>', 'Output file (default BENCHMARK_RESULTS.md)')
     .option('--json', 'Print the merged runs as JSON instead of markdown')
     .option('--timestamp <iso>', 'Override the leaderboard timestamp (default now)')
+    .option('--pr-comment', 'Print a compact PR comment (with upsert marker) instead of writing markdown')
     .action(leaderboardCommand)
 
   const argv = process.argv

@@ -71,6 +71,26 @@ describe('leaderboardCommand', () => {
     }
   })
 
+  it('prints a compact PR comment with --pr-comment', () => {
+    const dir = createTempProject({
+      'openai.json': JSON.stringify(summary(0.88)),
+      'anthropic.json': JSON.stringify(summary(0.91)),
+    })
+    try {
+      leaderboardCommand({ dir, prComment: true, timestamp: '2026-08-03T03:00:00.000Z' })
+      const stdout = (process.stdout.write as jest.Mock).mock.calls
+        .map((call: unknown[]) => (typeof call[0] === 'string' ? call[0] : ''))
+        .join('')
+      expect(stdout).toContain('<!-- vectalon-leaderboard -->')
+      expect(stdout).toContain('| anthropic | 91% |')
+      expect(stdout).toContain('| openai | 88% |')
+      // Not the full markdown leaderboard
+      expect(stdout).not.toContain('# RN Coding Tests — Model Leaderboard')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
   it('exits non-zero when no results are found', () => {
     const exit = jest.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('exit')
