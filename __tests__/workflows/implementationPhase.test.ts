@@ -468,6 +468,76 @@ describe('implementationPhase', () => {
     expect(existsSync(join(projectRoot, 'scripts/remove-appcenter.sh'))).toBe(true)
   })
 
+  it('strips iOS/Android native references (pods, gradle includes, imports) when removing a dependency', async () => {
+    const srcDir = join(projectRoot, 'src')
+    mkdirSync(srcDir, { recursive: true })
+    writeFileSync(
+      join(projectRoot, 'package.json'),
+      JSON.stringify(
+        { name: 'my-app', version: '1.0.0', dependencies: { 'react-native': '0.72.0', appcenter: '5.0.3' } },
+        null,
+        2
+      )
+    )
+    mkdirSync(join(projectRoot, 'ios'), { recursive: true })
+    mkdirSync(join(projectRoot, 'android/app/src/main/java/com/app'), { recursive: true })
+    writeFileSync(
+      join(projectRoot, 'ios/Podfile'),
+      [
+        "require_relative '../node_modules/react-native/scripts/react_native_pods'",
+        "pod 'AppCenter', :path => '../node_modules/appcenter/ios'",
+        "pod 'React', :path => '../node_modules/react-native/ReactCommon'",
+      ].join('\n')
+    )
+    writeFileSync(
+      join(projectRoot, 'android/settings.gradle'),
+      [
+        "include ':app'",
+        "include ':appcenter'",
+        "project(':appcenter').projectDir = new File(rootProject.projectDir, '../node_modules/appcenter/android')",
+      ].join('\n')
+    )
+    writeFileSync(
+      join(projectRoot, 'android/app/src/main/java/com/app/MainApplication.kt'),
+      [
+        'import com.microsoft.appcenter.AppCenter',
+        'import com.microsoft.appcenter.analytics.Analytics',
+        '',
+        'class MainApplication : Application() {',
+        '  override fun onCreate() {',
+        '    AppCenter.start(applicationContext, "secret", Analytics::class.java)',
+        '  }',
+        '}',
+      ].join('\n')
+    )
+
+    const router = createMockModelRouterSequence([
+      JSON.stringify({ intents: [{ type: 'remove-dependency', dependency: 'appcenter', confidence: 1, reasoning: 'remove appcenter' }] }),
+    ])
+    const result = await implementationPhase.run(createContext(router, 'Remove appcenter safely from this project', projectRoot))
+
+    // Podfile: pod declaration removed, unrelated pod untouched.
+    const podfile = readFileSync(join(projectRoot, 'ios/Podfile'), 'utf-8')
+    expect(podfile).not.toContain('AppCenter')
+    expect(podfile).toContain("pod 'React'")
+
+    // settings.gradle: include + projectDir removed, app include untouched.
+    const settings = readFileSync(join(projectRoot, 'android/settings.gradle'), 'utf-8')
+    expect(settings).not.toContain('appcenter')
+    expect(settings).toContain("include ':app'")
+
+    // MainApplication: import lines removed, runtime usage reported (not deleted).
+    const mainApplication = readFileSync(join(projectRoot, 'android/app/src/main/java/com/app/MainApplication.kt'), 'utf-8')
+    expect(mainApplication).not.toContain('import com.microsoft.appcenter')
+    expect(mainApplication).toContain('AppCenter.start')
+
+    // Output surfaces the native work.
+    expect(result.output).toContain('Native changes applied')
+    expect(result.output).toContain('ios/Podfile')
+    expect(result.output).toContain('android/settings.gradle')
+    expect(result.output).toContain('Native references remaining')
+  })
+
   it('asks the model to clean remaining usages after stripping imports', async () => {
     const srcDir = join(projectRoot, 'src')
     mkdirSync(srcDir, { recursive: true })

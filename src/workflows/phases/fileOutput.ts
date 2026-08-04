@@ -5,7 +5,7 @@ import { reportPathChange } from '../../utils/fileDiff'
 export const VECTALON_PACKAGE_NAME = '@vectalon-dev/rn-vectalon'
 export const GENERATED_OUTPUT_DIR = '.vectalon/generated'
 
-const FILE_PATH_RE = /^[A-Za-z0-9_@./-]+\.(?:tsx?|jsx?|ts|js|json|css|scss|swift|kt|java|gradle|plist|podspec|yaml|yml|md|sh|bash)$/
+const FILE_PATH_RE = /^[A-Za-z0-9_@./-]+\.(?:tsx?|jsx?|ts|js|json|css|scss|swift|kt|java|gradle|plist|podspec|yaml|yml|md|sh|bash|mm|m|h|pbxproj|xml|properties|xcconfig)$/
 
 export function isSafeProjectPath(filePath: string): boolean {
   if (!FILE_PATH_RE.test(filePath)) return false

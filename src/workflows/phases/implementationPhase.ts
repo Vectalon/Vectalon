@@ -6,6 +6,7 @@ import type { ContextSnapshot } from '../../harness/types'
 import type { ModelRouter } from '../../model/ModelRouter'
 import { removeUnusedImportsFromProject, findSourceFiles } from '../../utils/unusedImports'
 import { reportPathChange } from '../../utils/fileDiff'
+import { scanNativeReferences, stripNativeReferences, type NativeReference } from '../../utils/nativeScan'
 import { detectConventions, phaseResult, sanitizeFileName, fileExtension, jsxExtension } from './helpers'
 import { getIntent, intentTitle, isRemoveDependency, isRefactor, isFix, type WorkflowIntent } from './intent'
 import { runGuardrails, formatGuardrailResult, GuardrailResult, PolicyEngine } from '../../guardrails'
@@ -956,6 +957,38 @@ async function generateRemoveDependencyImplementation(
     }
   }
 
+  // --- 4. Native iOS/Android references: strip safe patterns, report the rest. ---
+  let nativeRemoved: NativeReference[] = []
+  let nativeRemaining: NativeReference[] = []
+  if (projectRoot && !redirectToGenerated) {
+    const native = stripNativeReferences(projectRoot, uninstallPackages)
+    nativeRemoved = native.removed
+    nativeRemaining = native.remaining
+  }
+
+  // Feed remaining NATIVE CODE usages (MainApplication.kt wiring, AppDelegate
+  // init calls) through the same model cleanup pass — scoped to those files and
+  // guarded by the code-likeness check. Manifest/plist/pbxproj entries are too
+  // fragile to rewrite blindly and are reported for manual review instead.
+  const nativeCodeRefFiles = [
+    ...new Set(nativeRemaining.filter(r => r.kind === 'code' || r.kind === 'import').map(r => r.file)),
+  ]
+  const modelCleanedNative: string[] = []
+  if (nativeCodeRefFiles.length > 0 && projectRoot && !redirectToGenerated) {
+    const cleaned = await modelCleanPackageUsages(modelRouter, projectRoot, dep, nativeCodeRefFiles, uninstallPackages)
+    const scoped = cleaned.files.filter(f => nativeCodeRefFiles.includes(f.path))
+    if (scoped.length > 0) {
+      for (const file of scoped) {
+        const writtenPath = writeProjectFile(projectRoot, file.path, file.content)
+        if (writtenPath) {
+          modelCleanedNative.push(file.path)
+        }
+      }
+      // Re-scan so the report reflects the final native state.
+      nativeRemaining = scanNativeReferences(projectRoot, uninstallPackages)
+    }
+  }
+
   const codeChanges = usages.map(u => {
     const removedImports = u.imports.filter(imp =>
       imp.toLowerCase().includes(ctx.dependency.toLowerCase())
@@ -967,23 +1000,29 @@ async function generateRemoveDependencyImplementation(
     }
   })
 
-  const nativeCleanup = isExpo
-    ? [
-        '### Expo managed workflow',
-        '1. If the package ships an Expo config plugin, remove its entry from `app.json` / `app.config.js` (`plugins` array).',
-        '2. Regenerate native projects if needed: `npx expo prebuild --clean` (only if you ejected).',
-        '3. Verify with `npx expo-doctor` that no dangling native config remains.',
-      ]
-    : [
-        '### Android',
-        '1. Open `android/app/build.gradle` and remove any package configuration.',
-        '2. Open `android/settings.gradle` and remove related include entries if present.',
-        '3. Clean and rebuild: `cd android && ./gradlew clean`',
-        '',
-        '### iOS',
-        '1. Open `ios/Podfile` and remove any package pods.',
-        '2. Run `cd ios && pod install` to update the lockfile.',
-      ]
+  const nativeCleanup = [
+    isExpo
+      ? [
+          '### Expo managed workflow',
+          '1. If the package ships an Expo config plugin, remove its entry from `app.json` / `app.config.js` (`plugins` array).',
+          '2. Regenerate native projects if needed: `npx expo prebuild --clean` (only if you ejected).',
+          '3. Verify with `npx expo-doctor` that no dangling native config remains.',
+        ]
+      : [
+          '### Native changes applied',
+          nativeRemoved.length > 0
+            ? nativeRemoved.map(r => `- ${r.platform} ${r.file}:${r.line} — ${r.kind}`).join('\n')
+            : '- No deterministic native changes were needed (or no ios/android directory found).',
+          ...(modelCleanedNative.length > 0
+            ? ['', '### Native code cleaned by the model', ...modelCleanedNative.map(f => `- ${f}`)]
+            : []),
+          '',
+          '### Native references remaining (review manually)',
+          nativeRemaining.length > 0
+            ? nativeRemaining.map(r => `- ${r.platform} ${r.file}:${r.line} — ${r.kind} — \`${r.text}\``).join('\n')
+            : '- None — the native side is clean.',
+        ],
+  ].flat()
 
   const installCmd = pm === 'yarn' ? 'yarn install' : pm === 'pnpm' ? 'pnpm install' : 'npm install'
   const removalScript = [
@@ -994,6 +1033,15 @@ async function generateRemoveDependencyImplementation(
     '# 1. Prune the removed package from the lockfile (package.json was already edited)',
     installCmd,
     ...(isExpo ? ['', '# Expo managed workflow: regenerate native projects if ejected', 'npx expo prebuild --clean', '', 'npx expo-doctor'] : ['', '# iOS cleanup', 'cd ios || exit 0', 'pod install', 'cd ..']),
+    '',
+    '# Verify no native (iOS/Android) references remain',
+    `NATIVE=$(grep -R -i -E "${ctx.dependency}([-_/]|$)|node_modules/${ctx.dependency}/" ios android --include='*.mm' --include='*.m' --include='*.h' --include='*.swift' --include='*.gradle' --include='*.kts' --include='*.pbxproj' --include='*.plist' --include='*.xml' 2>/dev/null || true)`,
+    `if [ -n "$NATIVE" ]; then`,
+    `  echo "Error: native files still reference ${ctx.dependency}:"`,
+    `  echo "$NATIVE"`,
+    `  exit 1`,
+    `fi`,
+    `echo "No native references remain for ${ctx.dependency}"`,
     '',
     '# Verify no imports remain in source files',
     `IMPORTS=$(grep -R -E "from ['"]${ctx.dependency}['"]|require\\(['"]${ctx.dependency}['"]\\)" src/ --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" 2>/dev/null || true)`,
@@ -1031,7 +1079,9 @@ async function generateRemoveDependencyImplementation(
     pkgChangeNote,
     ...strippedFiles.map(f => `- ${f}: stripped ${dep} import(s)`),
     ...modelCleaned.map(f => `- ${f}: model removed remaining ${dep} usage(s)`),
-    ...(pkgRemoved.length === 0 && strippedFiles.length === 0 && modelCleaned.length === 0 ? ['- Nothing to change — the dependency was already absent.'] : []),
+    ...(isExpo ? [] : nativeRemoved.map(r => `- ${r.platform} ${r.file}:${r.line}: removed ${r.kind} reference`)),
+    ...(isExpo ? [] : modelCleanedNative.map(f => `- ${f}: model removed remaining ${dep} native usage(s)`)),
+    ...(pkgRemoved.length === 0 && strippedFiles.length === 0 && modelCleaned.length === 0 && nativeRemoved.length === 0 && modelCleanedNative.length === 0 ? ['- Nothing to change — the dependency was already absent.'] : []),
     '',
     '### Remaining references (review manually)',
     remainingReferences.length > 0
@@ -1077,6 +1127,11 @@ async function generateRemoveDependencyImplementation(
         const full = join(projectRoot || '', f)
         const content = existsSync(full) ? readFileSync(full, 'utf-8') : ''
         return { type: 'engineering' as const, title: `Removed usage: ${f}`, content, path: f }
+      }),
+      ...modelCleanedNative.map(f => {
+        const full = join(projectRoot || '', f)
+        const content = existsSync(full) ? readFileSync(full, 'utf-8') : ''
+        return { type: 'engineering' as const, title: `Removed native usage: ${f}`, content, path: f }
       }),
       { type: 'engineering', title: `Cleanup script: ${dep}`, content: removalScript, path: scriptPath },
     ],
