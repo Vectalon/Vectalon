@@ -9,6 +9,12 @@ export interface ModelConfig {
   endpoint?: string
   maxTokens?: number
   temperature?: number
+  /**
+   * Project root used to enrich local generations with the project's enabled
+   * ecosystem skills (.vectalon/skills/<id>/SKILL.md) inlined into the system
+   * prompt, so the local model follows the same best practices as agents.
+   */
+  projectRoot?: string
 }
 
 export interface ModelRequest {

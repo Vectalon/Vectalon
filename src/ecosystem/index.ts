@@ -16,6 +16,13 @@ export {
   enableEcosystemItems,
 } from './config'
 export {
+  readSkillContent,
+  readEnabledSkills,
+  formatSkillsContext,
+  buildSkillsSystemPrompt,
+} from './skills'
+export type { SkillSource, SkillsContextOptions } from './skills'
+export {
   checkEcosystemItem,
   runEcosystemDoctor,
   checkNativeToolchain,
