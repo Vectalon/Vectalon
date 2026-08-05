@@ -1,6 +1,6 @@
 # RN Coding Tests — Model Leaderboard
 
-_Generated: 2026-08-04T05:53:55.813Z · spec v1 · 1 model(s) · 10 scenario(s)_
+_Generated: 2026-08-05T05:57:56.371Z · spec v1 · 1 model(s) · 11 scenario(s)_
 
 ## Composite
 
@@ -16,6 +16,7 @@ _Generated: 2026-08-04T05:53:55.813Z · spec v1 · 1 model(s) · 10 scenario(s)_
 | rn-08-feature-flags | 0% |
 | rn-09-accessible-form | 0% |
 | rn-10-refactor-hooks-ts | 0% |
+| rn-11-remove-dependency-native | n/a |
 | **Overall** | 0% |
 
 ## Correctness
@@ -32,6 +33,7 @@ _Generated: 2026-08-04T05:53:55.813Z · spec v1 · 1 model(s) · 10 scenario(s)_
 | rn-08-feature-flags | 0% |
 | rn-09-accessible-form | 0% |
 | rn-10-refactor-hooks-ts | 0% |
+| rn-11-remove-dependency-native | n/a |
 
 ## Adherence
 
@@ -47,6 +49,7 @@ _Generated: 2026-08-04T05:53:55.813Z · spec v1 · 1 model(s) · 10 scenario(s)_
 | rn-08-feature-flags | n/a |
 | rn-09-accessible-form | n/a |
 | rn-10-refactor-hooks-ts | n/a |
+| rn-11-remove-dependency-native | n/a |
 
 ## Guardrails
 
@@ -62,11 +65,12 @@ _Generated: 2026-08-04T05:53:55.813Z · spec v1 · 1 model(s) · 10 scenario(s)_
 | rn-08-feature-flags | n/a |
 | rn-09-accessible-form | n/a |
 | rn-10-refactor-hooks-ts | n/a |
+| rn-11-remove-dependency-native | n/a |
 | **Overall** | n/a |
 
 ## Relative to human (overall)
 
 | Model | Relative composite | Reference composite |
 | --- | --- | --- |
-| local | 0% | 89% |
+| local | 0% | 90% |
 
