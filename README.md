@@ -70,29 +70,42 @@ Go to **Settings → Secrets and variables → Actions** and add:
 |---|---|---|
 | **CI** | Push to `main` | Full build + test + lint + typecheck + extension checks + benchmark |
 | **PR** | Pull request | Fast validation: typecheck → lint → build → test |
-| **Publish** | Manual only (`workflow_dispatch`) | Build → test → lint → publish to npm → create Git tag |
+| **Publish** | Push to `main` with `[publish-*]` tag **or** manual (`workflow_dispatch`) | Build → test → lint → publish to npm → create Git tag |
 
-### How to Publish a New Version
+### How to Publish a New Version (Auto-Publish on Push)
 
 **⚠️ IMPORTANT: npm never allows republishing the same version. Always bump first.**
 
+Add one of these tags to your commit message when pushing to `main`:
+
+| Tag | What gets published |
+|---|---|
+| `[publish-core]` | `@vectalon-dev/core` only |
+| `[publish-rn]` | `@vectalon-dev/rn` only |
+| `[publish-both]` | Both packages |
+
 ```bash
-# 1. Bump versions (pick one)
+# 1. Bump versions (pick one or both)
 cd packages/core && npm version prerelease --preid=beta   # 1.0.0-beta.2 → 1.0.0-beta.3
 cd packages/rn && npm version prerelease --preid=beta     # 0.6.0-beta.3 → 0.6.0-beta.4
 
-# 2. Commit the version bumps
-git add -A && git commit -m "chore: bump versions" && git push
+# 2. Commit with the publish tag
+git add -A && git commit -m "chore: bump versions [publish-rn]" && git push
 
-# 3. Go to GitHub → Actions → Publish Packages → Run workflow
-#    Select: both  (or just core / just rn)
-
-# 4. Workflow will automatically create a Git tag: rn-vX.X.X-core-vX.X.X
+# 3. CI runs tests automatically
+# 4. Publish workflow auto-triggers and publishes the tagged package(s)
+# 5. A Git tag is created: rn-vX.X.X-core-vX.X.X
 ```
 
 ### Manual Publish (Fallback)
 
-If GitHub Actions fails, publish locally:
+If you forget the commit tag, use the GitHub UI:
+
+1. Go to **Actions → Publish Packages → Run workflow**
+2. Select the package from the dropdown
+3. Click **Run workflow**
+
+Or publish locally:
 
 ```bash
 cd packages/core && npm publish --access public
