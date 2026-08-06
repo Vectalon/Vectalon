@@ -13,6 +13,7 @@ import { startEnabledMcpClients } from '../../protocol/subMcp'
 import type { McpClientHandle } from '../../protocol/subMcp'
 import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
 import { activeModelLabel, isRemoteKeyMissing } from '../../model/setup'
+import { getWasmPreset } from '../../model/local/wasmPresets'
 import { printSyncStatus } from './sync'
 import { existsSync, readFileSync } from 'fs'
 import { join, basename, resolve } from 'path'
@@ -49,17 +50,28 @@ export async function serveCommand(options: {
 
   // The model provider comes from --model, else the project manifest set by
   // `vectalon init` (which also records the model name + API-key env var).
-  const modelRouter = new ModelRouter()
-  const modelProvider = resolveProjectModelProvider(root, options.modelProvider) as 'local' | 'openai' | 'anthropic'
+  // An explicit --model choice disables the zero-config WASM auto-tier (see
+  // feature.ts); projectRoot lets the local provider inline enabled ecosystem
+  // skills into local generations behind every tool that uses the model.
+  const modelRouter = new ModelRouter({
+    projectRoot: root,
+    zeroConfigEnabled: options.modelProvider ? false : undefined,
+  })
+  const modelProvider = resolveProjectModelProvider(root, options.modelProvider) as 'local' | 'wasm' | 'openai' | 'anthropic'
   const modelConfig = resolveProjectModelConfig(root)
-  // projectRoot lets the local provider inline enabled ecosystem skills into
-  // the system prompt of local generations behind every tool that uses the model.
-  modelRouter.initialize({ provider: modelProvider, modelName: modelConfig?.modelName, apiKeyEnv: modelConfig?.apiKeyEnv, projectRoot: root })
+  modelRouter.initialize({ provider: modelProvider, modelName: modelConfig?.modelName, apiKeyEnv: modelConfig?.apiKeyEnv })
 
-  const activeModel = activeModelLabel(modelProvider, modelConfig)
+  // The WASM zero-config tier shows as the effective model when it is active.
+  const activeModel =
+    modelProvider === 'local' || modelProvider === 'wasm'
+      ? modelRouter.getActiveLabel()
+      : activeModelLabel(modelProvider, modelConfig)
   logger.info(`Model: ${activeModel}`)
   if (isRemoteKeyMissing(modelProvider, modelConfig)) {
     logger.warn(`No API key found for ${modelProvider}. Set ${modelConfig?.apiKeyEnv || modelProvider.toUpperCase() + '_API_KEY'} in your environment or export it before connecting agents.`)
+  }
+  if (modelRouter.isZeroConfigActive()) {
+    logger.info(`Zero-config WASM model (${getWasmPreset().modelId}) will download on first tool use — RN_VECTALON_NO_WASM=1 to disable`)
   }
 
   const protocol = options.protocol || 'mcp'

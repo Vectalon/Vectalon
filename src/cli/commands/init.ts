@@ -172,6 +172,10 @@ function logModelSetup(model: ResolvedModelSetup): void {
     }
     return
   }
+  if (model.provider === 'wasm') {
+    logger.dim('  Model: wasm provider configured — Qwen2.5-Coder ONNX/WASM downloads on first use (zero-config).')
+    return
+  }
   const config = model.modelConfig
   const envSet = model.provider === 'openai'
     ? !!process.env.OPENAI_API_KEY
@@ -218,6 +222,11 @@ async function setupModelProvider(options: Record<string, unknown>): Promise<Res
         value: 'local',
         label: 'Local (Qwen2.5-Coder)',
         hint: availability.localDownloaded ? 'downloaded' : `~${getDefaultPreset().sizeGb} GB download`,
+      },
+      {
+        value: 'wasm',
+        label: 'WASM (zero-config)',
+        hint: 'downloads on first use — no API key, no native build',
       },
       { value: 'openai', label: 'OpenAI', hint: availability.openaiKeySet ? 'OPENAI_API_KEY set' : 'needs OPENAI_API_KEY' },
       { value: 'anthropic', label: 'Anthropic', hint: availability.anthropicKeySet ? 'ANTHROPIC_API_KEY set' : 'needs ANTHROPIC_API_KEY' },

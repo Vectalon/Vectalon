@@ -5,8 +5,10 @@ export type { WorkspaceInfo, WorkspaceManager } from './harness'
 export type { PlatformSuffix, ImportInfo, ExportInfo, HookCall, NavigatorInfo, NavigationInfo, ComponentDef, SourceAnalysis } from './harness'
 export type { GraphComponent, GraphEdge, GraphHookUsage, GraphNavigator, GraphNativeModule, GraphStore, GraphExpoRoute, ReRenderImpact, RNGraph } from './harness'
 
-export { ModelRouter } from './model'
+export { ModelRouter, WasmProvider, wasmZeroConfigEnabled } from './model'
+export { getWasmPreset, wasmDtype, wasmCacheDir, wasmCacheReady, WASM_MODEL_PRESETS } from './model'
 export type { ModelConfig, ModelRequest, ModelResponse, ModelProviderType } from './model'
+export type { WasmModelPreset, WasmProviderOptions } from './model'
 
 export { MCPServer } from './protocol'
 export type { AgentTool, ToolCall, ToolResult, ProtocolType } from './protocol'

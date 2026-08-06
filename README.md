@@ -64,7 +64,8 @@ model calls, and can be optionally `enhance`d through the configured model.
 
 ### Pluggable Model Layer
 Works with any model:
-- **Local**: Bundled lightweight model for offline use
+- **Local**: GGUF model via node-llama-cpp for offline use (`vectalon pull`)
+- **WASM (zero-config)**: quantized ONNX code model via `@huggingface/transformers` — downloads on first use, runs on any CPU
 - **OpenAI**: GPT-4o, GPT-4, GPT-3.5
 - **Anthropic**: Claude Sonnet 4, Claude 3.5 Haiku
 - **Custom**: Any API-compatible endpoint
@@ -102,6 +103,7 @@ your toolchain, not just a text generator.
 - **Monorepo workspace support (V-4).** The scanner detects pnpm / Yarn / npm / Turborepo / Lerna workspaces by walking up for `pnpm-workspace.yaml`, `turbo.json`, `lerna.json`, or a `workspaces` manifest field, maps internal packages (`@acme/ui` → `packages/ui`), and resolves the hoisted `node_modules` root so Metro bundle analysis and static budget checks look in the right place. Context prompts are monorepo-aware — they tell agents this app lives in a workspace, that `react-native` is hoisted to the root, and to avoid adding it to the sub-package's `devDependencies`.
 - **React 19 / React Compiler guardrails (VI-1).** The harness detects the React version and whether `babel-plugin-react-compiler` is wired up (manifest or babel/eslint config), then guardrails flag render-phase `ref.current` mutation, `useEffect` subscriptions without cleanup, React 19 `use()` without a `<Suspense>` boundary, unstable dependency arrays, `forwardRef` on React 19 (use ref-as-prop), and redundant manual `useMemo`/`useCallback` when the Compiler auto-memoizes. Context prompts explain the memoization implications so generated code matches the project's React.
 - **VS Code extension (IV-1).** A thin IDE layer over the exact same MCP server — `extension/` connects to `vectalon serve --protocol http` (auto-starting it when needed) and adds command-palette workflows (run a feature workflow, review/guardrail the current file, generate a component, show project context, search the knowledge base), **inline guardrail status** as Problems-panel diagnostics on save/active-file change with a status-bar summary, and a **Knowledge Base sidebar** that groups the artifact store by type and renders each artifact in a preview panel. No new backend — the extension reuses the existing HTTP tool surface (`GET /tools`, `POST /call`).
+- **Zero-config WASM inference.** A quantized Qwen2.5-Coder model (ONNX via `@huggingface/transformers`, the WASM runtime — no API key, no native build, any CPU) is a first-class model tier: `npm install` + `vectalon feature` produces real model output immediately. Weights download from Hugging Face Hub on first use (progress-cached under the shared model store, `~/.config/rn-vectalon/models/wasm`) and the deterministic stub is now the *graceful fallback*, not the primary path — it only appears when the download fails (e.g. no network). Opt out with `RN_VECTALON_NO_WASM=1`, or pick a specific model/dtype with `RN_VECTALON_WASM_MODEL` / `RN_VECTALON_WASM_DTYPE`.
   - System prompts that require real, runnable code and forbid TODOs/placeholders
   - Convention detection (TypeScript, navigation, StyleSheet) that shapes generated code
   - A deterministic fallback scaffold when no model is downloaded
@@ -136,8 +138,8 @@ cleanup, …), scoring generated code on three axes:
 Every scenario ships with a **human-authored reference solution**, so scores are
 also reported **relative to the human baseline** (e.g. “generated code is 92% of
 human best-practice adherence”). Run the deterministic baseline offline, or pass
-`--model local|openai|anthropic` for a real-model leaderboard pass over all 11
-scenarios. See `docs/BENCHMARK_PLAN.md` for the full plan.
+`--model local|wasm|openai|anthropic` for a real-model leaderboard pass over
+all 11 scenarios. See `docs/BENCHMARK_PLAN.md` for the full plan.
 
 ### Expo & React Native CLI — explicit separation
 rn-vectalon detects whether your project is **Expo-managed** or a **bare React
@@ -467,12 +469,18 @@ is written to the manifest and used by `vectalon feature`/`serve` automatically:
 
 - `vectalon init --model local` (default) — the local Qwen2.5-Coder provider;
   interactively, `init` offers to download the model (~1.1 GB) right away
+- `vectalon init --model wasm` — zero-config ONNX/WASM provider; weights
+  download on first use (no API key, no native build)
 - `vectalon init --model openai` — remote OpenAI provider; `init` records the
   model name and that it reads `OPENAI_API_KEY` from the environment
 - `vectalon init --model anthropic` — remote Anthropic provider via
   `ANTHROPIC_API_KEY`
 - Without a flag on a TTY, `init` prompts you to pick a provider; API keys are
   **never written to disk** — only the env var name is recorded
+
+Even without choosing WASM at init, a `local` provider run **auto-tiers** to the
+WASM model whenever no GGUF model is downloaded and the tier is enabled — so a
+fresh `npm install` + `vectalon feature` generates real code with zero setup.
 
 `init` detects whether your project is **Expo-managed** or a **bare React Native
 CLI** project and sets up the tooling accordingly:
@@ -508,7 +516,7 @@ implementation phase.
 
 ```bash
 vectalon pull              # default: Qwen2.5-Coder-1.5B-Instruct-GGUF
-vectalon models            # list available and downloaded models
+vectalon models            # list available and downloaded models (incl. the WASM tier)
 ```
 
 The default model is **Qwen2.5-Coder-1.5B-Instruct-GGUF** (`Q4_K_M`, ~1.1 GB), licensed under **Apache 2.0**, which is free for commercial use. If no model is
@@ -522,6 +530,31 @@ initialization: if it's missing or fails to load, the harness logs a clear
 warning and degrades to the deterministic stub (same offline behavior as no
 model), so nothing breaks. Run `npm install node-llama-cpp` and re-init to
 restore real local inference, or just use a remote provider.
+
+### Zero-config WASM inference
+
+Since the default `local` tier auto-tiers to the WASM model when no GGUF model
+is downloaded, `npm install` alone is enough to get **real model output** — no
+API key, no `vectalon pull`, no native build. The run logs which model is
+active (e.g. `Model: local → wasm (onnx-community/Qwen2.5-Coder-0.5B-Instruct)`)
+and notes that weights download on first use.
+
+- **Runtime** — a quantized ONNX code model runs through
+  `@huggingface/transformers` (ONNX Runtime: the WASM backend in browsers,
+  prebuilt per-platform binaries in Node — either way **no compilation** and
+  works on any CPU). WASM inference is slower than native GGUF — that tradeoff
+  is the price of "works everywhere".
+- **First use** — weights (~0.5 GB for the default `q8` 0.5B model; `q4` is
+  ~half that) download from Hugging Face Hub and are cached under
+  `~/.config/rn-vectalon/models/wasm/` (relocatable via `RN_VECTALON_CONFIG_DIR`).
+  `vectalon models` shows the cache status.
+- **Fallback order** — remote API key → GGUF model → **WASM model** →
+  deterministic stub. The stub is now the graceful last resort (only when the
+  download fails, e.g. no network), not the primary path.
+- **Opt-out / tuning** — `RN_VECTALON_NO_WASM=1` disables the tier entirely;
+  `RN_VECTALON_WASM_MODEL=<hf-repo>` and `RN_VECTALON_WASM_DTYPE=q4` swap the
+  model (presets: `onnx-community/Qwen2.5-Coder-0.5B-Instruct` default,
+  `onnx-community/Qwen2.5-Coder-1.5B-Instruct` for better quality).
 
 ### Run a feature workflow
 
@@ -566,6 +599,7 @@ npx vectalon bench                            # deterministic baseline (offline)
 npx vectalon bench --suite data-flow          # only the data-flow scenarios
 npx vectalon bench --live                     # run real tests/typecheck/lint
 npx vectalon bench --model local              # real-model leaderboard (all 11 scenarios)
+npx vectalon bench --model wasm               # zero-config WASM model leaderboard
 npx vectalon bench --model openai --json      # JSON summary for tooling
 npx vectalon bench -o report.md               # write the report to a file
 npx vectalon bench --scenarios ./my-evals     # run your own custom eval pack
@@ -574,8 +608,8 @@ npx vectalon leaderboard bench/results              # merge runs into BENCHMARK_
 npx vectalon leaderboard bench/results --pr-comment  # compact comment for PRs (upsert marker)
 ```
 
-- `--model <provider>` — `local` / `openai` / `anthropic`; runs the real-model
-  leaderboard pass over all 11 scenarios
+- `--model <provider>` — `local` / `wasm` / `openai` / `anthropic`; runs the
+  real-model leaderboard pass over all 11 scenarios
 - `--suite <id>` — only scenarios in one suite
   (`core-ui`, `data-flow`, `forms-security`, `navigation`, `a11y`, `perf`, `refactor`)
 - `--live` — run real tests/typecheck/lint for the correctness axis (slow)

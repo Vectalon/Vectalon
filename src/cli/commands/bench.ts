@@ -31,7 +31,7 @@ export interface BenchCommandOptions {
   tolerance?: number
 }
 
-const VALID_PROVIDERS = ['local', 'openai', 'anthropic']
+const VALID_PROVIDERS = ['local', 'wasm', 'openai', 'anthropic']
 
 export async function benchCommand(options: BenchCommandOptions): Promise<void> {
   if (options.model && !VALID_PROVIDERS.includes(options.model)) {
@@ -65,7 +65,10 @@ export async function benchCommand(options: BenchCommandOptions): Promise<void> 
   let modelRouter: ModelRouter | undefined
   if (options.model) {
     logger.info(`Running leaderboard pass with model provider: ${options.model}`)
-    modelRouter = new ModelRouter()
+    // An explicit --model disables the zero-config WASM auto-tier so a `--model
+    // local` pass measures the GGUF model (or the deterministic stub when none
+    // is downloaded) instead of silently swapping in the WASM model.
+    modelRouter = new ModelRouter({ zeroConfigEnabled: options.model ? false : undefined })
     modelRouter.initialize({ provider: options.model as ModelProviderType })
   }
 

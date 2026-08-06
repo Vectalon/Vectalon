@@ -1,4 +1,4 @@
-export type ModelProviderType = 'local' | 'openai' | 'anthropic' | 'custom'
+export type ModelProviderType = 'local' | 'wasm' | 'openai' | 'anthropic' | 'custom'
 
 /** A tool the model may call (OpenAI-style function shape). */
 export interface ToolDefinition {

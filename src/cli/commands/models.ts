@@ -1,6 +1,7 @@
 import Table from 'cli-table'
 import { listPresets } from '../../model/local/presets'
 import { listDownloadedModels } from '../../model/local/ModelStore'
+import { getWasmPreset, wasmCacheReady } from '../../model/local/wasmPresets'
 import { logger } from '../logger'
 
 export async function modelsCommand(): Promise<void> {
@@ -17,10 +18,17 @@ export async function modelsCommand(): Promise<void> {
     table.push([preset.name, preset.license, `~${preset.sizeGb} GB`, status])
   }
 
+  const wasm = getWasmPreset()
+  table.push([
+    `${wasm.name} (WASM)`, wasm.license,
+    `~${(wasm.sizeMb / 1024).toFixed(1)} GB`,
+    wasmCacheReady() ? 'Cached (zero-config)' : 'Auto-downloads on first use',
+  ])
+
   logger.out(table.toString() + '\n')
 
   if (downloaded.size === 0) {
-    logger.info('Run `vectalon pull` to download the default model.')
+    logger.info('Run `vectalon pull` to download the default GGUF model (or use the zero-config WASM model as-is).')
   }
 }
 

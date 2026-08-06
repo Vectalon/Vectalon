@@ -150,7 +150,7 @@ export function doctorCommand(directory: string, options: DoctorOptions): void {
   const leaderboardOptions = { localModelPresetId: getDefaultPreset().id, ...(options.leaderboard || {}) }
   // The configured model provider comes from .vectalon/rn-vectalon.json (set by
   // `vectalon init`); the doctor warns when that model can't reach tools.
-  const resolvedProvider = resolveProjectModelProvider(root) as 'local' | 'openai' | 'anthropic'
+  const resolvedProvider = resolveProjectModelProvider(root) as 'local' | 'wasm' | 'openai' | 'anthropic'
   const projectModelConfig = resolveProjectModelConfig(root)
   const modelOptions: ModelAccessCheckOptions = {
     provider: resolvedProvider,
