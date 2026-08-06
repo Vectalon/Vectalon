@@ -138,7 +138,7 @@ describe('ContextEngine', () => {
       'packages/mobile/package.json': JSON.stringify({
         name: 'mobile-app',
         version: '1.0.0',
-        dependencies: { 'react-native': '0.76.0' },
+        dependencies: { 'react-native': '0.76.0', '@acme/ui': 'workspace:*' },
       }),
       'packages/ui/package.json': JSON.stringify({ name: '@acme/ui', version: '1.0.0' }),
       'packages/mobile/src/ProfileCard.tsx': [
@@ -158,6 +158,12 @@ describe('ContextEngine', () => {
       expect(prompt).toContain('## Internal packages')
       expect(prompt).toContain('@acme/ui')
       expect(prompt).toContain('hoisted to the workspace root')
+      // The app's own dependency on the shared UI package is mapped to its
+      // workspace member — the workspace-boundary guidance.
+      expect(prompt).toContain('## Workspace dependencies')
+      expect(prompt).toContain('@acme/ui →')
+      expect(prompt).toContain('packages/ui')
+      expect(prompt).toContain('never install them from a registry')
     } finally {
       cleanup(ws)
     }
