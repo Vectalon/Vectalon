@@ -107,4 +107,23 @@ describe('MaestroFlowWriter', () => {
     const flow = new MaestroFlowWriter().writeFlow('Then the user sees "X"')
     expect(flow).toContain('appId: "com.example.app"')
   })
+
+  it('renders explicit accessibility-tree selectors when accessibility is enabled', () => {
+    const flow = new MaestroFlowWriter().writeFlow(
+      'Given the user opens the app\nWhen the user taps on "Login"\nThen the user sees "Dashboard"',
+      { featureName: 'Login', accessibility: true }
+    )
+    expect(flow).toContain('# Accessibility run: selectors resolve through the accessibility tree')
+    expect(flow).toContain('- tapOn:\n    text: "Login"')
+    expect(flow).toContain('- assertVisible:\n    text: "Dashboard"')
+    // The final screenshot is namespaced so accessibility runs are identifiable.
+    expect(flow).toContain('- takeScreenshot: accessibility-login')
+  })
+
+  it('keeps compact string-shorthand selectors by default', () => {
+    const flow = new MaestroFlowWriter().writeFlow('When the user taps on "Login"\nThen the user sees "Home"')
+    expect(flow).toContain('- tapOn: "Login"')
+    expect(flow).not.toContain('# Accessibility run')
+    expect(flow).toContain('- takeScreenshot: feature')
+  })
 })

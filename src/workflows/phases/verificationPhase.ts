@@ -1,6 +1,6 @@
-import { existsSync, readFileSync, readdirSync } from 'fs'
+import { existsSync, readFileSync, readdirSync, mkdirSync } from 'fs'
 import { join, relative } from 'path'
-import type { WorkflowPhase } from '../../adapters/types'
+import type { WorkflowPhase, WorkflowArtifact } from '../../adapters/types'
 import { runCommand } from '../../adapters/runCommand'
 import { DeviceController } from '../../adapters/deviceControl'
 import { detectValidationCommands } from '../../utils/validationCommands'
@@ -256,6 +256,45 @@ export const verificationPhase: WorkflowPhase = {
       }
     }
 
+    // Visual verification — boot a simulator/emulator (or reuse one already
+    // booted), capture a screenshot into .vectalon/artifacts/screenshots/, and
+    // attach it as a workflow artifact for the PR. Advisory: device boot is slow
+    // and often unavailable in CI, so this reports but never gates the workflow.
+    // Skipped for simulated runs, test runs, and explicit `visualCheck: false`.
+    let visualScreenshot: { rel: string } | null = null
+    // Only attempt on a real RN project (native dirs present) — a Node package
+    // without ios//android/ must never boot a simulator on the developer machine.
+    const hasNativeDirs =
+      Boolean(ctx.projectRoot) &&
+      (existsSync(join(ctx.projectRoot, 'ios')) || existsSync(join(ctx.projectRoot, 'android')))
+    if (hasNativeDirs && !isSimulated && process.env.NODE_ENV !== 'test' && (ctx.inputs as { visualCheck?: boolean } | undefined)?.visualCheck !== false) {
+      try {
+        const controller = new DeviceController(ctx.projectRoot)
+        const listing = await controller.listDevices()
+        const hasBooted = listing.success && listing.stdout.trim().length > 0
+        const boot = hasBooted ? null : await controller.boot()
+        if (boot && !boot.success) {
+          results.push(`- Visual check: skipped — could not boot a ${controller.platform} device (${(boot.stderr || boot.stdout).slice(0, 200)}). Screenshots need a running simulator/emulator.`)
+        } else {
+          const shotDir = join(ctx.projectRoot, '.vectalon', 'artifacts', 'screenshots')
+          mkdirSync(shotDir, { recursive: true })
+          const shotPath = join(shotDir, `visual-${controller.platform}-${Date.now()}.png`)
+          const shot = await controller.screenshot(shotPath)
+          if (shot.success) {
+            visualScreenshot = { rel: relative(ctx.projectRoot, shotPath) }
+            results.push(`- Visual check: screenshot captured to \`.vectalon/artifacts/screenshots/${visualScreenshot.rel}\` — attach to the PR (${hasBooted ? 'device already booted' : `${controller.platform} device booted for capture`})`)
+          } else {
+            results.push(`- Visual check: skipped — screenshot failed (${(shot.stderr || shot.stdout).slice(0, 200)})`)
+          }
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err)
+        results.push(`- Visual check: skipped — ${message}`)
+      }
+    } else {
+      results.push('- Visual check: skipped (simulated/test run) — boot a simulator/emulator and run `vectalon serve` device tools to capture screenshots')
+    }
+
     // Validate that tests exist for the new implementation. The engine appends a
     // document artifact to every phase, so filter for actual qa test artifacts.
     const testPhase = ctx.state.phases.find(p => p.id === 'tests')
@@ -302,12 +341,21 @@ export const verificationPhase: WorkflowPhase = {
 
     const status = allPassed ? 'completed' : 'failed'
     if (status === 'completed') {
+      const artifacts: WorkflowArtifact[] = [{ type: 'qa', title: `Verification: ${ctx.prompt}`, content: output }]
+      if (visualScreenshot) {
+        artifacts.push({
+          type: 'design',
+          title: 'Visual verification screenshot',
+          content: `Screenshot captured during verification:\n\n- \`${visualScreenshot.rel}\` (attach to the PR)`,
+          path: visualScreenshot.rel,
+        })
+      }
       return phaseResult(
         'verification',
         'Verification',
         'Run lint, type check, tests, prettier, and native build checks. Validates TDD and code review gates before PR.',
         output,
-        [{ type: 'qa', title: `Verification: ${ctx.prompt}`, content: output }]
+        artifacts
       )
     }
 

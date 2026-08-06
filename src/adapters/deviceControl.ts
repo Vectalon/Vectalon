@@ -141,6 +141,67 @@ export function buildListAvdsCommands(): DeviceCommand[] {
   return [{ command: 'emulator', args: ['-list-avds'] }]
 }
 
+/**
+ * Enable/disable the platform screen reader. Android drives TalkBack through
+ * the secure-settings accessibility switch; iOS flips the VoiceOver preference
+ * in the simulator's Accessibility domain (takes effect on the next boot).
+ */
+export function buildSetAccessibilityCommands(platform: DevicePlatform, enabled: boolean): DeviceCommand[] {
+  if (platform === 'android') {
+    return enabled
+      ? [
+          {
+            command: 'adb',
+            args: ['shell', 'settings', 'put', 'secure', 'enabled_accessibility_services', 'com.google.android.marvin.talkback/com.google.android.marvin.talkback.TalkBackService'],
+          },
+          { command: 'adb', args: ['shell', 'settings', 'put', 'secure', 'accessibility_enabled', '1'] },
+        ]
+      : [
+          { command: 'adb', args: ['shell', 'settings', 'put', 'secure', 'enabled_accessibility_services', 'null'] },
+          { command: 'adb', args: ['shell', 'settings', 'put', 'secure', 'accessibility_enabled', '0'] },
+        ]
+  }
+  return [
+    {
+      command: 'xcrun',
+      args: ['simctl', 'spawn', 'booted', 'defaults', 'write', 'com.apple.Accessibility', 'VoiceOverTouchEnabled', '-bool', enabled ? 'YES' : 'NO'],
+    },
+  ]
+}
+
+/**
+ * Dump the current accessibility tree. Android uses `uiautomator dump` (the
+ * XML TalkBack navigates, with content-desc/text/bounds); iOS uses `idb ui
+ * describe-all` when idb is installed.
+ */
+export function buildReadAccessibilityTreeCommands(platform: DevicePlatform): DeviceCommand[] {
+  return platform === 'android'
+    ? [
+        { command: 'adb', args: ['shell', 'uiautomator', 'dump', '/sdcard/vectalon-ui.xml'] },
+        { command: 'adb', args: ['shell', 'cat', '/sdcard/vectalon-ui.xml'] },
+        { command: 'adb', args: ['shell', 'rm', '-f', '/sdcard/vectalon-ui.xml'] },
+      ]
+    : [{ command: 'idb', args: ['ui', 'describe-all'] }]
+}
+
+/**
+ * Read recent screen-reader announcements. Android TalkBack announcements are
+ * logged under the TalkBack / Accessibility tags; iOS VoiceOver announcements
+ * flow through the Accessibility subsystem log.
+ */
+export function buildReadAnnouncementsCommands(platform: DevicePlatform, limit = 100): DeviceCommand[] {
+  if (platform === 'android') {
+    return [{ command: 'adb', args: ['logcat', '-d', '-t', String(Math.max(1, Math.round(limit))), '-s', 'TalkBack', 'Accessibility'] }]
+  }
+  const minutes = Math.max(1, Math.ceil(limit / 100))
+  return [
+    {
+      command: 'xcrun',
+      args: ['simctl', 'spawn', 'booted', 'log', 'show', '--last', `${minutes}m`, '--predicate', 'subsystem CONTAINS "com.apple.Accessibility" OR eventMessage CONTAINS[c] "VoiceOver"', '--style', 'compact'],
+    },
+  ]
+}
+
 // ---------------------------------------------------------------------------
 // Controller
 // ---------------------------------------------------------------------------
@@ -298,5 +359,18 @@ export class DeviceController {
   async logs(limit?: number): Promise<DeviceActionResult> {
     const n = typeof limit === 'number' && limit > 0 ? Math.min(Math.round(limit), 2000) : 200
     return this.execute(buildLogsCommands(this.platform, n))
+  }
+
+  async setVoiceOver(enabled: boolean): Promise<DeviceActionResult> {
+    return this.execute(buildSetAccessibilityCommands(this.platform, enabled))
+  }
+
+  async accessibilityTree(): Promise<DeviceActionResult> {
+    return this.execute(buildReadAccessibilityTreeCommands(this.platform))
+  }
+
+  async announcements(limit?: number): Promise<DeviceActionResult> {
+    const n = typeof limit === 'number' && limit > 0 ? Math.min(Math.round(limit), 2000) : 100
+    return this.execute(buildReadAnnouncementsCommands(this.platform, n))
   }
 }

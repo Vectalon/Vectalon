@@ -8,6 +8,9 @@ import {
   buildOpenUrlCommands,
   buildLogsCommands,
   buildListDevicesCommands,
+  buildSetAccessibilityCommands,
+  buildReadAccessibilityTreeCommands,
+  buildReadAnnouncementsCommands,
   detectDevicePlatform,
 } from '../../src/adapters/deviceControl'
 import { createTempProject, cleanup } from '../helpers/tmp'
@@ -61,6 +64,40 @@ describe('deviceControl command builders', () => {
   it('builds device listing commands', () => {
     expect(buildListDevicesCommands('android').map(c => c.args)).toEqual([['devices']])
     expect(buildListDevicesCommands('ios').map(c => c.args)).toEqual([['simctl', 'list', 'devices', 'booted']])
+  })
+
+  it('enables/disables TalkBack on Android via secure settings', () => {
+    const on = buildSetAccessibilityCommands('android', true)
+    expect(on.map(c => c.command)).toEqual(['adb', 'adb'])
+    expect(on[0].args).toContain('enabled_accessibility_services')
+    expect(on[0].args.join(' ')).toContain('TalkBackService')
+    expect(on[1].args).toContain('accessibility_enabled')
+    expect(on[1].args).toContain('1')
+
+    const off = buildSetAccessibilityCommands('android', false)
+    expect(off[0].args).toContain('null')
+    expect(off[1].args).toContain('0')
+  })
+
+  it('flips the VoiceOver preference on iOS via simctl defaults', () => {
+    const on = buildSetAccessibilityCommands('ios', true)
+    expect(on[0].args).toEqual(['simctl', 'spawn', 'booted', 'defaults', 'write', 'com.apple.Accessibility', 'VoiceOverTouchEnabled', '-bool', 'YES'])
+    expect(buildSetAccessibilityCommands('ios', false)[0].args).toContain('NO')
+  })
+
+  it('builds accessibility-tree reads (uiautomator dump vs idb describe-all)', () => {
+    const android = buildReadAccessibilityTreeCommands('android')
+    expect(android.map(c => c.args[1])).toEqual(['uiautomator', 'cat', 'rm'])
+    expect(android[1].args).toContain('/sdcard/vectalon-ui.xml')
+    expect(buildReadAccessibilityTreeCommands('ios').map(c => c.args)).toEqual([['ui', 'describe-all']])
+  })
+
+  it('builds screen-reader announcement reads (logcat tags vs Accessibility log)', () => {
+    expect(buildReadAnnouncementsCommands('android', 50).map(c => c.args)).toEqual([['logcat', '-d', '-t', '50', '-s', 'TalkBack', 'Accessibility']])
+    const ios = buildReadAnnouncementsCommands('ios')[0]
+    expect(ios.args[0]).toBe('simctl')
+    expect(ios.args.join(' ')).toContain('com.apple.Accessibility')
+    expect(ios.args.join(' ')).toContain('VoiceOver')
   })
 })
 
@@ -137,6 +174,28 @@ describe('DeviceController', () => {
       const path = controller.defaultScreenshotPath()
       expect(path.startsWith(join(dir, '.vectalon', 'artifacts', 'screenshots'))).toBe(true)
       expect(path.endsWith('.png')).toBe(true)
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('dry-run describes accessibility commands without executing them', async () => {
+    const dir = createTempProject({ 'package.json': '{}' })
+    try {
+      const controller = new DeviceController(dir, { dryRun: true, platform: 'android' })
+      const voice = await controller.setVoiceOver(true)
+      expect(voice.success).toBe(true)
+      expect(voice.stdout).toContain('[dry-run] adb shell settings put secure enabled_accessibility_services')
+
+      const tree = await controller.accessibilityTree()
+      expect(tree.stdout).toContain('[dry-run] adb shell uiautomator dump')
+
+      const ann = await controller.announcements(50)
+      expect(ann.stdout).toContain('[dry-run] adb logcat -d -t 50 -s TalkBack Accessibility')
+
+      const ios = new DeviceController(dir, { dryRun: true, platform: 'ios' })
+      expect((await ios.setVoiceOver(false)).stdout).toContain('VoiceOverTouchEnabled -bool NO')
+      expect((await ios.accessibilityTree()).stdout).toContain('[dry-run] idb ui describe-all')
     } finally {
       cleanup(dir)
     }

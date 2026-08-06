@@ -96,9 +96,10 @@ npx vectalon serve --model openai     # override the model provider for this run
 
 **What it does**
 
-- Exposes **44 built-in MCP tools** — 37 by default, plus the knowledge-base
+- Exposes **47 built-in MCP tools** — 40 by default, plus the knowledge-base
   and team-brain tools when those services are present (project context, SDLC
-  modules, devices & E2E, knowledge base, team brain)
+  modules, devices & E2E incl. screen-reader control, knowledge base, team
+  brain)
 - Reads `.vectalon/ecosystem.json` and exposes each **enabled ecosystem MCP
   server as a first-class tool** (Metro MCP, Expo MCP, …) agents auto-discover
 - Loads the resolved model provider from the manifest (or `--model`) and logs
