@@ -12,6 +12,7 @@ export type ArtifactType =
   | 'devops'
   | 'operations'
   | 'analytics'
+  | 'telemetry'
 
 export type ArtifactSource = 'import' | 'generated' | 'user'
 
@@ -56,6 +57,7 @@ export const ARTIFACT_TYPES: ArtifactType[] = [
   'devops',
   'operations',
   'analytics',
+  'telemetry',
 ]
 
 export const ARTIFACT_ROLES: ArtifactRole[] = ['pm', 'ba', 'architect', 'engineer', 'qa', 'devops', 'support', 'analyst']
@@ -64,11 +66,11 @@ export const ROLE_ARTIFACT_TYPES: Record<ArtifactRole, ArtifactType[]> = {
   pm: ['business', 'research', 'product', 'analytics'],
   ba: ['research', 'product', 'requirements', 'analytics'],
   architect: ['requirements', 'architecture', 'security', 'engineering', 'data'],
-  engineer: ['requirements', 'architecture', 'engineering', 'data', 'security', 'qa'],
+  engineer: ['requirements', 'architecture', 'engineering', 'data', 'security', 'qa', 'telemetry'],
   qa: ['requirements', 'design', 'engineering', 'qa', 'devops'],
-  devops: ['engineering', 'security', 'devops', 'operations', 'analytics'],
-  support: ['operations', 'product', 'qa'],
-  analyst: ['analytics', 'product', 'research', 'operations'],
+  devops: ['engineering', 'security', 'devops', 'operations', 'analytics', 'telemetry'],
+  support: ['operations', 'product', 'qa', 'telemetry'],
+  analyst: ['analytics', 'product', 'research', 'operations', 'telemetry'],
 }
 
 export function checksum(content: string): string {

@@ -72,7 +72,7 @@ describe('MCPServer', () => {
 
   it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(36)
+    expect(names).toHaveLength(37)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -92,6 +92,7 @@ describe('MCPServer', () => {
         'write_test_plan',
         'triage_bugs',
         'analyze_root_cause',
+        'analyze_crash',
         'review_code',
         'suggest_refactors',
         'write_adr',

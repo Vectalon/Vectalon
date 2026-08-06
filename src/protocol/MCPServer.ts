@@ -1,3 +1,5 @@
+import { existsSync, readFileSync, statSync } from 'fs'
+import { join } from 'path'
 import type { AgentTool, ToolCall, ToolResult, ProtocolType } from './types'
 import type { McpClientHandle } from './subMcp'
 import { ContextEngine } from '../harness/ContextEngine'
@@ -37,6 +39,8 @@ import type { KpiMetric } from '../sdlc/KpiReportAnalyzer'
 import { MaestroFlowWriter } from '../sdlc/MaestroFlowWriter'
 import { DeviceController, type DevicePlatform } from '../adapters/deviceControl'
 import { runGuardrails } from '../guardrails'
+import { TelemetryIngestionService, parseTelemetryContent } from '../knowledge/telemetry'
+import type { ParsedCrash, TelemetryEvent } from '../knowledge/telemetry'
 import type { GuardrailConventions } from '../guardrails'
 type ToolHandler = (args: Record<string, unknown>) => Promise<string>
 
@@ -328,6 +332,17 @@ export class MCPServer {
         },
       },
       {
+        name: 'analyze_crash',
+        description: 'Analyze a runtime crash report (Sentry event or Firebase Crashlytics JSON, or a path to an export file) using the actual crash facts — stack frames, release, environment — and return a data-driven root-cause analysis',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            crash: { type: 'string' },
+            crashFile: { type: 'string' },
+          },
+        },
+      },
+      {
         name: 'review_code',
         description: 'Run deterministic code review checks over a code snippet',
         inputSchema: {
@@ -595,6 +610,17 @@ export class MCPServer {
                   childId: { type: 'string' },
                 },
                 required: ['parentId', 'childId'],
+              },
+            },
+            {
+              name: 'ingest_telemetry',
+              description: 'Ingest runtime telemetry exports (Sentry / Firebase Crashlytics / performance traces / analytics JSON or JSONL) from a directory or file into the knowledge base as telemetry artifacts; runs data-driven crash analysis on each new crash',
+              inputSchema: {
+                type: 'object',
+                properties: {
+                  path: { type: 'string' },
+                  analyze: { type: 'boolean' },
+                },
               },
             },
           ]
@@ -970,6 +996,29 @@ export class MCPServer {
       return content
     })
 
+    this.tools.set('analyze_crash', async (args: Record<string, unknown>) => {
+      const raw = (args.crash as string | undefined) || ''
+      const crashFile = (args.crashFile as string | undefined) || ''
+
+      let events: TelemetryEvent[] = []
+      if (raw.trim()) {
+        events = parseTelemetryContent(raw)
+      } else if (crashFile && existsSync(crashFile)) {
+        events = parseTelemetryContent(readFileSync(crashFile, 'utf-8'))
+      } else {
+        return 'Pass a `crash` JSON string or a `crashFile` path pointing at a Sentry event / Crashlytics report export.'
+      }
+
+      const crash = events.find((e): e is ParsedCrash => e.kind === 'crash')
+      if (!crash) return 'No crash event could be parsed from the provided input. Expected a Sentry event (exception.stacktrace.frames) or a Firebase Crashlytics report (app_info + event.type crash/error/anr).'
+
+      const analyzer = new RootCauseAnalyzer()
+      const result = analyzer.analyzeCrash(crash)
+      const content = analyzer.renderCrash(result)
+      this.persistArtifact('telemetry', `Crash Analysis: ${crash.exceptionType || crash.message || crash.id}`, content)
+      return content
+    })
+
     this.tools.set('review_code', async (args: Record<string, unknown>) => {
       const code = (args.code as string) || ''
       const findings = new CodeReviewAnalyzer().review(code, (args.language as string) || 'tsx')
@@ -1262,6 +1311,55 @@ export class MCPServer {
         throw new Error(`Failed to link artifacts: missing id`)
       }
       return `Linked ${parentId} -> ${childId}`
+    })
+
+    this.tools.set('ingest_telemetry', async (args: Record<string, unknown>) => {
+      const root = this.engine.getSnapshot()?.project.root || process.cwd()
+      const requested = (args.path as string | undefined) || ''
+      const target = requested
+        ? join(root, requested)
+        : TelemetryIngestionService.findDefaultDir(root)
+      if (!target || !existsSync(target)) {
+        return `No telemetry exports found. Drop Sentry / Crashlytics / trace / analytics exports into ${requested || '`.vectalon/telemetry/` or `telemetry/`'} and re-run, or pass an explicit path.`
+      }
+
+      const service = new TelemetryIngestionService(store)
+      const result = statSync(target).isFile()
+        ? service.ingestFile(target)
+        : service.ingestDirectory(target)
+
+      // Data-driven analysis pass: link a crash root-cause analysis to each
+      // newly ingested crash artifact.
+      if (args.analyze !== false) {
+        const analyzer = new RootCauseAnalyzer()
+        for (const crash of result.crashes) {
+          const analysis = analyzer.renderCrash(analyzer.analyzeCrash(crash))
+          const artifact = this.persistArtifact('telemetry', `Crash Analysis: ${crash.exceptionType || crash.message || crash.id}`, analysis)
+          const crashArtifact = result.artifacts.find(a => {
+            const stored = store.get(a.id)
+            return stored?.meta.eventId === crash.id
+          })
+          if (artifact && crashArtifact) {
+            store.link(crashArtifact.id, artifact.id)
+          }
+        }
+      }
+
+      return JSON.stringify(
+        {
+          target,
+          filesScanned: result.filesScanned,
+          events: result.events.length,
+          crashes: result.crashes.length,
+          traces: result.traces.length,
+          analytics: result.analytics.length,
+          skipped: result.skipped,
+          artifacts: result.artifacts.map(a => ({ id: a.id, title: a.title })),
+          errors: result.errors,
+        },
+        null,
+        2
+      )
     })
   }
 

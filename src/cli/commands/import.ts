@@ -101,7 +101,7 @@ function importOne(
 function validateType(type: string | undefined): ArtifactType {
   if (type && ArtifactStore.isValidType(type)) return type
   if (!type) return 'business'
-  throw new Error(`Unknown artifact type: ${type}. Valid types: business, research, product, requirements, design, architecture, engineering, data, security, qa, devops, operations, analytics`)
+  throw new Error(`Unknown artifact type: ${type}. Valid types: business, research, product, requirements, design, architecture, engineering, data, security, qa, devops, operations, analytics, telemetry`)
 }
 
 function detectType(content: string): ArtifactType {

@@ -19,6 +19,27 @@ export {
   createArtifactSync,
   DEFAULT_SYNC_BRANCH,
 } from './artifactSync'
+export {
+  TelemetryIngestionService,
+  DEFAULT_TELEMETRY_DIRS,
+  renderEventMarkdown,
+  parseTelemetryContent,
+  parseSentryExport,
+  parseCrashlyticsReport,
+  parsePerformanceTrace,
+  parseAnalyticsEvent,
+  detectTelemetryFormat,
+} from './telemetry'
+export type {
+  TelemetryKind,
+  TelemetryFrame,
+  ParsedCrash,
+  ParsedTrace,
+  ParsedAnalyticsEvent,
+  TelemetryEvent,
+  TelemetryFormat,
+  TelemetryIngestResult,
+} from './telemetry'
 export type {
   ArtifactSyncConfig,
   SyncResult,

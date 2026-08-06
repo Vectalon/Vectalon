@@ -101,7 +101,13 @@ export type {
   KpiResult,
   KpiResultMetric,
   KpiStatus,
+  CrashRootCauseResult,
+  CrashFacts,
+  TelemetryKpiOptions,
 } from './sdlc'
+export { TelemetryIngestionService, DEFAULT_TELEMETRY_DIRS } from './knowledge'
+export { parseTelemetryContent, parseSentryExport, parseCrashlyticsReport, detectTelemetryFormat } from './knowledge'
+export type { TelemetryEvent, ParsedCrash, ParsedTrace, ParsedAnalyticsEvent, TelemetryFormat, TelemetryIngestResult } from './knowledge'
 
 export { PatternLearner, ProjectMemory } from './memory'
 export type { Pattern, PatternStore } from './memory'

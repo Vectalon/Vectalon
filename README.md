@@ -1447,6 +1447,17 @@ Areas we'd love help with:
   `<Suspense>`, unstable dependency arrays, `forwardRef` on React 19, and
   redundant manual memoization under the Compiler; the context prompt and
   implementation prompt explain React 19 / auto-memoization implications
+- ✅ **Runtime telemetry ingestion (III-1)** — `src/knowledge/telemetry/`
+  parses Sentry event exports, Firebase Crashlytics reports (JSONL, incl.
+  ANR/NDK), performance traces, and analytics event streams into typed
+  `telemetry` artifacts in the knowledge base (`vectalon telemetry [dir]`,
+  `ingest_telemetry` + `analyze_crash` MCP tools, checksum + event-id dedupe);
+  the SDLC analyzers become data-driven — `RootCauseAnalyzer.analyzeCrash`
+  classifies native-crash/memory/ANR buckets and investigates the actual stack
+  frames, release, and environment, `IncidentAnalyzer` derives severity,
+  impact, and timeline from the crash window, and `KpiReportAnalyzer`
+  computes crash-free session rate, affected users, and average trace
+  duration straight from the ingested events
 
 **Next up:**
 
