@@ -153,7 +153,7 @@ describe('testPhase (TDD)', () => {
   })
 
   it('keeps generated tests out of src/ when the project is the rn-vectalon package itself', async () => {
-    writeFileSync(join(projectRoot, 'package.json'), JSON.stringify({ name: '@vectalon-dev/rn-vectalon', version: '0.5.0' }))
+    writeFileSync(join(projectRoot, 'package.json'), JSON.stringify({ name: '@vectalon-dev/rn', version: '0.5.0' }))
 
     const result = await testPhase.run(makeContext(projectRoot, 'Login'))
 

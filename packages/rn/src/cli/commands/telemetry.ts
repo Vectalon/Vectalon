@@ -5,7 +5,7 @@
 
 import { existsSync, statSync } from 'fs'
 import { join, resolve } from 'path'
-import { UsageReporter } from '@vectalon/core'
+import { UsageReporter } from '@vectalon-dev/core'
 import { logger } from '../logger'
 import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { TelemetryIngestionService, DEFAULT_TELEMETRY_DIRS } from '../../knowledge/telemetry'

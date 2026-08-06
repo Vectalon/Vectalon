@@ -1,5 +1,5 @@
 /**
- * @vectalon/rn — React Native adaptive AI harness
+ * @vectalon-dev/rn — React Native adaptive AI harness
  * 
  * The adaptive AI harness for React Native — project-aware SDLC intelligence for any agent.
  * 
@@ -13,18 +13,18 @@
  * [Website](https://vectalon.in) | [Docs](https://vectalon.in/docs) | [Pricing](https://vectalon.in/pricing)
  */
 
-# @vectalon/rn
+# @vectalon-dev/rn
 
 **The adaptive AI harness for React Native.**
 
 ## Installation
 
 ```bash
-npm install --save-dev @vectalon/rn
+npm install --save-dev @vectalon-dev/rn
 # or
-yarn add -D @vectalon/rn
+yarn add -D @vectalon-dev/rn
 # or
-pnpm add -D @vectalon/rn
+pnpm add -D @vectalon-dev/rn
 ```
 
 ## Quick Start

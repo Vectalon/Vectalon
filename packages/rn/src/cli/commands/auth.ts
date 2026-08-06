@@ -3,7 +3,7 @@
  * Business Source License 1.1 (BSL-1.1)
  */
 
-import { LicenseStore, LicenseValidator, TrialTracker } from '@vectalon/core'
+import { LicenseStore, LicenseValidator, TrialTracker } from '@vectalon-dev/core'
 import { logger } from '../logger'
 
 interface AuthOptions {

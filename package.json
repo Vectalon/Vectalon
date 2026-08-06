@@ -13,9 +13,9 @@
     "test": "turbo run test",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "publish:core": "turbo run publish --filter=@vectalon/core",
-    "publish:rn": "turbo run publish --filter=@vectalon/rn",
-    "publish:all": "turbo run publish --filter=@vectalon/*"
+    "publish:core": "turbo run publish --filter=@vectalon-dev/core",
+    "publish:rn": "turbo run publish --filter=@vectalon-dev/rn",
+    "publish:all": "turbo run publish --filter=@vectalon-dev/*"
   },
   "devDependencies": {
     "turbo": "^2.0.0"

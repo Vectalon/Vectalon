@@ -207,7 +207,7 @@ describe('implementationPhase', () => {
   })
 
   it('keeps generated scaffold out of src/ when the project is the rn-vectalon package itself', async () => {
-    writeFileSync(join(projectRoot, 'package.json'), JSON.stringify({ name: '@vectalon-dev/rn-vectalon', version: '0.5.0' }))
+    writeFileSync(join(projectRoot, 'package.json'), JSON.stringify({ name: '@vectalon-dev/rn', version: '0.5.0' }))
 
     const router = createMockModelRouter('[Local model fallback: no downloaded model]')
     const result = await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
@@ -224,7 +224,7 @@ describe('implementationPhase', () => {
   })
 
   it('keeps model-generated files out of src/ when the project is the rn-vectalon package itself', async () => {
-    writeFileSync(join(projectRoot, 'package.json'), JSON.stringify({ name: '@vectalon-dev/rn-vectalon', version: '0.5.0' }))
+    writeFileSync(join(projectRoot, 'package.json'), JSON.stringify({ name: '@vectalon-dev/rn', version: '0.5.0' }))
     const response = JSON.stringify({
       files: [{ path: 'src/screens/AddLoginScreenScreen.tsx', content: 'export function LoginScreen() { return null }' }],
     })

@@ -3,7 +3,7 @@ import { join } from 'path'
 import { bundleCommand } from '../../src/cli/commands/bundle'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
-jest.mock('@vectalon/core', () => ({
+jest.mock('@vectalon-dev/core', () => ({
   requireTier: () => ({ allowed: true, currentTier: 'pro', requiredTier: 'pro', canTrial: false }),
 }))
 

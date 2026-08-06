@@ -5,7 +5,7 @@
 
 import { resolve } from 'path'
 import { existsSync, accessSync, constants } from 'fs'
-import { LicenseStore, LicenseValidator, TrialTracker } from '@vectalon/core'
+import { LicenseStore, LicenseValidator, TrialTracker } from '@vectalon-dev/core'
 import { reportError } from '../../utils/safe'
 import { spawnSync } from 'child_process'
 import Table from 'cli-table'
