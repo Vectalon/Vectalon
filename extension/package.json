@@ -1,0 +1,120 @@
+{
+  "name": "vectalon",
+  "displayName": "Vectalon — React Native harness",
+  "description": "Project-aware React Native workflows, inline guardrail status, and the team knowledge base — powered by the vectalon MCP server.",
+  "version": "0.1.0",
+  "publisher": "vectalon-dev",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other",
+    "Linters",
+    "Testing"
+  ],
+  "keywords": [
+    "react-native",
+    "mcp",
+    "ai",
+    "workflows",
+    "knowledge-base",
+    "guardrails"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onView:vectalon.knowledgeView"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "vectalon",
+          "title": "Vectalon",
+          "icon": "media/vectalon.svg"
+        }
+      ]
+    },
+    "views": {
+      "vectalon": [
+        {
+          "id": "vectalon.knowledgeView",
+          "name": "Knowledge Base",
+          "when": "vectalon.connected"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "vectalon.runFeatureWorkflow",
+        "title": "Vectalon: Run Feature Workflow"
+      },
+      {
+        "command": "vectalon.reviewCode",
+        "title": "Vectalon: Review Code (current file)"
+      },
+      {
+        "command": "vectalon.checkGuardrails",
+        "title": "Vectalon: Check Guardrails (current file)"
+      },
+      {
+        "command": "vectalon.generateComponent",
+        "title": "Vectalon: Generate Component"
+      },
+      {
+        "command": "vectalon.projectContext",
+        "title": "Vectalon: Show Project Context"
+      },
+      {
+        "command": "vectalon.searchKnowledge",
+        "title": "Vectalon: Search Knowledge Base"
+      },
+      {
+        "command": "vectalon.refreshKnowledge",
+        "title": "Vectalon: Refresh Knowledge View"
+      },
+      {
+        "command": "vectalon.startServer",
+        "title": "Vectalon: Start MCP Server"
+      },
+      {
+        "command": "vectalon.stopServer",
+        "title": "Vectalon: Stop MCP Server"
+      }
+    ],
+    "configuration": {
+      "title": "Vectalon",
+      "properties": {
+        "vectalon.url": {
+          "type": "string",
+          "default": "http://localhost:8765",
+          "description": "Base URL of the vectalon MCP HTTP server (vectalon serve --protocol http --port 8765)."
+        },
+        "vectalon.autoStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically spawn `vectalon serve --protocol http` when the extension activates and no server is reachable."
+        },
+        "vectalon.guardrailsOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run guardrail checks on the active file and surface findings in the Problems panel."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -w -p ./",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc -p ./ --noEmit"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.95.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.0"
+  }
+}

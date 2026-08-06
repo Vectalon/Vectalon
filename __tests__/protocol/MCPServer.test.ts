@@ -72,12 +72,13 @@ describe('MCPServer', () => {
 
   it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(35)
+    expect(names).toHaveLength(36)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
         'generate_component',
         'write_test',
+        'check_guardrails',
         'analyze_error',
         'suggest_dependency_update',
         'get_learned_patterns',
@@ -125,6 +126,7 @@ describe('MCPServer', () => {
         args.prompt = 'Create a login screen'
       }
       if (tool.name === 'write_test') args.target = 'Button'
+      if (tool.name === 'check_guardrails') args.content = 'const x = 1'
       if (tool.name === 'analyze_error') args.error = 'TypeError: x is not a function'
       if (tool.name === 'suggest_dependency_update') args.packageName = 'react-native'
       if (tool.name === 'write_prd') args.feature = 'Onboarding'
@@ -264,6 +266,30 @@ describe('MCPServer', () => {
     })
     expect(result.content).toContain('jest')
     expect(result.content).toContain('Home.tsx')
+  })
+
+  it('check_guardrails returns JSON findings for a snippet', async () => {
+    const server = createServer()
+    const bad = await server.handleToolCall({
+      id: '1',
+      name: 'check_guardrails',
+      arguments: { filePath: 'src/api/client.ts', content: 'const BASE_URL = "https://api.example.com/v1";' },
+    })
+    expect(bad.isError).not.toBe(true)
+    const parsed = JSON.parse(bad.content)
+    expect(parsed.ok).toBe(false)
+    const hardcoded = parsed.findings.find((f: { rule: string }) => f.rule === 'No hardcoded API URLs')
+    expect(hardcoded?.passed).toBe(false)
+
+    const clean = await server.handleToolCall({
+      id: '2',
+      name: 'check_guardrails',
+      arguments: { filePath: 'src/components/Header.tsx', content: 'const Header = () => <View />;\nexport { Header };' },
+    })
+    expect(JSON.parse(clean.content).ok).toBe(true)
+
+    const missing = await server.handleToolCall({ id: '3', name: 'check_guardrails', arguments: {} })
+    expect(missing.content).toContain('Missing required field')
   })
 
   it('device tools default to deterministic dry-run descriptions', async () => {

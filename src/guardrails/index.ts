@@ -1,9 +1,10 @@
-import { GuardrailRule, GuardrailResult } from './types'
+import { GuardrailRule, GuardrailResult, GuardrailConventions, GuardrailFinding } from './types'
 import { rules } from './rules'
 import { PolicyEngine, initPolicy, runPolicy, defaultPolicy, defaultCodeReviewPolicy } from './PolicyEngine'
 import { runGuardrails, formatGuardrailResult } from './engine'
 
 export { GuardrailRule, GuardrailResult }
+export type { GuardrailConventions, GuardrailFinding }
 export { rules }
 export { PolicyEngine, initPolicy, runPolicy, defaultPolicy, defaultCodeReviewPolicy }
 export type { PolicyConfig, PolicyRuleOverride, PolicyCustomRule, PolicyOptions, PolicyRunResult, CodeReviewPolicy } from './PolicyEngine'
