@@ -10,3 +10,9 @@ extension/out/
 coverage/
 bench/results/*.json
 .freebuff/
+
+# Turborepo
+.turbo/
+
+# Package manager
+.pnpm-store/

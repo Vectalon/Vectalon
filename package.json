@@ -1,94 +1,29 @@
 {
-  "name": "@vectalon-dev/rn-vectalon",
-  "version": "0.5.0",
-  "description": "The adaptive AI harness for React Native — project-aware SDLC intelligence for any agent",
-  "main": "dist/index.js",
-  "bin": {
-    "rn-vectalon": "./bin/rn-vectalon.js",
-    "vectalon": "./bin/rn-vectalon.js"
-  },
-  "files": [
-    "dist",
-    "bin",
-    "bench",
-    "README.md",
-    "LICENSE"
+  "name": "vectalon",
+  "private": true,
+  "version": "0.6.0-beta.1",
+  "description": "Vectalon monorepo — the adaptive AI harness for React Native and beyond",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "test": "jest",
-    "test:coverage": "jest --coverage",
-    "lint": "eslint src __tests__ --ext .ts",
-    "lint:ext": "eslint extension/src --ext .ts",
-    "typecheck": "tsc --noEmit",
-    "typecheck:ext": "tsc -p extension --noEmit",
-    "prepublishOnly": "npm run build"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Vectalon/rn-vectalon.git"
-  },
-  "keywords": [
-    "react-native",
-    "ai",
-    "sdlc",
-    "harness",
-    "agent",
-    "mcp",
-    "claude-code",
-    "opencode",
-    "codex",
-    "developer-tools"
-  ],
-  "author": "Bhishak Sanyal",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Vectalon/rn-vectalon/issues"
-  },
-  "homepage": "https://github.com/Vectalon/rn-vectalon#readme",
-  "engines": {
-    "node": ">=20.12.0"
-  },
-  "dependencies": {
-    "@babel/parser": "^7.29.8",
-    "@clack/prompts": "^1.7.0",
-    "@huggingface/transformers": "^4.2.0",
-    "cli-table": "^0.3.11",
-    "commander": "^15.0.0",
-    "picocolors": "^1.0.0",
-    "pngjs": "^7.0.0",
-    "ws": "^8.21.2"
-  },
-  "optionalDependencies": {
-    "better-sqlite3": "^13.0.3",
-    "node-llama-cpp": "^3.19.1",
-    "sqlite-vec": "^0.1.6"
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "publish:core": "turbo run publish --filter=@vectalon/core",
+    "publish:rn": "turbo run publish --filter=@vectalon/rn",
+    "publish:all": "turbo run publish --filter=@vectalon/*"
   },
   "devDependencies": {
-    "@semantic-release/changelog": "^7.0.0",
-    "@semantic-release/commit-analyzer": "^13.0.1",
-    "@semantic-release/exec": "^7.1.0",
-    "@semantic-release/github": "^12.0.9",
-    "@semantic-release/npm": "^13.1.5",
-    "@semantic-release/release-notes-generator": "^14.1.1",
-    "@types/cli-table": "^0.3.4",
-    "@types/jest": "^30.0.0",
-    "@types/node": "^26.1.2",
-    "@types/pngjs": "^6.0.5",
-    "@types/vscode": "^1.125.0",
-    "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "@typescript-eslint/parser": "^7.0.0",
-    "@vscode/vsce": "^3.9.2",
-    "eslint": "^8.57.0",
-    "jest": "^30.4.2",
-    "node-llama-cpp": "^3.19.1",
-    "semantic-release": "^25.0.8",
-    "ts-jest": "^29.1.0",
-    "typescript": "^5.4.0"
+    "turbo": "^2.0.0"
   },
-  "packageManager": "npm@10.9.2"
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20.12.0",
+    "npm": ">=10.9.0"
+  },
+  "packageManager": "pnpm@9.0.0+sha512.b4106707c7225b1748b61595953ccbebff97b54ad05d002aa3635f633b9c53cd666f7ce9b8bc44704f1fa048b9a49b55371ab2d9e9d667d1efe2ef1514bcd513"
 }

@@ -1,0 +1,76 @@
+{
+  "name": "@vectalon/rn",
+  "version": "0.6.0-beta.1",
+  "description": "The adaptive AI harness for React Native — project-aware SDLC intelligence for any agent",
+  "license": "BSL-1.1",
+  "author": "Bhishak Sanyal",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Vectalon/vectalon.git",
+    "directory": "packages/rn"
+  },
+  "main": "dist/index.js",
+  "bin": {
+    "rn-vectalon": "./bin/rn-vectalon.js",
+    "vectalon": "./bin/rn-vectalon.js"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "bench",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src __tests__ --ext .ts",
+    "lint:ext": "eslint extension/src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "typecheck:ext": "tsc -p extension --noEmit",
+    "prepublishOnly": "npm run build",
+    "publish": "npm publish --access public --no-git-checks"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.29.8",
+    "@clack/prompts": "^1.7.0",
+    "@huggingface/transformers": "^4.2.0",
+    "cli-table": "^0.3.11",
+    "commander": "^15.0.0",
+    "picocolors": "^1.0.0",
+    "pngjs": "^7.0.0",
+    "ws": "^8.21.2",
+    "@vectalon/core": "workspace:^"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^13.0.3",
+    "node-llama-cpp": "^3.19.1",
+    "sqlite-vec": "^0.1.6"
+  },
+  "devDependencies": {
+    "@semantic-release/changelog": "^7.0.0",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/github": "^12.0.9",
+    "@semantic-release/npm": "^13.1.5",
+    "@semantic-release/release-notes-generator": "^14.1.1",
+    "@types/cli-table": "^0.3.4",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^26.1.2",
+    "@types/pngjs": "^6.0.0",
+    "@types/vscode": "^1.125.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "jest": "^30.4.2",
+    "semantic-release": "^25.0.8",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=20.12.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

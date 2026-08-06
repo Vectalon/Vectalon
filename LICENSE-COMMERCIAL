@@ -1,0 +1,66 @@
+Vectalon Commercial License
+
+This Commercial License Agreement ("Agreement") is entered into between
+Bhishak Sanyal ("Licensor") and the licensee ("Licensee").
+
+1. GRANT OF LICENSE
+   Subject to the terms of this Agreement and payment of applicable fees,
+   Licensor grants Licensee a non-exclusive, non-transferable license to:
+   
+   a) Use the Vectalon software for commercial purposes
+   b) Install and run Vectalon on Licensee's infrastructure
+   c) Access premium features as defined in the purchased tier
+
+2. LICENSE TIERS
+
+   Pro ($19/month or $190/year):
+   - One product (e.g., @vectalon/rn)
+   - All advanced features (upgrade copilot, CI generation, bundle budgets)
+   - Single developer use
+   
+   All-Access ($49/month or $490/year):
+   - All current and future Vectalon products
+   - Cross-product features
+   - Single developer use
+   
+   Team ($99/seat/month):
+   - All products
+   - Team brain / cross-project knowledge
+   - Cloud-synced knowledge base
+   - Custom model endpoints
+   - Priority LLM inference
+   - Up to 50 seats
+   
+   Enterprise (Custom):
+   - Unlimited seats
+   - SSO / SAML
+   - SOC-2 compliance
+   - Dedicated support
+   - Custom integrations
+
+3. RESTRICTIONS
+   Licensee may NOT:
+   a) Resell, sublicense, or distribute the software to third parties
+   b) Use the software to build a competing product
+   c) Remove or circumvent license validation
+   d) Use Team/Enterprise features with a Pro license
+
+4. PAYMENT
+   License fees are paid via LemonSqueezy (our merchant of record).
+   All fees are non-refundable except as required by law.
+
+5. TERM AND TERMINATION
+   This Agreement begins upon payment and continues until canceled.
+   Either party may terminate with 30 days notice.
+   Upon termination, Licensee must cease using the Licensed Work.
+
+6. WARRANTY DISCLAIMER
+   THE SOFTWARE IS PROVIDED "AS IS". Licensor provides no warranties.
+
+7. LIMITATION OF LIABILITY
+   Licensor's liability is limited to the amount paid in the last 12 months.
+
+8. GOVERNING LAW
+   This Agreement is governed by the laws of India.
+
+For licensing inquiries: licenses@vectalon.in
