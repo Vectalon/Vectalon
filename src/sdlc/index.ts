@@ -63,3 +63,13 @@ export { KpiReportAnalyzer } from './KpiReportAnalyzer'
 export type { KpiMetric, KpiResult, KpiResultMetric, KpiStatus, TelemetryKpiOptions } from './KpiReportAnalyzer'
 export { MaestroFlowWriter } from './MaestroFlowWriter'
 export type { MaestroFlowOptions } from './MaestroFlowWriter'
+export { NativeModuleGenerator, parseNativeModuleSpec, defaultPackageName } from './NativeModuleGenerator'
+export type {
+  NativeModuleSpec,
+  NativeMethod,
+  NativeMethodParam,
+  NativeComponentSpec,
+  NativeComponentProp,
+  GeneratedNativeModule,
+  GeneratedNativeFile,
+} from './NativeModuleGenerator'

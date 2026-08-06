@@ -27,6 +27,7 @@ import { RunbookWriter } from '../../sdlc/RunbookWriter'
 import { KpiReportAnalyzer } from '../../sdlc/KpiReportAnalyzer'
 import type { KpiMetric } from '../../sdlc/KpiReportAnalyzer'
 import { MaestroFlowWriter } from '../../sdlc/MaestroFlowWriter'
+import { NativeModuleGenerator, parseNativeModuleSpec } from '../../sdlc/NativeModuleGenerator'
 import { parseTelemetryContent } from '../../knowledge/telemetry'
 import { parseMetroStats, analyzeBundleStats, checkBundleBudgets, checkStaticBudgets, type BudgetFinding } from '../../utils/bundleAnalyzer'
 import type { ParsedCrash, TelemetryEvent } from '../../knowledge/telemetry'
@@ -512,5 +513,34 @@ export class SdlcTools extends ToolRegistry {
     })
     const fence = '```'
     return ['## Maestro E2E flow', '', `${fence}yaml`, flow.trimEnd(), fence].join('\n')
+  }
+
+  @mcpTool('scaffold_native_module', 'Deterministically scaffold a React Native New Architecture native module — TypeScript TurboModule spec, iOS Objective-C++ / Android Kotlin implementations, podspec / build.gradle entries, codegen config (bare RN CLI) or the Expo Modules API layout — from a structured JSON spec. Returns the full file tree ready to drop into the project', {
+    type: 'object',
+    properties: {
+      spec: {
+        type: 'string',
+        description: 'JSON spec: { moduleName, packageName?, methods: [{ name, params?: [{ name, type }], returnType? }], constants?: Record<string,string|number|boolean>, events?: string[], component?: { name, props?: [{ name, type }], events? } }',
+      },
+      api: { type: 'string', enum: ['rn-cli', 'expo'] },
+    },
+    required: ['spec'],
+  })
+  async scaffoldNativeModule(args: Record<string, unknown>): Promise<string> {
+    const raw = (args.spec as string) || ''
+    if (!raw.trim()) {
+      return 'Pass a `spec` JSON string describing the native module: { moduleName, methods, constants?, events?, component? }. Use api: "expo" for the Expo Modules API layout (default: bare RN CLI).'
+    }
+    let spec
+    try {
+      spec = parseNativeModuleSpec(raw)
+    } catch (err) {
+      return err instanceof Error ? err.message : String(err)
+    }
+    const generator = new NativeModuleGenerator()
+    const result = generator.generate(spec, { api: args.api === 'expo' ? 'expo' : 'rn-cli' })
+    const content = generator.render(result)
+    this.persistArtifact('engineering', `Native module scaffold: ${result.spec.moduleName}`, content)
+    return content
   }
 }
