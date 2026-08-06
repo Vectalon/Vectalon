@@ -41,7 +41,7 @@ rn-vectalon learns as your project grows:
 ### Multi-Role SDLC Harness
 
 Beyond the v0.1 core, rn-vectalon ships deterministic SDLC modules covering the
-whole lifecycle — **50 MCP tools** (43 always available; 5 more when a
+whole lifecycle — **53 MCP tools** (46 always available; 5 more when a
 knowledge base is present; 2 more when a team brain is configured), all
 callable by any MCP agent:
 
@@ -102,6 +102,7 @@ your toolchain, not just a text generator.
 - **Metro bundle analysis & performance budgets.** The code-review phase runs deterministic budget checks on every workflow — libraries over 100 KB, dependencies missing `sideEffects: false`, unoptimized images (>200 KB non-WebP), and oversized static assets — and when the project has a Metro entry point it snapshots a real `react-native bundle --json` build into the knowledge base, warning "this change increases the bundle by X%" when a PR grows it >5% vs the previous snapshot. `vectalon bundle` runs the same checks on demand (`--platform`, `--static`).
 - **Simulator/device control + Maestro E2E flows.** `vectalon serve` exposes device tools (`device_boot`, `device_screenshot`, `device_tap`, `device_swipe`, `device_open_url`, `device_logs`, `device_set_voiceover`, `device_accessibility_tree`, `device_announcements`) that drive the iOS Simulator (`xcrun simctl` + `idb`) and Android Emulator (`emulator` + `adb`) — boot, capture screenshots into `.vectalon/artifacts/screenshots/`, inject taps/swipes, open deep links, read logs, and **drive the screen reader** (enable/disable VoiceOver/TalkBack, dump the accessibility tree, read what the screen reader announced). The test-writing phase generates a **Maestro YAML flow** (`.maestro/<feature>.yaml`) straight from the acceptance criteria (Given/When/Then → `launchApp` / `tapOn` / `inputText` / `assertVisible` / `openLink` / `swipe`, ending in a screenshot) — plus an **accessibility variant** (`.maestro/<feature>-accessibility.yaml`) when the request mentions VoiceOver/TalkBack/accessibility, with explicit accessibility-tree selectors (the layer Maestro resolves by default). The verification phase runs those flows with `maestro test` when the CLI and a booted device are available (advisory — E2E never gates the workflow) and, on real runs, captures a **visual verification screenshot** (booting a simulator/emulator when needed) into `.vectalon/artifacts/screenshots/` that is attached to the workflow as a PR artifact.
 - **Visual verification loop.** After implementation, the verification phase boots (or reuses) a simulator/emulator, **deep-links to the newly generated screen** (the app's URL scheme is detected from `app.json` / iOS `Info.plist`, falling back to the package name; the screen is derived from the implementation artifacts), captures a screenshot, and **diffs it against a stored reference image** (`.vectalon/artifacts/reference/`, seeded from Figma frames or known-good screenshots via `visual_capture_reference`). UI regressions — misaligned elements, missing safe-area insets, wrong theme colors — surface as **annotated code-review findings** (severity + rule + message + pixel bounding box) in the verification report and as a design artifact on the PR. `visual_check` runs the diff on demand (device-free when given `path` + `reference`), and `visualCheck.captureReference` seeds a baseline straight from a workflow run.
+- **Figma-to-code bridge.** The Figma REST API (token from `FIGMA_TOKEN` or a `token` arg) feeds the Company Brain with the **external source of truth**: `figma_fetch_design` pulls a file and deterministically extracts design tokens (named FILL colors, TEXT typography, EFFECT shadows, spacing/radius scales) and **component specs** (bounds, corner radius, fills, layout mode, text children). `figma_generate_component` turns a frame into a **React Native component** — sizes, radius, colors, and text map 1:1 from the design, emitting `theme.colors.<token>` references when the palette matches. `review_code` gained a **design-system compliance** section: pass the Figma JSON in `figmaJson` and it flags geometry drift (height/borderRadius vs the spec), off-palette hardcoded colors, and inline hexes that should be tokens — the companion enforces design fidelity, not just code correctness. All parsing is deterministic and offline-testable; the live fetch degrades gracefully when unconfigured.
 - **Monorepo workspace support (V-4).** The scanner detects pnpm / Yarn / npm / Turborepo / Lerna workspaces by walking up for `pnpm-workspace.yaml`, `turbo.json`, `lerna.json`, or a `workspaces` manifest field, maps internal packages (`@acme/ui` → `packages/ui`), and resolves the hoisted `node_modules` root so Metro bundle analysis and static budget checks look in the right place. Context prompts are monorepo-aware — they tell agents this app lives in a workspace, that `react-native` is hoisted to the root, and to avoid adding it to the sub-package's `devDependencies`.
 - **React 19 / React Compiler guardrails (VI-1).** The harness detects the React version and whether `babel-plugin-react-compiler` is wired up (manifest or babel/eslint config), then guardrails flag render-phase `ref.current` mutation, `useEffect` subscriptions without cleanup, React 19 `use()` without a `<Suspense>` boundary, unstable dependency arrays, `forwardRef` on React 19 (use ref-as-prop), and redundant manual `useMemo`/`useCallback` when the Compiler auto-memoizes. Context prompts explain the memoization implications so generated code matches the project's React.
 - **VS Code extension (IV-1).** A thin IDE layer over the exact same MCP server — `extension/` connects to `vectalon serve --protocol http` (auto-starting it when needed) and adds command-palette workflows (run a feature workflow, review/guardrail the current file, generate a component, show project context, search the knowledge base), **inline guardrail status** as Problems-panel diagnostics on save/active-file change with a status-bar summary, and a **Knowledge Base sidebar** that groups the artifact store by type and renders each artifact in a preview panel. No new backend — the extension reuses the existing HTTP tool surface (`GET /tools`, `POST /call`).
@@ -391,7 +392,7 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 │  │  │  (Project Memory + Pattern Learner)     │  │    │
 │  │  └─────────────────────────────────────────┘  │    │
 │  │  ┌─────────────────────────────────────────┐  │    │
-│  │  │       SDLC Modules (50 MCP tools)       │  │    │
+│  │  │       SDLC Modules (53 MCP tools)       │  │    │
 │  │  │  BA · QA · Architecture · Security ·   │  │    │
 │  │  │  UX · DevOps · Ops · Analytics         │  │    │
 │  │  └─────────────────────────────────────────┘  │    │
@@ -412,7 +413,7 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 ### Flow
 
 1. **`vectalon init`** — Scans your project, catalogues components, detects patterns, stores context in `.vectalon/`
-2. **`vectalon serve`** — Starts a local server exposing 50 MCP tools (43 by default, plus the knowledge-base and team-brain tools when those services are present, and the **real proxied tools of every enabled ecosystem MCP server**, namespaced as `<id>__<tool>`)
+2. **`vectalon serve`** — Starts a local server exposing 53 MCP tools (46 by default, plus the knowledge-base and team-brain tools when those services are present, and the **real proxied tools of every enabled ecosystem MCP server**, namespaced as `<id>__<tool>`)
 3. **`vectalon import`** — Feeds the Company Brain: PRDs, Jira exports, postmortems, any SDLC artifact
 4. **Agent connects** — Your AI agent (Claude Code, OpenCode, etc.) connects to the MCP server and gets full project awareness
 5. **Agent acts** — The agent uses the harness tools to generate code, fix bugs, write tests, produce PRDs/ADRs/test plans — all in your project's style
@@ -860,7 +861,7 @@ See `src/adapters/` for the interfaces and implementations.
 
 ## Available Tools
 
-Once the server is running, agents can call **50 built-in tools** — 43 always
+Once the server is running, agents can call **53 built-in tools** — 46 always
 available, 5 more when a knowledge base is present (`list_artifacts`,
 `get_artifact`, `get_knowledge_context`, `link_artifacts`, `ingest_telemetry`),
 and 2 more when a team brain is configured (`get_team_context`,
@@ -912,6 +913,9 @@ Expo MCP, …) exposed as first-class tools:
 | `threat_model` | Produce a STRIDE threat model for a feature |
 | `check_accessibility` | Deterministic a11y checks: unlabelled images, touchable roles, text inputs |
 | `extract_design_system` | Extract design tokens (colors, spacing, fonts, radius) from style code |
+| `figma_fetch_design` | Fetch a Figma file from the REST API (token from `FIGMA_TOKEN` or the `token` arg) and extract design tokens + component specs — the external source of truth |
+| `figma_generate_component` | Generate an RN component directly from a Figma component (spec JSON, or `figmaJson` + component name) — sizes, radius, colors, and text map 1:1 from the frame |
+| `check_design_compliance` | Check code against the Figma design system — geometry drift, off-palette colors, inlined hexes that should be theme tokens |
 | `generate_wireframe` | Generate an ASCII wireframe from a section list |
 
 #### DevOps, Ops & Analytics
@@ -1600,6 +1604,13 @@ Areas we'd love help with:
   deterministic, no model calls) producing annotated UI-regression findings;
   `visual_capture_reference` + `visual_check` MCP tools (diff two PNGs
   device-free)
+- ✅ **Figma-to-code bridge** — `src/utils/figma.ts` (REST client via
+  `FIGMA_TOKEN`, deterministic parser: named FILL/TEXT/EFFECT styles,
+  spacing/radius scales, COMPONENT specs),
+  `src/sdlc/FigmaComponentGenerator.ts` (frame → RN component codegen) and
+  `src/sdlc/DesignComplianceChecker.ts` (height/radius/color drift vs the
+  design); `figma_fetch_design`, `figma_generate_component`,
+  `check_design_compliance` MCP tools + a `review_code` `figmaJson` section
 - ✅ **Monorepo workspace support (V-4)** — `src/harness/workspace.ts` detects
   pnpm/Yarn/npm/Turborepo/Lerna workspaces by walking up from the scanned
   directory (`pnpm-workspace.yaml`, `turbo.json`, `lerna.json`, or a

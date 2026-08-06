@@ -30,6 +30,9 @@ import { MaestroFlowWriter } from '../../sdlc/MaestroFlowWriter'
 import { NativeModuleGenerator, parseNativeModuleSpec } from '../../sdlc/NativeModuleGenerator'
 import { parseTelemetryContent } from '../../knowledge/telemetry'
 import { parseMetroStats, analyzeBundleStats, checkBundleBudgets, checkStaticBudgets, type BudgetFinding } from '../../utils/bundleAnalyzer'
+import { parseFigmaFile, fetchFigmaFile, resolveFigmaToken, renderFigmaDesignSystem } from '../../utils/figma'
+import { generateFigmaComponent, findFigmaComponent } from '../../sdlc/FigmaComponentGenerator'
+import { DesignComplianceChecker } from '../../sdlc/DesignComplianceChecker'
 import type { ParsedCrash, TelemetryEvent } from '../../knowledge/telemetry'
 
 /**
@@ -218,12 +221,13 @@ export class SdlcTools extends ToolRegistry {
     return content
   }
 
-  @mcpTool('review_code', 'Run deterministic code review checks over a code snippet; also flags performance budgets (pass Metro `--json` bundle output in `bundleJson` for library-size checks; static sideEffects/image checks always run against the current project)', {
+  @mcpTool('review_code', 'Run deterministic code review checks over a code snippet; also flags performance budgets (pass Metro `--json` bundle output in `bundleJson` for library-size checks; static sideEffects/image checks always run against the current project) and design-system compliance (pass a Figma file JSON in `figmaJson` to diff geometry/colors against the design)', {
     type: 'object',
     properties: {
       code: { type: 'string' },
       language: { type: 'string' },
       bundleJson: { type: 'string' },
+      figmaJson: { type: 'string' },
     },
     required: ['code'],
   })
@@ -270,6 +274,20 @@ export class SdlcTools extends ToolRegistry {
     }
     if (budgetFindings.length > 0) {
       parts.push(`## Performance budgets\n\n${budgetFindings.map(f => `- ⚠️ [${f.rule}] ${f.message}`).join('\n')}`)
+    }
+
+    // Design-system compliance — diff the code's geometry/colors against a
+    // Figma design (pass `figmaJson`); deterministic, no model calls.
+    const rawFigma = (args.figmaJson as string | undefined) || ''
+    if (rawFigma.trim()) {
+      try {
+        const ds = parseFigmaFile(JSON.parse(rawFigma))
+        const compliance = new DesignComplianceChecker().check(code, ds)
+        parts.push(new DesignComplianceChecker().render(compliance))
+      } catch (err) {
+        reportError(err, 'review_code: parsing figmaJson')
+        parts.push('## Design system compliance\n\nCould not parse `figmaJson` — pass the raw Figma file JSON (from `figma_fetch_design`).')
+      }
     }
 
     const content = parts.join('\n\n')
@@ -513,6 +531,109 @@ export class SdlcTools extends ToolRegistry {
     })
     const fence = '```'
     return ['## Maestro E2E flow', '', `${fence}yaml`, flow.trimEnd(), fence].join('\n')
+  }
+
+  @mcpTool('figma_fetch_design', 'Fetch a Figma file from the REST API (token from FIGMA_TOKEN env or the `token` arg) and extract its design tokens (colors, typography, shadows, spacing, radii) and component specs. Persists the design system as a `design` artifact — the external source of truth for design fidelity', {
+    type: 'object',
+    properties: {
+      fileKey: { type: 'string' },
+      token: { type: 'string' },
+    },
+    required: ['fileKey'],
+  })
+  async figmaFetchDesign(args: Record<string, unknown>): Promise<string> {
+    const fileKey = (args.fileKey as string) || ''
+    const token = resolveFigmaToken(args.token as string | undefined)
+    const result = await fetchFigmaFile(fileKey, token)
+    if (!result.ok || !result.data) {
+      return `**Failed** — ${result.error || 'no data returned'}.\n\nExport the file JSON locally (Figma → Plugins → “Copy as JSON”) and use \`figma_generate_component\` / \`review_code\` with the raw JSON in \`figmaJson\`.`
+    }
+    const ds = parseFigmaFile(result.data)
+    const content = renderFigmaDesignSystem(ds)
+    this.persistArtifact('design', `Design System: ${ds.file}`, content)
+    return content
+  }
+
+  @mcpTool('figma_generate_component', 'Generate a React Native component directly from a Figma component (pass the raw Figma file JSON in `figmaJson` plus a `component` name, or a component spec JSON in `spec`). Deterministic codegen — sizes, radius, colors, and text map 1:1 from the frame', {
+    type: 'object',
+    properties: {
+      spec: { type: 'string', description: 'Figma component spec JSON: { id?, name, width, height, cornerRadius?, backgroundColor?, layoutMode?, children: [{ name, type, characters?, x, y, width, height, color?, fontSize? }] }' },
+      figmaJson: { type: 'string', description: 'Raw Figma file JSON (from figma_fetch_design) to look up the component by name' },
+      component: { type: 'string', description: 'Component name to generate when `figmaJson` is passed (e.g. Button/Primary)' },
+      componentName: { type: 'string' },
+    },
+  })
+  async figmaGenerateComponent(args: Record<string, unknown>): Promise<string> {
+    const fence = '```'
+    const rawSpec = (args.spec as string | undefined) || ''
+    const rawFigma = (args.figmaJson as string | undefined) || ''
+    const componentQuery = (args.component as string | undefined) || ''
+
+    let spec
+    let colorTokens: Array<{ name: string; value: string }> | undefined
+    if (rawSpec.trim()) {
+      try {
+        const parsed = JSON.parse(rawSpec)
+        spec = parsed && typeof parsed === 'object' && typeof parsed.name === 'string' ? parsed : null
+        if (!spec) return 'Invalid component spec — expected { name, width, height, ... } JSON.'
+      } catch (err) {
+        return `Invalid component spec JSON: ${err instanceof Error ? err.message : String(err)}`
+      }
+    } else if (rawFigma.trim()) {
+      try {
+        const ds = parseFigmaFile(JSON.parse(rawFigma))
+        const found = findFigmaComponent(ds, componentQuery || 'Component')
+        if (!found) {
+          return `Component "${componentQuery}" not found in the Figma file. Available: ${ds.components.map(c => c.name).join(', ') || 'none'}.`
+        }
+        spec = found
+        colorTokens = ds.colorPalette
+      } catch (err) {
+        return `Could not parse figmaJson: ${err instanceof Error ? err.message : String(err)}`
+      }
+    } else {
+      return 'Pass a component `spec` JSON or a `figmaJson` + `component` name.'
+    }
+
+    const generated = generateFigmaComponent(spec, {
+      componentName: args.componentName as string | undefined,
+      colorTokens,
+    })
+    const content = [`## ${generated.name}`, '', `${fence}tsx`, generated.code, fence].join('\n')
+    this.persistArtifact('design', `Figma component: ${generated.name}`, content)
+    return content
+  }
+
+  @mcpTool('check_design_compliance', 'Check code against the Figma design system — geometry drift (height/borderRadius vs the component spec), off-palette colors, and inline hexes that should be theme tokens. Pass the Figma file JSON in `figmaJson` (or a spec JSON in `spec`) and the code in `code`', {
+    type: 'object',
+    properties: {
+      code: { type: 'string' },
+      figmaJson: { type: 'string' },
+      spec: { type: 'string' },
+    },
+    required: ['code'],
+  })
+  async checkDesignCompliance(args: Record<string, unknown>): Promise<string> {
+    const code = (args.code as string) || ''
+    if (!code.trim()) return 'Pass the `code` to check.'
+    let ds
+    try {
+      const rawFigma = (args.figmaJson as string | undefined) || ''
+      if (rawFigma.trim()) {
+        ds = parseFigmaFile(JSON.parse(rawFigma))
+      } else if ((args.spec as string | undefined)?.trim()) {
+        const spec = JSON.parse(args.spec as string)
+        ds = { file: spec.name || 'spec', colors: [], spacing: [], fontSizes: [], borderRadius: [], shadows: [], colorPalette: [], textStyles: [], effectStyles: [], components: [spec] }
+      } else {
+        return 'Pass `figmaJson` (Figma file JSON from figma_fetch_design) or a component `spec` JSON to check against.'
+      }
+    } catch (err) {
+      return `Could not parse the design input: ${err instanceof Error ? err.message : String(err)}`
+    }
+    const findings = new DesignComplianceChecker().check(code, ds)
+    const content = new DesignComplianceChecker().render(findings)
+    this.persistArtifact('design', 'Design compliance check', content)
+    return content
   }
 
   @mcpTool('scaffold_native_module', 'Deterministically scaffold a React Native New Architecture native module — TypeScript TurboModule spec, iOS Objective-C++ / Android Kotlin implementations, podspec / build.gradle entries, codegen config (bare RN CLI) or the Expo Modules API layout — from a structured JSON spec. Returns the full file tree ready to drop into the project', {
