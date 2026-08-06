@@ -28,6 +28,7 @@ import { KpiReportAnalyzer } from '../../sdlc/KpiReportAnalyzer'
 import type { KpiMetric } from '../../sdlc/KpiReportAnalyzer'
 import { MaestroFlowWriter } from '../../sdlc/MaestroFlowWriter'
 import { parseTelemetryContent } from '../../knowledge/telemetry'
+import { parseMetroStats, analyzeBundleStats, checkBundleBudgets, checkStaticBudgets, type BudgetFinding } from '../../utils/bundleAnalyzer'
 import type { ParsedCrash, TelemetryEvent } from '../../knowledge/telemetry'
 
 /**
@@ -216,11 +217,12 @@ export class SdlcTools extends ToolRegistry {
     return content
   }
 
-  @mcpTool('review_code', 'Run deterministic code review checks over a code snippet', {
+  @mcpTool('review_code', 'Run deterministic code review checks over a code snippet; also flags performance budgets (pass Metro `--json` bundle output in `bundleJson` for library-size checks; static sideEffects/image checks always run against the current project)', {
     type: 'object',
     properties: {
       code: { type: 'string' },
       language: { type: 'string' },
+      bundleJson: { type: 'string' },
     },
     required: ['code'],
   })
@@ -239,6 +241,34 @@ export class SdlcTools extends ToolRegistry {
     })
     if (llmReview) {
       parts.push(`## LLM Review\n\n${formatLLMReview(llmReview)}`)
+    }
+
+    // Deterministic performance budgets (no model calls):
+    // 1. Bundle composition from Metro `--json` output — flags libraries >100 KB.
+    // 2. On-disk static checks — missing `sideEffects: false`, unoptimized
+    //    images, oversized assets — against the server's project root.
+    const budgetFindings: BudgetFinding[] = []
+    const rawBundle = (args.bundleJson as string | undefined) || ''
+    if (rawBundle.trim()) {
+      try {
+        const stats = parseMetroStats(rawBundle)
+        if (stats) {
+          budgetFindings.push(...checkBundleBudgets(analyzeBundleStats(stats)))
+        }
+      } catch (err) {
+        reportError(err, 'review_code: parsing bundleJson')
+      }
+    }
+    const projectRoot = this.ctx.engine.getSnapshot()?.project.root
+    if (projectRoot) {
+      try {
+        budgetFindings.push(...checkStaticBudgets(projectRoot).findings)
+      } catch (err) {
+        reportError(err, 'review_code: static budget checks')
+      }
+    }
+    if (budgetFindings.length > 0) {
+      parts.push(`## Performance budgets\n\n${budgetFindings.map(f => `- ⚠️ [${f.rule}] ${f.message}`).join('\n')}`)
     }
 
     const content = parts.join('\n\n')
