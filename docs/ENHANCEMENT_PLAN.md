@@ -254,6 +254,7 @@ vectalon chat
 
 - [x] Model store + download command
 - [x] node-llama-cpp dynamic integration
+- [x] **Optional dependency** — `node-llama-cpp` moved to `optionalDependencies` (dev-only for the repo's own typecheck); `LocalProvider` probes the module at init and degrades to the deterministic stub with a clear warning when it's missing or fails to load, so installs on constrained systems never break
 - [ ] Qwen chat template support (using default node-llama-cpp chat wrapper)
 - [x] Fallback to deterministic stub
 - [x] `vectalon models` / `vectalon pull` commands

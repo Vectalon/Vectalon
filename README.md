@@ -514,6 +514,15 @@ vectalon models            # list available and downloaded models
 The default model is **Qwen2.5-Coder-1.5B-Instruct-GGUF** (`Q4_K_M`, ~1.1 GB), licensed under **Apache 2.0**, which is free for commercial use. If no model is
 downloaded, the feature workflow falls back to deterministic scaffolds.
 
+**Local inference is fully optional.** `node-llama-cpp` is an
+`optionalDependency` — on systems where its native binary can't build or load
+(constrained CI, old glibc, missing toolchain), `npm install` still succeeds
+and skips it with a warning. `LocalProvider` probes the module at
+initialization: if it's missing or fails to load, the harness logs a clear
+warning and degrades to the deterministic stub (same offline behavior as no
+model), so nothing breaks. Run `npm install node-llama-cpp` and re-init to
+restore real local inference, or just use a remote provider.
+
 ### Run a feature workflow
 
 ```bash
