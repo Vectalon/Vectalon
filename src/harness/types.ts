@@ -50,6 +50,10 @@ export interface ProjectInfo {
   newArchitecture?: import('../utils/newArchitecture').NewArchitectureInfo
   /** Monorepo workspace context when the project lives in a pnpm/yarn/npm/turbo/lerna workspace. */
   workspace?: import('./workspace').WorkspaceInfo
+  /** React version resolved from the manifest ('' when unknown). */
+  reactVersion: string
+  /** Detected React 19 / React Compiler state (babel-plugin-react-compiler). */
+  reactCompiler?: import('../utils/reactCompiler').ReactCompilerInfo
 }
 
 export interface FileNode {

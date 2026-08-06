@@ -108,6 +108,29 @@ describe('ContextEngine', () => {
     expect(snapshot?.knowledgeGraph?.components.map(c => c.name)).toContain('ProfileCard')
   })
 
+  it('includes a React 19 / Compiler section with memoization implications', () => {
+    const dir = createTempProject({
+      'package.json': JSON.stringify({
+        name: 'react19-app',
+        version: '1.0.0',
+        dependencies: { react: '19.1.0', 'react-native': '0.76.0' },
+        devDependencies: { 'babel-plugin-react-compiler': '^0.0.0-experimental' },
+      }),
+      'src/App.tsx': 'export default function App() { return null }',
+    })
+    try {
+      const engine = new ContextEngine(dir)
+      engine.init()
+      const prompt = engine.buildContextPrompt()
+      expect(prompt).toContain('- React: 19.1.0')
+      expect(prompt).toContain('## React 19 / Compiler')
+      expect(prompt).toContain('React Compiler: enabled')
+      expect(prompt).toContain('auto-memoizes components')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
   it('includes a monorepo workspace section when the app lives in a workspace', () => {
     const ws = createTempProject({
       'pnpm-workspace.yaml': 'packages:\n  - "packages/*"\n',

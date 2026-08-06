@@ -3,6 +3,7 @@ import { join, relative, extname } from 'path'
 import type { ProjectInfo, FileNode, ComponentInfo, LintConfigInfo } from './types'
 import { analyzeSourceFile } from './AstScanner'
 import { detectNewArchitecture } from '../utils/newArchitecture'
+import { detectReactCompiler } from '../utils/reactCompiler'
 import { detectWorkspace, resolveReactNativeVersion } from './workspace'
 
 export interface PackageJsonLike {
@@ -43,6 +44,7 @@ export class Scanner {
       ...(pkg.dependencies || {}),
       ...(pkg.devDependencies || {}),
     })
+    const reactVersion = pkg.dependencies?.react || pkg.devDependencies?.react || ''
     const hasTypeScript =
       existsSync(join(this.root, 'tsconfig.json')) ||
       (wsRoot !== null && wsRoot !== this.root && existsSync(join(wsRoot, 'tsconfig.json')))
@@ -69,6 +71,8 @@ export class Scanner {
       expoSdkVersion: pkg.dependencies?.expo || '',
       lintConfig: this.detectLintConfigs(),
       newArchitecture: detectNewArchitecture(this.root, pkg),
+      reactVersion,
+      reactCompiler: detectReactCompiler(this.root, pkg),
       workspace,
     }
   }

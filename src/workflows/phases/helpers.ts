@@ -42,6 +42,8 @@ export function detectConventions(snapshot: import('../../harness/types').Contex
   platforms: string[]
   lintConfig?: import('../../harness/types').LintConfigInfo
   newArchitecture?: import('../../utils/newArchitecture').NewArchitectureInfo
+  reactVersion: string
+  reactCompiler?: import('../../utils/reactCompiler').ReactCompilerInfo
 } {
   const components = snapshot?.components || []
   const project = snapshot?.project
@@ -53,6 +55,8 @@ export function detectConventions(snapshot: import('../../harness/types').Contex
     platforms: project?.platforms || [],
     lintConfig: project?.lintConfig,
     newArchitecture: project?.newArchitecture,
+    reactVersion: project?.reactVersion || '',
+    reactCompiler: project?.reactCompiler,
   }
 }
 

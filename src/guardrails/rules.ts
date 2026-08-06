@@ -1,8 +1,47 @@
 import { GuardrailRule } from './types'
 import { isNewArchitectureEnabled } from '../utils/newArchitecture'
+import { isReact19 } from '../utils/reactCompiler'
 
 function findLine(content: string, index: number): number {
   return content.slice(0, index).split('\n').length
+}
+
+/**
+ * True when `index` falls inside a `useEffect` / `useLayoutEffect` /
+ * `useInsertionEffect` call (between its opening paren and the matching close).
+ * Used to distinguish legal ref mutation inside effect callbacks from the
+ * React 19 error of mutating refs during render.
+ */
+function isInsideEffectCall(content: string, index: number): boolean {
+  const effectRe = /use(?:Layout|Insertion)?Effect\s*\(/g
+  let m: RegExpExecArray | null
+  let lastEffectStart = -1
+  while ((m = effectRe.exec(content)) !== null) {
+    if (m.index > index) break
+    lastEffectStart = m.index
+  }
+  if (lastEffectStart === -1) return false
+
+  // Scan forward from the effect call to its matching close paren.
+  let depth = 0
+  let inString = false
+  let quote = ''
+  let i = lastEffectStart
+  for (; i < content.length; i++) {
+    const c = content[i]
+    if (inString) {
+      if (c === quote && content[i - 1] !== '\\') inString = false
+    } else if (c === '"' || c === "'" || c === '`') {
+      inString = true
+      quote = c
+    } else if (c === '(') {
+      depth++
+    } else if (c === ')') {
+      depth--
+      if (depth === 0) break
+    }
+  }
+  return index < i
 }
 
 function findJsxOpeningTagEnd(content: string, start: number): number {
@@ -528,6 +567,149 @@ export const rules: GuardrailRule[] = [
             passed: false,
             message: `Native module '${name}' is used but has no TurboModule TypeScript spec (expected Native${name}.ts or ${name}Spec.ts)`,
           }
+        }
+      }
+      return { passed: true }
+    },
+  },
+  {
+    id: 'no-ref-mutation-in-render',
+    name: 'Refs are not mutated during render',
+    description: 'React 19 throws when a ref is mutated during render. Assign ref.current only inside effects or event handlers.',
+    severity: 'warning',
+    applicable: ({ filePath }) => /\.[jt]sx?$/.test(filePath),
+    check: ({ content }) => {
+      // `=` (but not `==` / `===`) — comparison reads are legal.
+      const re = /\.current\s*=\s*(?!=)/g
+      let m: RegExpExecArray | null
+      while ((m = re.exec(content)) !== null) {
+        const start = m.index
+        // Assignments inside effect callbacks are legal; render-phase writes are not.
+        // (Assignments inside event handlers are not inside an effect call and
+        // are also flagged — a conservative heuristic; the React 19 rule is
+        // render-scoped.)
+        if (isInsideEffectCall(content, start)) continue
+        return {
+          passed: false,
+          message: 'Ref assigned outside an effect callback — React 19 errors when refs are mutated during render; move the assignment into useEffect',
+          line: findLine(content, start),
+        }
+      }
+      return { passed: true }
+    },
+  },
+  {
+    id: 'use-effect-cleanup',
+    name: 'useEffect subscriptions return cleanup',
+    description: 'Subscriptions set up in useEffect (timers, listeners, observers, sockets) must be torn down in a returned cleanup function — React 19 effect cleanup semantics make this a correctness issue, not just a leak.',
+    severity: 'warning',
+    applicable: ({ filePath }) => /\.[jt]sx?$/.test(filePath),
+    check: ({ content }) => {
+      const re = /useEffect\s*\(\s*(?:async\s+)?\(\s*\)\s*=>\s*\{([\s\S]*?)\}\s*,\s*\[/g
+      let m: RegExpExecArray | null
+      while ((m = re.exec(content)) !== null) {
+        const body = m[1]
+        const hasSubscription = /setInterval|setTimeout|addEventListener|addListener|\.subscribe\s*\(|\.on\s*\(|\.watch\s*\(|new\s+WebSocket|\.connect\s*\(/.test(body)
+        if (!hasSubscription) continue
+        const hasCleanup = /return\s+(?:\(?\)?\s*=>|function\s*\()|clearInterval|clearTimeout|removeEventListener|removeListener|\.unsubscribe\s*\(|\.off\s*\(|\.dispose\s*\(|\.close\s*\(|\.destroy\s*\(|AbortController/.test(body)
+        if (!hasCleanup) {
+          return {
+            passed: false,
+            message: 'useEffect sets up a subscription (timer/listener/observer/socket) but never returns a cleanup function',
+            line: findLine(content, m.index || 0),
+          }
+        }
+      }
+      return { passed: true }
+    },
+  },
+  {
+    id: 'use-outside-suspense',
+    name: 'use() is inside a Suspense boundary',
+    description: "React 19's use() reads a promise or context. Promise reads suspend — the consuming component must be wrapped in <Suspense>, and context reads need a matching Provider.",
+    severity: 'warning',
+    applicable: ({ filePath, content }) =>
+      /\.[jt]sx?$/.test(filePath) &&
+      /\buse\s*\(/.test(content) &&
+      (/\buse\b[^;]*from\s*['"]react['"]/.test(content) || /React\.use\s*\(/.test(content)),
+    check: ({ content }) => {
+      // A Suspense boundary anywhere in the file means the call site is
+      // (very likely) covered — treat that as passing.
+      if (/<Suspense\b/.test(content)) return { passed: true }
+      const m = content.match(/(?:\buse|React\.use)\s*\(/)
+      if (m) {
+        return {
+          passed: false,
+          message: 'use() called but no <Suspense> boundary found — promise reads will suspend and throw without a fallback; wrap the consuming component in <Suspense fallback={...}>',
+          line: findLine(content, m.index || 0),
+        }
+      }
+      return { passed: true }
+    },
+  },
+  {
+    id: 'unstable-dependency-array',
+    name: 'Dependency arrays are stable',
+    description: 'Dependency arrays must contain stable values — inline object/array/function literals and derived calls are recreated every render and cause effect re-runs.',
+    severity: 'warning',
+    applicable: ({ filePath }) => /\.[jt]sx?$/.test(filePath),
+    check: ({ content }) => {
+      // Anchor the deps array to the hook's closing paren so `, [` sequences
+      // inside the callback body (e.g. fn(a, [1])) are not mistaken for deps.
+      const re = /(useEffect|useCallback|useMemo)\s*\([\s\S]*?,\s*\[([^\][]*)\]\s*\)/g
+      let m: RegExpExecArray | null
+      while ((m = re.exec(content)) !== null) {
+        const deps = m[2]
+        if (/=>/.test(deps)) {
+          return { passed: false, message: 'Unstable dependency array — inline function is recreated every render', line: findLine(content, m.index || 0) }
+        }
+        if (/\.(filter|map|reduce|slice|sort|find|some|every)\s*\(/.test(deps)) {
+          return { passed: false, message: 'Unstable dependency array — derived call result changes every render', line: findLine(content, m.index || 0) }
+        }
+        if (/\{\s*[^}]*\}|\[\s*\]/.test(deps)) {
+          return { passed: false, message: 'Unstable dependency array — inline object/array literal is recreated every render', line: findLine(content, m.index || 0) }
+        }
+      }
+      return { passed: true }
+    },
+  },
+  {
+    id: 'no-forward-ref',
+    name: 'React 19 uses ref as a prop instead of forwardRef',
+    description: 'React 19 supports ref as a normal prop — forwardRef is deprecated and its wrapper also interferes with React Compiler memoization.',
+    severity: 'warning',
+    applicable: ({ filePath, content, conventions }) =>
+      /\.[jt]sx?$/.test(filePath) &&
+      /\bforwardRef\s*\(/.test(content) &&
+      isReact19(conventions?.reactVersion || ''),
+    check: ({ content }) => {
+      const m = content.match(/\bforwardRef\s*\(/)
+      if (m) {
+        return {
+          passed: false,
+          message: 'forwardRef is deprecated in React 19 — accept ref as a regular prop instead',
+          line: findLine(content, m.index || 0),
+        }
+      }
+      return { passed: true }
+    },
+  },
+  {
+    id: 'compiler-auto-memoization',
+    name: 'React Compiler auto-memoizes — avoid manual memoization',
+    description: 'With the React Compiler enabled, components are memoized automatically; manual useMemo/useCallback are usually redundant and add noise.',
+    severity: 'info',
+    applicable: ({ filePath, content, conventions }) =>
+      /\.[jt]sx?$/.test(filePath) &&
+      conventions?.reactCompiler?.enabled === true &&
+      /useMemo\s*\(|useCallback\s*\(/.test(content),
+    check: ({ content }) => {
+      const m = content.match(/useMemo\s*\(|useCallback\s*\(/)
+      if (m) {
+        return {
+          passed: false,
+          message: 'React Compiler auto-memoizes — manual useMemo/useCallback is usually redundant; keep values immutable and let the Compiler cache',
+          line: findLine(content, m.index || 0),
         }
       }
       return { passed: true }
