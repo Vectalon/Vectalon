@@ -40,10 +40,10 @@ jobs:
         run: pnpm turbo run test
 
       - name: Extension type check
-        run: pnpm --filter @vectalon/rn run typecheck:ext
+        run: pnpm --filter @vectalon-dev/rn run typecheck:ext
 
       - name: Extension lint
-        run: pnpm --filter @vectalon/rn run lint:ext
+        run: pnpm --filter @vectalon-dev/rn run lint:ext
 
   coverage:
     runs-on: ubuntu-latest
@@ -66,7 +66,7 @@ jobs:
         run: pnpm install
 
       - name: Test with coverage (threshold gate)
-        run: pnpm --filter @vectalon/rn run test:coverage
+        run: pnpm --filter @vectalon-dev/rn run test:coverage
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5

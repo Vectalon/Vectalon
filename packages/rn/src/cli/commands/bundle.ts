@@ -5,7 +5,7 @@
 
 import { existsSync } from 'fs'
 import { join, resolve } from 'path'
-import { requireTier } from '@vectalon/core'
+import { requireTier } from '@vectalon-dev/core'
 import { logger } from '../logger'
 import { analyzeBundleStats, checkBundleBudgets, checkStaticBudgets, runMetroBundleCommand, formatBytes, formatPct, type BudgetFinding } from '../../utils/bundleAnalyzer'
 import { ArtifactStore } from '../../knowledge/ArtifactStore'

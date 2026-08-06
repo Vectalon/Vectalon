@@ -6,8 +6,8 @@
  */
 
 // Re-export core interfaces for convenience
-export type { Tier, TierCheck, Product, Feature } from '@vectalon/core'
-export { requireTier } from '@vectalon/core'
+export type { Tier, TierCheck, Product, Feature } from '@vectalon-dev/core'
+export { requireTier } from '@vectalon-dev/core'
 
 export { Scanner, ContextEngine, parseSource, analyzeSourceFile, walk, buildKnowledgeGraph, extractExpoRoutes, computeReRenderImpact } from './harness'
 export { detectWorkspace, findWorkspaceRoot, resolveNodeModulesRoot } from './harness'

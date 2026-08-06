@@ -9,17 +9,17 @@ on:
       package:
         description: 'Package to publish'
         required: true
-        default: '@vectalon/rn'
+        default: '@vectalon-dev/rn'
         type: choice
         options:
-          - '@vectalon/core'
-          - '@vectalon/rn'
+          - '@vectalon-dev/core'
+          - '@vectalon-dev/rn'
           - both
 
 jobs:
   publish-core:
     runs-on: ubuntu-latest
-    if: github.event.inputs.package == '@vectalon/core' || github.event.inputs.package == 'both' || contains(github.event.head_commit.message, '[publish-core]')
+    if: github.event.inputs.package == '@vectalon-dev/core' || github.event.inputs.package == 'both' || contains(github.event.head_commit.message, '[publish-core]')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,25 +40,25 @@ jobs:
         run: pnpm install
 
       - name: Build
-        run: pnpm turbo run build --filter=@vectalon/core
+        run: pnpm turbo run build --filter=@vectalon-dev/core
 
       - name: Test
-        run: pnpm turbo run test --filter=@vectalon/core
+        run: pnpm turbo run test --filter=@vectalon-dev/core
 
       - name: Lint
-        run: pnpm turbo run lint --filter=@vectalon/core
+        run: pnpm turbo run lint --filter=@vectalon-dev/core
 
       - name: Type check
-        run: pnpm turbo run typecheck --filter=@vectalon/core
+        run: pnpm turbo run typecheck --filter=@vectalon-dev/core
 
-      - name: Publish @vectalon/core
-        run: pnpm publish --filter=@vectalon/core --access public --no-git-checks
+      - name: Publish @vectalon-dev/core
+        run: pnpm publish --filter=@vectalon-dev/core --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-rn:
     runs-on: ubuntu-latest
-    if: github.event.inputs.package == '@vectalon/rn' || github.event.inputs.package == 'both' || contains(github.event.head_commit.message, '[publish-rn]')
+    if: github.event.inputs.package == '@vectalon-dev/rn' || github.event.inputs.package == 'both' || contains(github.event.head_commit.message, '[publish-rn]')
     needs: [publish-core]
     steps:
       - name: Checkout
@@ -80,18 +80,18 @@ jobs:
         run: pnpm install
 
       - name: Build
-        run: pnpm turbo run build --filter=@vectalon/rn
+        run: pnpm turbo run build --filter=@vectalon-dev/rn
 
       - name: Test
-        run: pnpm turbo run test --filter=@vectalon/rn
+        run: pnpm turbo run test --filter=@vectalon-dev/rn
 
       - name: Lint
-        run: pnpm turbo run lint --filter=@vectalon/rn
+        run: pnpm turbo run lint --filter=@vectalon-dev/rn
 
       - name: Type check
-        run: pnpm turbo run typecheck --filter=@vectalon/rn
+        run: pnpm turbo run typecheck --filter=@vectalon-dev/rn
 
-      - name: Publish @vectalon/rn
-        run: pnpm publish --filter=@vectalon/rn --access public --no-git-checks
+      - name: Publish @vectalon-dev/rn
+        run: pnpm publish --filter=@vectalon-dev/rn --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

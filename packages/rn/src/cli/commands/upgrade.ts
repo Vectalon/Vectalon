@@ -3,7 +3,7 @@
  * Business Source License 1.1 (BSL-1.1)
  */
 
-import { requireTier } from '@vectalon/core'
+import { requireTier } from '@vectalon-dev/core'
 import { logger } from '../logger'
 
 interface UpgradeOptions {

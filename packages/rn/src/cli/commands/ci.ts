@@ -5,7 +5,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join, resolve } from 'path'
-import { requireTier } from '@vectalon/core'
+import { requireTier } from '@vectalon-dev/core'
 import { logger } from '../logger'
 
 interface CiOptions {
