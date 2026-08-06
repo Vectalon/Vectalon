@@ -75,7 +75,7 @@ describe('MCPServer', () => {
 
   it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(43)
+    expect(names).toHaveLength(46)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -121,6 +121,9 @@ describe('MCPServer', () => {
         'scaffold_native_module',
         'visual_capture_reference',
         'visual_check',
+        'figma_fetch_design',
+        'figma_generate_component',
+        'check_design_compliance',
       ])
     )
   })
@@ -175,6 +178,13 @@ describe('MCPServer', () => {
       }
       if (tool.name === 'visual_capture_reference') {
         args.key = 'LoginScreen'
+      }
+      if (tool.name === 'figma_generate_component') {
+        args.spec = JSON.stringify({ name: 'Button/Primary', width: 100, height: 44, children: [] })
+      }
+      if (tool.name === 'check_design_compliance') {
+        args.code = 'const x = 1'
+        args.spec = JSON.stringify({ name: 'Button', width: 100, height: 44, children: [] })
       }
 
       const result = await server.handleToolCall({ id: '1', name: tool.name, arguments: args })
@@ -380,6 +390,69 @@ describe('MCPServer', () => {
     expect(fail.isError).not.toBe(true)
     expect(fail.content).toContain('found differences')
     expect(fail.content).toContain('visual-drift')
+  })
+
+  it('review_code reports design-system compliance against a Figma file', async () => {
+    const server = createServer()
+    const figmaJson = JSON.stringify({
+      name: 'Design',
+      document: {
+        type: 'DOCUMENT',
+        children: [
+          {
+            type: 'COMPONENT',
+            id: 'c1',
+            name: 'Button/Primary',
+            absoluteBoundingBox: { x: 0, y: 0, width: 200, height: 44 },
+            cornerRadius: 8,
+            children: [],
+          },
+        ],
+      },
+    })
+    const code = `export function ButtonPrimary() { return <View style={styles.root} /> }\nconst styles = StyleSheet.create({ root: { height: 52, borderRadius: 8 } })`
+    const result = await server.handleToolCall({
+      id: '1',
+      name: 'review_code',
+      arguments: { code, figmaJson },
+    })
+    expect(result.isError).not.toBe(true)
+    expect(result.content).toContain('Design system compliance')
+    expect(result.content).toContain('height-drift')
+  })
+
+  it('figma_generate_component renders a component from a spec JSON', async () => {
+    const server = createServer()
+    const result = await server.handleToolCall({
+      id: '1',
+      name: 'figma_generate_component',
+      arguments: {
+        spec: JSON.stringify({
+          name: 'Button/Primary',
+          width: 200,
+          height: 44,
+          cornerRadius: 8,
+          backgroundColor: '#F5331A',
+          children: [{ name: 'Label', type: 'TEXT', characters: 'Go', x: 90, y: 12, width: 20, height: 20 }],
+        }),
+      },
+    })
+    expect(result.isError).not.toBe(true)
+    expect(result.content).toContain('export function ButtonPrimary')
+    expect(result.content).toContain('height: 44,')
+    expect(result.content).toContain('Go')
+  })
+
+  it('figma_fetch_design degrades gracefully without a token', async () => {
+    const server = createServer()
+    const result = await server.handleToolCall({
+      id: '1',
+      name: 'figma_fetch_design',
+      arguments: { fileKey: 'abc123' },
+    })
+    expect(result.isError).not.toBe(true)
+    expect(result.content).toContain('**Failed**')
+    expect(result.content).toContain('FIGMA_TOKEN')
   })
 
   it('visual_capture_reference stores an imported PNG under the store key', async () => {
