@@ -1,7 +1,8 @@
-import { existsSync, readFileSync } from 'fs'
+import { existsSync, readFileSync, readdirSync } from 'fs'
 import { join, relative } from 'path'
 import type { WorkflowPhase } from '../../adapters/types'
 import { runCommand } from '../../adapters/runCommand'
+import { DeviceController } from '../../adapters/deviceControl'
 import { detectValidationCommands } from '../../utils/validationCommands'
 import { findSourceFiles } from '../../utils/unusedImports'
 import { phaseResult, failedPhase } from './helpers'
@@ -196,6 +197,60 @@ export const verificationPhase: WorkflowPhase = {
         results.push(`- Dead native config scan: ${deadScan.findings.length} candidate(s) (advisory — nothing deleted): ${sample}`)
       } else {
         results.push('- Dead native config scan: pass — no candidate dead pods/gradle deps/imports found')
+      }
+    }
+
+    // Maestro E2E — run any flows the test phase generated (advisory: E2E is
+    // slow and flaky, so it reports but never gates the workflow). Requires the
+    // maestro CLI on PATH and a booted device; otherwise it explains how to run
+    // the flows locally.
+    if (ctx.projectRoot) {
+      const flowsDir = join(ctx.projectRoot, '.maestro')
+      let flows: string[] = []
+      try {
+        flows = existsSync(flowsDir)
+          ? readdirSync(flowsDir).filter(f => f.endsWith('.yaml') || f.endsWith('.yml'))
+          : []
+      } catch {
+        flows = []
+      }
+      if (flows.length > 0) {
+        const maestroProbe = await runCommand('maestro', ['--version'], { cwd: ctx.projectRoot, timeout: 10000 })
+        if (!maestroProbe.success) {
+          results.push(`- Maestro E2E: skipped — maestro CLI not found on PATH (generated ${flows.length} flow(s) in .maestro/; install with \`curl -Ls "https://get.maestro.mobile.dev" | bash\`)`)
+        } else if (isSimulated) {
+          // A dry-run workflow must never actually execute E2E tests.
+          results.push(`- Maestro E2E: skipped (simulated) — ${flows.length} flow(s) in .maestro/ ready for \`maestro test\``)
+        } else {
+          // Check BOTH platforms: a booted iOS simulator OR Android emulator
+          // qualifies (maestro targets whichever device is running).
+          const iosController = new DeviceController(ctx.projectRoot, { platform: 'ios' })
+          const androidController = new DeviceController(ctx.projectRoot, { platform: 'android' })
+          const [iosBooted, androidBooted] = await Promise.all([
+            iosController.listDevices(),
+            androidController.listDevices(),
+          ])
+          const hasDevice =
+            (iosBooted.success && iosBooted.stdout.trim().length > 0) ||
+            (androidBooted.success && androidBooted.stdout.trim().length > 0)
+          if (!hasDevice) {
+            results.push(`- Maestro E2E: skipped — no booted device detected (${flows.length} flow(s) in .maestro/). Boot one with \`vectalon serve\` device tools or \`xcrun simctl boot\` / \`emulator -avd <name>\`.)`)
+          } else {
+            try {
+              const e2e = await runCommand('maestro', ['test', flowsDir, '--format', 'junit'], {
+                cwd: ctx.projectRoot,
+                timeout: 15 * 60 * 1000,
+              })
+              const reportNote = e2e.success
+                ? ' — screenshots/report in ./maestro-report/ (attach to the PR)'
+                : ''
+              results.push(`- Maestro E2E: ${e2e.success ? 'pass' : 'failed'} — ${flows.length} flow(s) executed${reportNote}${formatOutput(e2e.stdout, e2e.stderr, 2000)}`)
+            } catch (err) {
+              const message = err instanceof Error ? err.message : String(err)
+              results.push(`- Maestro E2E: error — ${message}`)
+            }
+          }
+        }
       }
     }
 

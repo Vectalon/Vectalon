@@ -1,7 +1,31 @@
+import { existsSync, readFileSync } from 'fs'
+import { join } from 'path'
 import type { WorkflowPhase, WorkflowArtifact } from '../../adapters/types'
 import { phaseResult, sanitizeFileName, detectConventions } from './helpers'
 import { getIntent, isRemoveDependency, isRefactor, isFix } from './intent'
 import { writeProjectFile, isSelfPackageRepo, GENERATED_OUTPUT_DIR } from './fileOutput'
+import { MaestroFlowWriter } from '../../sdlc/MaestroFlowWriter'
+
+/** Best-effort Android applicationId / bundle id for the Maestro header. */
+function inferAppId(root: string | undefined): string {
+  if (!root) return 'com.example.app'
+  try {
+    const gradle = join(root, 'android', 'app', 'build.gradle')
+    if (existsSync(gradle)) {
+      const m = readFileSync(gradle, 'utf-8').match(/applicationId\s+["']([^"']+)["']/)
+      if (m) return m[1]
+    }
+    const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf-8')) as { name?: string }
+    if (pkg.name && pkg.name.includes('.')) return pkg.name
+  } catch {
+    // Fall through to the placeholder.
+  }
+  return 'com.example.app'
+}
+
+function isE2EFlow(path: string): boolean {
+  return path.startsWith('.maestro/')
+}
 
 export const testPhase: WorkflowPhase = {
   id: 'tests',
@@ -145,6 +169,22 @@ export const testPhase: WorkflowPhase = {
       ].join('\n'),
     })
 
+    // Maestro E2E flow — a deterministic YAML walkthrough derived from the
+    // acceptance criteria (no model calls). Generated alongside the unit tests
+    // so the verification phase can run it on a simulator/emulator.
+    const flowFile = acceptanceCriteria
+      ? {
+          path: `.maestro/${featureName}.yaml`,
+          content: new MaestroFlowWriter().writeFlow(acceptanceCriteria, {
+            featureName,
+            appId: inferAppId(projectRoot),
+          }),
+        }
+      : null
+    if (flowFile) {
+      testFiles.push(flowFile)
+    }
+
     const writtenTests: string[] = []
     const artifacts: WorkflowArtifact[] = []
     const redirected = projectRoot ? isSelfPackageRepo(projectRoot) : false
@@ -154,14 +194,14 @@ export const testPhase: WorkflowPhase = {
         const written = writeProjectFile(projectRoot, file.path, file.content)
         if (written) {
           writtenTests.push(written)
-          artifacts.push({ type: 'qa', title: file.path, content: file.content, path: written })
+          artifacts.push({ type: isE2EFlow(file.path) ? 'e2e' : 'qa', title: file.path, content: file.content, path: written })
         }
       }
     } else {
       // No project root: record the tests as artifacts so the TDD gate can still
       // verify that tests were written before implementation.
       for (const file of testFiles) {
-        artifacts.push({ type: 'qa', title: file.path, content: file.content })
+        artifacts.push({ type: isE2EFlow(file.path) ? 'e2e' : 'qa', title: file.path, content: file.content })
       }
     }
 
@@ -183,6 +223,14 @@ export const testPhase: WorkflowPhase = {
       ...writtenTests.map(t => `- \`${t}\``),
       ...redirectNote,
       '',
+      ...(flowFile
+        ? [
+            '## E2E flow',
+            '',
+            `- \`.maestro/${featureName}.yaml\` — Maestro E2E flow generated from the acceptance criteria (run with \`maestro test\` on a booted simulator/emulator)`,
+            '',
+          ]
+        : []),
       '## TDD Approach',
       '1. These tests define the expected behavior BEFORE implementation.',
       '2. The implementation phase must make these tests pass.',

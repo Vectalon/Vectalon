@@ -7,6 +7,25 @@ import { createDesignAdapter } from './design'
 
 export * from './types'
 export { detectProjectTooling } from './simulator'
+export {
+  DeviceController,
+  detectDevicePlatform,
+  buildBootCommands,
+  buildShutdownCommands,
+  buildListDevicesCommands,
+  buildScreenshotCommands,
+  buildTapCommands,
+  buildSwipeCommands,
+  buildOpenUrlCommands,
+  buildLogsCommands,
+  buildListAvdsCommands,
+} from './deviceControl'
+export type {
+  DeviceControllerOptions,
+  DeviceActionResult,
+  DeviceCommand,
+  DevicePlatform,
+} from './deviceControl'
 
 export interface CreateAdaptersOptions {
   root?: string

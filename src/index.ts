@@ -144,6 +144,10 @@ export {
 export type { EcosystemCategory, EcosystemItem, EcosystemCatalog, ProjectFlavor, EcosystemConfig, EcosystemExport } from './ecosystem'
 
 export { detectProjectTooling } from './adapters'
+export { DeviceController, detectDevicePlatform } from './adapters'
+export type { DeviceControllerOptions, DeviceActionResult, DevicePlatform } from './adapters'
+export { MaestroFlowWriter } from './sdlc'
+export type { MaestroFlowOptions } from './sdlc'
 
 export { WorkflowEngine, getWorkflow, listWorkflows, createWorkflowState, featureDevelopmentWorkflow } from './workflows'
 export { MAX_REVIEW_ATTEMPTS } from './workflows/phases/codeReviewPhase'
