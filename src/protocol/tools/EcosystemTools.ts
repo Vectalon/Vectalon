@@ -1,0 +1,123 @@
+import { ToolRegistry } from './base'
+import { mcpTool } from './decorators'
+import { DeviceController, type DevicePlatform } from '../../adapters/deviceControl'
+import type { DeviceActionResult } from '../../adapters/deviceControl'
+
+/**
+ * Ecosystem tools — simulator/emulator device control. Real commands only when
+ * the server was constructed with `deviceControlLive`; every other surface gets
+ * a deterministic dry-run description.
+ */
+export class EcosystemTools extends ToolRegistry {
+  @mcpTool('device_boot', 'Boot a simulator/emulator (xcrun simctl boot / emulator -avd). Pass platform and optional device/AVD name', {
+    type: 'object',
+    properties: {
+      platform: { type: 'string', enum: ['ios', 'android'] },
+      device: { type: 'string' },
+    },
+  })
+  async deviceBoot(args: Record<string, unknown>): Promise<string> {
+    const result = await this.deviceControllerFor(args).boot(args.device as string | undefined)
+    return this.formatDeviceResult(result)
+  }
+
+  @mcpTool('device_screenshot', 'Capture a screenshot of the booted device to .vectalon/artifacts/screenshots/ (or a given path)', {
+    type: 'object',
+    properties: {
+      platform: { type: 'string', enum: ['ios', 'android'] },
+      path: { type: 'string' },
+    },
+  })
+  async deviceScreenshot(args: Record<string, unknown>): Promise<string> {
+    const result = await this.deviceControllerFor(args).screenshot(args.path as string | undefined)
+    return this.formatDeviceResult(result)
+  }
+
+  @mcpTool('device_tap', 'Tap at screen coordinates on the booted device', {
+    type: 'object',
+    properties: {
+      platform: { type: 'string', enum: ['ios', 'android'] },
+      x: { type: 'number' },
+      y: { type: 'number' },
+    },
+    required: ['x', 'y'],
+  })
+  async deviceTap(args: Record<string, unknown>): Promise<string> {
+    const result = await this.deviceControllerFor(args).tap(Number(args.x), Number(args.y))
+    return this.formatDeviceResult(result)
+  }
+
+  @mcpTool('device_swipe', 'Swipe from (x1, y1) to (x2, y2) on the booted device, optional duration in ms', {
+    type: 'object',
+    properties: {
+      platform: { type: 'string', enum: ['ios', 'android'] },
+      x1: { type: 'number' },
+      y1: { type: 'number' },
+      x2: { type: 'number' },
+      y2: { type: 'number' },
+      duration: { type: 'number' },
+    },
+    required: ['x1', 'y1', 'x2', 'y2'],
+  })
+  async deviceSwipe(args: Record<string, unknown>): Promise<string> {
+    const result = await this.deviceControllerFor(args).swipe(
+      Number(args.x1),
+      Number(args.y1),
+      Number(args.x2),
+      Number(args.y2),
+      args.duration === undefined ? undefined : Number(args.duration)
+    )
+    return this.formatDeviceResult(result)
+  }
+
+  @mcpTool('device_open_url', 'Open a deep link on the booted device (simctl openurl / adb am start VIEW)', {
+    type: 'object',
+    properties: {
+      platform: { type: 'string', enum: ['ios', 'android'] },
+      url: { type: 'string' },
+    },
+    required: ['url'],
+  })
+  async deviceOpenUrl(args: Record<string, unknown>): Promise<string> {
+    const result = await this.deviceControllerFor(args).openUrl((args.url as string) || '')
+    return this.formatDeviceResult(result)
+  }
+
+  @mcpTool('device_logs', 'Read recent device logs (simctl log show / adb logcat), optional line limit', {
+    type: 'object',
+    properties: {
+      platform: { type: 'string', enum: ['ios', 'android'] },
+      limit: { type: 'number' },
+    },
+  })
+  async deviceLogs(args: Record<string, unknown>): Promise<string> {
+    const result = await this.deviceControllerFor(args).logs(args.limit === undefined ? undefined : Number(args.limit))
+    return this.formatDeviceResult(result)
+  }
+
+  private deviceControllerFor(args: Record<string, unknown>): DeviceController {
+    const root = this.ctx.engine.getSnapshot()?.project.root || process.cwd()
+    const platform = args.platform as DevicePlatform | undefined
+    return new DeviceController(root, {
+      // Live control only when the serve command opted in; every other surface
+      // (tests, default `serve`) gets a deterministic dry-run description.
+      dryRun: !this.ctx.deviceControlLive,
+      platform: platform === 'ios' || platform === 'android' ? platform : undefined,
+    })
+  }
+
+  private formatDeviceResult(result: DeviceActionResult): string {
+    const fence = '```'
+    const lines = [
+      `**${result.success ? 'OK' : 'Failed'}**`,
+      '',
+      `${fence}bash`,
+      result.command ? `$ ${result.command}` : '_no command — argument validation failed_',
+      fence,
+      '',
+    ]
+    if (result.stdout) lines.push(result.stdout.slice(0, 4000))
+    if (result.stderr) lines.push(`\n**stderr**\n\n${fence}\n${result.stderr.slice(0, 2000)}\n${fence}`)
+    return lines.join('\n')
+  }
+}
