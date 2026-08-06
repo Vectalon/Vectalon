@@ -33,7 +33,7 @@
     "publish": "npm publish --access public --no-git-checks"
   },
   "dependencies": {
-    "@babel/parser": "^7.29.8",
+    "@babel/parser": "^8.0.4",
     "@clack/prompts": "^1.7.0",
     "@huggingface/transformers": "^4.2.0",
     "cli-table": "^0.3.11",
