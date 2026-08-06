@@ -95,6 +95,49 @@ export class EcosystemTools extends ToolRegistry {
     return this.formatDeviceResult(result)
   }
 
+  @mcpTool('device_set_voiceover', 'Enable or disable the screen reader on the booted device (Android: TalkBack via secure settings; iOS: VoiceOver preference, effective on next boot)', {
+    type: 'object',
+    properties: {
+      platform: { type: 'string', enum: ['ios', 'android'] },
+      enabled: { type: 'boolean' },
+    },
+    required: ['enabled'],
+  })
+  async deviceSetVoiceOver(args: Record<string, unknown>): Promise<string> {
+    const result = await this.deviceControllerFor(args).setVoiceOver(args.enabled === true)
+    const platform = this.deviceControllerFor(args).platform
+    // iOS VoiceOver is a persisted preference — tell the caller it needs a
+    // simulator restart to take effect, so announcement reads aren't confusing.
+    const restartNote =
+      result.success && platform === 'ios'
+        ? '\n\n_Note: the VoiceOver preference is persisted — restart the simulator (`device_boot` or `xcrun simctl shutdown` + `boot`) for it to take effect._'
+        : ''
+    return `${this.formatDeviceResult(result)}${restartNote}`
+  }
+
+  @mcpTool('device_accessibility_tree', 'Dump the current accessibility tree of the booted device (Android: uiautomator dump XML; iOS: idb ui describe-all) — the view hierarchy the screen reader navigates', {
+    type: 'object',
+    properties: {
+      platform: { type: 'string', enum: ['ios', 'android'] },
+    },
+  })
+  async deviceAccessibilityTree(args: Record<string, unknown>): Promise<string> {
+    const result = await this.deviceControllerFor(args).accessibilityTree()
+    return this.formatDeviceResult(result)
+  }
+
+  @mcpTool('device_announcements', 'Read recent screen-reader announcements (Android: logcat TalkBack/Accessibility tags; iOS: Accessibility subsystem log) to verify what VoiceOver/TalkBack spoke', {
+    type: 'object',
+    properties: {
+      platform: { type: 'string', enum: ['ios', 'android'] },
+      limit: { type: 'number' },
+    },
+  })
+  async deviceAnnouncements(args: Record<string, unknown>): Promise<string> {
+    const result = await this.deviceControllerFor(args).announcements(args.limit === undefined ? undefined : Number(args.limit))
+    return this.formatDeviceResult(result)
+  }
+
   private deviceControllerFor(args: Record<string, unknown>): DeviceController {
     const root = this.ctx.engine.getSnapshot()?.project.root || process.cwd()
     const platform = args.platform as DevicePlatform | undefined

@@ -172,19 +172,25 @@ export const testPhase: WorkflowPhase = {
 
     // Maestro E2E flow — a deterministic YAML walkthrough derived from the
     // acceptance criteria (no model calls). Generated alongside the unit tests
-    // so the verification phase can run it on a simulator/emulator.
-    const flowFile = acceptanceCriteria
-      ? {
-          path: `.maestro/${featureName}.yaml`,
-          content: new MaestroFlowWriter().writeFlow(acceptanceCriteria, {
-            featureName,
-            appId: inferAppId(projectRoot),
-          }),
-        }
-      : null
-    if (flowFile) {
-      testFiles.push(flowFile)
+    // so the verification phase can run it on a simulator/emulator. When the
+    // request or criteria mention accessibility, an accessibility variant is
+    // also generated (explicit accessibility-tree selectors + screen-reader
+    // guidance) for VoiceOver / TalkBack verification.
+    const appId = inferAppId(projectRoot)
+    const flowFiles: { path: string; content: string }[] = []
+    if (acceptanceCriteria) {
+      flowFiles.push({
+        path: `.maestro/${featureName}.yaml`,
+        content: new MaestroFlowWriter().writeFlow(acceptanceCriteria, { featureName, appId }),
+      })
+      if (/accessib|voiceover|talkback|screen\s*-?reader/i.test(`${ctx.prompt}\n${acceptanceCriteria}`)) {
+        flowFiles.push({
+          path: `.maestro/${featureName}-accessibility.yaml`,
+          content: new MaestroFlowWriter().writeFlow(acceptanceCriteria, { featureName, appId, accessibility: true }),
+        })
+      }
     }
+    testFiles.push(...flowFiles)
 
     const writtenTests: string[] = []
     const artifacts: WorkflowArtifact[] = []
@@ -224,11 +230,11 @@ export const testPhase: WorkflowPhase = {
       ...writtenTests.map(t => `- \`${t}\``),
       ...redirectNote,
       '',
-      ...(flowFile
+      ...(flowFiles.length > 0
         ? [
             '## E2E flow',
             '',
-            `- \`.maestro/${featureName}.yaml\` — Maestro E2E flow generated from the acceptance criteria (run with \`maestro test\` on a booted simulator/emulator)`,
+            ...flowFiles.map(f => `- \`${f.path}\` — Maestro ${f.path.includes('accessibility') ? 'accessibility' : 'E2E'} flow generated from the acceptance criteria (run with \`maestro test\` on a booted simulator/emulator)`),
             '',
           ]
         : []),

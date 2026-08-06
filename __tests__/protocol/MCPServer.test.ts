@@ -72,7 +72,7 @@ describe('MCPServer', () => {
 
   it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(37)
+    expect(names).toHaveLength(40)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -111,6 +111,9 @@ describe('MCPServer', () => {
         'device_swipe',
         'device_open_url',
         'device_logs',
+        'device_set_voiceover',
+        'device_accessibility_tree',
+        'device_announcements',
         'generate_maestro_flow',
       ])
     )

@@ -15,6 +15,13 @@
 export interface MaestroFlowOptions {
   featureName?: string
   appId?: string
+  /**
+   * Accessibility run: selectors resolve through the accessibility tree (the
+   * same labels VoiceOver / TalkBack announce) and are rendered as explicit
+   * `text` selector blocks. Pair with the `device_set_voiceover` /
+   * `device_announcements` tools to verify what the screen reader speaks.
+   */
+  accessibility?: boolean
 }
 
 type MaestroStep =
@@ -147,25 +154,33 @@ export function criteriaLineToStep(line: string): MaestroStep | null {
   return parseWhen(trimmed) || parseThen(trimmed)
 }
 
-/** Render parsed steps as Maestro YAML lines (excluding the header). */
-export function renderMaestroSteps(steps: MaestroStep[]): string[] {
+/**
+ * Render parsed steps as Maestro YAML lines (excluding the header). When
+ * `accessibility` is true, text selectors are written as explicit blocks so the
+ * flow documents that it matches through the accessibility tree.
+ */
+export function renderMaestroSteps(steps: MaestroStep[], accessibility = false): string[] {
   const lines: string[] = []
+  // Accessibility runs match selectors via the accessibility tree, so a
+  // text selector becomes an explicit `text:` block (`- tapOn:\n    text: X`).
+  const textSelector = (value: string): string =>
+    accessibility ? `:\n    text: ${yamlString(value)}` : `: ${yamlString(value)}`
   for (const step of steps) {
     switch (step.kind) {
       case 'launchApp':
         lines.push('- launchApp')
         break
       case 'tapOn':
-        lines.push(`- tapOn: ${yamlString(step.text)}`)
+        lines.push(`- tapOn${textSelector(step.text)}`)
         break
       case 'inputText':
-        lines.push(`- inputText: ${yamlString(step.text)}`)
+        lines.push(`- inputText${textSelector(step.text)}`)
         break
       case 'assertVisible':
-        lines.push(`- assertVisible: ${yamlString(step.text)}`)
+        lines.push(`- assertVisible${textSelector(step.text)}`)
         break
       case 'assertNotVisible':
-        lines.push(`- assertNotVisible: ${yamlString(step.text)}`)
+        lines.push(`- assertNotVisible${textSelector(step.text)}`)
         break
       case 'swipe':
         lines.push(`- swipe:\n    direction: ${step.direction}`)
@@ -192,6 +207,7 @@ export class MaestroFlowWriter {
   writeFlow(acceptanceCriteria: string, options: MaestroFlowOptions = {}): string {
     const featureName = options.featureName || 'Feature'
     const appId = options.appId || 'com.example.app'
+    const accessibility = options.accessibility === true
 
     const steps: MaestroStep[] = []
     let launchAdded = false
@@ -207,9 +223,18 @@ export class MaestroFlowWriter {
       steps.unshift({ kind: 'launchApp' })
     }
     // Screenshot the final state so verification can attach it to the PR.
-    steps.push({ kind: 'takeScreenshot', name: featureName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'final' })
+    const slug = featureName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'final'
+    steps.push({ kind: 'takeScreenshot', name: accessibility ? `accessibility-${slug}` : slug })
 
-    const body = renderMaestroSteps(steps)
-    return [`appId: ${yamlString(appId)}`, '---', ...body, ''].join('\n')
+    const header = [`appId: ${yamlString(appId)}`, '---']
+    if (accessibility) {
+      header.push(
+        '# Accessibility run: selectors resolve through the accessibility tree - the same labels',
+        '# VoiceOver / TalkBack announce. Verify announcements with `vectalon serve` device_set_voiceover',
+        '# and device_announcements.',
+      )
+    }
+    const body = renderMaestroSteps(steps, accessibility)
+    return [...header, ...body, ''].join('\n')
   }
 }

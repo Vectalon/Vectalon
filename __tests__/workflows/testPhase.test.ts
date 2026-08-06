@@ -211,4 +211,33 @@ describe('testPhase (TDD)', () => {
 
     expect(result.artifacts.find(a => a.type === 'e2e')).toBeUndefined()
   })
+
+  it('generates an accessibility Maestro flow when the prompt mentions VoiceOver/TalkBack', async () => {
+    const ctx = makeContext(projectRoot, 'VoiceOver login')
+    ctx.state.phases[0].output = [
+      'Given the user opens the app',
+      'When the user taps on "Login"',
+      'Then the user sees "Dashboard"',
+    ].join('\n')
+    const result = await testPhase.run(ctx)
+
+    const flows = result.artifacts.filter(a => a.type === 'e2e')
+    expect(flows).toHaveLength(2)
+    const accessibilityFlow = flows.find(f => f.title.includes('accessibility'))
+    expect(accessibilityFlow).toBeDefined()
+    expect(accessibilityFlow!.title).toContain('.maestro/VoiceoverLogin-accessibility.yaml')
+    expect(accessibilityFlow!.content).toContain('# Accessibility run')
+    expect(accessibilityFlow!.content).toContain('- assertVisible:\n    text: "Dashboard"')
+    expect(existsSync(join(projectRoot, '.maestro/VoiceoverLogin-accessibility.yaml'))).toBe(true)
+  })
+
+  it('does not generate an accessibility flow for ordinary prompts', async () => {
+    const ctx = makeContext(projectRoot, 'Login')
+    ctx.state.phases[0].output = 'Given the user opens the app\nThen the user sees "Dashboard"'
+    const result = await testPhase.run(ctx)
+
+    const flows = result.artifacts.filter(a => a.type === 'e2e')
+    expect(flows).toHaveLength(1)
+    expect(flows[0].title).not.toContain('accessibility')
+  })
 })

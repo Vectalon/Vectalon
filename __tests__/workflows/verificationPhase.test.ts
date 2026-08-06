@@ -230,6 +230,16 @@ describe('verificationPhase remove-dependency checks', () => {
     expect(result.status).toBe('completed')
   })
 
+  it('skips the visual check for simulated runs and never gates the workflow', async () => {
+    const result = await verificationPhase.run(createContext(projectRoot))
+
+    // The console test runner is always 'simulated', so booting a simulator and
+    // capturing a screenshot must be reported as skipped — and never attempted.
+    expect(result.output).toContain('Visual check: skipped')
+    expect(result.output).toContain('simulated/test run')
+    expect(result.status).toBe('completed')
+  })
+
   it('falls back to the scan-time snapshot when no package.json exists on disk', async () => {
     const ctx = createContext(projectRoot)
     ctx.snapshot = {
