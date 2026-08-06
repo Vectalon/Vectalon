@@ -53,6 +53,54 @@ vectalon/
 
 ---
 
+## CI/CD & Publishing (GitHub Actions)
+
+### Required Secrets
+
+Go to **Settings → Secrets and variables → Actions** and add:
+
+| Secret | How to get it |
+|---|---|
+| `NPM_TOKEN` | [npmjs.com](https://www.npmjs.com) → Access Tokens → Generate new **Automation** token |
+| `CODECOV_TOKEN` | [codecov.io](https://codecov.io) → Your repo → Settings → Token |
+
+### Workflows
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| **CI** | Push to `main` | Full build + test + lint + typecheck + extension checks + benchmark |
+| **PR** | Pull request | Fast validation: typecheck → lint → build → test |
+| **Publish** | Manual only (`workflow_dispatch`) | Build → test → lint → publish to npm → create Git tag |
+
+### How to Publish a New Version
+
+**⚠️ IMPORTANT: npm never allows republishing the same version. Always bump first.**
+
+```bash
+# 1. Bump versions (pick one)
+cd packages/core && npm version prerelease --preid=beta   # 1.0.0-beta.2 → 1.0.0-beta.3
+cd packages/rn && npm version prerelease --preid=beta     # 0.6.0-beta.3 → 0.6.0-beta.4
+
+# 2. Commit the version bumps
+git add -A && git commit -m "chore: bump versions" && git push
+
+# 3. Go to GitHub → Actions → Publish Packages → Run workflow
+#    Select: both  (or just core / just rn)
+
+# 4. Workflow will automatically create a Git tag: rn-vX.X.X-core-vX.X.X
+```
+
+### Manual Publish (Fallback)
+
+If GitHub Actions fails, publish locally:
+
+```bash
+cd packages/core && npm publish --access public
+cd packages/rn && npm publish --access public
+```
+
+---
+
 ## Getting Started
 
 ### React Native
