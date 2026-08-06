@@ -3,6 +3,8 @@ import { ContextEngine } from '../../src/harness/ContextEngine'
 import { ModelRouter } from '../../src/model/ModelRouter'
 import { ArtifactStore } from '../../src/knowledge/ArtifactStore'
 import { resetConfig } from '../../src/config'
+import { mkdirSync, writeFileSync } from 'fs'
+import { join } from 'path'
 import { createTempProject, cleanup, useTempConfig } from '../helpers/tmp'
 
 const PROJECT = {
@@ -102,6 +104,41 @@ describe('MCPServer QA tools', () => {
     const { server, store } = createServer(true)
     await server.handleToolCall({ id: '1', name: 'review_code', arguments: { code: 'const x = 1\n' } })
     expect(store!.findByType('engineering').length).toBe(1)
+  })
+
+  it('review_code flags large libraries from Metro bundle JSON', async () => {
+    const { server } = createServer(false)
+    const bundleJson = JSON.stringify({
+      modules: [
+        { name: 'node_modules/heavy-lib/index.js', size: 150 * 1024 },
+        { name: 'index.js', size: 1024 },
+      ],
+    })
+    const result = await server.handleToolCall({
+      id: '1',
+      name: 'review_code',
+      arguments: { code: 'const x = 1\n', bundleJson },
+    })
+    expect(result.isError).not.toBe(true)
+    expect(result.content).toContain('## Performance budgets')
+    expect(result.content).toContain('large-library')
+    expect(result.content).toContain('heavy-lib')
+  })
+
+  it('review_code flags unoptimized images via static budget checks', async () => {
+    const { server } = createServer(false)
+    // A >200KB non-WebP image in an asset dir trips the unoptimized-image rule.
+    mkdirSync(join(dir, 'assets'), { recursive: true })
+    writeFileSync(join(dir, 'assets', 'logo.png'), Buffer.alloc(250 * 1024))
+    const result = await server.handleToolCall({
+      id: '1',
+      name: 'review_code',
+      arguments: { code: 'const x = 1\n' },
+    })
+    expect(result.isError).not.toBe(true)
+    expect(result.content).toContain('## Performance budgets')
+    expect(result.content).toContain('unoptimized-image')
+    expect(result.content).toContain('assets/logo.png')
   })
 
   it('suggest_refactors returns refactor suggestions', async () => {

@@ -804,7 +804,7 @@ Expo MCP, …) exposed as first-class tools:
 | `triage_bugs` | Triage bug reports by severity (critical→low) and priority (p0→p3) |
 | `analyze_root_cause` | Classify a production issue into a root-cause bucket with investigation steps |
 | `analyze_crash` | Data-driven root-cause analysis of a Sentry/Crashlytics crash report |
-| `review_code` | Deterministic code review: console.log, `any`, empty catches, TODOs, inline styles |
+| `review_code` | Deterministic code review (console.log, `any`, empty catches, TODOs, inline styles) + performance budgets: libraries >100 KB (pass Metro `--json` output in `bundleJson`), missing `sideEffects: false`, unoptimized images |
 | `suggest_refactors` | Static refactor heuristics: oversized files/functions, magic numbers, `any` |
 
 #### Architecture, Security & UX
