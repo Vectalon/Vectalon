@@ -1,12 +1,12 @@
 {
   "name": "@vectalon-dev/rn",
-  "version": "0.6.0-beta.1",
+  "version": "0.6.0-beta.3",
   "description": "The adaptive AI harness for React Native — project-aware SDLC intelligence for any agent",
   "license": "BSL-1.1",
   "author": "Bhishak Sanyal",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Vectalon/vectalon.git",
+    "url": "git+https://github.com/Vectalon/vectalon.git",
     "directory": "packages/rn"
   },
   "main": "dist/index.js",
@@ -30,7 +30,7 @@
     "typecheck": "tsc --noEmit",
     "typecheck:ext": "tsc -p extension --noEmit",
     "prepublishOnly": "npm run build",
-    "publish": "npm publish --access public --no-git-checks"
+    "release": "npm publish --access public --no-git-checks"
   },
   "dependencies": {
     "@babel/parser": "^7.29.8",

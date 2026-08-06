@@ -1,12 +1,12 @@
 {
   "name": "@vectalon-dev/core",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "Vectalon core — auth, licensing, billing, telemetry, and platform interfaces",
   "license": "BSL-1.1",
   "author": "Bhishak Sanyal",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Vectalon/vectalon.git",
+    "url": "git+https://github.com/Vectalon/vectalon.git",
     "directory": "packages/core"
   },
   "main": "dist/index.js",
@@ -21,7 +21,7 @@
     "test": "jest",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
-    "publish": "npm publish --access public --no-git-checks"
+    "release": "npm publish --access public --no-git-checks"
   },
   "dependencies": {},
   "devDependencies": {
