@@ -92,6 +92,20 @@ export class ContextEngine {
       if (workspace.hoistedNodeModules) {
         sections.push('', '> ⚠️ This app is in a monorepo workspace — `react-native` and other native deps are hoisted to the workspace root. Do not add them to this package\'s `dependencies`/`devDependencies`; install from the workspace root instead.')
       }
+      // Map THIS app's declared dependencies to internal workspace members —
+      // the shared libraries (e.g. a UI kit) it actually consumes. This is the
+      // workspace-boundary signal: import them by name, Metro resolves them
+      // through the workspace, and they must never be registry-installed here.
+      const deps = { ...project.dependencies, ...project.devDependencies }
+      const internalDeps = Object.keys(workspace.internalPackages).filter(name => deps[name])
+      if (internalDeps.length > 0) {
+        sections.push('', '## Workspace dependencies')
+        sections.push('- This app depends on these internal workspace packages (shared UI/libs):')
+        for (const name of internalDeps.slice(0, 20)) {
+          sections.push(`- ${name} → ${workspace.internalPackages[name]}`)
+        }
+        sections.push('', '- Import them by name (`import { X } from "@acme/ui"`) — Metro resolves them through the workspace; never install them from a registry. Changes to a shared package rebuild this app via workspace resolution.')
+      }
     }
 
     if (components.length > 0) {
