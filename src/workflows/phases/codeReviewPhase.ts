@@ -13,6 +13,9 @@ import { getGeneratedOutputRoot, writeProjectFile, isSafeProjectPath } from './f
 import { reportPathChange } from '../../utils/fileDiff'
 import { PolicyEngine, defaultCodeReviewPolicy } from '../../guardrails/PolicyEngine'
 import { loadFailedHeals, recordFailedHeals, formatFailedHeals, type FailedHealRecord } from './healMemory'
+import { analyzeBundleStats, checkBundleBudgets, checkStaticBudgets, runMetroBundleCommand, formatBytes, formatPct, type BudgetFinding } from '../../utils/bundleAnalyzer'
+import { ArtifactStore } from '../../knowledge/ArtifactStore'
+import { recordBundleSnapshot, getLatestBundleSnapshot, bundleDeltaPct, bundleDeltaSummary } from '../../knowledge/bundleHistory'
 
 /** Default review→fix→re-review cycles before the phase gives up (policy overrides). */
 export const MAX_REVIEW_ATTEMPTS = defaultCodeReviewPolicy.maxAttempts
@@ -59,6 +62,76 @@ function buildRulesList(
 
 function severityAtLeast(severity: string, thresholdRank: number): boolean {
   return (SEVERITY_RANK[severity] ?? 0) >= thresholdRank
+}
+
+/**
+ * Deterministic performance-budget section (no model calls):
+ * 1. Static checks against the project on disk (sideEffects, images, assets).
+ * 2. When the project has a Metro entry point + react-native installed, run a
+ *    real `--json` bundle build, snapshot it into the knowledge base, and
+ *    compare against the previous snapshot to warn on bundle growth.
+ * Returns the rendered section plus any findings (warnings/infos never fail
+ * the phase — budgets inform, they don't gate on their own).
+ */
+async function runPerformanceBudgets(projectRoot: string): Promise<{ section: string; findings: BudgetFinding[] }> {
+  const lines: string[] = ['## Performance budgets', '']
+  const findings: BudgetFinding[] = []
+
+  const staticResult = checkStaticBudgets(projectRoot)
+  findings.push(...staticResult.findings)
+
+  // A real Metro build is attempted only when the project looks bundleable and
+  // we're not inside the test runner (deterministic unit tests never spawn it).
+  let bundleNote = 'No Metro bundle snapshot taken (no entry file or react-native not installed)'
+  if (process.env.NODE_ENV !== 'test') {
+    try {
+      const stats = await runMetroBundleCommand(projectRoot)
+      if (stats) {
+        const analysis = analyzeBundleStats(stats)
+        findings.push(...checkBundleBudgets(analysis))
+        const store = new ArtifactStore(projectRoot)
+        const previous = getLatestBundleSnapshot(store, 'ios')
+        recordBundleSnapshot(store, analysis, 'ios')
+        if (previous) {
+          const pct = bundleDeltaPct(previous, analysis)
+          const summary = bundleDeltaSummary(previous, analysis)
+          bundleNote = `Bundle snapshot: ${formatBytes(analysis.totalSize)} across ${analysis.moduleCount} module(s) — ${summary}`
+          if (pct > 5) {
+            findings.push({
+              rule: 'bundle-growth',
+              severity: 'warning',
+              message: `This change ${summary} vs the previous snapshot`,
+            })
+          } else {
+            lines.push(`- Bundle snapshot: ${formatBytes(analysis.totalSize)} across ${analysis.moduleCount} module(s) — ${summary}`)
+          }
+        } else {
+          bundleNote = `Bundle snapshot recorded: ${formatBytes(analysis.totalSize)} across ${analysis.moduleCount} module(s) (first snapshot — no baseline yet)`
+        }
+      }
+    } catch {
+      bundleNote = 'Bundle snapshot skipped (Metro build unavailable)'
+    }
+  }
+
+  if (findings.length === 0) {
+    lines.push('✅ All performance budgets met.')
+    lines.push('')
+    lines.push(`_${bundleNote}_`)
+  } else {
+    lines.push(`${findings.length} budget finding(s):`)
+    lines.push('')
+    for (const f of findings) {
+      const icon = f.severity === 'warning' ? '⚠️' : '🔵'
+      lines.push(`${icon} **${f.rule}**: ${f.message}`)
+    }
+    if (bundleNote) {
+      lines.push('')
+      lines.push(`_${bundleNote}_`)
+    }
+  }
+
+  return { section: lines.join('\n'), findings }
 }
 
 function readFileSafe(path: string): string | null {
@@ -525,6 +598,19 @@ export const codeReviewPhase: WorkflowPhase = {
 
     const llmReviewed = allFindings.some(f => f.llmReview !== null)
 
+    // Deterministic performance budgets (no model calls). Never fail the phase
+    // on budget findings alone — they are surfaced as warnings/infos in the
+    // report and in the workflow summary.
+    let budgetSection = ''
+    let budgetFindings: BudgetFinding[] = []
+    if (projectRoot) {
+      const budgets = await runPerformanceBudgets(projectRoot)
+      budgetSection = budgets.section
+      budgetFindings = budgets.findings
+      totalWarnings += budgetFindings.filter(f => f.severity === 'warning').length
+      totalInfos += budgetFindings.filter(f => f.severity === 'info').length
+    }
+
     const outputParts: string[] = [
       '# Code Review Report',
       '',
@@ -572,6 +658,11 @@ export const codeReviewPhase: WorkflowPhase = {
     outputParts.push('## Rules checked')
     outputParts.push(...reviewRules)
     outputParts.push('')
+
+    if (budgetSection) {
+      outputParts.push(budgetSection)
+      outputParts.push('')
+    }
 
     if (totalErrors === 0) {
       outputParts.push('✅ Code review passed. Proceeding to verification and PR.')

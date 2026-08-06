@@ -96,6 +96,7 @@ each result back until it answers — so the local model becomes a real agent ov
 your toolchain, not just a text generator.
 - **Guardrails are applied before generated code is written.** The implementation phase runs an exhaustive rule set over every generated file and reports the results in the workflow output. Rules cover: `console.log`, inline styles, hardcoded URLs, secrets, `any`, missing error handling, unused imports, state mutation, missing hook deps, heavy work in render, missing accessibility labels, deprecated APIs, platform-specific code, navigation types, naming conventions, safe-area usage, TODO/FIXME comments, TypeScript return types, remote image assets, list virtualization, mutation in hooks/Reducers, `==`/`!=`, `var`, and default component exports.
 - **New Architecture awareness.** The scanner detects whether a project runs the React Native New Architecture (Fabric + bridgeless + TurboModules) from `android/gradle.properties`, `ios/Podfile`, `react-native.config.js`, Expo app config, and RN/Expo version defaults — then guardrails flag Fabric-hostile code (`setNativeProps`, synchronous `NativeModules` calls, native modules without a typed TurboModule spec) and the implementation prompt tells the model to use TurboModule promise APIs instead.
+- **Metro bundle analysis & performance budgets.** The code-review phase runs deterministic budget checks on every workflow — libraries over 100 KB, dependencies missing `sideEffects: false`, unoptimized images (>200 KB non-WebP), and oversized static assets — and when the project has a Metro entry point it snapshots a real `react-native bundle --json` build into the knowledge base, warning "this change increases the bundle by X%" when a PR grows it >5% vs the previous snapshot. `vectalon bundle` runs the same checks on demand (`--platform`, `--static`).
   - System prompts that require real, runnable code and forbid TODOs/placeholders
   - Convention detection (TypeScript, navigation, StyleSheet) that shapes generated code
   - A deterministic fallback scaffold when no model is downloaded
@@ -1413,6 +1414,13 @@ Areas we'd love help with:
   (`vectalon leaderboard --pr-comment`) and posts it as a marker-identified
   comment on every PR, updating it in place as the branch evolves instead of
   spamming new comments
+- ✅ **Metro bundle analysis & performance budgets** — deterministic
+  `src/utils/bundleAnalyzer.ts` (Metro `--json` parsing, per-package sizes) +
+  `src/knowledge/bundleHistory.ts` (size snapshots in the artifact store with
+  delta warnings); the code-review phase appends a **Performance budgets**
+  section (large libraries, missing `sideEffects: false`, unoptimized images,
+  oversized assets, >5% bundle growth vs the previous snapshot) and
+  `vectalon bundle` runs the same checks on demand
 
 **Next up:**
 

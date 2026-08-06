@@ -8,6 +8,7 @@ import { pullCommand } from './commands/pull'
 import { modelsCommand } from './commands/models'
 import { policyCommand } from './commands/policy'
 import { refreshCommand } from './commands/refresh'
+import { bundleCommand } from './commands/bundle'
 import { ecosystemCommand } from './commands/ecosystem'
 import { syncCommand } from './commands/sync'
 import { benchCommand } from './commands/bench'
@@ -88,6 +89,13 @@ export function runCLI(): void {
     .description('Refresh knowledge from web sources and generate improvement suggestions')
     .option('--force', 'Refresh even if the cache is still fresh')
     .action(refreshCommand)
+
+  program
+    .command('bundle [directory]')
+    .description('Analyze the Metro bundle and enforce performance budgets')
+    .option('--platform <type>', 'Bundle platform (ios|android)', 'ios')
+    .option('--static', 'Static on-disk checks only (skip the Metro build)')
+    .action(bundleCommand)
 
   program
     .command('ecosystem [directory]')
@@ -179,6 +187,7 @@ async function runInteractive(): Promise<void> {
       { value: 'init', label: 'Initialize a project', hint: 'Scan React Native project and create .vectalon/' },
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Refresh knowledge', hint: 'Update best practices and dependency suggestions from the web' },
+      { value: 'bundle', label: 'Analyze bundle', hint: 'Metro bundle snapshot + performance budgets' },
       { value: 'ecosystem', label: 'Manage ecosystem', hint: 'Enable MCP servers, skills, tools, and hooks (Expo & RN-CLI)' },
       { value: 'doctor', label: 'Run doctor', hint: 'Verify every enabled ecosystem item is installed and reachable' },
       { value: 'bench', label: 'Run benchmark', hint: 'Score the harness on the RN coding tests (11 scenarios)' },
@@ -267,6 +276,12 @@ async function runInteractive(): Promise<void> {
   if (action === 'refresh') {
     await refreshCommand('', { force: true })
     p.outro('Knowledge refreshed')
+    return
+  }
+
+  if (action === 'bundle') {
+    await bundleCommand('', {})
+    p.outro('Bundle analysis complete')
     return
   }
 
