@@ -75,7 +75,7 @@ describe('MCPServer', () => {
 
   it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(47)
+    expect(names).toHaveLength(49)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -119,6 +119,8 @@ describe('MCPServer', () => {
         'device_accessibility_tree',
         'device_announcements',
         'generate_maestro_flow',
+        'plan_release',
+        'check_crash_rate',
         'scaffold_native_module',
         'visual_capture_reference',
         'visual_check',
@@ -187,6 +189,14 @@ describe('MCPServer', () => {
       if (tool.name === 'check_design_compliance') {
         args.code = 'const x = 1'
         args.spec = JSON.stringify({ name: 'Button', width: 100, height: 44, children: [] })
+      }
+      if (tool.name === 'plan_release') {
+        args.currentVersion = '1.2.3'
+        args.gitLog = 'a1b2c3d feat: add login'
+      }
+      if (tool.name === 'check_crash_rate') {
+        args.crashes = JSON.stringify([{ kind: 'crash', id: 'c1', source: 'crashlytics', frames: [] }])
+        args.baselineRate = 1.0
       }
 
       const result = await server.handleToolCall({ id: '1', name: tool.name, arguments: args })
@@ -334,6 +344,55 @@ describe('MCPServer', () => {
     const missing = await server.handleToolCall({ id: '2', name: 'analyze_impact', arguments: {} })
     expect(missing.isError).not.toBe(true)
     expect(missing.content).toContain('Pass `changedFiles`')
+  })
+
+  it('plan_release renders a release plan from git log', async () => {
+    const server = createServer()
+    const result = await server.handleToolCall({
+      id: '1',
+      name: 'plan_release',
+      arguments: { currentVersion: '1.2.3', gitLog: 'a1b2c3d feat: add login\nf1e2d3c fix: crash' },
+    })
+    expect(result.isError).not.toBe(true)
+    expect(result.content).toContain('## 🚀 Release plan')
+    expect(result.content).toContain('1.3.0')
+
+    const empty = await server.handleToolCall({
+      id: '2',
+      name: 'plan_release',
+      arguments: { currentVersion: '1.2.3', gitLog: '' },
+    })
+    expect(empty.isError).not.toBe(true)
+    expect(empty.content).toContain('No commits could be parsed')
+  })
+
+  it('check_crash_rate flags a spike and files an incident', async () => {
+    const server = createServer()
+    const crashes = Array.from({ length: 240 }, (_, i) => ({
+      kind: 'crash',
+      id: `c${i}`,
+      source: 'crashlytics',
+      exceptionType: 'NSInvalidArgumentException',
+      release: '1.3.0',
+      frames: [],
+    }))
+    const result = await server.handleToolCall({
+      id: '1',
+      name: 'check_crash_rate',
+      arguments: { crashes: JSON.stringify(crashes), baselineRate: 1.0 },
+    })
+    expect(result.isError).not.toBe(true)
+    expect(result.content).toContain('## 📡 Release monitor')
+    expect(result.content).toContain('Auto-filed incident')
+    expect(result.content).toContain('Suggested action: roll back the release.')
+
+    const invalid = await server.handleToolCall({
+      id: '2',
+      name: 'check_crash_rate',
+      arguments: { crashes: 'not json' },
+    })
+    expect(invalid.isError).not.toBe(true)
+    expect(invalid.content).toContain('Could not parse')
   })
 
   it('device tools default to deterministic dry-run descriptions', async () => {

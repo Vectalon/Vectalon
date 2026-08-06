@@ -12,6 +12,7 @@ import { bundleCommand } from './commands/bundle'
 import { daemonCommand } from './commands/daemon'
 import { telemetryCommand } from './commands/telemetry'
 import { ciCommand } from './commands/ci'
+import { releaseCommand } from './commands/release'
 import { ecosystemCommand } from './commands/ecosystem'
 import { syncCommand } from './commands/sync'
 import { benchCommand } from './commands/bench'
@@ -127,6 +128,19 @@ export function runCLI(): void {
     .action(ciCommand)
 
   program
+    .command('release [directory]')
+    .description('Autonomous release & monitor pipeline: detect version bump, generate changelog, write the release workflow (E2E + store submission), and monitor the crash rate')
+    .option('--version <v>', 'Current version (default: package.json version)')
+    .option('--changelog', 'Print only the generated changelog and exit')
+    .option('--submit', 'Write the release workflow (EAS for Expo, GitHub Actions for bare RN CLI)')
+    .option('--monitor', 'Ingest telemetry and monitor the crash rate for spikes')
+    .option('--telemetry <dir>', 'Telemetry exports directory for --monitor (default .vectalon/telemetry)')
+    .option('--baseline <rate>', 'Baseline crash rate per 1k sessions for spike detection', Number)
+    .option('--hours <n>', 'Monitoring window in hours (default 24)', Number)
+    .option('--json', 'Print the release plan as JSON')
+    .action(releaseCommand)
+
+  program
     .command('ecosystem [directory]')
     .description('Browse and enable external MCP servers, skills, tools, and hooks for React Native / Expo projects')
     .option('--category <type>', 'Filter by category (mcp|skill|tool|hook)')
@@ -231,6 +245,7 @@ async function runInteractive(): Promise<void> {
       { value: 'telemetry', label: 'Ingest telemetry', hint: 'Sentry/Crashlytics/traces/analytics into the knowledge base' },
       { value: 'impact', label: 'Analyze impact', hint: 'Cross-package blast radius of changed files (monorepo)' },
       { value: 'ci', label: 'Generate CI workflow', hint: 'EAS Workflows (Expo) or GitHub Actions (bare RN CLI)' },
+      { value: 'release', label: 'Release pipeline', hint: 'Detect version bump, changelog, submit workflow, crash monitor' },
       { value: 'ecosystem', label: 'Manage ecosystem', hint: 'Enable MCP servers, skills, tools, and hooks (Expo & RN-CLI)' },
       { value: 'doctor', label: 'Run doctor', hint: 'Verify every enabled ecosystem item is installed and reachable' },
       { value: 'bench', label: 'Run benchmark', hint: 'Score the harness on the RN coding tests (11 scenarios)' },
@@ -377,6 +392,30 @@ async function runInteractive(): Promise<void> {
   if (action === 'ci') {
     await ciCommand('', {})
     p.outro('CI workflow configured')
+    return
+  }
+
+  if (action === 'release') {
+    const step = await p.select({
+      message: 'Release stage',
+      options: [
+        { value: 'plan', label: 'Plan release', hint: 'Detect version bump + changelog from git history' },
+        { value: 'submit', label: 'Write submit workflow', hint: 'E2E on device farm + store submission (EAS / GitHub Actions)' },
+        { value: 'monitor', label: 'Monitor crash rate', hint: 'Ingest telemetry and check for spikes' },
+      ],
+    })
+    if (p.isCancel(step)) {
+      p.outro('Cancelled')
+      return
+    }
+    if (step === 'submit') {
+      await releaseCommand('', { submit: true })
+    } else if (step === 'monitor') {
+      await releaseCommand('', { monitor: true })
+    } else {
+      await releaseCommand('', {})
+    }
+    p.outro('Release stage complete')
     return
   }
 

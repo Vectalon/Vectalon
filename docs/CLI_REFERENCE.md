@@ -6,8 +6,8 @@ globally or linked).
 
 Running `npx vectalon` with no arguments opens an **interactive menu** covering
 the most common actions (init, feature, refresh, impact, ecosystem, doctor,
-bench, bundle, daemon, telemetry, ci, leaderboard, sync, policy, serve, import,
-pull, models, help).
+bench, bundle, daemon, telemetry, ci, release, leaderboard, sync, policy, serve,
+import, pull, models, help).
 
 ---
 
@@ -99,10 +99,10 @@ npx vectalon serve --model openai     # override the model provider for this run
 
 **What it does**
 
-- Exposes **54 built-in MCP tools** — 47 by default, plus the knowledge-base
+- Exposes **56 built-in MCP tools** — 49 by default, plus the knowledge-base
   and team-brain tools when those services are present (project context, SDLC
   modules, devices & E2E incl. screen-reader control, cross-package impact,
-  knowledge base, team brain)
+  release planning & crash monitoring, knowledge base, team brain)
 - Reads `.vectalon/ecosystem.json` and exposes each **enabled ecosystem MCP
   server as a first-class tool** (Metro MCP, Expo MCP, …) agents auto-discover
 - Loads the resolved model provider from the manifest (or `--model`) and logs
@@ -454,6 +454,63 @@ npx vectalon ci ./my-app
 | Code | When |
 |---|---|
 | 0 | Workflow generated (or already present) |
+| 1 | No `.vectalon/` directory found |
+
+---
+
+## `release`
+
+Run the **autonomous release & monitor pipeline**: detect the version bump from
+git history, generate the changelog, write the release workflow (E2E on a
+device farm + store submission), and monitor the crash rate after the release
+ships.
+
+```bash
+npx vectalon release                          # plan: version bump + changelog
+npx vectalon release --changelog              # print only the changelog
+npx vectalon release --submit                 # write the release workflow
+npx vectalon release --monitor                # monitor crash rate (24h window)
+npx vectalon release --monitor --telemetry telemetry/ --baseline 2.5
+npx vectalon release --version 2.1.0          # explicit current version
+npx vectalon release --json                   # release plan as JSON
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--version <v>` | Current version (default: `package.json` version) |
+| `--changelog` | Print only the generated changelog and exit |
+| `--submit` | Write the release workflow — EAS Workflows for Expo, GitHub Actions for bare RN CLI (quality → Maestro E2E on the device farm → store submission → scheduled 24h monitor) |
+| `--monitor` | Ingest telemetry and monitor the crash rate for spikes |
+| `--telemetry <dir>` | Telemetry exports directory for `--monitor` (default `.vectalon/telemetry`) |
+| `--baseline <rate>` | Baseline crash rate per 1k sessions for spike detection |
+| `--hours <n>` | Monitoring window in hours (default `24`) |
+| `--json` | Print the release plan as JSON |
+
+**What it does**
+
+- **Detects the version bump** from `git log --oneline` history: breaking
+  changes → `major`, `feat` → `minor`, `fix`/`chore`/… → `patch`
+- **Generates the changelog** from commit messages with the same deterministic
+  categorizer as the `write_release_notes` tool
+- **`--submit`** writes `.eas/workflows/vectalon-release.yml` (Expo) or
+  `.github/workflows/vectalon-release.yml` (bare RN CLI) — idempotent, never
+  overwrites. The workflow runs quality checks, **Maestro E2E flows** on the
+  device farm (when `.maestro/` exists), submits to **App Store Connect /
+  Play Console** (EAS submit / fastlane), and schedules a **24h crash-rate
+  monitor** job
+- **`--monitor`** ingests Sentry / Crashlytics exports via the telemetry
+  service, computes the crash rate per 1k sessions/day, and when it exceeds
+  the baseline × threshold (default 2×) **auto-files an incident** (via the
+  IncidentAnalyzer) **and suggests a rollback**
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Plan printed / workflow written / monitor completed |
 | 1 | No `.vectalon/` directory found |
 
 ---

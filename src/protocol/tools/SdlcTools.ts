@@ -27,6 +27,8 @@ import { RunbookWriter } from '../../sdlc/RunbookWriter'
 import { KpiReportAnalyzer } from '../../sdlc/KpiReportAnalyzer'
 import type { KpiMetric } from '../../sdlc/KpiReportAnalyzer'
 import { MaestroFlowWriter } from '../../sdlc/MaestroFlowWriter'
+import { planRelease, renderReleasePlan, parseGitLog } from '../../sdlc/ReleasePlanner'
+import { monitorRelease, renderMonitorReport } from '../../sdlc/CrashMonitor'
 import { NativeModuleGenerator, parseNativeModuleSpec } from '../../sdlc/NativeModuleGenerator'
 import { parseTelemetryContent } from '../../knowledge/telemetry'
 import { parseMetroStats, analyzeBundleStats, checkBundleBudgets, checkStaticBudgets, type BudgetFinding } from '../../utils/bundleAnalyzer'
@@ -633,6 +635,61 @@ export class SdlcTools extends ToolRegistry {
     const findings = new DesignComplianceChecker().check(code, ds)
     const content = new DesignComplianceChecker().render(findings)
     this.persistArtifact('design', 'Design compliance check', content)
+    return content
+  }
+
+  @mcpTool('plan_release', 'Plan the next release: detect the semver bump from git log output (conventional-commit + breaking-change keywords), compute the next version, and generate the changelog from commit messages. Pass the current version and `git log --oneline` output', {
+    type: 'object',
+    properties: {
+      currentVersion: { type: 'string' },
+      gitLog: { type: 'string' },
+    },
+    required: ['currentVersion', 'gitLog'],
+  })
+  async planReleaseTool(args: Record<string, unknown>): Promise<string> {
+    const currentVersion = (args.currentVersion as string) || '0.0.0'
+    const gitLog = (args.gitLog as string) || ''
+    const commits = parseGitLog(gitLog)
+    if (commits.length === 0) {
+      return 'No commits could be parsed from `gitLog` — pass the output of `git log --oneline -50`.'
+    }
+    const plan = planRelease(currentVersion, gitLog)
+    const content = renderReleasePlan(plan)
+    this.persistArtifact('devops', `Release plan: v${plan.nextVersion}`, content)
+    return content
+  }
+
+  @mcpTool('check_crash_rate', 'Monitor the crash rate after a release: pass telemetry crash JSON (from `analyze_crash` / `vectalon telemetry`) plus a baseline rate per 1k sessions; flags a spike and auto-files an incident with a rollback suggestion when the rate exceeds the baseline × threshold', {
+    type: 'object',
+    properties: {
+      crashes: { type: 'string' },
+      baselineRate: { type: 'number' },
+      windowHours: { type: 'number' },
+      threshold: { type: 'number' },
+      sessions: { type: 'number' },
+    },
+    required: ['crashes'],
+  })
+  async checkCrashRate(args: Record<string, unknown>): Promise<string> {
+    const raw = (args.crashes as string) || ''
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(raw)
+    } catch {
+      return 'Could not parse `crashes` — pass a crash JSON or array of crash events (kind: "crash").'
+    }
+    const crashes = (Array.isArray(parsed) ? parsed : [parsed]).filter((c: unknown) => c && typeof c === 'object' && (c as { kind?: string }).kind === 'crash')
+    if (crashes.length === 0) {
+      return 'No crash events found — pass `crashes` with kind: "crash" (from `analyze_crash` / `vectalon telemetry`).'
+    }
+    const monitor = monitorRelease(crashes as ParsedCrash[], {
+      baselineRate: typeof args.baselineRate === 'number' ? args.baselineRate : null,
+      windowHours: typeof args.windowHours === 'number' ? args.windowHours : undefined,
+      threshold: typeof args.threshold === 'number' ? args.threshold : undefined,
+      sessions: typeof args.sessions === 'number' ? args.sessions : undefined,
+    })
+    const content = renderMonitorReport(monitor.spike, monitor.incident)
+    this.persistArtifact('operations', `Crash monitor: ${monitor.spike.spiked ? 'spike' : 'healthy'}`, content)
     return content
   }
 
