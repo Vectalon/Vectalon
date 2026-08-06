@@ -93,6 +93,43 @@ describe('Scanner', () => {
       expect(info.newArchitecture?.enabled).toBe(false)
     })
 
+    it('detects the React version and React Compiler from the manifest + babel config', () => {
+      const dir = createTempProject({
+        'package.json': JSON.stringify({
+          name: 'react19-app',
+          version: '1.0.0',
+          dependencies: { react: '19.1.0', 'react-native': '0.76.0' },
+          devDependencies: { 'babel-plugin-react-compiler': '^0.0.0-experimental' },
+        }),
+      })
+      try {
+        const info = new Scanner(dir).scanProject()
+        expect(info.reactVersion).toBe('19.1.0')
+        expect(info.reactCompiler?.enabled).toBe(true)
+        expect(info.reactCompiler?.sources).toContain('package.json')
+      } finally {
+        cleanup(dir)
+      }
+    })
+
+    it('detects the React Compiler from babel.config.js', () => {
+      const dir = createTempProject({
+        'package.json': JSON.stringify({
+          name: 'compiler-app',
+          version: '1.0.0',
+          dependencies: { react: '19.0.0', 'react-native': '0.76.0' },
+        }),
+        'babel.config.js': "module.exports = { plugins: ['babel-plugin-react-compiler'] }",
+      })
+      try {
+        const info = new Scanner(dir).scanProject()
+        expect(info.reactCompiler?.enabled).toBe(true)
+        expect(info.reactCompiler?.sources).toEqual(['babel.config.js'])
+      } finally {
+        cleanup(dir)
+      }
+    })
+
     it('attaches workspace info and falls back to the hoisted Metro/tsconfig', () => {
       const ws = createTempProject({
         'pnpm-workspace.yaml': 'packages:\n  - "apps/*"\n',

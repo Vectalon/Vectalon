@@ -99,6 +99,7 @@ your toolchain, not just a text generator.
 - **Metro bundle analysis & performance budgets.** The code-review phase runs deterministic budget checks on every workflow — libraries over 100 KB, dependencies missing `sideEffects: false`, unoptimized images (>200 KB non-WebP), and oversized static assets — and when the project has a Metro entry point it snapshots a real `react-native bundle --json` build into the knowledge base, warning "this change increases the bundle by X%" when a PR grows it >5% vs the previous snapshot. `vectalon bundle` runs the same checks on demand (`--platform`, `--static`).
 - **Simulator/device control + Maestro E2E flows.** `vectalon serve` exposes device tools (`device_boot`, `device_screenshot`, `device_tap`, `device_swipe`, `device_open_url`, `device_logs`) that drive the iOS Simulator (`xcrun simctl` + `idb`) and Android Emulator (`emulator` + `adb`) — boot, capture screenshots into `.vectalon/artifacts/screenshots/`, inject taps/swipes, open deep links, and read logs. The test-writing phase generates a **Maestro YAML flow** (`.maestro/<feature>.yaml`) straight from the acceptance criteria (Given/When/Then → `launchApp` / `tapOn` / `inputText` / `assertVisible` / `openLink` / `swipe`, ending in a screenshot), and the verification phase runs those flows with `maestro test` when the CLI and a booted device are available (advisory — E2E never gates the workflow).
 - **Monorepo workspace support (V-4).** The scanner detects pnpm / Yarn / npm / Turborepo / Lerna workspaces by walking up for `pnpm-workspace.yaml`, `turbo.json`, `lerna.json`, or a `workspaces` manifest field, maps internal packages (`@acme/ui` → `packages/ui`), and resolves the hoisted `node_modules` root so Metro bundle analysis and static budget checks look in the right place. Context prompts are monorepo-aware — they tell agents this app lives in a workspace, that `react-native` is hoisted to the root, and to avoid adding it to the sub-package's `devDependencies`.
+- **React 19 / React Compiler guardrails (VI-1).** The harness detects the React version and whether `babel-plugin-react-compiler` is wired up (manifest or babel/eslint config), then guardrails flag render-phase `ref.current` mutation, `useEffect` subscriptions without cleanup, React 19 `use()` without a `<Suspense>` boundary, unstable dependency arrays, `forwardRef` on React 19 (use ref-as-prop), and redundant manual `useMemo`/`useCallback` when the Compiler auto-memoizes. Context prompts explain the memoization implications so generated code matches the project's React.
   - System prompts that require real, runnable code and forbid TODOs/placeholders
   - Convention detection (TypeScript, navigation, StyleSheet) that shapes generated code
   - A deterministic fallback scaffold when no model is downloaded
@@ -1438,6 +1439,13 @@ Areas we'd love help with:
   `metro.config`, and `tsconfig`; the context prompt gains a **Workspace**
   section with hoisting guidance; bundle analysis and static budgets resolve
   the hoisted `node_modules` root
+- ✅ **React 19 / React Compiler guardrails (VI-1)** — `src/utils/reactCompiler.ts`
+  detects the React version and `babel-plugin-react-compiler` (manifest or
+  babel/eslint config); 6 new guardrail rules flag render-phase `ref.current`
+  mutation, `useEffect` subscriptions without cleanup, `use()` outside
+  `<Suspense>`, unstable dependency arrays, `forwardRef` on React 19, and
+  redundant manual memoization under the Compiler; the context prompt and
+  implementation prompt explain React 19 / auto-memoization implications
 
 **Next up:**
 

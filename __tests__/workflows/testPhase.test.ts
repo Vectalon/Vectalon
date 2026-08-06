@@ -39,6 +39,7 @@ function makeContext(projectRoot: string | undefined, prompt: string): WorkflowC
         hasExpo: false,
         tooling: 'rn-cli',
         expoSdkVersion: '',
+        reactVersion: '18.2.0',
       },
       structure: [],
       components: [],

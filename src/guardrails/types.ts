@@ -6,6 +6,10 @@ export interface GuardrailConventions {
   hasNavigation?: boolean
   /** Detected React Native New Architecture state. */
   newArchitecture?: import('../utils/newArchitecture').NewArchitectureInfo
+  /** React version resolved from the manifest ('' when unknown). */
+  reactVersion?: string
+  /** Detected React 19 / React Compiler state. */
+  reactCompiler?: import('../utils/reactCompiler').ReactCompilerInfo
 }
 
 export interface GuardrailRule {

@@ -4,6 +4,7 @@ import { Scanner } from './Scanner'
 import { buildCodeGraph } from './CodeGraph'
 import { buildKnowledgeGraph } from './KnowledgeGraph'
 import { newArchitectureLabel } from '../utils/newArchitecture'
+import { reactCompilerLabel } from '../utils/reactCompiler'
 import type { ContextSnapshot } from './types'
 import type { PatternStore } from '../memory/PatternLearner'
 
@@ -54,12 +55,26 @@ export class ContextEngine {
     const sections: string[] = [
       `# Project: ${project.name} v${project.version}`,
       `- React Native: ${project.reactNativeVersion}`,
+      `- React: ${project.reactVersion || 'unknown'}`,
       `- Platforms: ${project.platforms.join(', ')}`,
       `- TypeScript: ${project.hasTypeScript ? 'Yes' : 'No'}`,
       `- Metro: ${project.hasMetro ? 'Yes' : 'No'}`,
       `- Tooling: ${project.tooling === 'expo' ? `Expo (SDK ${project.expoSdkVersion || 'unknown'})` : 'React Native CLI (bare)'}`,
       `- New Architecture: ${newArchitectureLabel(project.newArchitecture)}`,
     ]
+
+    const compiler = project.reactCompiler
+    const react19 = /^(>=|~|\^)?19/.test(project.reactVersion)
+    if (compiler || react19) {
+      sections.push('', '## React 19 / Compiler')
+      if (compiler?.enabled) {
+        sections.push(`- React Compiler: ${reactCompilerLabel(compiler)} (${compiler.sources.join(', ') || 'babel-plugin-react-compiler'})`)
+        sections.push('- The Compiler auto-memoizes components — manual `useMemo`/`useCallback` are usually redundant; keep props and state immutable so the Compiler can cache safely')
+      } else if (react19) {
+        sections.push(`- React: ${project.reactVersion || '19'}`)
+        sections.push('- React 19: prefer `ref` as a prop over `forwardRef`; `use()` reads promises/context (must be inside a `<Suspense>` boundary for promises); effects must return cleanup for subscriptions')
+      }
+    }
 
     const workspace = project.workspace
     if (workspace?.isMonorepo) {

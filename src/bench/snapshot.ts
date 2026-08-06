@@ -24,6 +24,7 @@ export function benchmarkSnapshot(): ContextSnapshot {
       hasExpo: false,
       tooling: 'rn-cli',
       expoSdkVersion: '',
+      reactVersion: '18.2.0',
     },
     structure: [],
     components: [],

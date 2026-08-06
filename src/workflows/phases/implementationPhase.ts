@@ -11,6 +11,7 @@ import { detectConventions, phaseResult, sanitizeFileName, fileExtension, jsxExt
 import { getIntent, intentTitle, isRemoveDependency, isRefactor, isFix, type WorkflowIntent } from './intent'
 import { runGuardrails, formatGuardrailResult, GuardrailResult, PolicyEngine } from '../../guardrails'
 import { newArchitectureLabel } from '../../utils/newArchitecture'
+import { isReact19 } from '../../utils/reactCompiler'
 
 interface DependencyMatch {
   name: string
@@ -43,6 +44,8 @@ function checkGuardrails(
         usesStyleSheet: conventions.usesStyleSheet,
         hasNavigation: conventions.hasNavigation,
         newArchitecture: conventions.newArchitecture,
+        reactVersion: conventions.reactVersion,
+        reactCompiler: conventions.reactCompiler,
       },
     }
     return policy ? policy.runPolicy(options) : runGuardrails(options)
@@ -254,6 +257,24 @@ export function buildImplementationPrompt(ctx: {
           'IMPORTANT: This project uses the React Native New Architecture (Fabric + bridgeless + TurboModules).',
           '- Never use setNativeProps (unsupported on Fabric).',
           '- Access native modules via TurboModuleRegistry.get() with a typed TurboModule spec (NativeX.ts / XSpec.ts); never synchronous NativeModules calls.',
+        ]
+      : []),
+    ...(conventions.reactCompiler?.enabled === true
+      ? [
+          '',
+          'IMPORTANT: The React Compiler (babel-plugin-react-compiler) is enabled for this project.',
+          '- Components are auto-memoized; do NOT add manual useMemo/useCallback where the Compiler handles it.',
+          '- Keep props and state immutable so the Compiler can cache safely.',
+        ]
+      : []),
+    ...(isReact19(conventions.reactVersion)
+      ? [
+          '',
+          `IMPORTANT: This project runs React ${conventions.reactVersion}.`,
+          '- Accept ref as a regular prop; do NOT use forwardRef (deprecated in React 19).',
+          '- use() reads promises/context — promise reads must be inside a <Suspense> boundary.',
+          '- useEffect subscriptions must return a cleanup function.',
+          '- Never mutate refs during render.',
         ]
       : []),
   ].join('\n')

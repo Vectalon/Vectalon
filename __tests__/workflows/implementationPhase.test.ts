@@ -52,6 +52,7 @@ function createContext(modelRouter: ModelRouter, prompt: string, projectRoot: st
         hasExpo: false,
         tooling: 'rn-cli',
         expoSdkVersion: '',
+        reactVersion: '18.2.0',
       },
       structure: [],
       components: [],
