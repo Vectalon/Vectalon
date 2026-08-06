@@ -37,7 +37,19 @@ self-corrects before it ever shows you a diff.
 > RN-CLI separation, ecosystem MCP exposure in `serve`, init tooling & model
 > setup, resolved-model surfacing, the ecosystem & native-toolchain doctor with
 > `--fix` auto-remediation, and the RN coding-tests benchmark (V-5, M1–M4/M6
-> delivered, including the CI regression gate). See the README
+> delivered, including the CI regression gate). The Phase I+ roadmap items below
+> that are now **delivered** (see the [Status tracker](#status-tracker) for
+> details): **I-1 RN knowledge graph (AST-grade)** — `AstScanner` + `CodeGraph`
+> replace the regex scanner; **I-2 New Architecture & React Compiler
+> awareness** — detection from `gradle.properties`/`Podfile`/config with
+> Fabric-hostile guardrails; **I-5 simulator control + Maestro E2E** — device
+> tools + acceptance-criteria Maestro flows in test/verification phases;
+> **I-6 Metro bundle analysis & performance budgets** — `bundleAnalyzer`
+> budgets + bundle-size history with growth warnings; **II-2 self-healing CI**
+> — real PR automation + EAS/GitHub Actions workflow generation; **III-1
+> runtime telemetry ingestion** — Sentry/Crashlytics/trace/analytics parsing
+> with data-driven crash analysis; **IV-1 IDE extension**; **V-4 monorepo
+> workspace support**; **VI-1 React 19 guardrails**. See the README
 > [`Roadmap`](README.md) for the authoritative delivered/next-up lists and
 > [`CLI_REFERENCE.md`](CLI_REFERENCE.md) for every command. The rows below show
 > where the roadmap goes next; see the
@@ -49,17 +61,17 @@ self-corrects before it ever shows you a diff.
 | 1. Discovery & validation | SWOT, ticket analysis | BRD/charter + opportunity assessment |
 | 2. Product management | PRD, stories, acceptance criteria | Roadmap, OKRs, personas, prioritization |
 | 3. Business analysis | SRS, use cases, gap analysis, RTM | Data dictionary, live traceability |
-| 4. UX/UI design | Wireframes, a11y, design tokens | Design-system *enforcement*, simulator screenshots |
+| 4. UX/UI design | Wireframes, a11y, design tokens, **simulator screenshots (I-5)** | Design-system *enforcement* |
 | 5. Solution architecture | ADRs, tradeoffs | HLD/LLD, tech evaluation, upgrade planner (I-6) |
-| 6. Engineering | component-gen, analyze-error, lint-fixer, review, refactors | API contracts, RN knowledge graph (I-1), Metro sandbox (I-2) |
+| 6. Engineering | component-gen, analyze-error, lint-fixer, review, refactors, **RN knowledge graph (I-1, AST), New Arch awareness (I-2), Metro bundle budgets (I-6)** | API contracts, Metro sandbox, Hermes profiling (I-7) |
 | 7. Data engineering | — | Schema design, data dictionary |
 | 8. Security | Threat model, policy guardrails | OWASP-aware review, secrets/supply-chain checks (V-2) |
 | 9. QA | write-test, test plans, triage, RCA | Test strategy/plan, UAT, device-farm execution |
-| 10. DevOps & release | Release notes, CI scripts | Self-healing CI (II-2), release automation |
-| 11. Ops & support | Incidents, runbooks | Runtime telemetry ingestion (III-1), auto-remediation |
+| 10. DevOps & release | Release notes, CI scripts, **self-healing CI (II-2)** | Release automation |
+| 11. Ops & support | Incidents, runbooks, **runtime telemetry ingestion (III-1)** | Auto-remediation |
 | 12. Analytics & growth | KPI reports | Funnel analysis, experiment planning |
 | Knowledge base | Artifacts, team brain, embeddings, sync, refresh | Provenance scoring (III-3), git-history derivation (III-2) |
-| Team / multi-project | TeamStore + sync | Cross-project convention learning (III-4), monorepo federation (V-4) |
+| Team / multi-project | TeamStore + sync, **monorepo workspace support (V-4)** | Cross-project convention learning (III-4), federated team-brain instances |
 
 ## Architecture additions (foundation)
 
