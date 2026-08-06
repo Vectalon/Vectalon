@@ -41,7 +41,7 @@ rn-vectalon learns as your project grows:
 ### Multi-Role SDLC Harness
 
 Beyond the v0.1 core, rn-vectalon ships deterministic SDLC modules covering the
-whole lifecycle — **47 MCP tools** (40 always available; 5 more when a
+whole lifecycle — **48 MCP tools** (41 always available; 5 more when a
 knowledge base is present; 2 more when a team brain is configured), all
 callable by any MCP agent:
 
@@ -98,6 +98,7 @@ each result back until it answers — so the local model becomes a real agent ov
 your toolchain, not just a text generator.
 - **Guardrails are applied before generated code is written.** The implementation phase runs an exhaustive rule set over every generated file and reports the results in the workflow output. Rules cover: `console.log`, inline styles, hardcoded URLs, secrets, `any`, missing error handling, unused imports, state mutation, missing hook deps, heavy work in render, missing accessibility labels, deprecated APIs, platform-specific code, navigation types, naming conventions, safe-area usage, TODO/FIXME comments, TypeScript return types, remote image assets, list virtualization, mutation in hooks/Reducers, `==`/`!=`, `var`, and default component exports.
 - **New Architecture awareness.** The scanner detects whether a project runs the React Native New Architecture (Fabric + bridgeless + TurboModules) from `android/gradle.properties`, `ios/Podfile`, `react-native.config.js`, Expo app config, and RN/Expo version defaults — then guardrails flag Fabric-hostile code (`setNativeProps`, synchronous `NativeModules` calls, native modules without a typed TurboModule spec) and the implementation prompt tells the model to use TurboModule promise APIs instead.
+- **TurboModule & Fabric component scaffolding.** `scaffold_native_module` deterministically generates the full New Architecture native stack from a structured spec: a typed `Native<Module>.ts` TurboModule spec (`TurboModuleRegistry.getEnforcing`), iOS Objective-C++ JSI bindings (`RCTEventEmitter` + promise handlers), Android Kotlin `Module` + `Package` (+ `SimpleViewManager` for Fabric components), a `<Module>.podspec`, `android/build.gradle` library config, and the `react-native.config.js` `codegenConfig` block — with codegen + `pod install` / gradle install steps. The **Expo Modules API** variant emits the `modules/<name>/` layout instead (`requireNativeModule`, Kotlin + Swift `Module` definitions with `AsyncFunction`/`Function`/`Events`, the `View`/`Prop` DSL for Fabric components, and `expo-module.config.json` for autolinking).
 - **Metro bundle analysis & performance budgets.** The code-review phase runs deterministic budget checks on every workflow — libraries over 100 KB, dependencies missing `sideEffects: false`, unoptimized images (>200 KB non-WebP), and oversized static assets — and when the project has a Metro entry point it snapshots a real `react-native bundle --json` build into the knowledge base, warning "this change increases the bundle by X%" when a PR grows it >5% vs the previous snapshot. `vectalon bundle` runs the same checks on demand (`--platform`, `--static`).
 - **Simulator/device control + Maestro E2E flows.** `vectalon serve` exposes device tools (`device_boot`, `device_screenshot`, `device_tap`, `device_swipe`, `device_open_url`, `device_logs`, `device_set_voiceover`, `device_accessibility_tree`, `device_announcements`) that drive the iOS Simulator (`xcrun simctl` + `idb`) and Android Emulator (`emulator` + `adb`) — boot, capture screenshots into `.vectalon/artifacts/screenshots/`, inject taps/swipes, open deep links, read logs, and **drive the screen reader** (enable/disable VoiceOver/TalkBack, dump the accessibility tree, read what the screen reader announced). The test-writing phase generates a **Maestro YAML flow** (`.maestro/<feature>.yaml`) straight from the acceptance criteria (Given/When/Then → `launchApp` / `tapOn` / `inputText` / `assertVisible` / `openLink` / `swipe`, ending in a screenshot) — plus an **accessibility variant** (`.maestro/<feature>-accessibility.yaml`) when the request mentions VoiceOver/TalkBack/accessibility, with explicit accessibility-tree selectors (the layer Maestro resolves by default). The verification phase runs those flows with `maestro test` when the CLI and a booted device are available (advisory — E2E never gates the workflow) and, on real runs, captures a **visual verification screenshot** (booting a simulator/emulator when needed) into `.vectalon/artifacts/screenshots/` that is attached to the workflow as a PR artifact.
 - **Monorepo workspace support (V-4).** The scanner detects pnpm / Yarn / npm / Turborepo / Lerna workspaces by walking up for `pnpm-workspace.yaml`, `turbo.json`, `lerna.json`, or a `workspaces` manifest field, maps internal packages (`@acme/ui` → `packages/ui`), and resolves the hoisted `node_modules` root so Metro bundle analysis and static budget checks look in the right place. Context prompts are monorepo-aware — they tell agents this app lives in a workspace, that `react-native` is hoisted to the root, and to avoid adding it to the sub-package's `devDependencies`.
@@ -389,7 +390,7 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 │  │  │  (Project Memory + Pattern Learner)     │  │    │
 │  │  └─────────────────────────────────────────┘  │    │
 │  │  ┌─────────────────────────────────────────┐  │    │
-│  │  │       SDLC Modules (47 MCP tools)       │  │    │
+│  │  │       SDLC Modules (48 MCP tools)       │  │    │
 │  │  │  BA · QA · Architecture · Security ·   │  │    │
 │  │  │  UX · DevOps · Ops · Analytics         │  │    │
 │  │  └─────────────────────────────────────────┘  │    │
@@ -410,7 +411,7 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 ### Flow
 
 1. **`vectalon init`** — Scans your project, catalogues components, detects patterns, stores context in `.vectalon/`
-2. **`vectalon serve`** — Starts a local server exposing 47 MCP tools (40 by default, plus the knowledge-base and team-brain tools when those services are present, and the **real proxied tools of every enabled ecosystem MCP server**, namespaced as `<id>__<tool>`)
+2. **`vectalon serve`** — Starts a local server exposing 48 MCP tools (41 by default, plus the knowledge-base and team-brain tools when those services are present, and the **real proxied tools of every enabled ecosystem MCP server**, namespaced as `<id>__<tool>`)
 3. **`vectalon import`** — Feeds the Company Brain: PRDs, Jira exports, postmortems, any SDLC artifact
 4. **Agent connects** — Your AI agent (Claude Code, OpenCode, etc.) connects to the MCP server and gets full project awareness
 5. **Agent acts** — The agent uses the harness tools to generate code, fix bugs, write tests, produce PRDs/ADRs/test plans — all in your project's style
@@ -858,7 +859,7 @@ See `src/adapters/` for the interfaces and implementations.
 
 ## Available Tools
 
-Once the server is running, agents can call **47 built-in tools** — 40 always
+Once the server is running, agents can call **48 built-in tools** — 41 always
 available, 5 more when a knowledge base is present (`list_artifacts`,
 `get_artifact`, `get_knowledge_context`, `link_artifacts`, `ingest_telemetry`),
 and 2 more when a team brain is configured (`get_team_context`,
@@ -878,6 +879,7 @@ Expo MCP, …) exposed as first-class tools:
 | `run_agent` | Run the local model as an agent over the SDK tools (incl. proxied MCP tools) |
 | `check_guardrails` | Run the project guardrail rule set over a code snippet (JSON findings) |
 | `execute_workflow` | Run a full end-to-end SDLC workflow (e.g. feature-development) |
+| `scaffold_native_module` | Deterministically scaffold a React Native New Architecture native module — TypeScript TurboModule spec, iOS Objective-C++ / Android Kotlin implementations, podspec / build.gradle entries, codegen config (bare RN CLI) or the Expo Modules API layout — from a structured JSON spec |
 
 #### Requirements & BA
 

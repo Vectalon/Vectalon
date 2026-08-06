@@ -72,7 +72,7 @@ describe('MCPServer', () => {
 
   it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(40)
+    expect(names).toHaveLength(41)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -115,6 +115,7 @@ describe('MCPServer', () => {
         'device_accessibility_tree',
         'device_announcements',
         'generate_maestro_flow',
+        'scaffold_native_module',
       ])
     )
   })
@@ -163,6 +164,9 @@ describe('MCPServer', () => {
       if (tool.name === 'write_runbook') args.title = 'Restart the backend'
       if (tool.name === 'analyze_kpis') {
         args.metrics = JSON.stringify([{ name: 'Retention', current: 75, previous: 60, target: 70 }])
+      }
+      if (tool.name === 'scaffold_native_module') {
+        args.spec = JSON.stringify({ moduleName: 'Battery', methods: [{ name: 'getLevel', returnType: 'number' }] })
       }
 
       const result = await server.handleToolCall({ id: '1', name: tool.name, arguments: args })
