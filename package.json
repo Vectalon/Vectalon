@@ -22,7 +22,9 @@
     "dev": "tsc --watch",
     "test": "jest",
     "lint": "eslint src __tests__ --ext .ts",
+  "lint:ext": "eslint extension/src --ext .ts",
     "typecheck": "tsc --noEmit",
+  "typecheck:ext": "tsc -p extension --noEmit",
     "prepublishOnly": "npm run build"
   },
   "repository": {
@@ -67,6 +69,7 @@
     "@types/cli-table": "^0.3.4",
     "@types/jest": "^30.0.0",
     "@types/node": "^26.1.2",
+    "@types/vscode": "^1.125.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "eslint": "^8.57.0",

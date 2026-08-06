@@ -36,6 +36,8 @@ import { KpiReportAnalyzer } from '../sdlc/KpiReportAnalyzer'
 import type { KpiMetric } from '../sdlc/KpiReportAnalyzer'
 import { MaestroFlowWriter } from '../sdlc/MaestroFlowWriter'
 import { DeviceController, type DevicePlatform } from '../adapters/deviceControl'
+import { runGuardrails } from '../guardrails'
+import type { GuardrailConventions } from '../guardrails'
 type ToolHandler = (args: Record<string, unknown>) => Promise<string>
 
 const LATEST_KNOWN: Record<string, string> = {
@@ -163,6 +165,18 @@ export class MCPServer {
             acceptanceCriteria: { type: 'string' },
           },
           required: ['target'],
+        },
+      },
+      {
+        name: 'check_guardrails',
+        description: 'Run the project guardrail rule set over a code snippet and report pass/fail findings with line numbers (JSON)',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            content: { type: 'string' },
+            filePath: { type: 'string' },
+          },
+          required: ['content'],
         },
       },
       {
@@ -815,6 +829,14 @@ export class MCPServer {
       return response.content
     })
 
+    this.tools.set('check_guardrails', async (args: Record<string, unknown>) => {
+      const content = (args.content as string) || ''
+      const filePath = (args.filePath as string) || 'snippet.tsx'
+      if (!content) return 'Missing required field: content'
+      const result = runGuardrails({ filePath, content, conventions: this.conventionsFromSnapshot() })
+      return JSON.stringify(result, null, 2)
+    })
+
     this.tools.set('write_test', async (args: Record<string, unknown>) => {
       const target = args.target as string
       const framework = (args.framework as string) || 'jest'
@@ -1106,6 +1128,20 @@ export class MCPServer {
       const fence = '```'
       return ['## Maestro E2E flow', '', `${fence}yaml`, flow.trimEnd(), fence].join('\n')
     })
+  }
+
+  /** Project conventions for guardrail checks, derived from the scan snapshot. */
+  private conventionsFromSnapshot(): GuardrailConventions {
+    const snapshot = this.engine.getSnapshot()
+    const components = snapshot?.components || []
+    return {
+      hasTypeScript: snapshot?.project.hasTypeScript,
+      usesStyleSheet: components.some(c => c.usesStyleSheet),
+      hasNavigation: components.some(c => c.usesNavigation),
+      newArchitecture: snapshot?.project.newArchitecture,
+      reactVersion: snapshot?.project.reactVersion,
+      reactCompiler: snapshot?.project.reactCompiler,
+    }
   }
 
   private persistArtifact(
