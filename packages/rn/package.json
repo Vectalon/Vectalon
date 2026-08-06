@@ -6,7 +6,7 @@
   "author": "Bhishak Sanyal",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Vectalon/vectalon.git",
+    "url": "git+https://github.com/Vectalon/Vectalon.git",
     "directory": "packages/rn"
   },
   "main": "dist/index.js",
