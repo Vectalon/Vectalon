@@ -192,6 +192,126 @@ describe('analyzeSourceFile — hooks', () => {
     const profile = analysis!.components.find(c => c.name === 'ProfileScreen')
     expect(profile!.hooks).toEqual(expect.arrayContaining(['useNavigation']))
   })
+
+  it('tracks body references for missing-deps analysis and flags unstable deps', () => {
+    const analysis = analyzeSourceFile(
+      [
+        'const Screen = ({ userId }) => {',
+        '  useEffect(() => {',
+        '    fetchProfile(userId)',
+        '    trackEvent(userId)',
+        '  }, [userId])',
+        '  const memo = useMemo(() => config.filters, [config.filters, { fresh: true }])',
+        '  return <View />',
+        '}',
+      ].join('\n'),
+      'Screen.tsx'
+    )
+    const effect = analysis!.hooks.find(h => h.hook === 'useEffect')!
+    // `trackEvent` is used in the body but missing from deps — the missing-dep
+    // signal guardrails need. Property keys/member props are excluded.
+    expect(effect.bodyRefs).toEqual(expect.arrayContaining(['userId', 'fetchProfile', 'trackEvent']))
+    expect(effect.bodyRefs).not.toContain('filters')
+    expect(effect.deps).toEqual(['userId'])
+
+    const memo = analysis!.hooks.find(h => h.hook === 'useMemo')!
+    expect(memo.deps).toEqual(['config.filters', '{ … }'])
+    // The object literal dep is recreated every render.
+    expect(memo.unstableDeps).toEqual(expect.arrayContaining(['{ … }']))
+  })
+
+  it('detects zustand / jotai / context store definitions', () => {
+    const analysis = analyzeSourceFile(
+      [
+        "import { create } from 'zustand'",
+        "import { atom } from 'jotai'",
+        "import { createContext } from 'react'",
+        'const useAuthStore = create((set) => ({ token: null }))',
+        'const countAtom = atom(0)',
+        'const ThemeContext = createContext(null)',
+        '// user-defined create must NOT be flagged',
+        "const myCreate = require('other')",
+        'const notAStore = myCreate(1)',
+      ].join('\n'),
+      'stores.tsx'
+    )
+    expect(analysis!.stores).toEqual(
+      expect.arrayContaining([
+        { name: 'useAuthStore', kind: 'zustand' },
+        { name: 'countAtom', kind: 'jotai' },
+        { name: 'ThemeContext', kind: 'context' },
+      ])
+    )
+    // The user-defined create call is not imported from zustand — not a store.
+    expect(analysis!.stores).not.toContainEqual({ name: 'notAStore', kind: 'zustand' })
+  })
+
+  it('detects zustand v4 create()() store definitions', () => {
+    const analysis = analyzeSourceFile(
+      [
+        "import { create } from 'zustand'",
+        'const useStore = create()((set) => ({ count: 0 }))',
+      ].join('\n'),
+      'counter.ts'
+    )
+    expect(analysis!.stores).toContainEqual({ name: 'useStore', kind: 'zustand' })
+  })
+
+  it('tracks which components consume which stores', () => {
+    const analysis = analyzeSourceFile(
+      [
+        "import { useAtom } from 'jotai'",
+        "import { createContext, useContext } from 'react'",
+        'const countAtom = atom(0)',
+        'const ThemeContext = createContext(null)',
+        'const Counter = () => {',
+        '  const [count, setCount] = useAtom(countAtom)',
+        '  return <View />',
+        '}',
+        'const Themed = () => {',
+        '  const theme = useContext(ThemeContext)',
+        '  return <View />',
+        '}',
+      ].join('\n'),
+      'consumers.tsx'
+    )
+    expect(analysis!.storeUsages).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ store: 'countAtom', hook: 'useAtom', component: 'Counter' }),
+        expect.objectContaining({ store: 'ThemeContext', hook: 'useContext', component: 'Themed' }),
+      ])
+    )
+  })
+
+  it('flags expo-router imports for file-based route detection', () => {
+    const analysis = analyzeSourceFile(
+      [
+        "import { Stack } from 'expo-router'",
+        'export default function Layout() {',
+        '  return <Stack />',
+        '}',
+      ].join('\n'),
+      'app/_layout.tsx'
+    )
+    expect(analysis!.usesExpoRouter).toBe(true)
+    expect(analyzeSourceFile('import { View } from "react-native"', 'a.tsx')!.usesExpoRouter).toBe(false)
+  })
+
+  it('marks navigator-container components', () => {
+    const analysis = analyzeSourceFile(
+      [
+        "import { createNativeStackNavigator } from '@react-navigation/native-stack'",
+        'const Stack = createNativeStackNavigator()',
+        'const AppNav = () => {',
+        '  return <Stack.Navigator><Stack.Screen name="Home" component={Home} /></Stack.Navigator>',
+        '}',
+        'const Plain = () => <View />',
+      ].join('\n'),
+      'Nav.tsx'
+    )
+    expect(analysis!.components.find(c => c.name === 'AppNav')!.isNavigatorContainer).toBe(true)
+    expect(analysis!.components.find(c => c.name === 'Plain')!.isNavigatorContainer).toBe(false)
+  })
 })
 
 describe('analyzeSourceFile — navigation', () => {

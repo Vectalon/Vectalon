@@ -1,4 +1,4 @@
-import { buildKnowledgeGraph } from '../../src/harness/KnowledgeGraph'
+import { buildKnowledgeGraph, extractExpoRoutes, computeReRenderImpact } from '../../src/harness/KnowledgeGraph'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
 const PROJECT = {
@@ -128,7 +128,17 @@ describe('buildKnowledgeGraph', () => {
 
   it('returns an empty graph for a missing src dir', () => {
     const empty = buildKnowledgeGraph(dir, 'missing')
-    expect(empty).toEqual({ components: [], edges: [], hooks: [], navigators: [], nativeModules: [], platformVariants: [] })
+    expect(empty).toEqual({
+      components: [],
+      edges: [],
+      hooks: [],
+      navigators: [],
+      nativeModules: [],
+      stores: [],
+      expoRoutes: [],
+      reRenderImpact: [],
+      platformVariants: [],
+    })
   })
 
   it('skips unparseable files without failing the scan', () => {
@@ -139,5 +149,154 @@ describe('buildKnowledgeGraph', () => {
     const graph = buildKnowledgeGraph(broken)
     expect(graph.components).toEqual([])
     cleanup(broken)
+  })
+
+  it('extracts hook body references and unstable deps for guardrails', () => {
+    const d = createTempProject({
+      'package.json': '{}',
+      'src/Screen.tsx': [
+        'const Screen = ({ userId }) => {',
+        '  useEffect(() => {',
+        '    fetchProfile(userId)',
+        '    trackEvent(userId)',
+        '  }, [userId])',
+        '  const memo = useMemo(() => config.x, [config.x, { fresh: true }])',
+        '  return <View />',
+        '}',
+      ].join('\n'),
+    })
+    try {
+      const graph = buildKnowledgeGraph(d)
+      const effect = graph.hooks.find(h => h.hook === 'useEffect')!
+      expect(effect.bodyRefs).toEqual(expect.arrayContaining(['userId', 'fetchProfile', 'trackEvent']))
+      // Missing dep: trackEvent is referenced but not in [userId].
+      const missing = (effect.bodyRefs || []).filter(r => !(effect.deps || []).includes(r))
+      expect(missing).toContain('trackEvent')
+      const memo = graph.hooks.find(h => h.hook === 'useMemo')!
+      expect(memo.unstableDeps).toEqual(expect.arrayContaining(['{ … }']))
+    } finally {
+      cleanup(d)
+    }
+  })
+
+  it('aggregates state stores with their consumers', () => {
+    const d = createTempProject({
+      'package.json': '{}',
+      'src/store/auth.ts': [
+        "import { create } from 'zustand'",
+        'export const useAuthStore = create((set) => ({ token: null }))',
+      ].join('\n'),
+      'src/store/count.ts': [
+        "import { atom } from 'jotai'",
+        'export const countAtom = atom(0)',
+      ].join('\n'),
+      'src/screens/LoginScreen.tsx': [
+        "import { useAuthStore } from '../store/auth'",
+        "import { useAtom } from 'jotai'",
+        "import { countAtom } from '../store/count'",
+        'const LoginScreen = () => {',
+        '  const token = useAuthStore((s) => s.token)',
+        '  const [count] = useAtom(countAtom)',
+        '  return <View />',
+        '}',
+      ].join('\n'),
+    })
+    try {
+      const graph = buildKnowledgeGraph(d)
+      const auth = graph.stores.find(s => s.name === 'useAuthStore')
+      expect(auth).toMatchObject({ kind: 'zustand', filePath: 'src/store/auth.ts' })
+      expect(auth!.consumers).toEqual(
+        expect.arrayContaining([{ component: 'LoginScreen', filePath: 'src/screens/LoginScreen.tsx' }])
+      )
+      const count = graph.stores.find(s => s.name === 'countAtom')
+      expect(count!.kind).toBe('jotai')
+      expect(count!.consumers.map(c => c.component)).toContain('LoginScreen')
+    } finally {
+      cleanup(d)
+    }
+  })
+
+  it('extracts expo-router file-based routes', () => {
+    const d = createTempProject({
+      'package.json': JSON.stringify({ dependencies: { expo: '~52.0.0', 'expo-router': '~4.0.0' } }),
+      'app/_layout.tsx': [
+        "import { Stack } from 'expo-router'",
+        'export default function RootLayout() { return <Stack /> }',
+      ].join('\n'),
+      'app/index.tsx': [
+        'export default function Home() { return null }',
+      ].join('\n'),
+      'app/profile/[id].tsx': [
+        'export default function Profile() { return null }',
+      ].join('\n'),
+      'app/(tabs)/settings.tsx': [
+        'export default function Settings() { return null }',
+      ].join('\n'),
+    })
+    try {
+      const routes = extractExpoRoutes(d)
+      const byRoute = Object.fromEntries(routes.map(r => [r.route, r]))
+      expect(byRoute['/']).toMatchObject({ filePath: 'app/index.tsx', isLayout: false, component: 'Home' })
+      expect(byRoute['/profile/[id]']).toMatchObject({ dynamicSegments: ['id'], component: 'Profile' })
+      expect(byRoute['/(tabs)/settings']).toMatchObject({ groups: ['tabs'], component: 'Settings' })
+      expect(byRoute['/_layout']).toMatchObject({ isLayout: true })
+    } finally {
+      cleanup(d)
+    }
+  })
+
+  it('computes re-render impact: shared components reachable from multiple screens', () => {
+    const d = createTempProject({
+      'package.json': '{}',
+      'src/components/SharedHeader.tsx': 'const SharedHeader = () => null\nexport default SharedHeader',
+      'src/screens/HomeScreen.tsx': [
+        "import SharedHeader from '../components/SharedHeader'",
+        'const HomeScreen = () => <SharedHeader />',
+        'export default HomeScreen',
+      ].join('\n'),
+      'src/screens/SettingsScreen.tsx': [
+        "import SharedHeader from '../components/SharedHeader'",
+        'const SettingsScreen = () => <SharedHeader />',
+        'export default SettingsScreen',
+      ].join('\n'),
+      'src/nav/App.tsx': [
+        "import { createNativeStackNavigator } from '@react-navigation/native-stack'",
+        'const Stack = createNativeStackNavigator()',
+        'export default function App() {',
+        '  return <Stack.Navigator>',
+        '    <Stack.Screen name="Home" component={HomeScreen} />',
+        '    <Stack.Screen name="Settings" component={SettingsScreen} />',
+        '  </Stack.Navigator>',
+        '}',
+      ].join('\n'),
+    })
+    try {
+      const graph = buildKnowledgeGraph(d)
+      const shared = graph.reRenderImpact.find(i => i.name === 'SharedHeader')
+      expect(shared).toBeDefined()
+      expect(shared!.parents).toHaveLength(2)
+      // Both screens render SharedHeader -> re-render blast radius is both.
+      const screenNames = shared!.screens.map(id => {
+        const c = graph.components.find(c => c.id === id)
+        return c?.name
+      })
+      expect(screenNames).toEqual(expect.arrayContaining(['HomeScreen', 'SettingsScreen']))
+    } finally {
+      cleanup(d)
+    }
+  })
+
+  it('computeReRenderImpact leaves non-shared components out', () => {
+    const d = createTempProject({
+      'package.json': '{}',
+      'src/Screen.tsx': 'const Screen = () => null\nexport default Screen',
+    })
+    try {
+      const graph = buildKnowledgeGraph(d)
+      expect(graph.reRenderImpact).toEqual([])
+      expect(computeReRenderImpact(graph)).toEqual([])
+    } finally {
+      cleanup(d)
+    }
   })
 })

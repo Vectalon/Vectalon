@@ -1,7 +1,7 @@
 export { Scanner } from './Scanner'
 export { ContextEngine } from './ContextEngine'
 export { parseSource, analyzeSourceFile, walk } from './AstScanner'
-export { buildKnowledgeGraph } from './KnowledgeGraph'
+export { buildKnowledgeGraph, extractExpoRoutes, computeReRenderImpact } from './KnowledgeGraph'
 export { detectWorkspace, findWorkspaceRoot, resolveNodeModulesRoot, NO_WORKSPACE } from './workspace'
 export type { WorkspaceInfo, WorkspaceManager } from './workspace'
 export type { ProjectInfo, FileNode, ComponentInfo, ContextSnapshot } from './types'
@@ -14,6 +14,10 @@ export type {
   NavigationInfo,
   ComponentDef,
   SourceAnalysis,
+  StoreDef,
+  StoreKind,
+  StoreUsage,
+  StoreConsumerHook,
 } from './AstScanner'
 export type {
   GraphComponent,
@@ -21,5 +25,8 @@ export type {
   GraphHookUsage,
   GraphNavigator,
   GraphNativeModule,
+  GraphStore,
+  GraphExpoRoute,
+  ReRenderImpact,
   RNGraph,
 } from './KnowledgeGraph'

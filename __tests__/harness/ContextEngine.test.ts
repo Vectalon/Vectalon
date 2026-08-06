@@ -192,4 +192,31 @@ describe('ContextEngine', () => {
     expect(prompt).toContain('SecureStore')
     cleanup(withNative)
   })
+
+  it('includes state-management, expo-routes, and re-render impact sections', () => {
+    const rich = createTempProject({
+      'package.json': JSON.stringify({
+        name: 'rich-app',
+        version: '1.0.0',
+        dependencies: { 'react-native': '0.76.0', zustand: '^5.0.0', 'expo-router': '~4.0.0' },
+      }),
+      'app/_layout.tsx': ["import { Stack } from 'expo-router'", 'export default function RootLayout() { return <Stack /> }'].join('\n'),
+      'app/index.tsx': ["import { Stack } from 'expo-router'", 'export default function Home() { return null }'].join('\n'),
+      'src/store/auth.ts': ["import { create } from 'zustand'", 'export const useAuthStore = create((set) => ({ token: null }))'].join('\n'),
+      'src/screens/HomeScreen.tsx': [
+        "import { useAuthStore } from '../store/auth'",
+        'const HomeScreen = () => { useAuthStore((s) => s.token); return null }',
+        'export default HomeScreen',
+      ].join('\n'),
+    })
+    const engine = new ContextEngine(rich)
+    engine.init()
+    const prompt = engine.buildContextPrompt()
+    expect(prompt).toContain('## State management')
+    expect(prompt).toContain('useAuthStore (zustand)')
+    expect(prompt).toContain('used by HomeScreen')
+    expect(prompt).toContain('**Expo Router (file-based)**')
+    expect(prompt).toContain('/')
+    cleanup(rich)
+  })
 })
