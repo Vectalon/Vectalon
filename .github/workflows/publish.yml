@@ -1,6 +1,10 @@
 name: Publish Packages
 
 on:
+  # Auto-publish when pushing to main with [publish-*] tags in commit message
+  push:
+    branches: [main]
+  # Manual fallback via GitHub UI
   workflow_dispatch:
     inputs:
       package:
@@ -19,7 +23,13 @@ env:
 jobs:
   publish-core:
     runs-on: ubuntu-latest
-    if: github.event.inputs.package == '@vectalon-dev/core' || github.event.inputs.package == 'both'
+    if: >
+      (github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.package == '@vectalon-dev/core' || github.event.inputs.package == 'both'))
+      ||
+      (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-core]'))
+      ||
+      (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-both]'))
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,7 +49,6 @@ jobs:
       - name: Configure npm auth
         run: |
           echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
-          cat .npmrc
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -65,7 +74,13 @@ jobs:
 
   publish-rn:
     runs-on: ubuntu-latest
-    if: github.event.inputs.package == '@vectalon-dev/rn' || github.event.inputs.package == 'both'
+    if: >
+      (github.event_name == 'workflow_dispatch' &&
+       (github.event.inputs.package == '@vectalon-dev/rn' || github.event.inputs.package == 'both'))
+      ||
+      (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-rn]'))
+      ||
+      (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-both]'))
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -85,7 +100,6 @@ jobs:
       - name: Configure npm auth
         run: |
           echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
-          cat .npmrc
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
