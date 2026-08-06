@@ -1,5 +1,7 @@
-export { Scanner, ContextEngine } from './harness'
+export { Scanner, ContextEngine, parseSource, analyzeSourceFile, walk, buildKnowledgeGraph } from './harness'
 export type { ProjectInfo, FileNode, ComponentInfo, ContextSnapshot } from './harness'
+export type { PlatformSuffix, ImportInfo, ExportInfo, HookCall, NavigatorInfo, NavigationInfo, ComponentDef, SourceAnalysis } from './harness'
+export type { GraphComponent, GraphEdge, GraphHookUsage, GraphNavigator, GraphNativeModule, RNGraph } from './harness'
 
 export { ModelRouter } from './model'
 export type { ModelConfig, ModelRequest, ModelResponse, ModelProviderType } from './model'

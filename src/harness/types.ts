@@ -1,5 +1,7 @@
 export type ProjectTooling = 'expo' | 'rn-cli'
 
+export type PlatformSuffix = 'ios' | 'android' | 'windows' | 'macos' | 'web' | 'native' | 'universal'
+
 export interface LintConfigInfo {
   eslint?: string
   biome?: string
@@ -42,6 +44,18 @@ export interface ComponentInfo {
   usesStyleSheet: boolean
   usesNavigation: boolean
   imports: string[]
+  /** AST-derived: 'function' | 'class' component kind. */
+  kind?: 'function' | 'class'
+  /** AST-derived: hook names used inside the component. */
+  hooks?: string[]
+  /** AST-derived: HOC wrappers on export (withNavigation, connect, …). */
+  hocs?: string[]
+  /** AST-derived: native module identifiers referenced. */
+  nativeModules?: string[]
+  /** Platform-specific file variant (.ios./.android./…). */
+  platform?: PlatformSuffix
+  /** All export names (named + default) of the component. */
+  exportedNames?: string[]
 }
 
 export interface ContextSnapshot {
@@ -51,4 +65,6 @@ export interface ContextSnapshot {
   recentChanges: string[]
   timestamp: number
   codeGraph?: import('./CodeGraph').CodeGraph
+  /** AST-derived RN knowledge graph (component trees, hooks, navigation, native). */
+  knowledgeGraph?: import('./KnowledgeGraph').RNGraph
 }

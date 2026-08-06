@@ -1,5 +1,6 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'fs'
 import { join, relative, extname } from 'path'
+import { analyzeSourceFile } from './AstScanner'
 
 export interface GraphNode {
   id: string
@@ -29,28 +30,16 @@ function isSourceFile(name: string): boolean {
   return SOURCE_EXTS.has(extname(name))
 }
 
-function extractImports(content: string): string[] {
-  const imports: string[] = []
-  const regex = /from\s+['"]([^'"]+)['"]/g
-  let match
-  while ((match = regex.exec(content)) !== null) {
-    imports.push(match[1])
-  }
-  return imports
+function extractImports(content: string, fileName = 'file.tsx'): string[] {
+  const analysis = analyzeSourceFile(content, fileName)
+  if (!analysis) return []
+  return analysis.imports.map(i => i.source)
 }
 
-function extractExports(content: string): string[] {
-  const exports: string[] = []
-  const named = /export\s+(?:const|let|var|function|class|interface|type|enum)\s+(\w+)/g
-  let match
-  while ((match = named.exec(content)) !== null) {
-    exports.push(match[1])
-  }
-  const defaultRe = /export\s+default\s+(?:function\s+)?(\w+)|export\s+default\s+/g
-  while ((match = defaultRe.exec(content)) !== null) {
-    exports.push(match[1] || 'default')
-  }
-  return exports
+function extractExports(content: string, fileName = 'file.tsx'): string[] {
+  const analysis = analyzeSourceFile(content, fileName)
+  if (!analysis) return []
+  return analysis.exports.map(e => e.name)
 }
 
 function resolveImportPath(importPath: string, currentDir: string, root: string): string | null {
@@ -106,8 +95,8 @@ export function buildCodeGraph(root: string, srcDir = 'src'): CodeGraph {
   for (const filePath of filePaths) {
     const fullPath = join(root, filePath)
     const content = readFileSync(fullPath, 'utf-8')
-    const imports = extractImports(content)
-    const exports = extractExports(content)
+    const imports = extractImports(content, filePath)
+    const exports = extractExports(content, filePath)
     const currentDir = join(root, filePath, '..')
 
     idToImports.set(filePath, imports)

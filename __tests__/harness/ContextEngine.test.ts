@@ -98,4 +98,43 @@ describe('ContextEngine', () => {
     engine.attachPatternStore(store)
     expect(engine.getPatternStore()).toBe(store)
   })
+
+  it('persists the AST knowledge graph alongside the code graph', () => {
+    const engine = new ContextEngine(dir)
+    engine.init()
+    expect(existsSync(join(dir, '.vectalon', 'knowledge-graph.json'))).toBe(true)
+    const snapshot = engine.getSnapshot()
+    expect(snapshot?.knowledgeGraph).toBeDefined()
+    expect(snapshot?.knowledgeGraph?.components.map(c => c.name)).toContain('ProfileCard')
+  })
+
+  it('includes navigation and native module sections when present', () => {
+    const withNative = createTempProject({
+      'package.json': JSON.stringify({ name: 'nav-app', version: '1.0.0', dependencies: { 'react-native': '0.72.0' } }),
+      'src/App.tsx': [
+        "import { NavigationContainer } from '@react-navigation/native'",
+        "import { createNativeStackNavigator } from '@react-navigation/native-stack'",
+        'const Stack = createNativeStackNavigator()',
+        'export default function App() {',
+        '  return (',
+        '    <NavigationContainer>',
+        '      <Stack.Navigator>',
+        '        <Stack.Screen name="Home" component={HomeScreen} />',
+        '      </Stack.Navigator>',
+        '    </NavigationContainer>',
+        '  )',
+        '}',
+      ].join('\n'),
+      'src/native/Bridge.ts': ["import { NativeModules } from 'react-native'", 'export const t = NativeModules.SecureStore'].join('\n'),
+    })
+    const engine = new ContextEngine(withNative)
+    engine.init()
+    const prompt = engine.buildContextPrompt()
+    expect(prompt).toContain('## Navigation')
+    expect(prompt).toContain('Stack (native-stack)')
+    expect(prompt).toContain('Home → HomeScreen')
+    expect(prompt).toContain('## Native modules')
+    expect(prompt).toContain('SecureStore')
+    cleanup(withNative)
+  })
 })

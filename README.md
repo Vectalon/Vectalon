@@ -1209,6 +1209,8 @@ rn-vectalon/
 │   │   └── types.ts
 │   ├── harness/
 │   │   ├── Scanner.ts     # Project & component scanner (Expo vs RN-CLI)
+│   │   ├── AstScanner.ts  # AST-based source analysis (babel parser)
+│   │   ├── KnowledgeGraph.ts  # RN knowledge graph (trees, hooks, nav, native)
 │   │   ├── CodeGraph.ts   # Dependency graph builder
 │   │   ├── ContextEngine.ts  # Context builder & manager
 │   │   └── types.ts
@@ -1364,6 +1366,13 @@ Areas we'd love help with:
   runs `vectalon bench --live --install --model` on a `[local, openai, anthropic]`
   matrix nightly, merges per-model results with `vectalon leaderboard`, and
   commits a timestamped `BENCHMARK_RESULTS.md` scenario × model × axis table
+- ✅ **AST-based project scanner (RN knowledge graph)** — the regex-based
+  component sniffer is replaced with a real babel AST parse: component trees
+  (parent → child JSX edges), hook calls with dependency arrays, navigation
+  structure (navigators + screens), native module boundaries
+  (`NativeModules` / `TurboModuleRegistry`, platform-split `.ios./.android.`
+  variants), HOC wrappers, and dynamic imports — persisted as
+  `knowledge-graph.json` and surfaced in the context prompt
 - ✅ **Expo & RN-CLI separation** — `Scanner` detects `tooling` + Expo SDK
   version; context prompts, simulator runs, and dependency removal are
   flavor-aware

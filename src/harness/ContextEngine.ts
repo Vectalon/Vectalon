@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { Scanner } from './Scanner'
 import { buildCodeGraph } from './CodeGraph'
+import { buildKnowledgeGraph } from './KnowledgeGraph'
 import type { ContextSnapshot } from './types'
 import type { PatternStore } from '../memory/PatternLearner'
 
@@ -62,8 +63,28 @@ export class ContextEngine {
       sections.push('', '## Components')
       const componentList = components
         .slice(0, 50)
-        .map(c => `- ${c.name} (${c.filePath})${c.usesNavigation ? ' [navigation]' : ''}`)
+        .map(c => `- ${c.name} (${c.filePath})${c.usesNavigation ? ' [navigation]' : ''}${c.hooks && c.hooks.length > 0 ? ` [hooks: ${c.hooks.join(', ')}]` : ''}`)
       sections.push(...componentList)
+    }
+
+    const kg = this.snapshot.knowledgeGraph
+    if (kg && kg.navigators.length > 0) {
+      sections.push('', '## Navigation')
+      for (const nav of kg.navigators.slice(0, 10)) {
+        const screens = nav.screens.map(s => `${s.name} → ${s.component}`).join(', ') || 'no screens declared'
+        sections.push(`- ${nav.name} (${nav.type}) in ${nav.filePath}: ${screens}`)
+      }
+      const navHooks = new Set(kg.hooks.map(h => h.hook).filter(h => /^useNavigation|^useRoute|^useFocusEffect|^useIsFocused/.test(h)))
+      if (navHooks.size > 0) {
+        sections.push(`- Navigation hooks: ${[...navHooks].join(', ')}`)
+      }
+    }
+
+    if (kg && kg.nativeModules.length > 0) {
+      sections.push('', '## Native modules')
+      for (const mod of kg.nativeModules.slice(0, 10)) {
+        sections.push(`- ${mod.filePath}: ${mod.modules.join(', ')}`)
+      }
     }
 
     if (this.patternStore) {
@@ -89,6 +110,7 @@ export class ContextEngine {
     const structure = this.scanner.scanStructure()
     const components = this.scanner.scanComponents()
     const codeGraph = buildCodeGraph(project.root)
+    const knowledgeGraph = buildKnowledgeGraph(project.root)
 
     return {
       project,
@@ -97,6 +119,7 @@ export class ContextEngine {
       recentChanges: [],
       timestamp: Date.now(),
       codeGraph,
+      knowledgeGraph,
     }
   }
 
@@ -114,6 +137,12 @@ export class ContextEngine {
       writeFileSync(
         join(this.contextDir, 'code-graph.json'),
         JSON.stringify(this.snapshot.codeGraph, null, 2)
+      )
+    }
+    if (this.snapshot.knowledgeGraph) {
+      writeFileSync(
+        join(this.contextDir, 'knowledge-graph.json'),
+        JSON.stringify(this.snapshot.knowledgeGraph, null, 2)
       )
     }
   }
