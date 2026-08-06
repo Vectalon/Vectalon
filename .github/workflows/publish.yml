@@ -1,25 +1,25 @@
 name: Publish Packages
 
 on:
-  push:
-    branches: [main]
-    tags: ['v*']
   workflow_dispatch:
     inputs:
       package:
         description: 'Package to publish'
         required: true
-        default: '@vectalon-dev/rn'
+        default: 'both'
         type: choice
         options:
           - '@vectalon-dev/core'
           - '@vectalon-dev/rn'
-          - both
+          - 'both'
+
+env:
+  CI: true
 
 jobs:
   publish-core:
     runs-on: ubuntu-latest
-    if: github.event.inputs.package == '@vectalon-dev/core' || github.event.inputs.package == 'both' || contains(github.event.head_commit.message, '[publish-core]')
+    if: github.event.inputs.package == '@vectalon-dev/core' || github.event.inputs.package == 'both'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,8 +36,15 @@ jobs:
           cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Configure npm auth
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
+          cat .npmrc
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm turbo run build --filter=@vectalon-dev/core
@@ -58,8 +65,7 @@ jobs:
 
   publish-rn:
     runs-on: ubuntu-latest
-    if: github.event.inputs.package == '@vectalon-dev/rn' || github.event.inputs.package == 'both' || contains(github.event.head_commit.message, '[publish-rn]')
-    needs: [publish-core]
+    if: github.event.inputs.package == '@vectalon-dev/rn' || github.event.inputs.package == 'both'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -76,8 +82,15 @@ jobs:
           cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Configure npm auth
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
+          cat .npmrc
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm turbo run build --filter=@vectalon-dev/rn
@@ -95,3 +108,31 @@ jobs:
         run: pnpm publish --filter=@vectalon-dev/rn --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  tag-release:
+    runs-on: ubuntu-latest
+    needs: [publish-core, publish-rn]
+    if: always() && (needs.publish-core.result == 'success' || needs.publish-rn.result == 'success')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version
+        id: version
+        run: |
+          RN_VERSION=$(node -p "require('./packages/rn/package.json').version")
+          CORE_VERSION=$(node -p "require('./packages/core/package.json').version")
+          echo "rn_version=$RN_VERSION" >> $GITHUB_OUTPUT
+          echo "core_version=$CORE_VERSION" >> $GITHUB_OUTPUT
+          echo "tag=rn-v${RN_VERSION}-core-v${CORE_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Create Git tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a ${{ steps.version.outputs.tag }} -m "Release ${{ steps.version.outputs.tag }}"
+          git push origin ${{ steps.version.outputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
