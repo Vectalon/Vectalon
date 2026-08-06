@@ -104,7 +104,10 @@ export async function serveCommand(options: {
 
   startBackgroundRefresh(root)
 
-  await server.start(options.port || 0)
+  const boundPort = await server.start(options.port || 0)
+  if (typeof boundPort === 'number') {
+    logger.info(`HTTP server listening on http://localhost:${boundPort}`)
+  }
 }
 
 const BACKGROUND_REFRESH_INTERVAL_MS = 60 * 60 * 1000
