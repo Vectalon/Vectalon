@@ -1,7 +1,25 @@
+import type { ParsedCrash } from '../knowledge/telemetry'
+
 export interface RootCauseResult {
   bucket: string
   probableCause: string
   investigation: string[]
+}
+
+export interface CrashFacts {
+  eventId: string
+  exceptionType?: string
+  release?: string
+  environment?: string
+  timestamp?: number
+  /** Top in-app stack frame locations, used as investigation leads. */
+  topFrames: string[]
+  /** Number of distinct users this crash instance is attributed to. */
+  userCount: number
+}
+
+export interface CrashRootCauseResult extends RootCauseResult {
+  crashFacts: CrashFacts
 }
 
 interface RootCauseRule {
@@ -92,6 +110,39 @@ const RULES: RootCauseRule[] = [
       'Use a cancellation token where needed',
     ],
   },
+  {
+    bucket: 'native-crash',
+    keywords: ['nsinvalidargumentexception', 'sigsegv', 'sigabrt', 'sigbus', 'nullpointerexception', 'java.lang', 'fatal exception', 'libc', 'native crash'],
+    cause: 'A native-level crash (platform runtime, native module, or OS signal)',
+    steps: [
+      'Pull the native crash report (dSYM symbolication on iOS, tombstone/soinfo on Android)',
+      'Check recent native module upgrades and their JNI/C++ boundary code',
+      'Verify the crash reproduces on the same OS/device class and release',
+      'If a third-party native library is implicated, test the previous version',
+    ],
+  },
+  {
+    bucket: 'memory-pressure',
+    keywords: ['out of memory', 'oom', 'memory pressure', 'allocation failed', 'memory warning', 'low memory', 'jettison'],
+    cause: 'The app exceeded available memory (JS heap, images, or native buffers)',
+    steps: [
+      'Profile heap growth with the Hermes/JS heap snapshot and LeakCanary',
+      'Audit large images, list rendering, and unbounded caches',
+      'Check for native memory leaks in image/WebView/video libraries',
+      'Verify the device/OS version matches the crash reports before tuning',
+    ],
+  },
+  {
+    bucket: 'anr',
+    keywords: ['anr', 'application not responding', 'not responding', 'input dispatching timed out', 'did not respond'],
+    cause: 'The main thread was blocked long enough for the OS to declare the app unresponsive',
+    steps: [
+      'Look for synchronous work on the JS/main thread (blocking I/O, heavy renders)',
+      'Inspect the ANR trace for the blocking frame and lock contention',
+      'Move slow work to background threads or defer it out of the render path',
+      'Check for infinite loops or deadlocks introduced by the latest release',
+    ],
+  },
 ]
 
 export class RootCauseAnalyzer {
@@ -107,6 +158,76 @@ export class RootCauseAnalyzer {
       probableCause: 'Could not automatically classify this issue',
       investigation: ['Reproduce the issue locally', 'Capture logs and stack traces', 'Trace recent changes that could relate'],
     }
+  }
+
+  /**
+   * Data-driven root-cause analysis for a parsed runtime crash. Classifies
+   * using the exception type, message, and stack-frame locations, then enriches
+   * the investigation with the actual crash facts (release, environment, top
+   * in-app frames) instead of generic heuristics alone.
+   */
+  analyzeCrash(crash: ParsedCrash): CrashRootCauseResult {
+    const frameText = crash.frames.map(f => [f.filename, f.function].filter(Boolean).join(' ')).join(' ')
+    const evidence = [crash.exceptionType, crash.message, crash.culprit, frameText].filter(Boolean).join(' ')
+    const base = this.analyze(evidence)
+
+    const inAppFrames = crash.frames.filter(f => f.inApp !== false)
+    const leadFrames = inAppFrames.length > 0 ? inAppFrames : crash.frames
+    const topFrames = leadFrames.slice(0, 5).map(f =>
+      [f.function || '(anonymous)', [f.filename, f.lineno !== undefined ? `:${f.lineno}` : ''].join('')].filter(Boolean).join(' — ')
+    )
+
+    const investigation = [...base.investigation]
+    if (crash.release) investigation.unshift(`Check what changed in release ${crash.release}${crash.environment ? ` (${crash.environment})` : ''} — the crash is attributed to it`)
+    if (topFrames.length > 0) {
+      investigation.push('Investigate the top in-app frames from the report:')
+      investigation.push(...topFrames.map(frame => `  - ${frame}`))
+    }
+    if (crash.fingerprint && crash.fingerprint.length > 0) {
+      investigation.push(`Group related reports by fingerprint: ${crash.fingerprint.join(', ')}`)
+    }
+
+    return {
+      bucket: base.bucket,
+      probableCause: crash.exceptionType && crash.message && crash.message !== crash.exceptionType
+        ? `${crash.exceptionType}: ${crash.message}`
+        : base.probableCause,
+      investigation,
+      crashFacts: {
+        eventId: crash.id,
+        exceptionType: crash.exceptionType,
+        release: crash.release,
+        environment: crash.environment,
+        timestamp: crash.timestamp,
+        topFrames,
+        userCount: crash.user?.id ? 1 : 0,
+      },
+    }
+  }
+
+  /** Render a crash-driven analysis including the runtime facts it was based on. */
+  renderCrash(result: CrashRootCauseResult): string {
+    const { crashFacts } = result
+    const lines = [
+      'Crash Root Cause Analysis',
+      '=========================',
+      '',
+      `Event: ${crashFacts.eventId}`,
+      ...(crashFacts.exceptionType ? [`Exception: ${crashFacts.exceptionType}`] : []),
+      ...(crashFacts.release ? [`Release: ${crashFacts.release}`] : []),
+      ...(crashFacts.environment ? [`Environment: ${crashFacts.environment}`] : []),
+      ...(crashFacts.timestamp ? [`First seen: ${new Date(crashFacts.timestamp).toISOString()}`] : []),
+      '',
+      `Bucket: ${result.bucket}`,
+      '',
+      `Probable cause: ${result.probableCause}`,
+      '',
+      'Investigation',
+      '-------------',
+      ...result.investigation.map(s => `- ${s}`),
+      '',
+    ]
+    return lines.join('\n')
   }
 
   render(result: RootCauseResult): string {

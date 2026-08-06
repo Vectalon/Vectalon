@@ -9,6 +9,7 @@ import { modelsCommand } from './commands/models'
 import { policyCommand } from './commands/policy'
 import { refreshCommand } from './commands/refresh'
 import { bundleCommand } from './commands/bundle'
+import { telemetryCommand } from './commands/telemetry'
 import { ecosystemCommand } from './commands/ecosystem'
 import { syncCommand } from './commands/sync'
 import { benchCommand } from './commands/bench'
@@ -96,6 +97,13 @@ export function runCLI(): void {
     .option('--platform <type>', 'Bundle platform (ios|android)', 'ios')
     .option('--static', 'Static on-disk checks only (skip the Metro build)')
     .action(bundleCommand)
+
+  program
+    .command('telemetry [directory]')
+    .description('Ingest runtime telemetry (Sentry / Crashlytics / traces / analytics) into the knowledge base and analyze it')
+    .option('--path <dir>', 'Telemetry exports directory or file (default .vectalon/telemetry or telemetry/)')
+    .option('--no-analyze', 'Ingest only; skip crash/incident/KPI analysis')
+    .action(telemetryCommand)
 
   program
     .command('ecosystem [directory]')
@@ -188,6 +196,7 @@ async function runInteractive(): Promise<void> {
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Refresh knowledge', hint: 'Update best practices and dependency suggestions from the web' },
       { value: 'bundle', label: 'Analyze bundle', hint: 'Metro bundle snapshot + performance budgets' },
+      { value: 'telemetry', label: 'Ingest telemetry', hint: 'Sentry/Crashlytics/traces/analytics into the knowledge base' },
       { value: 'ecosystem', label: 'Manage ecosystem', hint: 'Enable MCP servers, skills, tools, and hooks (Expo & RN-CLI)' },
       { value: 'doctor', label: 'Run doctor', hint: 'Verify every enabled ecosystem item is installed and reachable' },
       { value: 'bench', label: 'Run benchmark', hint: 'Score the harness on the RN coding tests (11 scenarios)' },
@@ -282,6 +291,12 @@ async function runInteractive(): Promise<void> {
   if (action === 'bundle') {
     await bundleCommand('', {})
     p.outro('Bundle analysis complete')
+    return
+  }
+
+  if (action === 'telemetry') {
+    await telemetryCommand('', {})
+    p.outro('Telemetry ingested')
     return
   }
 
