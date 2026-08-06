@@ -11,6 +11,8 @@
 
 Vectalon is an open-core developer tool that embeds AI intelligence directly into your codebase. It scans your project, understands its architecture, and provides project-aware assistance across the full SDLC.
 
+> **📌 This is a public repository.** The source code is available under the Business Source License 1.1 (BSL-1.1). Commercial use by teams with >3 developers requires a paid license. The admin dashboard and internal operations tools are maintained in a separate private repository.
+
 ### Products
 
 | Product | Package | Status |
@@ -43,7 +45,9 @@ vectalon/
 ├── packages/
 │   ├── core/             # @vectalon-dev/core — auth, licensing, telemetry, platform interfaces
 │   ├── rn/               # @vectalon-dev/rn — React Native tools
-│   └── admin-internal/   # Admin dashboard (private)
+│   ├── ios/              # @vectalon-dev/ios — iOS / Swift (coming soon)
+│   ├── android/          # @vectalon-dev/android — Android / Kotlin (coming soon)
+│   └── python/           # @vectalon-dev/python — Python / AI (coming soon)
 └── ...
 ```
 

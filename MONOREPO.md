@@ -15,13 +15,12 @@ vectalon/
 ├── apps/
 │   └── website/          # vectalon.in landing page (Next.js)
 ├── packages/
-│   ├── core/             # @vectalon/core — auth, licensing, telemetry, platform interfaces
-│   ├── rn/               # @vectalon/rn — React Native tools
-│   ├── ios/              # @vectalon/ios — iOS / Swift (coming soon)
-│   ├── android/          # @vectalon/android — Android / Kotlin (coming soon)
-│   ├── python/           # @vectalon/python — Python / AI (coming soon)
-│   ├── ts-config/        # Shared TypeScript configuration
-│   └── admin/            # Admin dashboard (private, not published)
+│   ├── core/             # @vectalon-dev/core — auth, licensing, telemetry, platform interfaces
+│   ├── rn/               # @vectalon-dev/rn — React Native tools
+│   ├── ios/              # @vectalon-dev/ios — iOS / Swift (coming soon)
+│   ├── android/          # @vectalon-dev/android — Android / Kotlin (coming soon)
+│   ├── python/           # @vectalon-dev/python — Python / AI (coming soon)
+│   └── ts-config/        # Shared TypeScript configuration
 ├── .github/workflows/    # CI/CD pipelines
 ├── turbo.json            # Turborepo configuration
 ├── pnpm-workspace.yaml   # pnpm workspaces
@@ -54,8 +53,8 @@ pnpm typecheck
 pnpm dev
 
 # Publish packages
-pnpm publish:core    # Publish @vectalon/core
-pnpm publish:rn      # Publish @vectalon/rn
+pnpm publish:core    # Publish @vectalon-dev/core
+pnpm publish:rn      # Publish @vectalon-dev/rn
 ```
 
 ## License
