@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync } from 'fs'
 import { join } from 'path'
 import type { WorkflowState } from '../adapters/types'
+import { reportError } from '../utils/safe'
 
 function workflowStateDir(projectRoot: string, workflowId: string): string {
   return join(projectRoot, '.vectalon', 'workflows', workflowId)
@@ -56,7 +57,8 @@ export function listWorkflowStates(projectRoot: string, workflowId: string): Wor
     .map(f => {
       try {
         return JSON.parse(readFileSync(join(dir, f), 'utf-8')) as WorkflowState
-      } catch {
+      } catch (err) {
+        reportError(err, 'WorkflowState: reading saved workflow state')
         return null
       }
     })

@@ -5,6 +5,7 @@ import { analyzeSourceFile } from './AstScanner'
 import { detectNewArchitecture } from '../utils/newArchitecture'
 import { detectReactCompiler } from '../utils/reactCompiler'
 import { detectWorkspace, resolveReactNativeVersion } from './workspace'
+import { reportError } from '../utils/safe'
 
 export interface PackageJsonLike {
   dependencies?: Record<string, string>
@@ -192,7 +193,8 @@ export class Scanner {
       if (existsSync(path)) {
         try {
           return readFileSync(path, 'utf-8').slice(0, 8000)
-        } catch {
+        } catch (err) {
+          reportError(err, 'Scanner: reading lint config file')
           return undefined
         }
       }

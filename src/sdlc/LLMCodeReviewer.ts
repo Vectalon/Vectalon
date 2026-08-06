@@ -1,5 +1,6 @@
 import pc from 'picocolors'
 import type { ModelRouter } from '../model/ModelRouter'
+import { reportError } from '../utils/safe'
 
 export type ReviewSeverity = 'error' | 'warning' | 'info'
 
@@ -50,7 +51,8 @@ export function parseLLMReview(content: string): LLMCodeReview | null {
   let raw: unknown
   try {
     raw = JSON.parse(jsonText)
-  } catch {
+  } catch (err) {
+    reportError(err, 'LLMCodeReviewer: parsing review JSON')
     return null
   }
 
@@ -154,7 +156,8 @@ export async function reviewCodeWithLLM(
       return null
     }
     return parseLLMReview(content)
-  } catch {
+  } catch (err) {
+    reportError(err, 'LLMCodeReviewer: LLM review failed', 'warn')
     return null
   }
 }
@@ -237,7 +240,8 @@ export async function fixCodeWithLLM(
       return null
     }
     return extractFixedCode(content)
-  } catch {
+  } catch (err) {
+    reportError(err, 'LLMCodeReviewer: extracting fixed code', 'warn')
     return null
   }
 }

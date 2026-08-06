@@ -2,6 +2,7 @@ import type { WorkflowContext } from '../../adapters/types'
 import type { ContextSnapshot } from '../../harness/types'
 import type { ModelRouter } from '../../model/ModelRouter'
 import { detectConventions } from './helpers'
+import { reportError } from '../../utils/safe'
 
 export type WorkflowIntent =
   | { type: 'add-feature'; feature: string; description: string }
@@ -124,7 +125,8 @@ function extractJsonPayload(content: string): string | null {
   try {
     JSON.parse(candidate)
     return candidate
-  } catch {
+  } catch (err) {
+    reportError(err, 'intent: model output wrapped in prose, slicing JSON')
     const firstBrace = candidate.indexOf('{')
     const lastBrace = candidate.lastIndexOf('}')
     if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) return null
@@ -132,14 +134,16 @@ function extractJsonPayload(content: string): string | null {
     try {
       JSON.parse(sliced)
       return sliced
-    } catch {
+    } catch (err) {
+      reportError(err, 'intent: JSON slice invalid, repairing trailing commas')
       // Small GGUF models frequently emit trailing commas (e.g. "confidence":0.9,}).
       // Strip them and retry before giving up.
       const repaired = sliced.replace(/,\s*([}\]])/g, '$1')
       try {
         JSON.parse(repaired)
         return repaired
-      } catch {
+      } catch (err) {
+        reportError(err, 'intent: JSON repair failed')
         return null
       }
     }
@@ -160,7 +164,8 @@ export function parseIntentPrediction(content: string): IntentPrediction | null 
   let raw: unknown
   try {
     raw = JSON.parse(jsonText)
-  } catch {
+  } catch (err) {
+    reportError(err, 'intent: parsing intent prediction JSON')
     return null
   }
 
@@ -325,7 +330,8 @@ export async function predictIntent(
       return unknown
     }
     return parseIntentPrediction(repairContent) ?? unknown
-  } catch {
+  } catch (err) {
+    reportError(err, 'intent: LLM intent detection failed', 'warn')
     return unknown
   }
 }
@@ -342,16 +348,16 @@ export async function getIntent(ctx: Pick<WorkflowContext, 'prompt' | 'snapshot'
       if (parsed && parsed.intent && typeof parsed.intent.type === 'string' && parsed.source) {
         return parsed
       }
-    } catch {
-      // Stale cache — fall through and re-detect.
+    } catch (err) {
+      reportError(err, 'intent: cached intent prediction unreadable')
     }
   }
 
   const prediction = await predictIntent(ctx.modelRouter, { prompt: ctx.prompt, snapshot: ctx.snapshot })
   try {
     ctx.outputs[INTENT_CACHE_KEY] = JSON.stringify(prediction)
-  } catch {
-    // Non-fatal: caching is best-effort.
+  } catch (err) {
+    reportError(err, 'intent: caching intent prediction')
   }
   return prediction
 }

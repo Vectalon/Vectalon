@@ -1,3 +1,5 @@
+import { reportError } from '../../utils/safe'
+
 import type {
   ParsedAnalyticsEvent,
   ParsedCrash,
@@ -344,8 +346,8 @@ export function parseTelemetryContent(content: string, forcedFormat?: TelemetryF
     for (const line of lines) {
       try {
         pushObject(JSON.parse(line))
-      } catch {
-        // Skip malformed lines within a JSONL stream.
+      } catch (err) {
+        reportError(err, 'telemetry: skipping malformed JSONL line')
       }
     }
     return events
@@ -358,8 +360,8 @@ export function parseTelemetryContent(content: string, forcedFormat?: TelemetryF
     } else {
       pushObject(parsed)
     }
-  } catch {
-    // Not JSON — nothing to ingest.
+  } catch (err) {
+    reportError(err, 'telemetry: content is not valid JSON')
   }
   return events
 }

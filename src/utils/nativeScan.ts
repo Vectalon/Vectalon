@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'fs'
 import { join, relative, extname } from 'path'
 import { reportPathChange } from './fileDiff'
+import { reportError } from './safe'
 
 export type NativePlatform = 'ios' | 'android'
 
@@ -125,7 +126,8 @@ function walkNativeDirs(
     let entries: string[]
     try {
       entries = readdirSync(dir)
-    } catch {
+    } catch (err) {
+      reportError(err, 'nativeScan: reading directory entries')
       continue
     }
     for (const entry of entries) {
@@ -133,7 +135,8 @@ function walkNativeDirs(
       let stat
       try {
         stat = statSync(full)
-      } catch {
+      } catch (err) {
+        reportError(err, 'nativeScan: statting native file')
         continue
       }
       if (stat.isDirectory()) {
@@ -164,7 +167,8 @@ export function scanNativeReferences(
     let content: string
     try {
       content = readFileSync(file, 'utf-8')
-    } catch {
+    } catch (err) {
+      reportError(err, 'nativeScan: reading native candidate file')
       continue
     }
     const rel = relative(projectRoot, file)
@@ -254,7 +258,8 @@ export function stripNativeReferences(
     let original: string
     try {
       original = readFileSync(full, 'utf-8')
-    } catch {
+    } catch (err) {
+      reportError(err, 'nativeScan: reading file to strip native references')
       continue
     }
     const kept = original
@@ -330,7 +335,8 @@ function readInstalledDependencies(projectRoot: string): InstalledDependency[] {
       }
     }
     return out
-  } catch {
+  } catch (err) {
+    reportError(err, 'nativeScan: parsing package.json for installed dependencies')
     return []
   }
 }
@@ -391,8 +397,8 @@ function iosNativeFilesReference(root: string, tokens: string[]): boolean {
     try {
       const content = readFileSync(file, 'utf-8')
       if (tokens.some(t => contentMentionsToken(content, t))) return true
-    } catch {
-      // unreadable file — skip
+    } catch (err) {
+      reportError(err, 'nativeScan: reading iOS file while checking pod usage')
     }
   }
   return false
@@ -491,7 +497,8 @@ export function scanDeadNativeConfig(projectRoot: string): DeadNativeScanResult 
     let content: string
     try {
       content = readFileSync(file, 'utf-8')
-    } catch {
+    } catch (err) {
+      reportError(err, 'nativeScan: reading iOS source file')
       continue
     }
     scannedFiles++
@@ -567,7 +574,8 @@ export function scanDeadNativeConfig(projectRoot: string): DeadNativeScanResult 
           ].some(f => {
             try {
               return existsSync(f) && readFileSync(f, 'utf-8').includes('com.android.application')
-            } catch {
+            } catch (err) {
+              reportError(err, 'nativeScan: checking module for app plugin')
               return false
             }
           })
@@ -577,7 +585,8 @@ export function scanDeadNativeConfig(projectRoot: string): DeadNativeScanResult 
               if (c.file.endsWith('settings.gradle') || c.file.endsWith('settings.gradle.kts')) return false
               try {
                 return contentReferencesTokens(readFileSync(c.file, 'utf-8'), [`project(':${name}')`, `:${name}`])
-              } catch {
+              } catch (err) {
+                reportError(err, 'nativeScan: checking gradle references')
                 return false
               }
             })
@@ -598,7 +607,8 @@ export function scanDeadNativeConfig(projectRoot: string): DeadNativeScanResult 
   const corpus = androidSourceFiles.map(c => {
     try {
       return readFileSync(c.file, 'utf-8')
-    } catch {
+    } catch (err) {
+      reportError(err, 'nativeScan: reading android source file')
       return ''
     }
   }).join('\n')
@@ -609,7 +619,8 @@ export function scanDeadNativeConfig(projectRoot: string): DeadNativeScanResult 
     let content: string
     try {
       content = readFileSync(file, 'utf-8')
-    } catch {
+    } catch (err) {
+      reportError(err, 'nativeScan: reading build.gradle file')
       continue
     }
     const rel = relative(projectRoot, file)
@@ -645,7 +656,8 @@ export function scanDeadNativeConfig(projectRoot: string): DeadNativeScanResult 
     let content: string
     try {
       content = readFileSync(file, 'utf-8')
-    } catch {
+    } catch (err) {
+      reportError(err, 'nativeScan: reading android source file for imports')
       continue
     }
     scannedFiles++

@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'fs'
 import { join, resolve } from 'path'
 import { logger } from '../logger'
 import { ensureCiConfigs } from '../../adapters/ciTemplates'
+import { reportError } from '../../utils/safe'
 
 interface CiOptions {
   // Reserved for future flags (e.g. --workflow <name>).
@@ -28,8 +29,8 @@ export async function ciCommand(directory: string, _options: CiOptions): Promise
       devDependencies?: Record<string, string>
     }
     isExpo = Boolean(pkg.dependencies?.expo || pkg.devDependencies?.expo)
-  } catch {
-    // Fall through with isExpo = false
+  } catch (err) {
+    reportError(err, 'ci: reading package.json for expo detection')
   }
 
   const result = ensureCiConfigs(root, { isExpo })

@@ -2,6 +2,7 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 import { rmSync, writeFileSync } from 'fs'
 import { logger } from '../cli/logger'
+import { reportError } from '../utils/safe'
 import { runCommand } from './runCommand'
 import type { GitAdapter, CommitInput, PullRequestInput, PullRequest } from './types'
 
@@ -181,7 +182,8 @@ export class LocalGitAdapter implements GitAdapter {
     try {
       const result = await runCommand('git', ['remote', 'get-url', 'origin'], { cwd: this.root })
       this.ownerRepo = parseGithubRemote(result.stdout) || null
-    } catch {
+    } catch (err) {
+      reportError(err, 'git: reading origin remote URL')
       this.ownerRepo = null
     }
     if (!this.ownerRepo) {
@@ -195,7 +197,8 @@ export class LocalGitAdapter implements GitAdapter {
     try {
       await runCommand('gh', ['--version'], { cwd: this.root })
       this.ghAvailable = true
-    } catch {
+    } catch (err) {
+      reportError(err, 'git: probing gh CLI availability')
       this.ghAvailable = false
     }
     return this.ghAvailable

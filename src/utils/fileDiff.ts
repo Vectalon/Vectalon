@@ -1,4 +1,5 @@
 import pc from 'picocolors'
+import { reportError } from './safe'
 
 export interface DiffLine {
   kind: 'context' | 'add' | 'remove'
@@ -30,8 +31,8 @@ export function reportFileChange(change: FileChange): void {
   if (!writer) return
   try {
     writer(change)
-  } catch {
-    // Never let logging break the write path
+  } catch (err) {
+    reportError(err, 'fileDiff: reporting file change')
   }
 }
 

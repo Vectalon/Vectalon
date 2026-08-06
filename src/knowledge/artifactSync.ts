@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { runCommand } from '../adapters/runCommand'
 import type { CommandResult } from '../adapters/runCommand'
+import { reportError } from '../utils/safe'
 
 export interface ArtifactSyncConfig {
   /** Git remote URL (e.g. git@github.com:org/team-brain.git or a hosted service). */
@@ -35,7 +36,8 @@ export function readSyncConfig(root: string): ArtifactSyncConfig | null {
       branch: typeof parsed.branch === 'string' && parsed.branch.trim() ? parsed.branch.trim() : DEFAULT_SYNC_BRANCH,
       enabled: parsed.enabled !== false,
     }
-  } catch {
+  } catch (err) {
+    reportError(err, 'artifactSync: reading artifact sync config')
     return null
   }
 }

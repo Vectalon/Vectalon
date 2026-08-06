@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
+import { reportError } from '../utils/safe'
 import {
   checksum,
   ARTIFACT_TYPES,
@@ -118,8 +119,8 @@ export class ArtifactStore {
       if (existsSync(this.filePath)) {
         return JSON.parse(readFileSync(this.filePath, 'utf-8'))
       }
-    } catch {
-      // Corrupted or missing store — start fresh
+    } catch (err) {
+      reportError(err, 'ArtifactStore: reading artifact store')
     }
     return []
   }

@@ -6,6 +6,7 @@ import { PatternLearner } from '../../memory/PatternLearner'
 import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { TeamStore } from '../../knowledge/TeamStore'
 import { HashEmbeddingProvider } from '../../knowledge/embeddings'
+import { reportError } from '../../utils/safe'
 import { createRemoteEmbeddingProvider } from '../../knowledge/remoteEmbeddings'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
 import { startEnabledMcpClients } from '../../protocol/subMcp'
@@ -161,8 +162,8 @@ function buildTeamStore(root: string, localStore: ArtifactStore): TeamStore | nu
   let config: TeamConfig
   try {
     config = JSON.parse(readFileSync(teamFile, 'utf-8'))
-  } catch {
-    logger.warn('.vectalon/team.json is not valid JSON; team brain disabled.')
+  } catch (err) {
+    reportError(err, 'serve: .vectalon/team.json is not valid JSON — team brain disabled', 'warn')
     return null
   }
 

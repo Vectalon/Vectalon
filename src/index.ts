@@ -215,3 +215,6 @@ export type {
   RubricFileResult,
   RubricResult,
 } from './bench'
+
+export { safe, safeAsync, bestEffort, bestEffortAsync, ok, err, toError, reportError } from './utils/safe'
+export type { Result } from './utils/safe'

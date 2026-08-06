@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
+import { reportError } from './safe'
 
 /**
  * React 19 / React Compiler detection — Phase VI-1.
@@ -34,7 +35,8 @@ function readIfExists(path: string): string | null {
   if (!existsSync(path)) return null
   try {
     return readFileSync(path, 'utf-8')
-  } catch {
+  } catch (err) {
+    reportError(err, 'reactCompiler: reading config file')
     return null
   }
 }

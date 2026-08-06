@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { listEcosystemItems } from './catalog'
 import type { EcosystemItem, ProjectFlavor } from './types'
+import { reportError } from '../utils/safe'
 
 export interface EcosystemConfig {
   version: string
@@ -24,8 +25,8 @@ export function readEcosystemConfig(root: string): EcosystemConfig {
         enabled: Array.isArray(raw.enabled) ? raw.enabled : [],
       }
     }
-  } catch {
-    // Corrupt config — fall back to empty
+  } catch (err) {
+    reportError(err, 'ecosystem: reading ecosystem config')
   }
   // Fresh copies every call: never share DEFAULT_CONFIG.enabled (a later
   // applyEcosystemRecommendations would push into the same array reference,

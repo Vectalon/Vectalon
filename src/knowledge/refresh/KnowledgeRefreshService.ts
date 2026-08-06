@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
+import { reportError } from '../../utils/safe'
 import type {
   KnowledgeRefreshOptions,
   RefreshResult,
@@ -188,8 +189,8 @@ export class KnowledgeRefreshService {
             createdAt: now,
           })
         }
-      } catch {
-        // Ignore registry parse errors
+      } catch (err) {
+        reportError(err, 'KnowledgeRefresh: parsing registry response')
       }
     }
 
@@ -208,7 +209,8 @@ export class KnowledgeRefreshService {
     }
     try {
       return JSON.parse(readFileSync(this.cachePath, 'utf-8')) as RefreshCache
-    } catch {
+    } catch (err) {
+      reportError(err, 'KnowledgeRefresh: reading refresh cache')
       return { version: 1, lastRefreshAt: 0, documents: [] }
     }
   }
@@ -223,7 +225,8 @@ export class KnowledgeRefreshService {
     }
     try {
       return JSON.parse(readFileSync(this.suggestionsPath, 'utf-8')) as SuggestionStore
-    } catch {
+    } catch (err) {
+      reportError(err, 'KnowledgeRefresh: reading suggestions store')
       return { version: 1, suggestions: [], lastRefreshAt: 0 }
     }
   }

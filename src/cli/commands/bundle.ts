@@ -4,6 +4,7 @@ import { logger } from '../logger'
 import { analyzeBundleStats, checkBundleBudgets, checkStaticBudgets, runMetroBundleCommand, formatBytes, formatPct, type BudgetFinding } from '../../utils/bundleAnalyzer'
 import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { getLatestBundleSnapshot, recordBundleSnapshot, bundleDeltaPct } from '../../knowledge/bundleHistory'
+import { reportError } from '../../utils/safe'
 
 interface BundleOptions {
   platform?: string
@@ -39,7 +40,8 @@ export async function bundleCommand(directory: string, options: BundleOptions): 
     let stats
     try {
       stats = await runMetroBundleCommand(root, platform)
-    } catch {
+    } catch (err) {
+      reportError(err, 'bundle: metro bundle build failed', 'warn')
       stats = null
     }
     if (!stats) {

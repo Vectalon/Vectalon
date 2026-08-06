@@ -2,6 +2,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
 import { join, basename, extname } from 'path'
 import { ArtifactStore } from '../ArtifactStore'
 import { checksum } from '../artifactTypes'
+import { reportError } from '../../utils/safe'
 import { parseTelemetryContent } from './parsers'
 import type { ParsedAnalyticsEvent, ParsedCrash, ParsedTrace, TelemetryEvent, TelemetryIngestResult } from './types'
 
@@ -61,7 +62,8 @@ export class TelemetryIngestionService {
     let entries: string[]
     try {
       entries = readdirSync(dir)
-    } catch {
+    } catch (err) {
+      reportError(err, 'telemetry: reading ingestion directory')
       return
     }
     for (const entry of entries) {
@@ -69,7 +71,8 @@ export class TelemetryIngestionService {
       let stat: ReturnType<typeof statSync> | null = null
       try {
         stat = statSync(fullPath)
-      } catch {
+      } catch (err) {
+        reportError(err, 'telemetry: statting file')
         continue
       }
       if (stat.isDirectory()) {
@@ -103,7 +106,8 @@ export class TelemetryIngestionService {
     if (events.length === 0 && extname(file).toLowerCase() === '.json') {
       try {
         JSON.parse(content)
-      } catch {
+      } catch (err) {
+        reportError(err, `telemetry: ${file} is not valid JSON`)
         result.errors.push({ file, error: 'File is not valid JSON' })
         return
       }

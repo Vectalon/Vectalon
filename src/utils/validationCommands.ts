@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
+import { reportError } from './safe'
 
 export interface ValidationCommand {
   name: string
@@ -26,7 +27,8 @@ function readPackageScripts(root: string): Record<string, string> {
   try {
     const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf-8')) as { scripts?: Record<string, string> }
     return pkg.scripts || {}
-  } catch {
+  } catch (err) {
+    reportError(err, 'validationCommands: reading package.json scripts')
     return {}
   }
 }
@@ -38,7 +40,8 @@ function hasReactNativeDependency(root: string): boolean {
       devDependencies?: Record<string, string>
     }
     return !!pkg.dependencies?.['react-native'] || !!pkg.devDependencies?.['react-native']
-  } catch {
+  } catch (err) {
+    reportError(err, 'validationCommands: checking react-native dependency')
     return false
   }
 }

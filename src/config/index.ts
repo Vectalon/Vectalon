@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { homedir } from 'os'
+import { reportError } from '../utils/safe'
 
 const DEFAULTS: Record<string, unknown> = {
   modelProvider: 'local',
@@ -28,8 +29,8 @@ function load(): Record<string, unknown> {
     if (existsSync(configPath())) {
       cache = JSON.parse(readFileSync(configPath(), 'utf-8'))
     }
-  } catch {
-    // Corrupted or unreadable config — start fresh
+  } catch (err) {
+    reportError(err, 'config: reading user config')
   }
   cache = cache || {}
   return cache

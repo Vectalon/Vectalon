@@ -1,5 +1,6 @@
 import { resolve } from 'path'
 import { existsSync, accessSync, constants } from 'fs'
+import { reportError } from '../../utils/safe'
 import { spawnSync } from 'child_process'
 import Table from 'cli-table'
 import pc from 'picocolors'
@@ -37,7 +38,8 @@ function realCheckers(root: string): DoctorCheckers {
       try {
         require.resolve(`${packageName}/package.json`, { paths: [root] })
         return true
-      } catch {
+      } catch (err) {
+        reportError(err, `doctor: resolving package ${packageName}`)
         return false
       }
     },
@@ -52,7 +54,8 @@ function realCheckers(root: string): DoctorCheckers {
           success: result.status === 0,
           output: (result.stdout || '') + (result.stderr || ''),
         }
-      } catch {
+      } catch (err) {
+        reportError(err, 'doctor: running toolchain probe')
         return { success: false, output: '' }
       }
     },
@@ -69,7 +72,8 @@ function realCheckers(root: string): DoctorCheckers {
       try {
         accessSync(dir, constants.W_OK)
         return true
-      } catch {
+      } catch (err) {
+        reportError(err, `doctor: checking writability of ${dir}`)
         return false
       }
     },
@@ -90,7 +94,8 @@ function realCheckers(root: string): DoctorCheckers {
           stdio: 'ignore',
         })
         return result.status === 0
-      } catch {
+      } catch (err) {
+        reportError(err, `doctor: probing port ${port}`)
         return false
       }
     },

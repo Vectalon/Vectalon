@@ -1,6 +1,7 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'fs'
 import { join, relative, extname } from 'path'
 import { analyzeSourceFile, type PlatformSuffix } from './AstScanner'
+import { reportError } from '../utils/safe'
 
 type NavigatorType =
   | 'native-stack'
@@ -109,7 +110,8 @@ export function buildKnowledgeGraph(root: string, srcDir = 'src'): RNGraph {
     let content: string
     try {
       content = readFileSync(fullPath, 'utf-8')
-    } catch {
+    } catch (err) {
+      reportError(err, 'KnowledgeGraph: reading source file')
       continue
     }
     const filePath = relative(root, fullPath)

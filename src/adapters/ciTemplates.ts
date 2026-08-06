@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { detectValidationCommands } from '../utils/validationCommands'
 import { logger } from '../cli/logger'
+import { reportError } from '../utils/safe'
 
 export interface CiTemplateOptions {
   /** Expo projects get `.eas/workflows/`; bare RN CLI gets `.github/workflows/`. */
@@ -68,7 +69,8 @@ function readScripts(root: string): Record<string, string> {
   try {
     const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf-8')) as { scripts?: Record<string, string> }
     return pkg.scripts || {}
-  } catch {
+  } catch (err) {
+    reportError(err, 'ciTemplates: reading package.json scripts')
     return {}
   }
 }

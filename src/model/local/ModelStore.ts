@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { homedir } from 'os'
+import { reportError } from '../../utils/safe'
 
 export interface DownloadedModel {
   id: string
@@ -31,7 +32,8 @@ function readManifest(): Record<string, DownloadedModel> {
   if (!existsSync(manifestPath())) return {}
   try {
     return JSON.parse(readFileSync(manifestPath(), 'utf-8')) as Record<string, DownloadedModel>
-  } catch {
+  } catch (err) {
+    reportError(err, 'ModelStore: reading downloaded model manifest')
     return {}
   }
 }

@@ -11,6 +11,7 @@
 
 import { existsSync, readFileSync } from 'fs'
 import type { BenchAxisScores, BenchSummary } from './types'
+import { reportError } from '../utils/safe'
 
 /** Default allowed axis drop before a regression is flagged (1 percentage point). */
 export const DEFAULT_BASELINE_TOLERANCE = 0.01
@@ -47,7 +48,8 @@ export function loadBaselineFile(file: string): BenchSummary | null {
   let raw: unknown
   try {
     raw = JSON.parse(readFileSync(file, 'utf-8'))
-  } catch {
+  } catch (err) {
+    reportError(err, `baseline: reading baseline file ${file}`)
     return null
   }
   if (!raw || typeof raw !== 'object') return null

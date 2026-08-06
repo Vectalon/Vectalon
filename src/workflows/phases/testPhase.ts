@@ -5,6 +5,7 @@ import { phaseResult, sanitizeFileName, detectConventions } from './helpers'
 import { getIntent, isRemoveDependency, isRefactor, isFix } from './intent'
 import { writeProjectFile, isSelfPackageRepo, GENERATED_OUTPUT_DIR } from './fileOutput'
 import { MaestroFlowWriter } from '../../sdlc/MaestroFlowWriter'
+import { reportError } from '../../utils/safe'
 
 /** Best-effort Android applicationId / bundle id for the Maestro header. */
 function inferAppId(root: string | undefined): string {
@@ -17,8 +18,8 @@ function inferAppId(root: string | undefined): string {
     }
     const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf-8')) as { name?: string }
     if (pkg.name && pkg.name.includes('.')) return pkg.name
-  } catch {
-    // Fall through to the placeholder.
+  } catch (err) {
+    reportError(err, 'testPhase: inferring app id from gradle/package.json')
   }
   return 'com.example.app'
 }

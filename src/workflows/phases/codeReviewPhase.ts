@@ -16,6 +16,7 @@ import { loadFailedHeals, recordFailedHeals, formatFailedHeals, type FailedHealR
 import { analyzeBundleStats, checkBundleBudgets, checkStaticBudgets, runMetroBundleCommand, formatBytes, type BudgetFinding } from '../../utils/bundleAnalyzer'
 import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { recordBundleSnapshot, getLatestBundleSnapshot, bundleDeltaPct, bundleDeltaSummary } from '../../knowledge/bundleHistory'
+import { reportError } from '../../utils/safe'
 
 /** Default review→fix→re-review cycles before the phase gives up (policy overrides). */
 export const MAX_REVIEW_ATTEMPTS = defaultCodeReviewPolicy.maxAttempts
@@ -109,7 +110,8 @@ async function runPerformanceBudgets(projectRoot: string): Promise<{ section: st
           bundleNote = `Bundle snapshot recorded: ${formatBytes(analysis.totalSize)} across ${analysis.moduleCount} module(s) (first snapshot — no baseline yet)`
         }
       }
-    } catch {
+    } catch (err) {
+      reportError(err, 'codeReview: metro bundle snapshot failed', 'warn')
       bundleNote = 'Bundle snapshot skipped (Metro build unavailable)'
     }
   }
@@ -137,7 +139,8 @@ async function runPerformanceBudgets(projectRoot: string): Promise<{ section: st
 function readFileSafe(path: string): string | null {
   try {
     return readFileSync(path, 'utf-8')
-  } catch {
+  } catch (err) {
+    reportError(err, 'codeReview: reading file')
     return null
   }
 }
@@ -200,7 +203,8 @@ function writeFixedFile(projectRoot: string | undefined, filePath: string, conte
   try {
     mkdirSync(dirname(fullPath), { recursive: true })
     writeFileSync(fullPath, content, 'utf-8')
-  } catch {
+  } catch (err) {
+    reportError(err, 'codeReview: writing fixed file')
     return null
   }
   reportPathChange(filePath, oldContent, content)
@@ -448,8 +452,8 @@ export const codeReviewPhase: WorkflowPhase = {
             findingsByFile.set(artifact.path || '', list)
             errors++
           }
-        } catch {
-          // A missing command (e.g. no lint script) must not fail the phase.
+        } catch (err) {
+          reportError(err, 'codeReview: tool check command failed')
         }
       }
 
