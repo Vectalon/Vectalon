@@ -3,7 +3,7 @@
 **The adaptive AI harness for developers — React Native, iOS, Android, Python, and beyond.**
 
 [![BSL License](https://img.shields.io/badge/license-BSL--1.1-blue.svg)](LICENSE)
-[![npm version](https://img.shields.io/npm/v/@vectalon/rn)](https://www.npmjs.com/package/@vectalon/rn)
+[![npm version](https://img.shields.io/npm/v/@vectalon-dev/rn)](https://www.npmjs.com/package/@vectalon-dev/rn)
 
 ---
 
@@ -15,10 +15,10 @@ Vectalon is an open-core developer tool that embeds AI intelligence directly int
 
 | Product | Package | Status |
 |---|---|---|
-| **React Native** | `@vectalon/rn` | Available |
-| **iOS (Swift)** | `@vectalon/ios` | Coming soon |
-| **Android (Kotlin)** | `@vectalon/android` | Coming soon |
-| **Python** | `@vectalon/python` | Coming soon |
+| **React Native** | `@vectalon-dev/rn` | Available |
+| **iOS (Swift)** | `@vectalon-dev/ios` | Coming soon |
+| **Android (Kotlin)** | `@vectalon-dev/android` | Coming soon |
+| **Python** | `@vectalon-dev/python` | Coming soon |
 
 ---
 
@@ -41,8 +41,8 @@ vectalon/
 ├── apps/
 │   └── website/          # vectalon.in landing page
 ├── packages/
-│   ├── core/             # @vectalon/core — auth, licensing, telemetry, platform interfaces
-│   ├── rn/               # @vectalon/rn — React Native tools
+│   ├── core/             # @vectalon-dev/core — auth, licensing, telemetry, platform interfaces
+│   ├── rn/               # @vectalon-dev/rn — React Native tools
 │   └── admin-internal/   # Admin dashboard (private)
 └── ...
 ```
