@@ -505,7 +505,7 @@ generated code aligned with the latest React 19 + RN best practices.
 - [x] **Phase H.6 — Ecosystem MCP exposure** (`vectalon serve` reads `.vectalon/ecosystem.json` and exposes each enabled MCP server as a first-class tool in the MCP tool list, so agents auto-discover Metro/Expo MCPs without manual config)
 - [x] **Phase H.7 — Resolved-model surfacing** (feature workflow summary and `serve` startup logs print the actual provider + model used, warning when a remote key is missing)
 - [x] **Phase H.8 — Ecosystem & toolchain doctor** (`vectalon doctor` verifies every enabled ecosystem item is installed/reachable, plus the native toolchain — Node, JDK, Android SDK/emulator, Xcode/CocoaPods, Metro port — with actionable fix hints and `--json`; `--fix` auto-installs missing items via npm/gem/brew/`npx skills add` and re-runs the checks, reporting `before → after` counts)
-- [ ] **Phase I — RN-native understanding** (RN knowledge graph, Metro sandbox, react-native-doctor, simulator control, perf/bundle budgets)
+- [~] **Phase I — RN-native understanding** (✅ RN knowledge graph — AST scanner + knowledge graph replacing regex sniffing; ✅ New Architecture detection & guardrails — gradle.properties/Podfile/config + version defaults, Fabric-hostile rule flags, TurboModule spec scan; ⬜ Metro sandbox, react-native-doctor, simulator control, perf/bundle budgets)
 - [ ] **Phase J — Autonomous mobile engineering team** (multi-agent squad, self-healing CI, durable sessions, ticket-to-PR)
 - [ ] **Phase K — Living knowledge brain** (runtime telemetry ingestion, auto-derivation from git, provenance scoring, team-brain v2)
 - [ ] **Phase L — DX magic** (IDE extension, MCP Apps, policy marketplace + PR guardrails, offline-first, preview environments)

@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { join, dirname } from 'path'
 import { rules as baseRules } from './rules'
 import { runGuardrails } from './engine'
-import type { GuardrailRule, GuardrailResult, GuardrailSeverity } from './types'
+import type { GuardrailRule, GuardrailResult, GuardrailSeverity, GuardrailConventions } from './types'
 
 export interface PolicyRuleOverride {
   enabled?: boolean
@@ -45,11 +45,7 @@ export interface PolicyConfig {
 export interface PolicyOptions {
   filePath: string
   content: string
-  conventions?: {
-    hasTypeScript?: boolean
-    usesStyleSheet?: boolean
-    hasNavigation?: boolean
-  }
+  conventions?: GuardrailConventions
 }
 
 export interface PolicyRunResult {

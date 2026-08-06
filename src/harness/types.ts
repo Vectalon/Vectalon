@@ -27,6 +27,8 @@ export interface ProjectInfo {
   expoSdkVersion: string
   /** Detected lint / formatter / TypeScript configuration content. */
   lintConfig?: LintConfigInfo
+  /** Detected React Native New Architecture state (Fabric / bridgeless / TurboModules). */
+  newArchitecture?: import('../utils/newArchitecture').NewArchitectureInfo
 }
 
 export interface FileNode {

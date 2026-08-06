@@ -70,6 +70,27 @@ describe('Scanner', () => {
       expect(info.hasMetro).toBe(true)
       expect(info.hasExpo).toBe(true)
     })
+
+    it('detects the New Architecture state from native config', () => {
+      const newArchDir = createTempProject({
+        'package.json': JSON.stringify({
+          name: 'newarch',
+          version: '1.0.0',
+          dependencies: { 'react-native': '0.76.0' },
+        }),
+        'android/gradle.properties': 'newArchEnabled=true\n',
+      })
+      const info = new Scanner(newArchDir).scanProject()
+      expect(info.newArchitecture?.enabled).toBe(true)
+      expect(info.newArchitecture?.sources).toContain('android/gradle.properties')
+      cleanup(newArchDir)
+    })
+
+    it('falls back to the RN version default for New Architecture', () => {
+      // DEFAULT_FILES pins react-native 0.72.0 → New Arch opt-in, off by default.
+      const info = new Scanner(dir).scanProject()
+      expect(info.newArchitecture?.enabled).toBe(false)
+    })
   })
 
   describe('scanStructure', () => {
