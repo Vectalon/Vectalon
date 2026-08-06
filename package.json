@@ -60,6 +60,7 @@
     "cli-table": "^0.3.11",
     "commander": "^15.0.0",
     "picocolors": "^1.0.0",
+    "pngjs": "^7.0.0",
     "ws": "^8.21.2"
   },
   "optionalDependencies": {
@@ -76,6 +77,7 @@
     "@types/cli-table": "^0.3.4",
     "@types/jest": "^30.0.0",
     "@types/node": "^26.1.2",
+    "@types/pngjs": "^6.0.5",
     "@types/vscode": "^1.125.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",

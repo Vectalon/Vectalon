@@ -1,7 +1,10 @@
+import { existsSync } from 'fs'
 import { ToolRegistry } from './base'
 import { mcpTool } from './decorators'
-import { DeviceController, type DevicePlatform } from '../../adapters/deviceControl'
+import { DeviceController, detectDevicePlatform, type DevicePlatform } from '../../adapters/deviceControl'
 import type { DeviceActionResult } from '../../adapters/deviceControl'
+import { ReferenceStore, isValidReferenceKey } from '../../utils/referenceStore'
+import { diffImages, formatVisualDiffResult } from '../../utils/visualDiff'
 
 /**
  * Ecosystem tools — simulator/emulator device control. Real commands only when
@@ -138,8 +141,104 @@ export class EcosystemTools extends ToolRegistry {
     return this.formatDeviceResult(result)
   }
 
+  @mcpTool('visual_capture_reference', 'Store a screenshot (or an existing PNG via `path`) as the visual reference for a screen `key` — the baseline the visual verification loop diffs against. Live device capture requires deviceControlLive; pass `path` to import an exported Figma frame or known-good screenshot without a device.', {
+    type: 'object',
+    properties: {
+      key: { type: 'string' },
+      platform: { type: 'string', enum: ['ios', 'android'] },
+      path: { type: 'string' },
+    },
+    required: ['key'],
+  })
+  async visualCaptureReference(args: Record<string, unknown>): Promise<string> {
+    const key = String(args.key || '')
+    if (!isValidReferenceKey(key)) {
+      return '**Failed** — invalid reference key: use letters, digits, `-`, `_` or `.` (no path separators)'
+    }
+    const root = this.projectRoot()
+    const platform = this.platformFor(args, root)
+    const store = new ReferenceStore(root)
+    const path = args.path as string | undefined
+    if (path) {
+      if (!existsSync(path)) return `**Failed** — reference image not found at \`${path}\``
+      const entry = store.save(key, path, { platform, source: 'explicit path', capturedAt: Date.now() })
+      return entry ? `**OK** — reference \`${key}\` stored to \`${entry.path}\`` : '**Failed** — could not store the reference'
+    }
+    if (!this.ctx.deviceControlLive) {
+      return `[dry-run] would capture a screenshot on the ${platform} device and store it as reference \`${key}\` (start \`vectalon serve --device-control\` for live capture, or pass \`path\` to import an existing image)`
+    }
+    const controller = this.deviceControllerFor(args)
+    const shotPath = controller.defaultScreenshotPath()
+    const shot = await controller.screenshot(shotPath)
+    if (!shot.success) return this.formatDeviceResult(shot)
+    const entry = store.save(key, shotPath, { platform, source: 'device capture', capturedAt: Date.now() })
+    return entry
+      ? `**OK** — reference \`${key}\` captured from the device and stored to \`${entry.path}\``
+      : '**Failed** — could not store the reference'
+  }
+
+  @mcpTool('visual_check', 'Capture a screenshot and diff it against a stored reference, reporting UI regressions (misaligned elements, missing safe-area insets, wrong colors) as annotated findings. Pass `path` + `reference` to diff two PNG files directly — deterministic and device-free.', {
+    type: 'object',
+    properties: {
+      key: { type: 'string' },
+      platform: { type: 'string', enum: ['ios', 'android'] },
+      path: { type: 'string' },
+      reference: { type: 'string' },
+      diffThreshold: { type: 'number' },
+    },
+  })
+  async visualCheck(args: Record<string, unknown>): Promise<string> {
+    const root = this.projectRoot()
+    const platform = this.platformFor(args, root)
+    const store = new ReferenceStore(root)
+    const referencePath = args.reference as string | undefined
+    let candidatePath = args.path as string | undefined
+
+    if (!candidatePath) {
+      if (!this.ctx.deviceControlLive) {
+        return '[dry-run] would capture a screenshot on the device and diff it against the stored reference (start `vectalon serve --device-control` for live capture, or pass `path` + `reference` to diff two files)'
+      }
+      const controller = this.deviceControllerFor(args)
+      candidatePath = controller.defaultScreenshotPath()
+      const shot = await controller.screenshot(candidatePath)
+      if (!shot.success) return this.formatDeviceResult(shot)
+    }
+    if (!existsSync(candidatePath)) return `**Failed** — screenshot not found at \`${candidatePath}\``
+
+    const key = args.key as string | undefined
+    // An explicit key that does not exist is a misconfiguration — report it
+    // instead of silently diffing against the newest reference for another
+    // screen. The newest reference is only a fallback when no key was given.
+    let resolvedReference = referencePath
+    if (!resolvedReference) {
+      resolvedReference = key ? store.get(key)?.path || undefined : store.latest(platform)?.path || undefined
+    }
+    if (!resolvedReference) {
+      return `**No reference found** — no stored reference${key ? ` for \`${key}\`` : ''} to diff against. Capture one with \`visual_capture_reference\` or pass \`reference\`.`
+    }
+    const diff = diffImages(
+      resolvedReference,
+      candidatePath,
+      args.diffThreshold !== undefined ? { driftThreshold: Number(args.diffThreshold) } : undefined
+    )
+    return formatVisualDiffResult(diff, {
+      reference: resolvedReference,
+      candidate: candidatePath,
+      key: key || undefined,
+    })
+  }
+
+  private projectRoot(): string {
+    return this.ctx.engine.getSnapshot()?.project.root || process.cwd()
+  }
+
+  private platformFor(args: Record<string, unknown>, root: string): DevicePlatform {
+    const platform = args.platform as DevicePlatform | undefined
+    return platform === 'ios' || platform === 'android' ? platform : detectDevicePlatform(root)
+  }
+
   private deviceControllerFor(args: Record<string, unknown>): DeviceController {
-    const root = this.ctx.engine.getSnapshot()?.project.root || process.cwd()
+    const root = this.projectRoot()
     const platform = args.platform as DevicePlatform | undefined
     return new DeviceController(root, {
       // Live control only when the serve command opted in; every other surface

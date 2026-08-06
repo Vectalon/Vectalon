@@ -1,9 +1,12 @@
 import { existsSync, readFileSync, readdirSync, mkdirSync } from 'fs'
 import { join, relative } from 'path'
-import type { WorkflowPhase, WorkflowArtifact } from '../../adapters/types'
+import type { WorkflowPhase, WorkflowArtifact, WorkflowContext } from '../../adapters/types'
 import { runCommand } from '../../adapters/runCommand'
 import { DeviceController } from '../../adapters/deviceControl'
 import { detectValidationCommands } from '../../utils/validationCommands'
+import { ReferenceStore } from '../../utils/referenceStore'
+import { diffImages, type VisualFinding } from '../../utils/visualDiff'
+import { detectUrlScheme, buildDeepLink, deriveScreenFromImplementation, kebabCase } from '../../utils/deepLink'
 import { findSourceFiles } from '../../utils/unusedImports'
 import { phaseResult, failedPhase } from './helpers'
 import { reportError } from '../../utils/safe'
@@ -13,6 +16,19 @@ import { scanNativeReferences, scanDeadNativeConfig, isRemoveUnusedNativeConfigT
 
 function isCommentLine(line: string): boolean {
   return /^(?:\/\/|\*|\/\*|#)/.test(line)
+}
+
+interface VisualCheckInput {
+  /** Screen name to deep-link to (e.g. `LoginScreen`); default: derived from the implementation phase. */
+  screen?: string
+  /** Full deep link to open; overrides the scheme+screen default. */
+  deepLink?: string
+  /** Reference-store key to diff against; default: kebab-case screen name or the newest reference. */
+  reference?: string
+  /** Save the captured screenshot as the reference for this run instead of diffing. */
+  captureReference?: boolean
+  /** Pixel-diff drift threshold (0-1); default 0.03. */
+  diffThreshold?: number
 }
 
 function formatOutput(stdout: string, stderr: string, limit = 4000): string {
@@ -32,6 +48,114 @@ function formatOutput(stdout: string, stderr: string, limit = 4000): string {
     parts.push('```')
   }
   return parts.length > 0 ? '\n' + parts.join('\n') : ''
+}
+
+interface VisualVerificationOutcome {
+  screenshot: { rel: string } | null
+  findings: VisualFinding[]
+}
+
+/**
+ * Boot (or reuse) a device, deep-link to the new screen, capture a screenshot,
+ * and diff it against the stored reference. Advisory only — every failure path
+ * reports a skip line and returns, never throws, and never gates the workflow.
+ */
+async function runVisualVerification(
+  ctx: WorkflowContext,
+  input: boolean | VisualCheckInput | undefined,
+  results: string[]
+): Promise<VisualVerificationOutcome> {
+  const outcome: VisualVerificationOutcome = { screenshot: null, findings: [] }
+  const root = ctx.projectRoot
+  const opts: VisualCheckInput = input === true || input === undefined || input === false ? {} : input
+  const store = new ReferenceStore(root)
+
+  try {
+    const controller = new DeviceController(root)
+    const listing = await controller.listDevices()
+    const hasBooted = listing.success && listing.stdout.trim().length > 0
+    const boot = hasBooted ? null : await controller.boot()
+    if (boot && !boot.success) {
+      results.push(`- Visual check: skipped — could not boot a ${controller.platform} device (${(boot.stderr || boot.stdout).slice(0, 200)}). Screenshots need a running simulator/emulator.`)
+      return outcome
+    }
+
+    // Deep-link to the new screen when we can identify one.
+    const screen = opts.screen || deriveScreenFromImplementation(ctx.state.phases)
+    const scheme = detectUrlScheme(root)
+    const deepLink = opts.deepLink || (screen && scheme ? buildDeepLink(scheme, screen) : null)
+    if (deepLink) {
+      const opened = await controller.openUrl(deepLink)
+      if (opened.success) {
+        // Give the JS bundle a moment to render the screen before capturing.
+        await new Promise(r => setTimeout(r, 1500))
+        results.push(`- Visual check: opened deep link \`${deepLink}\`${screen ? ` (${screen})` : ''}`)
+      } else {
+        results.push(`- Visual check: deep link \`${deepLink}\` failed to open (${(opened.stderr || opened.stdout).slice(0, 200)}) — capturing anyway`)
+      }
+    }
+
+    const shotDir = join(root, '.vectalon', 'artifacts', 'screenshots')
+    mkdirSync(shotDir, { recursive: true })
+    const shotPath = join(shotDir, `visual-${controller.platform}-${Date.now()}.png`)
+    const shot = await controller.screenshot(shotPath)
+    if (!shot.success) {
+      results.push(`- Visual check: skipped — screenshot failed (${(shot.stderr || shot.stdout).slice(0, 200)})`)
+      return outcome
+    }
+    outcome.screenshot = { rel: relative(root, shotPath) }
+
+    // Capture a baseline instead of diffing when asked.
+    const referenceKey = opts.reference || (screen ? kebabCase(screen) : null)
+    if (opts.captureReference && referenceKey) {
+      const saved = store.save(referenceKey, shotPath, {
+        platform: controller.platform,
+        source: 'verification baseline',
+        capturedAt: Date.now(),
+      })
+      if (saved) {
+        results.push(`- Visual check: reference captured for \`${referenceKey}\` — future runs will diff against it`)
+      } else {
+        results.push('- Visual check: could not capture reference (invalid key or missing screenshot)')
+      }
+      return outcome
+    }
+
+    // A requested key that does not exist is a misconfiguration — never fall
+    // back to the newest reference for a *different* screen and diff against
+    // the wrong baseline. Only fall back to newest when no key was requested.
+    let reference = referenceKey ? store.get(referenceKey) : null
+    if (!reference && referenceKey) {
+      results.push(`- Visual check: screenshot captured to \`.vectalon/artifacts/screenshots/${outcome.screenshot.rel}\` — no stored reference for \`${referenceKey}\`. Capture a baseline with \`visual_capture_reference\` (MCP) or pass \`visualCheck.captureReference\` on the next run.`)
+      return outcome
+    }
+    if (!reference) reference = store.latest(controller.platform)
+    if (!reference) {
+      results.push(`- Visual check: screenshot captured to \`.vectalon/artifacts/screenshots/${outcome.screenshot.rel}\` — no stored reference to diff against. Capture a baseline with \`visual_capture_reference\` (MCP) or pass \`visualCheck.captureReference\` on the next run.`)
+      return outcome
+    }
+
+    const diff = diffImages(
+      reference.path,
+      shotPath,
+      opts.diffThreshold !== undefined ? { driftThreshold: opts.diffThreshold } : undefined
+    )
+    outcome.findings = diff.findings
+    const pct = (diff.diffRatio * 100).toFixed(2)
+    if (diff.findings.length === 0) {
+      results.push(`- Visual diff: pass — screenshot matches reference \`${reference.key}\` (${pct}% of pixels differ)`)
+    } else {
+      results.push(`- Visual diff: ${diff.findings.length} finding(s) vs reference \`${reference.key}\` (${pct}% of pixels differ) — UI regression candidates:`)
+      for (const f of diff.findings) {
+        const region = f.region ? ` @(${f.region.x},${f.region.y},${f.region.width}×${f.region.height})` : ''
+        results.push(`  - [${f.severity}] ${f.rule}: ${f.message}${region}`)
+      }
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    results.push(`- Visual check: skipped — ${message}`)
+  }
+  return outcome
 }
 
 export const verificationPhase: WorkflowPhase = {
@@ -256,41 +380,25 @@ export const verificationPhase: WorkflowPhase = {
       }
     }
 
-    // Visual verification — boot a simulator/emulator (or reuse one already
-    // booted), capture a screenshot into .vectalon/artifacts/screenshots/, and
-    // attach it as a workflow artifact for the PR. Advisory: device boot is slow
-    // and often unavailable in CI, so this reports but never gates the workflow.
-    // Skipped for simulated runs, test runs, and explicit `visualCheck: false`.
+    // Visual verification loop — boot a simulator/emulator (or reuse one already
+    // booted), deep-link to the new screen, capture a screenshot into
+    // .vectalon/artifacts/screenshots/, diff it against a stored reference, and
+    // surface UI regressions as annotated findings in the phase output + a
+    // design artifact for the PR. Advisory: device boot is slow and often
+    // unavailable in CI, so this reports but never gates the workflow. Skipped
+    // for simulated runs, test runs, and explicit `visualCheck: false`.
     let visualScreenshot: { rel: string } | null = null
+    let visualFindings: VisualFinding[] = []
     // Only attempt on a real RN project (native dirs present) — a Node package
     // without ios//android/ must never boot a simulator on the developer machine.
     const hasNativeDirs =
       Boolean(ctx.projectRoot) &&
       (existsSync(join(ctx.projectRoot, 'ios')) || existsSync(join(ctx.projectRoot, 'android')))
-    if (hasNativeDirs && !isSimulated && process.env.NODE_ENV !== 'test' && (ctx.inputs as { visualCheck?: boolean } | undefined)?.visualCheck !== false) {
-      try {
-        const controller = new DeviceController(ctx.projectRoot)
-        const listing = await controller.listDevices()
-        const hasBooted = listing.success && listing.stdout.trim().length > 0
-        const boot = hasBooted ? null : await controller.boot()
-        if (boot && !boot.success) {
-          results.push(`- Visual check: skipped — could not boot a ${controller.platform} device (${(boot.stderr || boot.stdout).slice(0, 200)}). Screenshots need a running simulator/emulator.`)
-        } else {
-          const shotDir = join(ctx.projectRoot, '.vectalon', 'artifacts', 'screenshots')
-          mkdirSync(shotDir, { recursive: true })
-          const shotPath = join(shotDir, `visual-${controller.platform}-${Date.now()}.png`)
-          const shot = await controller.screenshot(shotPath)
-          if (shot.success) {
-            visualScreenshot = { rel: relative(ctx.projectRoot, shotPath) }
-            results.push(`- Visual check: screenshot captured to \`.vectalon/artifacts/screenshots/${visualScreenshot.rel}\` — attach to the PR (${hasBooted ? 'device already booted' : `${controller.platform} device booted for capture`})`)
-          } else {
-            results.push(`- Visual check: skipped — screenshot failed (${(shot.stderr || shot.stdout).slice(0, 200)})`)
-          }
-        }
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err)
-        results.push(`- Visual check: skipped — ${message}`)
-      }
+    const visualInput = (ctx.inputs as { visualCheck?: boolean | VisualCheckInput } | undefined)?.visualCheck
+    if (hasNativeDirs && !isSimulated && process.env.NODE_ENV !== 'test' && visualInput !== false) {
+      const outcome = await runVisualVerification(ctx, visualInput, results)
+      visualScreenshot = outcome.screenshot
+      visualFindings = outcome.findings
     } else {
       results.push('- Visual check: skipped (simulated/test run) — boot a simulator/emulator and run `vectalon serve` device tools to capture screenshots')
     }
@@ -348,6 +456,21 @@ export const verificationPhase: WorkflowPhase = {
           title: 'Visual verification screenshot',
           content: `Screenshot captured during verification:\n\n- \`${visualScreenshot.rel}\` (attach to the PR)`,
           path: visualScreenshot.rel,
+        })
+      }
+      if (visualFindings.length > 0) {
+        artifacts.push({
+          type: 'design',
+          title: `Visual diff findings: ${ctx.prompt}`,
+          content: [
+            `Annotated UI regression findings from diffing the captured screenshot against the reference:`, '',
+            '| Severity | Rule | Detail |',
+            '|---|---|---|',
+            ...visualFindings.map(f => {
+              const region = f.region ? ` @(${f.region.x},${f.region.y},${f.region.width}×${f.region.height})` : ''
+              return `| ${f.severity} | ${f.rule} | ${f.message.replace(/\n/g, ' ')}${region} |`
+            }),
+          ].join('\n'),
         })
       }
       return phaseResult(
