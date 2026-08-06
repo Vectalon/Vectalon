@@ -152,6 +152,8 @@ export {
 export type { EcosystemCategory, EcosystemItem, EcosystemCatalog, ProjectFlavor, EcosystemConfig, EcosystemExport } from './ecosystem'
 
 export { detectProjectTooling } from './adapters'
+export { ensureCiConfigs, generateEasWorkflow, generateGithubActionsWorkflow } from './adapters/ciTemplates'
+export type { CiTemplateOptions, GeneratedCiFile } from './adapters/ciTemplates'
 export { DeviceController, detectDevicePlatform } from './adapters'
 export type { DeviceControllerOptions, DeviceActionResult, DevicePlatform } from './adapters'
 export { MaestroFlowWriter } from './sdlc'

@@ -48,7 +48,13 @@ export interface GitAdapter {
   createBranch(name: string): Promise<void>
   commit(input: CommitInput): Promise<string>
   push(branch?: string): Promise<void>
-  createPullRequest(input: PullRequestInput): Promise<PullRequest>
+  /**
+   * Open a pull request. Returns null when the PR cannot be created (no
+   * GITHUB_TOKEN, no `gh` CLI, no GitHub remote) instead of fabricating one.
+   */
+  createPullRequest(input: PullRequestInput): Promise<PullRequest | null>
+  /** Post a review comment on an open pull request (e.g. the code-review summary). */
+  commentPullRequest(number: number, body: string): Promise<void>
 }
 
 export interface TestOptions {

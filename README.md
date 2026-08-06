@@ -1458,6 +1458,16 @@ Areas we'd love help with:
   impact, and timeline from the crash window, and `KpiReportAnalyzer`
   computes crash-free session rate, affected users, and average trace
   duration straight from the ingested events
+- ✅ **Self-healing CI / PR automation (II-2)** — `LocalGitAdapter` opens real
+  pull requests (GitHub REST API via `GITHUB_TOKEN`, `gh` CLI fallback,
+  owner/repo parsed from the origin remote — never a fabricated PR) and posts
+  the code-review report as a PR comment; the PR phase generates the project's
+  CI workflow before committing (`vectalon ci`): **EAS Workflows**
+  (`.eas/workflows/vectalon.yml`) for Expo, **GitHub Actions**
+  (`.github/workflows/vectalon-ci.yml`) for bare RN CLI with steps built from
+  the project's actual scripts + native checks (idempotent, never overwrites),
+  and writes a **What changed & why** PR body from the review summary,
+  self-healing log, and verification results
 
 **Next up:**
 
