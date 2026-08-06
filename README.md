@@ -41,8 +41,9 @@ rn-vectalon learns as your project grows:
 ### Multi-Role SDLC Harness
 
 Beyond the v0.1 core, rn-vectalon ships deterministic SDLC modules covering the
-whole lifecycle — **27 modules surfaced as 33 MCP tools**, all callable by any
-MCP agent:
+whole lifecycle — **44 MCP tools** (37 always available; 5 more when a
+knowledge base is present; 2 more when a team brain is configured), all
+callable by any MCP agent:
 
 - **Requirements & BA** — PRDs, user stories, acceptance criteria, gap analysis,
   SWOT, support-ticket theming
@@ -135,7 +136,7 @@ cleanup, …), scoring generated code on three axes:
 Every scenario ships with a **human-authored reference solution**, so scores are
 also reported **relative to the human baseline** (e.g. “generated code is 92% of
 human best-practice adherence”). Run the deterministic baseline offline, or pass
-`--model local|openai|anthropic` for a real-model leaderboard pass over all 10
+`--model local|openai|anthropic` for a real-model leaderboard pass over all 11
 scenarios. See `docs/BENCHMARK_PLAN.md` for the full plan.
 
 ### Expo & React Native CLI — explicit separation
@@ -384,7 +385,7 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 │  │  │  (Project Memory + Pattern Learner)     │  │    │
 │  │  └─────────────────────────────────────────┘  │    │
 │  │  ┌─────────────────────────────────────────┐  │    │
-│  │  │     SDLC Modules (27, 33 MCP tools)     │  │    │
+│  │  │       SDLC Modules (44 MCP tools)       │  │    │
 │  │  │  BA · QA · Architecture · Security ·   │  │    │
 │  │  │  UX · DevOps · Ops · Analytics         │  │    │
 │  │  └─────────────────────────────────────────┘  │    │
@@ -405,7 +406,7 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 ### Flow
 
 1. **`vectalon init`** — Scans your project, catalogues components, detects patterns, stores context in `.vectalon/`
-2. **`vectalon serve`** — Starts a local server exposing 33 MCP tools (plus the Company Brain tools when a knowledge base is present, and the **real proxied tools of every enabled ecosystem MCP server**, namespaced as `<id>__<tool>`)
+2. **`vectalon serve`** — Starts a local server exposing 44 MCP tools (37 by default, plus the knowledge-base and team-brain tools when those services are present, and the **real proxied tools of every enabled ecosystem MCP server**, namespaced as `<id>__<tool>`)
 3. **`vectalon import`** — Feeds the Company Brain: PRDs, Jira exports, postmortems, any SDLC artifact
 4. **Agent connects** — Your AI agent (Claude Code, OpenCode, etc.) connects to the MCP server and gets full project awareness
 5. **Agent acts** — The agent uses the harness tools to generate code, fix bugs, write tests, produce PRDs/ADRs/test plans — all in your project's style
@@ -755,10 +756,12 @@ See `src/adapters/` for the interfaces and implementations.
 
 ## Available Tools
 
-Once the server is running, agents can call **33 built-in tools** — 26 always
-available, 1 workflow orchestrator, 4 more when a knowledge base is present, and
-2 more when a team brain is configured — plus any **enabled ecosystem MCP
-servers** (Metro MCP, Expo MCP, …) exposed as first-class tools:
+Once the server is running, agents can call **44 built-in tools** — 37 always
+available, 5 more when a knowledge base is present (`list_artifacts`,
+`get_artifact`, `get_knowledge_context`, `link_artifacts`, `ingest_telemetry`),
+and 2 more when a team brain is configured (`get_team_context`,
+`search_knowledge`) — plus any **enabled ecosystem MCP servers** (Metro MCP,
+Expo MCP, …) exposed as first-class tools:
 
 #### Core (project-aware dev)
 
@@ -770,6 +773,8 @@ servers** (Metro MCP, Expo MCP, …) exposed as first-class tools:
 | `analyze_error` | Analyze RN errors with categorized fixes |
 | `suggest_dependency_update` | Suggest dependency upgrades against a curated catalog |
 | `get_learned_patterns` | View patterns the harness has learned |
+| `run_agent` | Run the local model as an agent over the SDK tools (incl. proxied MCP tools) |
+| `check_guardrails` | Run the project guardrail rule set over a code snippet (JSON findings) |
 | `execute_workflow` | Run a full end-to-end SDLC workflow (e.g. feature-development) |
 
 #### Requirements & BA
@@ -789,6 +794,7 @@ servers** (Metro MCP, Expo MCP, …) exposed as first-class tools:
 | `write_test_plan` | Write a QA test plan scaffold for a feature |
 | `triage_bugs` | Triage bug reports by severity (critical→low) and priority (p0→p3) |
 | `analyze_root_cause` | Classify a production issue into a root-cause bucket with investigation steps |
+| `analyze_crash` | Data-driven root-cause analysis of a Sentry/Crashlytics crash report |
 | `review_code` | Deterministic code review: console.log, `any`, empty catches, TODOs, inline styles |
 | `suggest_refactors` | Static refactor heuristics: oversized files/functions, magic numbers, `any` |
 
@@ -811,6 +817,18 @@ servers** (Metro MCP, Expo MCP, …) exposed as first-class tools:
 | `analyze_incident` | Analyze a production incident: severity, root-cause bucket, timeline, actions |
 | `write_runbook` | Write an ops runbook with symptoms, numbered steps, and escalation |
 | `analyze_kpis` | Evaluate KPI metrics (JSON array of `{ name, current, previous?, target? }`) with baselines and targets |
+| `generate_maestro_flow` | Generate a Maestro YAML E2E flow from acceptance criteria (Given/When/Then) |
+
+#### Devices & E2E
+
+| Tool | Description |
+|---|---|
+| `device_boot` | Boot a simulator/emulator (`xcrun simctl boot` / `emulator -avd`) |
+| `device_screenshot` | Capture a screenshot of the booted device to `.vectalon/artifacts/screenshots/` |
+| `device_tap` | Tap at screen coordinates on the booted device |
+| `device_swipe` | Swipe from (x1, y1) to (x2, y2) on the booted device |
+| `device_open_url` | Open a deep link on the booted device (`simctl openurl` / `adb am start`) |
+| `device_logs` | Read recent device logs (`simctl log show` / `adb logcat`) |
 
 #### Team brain (when `.vectalon/team.json` is configured)
 
@@ -827,6 +845,7 @@ servers** (Metro MCP, Expo MCP, …) exposed as first-class tools:
 | `get_artifact` | Get a single knowledge base artifact by id |
 | `get_knowledge_context` | Knowledge base context scoped to a role (pm, ba, architect, engineer, qa, devops, support, analyst) |
 | `link_artifacts` | Link a parent artifact to a child artifact |
+| `ingest_telemetry` | Ingest Sentry/Crashlytics/trace/analytics exports as telemetry artifacts |
 
 ---
 
@@ -1286,9 +1305,9 @@ rn-vectalon/
 │   ├── adapters/          # PM, git, test-runner, simulator, runCommand
 │   └── config/
 │       └── index.ts
-├── __tests__/            # 604 tests across 81 suites
+├── __tests__/            # 1,073 tests across 117 suites
 ├── bench/
-│   └── scenarios/        # 10 versioned RN coding test scenarios (rn-01…rn-10)
+│   └── scenarios/        # 11 versioned RN coding test scenarios (rn-01…rn-11)
 ├── bin/
 │   └── rn-vectalon.js       # CLI entry
 ├── docs/

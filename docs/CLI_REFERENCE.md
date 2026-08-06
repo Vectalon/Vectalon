@@ -96,8 +96,9 @@ npx vectalon serve --model openai     # override the model provider for this run
 
 **What it does**
 
-- Exposes **33 built-in MCP tools** (project context, SDLC modules, knowledge
-  base, team brain)
+- Exposes **44 built-in MCP tools** — 37 by default, plus the knowledge-base
+  and team-brain tools when those services are present (project context, SDLC
+  modules, devices & E2E, knowledge base, team brain)
 - Reads `.vectalon/ecosystem.json` and exposes each **enabled ecosystem MCP
   server as a first-class tool** (Metro MCP, Expo MCP, …) agents auto-discover
 - Loads the resolved model provider from the manifest (or `--model`) and logs
@@ -401,9 +402,9 @@ npx vectalon bench --json -o bench/baseline.json
 ```
 **What it does**
 
-- Runs **10 versioned RN coding test scenarios** (login screen, FlatList feeds,
+- Runs **11 versioned RN coding test scenarios** (login screen, FlatList feeds,
   typed navigation, secure forms, offline queues, image feeds, feature flags,
-  accessible forms, hooks refactors, …)
+  accessible forms, hooks refactors, dependency removal with native cleanup, …)
 - Scores on three axes: **correctness** (real test/typecheck/lint with
   `--live`), a **16-check best-practice rubric**, and the **guardrail rules**
 - Reports scores **relative to the human reference solutions**
