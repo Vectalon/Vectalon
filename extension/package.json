@@ -5,8 +5,13 @@
   "version": "0.1.0",
   "publisher": "vectalon-dev",
   "license": "MIT",
+  "icon": "media/vectalon-icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Vectalon/rn-vectalon.git"
+  },
   "engines": {
-    "vscode": "^1.95.0"
+    "vscode": "1.95.0"
   },
   "categories": [
     "Other",

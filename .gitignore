@@ -1,5 +1,6 @@
 node_modules/
 dist/
+extension/out/
 .vectalon/
 *.tsbuildinfo
 .DS_Store
