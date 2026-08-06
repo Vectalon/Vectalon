@@ -1,0 +1,474 @@
+{
+  "specVersion": 1,
+  "runs": [
+    {
+      "id": "rn-01-login-screen",
+      "title": "Login screen with auth API",
+      "suite": "forms-security",
+      "scaffoldable": true,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 0,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 0,
+      "correctnessDetails": [
+        "- Tests: failed (exit 1)",
+        "- Type check: failed (exit 1)",
+        "- Lint: failed (exit 2)"
+      ],
+      "reference": {
+        "files": [
+          "src/services/auth.ts",
+          "src/screens/LoginScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.7272727272727273,
+          "guardrails": 0.9736842105263158
+        },
+        "composite": 0.8504784688995215,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 0
+        }
+      }
+    },
+    {
+      "id": "rn-02-flatlist-fetch",
+      "title": "Paginated list with pull-to-refresh",
+      "suite": "data-flow",
+      "scaffoldable": true,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 0,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 0,
+      "correctnessDetails": [
+        "- Tests: failed (exit 1)",
+        "- Type check: failed (exit 1)",
+        "- Lint: failed (exit 2)"
+      ],
+      "reference": {
+        "files": [
+          "src/screens/FeedScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.8571428571428571,
+          "guardrails": 0.9523809523809523
+        },
+        "composite": 0.9047619047619048,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 0
+        }
+      }
+    },
+    {
+      "id": "rn-03-dark-mode-component",
+      "title": "Themed card component honoring dark mode",
+      "suite": "core-ui",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 0,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 0,
+      "correctnessDetails": [
+        "- Tests: failed (exit 1)",
+        "- Type check: failed (exit 1)",
+        "- Lint: failed (exit 2)"
+      ],
+      "reference": {
+        "files": [
+          "src/theme/tokens.ts",
+          "src/components/ThemeCard.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 0
+        }
+      }
+    },
+    {
+      "id": "rn-04-typed-navigation",
+      "title": "Settings stack with typed route params and deep links",
+      "suite": "navigation",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 0,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 0,
+      "correctnessDetails": [
+        "- Tests: failed (exit 1)",
+        "- Type check: failed (exit 1)",
+        "- Lint: failed (exit 2)"
+      ],
+      "reference": {
+        "files": [
+          "src/navigation/types.ts",
+          "src/navigation/linking.ts",
+          "src/screens/SettingsScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 0
+        }
+      }
+    },
+    {
+      "id": "rn-05-form-validation",
+      "title": "Multi-field form with validation and secure persistence",
+      "suite": "forms-security",
+      "scaffoldable": true,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 0,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 0,
+      "correctnessDetails": [
+        "- Tests: failed (exit 1)",
+        "- Type check: failed (exit 1)",
+        "- Lint: failed (exit 2)"
+      ],
+      "reference": {
+        "files": [
+          "src/services/credentials.ts",
+          "src/screens/SignUpScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.8,
+          "guardrails": 0.9473684210526315
+        },
+        "composite": 0.8736842105263158,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 0
+        }
+      }
+    },
+    {
+      "id": "rn-06-offline-queue",
+      "title": "Offline-first action queue with optimistic UI",
+      "suite": "data-flow",
+      "scaffoldable": true,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 0,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 0,
+      "correctnessDetails": [
+        "- Tests: failed (exit 1)",
+        "- Type check: failed (exit 1)",
+        "- Lint: failed (exit 2)"
+      ],
+      "reference": {
+        "files": [
+          "src/hooks/useOfflineQueue.ts",
+          "src/screens/QueueScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.4,
+          "guardrails": 0.9722222222222222
+        },
+        "composite": 0.6861111111111111,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 0
+        }
+      }
+    },
+    {
+      "id": "rn-07-image-feed",
+      "title": "Image-heavy feed with thumbnails",
+      "suite": "perf",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 0,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 0,
+      "correctnessDetails": [
+        "- Tests: failed (exit 1)",
+        "- Type check: failed (exit 1)",
+        "- Lint: failed (exit 2)"
+      ],
+      "reference": {
+        "files": [
+          "src/components/ImageRow.tsx",
+          "src/screens/ImageFeedScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.6666666666666666,
+          "guardrails": 0.9512195121951219
+        },
+        "composite": 0.8089430894308943,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 0
+        }
+      }
+    },
+    {
+      "id": "rn-08-feature-flags",
+      "title": "Feature-flag wrapper component and hook",
+      "suite": "core-ui",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 0,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 0,
+      "correctnessDetails": [
+        "- Tests: failed (exit 1)",
+        "- Type check: failed (exit 1)",
+        "- Lint: failed (exit 2)"
+      ],
+      "reference": {
+        "files": [
+          "src/config/flags.ts",
+          "src/hooks/useFeatureFlag.ts",
+          "src/components/FeatureGate.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 0
+        }
+      }
+    },
+    {
+      "id": "rn-09-accessible-form",
+      "title": "Screen-reader-friendly onboarding form",
+      "suite": "a11y",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 0,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 0,
+      "correctnessDetails": [
+        "- Tests: failed (exit 1)",
+        "- Type check: failed (exit 1)",
+        "- Lint: failed (exit 2)"
+      ],
+      "reference": {
+        "files": [
+          "src/screens/OnboardingScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.875,
+          "guardrails": 0.9565217391304348
+        },
+        "composite": 0.9157608695652175,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 0
+        }
+      }
+    },
+    {
+      "id": "rn-10-refactor-hooks-ts",
+      "title": "Convert class/JS component to typed hooks",
+      "suite": "refactor",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 0,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 0,
+      "correctnessDetails": [
+        "- Tests: failed (exit 1)",
+        "- Type check: failed (exit 1)",
+        "- Lint: failed (exit 2)"
+      ],
+      "reference": {
+        "files": [
+          "src/components/ProfileCard.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.75,
+          "guardrails": 1
+        },
+        "composite": 0.8749999999999999,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 0
+        }
+      }
+    },
+    {
+      "id": "rn-11-remove-dependency-native",
+      "title": "Remove a dependency with full native cleanup",
+      "suite": "refactor",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": null,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": null,
+      "reference": {
+        "files": [
+          "package.json",
+          "ios/Podfile",
+          "android/settings.gradle",
+          "android/app/src/main/AndroidManifest.xml"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 0.9807692307692307
+        },
+        "composite": 0.9903846153846152,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": null
+        }
+      }
+    }
+  ],
+  "suites": [
+    {
+      "suite": "forms-security",
+      "scenarioIds": [
+        "rn-01-login-screen",
+        "rn-05-form-validation"
+      ],
+      "composite": 0,
+      "guardrails": null
+    },
+    {
+      "suite": "data-flow",
+      "scenarioIds": [
+        "rn-02-flatlist-fetch",
+        "rn-06-offline-queue"
+      ],
+      "composite": 0,
+      "guardrails": null
+    },
+    {
+      "suite": "core-ui",
+      "scenarioIds": [
+        "rn-03-dark-mode-component",
+        "rn-08-feature-flags"
+      ],
+      "composite": 0,
+      "guardrails": null
+    },
+    {
+      "suite": "navigation",
+      "scenarioIds": [
+        "rn-04-typed-navigation"
+      ],
+      "composite": 0,
+      "guardrails": null
+    },
+    {
+      "suite": "perf",
+      "scenarioIds": [
+        "rn-07-image-feed"
+      ],
+      "composite": 0,
+      "guardrails": null
+    },
+    {
+      "suite": "a11y",
+      "scenarioIds": [
+        "rn-09-accessible-form"
+      ],
+      "composite": 0,
+      "guardrails": null
+    },
+    {
+      "suite": "refactor",
+      "scenarioIds": [
+        "rn-10-refactor-hooks-ts",
+        "rn-11-remove-dependency-native"
+      ],
+      "composite": 0,
+      "guardrails": null
+    }
+  ],
+  "overallComposite": 0,
+  "overallGuardrails": null,
+  "overallReferenceComposite": 0.9004658426981436,
+  "overallRelativeComposite": 0
+}
