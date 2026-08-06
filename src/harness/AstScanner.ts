@@ -42,6 +42,34 @@ export interface HookCall {
   component: string | null
   /** Dependency array for effect/memo hooks, when present and static. */
   deps: string[] | null
+  /**
+   * Identifiers referenced inside the hook callback body (excluding the deps
+   * array). Missing-deps analysis = bodyRefs − deps.
+   */
+  bodyRefs: string[] | null
+  /**
+   * Deps entries that are fresh expressions recreated every render (inline
+   * object/array literals, call results, inline functions) — the cause of
+   * effect re-runs and memo churn.
+   */
+  unstableDeps: string[] | null
+}
+
+export type StoreKind = 'zustand' | 'jotai' | 'context'
+
+export interface StoreDef {
+  name: string
+  kind: StoreKind
+}
+
+export type StoreConsumerHook = 'useStore' | 'useAtom' | 'useAtomValue' | 'useSetAtom' | 'useContext' | 'useSelector'
+
+export interface StoreUsage {
+  /** The store binding consumed, e.g. `useAuthStore` / `countAtom` / `ThemeContext`. */
+  store: string
+  hook: StoreConsumerHook
+  /** Component binding this consumption happens inside, when any. */
+  component: string | null
 }
 
 export interface NavigatorScreen {
@@ -75,6 +103,8 @@ export interface ComponentDef {
   /** HOC wrapper names, e.g. withNavigation, when wrapped on export. */
   hocs: string[]
   jsxElementCount: number
+  /** True when the component body renders a `<X.Navigator>` (navigator container). */
+  isNavigatorContainer: boolean
 }
 
 export interface SourceAnalysis {
@@ -86,6 +116,12 @@ export interface SourceAnalysis {
   navigation: NavigationInfo
   /** Native module identifiers referenced (NativeModules.X, TurboModuleRegistry.get). */
   nativeModules: string[]
+  /** State-management stores defined in this file (zustand/jotai/context). */
+  stores: StoreDef[]
+  /** Component-level state store consumption (useStore/useAtom/useContext/…). */
+  storeUsages: StoreUsage[]
+  /** True when the file imports from `expo-router` (file-based routing). */
+  usesExpoRouter: boolean
   /** File-level flags (kept file-scoped for convention detection). */
   usesStyleSheet: boolean
   usesNavigation: boolean
@@ -202,6 +238,12 @@ function nodeSource(node: unknown, depth = 0): string | null {
     }
     case 'TemplateLiteral':
       return 'template'
+    case 'ObjectExpression':
+      return '{ … }'
+    case 'ArrayExpression':
+      return '[ … ]'
+    case 'ArrowFunctionExpression':
+      return '() => …'
     default:
       return null
   }
@@ -227,6 +269,71 @@ function arrayToDeps(node: unknown): string[] | null {
 
 const EFFECT_HOOKS = new Set(['useEffect', 'useLayoutEffect', 'useInsertionEffect', 'useCallback', 'useMemo'])
 const NAVIGATION_HOOKS = new Set(['useNavigation', 'useRoute', 'useFocusEffect', 'useIsFocused', 'useNavigationState', 'useLinkProps', 'useLinkTo'])
+/** Hooks that consume a state store; the first argument names the store. */
+// Note: `useSelector` is deliberately excluded — its first argument is a selector
+// function, not a store binding, so attributing it by name would be a false positive.
+const STORE_CONSUMER_HOOKS = new Set(['useStore', 'useAtom', 'useAtomValue', 'useSetAtom', 'useContext'])
+/** Deps entries that are recreated every render (object/array literals, calls, inline functions). */
+function isUnstableDepNode(node: unknown): boolean {
+  if (!node || typeof node !== 'object') return false
+  const t = (node as BabelNode).type
+  return (
+    t === 'ObjectExpression' ||
+    t === 'ArrayExpression' ||
+    t === 'CallExpression' ||
+    t === 'NewExpression' ||
+    t === 'ArrowFunctionExpression' ||
+    t === 'FunctionExpression' ||
+    t === 'TemplateLiteral' ||
+    t === 'LogicalExpression' ||
+    t === 'ConditionalExpression'
+  )
+}
+
+/** Deps entries that are fresh expressions recreated every render. */
+function unstableDepsIn(node: unknown): string[] | null {
+  if (!node || typeof node !== 'object' || (node as BabelNode).type !== 'ArrayExpression') return null
+  const elements = (node as { elements: unknown[] }).elements
+  const unstable: string[] = []
+  for (const el of elements) {
+    if (el === null) continue
+    if (isUnstableDepNode(el)) {
+      const src = nodeSource(el)
+      if (src !== null) unstable.push(src)
+    }
+  }
+  return unstable.length > 0 ? unstable : null
+}
+
+/**
+ * Collect every Identifier name referenced in `node` — the free variables an
+ * effect/memo callback closes over. Skips object property keys (e.g. `x` in
+ * `{ x: y }`) since those are not variable references, and MemberExpression
+ * property names (`obj.prop` contributes `obj`, not `prop`).
+ */
+function collectIdentifierRefs(node: unknown, out: Set<string>): void {
+  walk(node, (n, parent) => {
+    if (n.type !== 'Identifier') return
+    // Skip property keys of object literals/classes.
+    if (
+      parent &&
+      (parent as BabelNode).type === 'ObjectProperty' &&
+      (parent as { key: unknown }).key === n
+    ) {
+      return
+    }
+    // Skip non-computed member property names: `foo.bar` -> refs foo only.
+    if (
+      parent &&
+      (parent as BabelNode).type === 'MemberExpression' &&
+      (parent as { property: unknown }).property === n &&
+      !(parent as { computed?: boolean }).computed
+    ) {
+      return
+    }
+    out.add((n as { name: string }).name)
+  })
+}
 /** Wrapper factories whose argument is the real component (memo, forwardRef, connect, …). */
 const WRAPPER_FACTORIES = new Set(['memo', 'forwardRef', 'connect', 'withNavigation', 'withRouter', 'observer', 'injectIntl', 'styled'])
 
@@ -272,10 +379,16 @@ export function analyzeSourceFile(content: string, filePath: string): SourceAnal
   const imports: ImportInfo[] = []
   const exports: ExportInfo[] = []
   const hooks: HookCall[] = []
+  const stores: StoreDef[] = []
+  const storeUsages: StoreUsage[] = []
   const nativeModules = new Set<string>()
   const navigation: NavigationInfo = { hasContainer: false, navigators: [], hooks: [] }
   let usesStyleSheet = false
   let usesNavigation = false
+  let usesExpoRouter = false
+
+  // Local binding → store kind for factory imports (create/atom/createContext).
+  const storeFactories = new Map<string, StoreKind>()
 
   const candidates: ComponentCandidate[] = []
 
@@ -304,6 +417,23 @@ export function analyzeSourceFile(content: string, filePath: string): SourceAnal
           if (info.named.includes('NativeModules') || info.named.includes('TurboModuleRegistry') || info.named.includes('NativeEventEmitter')) {
             nativeModules.add('react-native')
           }
+        }
+        // State-management factory bindings: zustand create/createStore, jotai
+        // atom, react createContext. Mapping the imported name (not the callee
+        // text) avoids false positives from user-defined `create(...)` helpers.
+        if (source === 'zustand' || source === 'zustand/middleware') {
+          for (const n of info.named) {
+            if (n === 'create' || n === 'createStore') storeFactories.set(n, 'zustand')
+          }
+        }
+        if (source === 'jotai' || source.startsWith('jotai/')) {
+          if (info.named.includes('atom')) storeFactories.set('atom', 'jotai')
+        }
+        if (source === 'react') {
+          if (info.named.includes('createContext')) storeFactories.set('createContext', 'context')
+        }
+        if (source === 'expo-router' || source.startsWith('expo-router/')) {
+          usesExpoRouter = true
         }
         break
       }
@@ -383,6 +513,18 @@ export function analyzeSourceFile(content: string, filePath: string): SourceAnal
               if (NAVIGATOR_FACTORIES[factory]) {
                 navigation.navigators.push({ name, type: NAVIGATOR_FACTORIES[factory], screens: [] })
               }
+              // const useAuthStore = create()(set => …) / create((set) => …)
+              // const countAtom = atom(0) / const ThemeContext = createContext(...)
+              if (storeFactories.has(factory)) {
+                stores.push({ name, kind: storeFactories.get(factory) as StoreKind })
+              }
+            } else if (callee.type === 'CallExpression') {
+              // zustand v4: create()(set => …) — the outer call's callee is
+              // itself a call to the factory.
+              const innerCallee = (callee as { callee: BabelNode }).callee
+              if (innerCallee.type === 'Identifier' && storeFactories.has((innerCallee as { name: string }).name)) {
+                stores.push({ name, kind: storeFactories.get((innerCallee as { name: string }).name) as StoreKind })
+              }
             }
           }
         }
@@ -435,6 +577,7 @@ export function analyzeSourceFile(content: string, filePath: string): SourceAnal
     const bodyHooks = new Set<string>()
     const children = new Set<string>()
     let jsxCount = 0
+    let isNavigatorContainer = false
     const body = cand.kind === 'class' ? (cand.node as { body: BabelNode }).body : cand.node
     walk(body, (n) => {
       if (n.type === 'CallExpression') {
@@ -444,8 +587,46 @@ export function analyzeSourceFile(content: string, filePath: string): SourceAnal
           if (/^use[A-Z]/.test(name)) {
             bodyHooks.add(name)
             const args = (n as { arguments: unknown[] }).arguments
-            const deps = EFFECT_HOOKS.has(name) && args.length >= 2 ? arrayToDeps(args[args.length - 1]) : null
-            hooks.push({ hook: name, component: cand.name, deps })
+            const hasDeps = EFFECT_HOOKS.has(name) && args.length >= 2
+            const deps = hasDeps ? arrayToDeps(args[args.length - 1]) : null
+            // bodyRefs: identifiers referenced inside the callback body
+            // (first argument), for missing-deps analysis.
+            let bodyRefs: string[] | null = null
+            let unstableDeps: string[] | null = null
+            if (EFFECT_HOOKS.has(name) && args.length >= 1) {
+              const cb = args[0]
+              if (cb && typeof cb === 'object' && (cb as BabelNode).type === 'ArrowFunctionExpression') {
+                const refs = new Set<string>()
+                collectIdentifierRefs((cb as { body: unknown }).body, refs)
+                bodyRefs = [...refs]
+              }
+              if (hasDeps) {
+                unstableDeps = unstableDepsIn(args[args.length - 1])
+              }
+            }
+            hooks.push({ hook: name, component: cand.name, deps, bodyRefs, unstableDeps })
+          }
+          // State-store consumption: useStore(store) / useAtom(atom) /
+          // useContext(Ctx) / useSelector(sel).
+          if (STORE_CONSUMER_HOOKS.has(name)) {
+            const firstArg = (n as { arguments: unknown[] }).arguments[0]
+            if (firstArg && typeof firstArg === 'object' && (firstArg as BabelNode).type === 'Identifier') {
+              storeUsages.push({
+                store: (firstArg as { name: string }).name,
+                hook: name as StoreUsage['hook'],
+                component: cand.name,
+              })
+            }
+          }
+          // zustand v5 style: the store hook itself is the callee
+          // (`useAuthStore((s) => s.token)`). Naming-convention detection is
+          // deterministic and matches the ecosystem's standard hook shape.
+          if (/^use\w*Store$/.test(name)) {
+            storeUsages.push({
+              store: name,
+              hook: 'useStore',
+              component: cand.name,
+            })
           }
         }
       } else if (n.type === 'JSXElement') {
@@ -457,7 +638,13 @@ export function analyzeSourceFile(content: string, filePath: string): SourceAnal
           if (/^[A-Z]/.test(tag) && !RN_PRIMITIVES.has(tag)) children.add(tag)
         } else if (nameNode.type === 'JSXMemberExpression') {
           const obj = (nameNode as { object: BabelNode }).object
-          if (obj.type === 'JSXIdentifier') children.add((obj as { name: string }).name)
+          if (obj.type === 'JSXIdentifier') {
+            const objName = (obj as { name: string }).name
+            children.add(objName)
+            if ((nameNode as { property: { name: string } }).property.name === 'Navigator') {
+              isNavigatorContainer = true
+            }
+          }
         }
       }
     })
@@ -471,6 +658,7 @@ export function analyzeSourceFile(content: string, filePath: string): SourceAnal
       hooks: [...bodyHooks],
       hocs: [],
       jsxElementCount: jsxCount,
+      isNavigatorContainer,
     })
   }
 
@@ -521,6 +709,9 @@ export function analyzeSourceFile(content: string, filePath: string): SourceAnal
     hooks,
     navigation,
     nativeModules: [...nativeModules],
+    stores,
+    storeUsages,
+    usesExpoRouter,
     usesStyleSheet,
     usesNavigation: usesNavigation || navigation.hasContainer,
     platform: detectPlatform(filePath),

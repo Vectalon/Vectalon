@@ -103,8 +103,15 @@ export class ContextEngine {
     }
 
     const kg = this.snapshot.knowledgeGraph
-    if (kg && kg.navigators.length > 0) {
+    if (kg && (kg.navigators.length > 0 || kg.expoRoutes.length > 0)) {
       sections.push('', '## Navigation')
+      if (kg.expoRoutes.length > 0) {
+        sections.push('- **Expo Router (file-based)**')
+        for (const r of kg.expoRoutes.filter(r => !r.isLayout).slice(0, 15)) {
+          const dynamic = r.dynamicSegments.length > 0 ? ` [dynamic: ${r.dynamicSegments.join(', ')}]` : ''
+          sections.push(`  - ${r.route}${dynamic} (${r.filePath})`)
+        }
+      }
       for (const nav of kg.navigators.slice(0, 10)) {
         const screens = nav.screens.map(s => `${s.name} → ${s.component}`).join(', ') || 'no screens declared'
         sections.push(`- ${nav.name} (${nav.type}) in ${nav.filePath}: ${screens}`)
@@ -115,10 +122,30 @@ export class ContextEngine {
       }
     }
 
+    if (kg && kg.stores.length > 0) {
+      sections.push('', '## State management')
+      for (const store of kg.stores.slice(0, 10)) {
+        const consumers = store.consumers.map(c => c.component).join(', ') || 'no direct consumers'
+        sections.push(`- ${store.name} (${store.kind}) in ${store.filePath}: used by ${consumers}`)
+      }
+    }
+
     if (kg && kg.nativeModules.length > 0) {
       sections.push('', '## Native modules')
       for (const mod of kg.nativeModules.slice(0, 10)) {
         sections.push(`- ${mod.filePath}: ${mod.modules.join(', ')}`)
+      }
+    }
+
+    if (kg && kg.reRenderImpact.length > 0) {
+      sections.push('', '## Re-render impact')
+      sections.push('- Shared components (≥2 parents) and the screens they re-render:')
+      for (const imp of kg.reRenderImpact.slice(0, 10)) {
+        const screens = imp.screens.map(s => {
+          const c = kg.components.find(c => c.id === s)
+          return c ? c.name : s
+        }).join(', ') || 'none'
+        sections.push(`- ${imp.name} (${imp.filePath}) ← ${imp.parents.length} parents; affects ${screens}`)
       }
     }
 
