@@ -41,7 +41,7 @@ rn-vectalon learns as your project grows:
 ### Multi-Role SDLC Harness
 
 Beyond the v0.1 core, rn-vectalon ships deterministic SDLC modules covering the
-whole lifecycle — **56 MCP tools** (49 always available; 5 more when a
+whole lifecycle — **57 MCP tools** (50 always available; 5 more when a
 knowledge base is present; 2 more when a team brain is configured), all
 callable by any MCP agent:
 
@@ -106,6 +106,7 @@ your toolchain, not just a text generator.
 - **Monorepo workspace support (V-4).** The scanner detects pnpm / Yarn / npm / Turborepo / Lerna workspaces by walking up for `pnpm-workspace.yaml`, `turbo.json`, `lerna.json`, or a `workspaces` manifest field, maps internal packages (`@acme/ui` → `packages/ui`), and resolves the hoisted `node_modules` root so Metro bundle analysis and static budget checks look in the right place. Context prompts are monorepo-aware — they tell agents this app lives in a workspace, that `react-native` is hoisted to the root, and to avoid adding it to the sub-package's `devDependencies`.
 - **Cross-package impact analysis (V-4).** When a shared package changes, `vectalon impact --changed <files>` (or the `analyze_impact` MCP tool) computes the blast radius across the workspace from the same AST analysis that powers the knowledge graph: which files in which packages consume it, which screens re-render (screen components that render a changed binding), which navigation stacks are involved, and which Maestro E2E flows must run — matched on screen component *and* route names. The report renders as a PR comment (via `--pr <number>`), so "you changed `Button.tsx` in `@acme/ui` → 12 screens in `@acme/mobile`" becomes an automatic review comment. Fully deterministic — no model calls.
 - **Autonomous release & monitor pipeline (II-2).** `vectalon release` handles the full lifecycle from "version bump" to "watch it in prod": it detects the semver bump from git history (breaking → major, feat → minor, fix → patch via conventional-commit keywords) and generates the changelog with the same categorizer as `write_release_notes`; `--submit` writes the release workflow (**EAS Workflows for Expo**, GitHub Actions for bare RN CLI) that runs quality checks → **Maestro E2E on the device farm** → **store submission** (App Store Connect / Play Console), plus a scheduled 24h monitor job; `--monitor --telemetry <dir>` ingests Crashlytics/Sentry exports and **auto-files an incident with a rollback suggestion** when the crash rate exceeds the baseline × threshold (default 2×). `plan_release` and `check_crash_rate` MCP tools expose the same deterministic analysis to agents.
+- **Fine-tuned RN code model (VII).** `vectalon train` curates the fine-tuning dataset from the benchmark's **human reference solutions** — every scenario's prompt + fixture project context is paired with its gold implementation as a ChatML JSONL conversation (`unsloth`/`axolotl`/`LLaMA-Factory` compatible, with a manifest + token stats) — and prints the **LoRA training plan** for Qwen2.5-Coder-1.5B/3B or DeepSeek-Coder-1.3B (hyperparameters scaled to dataset size, plus the train → GGUF convert → eval command chain). The eval step is the benchmark harness itself: `vectalon bench --model local --live --install` scores the fine-tuned model against the very scenarios the dataset was curated from. Custom scenario/reference packs are supported via `--scenarios`/`--references`.
 - **React 19 / React Compiler guardrails (VI-1).** The harness detects the React version and whether `babel-plugin-react-compiler` is wired up (manifest or babel/eslint config), then guardrails flag render-phase `ref.current` mutation, `useEffect` subscriptions without cleanup, React 19 `use()` without a `<Suspense>` boundary, unstable dependency arrays, `forwardRef` on React 19 (use ref-as-prop), and redundant manual `useMemo`/`useCallback` when the Compiler auto-memoizes. Context prompts explain the memoization implications so generated code matches the project's React.
 - **VS Code extension (IV-1).** A thin IDE layer over the exact same MCP server — `extension/` connects to `vectalon serve --protocol http` (auto-starting it when needed) and adds command-palette workflows (run a feature workflow, review/guardrail the current file, generate a component, show project context, search the knowledge base), **inline guardrail status** as Problems-panel diagnostics on save/active-file change with a status-bar summary, and a **Knowledge Base sidebar** that groups the artifact store by type and renders each artifact in a preview panel. No new backend — the extension reuses the existing HTTP tool surface (`GET /tools`, `POST /call`).
 - **Zero-config WASM inference.** A quantized Qwen2.5-Coder model (ONNX via `@huggingface/transformers`, the WASM runtime — no API key, no native build, any CPU) is a first-class model tier: `npm install` + `vectalon feature` produces real model output immediately. Weights download from Hugging Face Hub on first use (progress-cached under the shared model store, `~/.config/rn-vectalon/models/wasm`) and the deterministic stub is now the *graceful fallback*, not the primary path — it only appears when the download fails (e.g. no network). Opt out with `RN_VECTALON_NO_WASM=1`, or pick a specific model/dtype with `RN_VECTALON_WASM_MODEL` / `RN_VECTALON_WASM_DTYPE`.
@@ -394,7 +395,7 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 │  │  │  (Project Memory + Pattern Learner)     │  │    │
 │  │  └─────────────────────────────────────────┘  │    │
 │  │  ┌─────────────────────────────────────────┐  │    │
-│  │  │       SDLC Modules (56 MCP tools)       │  │    │
+│  │  │       SDLC Modules (57 MCP tools)       │  │    │
 │  │  │  BA · QA · Architecture · Security ·   │  │    │
 │  │  │  UX · DevOps · Ops · Analytics         │  │    │
 │  │  └─────────────────────────────────────────┘  │    │
@@ -415,7 +416,7 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 ### Flow
 
 1. **`vectalon init`** — Scans your project, catalogues components, detects patterns, stores context in `.vectalon/`
-2. **`vectalon serve`** — Starts a local server exposing 56 MCP tools (49 by default, plus the knowledge-base and team-brain tools when those services are present, and the **real proxied tools of every enabled ecosystem MCP server**, namespaced as `<id>__<tool>`)
+2. **`vectalon serve`** — Starts a local server exposing 57 MCP tools (50 by default, plus the knowledge-base and team-brain tools when those services are present, and the **real proxied tools of every enabled ecosystem MCP server**, namespaced as `<id>__<tool>`)
 3. **`vectalon import`** — Feeds the Company Brain: PRDs, Jira exports, postmortems, any SDLC artifact
 4. **Agent connects** — Your AI agent (Claude Code, OpenCode, etc.) connects to the MCP server and gets full project awareness
 5. **Agent acts** — The agent uses the harness tools to generate code, fix bugs, write tests, produce PRDs/ADRs/test plans — all in your project's style
@@ -863,7 +864,7 @@ See `src/adapters/` for the interfaces and implementations.
 
 ## Available Tools
 
-Once the server is running, agents can call **53 built-in tools** — 46 always
+Once the server is running, agents can call **57 built-in tools** — 50 always
 available, 5 more when a knowledge base is present (`list_artifacts`,
 `get_artifact`, `get_knowledge_context`, `link_artifacts`, `ingest_telemetry`),
 and 2 more when a team brain is configured (`get_team_context`,
@@ -922,6 +923,7 @@ Expo MCP, …) exposed as first-class tools:
 | `analyze_impact` | Compute the cross-package blast radius of changed files in a monorepo — consuming packages, affected screens, navigation stacks, and Maestro E2E flows to run |
 | `plan_release` | Plan the next release from git history — detect the semver bump, compute the next version, generate the changelog |
 | `check_crash_rate` | Monitor the crash rate after a release — flag spikes vs a baseline and auto-file an incident with a rollback suggestion |
+| `build_training_dataset` | Curate the RN fine-tuning dataset from benchmark reference solutions — ChatML JSONL + manifest for LoRA fine-tuning |
 
 #### DevOps, Ops & Analytics
 
@@ -1646,6 +1648,17 @@ Areas we'd love help with:
   or GitHub Actions release pipeline: quality → Maestro E2E → store submit →
   scheduled 24h monitor, idempotent like ciTemplates); `vectalon release`
   CLI command + `plan_release`/`check_crash_rate` MCP tools
+- ✅ **Fine-tuned RN code model (VII)** — `src/training/datasetBuilder.ts`
+  curates the fine-tuning dataset from the benchmark reference solutions
+  (`buildFineTuningDataset` pairs each scenario prompt + fixture context with
+  its gold implementation as ChatML messages; `writeDatasetJsonl` emits
+  `rn-finetune-dataset.jsonl` + `manifest.json` with token stats —
+  unsloth/axolotl/LLaMA-Factory compatible); `src/training/trainingPlan.ts`
+  (`buildTrainingPlan` — Qwen2.5-Coder-1.5B/3B or DeepSeek-Coder-1.3B base,
+  LoRA config, epochs scaled to dataset size, train → GGUF convert →
+  `vectalon bench --model local` eval chain); `vectalon train` CLI command
+  (`--plan`/`--out`/`--base`/`--scenarios`/`--references`/`--json`) +
+  `build_training_dataset` MCP tool
 - ✅ **React 19 / React Compiler guardrails (VI-1)** — `src/utils/reactCompiler.ts`
   detects the React version and `babel-plugin-react-compiler` (manifest or
   babel/eslint config); 6 new guardrail rules flag render-phase `ref.current`
