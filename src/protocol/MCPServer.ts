@@ -34,6 +34,8 @@ import { IncidentAnalyzer } from '../sdlc/IncidentAnalyzer'
 import { RunbookWriter } from '../sdlc/RunbookWriter'
 import { KpiReportAnalyzer } from '../sdlc/KpiReportAnalyzer'
 import type { KpiMetric } from '../sdlc/KpiReportAnalyzer'
+import { MaestroFlowWriter } from '../sdlc/MaestroFlowWriter'
+import { DeviceController, type DevicePlatform } from '../adapters/deviceControl'
 type ToolHandler = (args: Record<string, unknown>) => Promise<string>
 
 const LATEST_KNOWN: Record<string, string> = {
@@ -44,6 +46,15 @@ const LATEST_KNOWN: Record<string, string> = {
   '@react-navigation/native': '6.1.0',
 }
 
+export interface MCPServerOptions {
+  /**
+   * When true, device-control tools (device_boot, device_screenshot, …)
+   * execute real simulator/emulator commands. Defaults to false — tools
+   * describe the command they would run (safe, deterministic, CI-friendly).
+   */
+  deviceControlLive?: boolean
+}
+
 export class MCPServer {
   private tools: Map<string, ToolHandler> = new Map()
   private protocol: ProtocolType
@@ -52,6 +63,7 @@ export class MCPServer {
   private artifactStore: ArtifactStore | null
   private teamStore: TeamStore | null
   private subMcpClients: McpClientHandle[]
+  private deviceControlLive: boolean
   private httpServer: import('http').Server | null = null
 
   constructor(
@@ -60,7 +72,8 @@ export class MCPServer {
     protocol: ProtocolType = 'mcp',
     artifactStore: ArtifactStore | null = null,
     teamStore: TeamStore | null = null,
-    subMcpClients: McpClientHandle[] = []
+    subMcpClients: McpClientHandle[] = [],
+    options: MCPServerOptions = {}
   ) {
     this.engine = engine
     this.modelRouter = modelRouter
@@ -68,6 +81,7 @@ export class MCPServer {
     this.artifactStore = artifactStore
     this.teamStore = teamStore
     this.subMcpClients = subMcpClients
+    this.deviceControlLive = options.deviceControlLive === true
     this.registerDefaultTools()
   }
 
@@ -446,6 +460,92 @@ export class MCPServer {
           required: ['metrics'],
         },
       },
+      {
+        name: 'device_boot',
+        description: 'Boot a simulator/emulator (xcrun simctl boot / emulator -avd). Pass platform and optional device/AVD name',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            platform: { type: 'string', enum: ['ios', 'android'] },
+            device: { type: 'string' },
+          },
+        },
+      },
+      {
+        name: 'device_screenshot',
+        description: 'Capture a screenshot of the booted device to .vectalon/artifacts/screenshots/ (or a given path)',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            platform: { type: 'string', enum: ['ios', 'android'] },
+            path: { type: 'string' },
+          },
+        },
+      },
+      {
+        name: 'device_tap',
+        description: 'Tap at screen coordinates on the booted device',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            platform: { type: 'string', enum: ['ios', 'android'] },
+            x: { type: 'number' },
+            y: { type: 'number' },
+          },
+          required: ['x', 'y'],
+        },
+      },
+      {
+        name: 'device_swipe',
+        description: 'Swipe from (x1, y1) to (x2, y2) on the booted device, optional duration in ms',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            platform: { type: 'string', enum: ['ios', 'android'] },
+            x1: { type: 'number' },
+            y1: { type: 'number' },
+            x2: { type: 'number' },
+            y2: { type: 'number' },
+            duration: { type: 'number' },
+          },
+          required: ['x1', 'y1', 'x2', 'y2'],
+        },
+      },
+      {
+        name: 'device_open_url',
+        description: 'Open a deep link on the booted device (simctl openurl / adb am start VIEW)',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            platform: { type: 'string', enum: ['ios', 'android'] },
+            url: { type: 'string' },
+          },
+          required: ['url'],
+        },
+      },
+      {
+        name: 'device_logs',
+        description: 'Read recent device logs (simctl log show / adb logcat), optional line limit',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            platform: { type: 'string', enum: ['ios', 'android'] },
+            limit: { type: 'number' },
+          },
+        },
+      },
+      {
+        name: 'generate_maestro_flow',
+        description: 'Generate a Maestro YAML E2E flow from acceptance criteria (Given/When/Then)',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            acceptanceCriteria: { type: 'string' },
+            featureName: { type: 'string' },
+            appId: { type: 'string' },
+          },
+        },
+      },
       ...(this.artifactStore
         ? [
             {
@@ -629,6 +729,7 @@ export class MCPServer {
     this.registerQATools()
     this.registerArchTools()
     this.registerOpsTools()
+    this.registerDeviceTools()
 
     this.tools.set('suggest_dependency_update', async (args: Record<string, unknown>) => {
       const packageName = (args.packageName as string) || ''
@@ -930,6 +1031,80 @@ export class MCPServer {
       const content = analyzer.render(analyzer.analyze(metrics))
       this.persistArtifact('analytics', 'KPI Report', content)
       return content
+    })
+  }
+
+  private deviceControllerFor(args: Record<string, unknown>): DeviceController {
+    const root = this.engine.getSnapshot()?.project.root || process.cwd()
+    const platform = args.platform as DevicePlatform | undefined
+    return new DeviceController(root, {
+      // Live control only when the serve command opted in; every other surface
+      // (tests, default `serve`) gets a deterministic dry-run description.
+      dryRun: !this.deviceControlLive,
+      platform: platform === 'ios' || platform === 'android' ? platform : undefined,
+    })
+  }
+
+  private formatDeviceResult(result: import('../adapters/deviceControl').DeviceActionResult): string {
+    const fence = '```'
+    const lines = [
+      `**${result.success ? 'OK' : 'Failed'}**`,
+      '',
+      `${fence}bash`,
+      result.command ? `$ ${result.command}` : '_no command — argument validation failed_',
+      fence,
+      '',
+    ]
+    if (result.stdout) lines.push(result.stdout.slice(0, 4000))
+    if (result.stderr) lines.push(`\n**stderr**\n\n${fence}\n${result.stderr.slice(0, 2000)}\n${fence}`)
+    return lines.join('\n')
+  }
+
+  private registerDeviceTools(): void {
+    this.tools.set('device_boot', async (args) => {
+      const result = await this.deviceControllerFor(args).boot(args.device as string | undefined)
+      return this.formatDeviceResult(result)
+    })
+
+    this.tools.set('device_screenshot', async (args) => {
+      const result = await this.deviceControllerFor(args).screenshot(args.path as string | undefined)
+      return this.formatDeviceResult(result)
+    })
+
+    this.tools.set('device_tap', async (args) => {
+      const result = await this.deviceControllerFor(args).tap(Number(args.x), Number(args.y))
+      return this.formatDeviceResult(result)
+    })
+
+    this.tools.set('device_swipe', async (args) => {
+      const result = await this.deviceControllerFor(args).swipe(
+        Number(args.x1),
+        Number(args.y1),
+        Number(args.x2),
+        Number(args.y2),
+        args.duration === undefined ? undefined : Number(args.duration)
+      )
+      return this.formatDeviceResult(result)
+    })
+
+    this.tools.set('device_open_url', async (args) => {
+      const result = await this.deviceControllerFor(args).openUrl((args.url as string) || '')
+      return this.formatDeviceResult(result)
+    })
+
+    this.tools.set('device_logs', async (args) => {
+      const result = await this.deviceControllerFor(args).logs(args.limit === undefined ? undefined : Number(args.limit))
+      return this.formatDeviceResult(result)
+    })
+
+    this.tools.set('generate_maestro_flow', async (args) => {
+      const criteria = (args.acceptanceCriteria as string) || ''
+      const flow = new MaestroFlowWriter().writeFlow(criteria, {
+        featureName: (args.featureName as string) || undefined,
+        appId: (args.appId as string) || undefined,
+      })
+      const fence = '```'
+      return ['## Maestro E2E flow', '', `${fence}yaml`, flow.trimEnd(), fence].join('\n')
     })
   }
 

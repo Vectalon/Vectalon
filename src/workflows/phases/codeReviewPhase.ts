@@ -13,7 +13,7 @@ import { getGeneratedOutputRoot, writeProjectFile, isSafeProjectPath } from './f
 import { reportPathChange } from '../../utils/fileDiff'
 import { PolicyEngine, defaultCodeReviewPolicy } from '../../guardrails/PolicyEngine'
 import { loadFailedHeals, recordFailedHeals, formatFailedHeals, type FailedHealRecord } from './healMemory'
-import { analyzeBundleStats, checkBundleBudgets, checkStaticBudgets, runMetroBundleCommand, formatBytes, formatPct, type BudgetFinding } from '../../utils/bundleAnalyzer'
+import { analyzeBundleStats, checkBundleBudgets, checkStaticBudgets, runMetroBundleCommand, formatBytes, type BudgetFinding } from '../../utils/bundleAnalyzer'
 import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { recordBundleSnapshot, getLatestBundleSnapshot, bundleDeltaPct, bundleDeltaSummary } from '../../knowledge/bundleHistory'
 

@@ -77,7 +77,10 @@ export async function serveCommand(options: {
     })
   }
 
-  const server = new MCPServer(engine, modelRouter, protocol as 'mcp' | 'stdio' | 'sse' | 'http', artifactStore, teamStore, subMcpClients)
+  const server = new MCPServer(engine, modelRouter, protocol as 'mcp' | 'stdio' | 'sse' | 'http', artifactStore, teamStore, subMcpClients, {
+    // `vectalon serve` runs locally — device tools execute real commands.
+    deviceControlLive: true,
+  })
 
   // Kill spawned sub-MCP servers (and their npx grandchildren) on shutdown.
   const shutdown = (): void => {

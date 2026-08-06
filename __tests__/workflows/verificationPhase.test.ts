@@ -218,6 +218,17 @@ describe('verificationPhase remove-dependency checks', () => {
     expect(result.output).toContain('Dead native config scan: pass')
   })
 
+  it('reports generated Maestro flows without gating when the CLI is missing', async () => {
+    mkdirSync(join(projectRoot, '.maestro'), { recursive: true })
+    writeFileSync(join(projectRoot, '.maestro/Login.yaml'), 'appId: com.example.app\n---\n- launchApp\n')
+    // The remove-dependency context keeps the run green; the E2E check is
+    // advisory — a missing maestro CLI reports a skip, never a failure.
+    const result = await verificationPhase.run(createContext(projectRoot))
+
+    expect(result.output).toContain('Maestro E2E: skipped')
+    expect(result.status).toBe('completed')
+  })
+
   it('falls back to the scan-time snapshot when no package.json exists on disk', async () => {
     const ctx = createContext(projectRoot)
     ctx.snapshot = {

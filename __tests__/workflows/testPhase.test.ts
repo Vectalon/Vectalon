@@ -179,4 +179,35 @@ describe('testPhase (TDD)', () => {
     expect(result.artifacts.filter(a => a.type === 'qa')).toHaveLength(3)
     expect(result.output).toContain('simulated')
   })
+
+  it('generates a Maestro E2E flow from the acceptance criteria', async () => {
+    const ctx = makeContext(projectRoot, 'Login')
+    ctx.state.phases[0].output = [
+      'Given the user opens the app',
+      'When the user taps on "Login"',
+      'Then the user sees "Dashboard"',
+    ].join('\n')
+    const result = await testPhase.run(ctx)
+
+    const flow = result.artifacts.find(a => a.type === 'e2e')
+    expect(flow).toBeDefined()
+    expect(flow!.title).toContain('.maestro/Login.yaml')
+    expect(flow!.content).toContain('appId:')
+    expect(flow!.content).toContain('- launchApp')
+    expect(flow!.content).toContain('- tapOn: "Login"')
+    expect(flow!.content).toContain('- assertVisible: "Dashboard"')
+    // The flow file is written next to the unit tests.
+    expect(existsSync(join(projectRoot, '.maestro/Login.yaml'))).toBe(true)
+    // The TDD gate still counts only unit tests.
+    expect(result.artifacts.filter(a => a.type === 'qa')).toHaveLength(3)
+    expect(result.output).toContain('## E2E flow')
+  })
+
+  it('skips the Maestro flow when no acceptance criteria were captured', async () => {
+    const ctx = makeContext(projectRoot, 'Login')
+    ctx.state.phases[0].output = ''
+    const result = await testPhase.run(ctx)
+
+    expect(result.artifacts.find(a => a.type === 'e2e')).toBeUndefined()
+  })
 })

@@ -1,6 +1,12 @@
 import { MCPServer } from '../../src/protocol/MCPServer'
 import { ContextEngine } from '../../src/harness/ContextEngine'
 import { ModelRouter } from '../../src/model/ModelRouter'
+
+// Device-control tools share the real runCommand executor; stub it so the
+// live-mode test proves live wiring without executing any device commands.
+jest.mock('../../src/adapters/runCommand', () => ({
+  runCommand: jest.fn(async () => ({ success: true, stdout: 'MOCKED DEVICE OUTPUT', stderr: '', exitCode: 0 })),
+}))
 import { resetConfig } from '../../src/config'
 import type { Pattern, PatternStore } from '../../src/memory/PatternLearner'
 import { createTempProject, cleanup, useTempConfig } from '../helpers/tmp'
@@ -66,7 +72,7 @@ describe('MCPServer', () => {
 
   it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(28)
+    expect(names).toHaveLength(35)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -97,6 +103,13 @@ describe('MCPServer', () => {
         'analyze_incident',
         'write_runbook',
         'analyze_kpis',
+        'device_boot',
+        'device_screenshot',
+        'device_tap',
+        'device_swipe',
+        'device_open_url',
+        'device_logs',
+        'generate_maestro_flow',
       ])
     )
   })
@@ -251,5 +264,63 @@ describe('MCPServer', () => {
     })
     expect(result.content).toContain('jest')
     expect(result.content).toContain('Home.tsx')
+  })
+
+  it('device tools default to deterministic dry-run descriptions', async () => {
+    const server = createServer()
+    const boot = await server.handleToolCall({ id: '1', name: 'device_boot', arguments: {} })
+    expect(boot.isError).not.toBe(true)
+    expect(boot.content).toContain('[dry-run] xcrun simctl boot')
+
+    const open = await server.handleToolCall({
+      id: '2',
+      name: 'device_open_url',
+      arguments: { platform: 'android', url: 'myapp://home' },
+    })
+    expect(open.isError).not.toBe(true)
+    expect(open.content).toContain('adb shell am start')
+    expect(open.content).toContain('myapp://home')
+
+    // Missing coordinates are a graceful failure result, not a thrown error.
+    const tap = await server.handleToolCall({ id: '3', name: 'device_tap', arguments: {} })
+    expect(tap.isError).not.toBe(true)
+    expect(tap.content).toContain('Failed')
+  })
+
+  it('generate_maestro_flow renders a YAML flow from acceptance criteria', async () => {
+    const result = await createServer().handleToolCall({
+      id: '1',
+      name: 'generate_maestro_flow',
+      arguments: {
+        acceptanceCriteria: 'Given the user opens the app\nWhen the user taps on "Login"\nThen the user sees "Dashboard"',
+        featureName: 'Login',
+        appId: 'com.example.app',
+      },
+    })
+    expect(result.isError).not.toBe(true)
+    expect(result.content).toContain('appId: "com.example.app"')
+    expect(result.content).toContain('- launchApp')
+    expect(result.content).toContain('- tapOn: "Login"')
+    expect(result.content).toContain('- assertVisible: "Dashboard"')
+  })
+
+  it('device tools run live only when deviceControlLive is enabled', async () => {
+    const engine = new ContextEngine(dir)
+    engine.init()
+    const router = new ModelRouter()
+    router.initialize({ provider: 'local' })
+    const server = new MCPServer(engine, router, 'mcp', null, null, [], { deviceControlLive: true })
+
+    // device_logs on Android is quick and side-effect-free even with a device
+    // attached (adb logcat -d -t), so it safely proves live mode executes real
+    // commands instead of dry-run descriptions — no simulator gets booted.
+    const logs = await server.handleToolCall({
+      id: '1',
+      name: 'device_logs',
+      arguments: { platform: 'android', limit: 50 },
+    })
+    expect(logs.isError).not.toBe(true)
+    expect(logs.content.length).toBeGreaterThan(0)
+    expect(logs.content).not.toContain('[dry-run]')
   })
 })
