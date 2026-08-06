@@ -10,6 +10,7 @@ import { policyCommand } from './commands/policy'
 import { refreshCommand } from './commands/refresh'
 import { bundleCommand } from './commands/bundle'
 import { telemetryCommand } from './commands/telemetry'
+import { ciCommand } from './commands/ci'
 import { ecosystemCommand } from './commands/ecosystem'
 import { syncCommand } from './commands/sync'
 import { benchCommand } from './commands/bench'
@@ -106,6 +107,11 @@ export function runCLI(): void {
     .action(telemetryCommand)
 
   program
+    .command('ci [directory]')
+    .description('Generate the project CI workflow (EAS Workflows for Expo, GitHub Actions for bare RN CLI)')
+    .action(ciCommand)
+
+  program
     .command('ecosystem [directory]')
     .description('Browse and enable external MCP servers, skills, tools, and hooks for React Native / Expo projects')
     .option('--category <type>', 'Filter by category (mcp|skill|tool|hook)')
@@ -197,6 +203,7 @@ async function runInteractive(): Promise<void> {
       { value: 'refresh', label: 'Refresh knowledge', hint: 'Update best practices and dependency suggestions from the web' },
       { value: 'bundle', label: 'Analyze bundle', hint: 'Metro bundle snapshot + performance budgets' },
       { value: 'telemetry', label: 'Ingest telemetry', hint: 'Sentry/Crashlytics/traces/analytics into the knowledge base' },
+      { value: 'ci', label: 'Generate CI workflow', hint: 'EAS Workflows (Expo) or GitHub Actions (bare RN CLI)' },
       { value: 'ecosystem', label: 'Manage ecosystem', hint: 'Enable MCP servers, skills, tools, and hooks (Expo & RN-CLI)' },
       { value: 'doctor', label: 'Run doctor', hint: 'Verify every enabled ecosystem item is installed and reachable' },
       { value: 'bench', label: 'Run benchmark', hint: 'Score the harness on the RN coding tests (11 scenarios)' },
@@ -297,6 +304,12 @@ async function runInteractive(): Promise<void> {
   if (action === 'telemetry') {
     await telemetryCommand('', {})
     p.outro('Telemetry ingested')
+    return
+  }
+
+  if (action === 'ci') {
+    await ciCommand('', {})
+    p.outro('CI workflow configured')
     return
   }
 
