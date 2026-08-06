@@ -75,7 +75,7 @@ describe('MCPServer', () => {
 
   it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(46)
+    expect(names).toHaveLength(47)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -84,6 +84,7 @@ describe('MCPServer', () => {
         'check_guardrails',
         'analyze_error',
         'suggest_dependency_update',
+        'analyze_impact',
         'get_learned_patterns',
         'run_agent',
         'execute_workflow',
@@ -141,6 +142,7 @@ describe('MCPServer', () => {
       if (tool.name === 'write_test') args.target = 'Button'
       if (tool.name === 'check_guardrails') args.content = 'const x = 1'
       if (tool.name === 'analyze_error') args.error = 'TypeError: x is not a function'
+      if (tool.name === 'analyze_impact') args.changedFiles = 'src/Home.tsx'
       if (tool.name === 'suggest_dependency_update') args.packageName = 'react-native'
       if (tool.name === 'write_prd') args.feature = 'Onboarding'
       if (tool.name === 'write_user_stories') args.feature = 'Onboarding'
@@ -316,6 +318,22 @@ describe('MCPServer', () => {
 
     const missing = await server.handleToolCall({ id: '3', name: 'check_guardrails', arguments: {} })
     expect(missing.content).toContain('Missing required field')
+  })
+
+  it('analyze_impact reports the blast radius for changed files', async () => {
+    const server = createServer()
+    const result = await server.handleToolCall({
+      id: '1',
+      name: 'analyze_impact',
+      arguments: { changedFiles: 'src/Home.tsx' },
+    })
+    expect(result.isError).not.toBe(true)
+    expect(result.content).toContain('## 🌐 Cross-package impact analysis')
+    expect(result.content).toContain('**Changed:** `src/Home.tsx`')
+
+    const missing = await server.handleToolCall({ id: '2', name: 'analyze_impact', arguments: {} })
+    expect(missing.isError).not.toBe(true)
+    expect(missing.content).toContain('Pass `changedFiles`')
   })
 
   it('device tools default to deterministic dry-run descriptions', async () => {
