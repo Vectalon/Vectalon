@@ -75,7 +75,7 @@ describe('MCPServer', () => {
 
   it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(49)
+    expect(names).toHaveLength(50)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -121,6 +121,7 @@ describe('MCPServer', () => {
         'generate_maestro_flow',
         'plan_release',
         'check_crash_rate',
+        'build_training_dataset',
         'scaffold_native_module',
         'visual_capture_reference',
         'visual_check',
@@ -197,6 +198,9 @@ describe('MCPServer', () => {
       if (tool.name === 'check_crash_rate') {
         args.crashes = JSON.stringify([{ kind: 'crash', id: 'c1', source: 'crashlytics', frames: [] }])
         args.baselineRate = 1.0
+      }
+      if (tool.name === 'build_training_dataset') {
+        args.outDir = '.vectalon/training'
       }
 
       const result = await server.handleToolCall({ id: '1', name: tool.name, arguments: args })

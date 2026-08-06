@@ -202,6 +202,15 @@ export { planRelease, renderReleasePlan, parseGitLog, detectBumpType, bumpVersio
 export type { ReleasePlan, ParsedCommit, BumpType } from './sdlc/ReleasePlanner'
 export { monitorRelease, analyzeCrashRate, renderMonitorReport } from './sdlc/CrashMonitor'
 export type { CrashMonitorOptions, CrashSpike, MonitorResult } from './sdlc/CrashMonitor'
+export {
+  buildFineTuningDataset,
+  writeDatasetJsonl,
+  renderDatasetSummary,
+  exampleToJsonl,
+} from './training/datasetBuilder'
+export type { TrainingExample, DatasetBuildOptions, DatasetStats, DatasetBuildResult } from './training/datasetBuilder'
+export { buildTrainingPlan, renderTrainingPlan, listBaseModels } from './training/trainingPlan'
+export type { TrainingPlan, LoRAConfig, BaseModelId, BaseModelInfo } from './training/trainingPlan'
 export { DeviceController, detectDevicePlatform } from './adapters'
 export type { DeviceControllerOptions, DeviceActionResult, DevicePlatform } from './adapters'
 export { MaestroFlowWriter } from './sdlc'
