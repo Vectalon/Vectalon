@@ -2,6 +2,25 @@ export type ProjectTooling = 'expo' | 'rn-cli'
 
 export type PlatformSuffix = 'ios' | 'android' | 'windows' | 'macos' | 'web' | 'native' | 'universal'
 
+export type WorkspaceManager = 'pnpm' | 'yarn' | 'npm' | 'turborepo' | 'lerna'
+
+export interface WorkspaceInfo {
+  /** True when the scanned root is part of a monorepo workspace. */
+  isMonorepo: boolean
+  /** Detected package manager / orchestrator, or null when not a monorepo. */
+  manager: WorkspaceManager | null
+  /** Absolute path of the workspace root (may differ from the project root). */
+  root: string | null
+  /** Workspace glob patterns as declared (e.g. `packages/*`). */
+  patterns: string[]
+  /** Absolute paths of every workspace member directory that has a package.json. */
+  packages: string[]
+  /** Internal package name → absolute directory (for dependency mapping). */
+  internalPackages: Record<string, string>
+  /** True when node_modules is hoisted to the workspace root (default for all managers). */
+  hoistedNodeModules: boolean
+}
+
 export interface LintConfigInfo {
   eslint?: string
   biome?: string
@@ -29,6 +48,8 @@ export interface ProjectInfo {
   lintConfig?: LintConfigInfo
   /** Detected React Native New Architecture state (Fabric / bridgeless / TurboModules). */
   newArchitecture?: import('../utils/newArchitecture').NewArchitectureInfo
+  /** Monorepo workspace context when the project lives in a pnpm/yarn/npm/turbo/lerna workspace. */
+  workspace?: import('./workspace').WorkspaceInfo
 }
 
 export interface FileNode {

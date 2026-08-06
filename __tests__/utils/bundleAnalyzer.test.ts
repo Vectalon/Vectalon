@@ -7,6 +7,7 @@ import {
   formatBytes,
   formatPct,
 } from '../../src/utils/bundleAnalyzer'
+import { join } from 'path'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
 const SAMPLE_STATS = {
@@ -113,6 +114,46 @@ describe('checkStaticBudgets', () => {
     expect(missing).toBeDefined()
     expect(missing?.message).toContain('side-effect-lib')
     expect(result.findings.some(f => f.message.includes('good-lib'))).toBe(false)
+  })
+
+  it('resolves hoisted node_modules in a monorepo for the sideEffects check', () => {
+    dir = createTempProject({
+      'pnpm-workspace.yaml': 'packages:\n  - "packages/*"\n',
+      'package.json': JSON.stringify({ name: 'root', version: '1.0.0', private: true }),
+      // Deps are hoisted to the workspace root — no local node_modules here.
+      'node_modules/hoisted-lib/package.json': JSON.stringify({ name: 'hoisted-lib', version: '1.0.0' }),
+      'packages/mobile/package.json': JSON.stringify({
+        name: 'mobile',
+        version: '1.0.0',
+        dependencies: { 'react-native': '0.76.0', 'hoisted-lib': '1.0.0' },
+      }),
+    })
+    const result = checkStaticBudgets(join(dir, 'packages', 'mobile'))
+    expect(result.checkedPackages).toBe(1)
+    const missing = result.findings.find(f => f.rule === 'missing-side-effects')
+    expect(missing).toBeDefined()
+    expect(missing?.message).toContain('hoisted-lib')
+  })
+
+  it('falls back to the local store for non-hoisted deps in a workspace', () => {
+    dir = createTempProject({
+      'pnpm-workspace.yaml': 'packages:\n  - "packages/*"\n',
+      'package.json': JSON.stringify({ name: 'root', version: '1.0.0', private: true }),
+      // A hoisted store exists, but this dep is pinned locally in the app.
+      'node_modules/hoisted-lib/package.json': JSON.stringify({ name: 'hoisted-lib', version: '1.0.0', sideEffects: false }),
+      'packages/mobile/package.json': JSON.stringify({
+        name: 'mobile',
+        version: '1.0.0',
+        dependencies: { 'react-native': '0.76.0', 'hoisted-lib': '1.0.0', 'local-only': '1.0.0' },
+      }),
+      'packages/mobile/node_modules/local-only/package.json': JSON.stringify({ name: 'local-only', version: '1.0.0' }),
+    })
+    const result = checkStaticBudgets(join(dir, 'packages', 'mobile'))
+    expect(result.checkedPackages).toBe(2)
+    // The local-only dep (no sideEffects flag) is still flagged.
+    expect(result.findings.some(f => f.message.includes('local-only'))).toBe(true)
+    // The hoisted dep with sideEffects: false is not flagged.
+    expect(result.findings.some(f => f.message.includes('hoisted-lib'))).toBe(false)
   })
 
   it('flags unoptimized images and oversized assets', () => {
