@@ -1,7 +1,8 @@
 import { getDefaultPreset } from './local/presets'
 import { hasDownloadedModel } from './local/ModelStore'
+import { getWasmPreset, wasmCacheReady } from './local/wasmPresets'
 
-export const MODEL_PROVIDERS = ['local', 'openai', 'anthropic'] as const
+export const MODEL_PROVIDERS = ['local', 'wasm', 'openai', 'anthropic'] as const
 export type ModelSetupProvider = (typeof MODEL_PROVIDERS)[number]
 
 /** Default model per remote provider — must match RemoteProvider's defaults. */
@@ -20,6 +21,8 @@ export interface ModelAvailability {
   localPresetId: string
   /** Whether the default local model is already downloaded. */
   localDownloaded: boolean
+  /** Whether the zero-config WASM weights are already cached. */
+  wasmReady: boolean
   openaiKeySet: boolean
   anthropicKeySet: boolean
 }
@@ -29,6 +32,7 @@ export function detectModelAvailability(): ModelAvailability {
   return {
     localPresetId: getDefaultPreset().id,
     localDownloaded: hasDownloadedModel(getDefaultPreset().id),
+    wasmReady: wasmCacheReady(),
     openaiKeySet: !!process.env.OPENAI_API_KEY,
     anthropicKeySet: !!process.env.ANTHROPIC_API_KEY,
   }
@@ -63,6 +67,9 @@ export function isModelSetupProvider(value: string): value is ModelSetupProvider
 export function activeModelLabel(provider: string, config?: ProjectModelConfig): string {
   if (provider === 'local') {
     return `local (${getDefaultPreset().id})`
+  }
+  if (provider === 'wasm') {
+    return `wasm (${getWasmPreset().modelId})`
   }
   if (provider === 'openai' || provider === 'anthropic') {
     const model = config?.modelName || REMOTE_MODEL_DEFAULTS[provider]

@@ -33,6 +33,7 @@ provider, and enable the recommended ecosystem items.
 npx vectalon init                  # scan cwd and create .vectalon/
 npx vectalon init ./my-app         # scan a specific directory
 npx vectalon init --model local    # use the local Qwen2.5-Coder provider
+npx vectalon init --model wasm     # zero-config ONNX/WASM provider (downloads on first use)
 npx vectalon init --model openai   # remote OpenAI provider (reads OPENAI_API_KEY)
 npx vectalon init --model anthropic  # remote Anthropic provider (ANTHROPIC_API_KEY)
 ```
@@ -42,7 +43,7 @@ npx vectalon init --model anthropic  # remote Anthropic provider (ANTHROPIC_API_
 | Option | Description |
 |---|---|
 | `[directory]` | Project root to scan (default: cwd) |
-| `--model <provider>` | Default model provider: `local` \| `openai` \| `anthropic` |
+| `--model <provider>` | Default model provider: `local` \| `wasm` \| `openai` \| `anthropic` |
 
 **What it does**
 
@@ -53,8 +54,9 @@ npx vectalon init --model anthropic  # remote Anthropic provider (ANTHROPIC_API_
 - Detects **Expo-managed vs bare RN CLI** (`tooling` + Expo SDK version) and
   records it in `.vectalon/rn-vectalon.json`
 - Sets up the **model provider**: local download (Qwen2.5-Coder, ~1.1 GB,
-  offered interactively) or a remote provider with env-var API keys (keys are
-  never written to disk)
+  offered interactively), zero-config WASM (ONNX/Qwen2.5-Coder, downloads on
+  first use), or a remote provider with env-var API keys (keys are never
+  written to disk)
 - Enables the **flavor-appropriate ecosystem items** (Expo MCP/skills for Expo
   projects; Upgrader MCP/rn-diff-purge for bare RN-CLI) plus the shared baseline
 - Scans `package.json` dependencies and **auto-enables matching ecosystem
@@ -93,7 +95,7 @@ npx vectalon serve --model openai     # override the model provider for this run
 |---|---|
 | `-p, --port <number>` | HTTP server port (default `0` = auto-assign) |
 | `--protocol <type>` | `mcp` \| `stdio` \| `sse` \| `http` (default `mcp`) |
-| `--model <provider>` | Model provider: `local` \| `openai` \| `anthropic` |
+| `--model <provider>` | Model provider: `local` \| `wasm` \| `openai` \| `anthropic` |
 
 **What it does**
 
@@ -173,7 +175,7 @@ npx vectalon feature --ticket MOB-123 --push   # ticket-to-PR: read the ticket, 
 | `--json` | Output as JSON |
 | `--verbose` | Show full phase output |
 | `--dry-run` | Simulate adapters without running real commands |
-| `--model <provider>` | Model provider: `local` \| `openai` \| `anthropic` |
+| `--model <provider>` | Model provider: `local` \| `wasm` \| `openai` \| `anthropic` |
 | `--push` | Allow git push and PR creation (default: local branch/commit only) |
 | `--device` | Run device/simulator build checks during verification |
 | `--heal-interactive` | Prompt before applying each self-healing review fix |
@@ -200,6 +202,10 @@ npx vectalon feature --ticket MOB-123 --push   # ticket-to-PR: read the ticket, 
   gitignored `.vectalon/` workspace)
 - Applies **guardrails** (25 rules + `.vectalon/policy.json`) before writing
   files, and streams **live diffs** for every code change
+- **Zero-config WASM**: with no GGUF model downloaded and the tier enabled,
+  a `local` run auto-tiers to the ONNX/WASM model — weights download on first
+  use and the deterministic stub only remains as the fallback
+  (`RN_VECTALON_NO_WASM=1` disables)
 - Runs the project's `test`/`lint`/`prettier`/`typecheck` scripts during
   verification (device builds only with `--device`)
 - Prints an "upgrade suggestions available" section from
@@ -441,6 +447,7 @@ npx vectalon bench --suite data-flow        # only the data-flow suite
 npx vectalon bench --live                   # run real tests/typecheck/lint
 npx vectalon bench --live --install         # ... installing deps in each temp project first
 npx vectalon bench --model local            # real-model leaderboard (all 11)
+npx vectalon bench --model wasm             # zero-config WASM model pass
 npx vectalon bench --model openai --json    # JSON summary for tooling
 npx vectalon bench -o report.md             # write the report to a file
 npx vectalon bench --scenarios ./my-evals   # run your own custom eval pack
@@ -452,7 +459,7 @@ npx vectalon bench --baseline bench/baseline.json  # CI regression gate (exit 1 
 
 | Option | Description |
 |---|---|
-| `--model <provider>` | `local` \| `openai` \| `anthropic` — run the real-model pass |
+| `--model <provider>` | `local` \| `wasm` \| `openai` \| `anthropic` — run the real-model pass |
 | `--suite <id>` | Only one suite: `core-ui` \| `data-flow` \| `forms-security` \| `navigation` \| `a11y` \| `perf` \| `refactor` |
 | `--live` | Run real tests/typecheck/lint for correctness (slow) |
 | `--install` | `npm install` each temp project before the live checks (use with `--live` when the fixture project has a `package.json` but no `node_modules`) |
@@ -699,7 +706,8 @@ npx vectalon pull <preset>     # download a specific preset
 
 ## `models`
 
-List available and downloaded local models.
+List available and downloaded local models, including the zero-config WASM
+tier (shows whether its weights are already cached).
 
 ```bash
 npx vectalon models

@@ -14,6 +14,7 @@ import type { ContextSnapshot } from '../../harness/types'
 import { getIntent, type WorkflowIntent, type IntentPrediction } from '../../workflows/phases/intent'
 import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
 import { activeModelLabel, isRemoteKeyMissing } from '../../model/setup'
+import { getWasmPreset } from '../../model/local/wasmPresets'
 import { dynamicImport } from '../../utils/dynamicImport'
 import { setFileChangeWriter, formatFileChange, computeFileChange, type FileChange } from '../../utils/fileDiff'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
@@ -103,7 +104,7 @@ export async function featureCommand(
     process.exit(1)
   }
 
-  const VALID_PROVIDERS = ['local', 'openai', 'anthropic']
+  const VALID_PROVIDERS = ['local', 'wasm', 'openai', 'anthropic']
   if (options.model && !VALID_PROVIDERS.includes(options.model)) {
     log.error(`Unknown model provider: ${options.model}`)
     log.info(`Available providers: ${VALID_PROVIDERS.join(', ')}`)
@@ -181,12 +182,15 @@ export async function featureCommand(
 
   // The model provider comes from --model, else the project manifest set by
   // `vectalon init` (which also records the model name + API-key env var).
-  const modelRouter = new ModelRouter()
+  // An explicit --model choice disables the zero-config WASM auto-tier so it
+  // never silently substitutes a different model (or triggers a first-use
+  // download) when the user asked for a specific provider; the tier only
+  // applies to the manifest default path. projectRoot lets the local provider
+  // inline enabled ecosystem skills into every local generation.
+  const modelRouter = new ModelRouter({ projectRoot: root, zeroConfigEnabled: options.model ? false : undefined })
   const provider = resolveProjectModelProvider(root, options.model) as ModelProviderType
   const modelConfig = resolveProjectModelConfig(root)
-  // projectRoot lets the local provider inline enabled ecosystem skills into
-  // the system prompt of every local generation (incl. intent detection).
-  modelRouter.initialize({ provider, modelName: modelConfig?.modelName, apiKeyEnv: modelConfig?.apiKeyEnv, projectRoot: root })
+  modelRouter.initialize({ provider, modelName: modelConfig?.modelName, apiKeyEnv: modelConfig?.apiKeyEnv })
 
   // Audit the guidance the model will actually receive: print the inlined
   // skills (truncated to a few lines per skill) so users can see what
@@ -201,13 +205,23 @@ export async function featureCommand(
     }
   }
 
-  // Surface the model that will generate the code, warning when a remote
-  // provider is configured but its API key is missing from the environment.
-  const activeModel = activeModelLabel(provider, modelConfig)
+  // Surface the model that will generate the code (the WASM zero-config tier
+  // when active for local), warning when a remote provider is configured but
+  // its API key is missing from the environment.
+  const activeModel =
+    provider === 'local' || provider === 'wasm'
+      ? modelRouter.getActiveLabel()
+      : activeModelLabel(provider, modelConfig)
   if (!options.json) {
     log.info(`Model: ${pc.bold(activeModel)}`)
     if (isRemoteKeyMissing(provider, modelConfig)) {
       log.warn(`No API key found for ${provider}. Set ${modelConfig?.apiKeyEnv || provider.toUpperCase() + '_API_KEY'} in your environment or export it before running.`)
+    }
+    if (modelRouter.isZeroConfigActive()) {
+      const wasm = getWasmPreset()
+      log.info(
+        pc.dim(`Zero-config WASM model: ${wasm.modelId} (${wasm.dtype}, ~${Math.round(wasm.sizeMb / 1024)} GB) downloads on first use. Set RN_VECTALON_NO_WASM=1 to disable.`)
+      )
     }
   }
 

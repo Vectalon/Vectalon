@@ -189,7 +189,7 @@ export type ModelAccessItemId = (typeof MODEL_ACCESS_ITEM_IDS)[number]
 
 export interface ModelAccessCheckOptions {
   /** Configured provider ('local' when unset — the default). */
-  provider?: 'local' | 'openai' | 'anthropic'
+  provider?: 'local' | 'wasm' | 'openai' | 'anthropic'
   /** Local model preset id to verify is downloaded (default qwen2.5-coder-1.5b). */
   modelPresetId?: string
   /** Env var carrying the remote API key (default per provider). */
@@ -232,6 +232,13 @@ export function checkModelAccess(
         hint: 'Download the model: `vectalon pull` (or pick a remote provider with `vectalon init`)',
       })
     }
+  } else if (provider === 'wasm') {
+    // Zero-config WASM — always usable; weights download on first use.
+    results.push({
+      ...base('ma-model', 'Configured model'),
+      status: 'ok',
+      detail: 'wasm provider — ONNX/WASM Qwen2.5-Coder downloads on first use (no API key, no native build)',
+    })
   } else {
     const apiKeyEnv = options.apiKeyEnv || (provider === 'openai' ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY')
     if (checkers.env(apiKeyEnv)) {

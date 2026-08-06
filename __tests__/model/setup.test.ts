@@ -16,7 +16,7 @@ describe('model setup helpers', () => {
   })
 
   it('lists exactly the supported providers', () => {
-    expect(MODEL_PROVIDERS).toEqual(['local', 'openai', 'anthropic'])
+    expect(MODEL_PROVIDERS).toEqual(['local', 'wasm', 'openai', 'anthropic'])
   })
 
   it('derives the API-key env var per provider', () => {
@@ -24,8 +24,9 @@ describe('model setup helpers', () => {
     expect(apiKeyEnvFor('anthropic')).toBe('ANTHROPIC_API_KEY')
   })
 
-  it('builds no model config for local and env-based config for remote providers', () => {
+  it('builds no model config for local/wasm and env-based config for remote providers', () => {
     expect(buildModelConfig('local')).toBeUndefined()
+    expect(buildModelConfig('wasm')).toBeUndefined()
 
     const openai = buildModelConfig('openai')
     expect(openai).toEqual({ modelName: REMOTE_MODEL_DEFAULTS.openai, apiKeyEnv: 'OPENAI_API_KEY' })
@@ -37,6 +38,7 @@ describe('model setup helpers', () => {
 
   it('validates provider strings', () => {
     expect(isModelSetupProvider('local')).toBe(true)
+    expect(isModelSetupProvider('wasm')).toBe(true)
     expect(isModelSetupProvider('openai')).toBe(true)
     expect(isModelSetupProvider('anthropic')).toBe(true)
     expect(isModelSetupProvider('custom')).toBe(false)
@@ -59,10 +61,12 @@ describe('model setup helpers', () => {
     const availability = detectModelAvailability()
     expect(availability.localPresetId).toBe('qwen2.5-coder-1.5b')
     expect(typeof availability.localDownloaded).toBe('boolean')
+    expect(typeof availability.wasmReady).toBe('boolean')
   })
 
   it('labels the active model with provider and model name', () => {
     expect(activeModelLabel('local')).toBe('local (qwen2.5-coder-1.5b)')
+    expect(activeModelLabel('wasm')).toBe('wasm (onnx-community/Qwen2.5-Coder-0.5B-Instruct)')
     expect(activeModelLabel('openai', { modelName: 'gpt-4o', apiKeyEnv: 'OPENAI_API_KEY' })).toBe('openai (gpt-4o)')
     expect(activeModelLabel('anthropic')).toBe('anthropic (claude-sonnet-4-20250514)')
     expect(activeModelLabel('custom')).toBe('custom')
