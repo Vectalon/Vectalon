@@ -1,8 +1,11 @@
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { ArtifactStore } from '../../src/knowledge/ArtifactStore'
+import { artifactDbPath } from '../../src/knowledge/SqliteArtifactStore'
 import { checksum } from '../../src/knowledge/artifactTypes'
 import { createTempProject, cleanup } from '../helpers/tmp'
+
+const JSON_PATH = (dir: string) => join(dir, '.vectalon', 'knowledge', 'artifacts.json')
 
 describe('ArtifactStore', () => {
   let dir: string
@@ -15,13 +18,19 @@ describe('ArtifactStore', () => {
     cleanup(dir)
   })
 
-  it('starts empty and does not create a file until an artifact is added', () => {
+  it('uses the SQLite engine when better-sqlite3 is available', () => {
     const store = new ArtifactStore(dir)
-    expect(store.list()).toEqual([])
-    expect(existsSync(join(dir, '.vectalon', 'knowledge', 'artifacts.json'))).toBe(false)
+    expect(store.engine).toBe('sqlite')
+    expect(store.dbPath()).toBe(artifactDbPath(dir))
   })
 
-  it('adds an artifact with defaults and persists to .vectalon/knowledge/artifacts.json', () => {
+  it('starts empty and does not create the JSON file', () => {
+    const store = new ArtifactStore(dir)
+    expect(store.list()).toEqual([])
+    expect(existsSync(JSON_PATH(dir))).toBe(false)
+  })
+
+  it('adds an artifact with defaults and persists to the database', () => {
     const store = new ArtifactStore(dir)
     const artifact = store.add({ type: 'product', title: 'PRD', content: '# PRD body' })
 
@@ -31,7 +40,8 @@ describe('ArtifactStore', () => {
     expect(artifact.status).toBe('draft')
     expect(artifact.links).toEqual([])
     expect(artifact.checksum).toBe(checksum('# PRD body'))
-    expect(existsSync(join(dir, '.vectalon', 'knowledge', 'artifacts.json'))).toBe(true)
+    expect(existsSync(artifactDbPath(dir))).toBe(true)
+    expect(existsSync(JSON_PATH(dir))).toBe(false)
   })
 
   it('persists artifacts across instances', () => {
@@ -105,5 +115,61 @@ describe('ArtifactStore', () => {
     })
     expect(artifact.source).toBe('generated')
     expect(artifact.status).toBe('active')
+  })
+
+  it('round-trips meta through the database', () => {
+    const store = new ArtifactStore(dir)
+    const artifact = store.add({
+      type: 'engineering',
+      title: 'Review',
+      content: 'body',
+      meta: { platform: 'ios', kind: 'proactive-bundle-tip' },
+    })
+    expect(store.get(artifact.id)?.meta).toEqual({ platform: 'ios', kind: 'proactive-bundle-tip' })
+  })
+
+  it('isValidType still validates artifact types', () => {
+    expect(ArtifactStore.isValidType('product')).toBe(true)
+    expect(ArtifactStore.isValidType('nope')).toBe(false)
+  })
+})
+
+describe('ArtifactStore forced JSON engine', () => {
+  let dir: string
+
+  beforeEach(() => {
+    dir = createTempProject({})
+  })
+
+  afterEach(() => {
+    cleanup(dir)
+  })
+
+  it('uses artifacts.json and never creates a file until an artifact is added', () => {
+    const store = new ArtifactStore(dir, { engine: 'json' })
+    expect(store.engine).toBe('json')
+    expect(store.list()).toEqual([])
+    expect(existsSync(JSON_PATH(dir))).toBe(false)
+
+    store.add({ type: 'product', title: 'PRD', content: '# PRD body' })
+    expect(existsSync(JSON_PATH(dir))).toBe(true)
+  })
+
+  it('persists across instances and supports the full interface', () => {
+    const store = new ArtifactStore(dir, { engine: 'json' })
+    const artifact = store.add({ type: 'product', title: 'PRD', content: 'login screen spec' })
+    const story = store.add({ type: 'requirements', title: 'Story', content: 'password reset story' })
+    store.link(artifact.id, story.id)
+
+    const reloaded = new ArtifactStore(dir, { engine: 'json' })
+    expect(reloaded.list()).toHaveLength(2)
+    expect(reloaded.get(artifact.id)?.links).toEqual([story.id])
+    expect(reloaded.fullTextSearch('story')).toHaveLength(1)
+    expect(reloaded.vectorSearch('password reset')[0].artifact.title).toBe('Story')
+  })
+
+  it('query() throws a clear error on the JSON engine', () => {
+    const store = new ArtifactStore(dir, { engine: 'json' })
+    expect(() => store.query('SELECT * FROM artifacts')).toThrow(/SQLite engine/)
   })
 })

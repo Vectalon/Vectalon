@@ -1,11 +1,10 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
-import { join } from 'path'
+import { ARTIFACT_TYPES } from './artifactTypes'
 import { reportError } from '../utils/safe'
-import {
-  checksum,
-  ARTIFACT_TYPES,
-} from './artifactTypes'
-import type { Artifact, ArtifactSource, ArtifactStatus, ArtifactType } from './artifactTypes'
+import type { ArtifactSource, ArtifactStatus, ArtifactType } from './artifactTypes'
+import type { EmbeddingProvider } from './embeddings'
+import { SqliteArtifactStore, isSqliteAvailable } from './SqliteArtifactStore'
+import type { StoreSearchOptions, VectorSearchHit } from './SqliteArtifactStore'
+import { JsonArtifactStore } from './JsonArtifactStore'
 
 export interface AddArtifactInput {
   type: ArtifactType
@@ -22,116 +21,134 @@ export interface UpdateArtifactInput {
   status?: ArtifactStatus
 }
 
-const MAX_HISTORY = 10
+export interface ArtifactStoreOptions {
+  /**
+   * Engine selection:
+   * - `auto` (default) — SQLite when the optional better-sqlite3 module loads
+   *   (and `RN_VECTALON_NO_SQLITE=1` is not set), otherwise the JSON fallback.
+   * - `sqlite` — prefer SQLite; falls back to JSON when unavailable.
+   * - `json` — always the deterministic flat-JSON store.
+   */
+  engine?: 'auto' | 'sqlite' | 'json'
+  /** Embedding provider used for vector search (default: deterministic hash). */
+  embeddingProvider?: EmbeddingProvider
+}
 
+export type ArtifactStoreEngine = 'sqlite' | 'json'
+
+/**
+ * The knowledge base ("Company Brain") artifact store.
+ *
+ * A facade over two engines sharing one interface:
+ *
+ * - **SQLite** (`SqliteArtifactStore`) — the default when the optional
+ *   `better-sqlite3` native module is available. WAL mode for concurrent
+ *   access, FTS5 full-text search, stored semantic vectors searched via
+ *   `sqlite-vec` (when that extension loads) or JS cosine similarity, and
+ *   arbitrary SQL through `query()`.
+ * - **JSON** (`JsonArtifactStore`) — the legacy flat-file engine used as a
+ *   graceful fallback on systems where the native module cannot load
+ *   (`RN_VECTALON_NO_SQLITE=1` forces it).
+ *
+ * The interface is unchanged from the flat-file store, so all consumers
+ * (MCP tools, TeamStore, workflows, the daemon) work with either engine.
+ */
 export class ArtifactStore {
-  private filePath: string
-  private artifacts: Artifact[] = []
+  private readonly impl: SqliteArtifactStore | JsonArtifactStore
 
-  constructor(root: string) {
-    this.filePath = join(root, '.vectalon', 'knowledge', 'artifacts.json')
-    this.artifacts = this.load()
-  }
-
-  list(): Artifact[] {
-    return this.artifacts
-  }
-
-  get(id: string): Artifact | null {
-    return this.artifacts.find(a => a.id === id) || null
-  }
-
-  add(input: AddArtifactInput): Artifact {
-    const now = Date.now()
-    const artifact: Artifact = {
-      id: `art-${now}-${Math.random().toString(36).slice(2, 8)}`,
-      type: input.type,
-      title: input.title,
-      content: input.content,
-      source: input.source || 'import',
-      status: input.status || 'draft',
-      createdAt: now,
-      updatedAt: now,
-      version: 1,
-      meta: input.meta || {},
-      links: [],
-      checksum: checksum(input.content),
-      history: [],
+  constructor(root: string, options: ArtifactStoreOptions = {}) {
+    const preferSqlite = options.engine !== 'json' && (options.engine === 'sqlite' || isSqliteAvailable())
+    if (preferSqlite) {
+      try {
+        this.impl = new SqliteArtifactStore(root, { embeddingProvider: options.embeddingProvider })
+        return
+      } catch (err) {
+        // Forced `engine: 'sqlite'` on a machine where better-sqlite3 can't
+        // load (or the DB file can't open) must never crash the harness —
+        // degrade to the JSON store with a warning.
+        reportError(err, 'ArtifactStore: SQLite engine failed, falling back to JSON store')
+      }
     }
-    this.artifacts.push(artifact)
-    this.persist()
-    return artifact
+    this.impl = new JsonArtifactStore(root, { embeddingProvider: options.embeddingProvider })
   }
 
-  update(id: string, patch: UpdateArtifactInput): Artifact | null {
-    const artifact = this.get(id)
-    if (!artifact) return null
+  /** Which engine is backing this store: `'sqlite'` or `'json'`. */
+  get engine(): ArtifactStoreEngine {
+    return this.impl.engine
+  }
 
-    if (patch.content !== undefined) {
-      artifact.history.push({
-        version: artifact.version,
-        content: artifact.content,
-        updatedAt: artifact.updatedAt,
-        checksum: artifact.checksum,
-      })
-      artifact.history = artifact.history.slice(-MAX_HISTORY)
-      artifact.content = patch.content
-      artifact.checksum = checksum(patch.content)
-      artifact.version++
-    }
+  /** Path of the underlying store file (artifacts.db for SQLite, artifacts.json for JSON). */
+  dbPath(): string {
+    return this.impl.dbPath()
+  }
 
-    if (patch.title !== undefined) artifact.title = patch.title
-    if (patch.status !== undefined) artifact.status = patch.status
+  /** True when the optional sqlite-vec extension is active (SQLite engine only). */
+  isVecAvailable(): boolean {
+    return this.impl instanceof SqliteArtifactStore && this.impl.isVecAvailable()
+  }
 
-    artifact.updatedAt = Date.now()
-    this.persist()
-    return artifact
+  list(): ArtifactStoreReturn[] {
+    return this.impl.list()
+  }
+
+  get(id: string): ArtifactStoreReturn | null {
+    return this.impl.get(id)
+  }
+
+  add(input: AddArtifactInput): ArtifactStoreReturn {
+    return this.impl.add(input)
+  }
+
+  update(id: string, patch: UpdateArtifactInput): ArtifactStoreReturn | null {
+    return this.impl.update(id, patch)
   }
 
   remove(id: string): boolean {
-    const index = this.artifacts.findIndex(a => a.id === id)
-    if (index === -1) return false
-    this.artifacts.splice(index, 1)
-    this.persist()
-    return true
+    return this.impl.remove(id)
   }
 
-  findByType(type: ArtifactType): Artifact[] {
-    return this.artifacts.filter(a => a.type === type)
+  findByType(type: ArtifactType): ArtifactStoreReturn[] {
+    return this.impl.findByType(type)
   }
 
   link(parentId: string, childId: string): boolean {
-    const parent = this.get(parentId)
-    if (!parent || !this.get(childId)) return false
-    if (!parent.links.includes(childId)) {
-      parent.links.push(childId)
-      this.persist()
-    }
-    return true
+    return this.impl.link(parentId, childId)
   }
 
   hasChecksum(hash: string): boolean {
-    return this.artifacts.some(a => a.checksum === hash)
+    return this.impl.hasChecksum(hash)
   }
 
-  private load(): Artifact[] {
-    try {
-      if (existsSync(this.filePath)) {
-        return JSON.parse(readFileSync(this.filePath, 'utf-8'))
-      }
-    } catch (err) {
-      reportError(err, 'ArtifactStore: reading artifact store')
-    }
-    return []
+  /** Run arbitrary SQL over the store (SQLite engine only). */
+  query(sql: string, ...params: unknown[]): ArtifactStoreReturn[] {
+    return this.impl.query(sql, ...params)
   }
 
-  private persist(): void {
-    const dir = join(this.filePath, '..')
-    mkdirSync(dir, { recursive: true })
-    writeFileSync(this.filePath, JSON.stringify(this.artifacts, null, 2))
+  /** FTS5 full-text search (SQLite) or deterministic token scoring (JSON). */
+  fullTextSearch(query: string, options?: StoreSearchOptions): ArtifactStoreReturn[] {
+    return this.impl.fullTextSearch(query, options)
+  }
+
+  /** Semantic vector search — ranked by cosine distance ascending. */
+  vectorSearch(query: string, options?: StoreSearchOptions): VectorSearchHit[] {
+    return this.impl.vectorSearch(query, options)
   }
 
   static isValidType(type: string): type is ArtifactType {
     return (ARTIFACT_TYPES as string[]).includes(type)
   }
+
+  /** Probe whether the SQLite engine is usable on this machine. */
+  static isSqliteAvailable(): boolean {
+    return isSqliteAvailable()
+  }
+
+  /** Release the underlying database handle (no-op on the JSON engine). */
+  close(): void {
+    this.impl.close()
+  }
 }
+
+/** The artifact shape returned by every read — a structural alias so the
+ * facade's signature stays stable without re-exporting the engine internals. */
+type ArtifactStoreReturn = import('./artifactTypes').Artifact

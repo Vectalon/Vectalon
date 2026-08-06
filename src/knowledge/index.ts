@@ -1,4 +1,6 @@
 export { ArtifactStore } from './ArtifactStore'
+export { SqliteArtifactStore, artifactDbPath, openDatabase, isSqliteAvailable } from './SqliteArtifactStore'
+export { JsonArtifactStore } from './JsonArtifactStore'
 export { TeamStore } from './TeamStore'
 export { KnowledgeIndex } from './KnowledgeIndex'
 export { Traceability } from './Traceability'
@@ -67,3 +69,16 @@ export type {
   KnowledgeSearchOptions,
   KnowledgeSearchResult,
 } from './KnowledgeIndex'
+export type {
+  AddArtifactInput,
+  UpdateArtifactInput,
+  ArtifactStoreOptions,
+  ArtifactStoreEngine,
+} from './ArtifactStore'
+export type {
+  SqliteDb,
+  SqliteStmt,
+  StoreSearchOptions,
+  VectorSearchHit,
+  SqliteArtifactStoreOptions,
+} from './SqliteArtifactStore'

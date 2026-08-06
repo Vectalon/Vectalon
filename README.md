@@ -105,6 +105,7 @@ your toolchain, not just a text generator.
 - **VS Code extension (IV-1).** A thin IDE layer over the exact same MCP server — `extension/` connects to `vectalon serve --protocol http` (auto-starting it when needed) and adds command-palette workflows (run a feature workflow, review/guardrail the current file, generate a component, show project context, search the knowledge base), **inline guardrail status** as Problems-panel diagnostics on save/active-file change with a status-bar summary, and a **Knowledge Base sidebar** that groups the artifact store by type and renders each artifact in a preview panel. No new backend — the extension reuses the existing HTTP tool surface (`GET /tools`, `POST /call`).
 - **Zero-config WASM inference.** A quantized Qwen2.5-Coder model (ONNX via `@huggingface/transformers`, the WASM runtime — no API key, no native build, any CPU) is a first-class model tier: `npm install` + `vectalon feature` produces real model output immediately. Weights download from Hugging Face Hub on first use (progress-cached under the shared model store, `~/.config/rn-vectalon/models/wasm`) and the deterministic stub is now the *graceful fallback*, not the primary path — it only appears when the download fails (e.g. no network). Opt out with `RN_VECTALON_NO_WASM=1`, or pick a specific model/dtype with `RN_VECTALON_WASM_MODEL` / `RN_VECTALON_WASM_DTYPE`.
 - **Live Metro/Hermes companion daemon.** `vectalon daemon` runs in the background and turns the harness proactive instead of reactive: it hooks into **Metro's reporter events** (via a generated reporter wired into `metro.config.js`), **Hermes JS-thread health** (CDP probe over the Metro WebSocket), and **device logs** — feeding live build errors and bundle-size deltas straight into the knowledge base. Every `bundle_build_done` snapshots composition (reusing `vectalon bundle`'s budgets) and diffs it against the previous build to surface proactive tips ("your last Metro build added lodash — +80 KB; use lodash.debounce instead"); build failures are persisted as deduped artifacts so they're never lost to a scrolling terminal. `vectalon daemon --once` runs a single probe pass (CI-friendly), `--status`/`--stop` manage it, and `--no-device-probe`/`--wire-metro` control the probe loop and reporter wiring.
+- **SQLite + vector knowledge core.** The Company Brain is backed by a real database when the optional `better-sqlite3` module is available: `.vectalon/knowledge/artifacts.db` in **WAL mode** (concurrent access — two devs or `serve` + the daemon never race on a JSON file), **FTS5 full-text search** (`bm25`-ranked MATCH queries over title + content), **semantic vectors** (KNN via the optional sqlite-vec extension, or identical JS cosine similarity), and **arbitrary SQL** through `store.query()` for traceability joins. Existing `artifacts.json` stores are **migrated automatically** on first open (ids, versions, history, links, meta preserved) and the flat file remains the graceful fallback when the native module can't load (`RN_VECTALON_NO_SQLITE=1` forces it).
   - System prompts that require real, runnable code and forbid TODOs/placeholders
   - Convention detection (TypeScript, navigation, StyleSheet) that shapes generated code
   - A deterministic fallback scaffold when no model is downloaded
@@ -956,9 +957,34 @@ Expo MCP, …) exposed as first-class tools:
 ## Knowledge Base
 
 The knowledge base ("Company Brain") is a typed, versioned, traceable document
-store at `.vectalon/knowledge/artifacts.json`. It holds SDLC artifacts — PRDs,
-user stories, ADRs, test plans, incident reports — so agents get role-scoped
-context instead of just a file tree.
+store backed by **SQLite** (`.vectalon/knowledge/artifacts.db`) when the
+optional `better-sqlite3` native module is available, with the legacy
+`.vectalon/knowledge/artifacts.json` as a transparent fallback on systems where
+it can't load (`RN_VECTALON_NO_SQLITE=1` forces the fallback). It holds SDLC
+artifacts — PRDs, user stories, ADRs, test plans, incident reports — so agents
+get role-scoped context instead of just a file tree.
+
+The SQLite engine upgrades the brain from a flat file to a real database:
+
+- **Concurrent access** — WAL journal mode + busy timeout, so two developers
+  (or `vectalon serve` + the daemon) reading and writing one project's brain
+  no longer race on a shared JSON file
+- **FTS5 full-text search** — `store.fullTextSearch('camera AND login')` ranks
+  artifacts with SQLite's bm25 over title + content
+- **Semantic vectors** — every artifact's embedding is stored with it;
+  `store.vectorSearch(query)` runs KNN through the optional **sqlite-vec**
+  extension (`vec_distance_cosine`) when it loads, or identical JS cosine
+  similarity otherwise
+- **Complex queries** — `store.query(sql, params)` runs arbitrary SQL over the
+  `artifacts` table (links in `artifact_links`, history in
+  `artifact_history`) and hydrates rows back into `Artifact` objects, e.g.
+  `SELECT a.* FROM artifacts a JOIN artifact_links l ON l.child_id = a.id WHERE l.parent_id = ?`
+- **One-time migration** — existing `artifacts.json` stores are imported into
+  the database automatically on first open (ids, timestamps, versions,
+  history, links, and meta preserved; the JSON file is left on disk)
+
+All existing consumers (MCP tools, TeamStore, workflows, the daemon) work with
+either engine unchanged.
 
 ### Import artifacts
 
