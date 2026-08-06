@@ -1256,7 +1256,15 @@ rn-vectalon/
 │   │   ├── local/         # ModelStore, download, inference, presets
 │   │   └── types.ts
 │   ├── protocol/
-│   │   ├── MCPServer.ts   # MCP/stdio/HTTP server (33 tools + ecosystem MCPs)
+│   │   ├── MCPServer.ts   # MCP/stdio/HTTP server — orchestration only
+│   │   ├── tools/         # Per-domain tool registries (@mcpTool decorator)
+│   │   │   ├── CoreTools.ts      # context, patterns, generation, guardrails
+│   │   │   ├── SdlcTools.ts      # PRD → release notes, review, Maestro
+│   │   │   ├── KnowledgeTools.ts # artifacts, team brain, telemetry (gated)
+│   │   │   ├── EcosystemTools.ts # device control tools
+│   │   │   ├── decorators.ts     # @mcpTool / collectTools
+│   │   │   ├── base.ts           # ToolRegistry base (persist, enhance)
+│   │   │   └── context.ts        # ToolContext (services + server bridges)
 │   │   └── types.ts
 │   ├── workflows/         # Feature-development workflow engine
 │   │   ├── WorkflowEngine.ts  # Phase orchestration + state
