@@ -2,6 +2,7 @@ import { readFileSync, existsSync, readdirSync, statSync } from 'fs'
 import { join, relative, extname } from 'path'
 import type { ProjectInfo, FileNode, ComponentInfo, LintConfigInfo } from './types'
 import { analyzeSourceFile } from './AstScanner'
+import { detectNewArchitecture } from '../utils/newArchitecture'
 
 export interface PackageJsonLike {
   dependencies?: Record<string, string>
@@ -49,6 +50,7 @@ export class Scanner {
       tooling,
       expoSdkVersion: pkg.dependencies?.expo || '',
       lintConfig: this.detectLintConfigs(),
+      newArchitecture: detectNewArchitecture(this.root, pkg),
     }
   }
 

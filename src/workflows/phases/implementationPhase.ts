@@ -10,6 +10,7 @@ import { scanNativeReferences, stripNativeReferences, scanDeadNativeConfig, isRe
 import { detectConventions, phaseResult, sanitizeFileName, fileExtension, jsxExtension } from './helpers'
 import { getIntent, intentTitle, isRemoveDependency, isRefactor, isFix, type WorkflowIntent } from './intent'
 import { runGuardrails, formatGuardrailResult, GuardrailResult, PolicyEngine } from '../../guardrails'
+import { newArchitectureLabel } from '../../utils/newArchitecture'
 
 interface DependencyMatch {
   name: string
@@ -41,6 +42,7 @@ function checkGuardrails(
         hasTypeScript: conventions.hasTypeScript,
         usesStyleSheet: conventions.usesStyleSheet,
         hasNavigation: conventions.hasNavigation,
+        newArchitecture: conventions.newArchitecture,
       },
     }
     return policy ? policy.runPolicy(options) : runGuardrails(options)
@@ -246,6 +248,14 @@ export function buildImplementationPrompt(ctx: {
     '- Use === and !== instead of == and !=.',
     '- Screens with TextInput must use KeyboardAvoidingView on iOS.',
     '- Do not use deprecated APIs: ListView, AsyncStorage from react-native, AlertIOS, StatusBarIOS, Navigator.',
+    ...(conventions.newArchitecture?.enabled === true
+      ? [
+          '',
+          'IMPORTANT: This project uses the React Native New Architecture (Fabric + bridgeless + TurboModules).',
+          '- Never use setNativeProps (unsupported on Fabric).',
+          '- Access native modules via TurboModuleRegistry.get() with a typed TurboModule spec (NativeX.ts / XSpec.ts); never synchronous NativeModules calls.',
+        ]
+      : []),
   ].join('\n')
 
   const testsSection = ctx.tests
@@ -257,6 +267,7 @@ export function buildImplementationPrompt(ctx: {
     `- TypeScript: ${conventions.hasTypeScript ? 'yes' : 'no'}`,
     `- React Navigation: ${conventions.hasNavigation ? 'yes' : 'no'}`,
     `- StyleSheet: ${conventions.usesStyleSheet ? 'yes' : 'no'}`,
+    `- New Architecture (Fabric/TurboModules): ${newArchitectureLabel(conventions.newArchitecture)}`,
     `- Existing components: ${ctx.snapshot?.components.map(c => c.name).join(', ') || 'none'}`,
     '',
     `Request: ${ctx.prompt}`,

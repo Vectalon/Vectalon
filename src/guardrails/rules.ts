@@ -1,4 +1,5 @@
 import { GuardrailRule } from './types'
+import { isNewArchitectureEnabled } from '../utils/newArchitecture'
 
 function findLine(content: string, index: number): number {
   return content.slice(0, index).split('\n').length
@@ -441,6 +442,93 @@ export const rules: GuardrailRule[] = [
       const match = content.match(/export\s+default\s+function\s+/)
       if (match) {
         return { passed: false, message: 'Prefer named export over default export for components', line: findLine(content, match.index || 0) }
+      }
+      return { passed: true }
+    },
+  },
+  {
+    id: 'no-set-native-props',
+    name: 'No setNativeProps in New Architecture projects',
+    description: 'setNativeProps bypasses the React render cycle and is unsupported on Fabric (New Architecture). Use state or refs instead.',
+    severity: 'warning',
+    applicable: ({ filePath, content, conventions }) =>
+      /\.(tsx|jsx)$/.test(filePath) &&
+      isNewArchitectureEnabled(conventions?.newArchitecture) &&
+      /\.setNativeProps\s*\(/.test(content),
+    check: ({ content }) => {
+      const match = content.match(/\.setNativeProps\s*\(/)
+      if (match) {
+        return {
+          passed: false,
+          message: 'setNativeProps is not supported on Fabric (New Architecture) — drive the view via state/props instead',
+          line: findLine(content, match.index || 0),
+        }
+      }
+      return { passed: true }
+    },
+  },
+  {
+    id: 'no-sync-native-module-calls',
+    name: 'No synchronous NativeModules calls on New Architecture',
+    description: 'Under the New Architecture TurboModules are async; synchronous NativeModules calls block the JS thread. Prefer promise-based TurboModule APIs.',
+    severity: 'warning',
+    applicable: ({ filePath, content, conventions }) =>
+      /\.(tsx?|jsx?)$/.test(filePath) &&
+      isNewArchitectureEnabled(conventions?.newArchitecture) &&
+      /NativeModules\.[A-Z]\w*\.[a-zA-Z]\w*\s*\(/.test(content),
+    check: ({ content }) => {
+      const re = /NativeModules\.([A-Z]\w*)\.([a-zA-Z]\w*)\s*\(/g
+      let match: RegExpExecArray | null
+      while ((match = re.exec(content)) !== null) {
+        const start = match.index
+        // Look back to the statement start (previous ; or { or newline up to 200 chars).
+        const window = content.slice(Math.max(0, start - 200), start)
+        const statementStart = Math.max(
+          window.lastIndexOf(';'),
+          window.lastIndexOf('{'),
+          window.lastIndexOf('}')
+        )
+        const before = window.slice(statementStart + 1)
+        // Async-style: awaited, or the call's result is chained with .then/.catch.
+        const isAwaited = /\bawait\s+$/.test(before) || /\bawait\s+NativeModules/.test(before + match[0])
+        const isChained = /\.then\s*\(|\.catch\s*\(/.test(content.slice(start + match[0].length, start + match[0].length + 60))
+        if (isAwaited || isChained) continue
+        return {
+          passed: false,
+          message: `Synchronous NativeModules.${match[1]}.${match[2]}() call — TurboModules are async on New Architecture; use the promise API`,
+          line: findLine(content, start),
+        }
+      }
+      return { passed: true }
+    },
+  },
+  {
+    id: 'missing-turbomodule-spec',
+    name: 'Native modules have a TurboModule TypeScript spec',
+    description: 'New Architecture native modules should be declared in a typed TurboModule spec (NativeX.ts / XSpec.ts) and accessed via TurboModuleRegistry.',
+    severity: 'warning',
+    applicable: ({ content, conventions }) =>
+      isNewArchitectureEnabled(conventions?.newArchitecture) &&
+      (/TurboModuleRegistry/.test(content) || /NativeModules\.[A-Z]\w*/.test(content)),
+    check: ({ content, conventions }) => {
+      const specs = conventions?.newArchitecture?.turboModuleSpecs || []
+      const names = new Set<string>()
+      // TurboModuleRegistry.get('X') and NativeModules.X direct access.
+      const registryRe = /TurboModuleRegistry\.get\s*\(\s*['"]([A-Za-z]\w*)['"]/g
+      let m: RegExpExecArray | null
+      while ((m = registryRe.exec(content)) !== null) names.add(m[1])
+      const directRe = /NativeModules\.([A-Z]\w*)/g
+      while ((m = directRe.exec(content)) !== null) names.add(m[1])
+      // A spec matches when its basename is Native<Name>, <Name>Spec, or contains the name.
+      const hasSpec = (name: string): boolean =>
+        specs.some(s => s === `Native${name}` || s === `${name}Spec` || s.includes(name))
+      for (const name of names) {
+        if (!hasSpec(name)) {
+          return {
+            passed: false,
+            message: `Native module '${name}' is used but has no TurboModule TypeScript spec (expected Native${name}.ts or ${name}Spec.ts)`,
+          }
+        }
       }
       return { passed: true }
     },

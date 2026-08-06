@@ -3,6 +3,7 @@ import { join } from 'path'
 import { Scanner } from './Scanner'
 import { buildCodeGraph } from './CodeGraph'
 import { buildKnowledgeGraph } from './KnowledgeGraph'
+import { newArchitectureLabel } from '../utils/newArchitecture'
 import type { ContextSnapshot } from './types'
 import type { PatternStore } from '../memory/PatternLearner'
 
@@ -57,6 +58,7 @@ export class ContextEngine {
       `- TypeScript: ${project.hasTypeScript ? 'Yes' : 'No'}`,
       `- Metro: ${project.hasMetro ? 'Yes' : 'No'}`,
       `- Tooling: ${project.tooling === 'expo' ? `Expo (SDK ${project.expoSdkVersion || 'unknown'})` : 'React Native CLI (bare)'}`,
+      `- New Architecture: ${newArchitectureLabel(project.newArchitecture)}`,
     ]
 
     if (components.length > 0) {

@@ -1,14 +1,10 @@
-import { GuardrailRule, GuardrailResult } from './types'
+import { GuardrailRule, GuardrailResult, GuardrailConventions } from './types'
 import { rules } from './rules'
 
 export interface GuardrailOptions {
   filePath: string
   content: string
-  conventions?: {
-    hasTypeScript?: boolean
-    usesStyleSheet?: boolean
-    hasNavigation?: boolean
-  }
+  conventions?: GuardrailConventions
   rules?: GuardrailRule[]
 }
 

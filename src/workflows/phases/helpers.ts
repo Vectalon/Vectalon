@@ -41,6 +41,7 @@ export function detectConventions(snapshot: import('../../harness/types').Contex
   packageName: string
   platforms: string[]
   lintConfig?: import('../../harness/types').LintConfigInfo
+  newArchitecture?: import('../../utils/newArchitecture').NewArchitectureInfo
 } {
   const components = snapshot?.components || []
   const project = snapshot?.project
@@ -51,6 +52,7 @@ export function detectConventions(snapshot: import('../../harness/types').Contex
     packageName: project?.name || 'app',
     platforms: project?.platforms || [],
     lintConfig: project?.lintConfig,
+    newArchitecture: project?.newArchitecture,
   }
 }
 

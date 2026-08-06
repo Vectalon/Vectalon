@@ -1,13 +1,27 @@
 export type GuardrailSeverity = 'error' | 'warning' | 'info'
 
+export interface GuardrailConventions {
+  hasTypeScript?: boolean
+  usesStyleSheet?: boolean
+  hasNavigation?: boolean
+  /** Detected React Native New Architecture state. */
+  newArchitecture?: import('../utils/newArchitecture').NewArchitectureInfo
+}
+
 export interface GuardrailRule {
   id: string
   name: string
   description: string
   severity: GuardrailSeverity
   enabled?: boolean
-  applicable?: (options: { filePath: string; content: string; conventions?: { hasTypeScript?: boolean; usesStyleSheet?: boolean; hasNavigation?: boolean } }) => boolean
-  check: (options: { filePath: string; content: string }) => { passed: boolean; message?: string; line?: number }
+  applicable?: (options: GuardrailContext) => boolean
+  check: (options: GuardrailContext) => { passed: boolean; message?: string; line?: number }
+}
+
+export interface GuardrailContext {
+  filePath: string
+  content: string
+  conventions?: GuardrailConventions
 }
 
 export interface GuardrailFinding {
