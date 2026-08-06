@@ -5,9 +5,9 @@ available as `npx vectalon <command>` (or `vectalon <command>` when installed
 globally or linked).
 
 Running `npx vectalon` with no arguments opens an **interactive menu** covering
-the most common actions (init, feature, refresh, ecosystem, doctor, bench,
-bundle, daemon, telemetry, ci, leaderboard, sync, policy, serve, import, pull,
-models, help).
+the most common actions (init, feature, refresh, impact, ecosystem, doctor,
+bench, bundle, daemon, telemetry, ci, leaderboard, sync, policy, serve, import,
+pull, models, help).
 
 ---
 
@@ -99,10 +99,10 @@ npx vectalon serve --model openai     # override the model provider for this run
 
 **What it does**
 
-- Exposes **47 built-in MCP tools** — 40 by default, plus the knowledge-base
+- Exposes **54 built-in MCP tools** — 47 by default, plus the knowledge-base
   and team-brain tools when those services are present (project context, SDLC
-  modules, devices & E2E incl. screen-reader control, knowledge base, team
-  brain)
+  modules, devices & E2E incl. screen-reader control, cross-package impact,
+  knowledge base, team brain)
 - Reads `.vectalon/ecosystem.json` and exposes each **enabled ecosystem MCP
   server as a first-class tool** (Metro MCP, Expo MCP, …) agents auto-discover
 - Loads the resolved model provider from the manifest (or `--model`) and logs
@@ -617,6 +617,53 @@ compact comparison with `--pr-comment` from the committed results, and upserts a
 single comment (located by the marker) so the leaderboard stays current as the
 branch evolves. When no results are committed yet (e.g. before the first nightly
 run), the workflow skips gracefully without failing the PR check.
+
+---
+
+## `impact`
+
+Compute the **cross-package blast radius** of changed files in a monorepo:
+which workspace packages consume them, which screens re-render, which
+navigation stacks are affected, and which Maestro E2E flows must run.
+
+```bash
+npx vectalon impact --changed packages/ui/src/Button.tsx
+npx vectalon impact --changed packages/ui/src/Button.tsx --pr 123 --push
+npx vectalon impact --changed "packages/ui/src/Button.tsx,packages/core/src/hooks.ts" --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root / workspace root (default: cwd) |
+| `--changed <files>` | Comma-separated changed file paths relative to the workspace root (required) |
+| `--pr <number>` | Post the impact report as a comment on the given pull request |
+| `--push` | Allow git push / PR comments |
+| `--json` | Print the impact report as JSON instead of markdown |
+| `--dry-run` | Simulate the PR comment without posting |
+
+**What it does**
+
+- Detects the workspace (pnpm / Yarn / npm / Turborepo / Lerna) and scans every
+  member package with the same AST analysis as the knowledge graph
+- Finds every file that imports a changed package by name (cross-package) or
+  directly imports a changed file (same-package), plus screens (default-export
+  components, navigator-declared components, Expo route files), navigator
+  definitions referencing affected screens, re-render screens (screens
+  rendering a changed binding), and `.maestro/` + `e2e/` YAML flows referencing
+  affected screens (component or route name)
+- With `--pr <number>`, posts the rendered report as a PR comment via the git
+  adapter (`--push` required for real posting; without it — or without a
+  GitHub remote / `GITHUB_TOKEN` / `gh` CLI — the adapter logs a warning and
+  skips the post, so the command still succeeds)
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Report printed (comment post is best-effort) |
+| 1 | Missing `--changed`
 
 ---
 

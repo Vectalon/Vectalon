@@ -6,6 +6,7 @@ import { WorkflowEngine, getWorkflow, listWorkflows, createWorkflowState } from 
 import { createAdapters } from '../../adapters'
 import { TestCaseWriter } from '../../sdlc/TestCaseWriter'
 import { runGuardrails } from '../../guardrails'
+import { analyzeCrossPackageImpact, renderImpactReport } from '../../harness'
 import type { GuardrailConventions } from '../../guardrails'
 
 const LATEST_KNOWN: Record<string, string> = {
@@ -174,6 +175,28 @@ export class CoreTools extends ToolRegistry {
       null,
       2
     )
+  }
+
+  @mcpTool('analyze_impact', 'Compute the cross-package blast radius of changed files in a monorepo: which workspace packages consume them, which screens re-render, which navigation stacks are affected, and which Maestro E2E flows must run. Pass comma-separated changed file paths (relative to the workspace root)', {
+    type: 'object',
+    properties: {
+      changedFiles: { type: 'string' },
+    },
+    required: ['changedFiles'],
+  })
+  async analyzeImpact(args: Record<string, unknown>): Promise<string> {
+    const changed = ((args.changedFiles as string) || '')
+      .split(/[,\n]/)
+      .map(s => s.trim())
+      .filter(Boolean)
+    if (changed.length === 0) {
+      return 'Pass `changedFiles` — a comma-separated list of changed paths relative to the workspace root (e.g. "packages/ui/src/Button.tsx").'
+    }
+    const root = this.ctx.engine.getSnapshot()?.project.root || process.cwd()
+    const impact = analyzeCrossPackageImpact(root, changed)
+    const content = renderImpactReport(impact)
+    this.persistArtifact('engineering', `Cross-package impact: ${changed.join(', ')}`, content)
+    return content
   }
 
   @mcpTool('analyze_error', 'Analyze a build or runtime error and provide fixes', {

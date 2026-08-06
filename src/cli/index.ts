@@ -16,6 +16,7 @@ import { ecosystemCommand } from './commands/ecosystem'
 import { syncCommand } from './commands/sync'
 import { benchCommand } from './commands/bench'
 import { leaderboardCommand } from './commands/leaderboard'
+import { impactCommand } from './commands/impact'
 import { doctorCommand } from './commands/doctor'
 import { logger } from './logger'
 import pkg from '../../package.json'
@@ -170,6 +171,16 @@ export function runCLI(): void {
     .action(benchCommand)
 
   program
+    .command('impact [directory]')
+    .description('Compute the cross-package blast radius of changed files in a monorepo (screens, navigation, E2E flows) and optionally post it as a PR comment')
+    .option('--changed <files>', 'Comma-separated changed file paths relative to the workspace root')
+    .option('--pr <number>', 'Post the impact report as a comment on the given pull request', Number)
+    .option('--push', 'Allow git push / PR comments')
+    .option('--json', 'Print the impact report as JSON')
+    .option('--dry-run', 'Simulate the PR comment without posting')
+    .action(impactCommand)
+
+  program
     .command('leaderboard [directory]')
     .description('Merge per-model benchmark results into a timestamped BENCHMARK_RESULTS.md leaderboard')
     .option('--out <path>', 'Output file (default BENCHMARK_RESULTS.md)')
@@ -218,6 +229,7 @@ async function runInteractive(): Promise<void> {
       { value: 'bundle', label: 'Analyze bundle', hint: 'Metro bundle snapshot + performance budgets' },
       { value: 'daemon', label: 'Live Metro daemon', hint: 'Watch bundle size and JS thread health continuously' },
       { value: 'telemetry', label: 'Ingest telemetry', hint: 'Sentry/Crashlytics/traces/analytics into the knowledge base' },
+      { value: 'impact', label: 'Analyze impact', hint: 'Cross-package blast radius of changed files (monorepo)' },
       { value: 'ci', label: 'Generate CI workflow', hint: 'EAS Workflows (Expo) or GitHub Actions (bare RN CLI)' },
       { value: 'ecosystem', label: 'Manage ecosystem', hint: 'Enable MCP servers, skills, tools, and hooks (Expo & RN-CLI)' },
       { value: 'doctor', label: 'Run doctor', hint: 'Verify every enabled ecosystem item is installed and reachable' },
@@ -345,6 +357,20 @@ async function runInteractive(): Promise<void> {
   if (action === 'telemetry') {
     await telemetryCommand('', {})
     p.outro('Telemetry ingested')
+    return
+  }
+
+  if (action === 'impact') {
+    const changed = await p.text({
+      message: 'Changed files (comma-separated, relative to the workspace root)',
+      placeholder: 'packages/ui/src/Button.tsx',
+      validate: value => value ? undefined : 'At least one changed file is required',
+    })
+    if (p.isCancel(changed)) {
+      p.outro('Cancelled')
+      return
+    }
+    await impactCommand('', { changed: changed as string })
     return
   }
 
