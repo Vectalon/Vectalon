@@ -15,6 +15,15 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    open-pull-requests-limit: 10
+    # actions/checkout and actions/setup-node are pinned at v4; their major
+    # tags beyond that do not exist, so block blind major bumps that would
+    # break every workflow (patch/minor updates are still applied).
+    ignore:
+      - dependency-name: actions/checkout
+        update-types: ['version-update:semver-major']
+      - dependency-name: actions/setup-node
+        update-types: ['version-update:semver-major']
     commit-message:
       prefix: chore
       include: scope

@@ -21,10 +21,11 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "lint": "eslint src __tests__ --ext .ts",
-  "lint:ext": "eslint extension/src --ext .ts",
+    "lint:ext": "eslint extension/src --ext .ts",
     "typecheck": "tsc --noEmit",
-  "typecheck:ext": "tsc -p extension --noEmit",
+    "typecheck:ext": "tsc -p extension --noEmit",
     "prepublishOnly": "npm run build"
   },
   "repository": {
