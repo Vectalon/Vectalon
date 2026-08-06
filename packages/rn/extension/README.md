@@ -1,6 +1,6 @@
 # Vectalon for VS Code
 
-A thin IDE layer over the [rn-vectalon](https://github.com/Vectalon/vectalon) MCP server. No new backend — the extension talks to `vectalon serve --protocol http` over the same HTTP tool surface the CLI exposes (`GET /tools`, `POST /call`).
+A thin IDE layer over the [rn-vectalon](https://github.com/Vectalon/Vectalon) MCP server. No new backend — the extension talks to `vectalon serve --protocol http` over the same HTTP tool surface the CLI exposes (`GET /tools`, `POST /call`).
 
 ## Install
 
@@ -21,7 +21,7 @@ code --install-extension vectalon-local.vsix
 
 ## Requirements
 
-- [rn-vectalon](https://github.com/Vectalon/vectalon) installed and on your `PATH`
+- [rn-vectalon](https://github.com/Vectalon/Vectalon) installed and on your `PATH`
 - Node.js 20+
 - A React Native project scanned with `vectalon init`
 
