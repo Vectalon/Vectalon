@@ -14,7 +14,7 @@ export type ArtifactType =
   | 'analytics'
   | 'telemetry'
 
-export type ArtifactSource = 'import' | 'generated' | 'user'
+export type ArtifactSource = 'import' | 'generated' | 'user' | 'daemon'
 
 export type ArtifactStatus = 'draft' | 'active' | 'deprecated'
 

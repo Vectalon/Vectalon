@@ -9,6 +9,7 @@ import { modelsCommand } from './commands/models'
 import { policyCommand } from './commands/policy'
 import { refreshCommand } from './commands/refresh'
 import { bundleCommand } from './commands/bundle'
+import { daemonCommand } from './commands/daemon'
 import { telemetryCommand } from './commands/telemetry'
 import { ciCommand } from './commands/ci'
 import { ecosystemCommand } from './commands/ecosystem'
@@ -99,6 +100,18 @@ export function runCLI(): void {
     .option('--platform <type>', 'Bundle platform (ios|android)', 'ios')
     .option('--static', 'Static on-disk checks only (skip the Metro build)')
     .action(bundleCommand)
+
+  program
+    .command('daemon')
+    .description('Live Metro/Hermes companion daemon — continuously watch bundle size, build errors, and JS thread health')
+    .option('-p, --port <number>', 'Daemon HTTP port (default 0 = auto-assign)', Number, 0)
+    .option('--metro-port <number>', 'Metro dev-server port (default 8081)', Number, 8081)
+    .option('--stop', 'Stop a running daemon')
+    .option('--status', 'Show daemon status')
+    .option('--once', 'Run a single device-probe pass and exit')
+    .option('--no-device-probe', 'Disable the Hermes JS-thread probe')
+    .option('--wire-metro', 'Patch metro.config.js to use the generated reporter')
+    .action(daemonCommand)
 
   program
     .command('telemetry [directory]')
@@ -203,6 +216,7 @@ async function runInteractive(): Promise<void> {
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Refresh knowledge', hint: 'Update best practices and dependency suggestions from the web' },
       { value: 'bundle', label: 'Analyze bundle', hint: 'Metro bundle snapshot + performance budgets' },
+      { value: 'daemon', label: 'Live Metro daemon', hint: 'Watch bundle size and JS thread health continuously' },
       { value: 'telemetry', label: 'Ingest telemetry', hint: 'Sentry/Crashlytics/traces/analytics into the knowledge base' },
       { value: 'ci', label: 'Generate CI workflow', hint: 'EAS Workflows (Expo) or GitHub Actions (bare RN CLI)' },
       { value: 'ecosystem', label: 'Manage ecosystem', hint: 'Enable MCP servers, skills, tools, and hooks (Expo & RN-CLI)' },
@@ -299,6 +313,32 @@ async function runInteractive(): Promise<void> {
   if (action === 'bundle') {
     await bundleCommand('', {})
     p.outro('Bundle analysis complete')
+    return
+  }
+
+  if (action === 'daemon') {
+    const mode = await p.select({
+      message: 'Daemon action',
+      options: [
+        { value: 'start', label: 'Start daemon', hint: 'Watch Metro builds + JS thread health' },
+        { value: 'status', label: 'Show status' },
+        { value: 'stop', label: 'Stop daemon' },
+      ],
+    })
+    if (p.isCancel(mode)) {
+      p.outro('Cancelled')
+      return
+    }
+    if (mode === 'status') {
+      await daemonCommand({ status: true })
+      return
+    }
+    if (mode === 'stop') {
+      await daemonCommand({ stop: true })
+      p.outro('Daemon stopped')
+      return
+    }
+    await daemonCommand({})
     return
   }
 

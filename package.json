@@ -59,7 +59,8 @@
     "@huggingface/transformers": "^4.2.0",
     "cli-table": "^0.3.11",
     "commander": "^15.0.0",
-    "picocolors": "^1.0.0"
+    "picocolors": "^1.0.0",
+    "ws": "^8.21.2"
   },
   "optionalDependencies": {
     "node-llama-cpp": "^3.19.1"

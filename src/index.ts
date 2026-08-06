@@ -141,6 +141,46 @@ export type {
 export { getConfig, setConfig } from './config'
 
 export {
+  startDaemon,
+  stopDaemon,
+  daemonStatus,
+  isDaemonRunning,
+  readDaemonState,
+  daemonStatePath,
+  PROBE_INTERVAL_MS,
+  MetroEventHandler,
+  DaemonServer,
+  runProbeCycle,
+  discoverHermesTargets,
+  classifyJsThread,
+  measureJsThreadLatency,
+  defaultWsFactory,
+  diffBundleComposition,
+  proactiveBundleTip,
+  writeMetroReporter,
+  buildMetroReporterSource,
+  hasMetroReporter,
+  metroReporterPath,
+  wireMetroReporter,
+} from './daemon'
+export type {
+  MetroEvent,
+  IngestResult,
+  HermesTarget,
+  JsThreadHealth,
+  ProbeResult,
+  DaemonStatus,
+  BundleCompositionDelta,
+  WsCtor,
+  WsInstance,
+  MeasureOptions,
+  ProbeCycleOptions,
+  StartDaemonOptions,
+  DaemonStateFile,
+  WireResult,
+} from './daemon'
+
+export {
   ECOSYSTEM_CATALOG,
   ECOSYSTEM_ITEMS,
   getEcosystemItem,
