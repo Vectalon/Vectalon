@@ -1,6 +1,7 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'fs'
 import { join, relative, extname } from 'path'
 import type { ProjectInfo, FileNode, ComponentInfo, LintConfigInfo } from './types'
+import { analyzeSourceFile } from './AstScanner'
 
 export interface PackageJsonLike {
   dependencies?: Record<string, string>
@@ -58,6 +59,11 @@ export class Scanner {
     return this.buildTree(srcPath, 0, maxDepth)
   }
 
+  /**
+   * Scan components using the AST analyzer — one entry per component
+   * definition (a file may contribute several). Skips files that fail to
+   * parse rather than guessing from regexes.
+   */
   scanComponents(): ComponentInfo[] {
     const components: ComponentInfo[] = []
     const srcDir = join(this.root, 'src')
@@ -73,17 +79,24 @@ export class Scanner {
           walkDir(fullPath)
         } else if (/\.(tsx?|jsx?)$/.test(entry)) {
           const content = readFileSync(fullPath, 'utf-8')
-          const name = entry.replace(/\.(tsx?|jsx?)$/, '')
-          const isComponent = /\b(React|Component|View|Text|StyleSheet)\b/.test(content)
+          const filePath = relative(this.root, fullPath)
+          const analysis = analyzeSourceFile(content, filePath)
+          if (!analysis) continue
 
-          if (isComponent) {
+          for (const def of analysis.components) {
             components.push({
-              name,
-              filePath: relative(this.root, fullPath),
-              isDefaultExport: /export\s+default/.test(content),
-              usesStyleSheet: /\bStyleSheet\.(create|flatten)\b/.test(content),
-              usesNavigation: /\buseNavigation|NavigationContainer\b/.test(content),
-              imports: this.extractImports(content),
+              name: def.name,
+              filePath,
+              isDefaultExport: def.isDefaultExport,
+              usesStyleSheet: analysis.usesStyleSheet,
+              usesNavigation: analysis.usesNavigation,
+              imports: analysis.imports.map(i => i.source),
+              kind: def.kind,
+              hooks: def.hooks,
+              hocs: def.hocs,
+              nativeModules: analysis.nativeModules,
+              platform: analysis.platform,
+              exportedNames: analysis.exports.filter(e => e.kind === 'default' || e.kind === 'named').map(e => e.name),
             })
           }
         }
