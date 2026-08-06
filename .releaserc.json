@@ -4,12 +4,17 @@
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
     "@semantic-release/changelog",
-    "@semantic-release/npm",
+    [
+      "@semantic-release/npm",
+      {
+        "pkgRoot": "packages/rn"
+      }
+    ],
     "@semantic-release/github",
     [
       "@semantic-release/exec",
       {
-        "publishCmd": "node ./scripts/publish-vsce.js ${nextRelease.version}"
+        "publishCmd": "node packages/rn/scripts/publish-vsce.js ${nextRelease.version}"
       }
     ]
   ]

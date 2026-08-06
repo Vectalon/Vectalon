@@ -1,0 +1,97 @@
+name: Publish Packages
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Package to publish'
+        required: true
+        default: '@vectalon/rn'
+        type: choice
+        options:
+          - '@vectalon/core'
+          - '@vectalon/rn'
+          - both
+
+jobs:
+  publish-core:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.package == '@vectalon/core' || github.event.inputs.package == 'both' || contains(github.event.head_commit.message, '[publish-core]')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm turbo run build --filter=@vectalon/core
+
+      - name: Test
+        run: pnpm turbo run test --filter=@vectalon/core
+
+      - name: Lint
+        run: pnpm turbo run lint --filter=@vectalon/core
+
+      - name: Type check
+        run: pnpm turbo run typecheck --filter=@vectalon/core
+
+      - name: Publish @vectalon/core
+        run: pnpm publish --filter=@vectalon/core --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-rn:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.package == '@vectalon/rn' || github.event.inputs.package == 'both' || contains(github.event.head_commit.message, '[publish-rn]')
+    needs: [publish-core]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm turbo run build --filter=@vectalon/rn
+
+      - name: Test
+        run: pnpm turbo run test --filter=@vectalon/rn
+
+      - name: Lint
+        run: pnpm turbo run lint --filter=@vectalon/rn
+
+      - name: Type check
+        run: pnpm turbo run typecheck --filter=@vectalon/rn
+
+      - name: Publish @vectalon/rn
+        run: pnpm publish --filter=@vectalon/rn --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
