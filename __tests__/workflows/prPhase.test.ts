@@ -109,7 +109,7 @@ function createContext(projectRoot: string, intentContent = REMOVE_DEP_INTENT): 
       updatedAt: Date.now(),
     },
     adapters: {
-      projectManagement: { name: 'mock', createTasks: jest.fn(), updateTasks: jest.fn(), closeTasks: jest.fn() },
+      projectManagement: { name: 'mock', createTasks: jest.fn(), updateTasks: jest.fn(), closeTasks: jest.fn(), readTicket: jest.fn(async () => null) },
       git,
       testRunner: { name: 'mock', runTests: jest.fn(), runLint: jest.fn(), runTypeCheck: jest.fn() },
       simulator: { name: 'mock', run: jest.fn() },

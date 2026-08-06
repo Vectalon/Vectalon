@@ -15,11 +15,30 @@ export interface Task {
   status: string
 }
 
+/**
+ * A ticket read from the project-management provider (Jira / GitHub / Monday)
+ * for headless ticket-to-PR flows (`vectalon feature --ticket <key>`).
+ */
+export interface Ticket {
+  key: string
+  title: string
+  description: string
+  url?: string
+  /** True when fetched from the live provider; false for the deterministic stub. */
+  fetched: boolean
+}
+
 export interface ProjectManagementAdapter {
   name: string
   createTasks(tasks: TaskInput[]): Promise<Task[]>
   updateTasks(ids: string[], status: string): Promise<void>
   closeTasks(ids: string[]): Promise<void>
+  /**
+   * Read a ticket by key. Providers without credentials (or a deterministic
+   * stub adapter) return a non-null stub ticket (fetched: false) so headless
+   * ticket-to-PR flows stay runnable everywhere.
+   */
+  readTicket(key: string): Promise<Ticket | null>
 }
 
 export interface CommitInput {

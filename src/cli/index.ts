@@ -52,8 +52,8 @@ export function runCLI(): void {
     .action(importCommand)
 
   program
-    .command('feature <prompt>')
-    .description('Run the feature-development SDLC workflow for a given prompt')
+    .command('feature [prompt]')
+    .description('Run the feature-development SDLC workflow for a given prompt (or --ticket <key> from the PM adapter)')
     .option('--workflow <id>', 'Workflow to run', 'feature-development')
     .option('--resume <state-id>', 'Resume a previous workflow state')
     .option('--from <phase-id>', 'Start from a specific phase when resuming')
@@ -67,6 +67,7 @@ export function runCLI(): void {
     .option('--heal-interactive', 'Prompt before applying each self-healing code-review fix (accept/reject/retry)')
     .option('--heal-attempts <n>', 'Max self-healing review attempts (default 3, or per .vectalon/policy.json)', Number)
     .option('--heal-severity <level>', 'Lowest severity that triggers healing: error|warning|info (default error)', 'error')
+    .option('--ticket <key>', 'Read a ticket from the PM adapter (Jira/GitHub/Monday) and run the workflow headlessly from its title + description')
     .action(featureCommand)
 
   program

@@ -36,6 +36,8 @@ export interface FeatureCommandOptions {
   healInteractive?: boolean
   healAttempts?: number
   healSeverity?: string
+  /** Read a ticket from the PM adapter and run the workflow headlessly from it. */
+  ticket?: string
 }
 
 export function formatIntentLabel(intent: WorkflowIntent): string {
@@ -105,6 +107,36 @@ export async function featureCommand(
   if (options.model && !VALID_PROVIDERS.includes(options.model)) {
     log.error(`Unknown model provider: ${options.model}`)
     log.info(`Available providers: ${VALID_PROVIDERS.join(', ')}`)
+    process.exit(1)
+  }
+
+  // Ticket-to-PR autonomy: with --ticket <key>, read the ticket through the PM
+  // adapter (Jira / GitHub / Monday; deterministic stub when no provider is
+  // configured) and drive the full workflow headlessly from its title +
+  // description. The self-healing code-review + verification loop then produces
+  // a real PR (with --push) and posts the review comment on it.
+  const adapters = createAdapters({ root, dryRun: options.dryRun, git: { push: options.push } })
+  if (options.ticket) {
+    try {
+      const ticket = await adapters.projectManagement.readTicket(options.ticket)
+      if (!ticket) {
+        log.error(`Ticket not found: ${options.ticket}`)
+        process.exit(1)
+      }
+      if (!prompt) {
+        prompt = [ticket.title, ticket.description].filter(Boolean).join('\n\n')
+      }
+      log.info(
+        `Ticket ${ticket.key}: ${ticket.title}${ticket.fetched ? (ticket.url ? ` (${ticket.url})` : ' (fetched)') : ' (deterministic stub — configure a PM provider for live fetch)'}`
+      )
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      log.error(`Could not read ticket ${options.ticket}: ${message}`)
+      process.exit(1)
+    }
+  }
+  if (!prompt) {
+    log.error('A prompt or --ticket <key> is required')
     process.exit(1)
   }
 
@@ -179,7 +211,6 @@ export async function featureCommand(
     }
   }
 
-  const adapters = createAdapters({ root, dryRun: options.dryRun, git: { push: options.push } })
   const deviceRun = options.device === true
 
   // Detect intent up front so users can see why the workflow routes the way it
