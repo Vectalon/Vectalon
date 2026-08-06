@@ -63,7 +63,9 @@
     "ws": "^8.21.2"
   },
   "optionalDependencies": {
-    "node-llama-cpp": "^3.19.1"
+    "better-sqlite3": "^13.0.3",
+    "node-llama-cpp": "^3.19.1",
+    "sqlite-vec": "^0.1.6"
   },
   "devDependencies": {
     "@semantic-release/changelog": "^7.0.0",
