@@ -61,6 +61,24 @@ export class ContextEngine {
       `- New Architecture: ${newArchitectureLabel(project.newArchitecture)}`,
     ]
 
+    const workspace = project.workspace
+    if (workspace?.isMonorepo) {
+      sections.push('', '## Workspace')
+      sections.push(`- Monorepo: Yes (${workspace.manager || 'unknown'} workspace)`)
+      sections.push(`- Workspace root: ${workspace.root || 'unknown'}`)
+      sections.push(`- Hoisted node_modules: ${workspace.hoistedNodeModules ? 'Yes — packages resolve from the workspace root, not this package' : 'No'}`)
+      const internal = Object.entries(workspace.internalPackages)
+        .slice(0, 20)
+        .map(([name, dir]) => `- ${name} (${dir})`)
+      if (internal.length > 0) {
+        sections.push('', '## Internal packages')
+        sections.push(...internal)
+      }
+      if (workspace.hoistedNodeModules) {
+        sections.push('', '> ⚠️ This app is in a monorepo workspace — `react-native` and other native deps are hoisted to the workspace root. Do not add them to this package\'s `dependencies`/`devDependencies`; install from the workspace root instead.')
+      }
+    }
+
     if (components.length > 0) {
       sections.push('', '## Components')
       const componentList = components

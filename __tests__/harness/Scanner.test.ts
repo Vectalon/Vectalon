@@ -1,4 +1,5 @@
 import { Scanner } from '../../src/harness/Scanner'
+import { join } from 'path'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
 const DEFAULT_FILES = {
@@ -90,6 +91,35 @@ describe('Scanner', () => {
       // DEFAULT_FILES pins react-native 0.72.0 → New Arch opt-in, off by default.
       const info = new Scanner(dir).scanProject()
       expect(info.newArchitecture?.enabled).toBe(false)
+    })
+
+    it('attaches workspace info and falls back to the hoisted Metro/tsconfig', () => {
+      const ws = createTempProject({
+        'pnpm-workspace.yaml': 'packages:\n  - "apps/*"\n',
+        'package.json': JSON.stringify({ name: 'root', version: '1.0.0', private: true }),
+        // react-native is hoisted to the workspace root manifest, not the app.
+        'node_modules/.bin/react-native': '#!/usr/bin/env node\n',
+        'metro.config.js': 'module.exports = {}',
+        'tsconfig.json': '{}',
+        'apps/mobile/package.json': JSON.stringify({
+          name: 'mobile-app',
+          version: '1.0.0',
+          dependencies: { react: '18.2.0' },
+        }),
+        'apps/mobile/src/App.tsx': 'export default function App() { return null }',
+      })
+      try {
+        const scanner = new Scanner(join(ws, 'apps', 'mobile'))
+        const info = scanner.scanProject()
+        expect(info.workspace?.isMonorepo).toBe(true)
+        expect(info.workspace?.manager).toBe('pnpm')
+        expect(info.workspace?.root).toBe(ws)
+        // Metro config + tsconfig live at the workspace root — still detected.
+        expect(info.hasMetro).toBe(true)
+        expect(info.hasTypeScript).toBe(true)
+      } finally {
+        cleanup(ws)
+      }
     })
   })
 

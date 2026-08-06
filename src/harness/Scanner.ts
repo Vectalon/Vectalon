@@ -3,6 +3,7 @@ import { join, relative, extname } from 'path'
 import type { ProjectInfo, FileNode, ComponentInfo, LintConfigInfo } from './types'
 import { analyzeSourceFile } from './AstScanner'
 import { detectNewArchitecture } from '../utils/newArchitecture'
+import { detectWorkspace, resolveReactNativeVersion } from './workspace'
 
 export interface PackageJsonLike {
   dependencies?: Record<string, string>
@@ -32,8 +33,25 @@ export class Scanner {
     }
 
     const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
-    const rnVersion = pkg.dependencies?.['react-native'] || ''
     const tooling = detectProjectTooling(pkg)
+    const workspace = detectWorkspace(this.root)
+    const wsRoot = workspace.isMonorepo && workspace.root ? workspace.root : null
+    // In a monorepo, react-native is usually hoisted to the workspace root
+    // manifest rather than declared in the app package (it may also sit in
+    // the app's devDependencies).
+    const rnVersion = resolveReactNativeVersion(this.root, {
+      ...(pkg.dependencies || {}),
+      ...(pkg.devDependencies || {}),
+    })
+    const hasTypeScript =
+      existsSync(join(this.root, 'tsconfig.json')) ||
+      (wsRoot !== null && wsRoot !== this.root && existsSync(join(wsRoot, 'tsconfig.json')))
+    const hasMetro =
+      existsSync(join(this.root, 'metro.config.js')) ||
+      existsSync(join(this.root, 'metro.config.cjs')) ||
+      (wsRoot !== null &&
+        wsRoot !== this.root &&
+        (existsSync(join(wsRoot, 'metro.config.js')) || existsSync(join(wsRoot, 'metro.config.cjs'))))
 
     return {
       root: this.root,
@@ -44,13 +62,14 @@ export class Scanner {
       devDependencies: pkg.devDependencies || {},
       scripts: pkg.scripts || {},
       platforms: this.detectPlatforms(pkg),
-      hasTypeScript: existsSync(join(this.root, 'tsconfig.json')),
-      hasMetro: existsSync(join(this.root, 'metro.config.js')) || existsSync(join(this.root, 'metro.config.cjs')),
+      hasTypeScript,
+      hasMetro,
       hasExpo: tooling === 'expo',
       tooling,
       expoSdkVersion: pkg.dependencies?.expo || '',
       lintConfig: this.detectLintConfigs(),
       newArchitecture: detectNewArchitecture(this.root, pkg),
+      workspace,
     }
   }
 

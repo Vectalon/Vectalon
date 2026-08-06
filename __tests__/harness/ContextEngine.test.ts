@@ -108,6 +108,38 @@ describe('ContextEngine', () => {
     expect(snapshot?.knowledgeGraph?.components.map(c => c.name)).toContain('ProfileCard')
   })
 
+  it('includes a monorepo workspace section when the app lives in a workspace', () => {
+    const ws = createTempProject({
+      'pnpm-workspace.yaml': 'packages:\n  - "packages/*"\n',
+      'package.json': JSON.stringify({ name: 'root', version: '1.0.0', private: true }),
+      'packages/mobile/package.json': JSON.stringify({
+        name: 'mobile-app',
+        version: '1.0.0',
+        dependencies: { 'react-native': '0.76.0' },
+      }),
+      'packages/ui/package.json': JSON.stringify({ name: '@acme/ui', version: '1.0.0' }),
+      'packages/mobile/src/ProfileCard.tsx': [
+        "import React from 'react'",
+        "import { View } from 'react-native'",
+        'const ProfileCard = () => <View />',
+        'export default ProfileCard',
+        '',
+      ].join('\n'),
+    })
+    try {
+      const engine = new ContextEngine(join(ws, 'packages', 'mobile'))
+      engine.init()
+      const prompt = engine.buildContextPrompt()
+      expect(prompt).toContain('## Workspace')
+      expect(prompt).toContain('Monorepo: Yes (pnpm workspace)')
+      expect(prompt).toContain('## Internal packages')
+      expect(prompt).toContain('@acme/ui')
+      expect(prompt).toContain('hoisted to the workspace root')
+    } finally {
+      cleanup(ws)
+    }
+  })
+
   it('includes navigation and native module sections when present', () => {
     const withNative = createTempProject({
       'package.json': JSON.stringify({ name: 'nav-app', version: '1.0.0', dependencies: { 'react-native': '0.72.0' } }),

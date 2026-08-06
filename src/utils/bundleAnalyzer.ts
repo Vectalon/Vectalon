@@ -2,6 +2,7 @@ import { existsSync, readFileSync, readdirSync, statSync, rmSync, mkdirSync } fr
 import { join, relative, extname } from 'path'
 import { tmpdir } from 'os'
 import { runCommand } from '../adapters/runCommand'
+import { resolveNodeModulesRoot } from '../harness/workspace'
 
 /**
  * Metro bundle analysis & performance budgets — fully deterministic, no model
@@ -198,11 +199,14 @@ export interface StaticBudgetResult {
  */
 export function checkStaticBudgets(
   projectRoot: string,
-  opts: { sideEffects?: boolean; imageBytes?: number; assetBytes?: number } = {}
+  opts: { sideEffects?: boolean; imageBytes?: number; assetBytes?: number; nodeModulesRoot?: string } = {}
 ): StaticBudgetResult {
   const findings: BudgetFinding[] = []
   const imageBytes = opts.imageBytes ?? 200 * 1024
   const assetBytes = opts.assetBytes ?? 1024 * 1024
+  // Monorepo-aware: dependencies are hoisted to the workspace root, so resolve
+  // node_modules there before falling back to the local store.
+  const nodeModulesRoot = opts.nodeModulesRoot || resolveNodeModulesRoot(projectRoot)
 
   // 1. Missing sideEffects: false across direct dependencies.
   let checkedPackages = 0
@@ -216,7 +220,10 @@ export function checkStaticBudgets(
         const names = Object.keys(pkg.dependencies || {})
         for (const name of names) {
           if (name === 'react-native' || name === 'react') continue
-          const depPath = join(projectRoot, 'node_modules', name, 'package.json')
+          // Hoisted store first; fall back to the local store so deps pinned
+          // inside the app package (not hoisted) are still checked.
+          const hoistedPath = join(nodeModulesRoot, name, 'package.json')
+          const depPath = existsSync(hoistedPath) ? hoistedPath : join(projectRoot, 'node_modules', name, 'package.json')
           if (!existsSync(depPath)) continue
           checkedPackages++
           let sideEffects: unknown
@@ -303,7 +310,9 @@ export async function runMetroBundleCommand(
   const entryFile = entryCandidates.find(f => existsSync(join(projectRoot, f)))
   if (!entryFile) return null
   // Guard on the react-native package itself; its `bin` provides the CLI.
-  const rnBin = join(projectRoot, 'node_modules', '.bin', 'react-native')
+  // Monorepo-aware: react-native is hoisted to the workspace root, so resolve
+  // the CLI binary from the hoisted node_modules when present.
+  const rnBin = join(resolveNodeModulesRoot(projectRoot), '.bin', 'react-native')
   if (!existsSync(rnBin)) return null
 
   // Unique scratch paths so concurrent runs / platforms never collide.
