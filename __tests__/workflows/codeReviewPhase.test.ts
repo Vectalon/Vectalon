@@ -365,6 +365,39 @@ describe('codeReviewPhase', () => {
     }
   })
 
+  it('appends the deterministic performance-budget section to the report', async () => {
+    const dir = createTempProject({
+      'package.json': JSON.stringify({ name: 'app', version: '1.0.0', dependencies: { leftpad: '^1.0.0' } }),
+      // Installed dep without `sideEffects: false` → tree-shaking info finding.
+      'node_modules/leftpad/package.json': JSON.stringify({ name: 'leftpad', version: '1.0.0' }),
+    })
+    try {
+      const ctx = makeContext({
+        phases: [
+          phase('implementation', 'Implementation', [
+            {
+              type: 'engineering',
+              title: 'Clean.ts',
+              content: 'export const clean = 1',
+              path: 'src/Clean.ts',
+            },
+          ]),
+        ],
+      }, {} as WorkflowContext['modelRouter'], dir)
+
+      const result = await codeReviewPhase.run(ctx)
+
+      expect(result.status).toBe('completed')
+      expect(result.output).toContain('## Performance budgets')
+      expect(result.output).toContain('missing-side-effects')
+      expect(result.output).toContain('leftpad')
+      // Budget findings are informational — they never fail the phase on their own.
+      expect(result.status).toBe('completed')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
   it('rejects non-code garbage fixes and does not overwrite the file', async () => {
     const dir = createTempProject({})
     try {

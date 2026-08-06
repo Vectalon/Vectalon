@@ -6,7 +6,7 @@ globally or linked).
 
 Running `npx vectalon` with no arguments opens an **interactive menu** covering
 the most common actions (init, feature, refresh, ecosystem, doctor, bench,
-leaderboard, sync, policy, serve, import, pull, models, help).
+bundle, leaderboard, sync, policy, serve, import, pull, models, help).
 
 ---
 
@@ -301,6 +301,51 @@ still cause exit code 1.
 |---|---|
 | 0 | No missing checks (after `--fix`, if given) |
 | 1 | One or more checks are still missing |
+
+---
+
+## `bundle`
+
+Build the Metro bundle and enforce **performance budgets** — fully deterministic,
+no model calls. Static checks always run against the project on disk; a real
+`react-native bundle --json` build snapshots the composition into the knowledge
+base and warns when it grows vs the previous snapshot.
+
+```bash
+npx vectalon bundle                         # build iOS bundle + run all budgets
+npx vectalon bundle --platform android      # build the Android bundle instead
+npx vectalon bundle --static                # on-disk static checks only (no build)
+```
+
+**What it checks**
+
+- **Large libraries** — direct dependencies adding >100 KB to the bundle
+  (per-package size from the Metro module map)
+- **Missing `sideEffects: false`** — installed deps without it can keep dead
+  code in the tree-shaking pass
+- **Unoptimized images** — png/jpeg/gif files over 200 KB (non-WebP) in
+  `assets`/`src/assets`/`app/assets`/`res`
+- **Oversized assets** — files over 1 MB in those asset directories
+- **Bundle growth** — each snapshot is stored in the knowledge base
+  (`.vectalon/knowledge/artifacts.json`, type `analytics`; the last 10 per
+  platform are kept); the command prints the delta vs the previous snapshot for
+  the same platform. Snapshot sizes are measured with `--minify false`, so they
+  track *composition* trends rather than exact production sizes
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--platform <type>` | `ios` \| `android` (default `ios`) |
+| `--static` | Skip the Metro build; static on-disk checks only |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Budgets met (or run completed with only informational findings) |
+| 1 | Missing `.vectalon/` directory |
 
 ---
 
