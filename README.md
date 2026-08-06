@@ -630,6 +630,11 @@ npx vectalon serve --protocol http --port 8931
 # In another terminal, use Codex CLI with the MCP endpoint
 ```
 
+The HTTP transport is a real JSON API, not just a discovery listing: `GET
+/tools` advertises the tools and `POST /call` (or `/invoke`) invokes any of
+them with a `{ id?, name, arguments }` body — so Codex CLI, web dashboards,
+and remote IDEs can call tools directly (with CORS enabled for browsers).
+
 ### Cursor / Windsurf / Any MCP Agent
 
 ```bash

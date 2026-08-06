@@ -103,6 +103,32 @@ npx vectalon serve --model openai     # override the model provider for this run
 - Loads the resolved model provider from the manifest (or `--model`) and logs
   it at startup, warning when a remote API key is missing
 - Registers sibling projects from `.vectalon/team.json` (team brain)
+
+**HTTP transport (Codex CLI, web dashboards, remote IDEs)**
+
+When `--protocol http` is used, the server exposes a JSON API in addition to
+advertising the tool list, so HTTP-based agents can actually invoke tools:
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/` or `/tools` | GET | Tool discovery — returns `{ tools, status }` |
+| `/call` | POST | Invoke a tool — body `{ id?, name, arguments }` |
+| `/invoke` | POST | Alias for `/call` |
+
+Tool calls return the tool result as JSON (`{ id, content, isError? }`), with
+`400` for malformed bodies, `404` for unknown tools/paths, `405` for wrong
+methods, and `500` when a tool handler errors. Responses include CORS headers
+so browser-based dashboards can call the server directly.
+
+```bash
+# Discover tools
+curl http://localhost:8931/tools
+
+# Call a tool
+curl -X POST http://localhost:8931/call \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"get_project_context","arguments":{}}'
+```
 - Starts a **background knowledge refresh** scheduler (hourly) and runs an
   immediate refresh when the cache is stale
 

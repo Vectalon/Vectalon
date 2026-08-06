@@ -52,6 +52,7 @@ export class MCPServer {
   private artifactStore: ArtifactStore | null
   private teamStore: TeamStore | null
   private subMcpClients: McpClientHandle[]
+  private httpServer: import('http').Server | null = null
 
   constructor(
     engine: ContextEngine,
@@ -70,7 +71,7 @@ export class MCPServer {
     this.registerDefaultTools()
   }
 
-  async start(port = 0): Promise<void> {
+  async start(port = 0): Promise<number | void> {
     switch (this.protocol) {
       case 'mcp':
       case 'stdio':
@@ -78,8 +79,7 @@ export class MCPServer {
         break
       case 'sse':
       case 'http':
-        await this.startHTTP(port)
-        break
+        return this.startHTTP(port)
     }
   }
 
@@ -539,8 +539,12 @@ export class MCPServer {
     }
   }
 
-  /** Close every proxied sub-MCP server (shutdown cleanup). */
+  /** Close the HTTP server (if any) and every proxied sub-MCP server. */
   close(): void {
+    if (this.httpServer) {
+      this.httpServer.close()
+      this.httpServer = null
+    }
     for (const client of this.subMcpClients) client.close()
   }
 
@@ -1135,19 +1139,130 @@ export class MCPServer {
     process.stdout.write(JSON.stringify(result) + '\n')
   }
 
-  private async startHTTP(port: number): Promise<void> {
+  private async startHTTP(port: number): Promise<number> {
     const http = await import('http')
     const server = http.createServer((req, res) => {
-      res.writeHead(200, { 'Content-Type': 'application/json' })
-      res.end(JSON.stringify({
-        tools: this.getToolList(),
-        status: 'running',
-      }))
+      void this.handleHttpRequest(req, res)
     })
+    this.httpServer = server
 
-    server.listen(port, () => {
-      process.stderr.write(`rn-vectalon MCP server running on port ${port}\n`)
+    return new Promise<number>((resolve, reject) => {
+      server.once('error', reject)
+      server.listen(port, () => {
+        const address = server.address()
+        const bound = typeof address === 'object' && address ? address.port : port
+        process.stderr.write(`rn-vectalon MCP server running on port ${bound}\n`)
+        resolve(bound)
+      })
     })
+  }
+
+  private async handleHttpRequest(req: import('http').IncomingMessage, res: import('http').ServerResponse): Promise<void> {
+    try {
+      const url = new URL(req.url || '/', 'http://localhost')
+      const path = url.pathname
+      const method = req.method || 'GET'
+
+      const sendJson = (status: number, body: unknown): void => {
+        if (res.writableEnded) return
+        res.writeHead(status, {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        })
+        res.end(JSON.stringify(body))
+      }
+
+      // CORS preflight for browser-based dashboards.
+      if (method === 'OPTIONS') {
+        res.writeHead(204, {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        })
+        res.end()
+        return
+      }
+
+      // Tool discovery.
+      if (method === 'GET' && (path === '/' || path === '/tools')) {
+        sendJson(200, { tools: this.getToolList(), status: 'running' })
+        return
+      }
+
+      // Tool invocation: POST /call or POST /invoke with a ToolCall JSON body
+      // { id?, name, arguments }. Tool-level failures come back as an isError
+      // flag on a 200 response (handleToolCall never throws for handler
+      // errors) — the transport stays 2xx and the error travels in the body.
+      if ((path === '/call' || path === '/invoke') && method === 'POST') {
+        const body = await this.readJsonBody(req)
+        if (!body) {
+          sendJson(400, { error: 'Invalid JSON body' })
+          return
+        }
+
+        const name = body.name
+        if (typeof name !== 'string' || !name) {
+          sendJson(400, { error: 'Missing required field: name' })
+          return
+        }
+
+        const args = body.arguments && typeof body.arguments === 'object' && !Array.isArray(body.arguments)
+          ? (body.arguments as Record<string, unknown>)
+          : {}
+
+        const call: ToolCall = {
+          id: typeof body.id === 'string' ? body.id : `http-${Date.now()}`,
+          name,
+          arguments: args,
+        }
+
+        const known = this.getToolList().some(t => t.name === name)
+        if (!known) {
+          sendJson(404, { error: `Unknown tool: ${name}` })
+          return
+        }
+
+        const result = await this.handleToolCall(call)
+        sendJson(200, result)
+        return
+      }
+
+      if (path === '/call' || path === '/invoke' || path === '/' || path === '/tools') {
+        sendJson(405, { error: `Method ${method} not allowed on ${path}` })
+        return
+      }
+
+      sendJson(404, { error: `Not found: ${path}` })
+    } catch (err) {
+      // Stream/parse failures (e.g. a client aborting mid-body) must never
+      // become an unhandled rejection or leave the client hanging.
+      const message = err instanceof Error ? err.message : String(err)
+      if (!res.writableEnded) {
+        res.writeHead(500, { 'Content-Type': 'application/json' })
+        res.end(JSON.stringify({ error: message }))
+      }
+    }
+  }
+
+  /** Read + parse a JSON request body, capped to 1 MiB. */
+  private async readJsonBody(req: import('http').IncomingMessage): Promise<Record<string, unknown> | null> {
+    const MAX_BYTES = 1024 * 1024
+    const chunks: Buffer[] = []
+    let size = 0
+    for await (const chunk of req) {
+      const buf = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
+      size += buf.length
+      if (size > MAX_BYTES) return null
+      chunks.push(buf)
+    }
+    try {
+      const parsed = JSON.parse(Buffer.concat(chunks).toString('utf-8'))
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : null
+    } catch {
+      return null
+    }
   }
 }
 
