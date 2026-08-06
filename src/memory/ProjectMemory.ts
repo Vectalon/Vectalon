@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { join } from 'path'
 import type { Pattern, PatternStore } from './PatternLearner'
+import { reportError } from '../utils/safe'
 
 interface MemoryStore {
   version: number
@@ -77,8 +78,8 @@ export class ProjectMemory implements PatternStore {
       if (existsSync(this.memoryPath)) {
         return JSON.parse(readFileSync(this.memoryPath, 'utf-8'))
       }
-    } catch {
-      // Corrupted memory file — start fresh
+    } catch (err) {
+      reportError(err, 'ProjectMemory: reading memory file')
     }
 
     return {

@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { join, relative } from 'path'
+import { reportError } from '../../utils/safe'
 import type { WorkflowPhase, WorkflowArtifact, TestRunnerAdapter, TestResult } from '../../adapters/types'
 import { isSafeProjectPath, isSelfPackageRepo, writeProjectFile, GENERATED_OUTPUT_DIR } from './fileOutput'
 import type { ContextSnapshot } from '../../harness/types'
@@ -147,8 +148,8 @@ function extractJsonFiles(content: string): GeneratedImplementation | null {
         return { files, notes: parsed.notes }
       }
     }
-  } catch {
-    // Ignore parse error
+  } catch (err) {
+    reportError(err, 'implementation: parsing model output')
   }
 
   return null
@@ -479,7 +480,8 @@ async function generateFixImplementation(
       temperature: 0.2,
     })
     raw = response.content
-  } catch {
+  } catch (err) {
+    reportError(err, 'implementation: model generation failed', 'warn')
     raw = ''
   }
 
@@ -859,7 +861,8 @@ async function modelCleanPackageUsages(
       temperature: 0.2,
     })
     raw = response.content
-  } catch {
+  } catch (err) {
+    reportError(err, 'implementation: model generation failed (add-feature)', 'warn')
     raw = ''
   }
 

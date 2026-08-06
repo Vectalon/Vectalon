@@ -2,6 +2,7 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import { logger } from '../cli/logger'
 import { runCommand } from './runCommand'
+import { reportError } from '../utils/safe'
 import { detectProjectTooling as detectToolingFromPkg } from '../harness/Scanner'
 import type { SimulatorAdapter, SimulatorOptions, SimulatorResult } from './types'
 
@@ -17,7 +18,8 @@ export function detectProjectTooling(root: string): 'expo' | 'rn-cli' {
       devDependencies?: Record<string, string>
     }
     return detectToolingFromPkg(pkg)
-  } catch {
+  } catch (err) {
+    reportError(err, 'simulator: detecting tooling from package.json')
     return 'rn-cli'
   }
 }

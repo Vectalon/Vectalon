@@ -3,6 +3,7 @@ import { join, dirname } from 'path'
 import { rules as baseRules } from './rules'
 import { runGuardrails } from './engine'
 import type { GuardrailRule, GuardrailResult, GuardrailSeverity, GuardrailConventions } from './types'
+import { reportError } from '../utils/safe'
 
 export interface PolicyRuleOverride {
   enabled?: boolean
@@ -82,9 +83,10 @@ function compileCustomRule(custom: PolicyCustomRule): GuardrailRule | null {
     if (custom.filePattern) {
       fileRegex = new RegExp(custom.filePattern)
     }
-  } catch {
+  } catch (err) {
     // A malformed pattern in policy.json must not crash the workflow;
     // the invalid rule is skipped instead.
+    reportError(err, 'PolicyEngine: compiling custom rule pattern')
     return null
   }
 
@@ -199,7 +201,8 @@ export class PolicyEngine {
         customRules: parsed.customRules || defaultPolicy.customRules,
         codeReview: parsed.codeReview || defaultPolicy.codeReview,
       }
-    } catch {
+    } catch (err) {
+      reportError(err, 'PolicyEngine: reading policy.json')
       return defaultPolicy
     }
   }

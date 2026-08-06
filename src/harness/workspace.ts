@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
 import { join, dirname } from 'path'
+import { bestEffort, reportError } from '../utils/safe'
 
 /**
  * Monorepo / workspace detection — Phase V-4. Many RN teams run pnpm
@@ -85,7 +86,8 @@ function detectMarker(dir: string): WorkspaceMarker | null {
   if (existsSync(pnpmYaml)) {
     try {
       return { manager: 'pnpm', patterns: parsePnpmWorkspaceYaml(readFileSync(pnpmYaml, 'utf-8')) }
-    } catch {
+    } catch (err) {
+      reportError(err, 'workspace: parsing pnpm-workspace.yaml')
       return { manager: 'pnpm', patterns: DEFAULT_PATTERNS }
     }
   }
@@ -95,7 +97,8 @@ function detectMarker(dir: string): WorkspaceMarker | null {
     try {
       const cfg = JSON.parse(readFileSync(lernaJson, 'utf-8')) as { packages?: string[] }
       return { manager: 'lerna', patterns: cfg.packages?.length ? cfg.packages : DEFAULT_PATTERNS }
-    } catch {
+    } catch (err) {
+      reportError(err, 'workspace: parsing lerna.json')
       return { manager: 'lerna', patterns: DEFAULT_PATTERNS }
     }
   }
@@ -111,8 +114,8 @@ function detectMarker(dir: string): WorkspaceMarker | null {
         const pkg = JSON.parse(readFileSync(pkgPath2, 'utf-8')) as { workspaces?: unknown }
         const ws = workspacesFromManifest(pkg)
         if (ws.length > 0) patterns = ws
-      } catch {
-        // Keep the default.
+      } catch (err) {
+        reportError(err, 'workspace: parsing turbo package.json')
       }
     }
     return { manager: 'turborepo', patterns }
@@ -141,8 +144,8 @@ function detectMarker(dir: string): WorkspaceMarker | null {
                 : 'npm'
         return { manager, patterns }
       }
-    } catch {
-      // Unreadable manifest — not a workspace.
+    } catch (err) {
+      reportError(err, 'workspace: parsing package.json workspaces field')
     }
   }
 
@@ -200,29 +203,19 @@ export function expandWorkspaceGlob(baseDir: string, pattern: string): string[] 
 }
 
 function readdirSafe(dir: string): string[] {
-  try {
-    return readdirSync(dir)
-  } catch {
-    return []
-  }
+  return bestEffort(() => readdirSync(dir), `workspace: reading directory ${dir}`) ?? []
 }
 
 function isDir(p: string): boolean {
-  try {
-    return statSync(p).isDirectory()
-  } catch {
-    return false
-  }
+  return bestEffort(() => statSync(p).isDirectory(), `workspace: statting ${p}`) ?? false
 }
 
 /** Read a package.json's name from a directory, or null. */
 function packageNameAt(dir: string): string | null {
-  try {
+  return bestEffort(() => {
     const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf-8')) as { name?: string }
     return pkg.name || null
-  } catch {
-    return null
-  }
+  }, `workspace: reading package.json in ${dir}`) ?? null
 }
 
 /** Detect the workspace the scanned root belongs to (walk-up from `root`). */
@@ -285,7 +278,8 @@ export function resolveReactNativeVersion(projectRoot: string, localDeps: Record
         devDependencies?: Record<string, string>
       }
       return pkg.dependencies?.['react-native'] || pkg.devDependencies?.['react-native'] || ''
-    } catch {
+    } catch (err) {
+      reportError(err, 'workspace: reading react-native version from workspace root')
       return ''
     }
   }

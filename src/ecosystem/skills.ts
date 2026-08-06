@@ -4,6 +4,7 @@ import { listEcosystemItems } from './catalog'
 import { readEcosystemConfig } from './config'
 import type { EcosystemConfig } from './config'
 import type { EcosystemItem } from './types'
+import { reportError } from '../utils/safe'
 
 /**
  * Ecosystem skills -> model context.
@@ -52,7 +53,8 @@ function findSkillFile(dir: string): string | null {
   let entries: string[]
   try {
     entries = readdirSync(dir)
-  } catch {
+  } catch (err) {
+    reportError(err, 'skills: reading skill directory')
     return null
   }
   const match = entries.find(e => e.toLowerCase() === 'skill.md')
@@ -66,7 +68,8 @@ export function readSkillContent(root: string, item: EcosystemItem): SkillSource
     if (file) {
       try {
         return { id: item.id, name: item.name, content: readFileSync(file, 'utf-8') }
-      } catch {
+      } catch (err) {
+        reportError(err, `skills: reading skill file ${file}`)
         return null
       }
     }
@@ -98,7 +101,8 @@ function skillsSignature(root: string, config: EcosystemConfig): string {
         if (file) {
           try {
             return `${item.id}:${statSync(file).mtimeMs}`
-          } catch {
+          } catch (err) {
+            reportError(err, `skills: statting skill file ${file}`)
             return `${item.id}:unreadable`
           }
         }

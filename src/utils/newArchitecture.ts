@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
 import { join } from 'path'
+import { reportError } from './safe'
 
 /**
  * React Native New Architecture detection.
@@ -37,7 +38,8 @@ function readIfExists(path: string): string | null {
   if (!existsSync(path)) return null
   try {
     return readFileSync(path, 'utf-8')
-  } catch {
+  } catch (err) {
+    reportError(err, 'newArchitecture: reading config file')
     return null
   }
 }
@@ -78,7 +80,8 @@ function walkFiles(root: string, onFile: (full: string) => void): void {
     let entries: string[]
     try {
       entries = readdirSync(dir)
-    } catch {
+    } catch (err) {
+      reportError(err, 'newArchitecture: reading directory entries')
       continue
     }
     for (const entry of entries) {
@@ -87,7 +90,8 @@ function walkFiles(root: string, onFile: (full: string) => void): void {
       let stat
       try {
         stat = statSync(full)
-      } catch {
+      } catch (err) {
+        reportError(err, 'newArchitecture: statting file')
         continue
       }
       if (stat.isDirectory()) {
@@ -116,7 +120,8 @@ export function findTurboModuleSpecs(root: string): string[] {
     let content: string
     try {
       content = readFileSync(full, 'utf-8')
-    } catch {
+    } catch (err) {
+      reportError(err, 'newArchitecture: reading TurboModule spec file')
       return
     }
     const registers = /TurboModuleRegistry/.test(content)

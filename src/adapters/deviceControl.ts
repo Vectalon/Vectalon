@@ -2,6 +2,7 @@ import { mkdirSync, statSync } from 'fs'
 import { join } from 'path'
 import { spawn } from 'child_process'
 import { runCommand } from './runCommand'
+import { reportError } from '../utils/safe'
 
 /**
  * Deep device control for iOS Simulator / Android Emulator: boot, screenshot,
@@ -53,7 +54,8 @@ export function detectDevicePlatform(root: string): DevicePlatform {
 function existsDir(p: string): boolean {
   try {
     return statSync(p).isDirectory()
-  } catch {
+  } catch (err) {
+    reportError(err, `deviceControl: statting ${p}`)
     return false
   }
 }

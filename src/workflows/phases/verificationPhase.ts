@@ -6,6 +6,7 @@ import { DeviceController } from '../../adapters/deviceControl'
 import { detectValidationCommands } from '../../utils/validationCommands'
 import { findSourceFiles } from '../../utils/unusedImports'
 import { phaseResult, failedPhase } from './helpers'
+import { reportError } from '../../utils/safe'
 import { getIntent, isRemoveDependency, isRefactor, isFix } from './intent'
 import { referenceTokens } from './implementationPhase'
 import { scanNativeReferences, scanDeadNativeConfig, isRemoveUnusedNativeConfigTarget } from '../../utils/nativeScan'
@@ -211,7 +212,8 @@ export const verificationPhase: WorkflowPhase = {
         flows = existsSync(flowsDir)
           ? readdirSync(flowsDir).filter(f => f.endsWith('.yaml') || f.endsWith('.yml'))
           : []
-      } catch {
+      } catch (err) {
+        reportError(err, 'verification: listing maestro flows')
         flows = []
       }
       if (flows.length > 0) {

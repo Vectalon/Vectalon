@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'fs'
 import { join, relative } from 'path'
 import { reportPathChange } from './fileDiff'
+import { reportError } from './safe'
 
 function displayPath(filePath: string): string {
   const rel = relative(process.cwd(), filePath)
@@ -19,7 +20,8 @@ export function findSourceFiles(dir: string, files: string[] = []): string[] {
   let entries: string[]
   try {
     entries = readdirSync(dir)
-  } catch {
+  } catch (err) {
+    reportError(err, 'unusedImports: reading source directory')
     return files
   }
 

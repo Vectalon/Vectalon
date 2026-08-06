@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, statSync } from 'fs'
 import { join } from 'path'
+import { reportError } from '../utils/safe'
 import type { AgentTool, ToolCall, ToolResult, ProtocolType } from './types'
 import type { McpClientHandle } from './subMcp'
 import { ContextEngine } from '../harness/ContextEngine'
@@ -964,7 +965,8 @@ export class MCPServer {
         temperature: 0.3,
       })
       return response.content
-    } catch {
+    } catch (err) {
+      reportError(err, 'MCPServer: LLM document expansion failed', 'warn')
       return scaffold
     }
   }
@@ -1094,7 +1096,8 @@ export class MCPServer {
         const parsed = JSON.parse(raw)
         if (!Array.isArray(parsed)) throw new Error('not an array')
         metrics = parsed as KpiMetric[]
-      } catch {
+      } catch (err) {
+        reportError(err, 'MCPServer: invalid metrics JSON')
         return `Invalid metrics JSON. Expected an array of { name, current, previous?, target? }. Received: ${raw.slice(0, 200)}`
       }
 
@@ -1229,7 +1232,8 @@ export class MCPServer {
         const parsed = JSON.parse(raw)
         if (!Array.isArray(parsed)) throw new Error('not an array')
         options = parsed as TradeoffOption[]
-      } catch {
+      } catch (err) {
+        reportError(err, 'MCPServer: invalid options JSON')
         return `Invalid options JSON. Expected an array of { name, scores: { attribute: 1-5 } }. Received: ${raw.slice(0, 200)}`
       }
 
@@ -1569,7 +1573,8 @@ export class MCPServer {
     try {
       const parsed = JSON.parse(Buffer.concat(chunks).toString('utf-8'))
       return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : null
-    } catch {
+    } catch (err) {
+      reportError(err, 'MCPServer: parsing JSON request body')
       return null
     }
   }

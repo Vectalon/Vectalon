@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 import type { ProjectModelConfig } from './model/setup'
+import { reportError } from './utils/safe'
 
 export interface ProjectManifest {
   version: string
@@ -24,7 +25,8 @@ export function readProjectManifest(root: string): ProjectManifest | null {
     const path = manifestPath(root)
     if (!existsSync(path)) return null
     return JSON.parse(readFileSync(path, 'utf-8')) as ProjectManifest
-  } catch {
+  } catch (err) {
+    reportError(err, `projectManifest: reading ${manifestPath(root)}`)
     return null
   }
 }

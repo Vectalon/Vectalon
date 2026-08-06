@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { reportPathChange } from '../../utils/fileDiff'
+import { reportError } from '../../utils/safe'
 
 export const VECTALON_PACKAGE_NAME = '@vectalon-dev/rn-vectalon'
 export const GENERATED_OUTPUT_DIR = '.vectalon/generated'
@@ -19,7 +20,8 @@ export function isSelfPackageRepo(projectRoot: string): boolean {
   try {
     const pkg = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf-8')) as { name?: string }
     return pkg.name === VECTALON_PACKAGE_NAME
-  } catch {
+  } catch (err) {
+    reportError(err, 'fileOutput: reading package.json to detect self repo')
     return false
   }
 }

@@ -13,6 +13,7 @@ import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { basename, resolve } from 'path'
 import { collectJsonFiles } from './fs'
 import type { BenchScenarioRun, BenchSummary } from './types'
+import { reportError } from '../utils/safe'
 
 /** One model pass: the provider id (from the filename) + its scored summary. */
 export interface LeaderboardRun {
@@ -40,8 +41,8 @@ export function loadLeaderboardRuns(dir: string): LeaderboardRun[] {
       const raw = JSON.parse(readFileSync(file, 'utf-8')) as Partial<BenchSummary>
       if (!raw || !Array.isArray(raw.runs)) continue
       runs.push({ model: basename(file, '.json'), summary: raw as BenchSummary })
-    } catch {
-      // skip unparseable result files
+    } catch (err) {
+      reportError(err, `leaderboard: skipping unparseable result file ${file}`)
     }
   }
   return runs.sort((a, b) => a.model.localeCompare(b.model))

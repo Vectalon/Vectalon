@@ -3,6 +3,7 @@ import { join } from 'path'
 import { listEcosystemItems, getEcosystemItem } from './catalog'
 import { readEcosystemConfig } from './config'
 import type { EcosystemItem } from './types'
+import { reportError } from '../utils/safe'
 
 export type DoctorStatus = 'ok' | 'missing' | 'warning'
 
@@ -847,7 +848,8 @@ function fixerCheckersProxy(root: string, fixer: DoctorFixer): DoctorCheckers {
       try {
         require.resolve(`${packageName}/package.json`, { paths: [root] })
         return true
-      } catch {
+      } catch (err) {
+        reportError(err, `ecosystem: resolving package ${packageName}`)
         return false
       }
     },

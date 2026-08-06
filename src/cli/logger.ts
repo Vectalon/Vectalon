@@ -13,6 +13,14 @@ export const logger = {
     process.stderr.write(`${pc.yellow('⚠')} ${msg}\n`)
   },
 
+  /** Debug trace; silent unless VECTALON_DEBUG=1 (used by reportError). */
+  debug(msg: string): void {
+    const enabled = process.env.VECTALON_DEBUG === '1' || process.env.VECTALON_DEBUG === 'true'
+    if (enabled) {
+      process.stderr.write(`${pc.dim('·')} ${msg}\n`)
+    }
+  },
+
   error(msg: string): void {
     process.stderr.write(`${pc.red('✖')} ${msg}\n`)
   },

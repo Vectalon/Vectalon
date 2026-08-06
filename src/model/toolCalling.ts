@@ -1,4 +1,5 @@
 import type { ModelRequest, ModelResponse, ToolDefinition } from './types'
+import { reportError } from '../utils/safe'
 
 /**
  * Local-model tool calling.
@@ -70,7 +71,8 @@ export function parseToolCallOutput(content: string): ParsedToolCall {
   let parsed: unknown
   try {
     parsed = JSON.parse(jsonText)
-  } catch {
+  } catch (err) {
+    reportError(err, 'toolCalling: parsing tool call JSON')
     return { kind: 'invalid' }
   }
   if (!parsed || typeof parsed !== 'object') return { kind: 'invalid' }

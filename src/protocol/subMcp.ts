@@ -1,6 +1,7 @@
 import { spawn } from 'child_process'
 import { listEcosystemItems, readEcosystemConfig } from '../ecosystem'
 import type { EcosystemItem } from '../ecosystem'
+import { reportError } from '../utils/safe'
 
 /**
  * Real sub-MCP proxying.
@@ -68,8 +69,8 @@ export function spawnMcpProcess(command: string, args: string[], options: SpawnP
         if (msg && typeof msg === 'object') {
           for (const cb of messageListeners) cb(msg as Record<string, unknown>)
         }
-      } catch {
-        // Non-JSON stdout line (npx banner, etc.) — ignore.
+      } catch (err) {
+        reportError(err, 'subMcp: non-JSON line from sub-MCP stdout')
       }
     }
   })
@@ -106,13 +107,13 @@ export function spawnMcpProcess(command: string, args: string[], options: SpawnP
     close() {
       try {
         if (child.pid) process.kill(-child.pid, 'SIGTERM')
-      } catch {
-        // Already gone.
+      } catch (err) {
+        reportError(err, 'subMcp: killing process group')
       }
       try {
         child.kill()
-      } catch {
-        // Already gone.
+      } catch (err) {
+        reportError(err, 'subMcp: killing child process')
       }
     },
   }

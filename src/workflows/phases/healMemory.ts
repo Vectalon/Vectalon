@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { join, dirname } from 'path'
 import type { LLMReviewFinding } from '../../sdlc/LLMCodeReviewer'
+import { reportError } from '../../utils/safe'
 
 export interface FailedHealRecord {
   timestamp: number
@@ -22,7 +23,8 @@ export function loadFailedHeals(projectRoot: string): FailedHealRecord[] {
     if (!existsSync(path)) return []
     const parsed = JSON.parse(readFileSync(path, 'utf-8')) as unknown
     return Array.isArray(parsed) ? (parsed as FailedHealRecord[]) : []
-  } catch {
+  } catch (err) {
+    reportError(err, 'healMemory: loading failed-heal records')
     return []
   }
 }
@@ -36,8 +38,8 @@ export function recordFailedHeals(projectRoot: string, records: FailedHealRecord
     const path = failedHealsPath(projectRoot)
     mkdirSync(dirname(path), { recursive: true })
     writeFileSync(path, JSON.stringify(merged, null, 2))
-  } catch {
-    // Best-effort persistence must never break the phase.
+  } catch (err) {
+    reportError(err, 'healMemory: persisting failed-heal records')
   }
 }
 

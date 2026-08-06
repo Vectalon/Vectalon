@@ -1,5 +1,6 @@
 import { parse, type ParserPlugin } from '@babel/parser'
 import { extname } from 'path'
+import { reportError } from '../utils/safe'
 
 /**
  * AST-based source analysis for React Native projects.
@@ -119,13 +120,15 @@ export function parseSource(content: string, fileName: string): BabelNode | null
   const sourceType = 'module' as const
   try {
     return parse(content, { sourceType, plugins: pluginsFor(fileName) })
-  } catch {
+  } catch (err) {
     // Flow-typed JS/JSX files fail the plain parse — retry with flow enabled.
+    reportError(err, 'AstScanner: initial source parse failed (retrying with flow)')
     const ext = extname(fileName)
     if (ext === '.js' || ext === '.jsx') {
       try {
         return parse(content, { sourceType, plugins: ['jsx', 'flow'] })
-      } catch {
+      } catch (err) {
+        reportError(err, 'AstScanner: flow parse retry failed')
         return null
       }
     }

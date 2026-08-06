@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { logger } from '../cli/logger'
 import { runCommand } from './runCommand'
+import { reportError } from '../utils/safe'
 import type { TestRunnerAdapter, TestOptions, TestResult } from './types'
 
 function detectPackageManager(root: string): 'npm' | 'yarn' | 'pnpm' {
@@ -22,7 +23,8 @@ function readScripts(root: string): Record<string, string> {
   try {
     const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf-8')) as { scripts?: Record<string, string> }
     return pkg.scripts || {}
-  } catch {
+  } catch (err) {
+    reportError(err, 'testRunner: reading package.json scripts')
     return {}
   }
 }

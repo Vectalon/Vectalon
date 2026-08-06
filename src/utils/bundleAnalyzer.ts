@@ -3,6 +3,7 @@ import { join, relative, extname } from 'path'
 import { tmpdir } from 'os'
 import { runCommand } from '../adapters/runCommand'
 import { resolveNodeModulesRoot } from '../harness/workspace'
+import { reportError } from './safe'
 
 /**
  * Metro bundle analysis & performance budgets — fully deterministic, no model
@@ -104,7 +105,8 @@ export function parseMetroStats(input: string | MetroBundleStats): MetroBundleSt
   if (typeof input === 'string') {
     try {
       parsed = JSON.parse(input)
-    } catch {
+    } catch (err) {
+      reportError(err, 'bundleAnalyzer: parsing metro bundle JSON')
       return null
     }
   }
@@ -229,7 +231,8 @@ export function checkStaticBudgets(
           let sideEffects: unknown
           try {
             sideEffects = JSON.parse(readFileSync(depPath, 'utf-8')).sideEffects
-          } catch {
+          } catch (err) {
+            reportError(err, 'bundleAnalyzer: reading dependency package.json for sideEffects')
             continue
           }
           const isTreeShakeable = sideEffects === false
@@ -241,8 +244,8 @@ export function checkStaticBudgets(
             })
           }
         }
-      } catch {
-        // Unreadable package.json — skip static dep checks.
+      } catch (err) {
+        reportError(err, 'bundleAnalyzer: reading project package.json for static checks')
       }
     }
   }
@@ -256,7 +259,8 @@ export function checkStaticBudgets(
     let entries: string[]
     try {
       entries = readdirSync(dir)
-    } catch {
+    } catch (err) {
+      reportError(err, 'bundleAnalyzer: reading asset directory')
       return
     }
     for (const entry of entries) {
@@ -265,7 +269,8 @@ export function checkStaticBudgets(
       let stat
       try {
         stat = statSync(full)
-      } catch {
+      } catch (err) {
+        reportError(err, 'bundleAnalyzer: statting asset file')
         continue
       }
       if (stat.isDirectory()) {
@@ -344,8 +349,8 @@ export async function runMetroBundleCommand(
   } finally {
     try {
       rmSync(scratchDir, { recursive: true, force: true })
-    } catch {
-      // Best-effort scratch cleanup.
+    } catch (err) {
+      reportError(err, 'bundleAnalyzer: cleaning up scratch directory')
     }
   }
 }

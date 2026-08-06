@@ -1,4 +1,5 @@
 import { writePhaseDocument } from './phases/documentWriter'
+import { reportError } from '../utils/safe'
 import type {
   WorkflowContext,
   WorkflowDefinition,
@@ -102,8 +103,8 @@ export class WorkflowEngine {
         content: result.output,
         path,
       })
-    } catch {
-      // Non-fatal: document writing failure should not fail the phase
+    } catch (err) {
+      reportError(err, 'WorkflowEngine: writing phase document', 'warn')
     }
   }
 

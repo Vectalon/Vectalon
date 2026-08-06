@@ -2,6 +2,7 @@ import { ArtifactStore } from './ArtifactStore'
 import { KnowledgeIndex } from './KnowledgeIndex'
 import { ROLE_ARTIFACT_TYPES } from './artifactTypes'
 import type { IndexedArtifact } from './KnowledgeIndex'
+import { reportError } from '../utils/safe'
 import type { EmbeddingProvider } from './embeddings'
 import type { RemoteEmbeddingProvider } from './remoteEmbeddings'
 import type { Artifact, ArtifactRole, ArtifactType } from './artifactTypes'
@@ -90,9 +91,10 @@ export class TeamStore {
         lexicalScore: r.lexicalScore,
         semanticScore: r.semanticScore,
       }))
-    } catch {
+    } catch (err) {
       // A dead embedding endpoint must never break search; degrade to the
       // deterministic lexical/hash path.
+      reportError(err, 'TeamStore: embedding search failed, degrading to lexical')
       return this.search(query)
     }
   }

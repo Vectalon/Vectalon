@@ -4,6 +4,7 @@ import { PatternLearner } from '../../memory/PatternLearner'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { logger } from '../logger'
+import { reportError } from '../../utils/safe'
 import { applyEcosystemRecommendations, recommendEcosystemSetup, detectEcosystemItemsFromDependencies, enableEcosystemItems } from '../../ecosystem'
 import pc from 'picocolors'
 import { pullCommand } from './pull'
@@ -108,8 +109,8 @@ export async function initCommand(rootDir: string, options: Record<string, unkno
       }
       dependencies = pkg.dependencies || {}
       devDependencies = pkg.devDependencies || {}
-    } catch {
-      logger.warn('package.json is not valid JSON; skipping dependency-based ecosystem detection.')
+    } catch (err) {
+      reportError(err, 'init: package.json is not valid JSON — skipping dependency-based ecosystem detection', 'warn')
     }
   }
   const detected = detectEcosystemItemsFromDependencies(dependencies, devDependencies)
