@@ -1,5 +1,6 @@
 import type { ModelPreset } from './presets'
 import { dynamicImport } from '../../utils/dynamicImport'
+import { reportError } from '../../utils/safe'
 import { getDownloadedModel } from './ModelStore'
 
 export interface InferenceOptions {
@@ -19,6 +20,63 @@ export interface InferenceResult {
   content: string
   modelId: string
   tokensUsed?: number
+}
+
+/**
+ * Probe whether the optional node-llama-cpp native module can actually be
+ * loaded on this machine. node-llama-cpp is an `optionalDependency`: on
+ * constrained systems the install (or its postinstall native build) may be
+ * skipped, in which case `import('node-llama-cpp')` rejects. The probe catches
+ * that so LocalProvider can degrade to the deterministic stub with a clear
+ * warning instead of failing at inference time.
+ *
+ * Returns a discriminated reason so callers can tailor the message:
+ * `true` when loadable, `'missing'` when the module isn't installed, or
+ * `'failed'` when it is installed but throws on load (e.g. broken native
+ * binary). Both failure modes are "no local model" — only the explanation
+ * differs.
+ */
+/**
+ * True when `err` is a "module not found" failure (package absent or its entry
+ * unresolved). Handles both the CommonJS `MODULE_NOT_FOUND` message and the
+ * ESM `ERR_MODULE_NOT_FOUND` / "Cannot find package" shape a dynamic import of
+ * a missing optional dependency produces.
+ */
+export function isMissingModuleError(err: unknown): boolean {
+  if (err instanceof Error) {
+    const code = (err as NodeJS.ErrnoException).code
+    if (code === 'MODULE_NOT_FOUND' || code === 'ERR_MODULE_NOT_FOUND') return true
+    if (err.message.includes('Cannot find module') || err.message.includes('Cannot find package')) return true
+  }
+  return false
+}
+
+/** Whether the optional module's entry can be resolved on disk. */
+function canResolveNodeLlamaCpp(): boolean {
+  try {
+    require.resolve('node-llama-cpp')
+    return true
+  } catch (err) {
+    reportError(err, 'Local model: resolving node-llama-cpp entry point')
+    return false
+  }
+}
+
+export async function probeNativeModule(): Promise<true | 'missing' | 'failed'> {
+  try {
+    await dynamicImport<typeof import('node-llama-cpp')>('node-llama-cpp')
+    return true
+  } catch (err) {
+    const code = (err as NodeJS.ErrnoException).code
+    // Jest runs tests in a VM without --experimental-vm-modules, so the
+    // Function-constructor dynamic import rejects there even though the module
+    // is installed and loads fine in real Node. Fall back to a resolution
+    // check so the probe reports availability correctly in tests too.
+    if (code === 'ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING_FLAG') {
+      return canResolveNodeLlamaCpp() ? true : 'missing'
+    }
+    return isMissingModuleError(err) ? 'missing' : 'failed'
+  }
 }
 
 /**

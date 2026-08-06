@@ -1,5 +1,6 @@
 import type { ModelPreset } from './presets'
 import { dynamicImport } from '../../utils/dynamicImport'
+import { isMissingModuleError } from './inference'
 import {
   getModelDir,
   registerModel,
@@ -59,6 +60,12 @@ export async function downloadModel(
     return { id: preset.id, filePath, alreadyExists: false }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
+    if (isMissingModuleError(err)) {
+      throw new Error(
+        `Failed to download model ${preset.id}: node-llama-cpp is not installed. ` +
+          `It is an optional dependency — run \`npm install node-llama-cpp\` and retry.`
+      )
+    }
     throw new Error(`Failed to download model ${preset.id}: ${message}`)
   }
 }
