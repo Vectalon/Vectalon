@@ -44,7 +44,7 @@ export function createAdapters(options: CreateAdaptersOptions = {}): AdapterRegi
   const baseConfig = { root, dryRun }
 
   return {
-    projectManagement: createProjectManagementAdapter(options.projectManagement || {}),
+    projectManagement: createProjectManagementAdapter({ root, ...(options.projectManagement || {}) }),
     git: createGitAdapter({ ...baseConfig, ...(options.git || {}) }),
     testRunner: createTestRunnerAdapter({ ...baseConfig, ...(options.testRunner || {}) }),
     simulator: createSimulatorAdapter({ ...baseConfig, ...(options.simulator || {}) }),

@@ -117,6 +117,21 @@ describe('featureCommand', () => {
     expect(stderrOutput).not.toContain('📝')
     expect(stderrOutput).not.toContain('✏️')
   })
+
+  it('runs the workflow headlessly from a ticket via --ticket (no positional prompt)', async () => {
+    await import('../../src/cli/commands/init').then(m => m.initCommand(dir, {}))
+    jest.spyOn(process.stdout, 'write').mockImplementation(() => true)
+
+    // The console PM adapter returns a deterministic stub ticket (title = key),
+    // which becomes the workflow prompt — no positional prompt needed. The
+    // workflow state ID is derived from the ticket key (lowercased).
+    await featureCommand('', { dryRun: true, ticket: 'MOB-123' })
+
+    expect(clackNoteOutput).toContain('mob-123')
+    expect(clackNoteOutput).toContain('Workflow: Feature Development')
+    expect(clackNoteOutput).toContain('Status: completed')
+    expect(clackNoteOutput).toContain('Files created or modified:')
+  })
 })
 
 describe('upgrade suggestion rendering', () => {

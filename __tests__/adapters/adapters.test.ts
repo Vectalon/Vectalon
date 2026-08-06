@@ -31,6 +31,51 @@ describe('Adapters', () => {
       expect(tasks).toHaveLength(1)
       expect(tasks[0].title).toBe('Test')
     })
+
+    it('reads a deterministic stub ticket from the console adapter', async () => {
+      const adapter = createProjectManagementAdapter({})
+      const ticket = await adapter.readTicket('MOB-123')
+      expect(ticket).not.toBeNull()
+      expect(ticket!.key).toBe('MOB-123')
+      expect(ticket!.title).toBe('MOB-123')
+      expect(ticket!.fetched).toBe(false)
+    })
+
+    it('falls back to the stub ticket for Jira without credentials', async () => {
+      const adapter = createProjectManagementAdapter({ provider: 'jira', baseUrl: 'https://example.atlassian.net', projectKey: 'MOB' })
+      const ticket = await adapter.readTicket('MOB-42')
+      expect(ticket).not.toBeNull()
+      expect(ticket!.key).toBe('MOB-42')
+      expect(ticket!.fetched).toBe(false)
+    })
+
+    it('creates a GitHub issue adapter when configured', () => {
+      const adapter = createProjectManagementAdapter({ provider: 'github', root: '/tmp/x', owner: 'acme', repo: 'app' })
+      expect(adapter.name).toBe('github')
+    })
+
+    it('reads a live GitHub ticket via the gh CLI', async () => {
+      const spy = jest.spyOn(runCommandModule, 'runCommand').mockResolvedValue({
+        success: true,
+        stdout: JSON.stringify({ number: 7, title: 'Add login screen', body: 'Users need to sign in.', url: 'https://github.com/acme/app/issues/7' }),
+        stderr: '',
+        exitCode: 0,
+      })
+      try {
+        const adapter = createProjectManagementAdapter({ provider: 'github', root: '/tmp/repo', owner: 'acme', repo: 'app' })
+        const ticket = await adapter.readTicket('7')
+        expect(ticket).not.toBeNull()
+        expect(ticket!.title).toBe('Add login screen')
+        expect(ticket!.description).toContain('sign in')
+        expect(ticket!.url).toContain('issues/7')
+        expect(ticket!.fetched).toBe(true)
+        const [cmd, args] = spy.mock.calls[0]
+        expect(cmd).toBe('gh')
+        expect(args).toEqual(expect.arrayContaining(['issue', 'view', '7', '--json']))
+      } finally {
+        spy.mockRestore()
+      }
+    })
   })
 
   describe('git', () => {
