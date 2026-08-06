@@ -41,7 +41,7 @@ rn-vectalon learns as your project grows:
 ### Multi-Role SDLC Harness
 
 Beyond the v0.1 core, rn-vectalon ships deterministic SDLC modules covering the
-whole lifecycle — **48 MCP tools** (41 always available; 5 more when a
+whole lifecycle — **50 MCP tools** (43 always available; 5 more when a
 knowledge base is present; 2 more when a team brain is configured), all
 callable by any MCP agent:
 
@@ -101,6 +101,7 @@ your toolchain, not just a text generator.
 - **TurboModule & Fabric component scaffolding.** `scaffold_native_module` deterministically generates the full New Architecture native stack from a structured spec: a typed `Native<Module>.ts` TurboModule spec (`TurboModuleRegistry.getEnforcing`), iOS Objective-C++ JSI bindings (`RCTEventEmitter` + promise handlers), Android Kotlin `Module` + `Package` (+ `SimpleViewManager` for Fabric components), a `<Module>.podspec`, `android/build.gradle` library config, and the `react-native.config.js` `codegenConfig` block — with codegen + `pod install` / gradle install steps. The **Expo Modules API** variant emits the `modules/<name>/` layout instead (`requireNativeModule`, Kotlin + Swift `Module` definitions with `AsyncFunction`/`Function`/`Events`, the `View`/`Prop` DSL for Fabric components, and `expo-module.config.json` for autolinking).
 - **Metro bundle analysis & performance budgets.** The code-review phase runs deterministic budget checks on every workflow — libraries over 100 KB, dependencies missing `sideEffects: false`, unoptimized images (>200 KB non-WebP), and oversized static assets — and when the project has a Metro entry point it snapshots a real `react-native bundle --json` build into the knowledge base, warning "this change increases the bundle by X%" when a PR grows it >5% vs the previous snapshot. `vectalon bundle` runs the same checks on demand (`--platform`, `--static`).
 - **Simulator/device control + Maestro E2E flows.** `vectalon serve` exposes device tools (`device_boot`, `device_screenshot`, `device_tap`, `device_swipe`, `device_open_url`, `device_logs`, `device_set_voiceover`, `device_accessibility_tree`, `device_announcements`) that drive the iOS Simulator (`xcrun simctl` + `idb`) and Android Emulator (`emulator` + `adb`) — boot, capture screenshots into `.vectalon/artifacts/screenshots/`, inject taps/swipes, open deep links, read logs, and **drive the screen reader** (enable/disable VoiceOver/TalkBack, dump the accessibility tree, read what the screen reader announced). The test-writing phase generates a **Maestro YAML flow** (`.maestro/<feature>.yaml`) straight from the acceptance criteria (Given/When/Then → `launchApp` / `tapOn` / `inputText` / `assertVisible` / `openLink` / `swipe`, ending in a screenshot) — plus an **accessibility variant** (`.maestro/<feature>-accessibility.yaml`) when the request mentions VoiceOver/TalkBack/accessibility, with explicit accessibility-tree selectors (the layer Maestro resolves by default). The verification phase runs those flows with `maestro test` when the CLI and a booted device are available (advisory — E2E never gates the workflow) and, on real runs, captures a **visual verification screenshot** (booting a simulator/emulator when needed) into `.vectalon/artifacts/screenshots/` that is attached to the workflow as a PR artifact.
+- **Visual verification loop.** After implementation, the verification phase boots (or reuses) a simulator/emulator, **deep-links to the newly generated screen** (the app's URL scheme is detected from `app.json` / iOS `Info.plist`, falling back to the package name; the screen is derived from the implementation artifacts), captures a screenshot, and **diffs it against a stored reference image** (`.vectalon/artifacts/reference/`, seeded from Figma frames or known-good screenshots via `visual_capture_reference`). UI regressions — misaligned elements, missing safe-area insets, wrong theme colors — surface as **annotated code-review findings** (severity + rule + message + pixel bounding box) in the verification report and as a design artifact on the PR. `visual_check` runs the diff on demand (device-free when given `path` + `reference`), and `visualCheck.captureReference` seeds a baseline straight from a workflow run.
 - **Monorepo workspace support (V-4).** The scanner detects pnpm / Yarn / npm / Turborepo / Lerna workspaces by walking up for `pnpm-workspace.yaml`, `turbo.json`, `lerna.json`, or a `workspaces` manifest field, maps internal packages (`@acme/ui` → `packages/ui`), and resolves the hoisted `node_modules` root so Metro bundle analysis and static budget checks look in the right place. Context prompts are monorepo-aware — they tell agents this app lives in a workspace, that `react-native` is hoisted to the root, and to avoid adding it to the sub-package's `devDependencies`.
 - **React 19 / React Compiler guardrails (VI-1).** The harness detects the React version and whether `babel-plugin-react-compiler` is wired up (manifest or babel/eslint config), then guardrails flag render-phase `ref.current` mutation, `useEffect` subscriptions without cleanup, React 19 `use()` without a `<Suspense>` boundary, unstable dependency arrays, `forwardRef` on React 19 (use ref-as-prop), and redundant manual `useMemo`/`useCallback` when the Compiler auto-memoizes. Context prompts explain the memoization implications so generated code matches the project's React.
 - **VS Code extension (IV-1).** A thin IDE layer over the exact same MCP server — `extension/` connects to `vectalon serve --protocol http` (auto-starting it when needed) and adds command-palette workflows (run a feature workflow, review/guardrail the current file, generate a component, show project context, search the knowledge base), **inline guardrail status** as Problems-panel diagnostics on save/active-file change with a status-bar summary, and a **Knowledge Base sidebar** that groups the artifact store by type and renders each artifact in a preview panel. No new backend — the extension reuses the existing HTTP tool surface (`GET /tools`, `POST /call`).
@@ -390,7 +391,7 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 │  │  │  (Project Memory + Pattern Learner)     │  │    │
 │  │  └─────────────────────────────────────────┘  │    │
 │  │  ┌─────────────────────────────────────────┐  │    │
-│  │  │       SDLC Modules (48 MCP tools)       │  │    │
+│  │  │       SDLC Modules (50 MCP tools)       │  │    │
 │  │  │  BA · QA · Architecture · Security ·   │  │    │
 │  │  │  UX · DevOps · Ops · Analytics         │  │    │
 │  │  └─────────────────────────────────────────┘  │    │
@@ -411,7 +412,7 @@ Zero lock-in. rn-vectalon is a standard npm package that integrates with your ex
 ### Flow
 
 1. **`vectalon init`** — Scans your project, catalogues components, detects patterns, stores context in `.vectalon/`
-2. **`vectalon serve`** — Starts a local server exposing 48 MCP tools (41 by default, plus the knowledge-base and team-brain tools when those services are present, and the **real proxied tools of every enabled ecosystem MCP server**, namespaced as `<id>__<tool>`)
+2. **`vectalon serve`** — Starts a local server exposing 50 MCP tools (43 by default, plus the knowledge-base and team-brain tools when those services are present, and the **real proxied tools of every enabled ecosystem MCP server**, namespaced as `<id>__<tool>`)
 3. **`vectalon import`** — Feeds the Company Brain: PRDs, Jira exports, postmortems, any SDLC artifact
 4. **Agent connects** — Your AI agent (Claude Code, OpenCode, etc.) connects to the MCP server and gets full project awareness
 5. **Agent acts** — The agent uses the harness tools to generate code, fix bugs, write tests, produce PRDs/ADRs/test plans — all in your project's style
@@ -859,7 +860,7 @@ See `src/adapters/` for the interfaces and implementations.
 
 ## Available Tools
 
-Once the server is running, agents can call **48 built-in tools** — 41 always
+Once the server is running, agents can call **50 built-in tools** — 43 always
 available, 5 more when a knowledge base is present (`list_artifacts`,
 `get_artifact`, `get_knowledge_context`, `link_artifacts`, `ingest_telemetry`),
 and 2 more when a team brain is configured (`get_team_context`,
@@ -936,6 +937,8 @@ Expo MCP, …) exposed as first-class tools:
 | `device_set_voiceover` | Enable/disable the screen reader (Android: TalkBack; iOS: VoiceOver preference) |
 | `device_accessibility_tree` | Dump the accessibility tree the screen reader navigates (`uiautomator dump` / `idb ui describe-all`) |
 | `device_announcements` | Read recent screen-reader announcements to verify what VoiceOver/TalkBack spoke |
+| `visual_capture_reference` | Store a screenshot (or an existing PNG via `path`) as the visual reference for a screen `key` — the baseline the visual verification loop diffs against |
+| `visual_check` | Capture a screenshot and diff it against a stored reference (or diff two PNGs directly via `path` + `reference`) — reports UI regressions as annotated findings |
 
 #### Team brain (when `.vectalon/team.json` is configured)
 
@@ -1590,6 +1593,13 @@ Areas we'd love help with:
   `src/sdlc/MaestroFlowWriter.ts` generates `.maestro/*.yaml` flows from
   acceptance criteria in the test phase; the verification phase runs them with
   `maestro test` (advisory); 9 device MCP tools + `generate_maestro_flow`
+- ✅ **Visual verification loop** — the verification phase boots a device,
+  deep-links to the new screen (scheme from `app.json`/`Info.plist`,
+  `src/utils/deepLink.ts`), screenshots, and pixel-diffs against a stored
+  reference (`src/utils/visualDiff.ts` + `src/utils/referenceStore.ts`, pngjs,
+  deterministic, no model calls) producing annotated UI-regression findings;
+  `visual_capture_reference` + `visual_check` MCP tools (diff two PNGs
+  device-free)
 - ✅ **Monorepo workspace support (V-4)** — `src/harness/workspace.ts` detects
   pnpm/Yarn/npm/Turborepo/Lerna workspaces by walking up from the scanned
   directory (`pnpm-workspace.yaml`, `turbo.json`, `lerna.json`, or a

@@ -7,6 +7,9 @@ import { ModelRouter } from '../../src/model/ModelRouter'
 jest.mock('../../src/adapters/runCommand', () => ({
   runCommand: jest.fn(async () => ({ success: true, stdout: 'MOCKED DEVICE OUTPUT', stderr: '', exitCode: 0 })),
 }))
+import { existsSync, writeFileSync } from 'fs'
+import { join } from 'path'
+import { PNG } from 'pngjs'
 import { resetConfig } from '../../src/config'
 import type { Pattern, PatternStore } from '../../src/memory/PatternLearner'
 import { createTempProject, cleanup, useTempConfig } from '../helpers/tmp'
@@ -72,7 +75,7 @@ describe('MCPServer', () => {
 
   it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(41)
+    expect(names).toHaveLength(43)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -116,6 +119,8 @@ describe('MCPServer', () => {
         'device_announcements',
         'generate_maestro_flow',
         'scaffold_native_module',
+        'visual_capture_reference',
+        'visual_check',
       ])
     )
   })
@@ -167,6 +172,9 @@ describe('MCPServer', () => {
       }
       if (tool.name === 'scaffold_native_module') {
         args.spec = JSON.stringify({ moduleName: 'Battery', methods: [{ name: 'getLevel', returnType: 'number' }] })
+      }
+      if (tool.name === 'visual_capture_reference') {
+        args.key = 'LoginScreen'
       }
 
       const result = await server.handleToolCall({ id: '1', name: tool.name, arguments: args })
@@ -336,6 +344,59 @@ describe('MCPServer', () => {
     expect(result.content).toContain('- launchApp')
     expect(result.content).toContain('- tapOn: "Login"')
     expect(result.content).toContain('- assertVisible: "Dashboard"')
+  })
+
+  it('visual_check diffs two PNG files deterministically without a device', async () => {
+    const server = createServer()
+    const writePng = (name: string, color: [number, number, number]): string => {
+      const png = new PNG({ width: 40, height: 40 })
+      for (let i = 0; i < 40 * 40; i++) {
+        png.data[i * 4] = color[0]
+        png.data[i * 4 + 1] = color[1]
+        png.data[i * 4 + 2] = color[2]
+        png.data[i * 4 + 3] = 255
+      }
+      const path = join(dir, name)
+      writeFileSync(path, PNG.sync.write(png))
+      return path
+    }
+    const reference = writePng('ref.png', [10, 20, 30])
+    const matching = writePng('match.png', [10, 20, 30])
+    const different = writePng('diff.png', [200, 0, 0])
+
+    const pass = await server.handleToolCall({
+      id: '1',
+      name: 'visual_check',
+      arguments: { path: matching, reference },
+    })
+    expect(pass.isError).not.toBe(true)
+    expect(pass.content).toContain('passed')
+
+    const fail = await server.handleToolCall({
+      id: '2',
+      name: 'visual_check',
+      arguments: { path: different, reference },
+    })
+    expect(fail.isError).not.toBe(true)
+    expect(fail.content).toContain('found differences')
+    expect(fail.content).toContain('visual-drift')
+  })
+
+  it('visual_capture_reference stores an imported PNG under the store key', async () => {
+    const server = createServer()
+    const png = new PNG({ width: 2, height: 2 })
+    for (let i = 0; i < 4; i++) png.data[i * 4 + 3] = 255
+    const path = join(dir, 'figma-frame.png')
+    writeFileSync(path, PNG.sync.write(png))
+
+    const result = await server.handleToolCall({
+      id: '1',
+      name: 'visual_capture_reference',
+      arguments: { key: 'LoginScreen', path },
+    })
+    expect(result.isError).not.toBe(true)
+    expect(result.content).toContain('**OK**')
+    expect(existsSync(join(dir, '.vectalon', 'artifacts', 'reference', 'LoginScreen-ios.png'))).toBe(true)
   })
 
   it('device tools run live only when deviceControlLive is enabled', async () => {
