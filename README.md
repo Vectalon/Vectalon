@@ -104,6 +104,7 @@ your toolchain, not just a text generator.
 - **React 19 / React Compiler guardrails (VI-1).** The harness detects the React version and whether `babel-plugin-react-compiler` is wired up (manifest or babel/eslint config), then guardrails flag render-phase `ref.current` mutation, `useEffect` subscriptions without cleanup, React 19 `use()` without a `<Suspense>` boundary, unstable dependency arrays, `forwardRef` on React 19 (use ref-as-prop), and redundant manual `useMemo`/`useCallback` when the Compiler auto-memoizes. Context prompts explain the memoization implications so generated code matches the project's React.
 - **VS Code extension (IV-1).** A thin IDE layer over the exact same MCP server — `extension/` connects to `vectalon serve --protocol http` (auto-starting it when needed) and adds command-palette workflows (run a feature workflow, review/guardrail the current file, generate a component, show project context, search the knowledge base), **inline guardrail status** as Problems-panel diagnostics on save/active-file change with a status-bar summary, and a **Knowledge Base sidebar** that groups the artifact store by type and renders each artifact in a preview panel. No new backend — the extension reuses the existing HTTP tool surface (`GET /tools`, `POST /call`).
 - **Zero-config WASM inference.** A quantized Qwen2.5-Coder model (ONNX via `@huggingface/transformers`, the WASM runtime — no API key, no native build, any CPU) is a first-class model tier: `npm install` + `vectalon feature` produces real model output immediately. Weights download from Hugging Face Hub on first use (progress-cached under the shared model store, `~/.config/rn-vectalon/models/wasm`) and the deterministic stub is now the *graceful fallback*, not the primary path — it only appears when the download fails (e.g. no network). Opt out with `RN_VECTALON_NO_WASM=1`, or pick a specific model/dtype with `RN_VECTALON_WASM_MODEL` / `RN_VECTALON_WASM_DTYPE`.
+- **Live Metro/Hermes companion daemon.** `vectalon daemon` runs in the background and turns the harness proactive instead of reactive: it hooks into **Metro's reporter events** (via a generated reporter wired into `metro.config.js`), **Hermes JS-thread health** (CDP probe over the Metro WebSocket), and **device logs** — feeding live build errors and bundle-size deltas straight into the knowledge base. Every `bundle_build_done` snapshots composition (reusing `vectalon bundle`'s budgets) and diffs it against the previous build to surface proactive tips ("your last Metro build added lodash — +80 KB; use lodash.debounce instead"); build failures are persisted as deduped artifacts so they're never lost to a scrolling terminal. `vectalon daemon --once` runs a single probe pass (CI-friendly), `--status`/`--stop` manage it, and `--no-device-probe`/`--wire-metro` control the probe loop and reporter wiring.
   - System prompts that require real, runnable code and forbid TODOs/placeholders
   - Convention detection (TypeScript, navigation, StyleSheet) that shapes generated code
   - A deterministic fallback scaffold when no model is downloaded
@@ -439,7 +440,7 @@ After installing locally, you can use the shorter alias:
 npx vectalon
 ```
 
-Running `npx vectalon` with no arguments opens an interactive menu so you can pick init, feature, refresh, bundle, telemetry, ci, ecosystem, doctor, bench, leaderboard, sync, policy, serve, import, pull, models, or help without memorizing flags.
+Running `npx vectalon` with no arguments opens an interactive menu so you can pick init, feature, refresh, bundle, daemon, telemetry, ci, ecosystem, doctor, bench, leaderboard, sync, policy, serve, import, pull, models, or help without memorizing flags.
 
 For the full command reference — every command with its options, examples, and
 exit codes — see [docs/CLI_REFERENCE.md](docs/CLI_REFERENCE.md).
@@ -555,6 +556,44 @@ and notes that weights download on first use.
   `RN_VECTALON_WASM_MODEL=<hf-repo>` and `RN_VECTALON_WASM_DTYPE=q4` swap the
   model (presets: `onnx-community/Qwen2.5-Coder-0.5B-Instruct` default,
   `onnx-community/Qwen2.5-Coder-1.5B-Instruct` for better quality).
+
+### Live Metro/Hermes companion daemon
+
+The companion daemon runs in the background and makes the harness **proactive**
+— it watches the live dev loop and records what it learns, instead of waiting
+for CLI commands:
+
+```bash
+npx vectalon daemon                 # start the background daemon
+npx vectalon daemon --status        # is it running? (pid, port, health)
+npx vectalon daemon --stop          # stop it
+npx vectalon daemon --once          # single probe pass, then exit (CI-friendly)
+npx vectalon daemon --wire-metro    # also patch metro.config.js to use the reporter
+```
+
+- **Metro reporter hook** — the daemon writes a generated reporter to
+  `.vectalon/metro/vectalon-reporter.js` and POSTs `bundle_build_done` /
+  `bundle_build_failed` events to its own HTTP endpoint (wired into
+  `metro.config.js` automatically with `--wire-metro`, or by hand with
+  `reporter: require('./.vectalon/metro/vectalon-reporter.js')`).
+- **Bundle-size deltas** — every successful build is parsed with the same
+  budget analyzer as `vectalon bundle`, snapshotted into the knowledge base
+  (the team brain sees it like any other artifact), and diffed against the
+  previous build in the session. When a build adds a library or grows a module,
+  the daemon logs a **proactive tip** ("your last Metro build added lodash —
+  +80 KB; use lodash.debounce instead") and persists it as a bounded set of
+  `engineering` artifacts in the store.
+- **Build failures never lost** — `bundle_build_failed` events are persisted as
+  deduped artifacts (identical failures collapse by content checksum), so a
+  failure that scrolls past in the terminal is still in the knowledge base.
+- **Hermes JS-thread health** — every 30s the daemon connects to the Hermes
+  CDP inspector over the Metro WebSocket and measures JS-thread latency;
+  spikes are recorded as probe artifacts in the knowledge base. Disable with
+  `--no-device-probe`.
+- **HTTP endpoint** — `GET /health` (status + event count + last probe) and
+  `POST /metro/event` (the reporter's ingest path) on the daemon's port.
+  The state file lives at `.vectalon/daemon.json`; `--stop`/`--status` read it
+  to find the live pid and refuse double-runs.
 
 ### Run a feature workflow
 

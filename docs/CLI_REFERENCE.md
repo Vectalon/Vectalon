@@ -6,8 +6,8 @@ globally or linked).
 
 Running `npx vectalon` with no arguments opens an **interactive menu** covering
 the most common actions (init, feature, refresh, ecosystem, doctor, bench,
-bundle, telemetry, ci, leaderboard, sync, policy, serve, import, pull, models,
-help).
+bundle, daemon, telemetry, ci, leaderboard, sync, policy, serve, import, pull,
+models, help).
 
 ---
 
@@ -143,6 +143,63 @@ curl -X POST http://localhost:8931/call \
 |---|---|
 | 0 | Server running (until stopped) |
 | 1 | No `.vectalon/` directory found |
+
+---
+
+## `daemon`
+
+Run the **live Metro/Hermes companion daemon** in the background. Instead of
+waiting for CLI commands, the daemon hooks into the dev loop and records what
+it learns: Metro build events (bundle size + build errors) and Hermes JS-thread
+health.
+
+```bash
+npx vectalon daemon                    # start the background daemon
+npx vectalon daemon --status           # show whether it is running (pid, port, health)
+npx vectalon daemon --stop             # stop a running daemon
+npx vectalon daemon --once             # single probe pass, then exit (CI-friendly)
+npx vectalon daemon --wire-metro       # also patch metro.config.js to use the reporter
+npx vectalon daemon --no-device-probe  # disable the Hermes JS-thread probe loop
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `-p, --port <number>` | Daemon HTTP port (default `0` = auto-assign; written to `.vectalon/daemon.json`) |
+| `--metro-port <number>` | Metro dev-server port for the Hermes probe (default `8081`) |
+| `--stop` | Stop a running daemon via its state file |
+| `--status` | Show daemon status (running pid, port, started-at, health) |
+| `--once` | Run a single probe pass (Metro status + Hermes latency) and exit |
+| `--no-device-probe` | Disable the 30s Hermes JS-thread probe loop |
+| `--wire-metro` | Patch `metro.config.js` to use the generated reporter |
+
+**What it does**
+
+- Writes a generated **Metro reporter** to `.vectalon/metro/vectalon-reporter.js`
+  that POSTs `bundle_build_done` / `bundle_build_failed` events to the daemon's
+  HTTP endpoint (auto-wired into `metro.config.js` with `--wire-metro`; the
+  daemon prints the one-line manual wiring for other setups)
+- On every successful build, **snapshots bundle composition** into the knowledge
+  base (reusing the `bundle` command's budget analyzer) and diffs it against the
+  previous build in the session, logging **proactive tips** when a build adds a
+  library or grows a module ("your last Metro build added lodash — +80 KB")
+  and persisting them as bounded `engineering` artifacts
+- Persists **build failures** as deduped artifacts (by content checksum) so a
+  failure that scrolls past in the terminal stays in the knowledge base
+- Probes **Hermes JS-thread health** every 30s over the Metro WebSocket (CDP)
+  and records latency spikes as probe artifacts
+- Exposes `GET /health` (status, event count, last probe) and
+  `POST /metro/event` (reporter ingest) on its port; the state file at
+  `.vectalon/daemon.json` lets `--stop`/`--status` find the live pid, and a
+  second `vectalon daemon` refuses to double-run
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Daemon started / status shown / stopped / single pass completed |
+| 1 | No `.vectalon/` directory found, or a daemon is already running |
 
 ---
 
