@@ -5,6 +5,42 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.10] - Unreleased
+
+### Added — Sandboxed code execution (V-1)
+
+- **`src/sandbox/`** — the trust foundation for running generated code, tests,
+  and scripts in isolated processes with **no ambient authority**:
+  - **Environment scrubbing** (`env.ts`): deny-by-default — only a small base
+    allowlist survives (PATH, HOME, TMPDIR, locale, …) plus explicit
+    `allowEnv` / `env` opt-ins; credential-shaped ambient variables
+    (tokens, keys, passwords, SSH agents, CI secrets) are always dropped.
+    Every run reports the dropped variable *names* so callers see exactly
+    what was stripped.
+  - **Isolation backends** (`backend.ts`): `sandbox-exec` (macOS seatbelt
+    profile — file writes confined to the sandbox root, outbound network
+    denied by default), `bwrap` (bubblewrap on Linux — read-only root bind +
+    network namespace), and an honest `process` fallback (scrubbed env +
+    rlimits + sandbox-root cwd) when no OS backend exists.
+  - **POSIX rlimits** (`limits.ts`): CPU seconds, virtual memory, file size,
+    open files, and process-count caps applied via a `ulimit` wrapper before
+    the command execs.
+  - **Bounded execution** (`run.ts`): wall-clock timeout with SIGTERM →
+    SIGKILL to the process group (a runaway never hangs the caller), output
+    capture caps per stream, and a structured result (`ok`, `exitCode`,
+    `signal`, `timedOut`, `isolation`, `droppedEnv`, `durationMs`).
+- **CLI** — `vectalon sandbox [dir] -- <command> [args...]` with
+  `--timeout`, `--cpu`, `--memory`, `--network`, `--allow-env`, `--json`.
+  Pro tier gated. Prints the backend used, dropped env vars, and the output.
+- **MCP tools** — `sandbox_run` (requires an explicit `root` + `command` —
+  never defaults to cwd, so agents can't execute against the wrong directory)
+  and `sandbox_backend` (reports the isolation available on the machine).
+- **Self-test** — six new `sandbox` category checks (env scrub, backend
+  detection, command execution, wall-clock timeout, CPU rlimit, write
+  confinement — the last warns honestly on process-level backends).
+- **Tests** — 20+ new tests covering the scrubber, limit wrapper, backends,
+  executor, MCP tools, and the CLI command.
+
 ## [0.1.9] - Unreleased
 
 ### Added — Hermes performance profiling & runtime regression detection (I-7 / M17)

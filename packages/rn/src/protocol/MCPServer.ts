@@ -12,6 +12,7 @@ import {
   EcosystemTools,
   UpgradeTools,
   PerfTools,
+  SandboxTools,
   type ToolContext,
   type ToolRegistry,
 } from './tools'
@@ -82,6 +83,7 @@ export class MCPServer {
       new EcosystemTools(ctx),
       new UpgradeTools(ctx),
       new PerfTools(ctx),
+      new SandboxTools(ctx),
     ]
     this.registerTools()
   }

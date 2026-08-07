@@ -952,6 +952,66 @@ npx vectalon profile --profile app.cpuprofile --baseline release --json
 
 ---
 
+## `sandbox`
+
+Run a command in an **isolated process with no ambient authority** — the
+trust foundation for running generated code, tests, and scripts. The
+environment is scrubbed to a deny-by-default allowlist, file writes are
+confined to the sandbox root (OS-enforced on macOS/Linux), network is denied
+by default, and the run is bounded by a wall-clock timeout plus optional CPU /
+memory limits. Requires the **Pro tier**.
+
+```bash
+npx vectalon sandbox -- node -e 'console.log("hello")'        # run inside the project dir
+npx vectalon sandbox --root /tmp/scratch -- npm test           # confine to a scratch dir
+npx vectalon sandbox --timeout 5000 -- node run-tests.js       # bound execution
+npx vectalon sandbox --cpu 10 --memory 512 -- jest             # CPU + memory caps
+npx vectalon sandbox --allow-env NODE_ENV -- npm run build     # keep one ambient var
+npx vectalon sandbox --json -- node -e 'process.exit(3)'       # structured result
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `--root <dir>` | Sandbox root — the working directory and (on macOS/Linux) the only writable location (default: cwd) |
+| `<command> [args...]` | The command to run inside the sandbox (everything after `--`) |
+| `--timeout <ms>` | Wall-clock timeout in ms (default 30000) — SIGTERM then SIGKILL to the whole process group |
+| `--cpu <seconds>` | CPU time limit in seconds (`ulimit -t`) |
+| `--memory <mb>` | Virtual memory limit in MB (`ulimit -v`) |
+| `--network` | Allow outbound network (default: **denied** where the backend supports it) |
+| `--allow-env <names>` | Comma-separated ambient env vars to keep (deny-by-default otherwise) |
+| `--json` | Print the structured result as JSON instead of the human report |
+
+**What it does**
+
+- **Environment scrubbing** — deny-by-default: only PATH, HOME, TMPDIR, and
+  locale variables survive unless passed via `--allow-env`. Credential-shaped
+  ambient variables (AWS keys, GitHub tokens, npm tokens, SSH agents, CI
+  secrets) are **always dropped**, and the report lists exactly which variable
+  names were stripped.
+- **OS isolation** — on macOS, `sandbox-exec` confines file writes to the
+  sandbox root and denies outbound network by default; on Linux, `bwrap` binds
+  the filesystem read-only and unshares the network namespace. Where neither
+  exists, it degrades to process-level isolation (scrubbed env + rlimits) and
+  says so honestly in the report.
+- **Bounds** — a wall-clock timeout kills the whole process group (SIGTERM →
+  SIGKILL), and POSIX rlimits cap CPU seconds, virtual memory, file size,
+  open files, and process count. Output capture is capped per stream.
+
+The same capability is exposed to agents as the MCP tools `sandbox_run`
+(requires an explicit `root` + `command` — never defaults to the current
+directory) and `sandbox_backend`.
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Command succeeded inside the sandbox |
+| 1 | Command failed, timed out, was killed by a limit, tier gate failed, or the root does not exist |
+
+---
+
 ## `policy`
 
 Manage project-specific guardrail policy (`.vectalon/policy.json`).

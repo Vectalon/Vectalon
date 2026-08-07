@@ -24,6 +24,7 @@ export type SelfTestCategory =
   | 'memory'
   | 'upgrade'
   | 'perf'
+  | 'sandbox'
 
 export const SELF_TEST_CATEGORIES: SelfTestCategory[] = [
   'cli',
@@ -40,6 +41,7 @@ export const SELF_TEST_CATEGORIES: SelfTestCategory[] = [
   'memory',
   'upgrade',
   'perf',
+  'sandbox',
 ]
 
 export type CheckStatus = 'pass' | 'fail' | 'warn'

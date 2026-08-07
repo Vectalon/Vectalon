@@ -16,6 +16,7 @@ import { policyCommand } from './commands/policy'
 import { refreshCommand } from './commands/refresh'
 import { bundleCommand } from './commands/bundle'
 import { profileCommand } from './commands/profile'
+import { sandboxCommand } from './commands/sandbox'
 import { daemonCommand } from './commands/daemon'
 import { telemetryCommand } from './commands/telemetry'
 import { authCommand } from './commands/auth'
@@ -143,6 +144,20 @@ export function createProgram(): Command {
     .action(profileCommand)
 
   program
+    .command('sandbox')
+    .description('Run a command in an isolated process with no ambient authority — scrubbed env, writes confined to the sandbox root, network denied by default, CPU/memory/time bounds')
+    .argument('<command>', 'Command to run inside the sandbox')
+    .argument('[args...]', 'Arguments for the command')
+    .option('--root <dir>', 'Sandbox root — working directory + the only writable location (default: cwd)')
+    .option('--timeout <ms>', 'Wall-clock timeout in ms (default 30000)', Number)
+    .option('--cpu <seconds>', 'CPU time limit in seconds')
+    .option('--memory <mb>', 'Virtual memory limit in MB')
+    .option('--network', 'Allow outbound network (default: denied where the backend supports it)')
+    .option('--allow-env <names>', 'Comma-separated ambient env vars to keep')
+    .option('--json', 'Print the result as JSON')
+    .action((command, args, opts) => sandboxCommand(command, args, opts))
+
+  program
     .command('daemon')
     .description('Live Metro/Hermes companion daemon — continuously watch bundle size, build errors, and JS thread health')
     .option('-p, --port <number>', 'Daemon HTTP port (default 0 = auto-assign)', Number, 0)
@@ -257,7 +272,7 @@ export function createProgram(): Command {
   program
     .command('selftest [directory]')
     .description('Test every feature of the harness in a sandbox — visible report + full activity trace of every step, command, and file modification')
-    .option('--category <cat>', 'Run only one category (cli, sdlc, guardrails, knowledge, harness, model, mcp, workflows, ecosystem, bench, adapters, memory, upgrade)')
+    .option('--category <cat>', 'Run only one category (cli, sdlc, guardrails, knowledge, harness, model, mcp, workflows, ecosystem, bench, adapters, memory, upgrade, perf, sandbox)')
     .option('--only <id>', 'Run a single check by id')
     .option('--model <provider>', 'Force the model provider for the real-inference check (local/wasm/openai/anthropic)')
     .option('--require-model', 'Fail (instead of warn) when no real model is available for the inference check')

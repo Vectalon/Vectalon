@@ -75,7 +75,7 @@ describe('MCPServer', () => {
 
   it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(55)
+    expect(names).toHaveLength(57)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -211,6 +211,12 @@ describe('MCPServer', () => {
       if (tool.name === 'apply_upgrade') {
         args.directory = dir
         args.to = '0.76'
+      }
+      // sandbox_run requires an explicit root + command — never defaults to cwd.
+      if (tool.name === 'sandbox_run') {
+        args.root = dir
+        args.command = 'node'
+        args.args = ['-e', 'process.stdout.write("ok")']
       }
 
       const result = await server.handleToolCall({ id: '1', name: tool.name, arguments: args })

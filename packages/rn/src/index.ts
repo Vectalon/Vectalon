@@ -354,6 +354,26 @@ export type {
 } from './upgrade'
 
 export {
+  runSandboxed,
+  scrubEnv,
+  detectBackend,
+  resetBackendCache,
+  buildMacProfile,
+  buildBwrapArgs,
+  buildLimitWrapper,
+  buildShellArgs,
+  renderSandboxResult,
+} from './sandbox'
+export type {
+  SandboxOptions,
+  SandboxResult,
+  IsolationLevel,
+  SandboxBackend,
+  ScrubEnvOptions,
+  ScrubEnvResult,
+} from './sandbox'
+
+export {
   parseCpuProfile,
   analyzeCpuProfile,
   analyzeHeapSnapshot,

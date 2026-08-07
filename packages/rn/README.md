@@ -51,6 +51,7 @@ Run `npx vectalon <command> --help` for detailed options.
 | `selftest [dir]` | Test every feature in a sandbox — live progress + visible report + activity trace; runs REAL model inference when a model/API key is available | `--category <cat>`, `--only <id>`, `--model <provider>`, `--require-model`, `--list`, `--json`, `--open`, `--out <dir>`, `--no-html`, `--verbose` |
 | `bundle [dir]` | Metro bundle analysis and performance budgets | `--platform <ios\|android>`, `--static` |
 | `profile [dir]` | Hermes runtime profiling: JS-thread blocking, retained objects, leak candidates, baselines + regressions | `--profile <file>`, `--heap <file>`, `--baseline <label>`, `--save-baseline`, `--threshold-ms <n>`, `--json` |
+| `sandbox` | Run a command in an isolated process with no ambient authority (scrubbed env, writes confined to the root, network denied by default) | `-- <command> [args...]`, `--root <dir>`, `--timeout <ms>`, `--cpu <s>`, `--memory <mb>`, `--network`, `--allow-env <names>`, `--json` |
 | `ci [dir]` | Self-healing CI workflow generator (EAS / GitHub Actions) | `--dry-run` |
 | `release [dir]` | Autonomous release pipeline: bump, changelog, E2E submit, crash monitor | `--version`, `--changelog`, `--submit`, `--monitor`, `--baseline`, `--hours`, `--json` |
 | `sync [dir]` | Sync team brain to a hosted git remote | `--push`, `--pull`, `--init`, `--remote <url>`, `--branch`, `--force` |
@@ -205,6 +206,37 @@ npx vectalon profile --profile app.cpuprofile                 # compare against 
   code, not just static rules.
 - Also available as the MCP tool `analyze_hermes_profile`.
 
+## Sandboxed Code Execution (`vectalon sandbox`)
+
+Run generated code, tests, and scripts in **isolated processes with no
+ambient authority** — the trust foundation for auto-executed code
+(**Pro tier**):
+
+```bash
+npx vectalon sandbox -- node -e 'console.log("hello")'        # run inside the project dir
+npx vectalon sandbox --root /tmp/scratch -- npm test           # confine to a scratch dir
+npx vectalon sandbox --timeout 5000 -- node run-tests.js       # bound execution
+npx vectalon sandbox --cpu 10 --memory 512 -- jest             # CPU + memory caps
+```
+
+- **Environment scrubbing** — deny-by-default: only PATH, HOME, TMPDIR, and
+  locale vars survive unless you pass `--allow-env`. Credential-shaped
+  ambient variables (AWS keys, GitHub tokens, npm tokens, SSH agents, CI
+  secrets) are always dropped; the report lists exactly what was stripped.
+- **OS isolation** — on macOS, `sandbox-exec` confines file writes to the
+  sandbox root and denies outbound network by default; on Linux, `bwrap`
+  binds the filesystem read-only and unshares the network namespace. Where
+  neither exists, it degrades to process-level isolation (scrubbed env +
+  rlimits) and says so honestly.
+- **Bounds** — wall-clock timeout (SIGTERM → SIGKILL to the whole process
+  group) and POSIX rlimits for CPU seconds, virtual memory, file size,
+  open files, and process count. A runaway can never hang the caller.
+- **Structured result** — every run returns `ok`, `exitCode`, `signal`,
+  `timedOut`, `isolation`, `droppedEnv`, and `durationMs` (also as JSON).
+
+Also available as the MCP tools `sandbox_run` (requires an explicit `root`
++ `command` — never defaults to the current directory) and `sandbox_backend`.
+
 ## Upgrade Copilot (`vectalon upgrade`)
 
 Automated React Native / Expo version upgrades with codemods, AST-grade
@@ -352,6 +384,7 @@ packages/rn/
 │   ├── memory/                 # Pattern learning, project memory
 │   ├── model/                  # Routing, local/WASM/remote inference
 │   ├── protocol/               # MCP server, sub-MCP clients, tools
+│   ├── sandbox/                # Sandboxed code execution (env scrub, backends, rlimits, bounded runs)
 │   ├── sdlc/                   # 30 SDLC analyzers/writers/generators
 │   ├── training/               # Fine-tuning dataset builder, LoRA plan
 │   ├── utils/                  # Bundle analysis, Figma, diff, native scan, visual diff
@@ -426,6 +459,7 @@ In dev mode:
 - **M15** — Figma-to-code pipeline (design → component → tests)
 - **M16** — Maestro/Detox E2E flow generation and execution
 - **M17** — Performance regression detection (bundle budgets, startup time)
+- **V-1** — Sandboxed code execution: isolated processes with no ambient authority (env scrub, write/network confinement, rlimits) — the trust foundation for the Metro sandbox (I-4) and the self-healing CI loop
 - **M18** — Crash-rate anomaly detection and auto-rollout gates
 - **M19** — Custom model provider support (Azure, Ollama, vLLM, Groq)
 - **M20** — Enterprise SSO and RBAC for team brain

@@ -10,6 +10,7 @@
  */
 
 import { readFileSync } from 'fs'
+import { join } from 'path'
 import pkg from '../../package.json'
 import { logger } from '../cli/logger'
 import { initCommand } from '../cli/commands/init'
@@ -26,6 +27,7 @@ import { trainCommand } from '../cli/commands/train'
 import { telemetryCommand } from '../cli/commands/telemetry'
 import { daemonCommand } from '../cli/commands/daemon'
 import { ciCommand } from '../cli/commands/ci'
+import { sandboxCommand } from '../cli/commands/sandbox'
 import {
   parseGitLog,
   planRelease,
@@ -49,6 +51,7 @@ import { KnowledgeIndex } from '../knowledge/KnowledgeIndex'
 import { HashEmbeddingProvider, cosineSimilarity } from '../knowledge/embeddings'
 import { Traceability } from '../knowledge/Traceability'
 import { analyzeHermesRuntime, recordPerfBaseline, getLatestPerfBaseline, compareToBaseline } from '../perf'
+import { runSandboxed, scrubEnv, detectBackend } from '../sandbox'
 import { analyzeSourceFile, parseSource } from '../harness/AstScanner'
 import { detectWorkspace, NO_WORKSPACE } from '../harness/workspace'
 import { ModelRouter } from '../model/ModelRouter'
@@ -175,12 +178,13 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
         telemetry: telemetryCommand,
         daemon: daemonCommand,
         ci: ciCommand,
+        sandbox: sandboxCommand,
       }
       const missing = Object.entries(actions)
         .filter(([, fn]) => typeof fn !== 'function')
         .map(([name]) => name)
       if (missing.length > 0) return fail(`actions missing: ${missing.join(', ')}`)
-      return ok(`${Object.keys(actions).length} command actions callable (init … ci)`)
+      return ok(`${Object.keys(actions).length} command actions callable (init … sandbox)`)
     },
   },
   {
@@ -1178,6 +1182,117 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
       }
       if (!runtime.message.includes('move to a worklet')) return fail('missing worklet suggestion')
       return ok(runtime.message)
+    },
+  },
+
+  // ---------------------------------------------------------------------------
+  // Sandbox
+  // ---------------------------------------------------------------------------
+  {
+    id: 'sandbox-env-scrub',
+    name: 'Sandbox env scrubbing (deny-by-default)',
+    category: 'sandbox',
+    description: 'scrubEnv drops credential-shaped ambient vars, keeps the base allowlist, and honors explicit overrides.',
+    run() {
+      const source: NodeJS.ProcessEnv = {
+        PATH: '/usr/bin:/bin',
+        HOME: '/home/user',
+        AWS_SECRET_ACCESS_KEY: 'AKIA…',
+        GITHUB_TOKEN: 'ghp_…',
+        NPM_TOKEN: 'npm_…',
+        SSH_AUTH_SOCK: '/tmp/ssh',
+        OPENAI_API_KEY: 'sk-…',
+      }
+      const { env, dropped } = scrubEnv(source)
+      if (env.PATH !== '/usr/bin:/bin') return fail('PATH dropped from the allowlist')
+      if (env.HOME !== '/home/user') return fail('HOME dropped from the allowlist')
+      for (const secret of ['AWS_SECRET_ACCESS_KEY', 'GITHUB_TOKEN', 'NPM_TOKEN', 'SSH_AUTH_SOCK', 'OPENAI_API_KEY']) {
+        if (secret in env) return fail(`${secret} leaked into the sandbox env`)
+        if (!dropped.includes(secret)) return fail(`${secret} not reported as dropped`)
+      }
+      const withAllow = scrubEnv({ ...source, MY_CUSTOM_FLAG: '1' }, { allowEnv: ['MY_CUSTOM_FLAG'] })
+      if (withAllow.env.MY_CUSTOM_FLAG !== '1') return fail('allowEnv did not pass the variable through')
+      return ok(`dropped ${dropped.length} credential-shaped var(s), allowlist + allowEnv verified`)
+    },
+  },
+  {
+    id: 'sandbox-backend',
+    name: 'Sandbox backend detection',
+    category: 'sandbox',
+    description: 'detectBackend returns a known isolation level with honest capability flags.',
+    run() {
+      const backend = detectBackend()
+      if (!['sandbox-exec', 'bwrap', 'process'].includes(backend.isolation)) return fail(`unknown backend ${backend.isolation}`)
+      if (typeof backend.canDenyNetwork !== 'boolean') return fail('canDenyNetwork must be boolean')
+      if (typeof backend.canConfineWrites !== 'boolean') return fail('canConfineWrites must be boolean')
+      const consistent = backend.isolation === 'process' ? backend.canDenyNetwork === false && backend.canConfineWrites === false : true
+      if (!consistent) return fail('process backend must report no OS enforcement')
+      return ok(`backend=${backend.isolation}, canDenyNetwork=${backend.canDenyNetwork}, canConfineWrites=${backend.canConfineWrites}`)
+    },
+  },
+  {
+    id: 'sandbox-run',
+    name: 'Sandboxed command execution',
+    category: 'sandbox',
+    description: 'runSandboxed executes a real command inside the sandbox root and captures its output.',
+    async run(ctx) {
+      const result = await runSandboxed('node', ['-e', 'process.stdout.write("sandbox-ok")'], { root: ctx.sandbox.root, timeoutMs: 15_000 })
+      if (result.error) return fail(`spawn failed: ${result.error}`)
+      if (!result.ok) return fail(`expected exit 0, got ${result.exitCode}${result.signal ? ` (${result.signal})` : ''}`)
+      if (!result.stdout.includes('sandbox-ok')) return fail(`unexpected stdout: ${result.stdout.slice(0, 40)}`)
+      return ok(`exit ${result.exitCode} (${result.durationMs}ms) on ${result.isolation}, stdout verified`)
+    },
+  },
+  {
+    id: 'sandbox-timeout',
+    name: 'Sandbox wall-clock timeout',
+    category: 'sandbox',
+    description: 'A process that outlives the timeout is killed — the sandbox never hangs the caller.',
+    async run(ctx) {
+      const started = Date.now()
+      const result = await runSandboxed('node', ['-e', 'setTimeout(() => {}, 30000)'], { root: ctx.sandbox.root, timeoutMs: 400 })
+      const elapsed = Date.now() - started
+      if (!result.timedOut) return fail('timeout was not enforced')
+      if (result.ok) return fail('timed-out process reported ok')
+      if (elapsed > 10_000) return fail('kill took too long')
+      return ok(`killed after ${elapsed}ms (timeout 400ms)`)
+    },
+  },
+  {
+    id: 'sandbox-rlimits',
+    name: 'Sandbox CPU rlimit',
+    category: 'sandbox',
+    description: 'A CPU-spinning process is cut off by the ulimit wrapper instead of running forever.',
+    async run(ctx) {
+      const result = await runSandboxed('node', ['-e', 'while (true) {}'], {
+        root: ctx.sandbox.root,
+        cpuSeconds: 1,
+        timeoutMs: 15_000,
+      })
+      if (result.ok) return fail('CPU-bound process completed (limit not enforced)')
+      if (result.timedOut) return fail('CPU limit fell through to the wall-clock timeout')
+      return ok(`terminated by ${result.signal || `exit ${result.exitCode}`} (cpuSeconds=1)`)
+    },
+  },
+  {
+    id: 'sandbox-write-confinement',
+    name: 'Sandbox write confinement',
+    category: 'sandbox',
+    description: 'On OS backends, a child writing outside the sandbox root is denied; on process fallback it reports honestly.',
+    async run(ctx) {
+      const backend = detectBackend()
+      const escape = join(ctx.sandbox.root, '..', `vectalon-escape-${process.pid}`)
+      const result = await runSandboxed('node', ['-e', `require('fs').writeFileSync(${JSON.stringify(escape)}, 'x')`], {
+        root: ctx.sandbox.root,
+        timeoutMs: 10_000,
+      })
+      if (backend.canConfineWrites) {
+        if (result.ok) return fail(`write outside the sandbox root succeeded on ${backend.isolation}`)
+        return ok(`${backend.isolation} denied the write outside the root (exit ${result.exitCode}${result.signal ? ` ${result.signal}` : ''})`)
+      }
+      // Process-level: no OS enforcement — report honestly instead of claiming a guarantee.
+      ctx.trace.warn(`no OS write confinement on this backend (${backend.isolation}) — writes outside the root are only prevented by convention`)
+      return warn('process-level sandbox: write confinement not OS-enforced')
     },
   },
 ]
