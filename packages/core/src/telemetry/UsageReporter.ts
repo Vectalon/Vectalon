@@ -45,6 +45,7 @@ export class UsageReporter {
 
   track(event: string, product: string, feature?: string, metadata?: Record<string, unknown>): void {
     if (!this.enabled) return
+    if (process.env.VECTALON_DEV_MODE === '1') return
 
     const telemetryEvent: TelemetryEvent = {
       event,

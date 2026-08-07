@@ -15,6 +15,17 @@ export class FeatureGates {
     product: Product,
     _feature: Feature
   ): TierCheck {
+    // 0. Dev mode — bypass all tier checks
+    if (process.env.VECTALON_DEV_MODE === '1' || process.env.VECTALON_BYPASS_TIER === '1') {
+      return {
+        allowed: true,
+        currentTier: 'enterprise',
+        requiredTier: required,
+        canTrial: false,
+        message: 'DEV MODE — all features unlocked',
+      }
+    }
+
     // 1. Check license
     const licenseInfo = LicenseStore.read()
     if (licenseInfo && licenseInfo.key) {
