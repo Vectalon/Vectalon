@@ -1,3 +1,0 @@
-[submodule "packages/core/src"]
-	path = packages/core/src
-	url = https://github.com/Vectalon/core.git

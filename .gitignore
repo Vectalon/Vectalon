@@ -16,3 +16,6 @@ bench/results/*.json
 
 # Package manager
 .pnpm-store/
+
+# Private core source — kept in separate private repo
+packages/core/src
