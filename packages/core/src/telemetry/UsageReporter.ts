@@ -5,7 +5,8 @@
 
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { join } from 'path'
-import { homedir } from 'os'
+import { homedir, hostname, userInfo } from 'os'
+import { createHash } from 'crypto'
 import type { TelemetryEvent, TelemetryBatch } from './types'
 
 const CONFIG_DIR = join(homedir(), '.config', 'vectalon')
@@ -123,8 +124,7 @@ export class UsageReporter {
   }
 
   private getDeviceId(): string {
-    const { hostname, username } = require('os')
-    const data = `${hostname()}-${username()}-${process.platform}`
-    return require('crypto').createHash('sha256').update(data).digest('hex').slice(0, 16)
+    const data = `${hostname()}-${userInfo().username}-${process.platform}`
+    return createHash('sha256').update(data).digest('hex').slice(0, 16)
   }
 }

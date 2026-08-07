@@ -67,6 +67,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build
+        run: pnpm turbo run build --filter=@vectalon-dev/rn
+
       - name: Test with coverage (threshold gate)
         run: pnpm --filter @vectalon-dev/rn run test:coverage
 
