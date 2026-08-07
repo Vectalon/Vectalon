@@ -844,6 +844,66 @@ npx vectalon impact --changed "packages/ui/src/Button.tsx,packages/core/src/hook
 
 ---
 
+## `upgrade`
+
+React Native / Expo **automated upgrade copilot** with codemods and
+AST-grade breaking-change impact analysis. Deterministic, catalog-driven
+planning (no model calls), provenance logging for every codemod, and an
+optional verification loop (doctor + typecheck + bundle budget gate).
+Requires the **Pro tier**.
+
+```bash
+npx vectalon upgrade                     # dry-run plan for the latest known RN
+npx vectalon upgrade --to 0.76           # plan the 0.72 → 0.76 migration
+npx vectalon upgrade --to 0.76 --json    # plan as JSON (CI-friendly)
+npx vectalon upgrade --to 0.76 --dry-run # explicit dry-run: no writes
+npx vectalon upgrade --to 0.76 --apply   # execute safe codemods + verify
+npx vectalon upgrade --to 0.76 --apply --force  # also apply risky review steps
+npx vectalon upgrade --to 53 --apply     # Expo SDK target
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--to <version>` | Target: RN `0.76`, Expo SDK `53`, or `latest` (default: latest known stable) |
+| `--dry-run` | Preview the plan + impact analysis without touching files (default) |
+| `--apply` | Execute codemods and dependency bumps, then verify |
+| `--force` | Also apply `review` steps (New Architecture flips, SDK level bumps) |
+| `--json` | Print the report as JSON instead of markdown |
+
+**Workflow stages**
+
+1. **Detect** — reads `package.json`, `android/build.gradle`,
+   `android/gradle.properties`, `ios/Podfile`, `app.json` (react-native, expo
+   SDK, Hermes, New Architecture, Kotlin, SDK levels). No network.
+2. **Catalog** — a curated migration catalog of the top breaking changes per
+   RN release (Hermes flag relocation, New Architecture opt-in,
+   `requireNativeComponent` → `codegenNativeComponent`, ReactTestRenderer
+   import fix, SDK / Kotlin / AGP requirements, React pairing).
+3. **Impact** — walks the project's own source with the harness scanner to
+   find affected files: native modules, bridge usage
+   (`NativeModules` / `requireNativeComponent`), and Fabric-hostile patterns.
+4. **Plan** — step-by-step migration plan with per-step risk and a total
+   risk label; steps are `auto` (safe codemods), `review` (risky — need
+   `--force`), or `manual` (documented instructions).
+5. **Codemods** — applies only with `--apply`; backs up every edited file
+   under `.vectalon/upgrades/backups/` and writes a provenance manifest
+   (`.vectalon/upgrades/<timestamp>-upgrade.json`) recording every edit.
+6. **Verify** — with `--apply` (and unless disabled), runs `vectalon doctor`,
+   a typecheck, and the bundle-budget regression gate against a pre-upgrade
+   Metro snapshot.
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Plan printed, or upgrade applied successfully |
+| 1 | Not an RN/Expo project, tier gate failed, or fatal error |
+
+---
+
 ## `policy`
 
 Manage project-specific guardrail policy (`.vectalon/policy.json`).

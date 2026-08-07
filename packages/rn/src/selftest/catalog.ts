@@ -58,6 +58,9 @@ import { resolveProjectModelProvider, resolveProjectModelConfig } from '../proje
 import { buildToolCallSystemPrompt, parseToolCallOutput } from '../model/toolCalling'
 import { WASM_MODEL_PRESETS, getWasmPreset } from '../model/local/wasmPresets'
 import { ContextEngine } from '../harness/ContextEngine'
+import { detectVersions } from '../upgrade/detect'
+import { planUpgrade } from '../upgrade/planner'
+import { runUpgrade } from '../upgrade'
 import { MCPServer } from '../protocol/MCPServer'
 import { parseMcpCommand } from '../protocol/subMcp'
 import { listWorkflows, getWorkflow } from '../workflows'
@@ -956,6 +959,127 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
         return ok(`${patterns.length} pattern(s) learned (PascalCase at ${(naming.confidence * 100).toFixed(0)}%)`)
       }
       return ok(`${patterns.length} pattern(s) learned`)
+    },
+  },
+  {
+    id: 'upgrade-detect',
+    name: 'Upgrade version detection',
+    category: 'upgrade',
+    description: 'detectVersions reads react-native / expo versions + native config (Podfile, gradle.properties, build.gradle).',
+    run(ctx) {
+      ctx.trace?.step('writing fixture project (RN 0.72, legacy Hermes flag, legacy bridge usage)')
+      ctx.sandbox.json('package.json', {
+        name: 'app',
+        version: '1.0.0',
+        dependencies: { react: '18.2.0', 'react-native': '0.72.5' },
+      })
+      ctx.sandbox.file('android/gradle.properties', 'newArchEnabled=false\n')
+      ctx.sandbox.file('android/build.gradle', [
+        'buildscript {',
+        '  ext {',
+        '    kotlinVersion = "1.8.10"',
+        '    compileSdkVersion = 33',
+        '    minSdkVersion = 21',
+        '    targetSdkVersion = 33',
+        '  }',
+        '}',
+        'enableHermes true',
+      ].join('\n'))
+      ctx.sandbox.file('ios/Podfile', [
+        'platform :ios, :deployment_target => "13.0"',
+        "target 'App' do",
+        '  use_react_native!(:path => config[:reactNativePath], :hermes_enabled => true)',
+        'end',
+      ].join('\n'))
+      ctx.sandbox.file('src/legacy.js', [
+        "import { NativeModules } from 'react-native'",
+        "import { requireNativeComponent } from 'react-native'",
+        'const NativeThing = requireNativeComponent("NativeThing")',
+        'export const M = NativeModules.MyModule',
+      ].join('\n'))
+
+      const v = detectVersions(ctx.sandbox.root)
+      if (v.rnVersion !== '0.72.5') return fail(`expected react-native 0.72.5, got ${v.rnVersion}`)
+      if (v.tooling !== 'rn-cli') return fail(`expected rn-cli tooling, got ${v.tooling}`)
+      if (v.android.kotlinVersion !== '1.8.10') return fail(`kotlinVersion detection failed: ${v.android.kotlinVersion}`)
+      if (v.ios.hermesEnabled !== true) return fail('Podfile :hermes_enabled => true not detected')
+      if (v.android.newArchEnabled !== false) return fail('gradle.properties newArchEnabled=false not detected')
+      return ok(`detected RN ${v.rnVersion} (rn-cli) · kotlin ${v.android.kotlinVersion} · Podfile Hermes on · New Arch off`)
+    },
+  },
+  {
+    id: 'upgrade-plan',
+    name: 'Upgrade planner (dry run)',
+    category: 'upgrade',
+    description: 'planUpgrade produces a deterministic step-by-step plan + AST impact without writing files.',
+    run(ctx) {
+      ctx.sandbox.json('package.json', {
+        name: 'app',
+        version: '1.0.0',
+        dependencies: { react: '18.2.0', 'react-native': '0.72.5' },
+      })
+      ctx.sandbox.file('android/gradle.properties', 'newArchEnabled=false\n')
+      ctx.sandbox.file('android/build.gradle', 'enableHermes true\n')
+      ctx.sandbox.file('src/legacy.js', [
+        "import { NativeModules } from 'react-native'",
+        "import { requireNativeComponent } from 'react-native'",
+        'const NativeThing = requireNativeComponent("NativeThing")',
+        'export const M = NativeModules.MyModule',
+      ].join('\n'))
+
+      const plan = planUpgrade(ctx.sandbox.root, { to: '0.76', dryRun: true })
+      if (plan.errors.length > 0) return fail(`plan errors: ${plan.errors.join('; ')}`)
+      const ids = plan.steps.map(s => s.id)
+      for (const required of ['dep-react-native', 'rn-070-hermes-flag', 'rn-071-newarch-flag', 'rn-070-codegen-native-component']) {
+        if (!ids.includes(required)) return fail(`missing step ${required} in ${ids.join(', ')}`)
+      }
+      if (plan.impact.length === 0) return fail('impact analysis produced no findings for legacy bridge fixture')
+      if (plan.edits.length === 0) return fail('expected planned edits (package.json bump, hermes flag)')
+      const pkgAfter = JSON.parse(readFileSync(ctx.sandbox.path('package.json'), 'utf-8')) as { dependencies: Record<string, string> }
+      if (pkgAfter.dependencies['react-native'] !== '0.72.5') return fail('dry-run modified package.json!')
+      return ok(`${plan.steps.length} steps · ${plan.edits.length} edits · ${plan.impact.length} impact findings — files untouched`)
+    },
+  },
+  {
+    id: 'upgrade-codemod',
+    name: 'Upgrade codemods + provenance',
+    category: 'upgrade',
+    description: 'Applying the plan bumps deps, relocates the Hermes flag, rewrites requireNativeComponent, and writes a provenance manifest.',
+    async run(ctx) {
+      ctx.sandbox.json('package.json', {
+        name: 'app',
+        version: '1.0.0',
+        dependencies: { react: '18.2.0', 'react-native': '0.72.5' },
+      })
+      ctx.sandbox.file('android/gradle.properties', 'newArchEnabled=false\n')
+      ctx.sandbox.file('android/build.gradle', 'enableHermes true\n')
+      ctx.sandbox.file('src/legacy.js', [
+        "import { NativeModules } from 'react-native'",
+        "import { requireNativeComponent } from 'react-native'",
+        'const NativeThing = requireNativeComponent("NativeThing")',
+        'export const M = NativeModules.MyModule',
+      ].join('\n'))
+
+      const report = await runUpgrade(ctx.sandbox.root, { to: '0.76', apply: true, dryRun: false, verify: false, force: true })
+      if (!report.applied) return fail(`upgrade not applied: ${report.errors.join('; ')}`)
+
+      const pkg = JSON.parse(readFileSync(ctx.sandbox.path('package.json'), 'utf-8')) as { dependencies: Record<string, string> }
+      if (pkg.dependencies['react-native'] !== '0.76.0') return fail(`react-native not bumped: ${pkg.dependencies['react-native']}`)
+      if (pkg.dependencies.react !== '18.3.1') return fail(`react not paired: ${pkg.dependencies.react}`)
+
+      const props = readFileSync(ctx.sandbox.path('android/gradle.properties'), 'utf-8')
+      if (!props.includes('newArchEnabled=true')) return fail('gradle.properties missing newArchEnabled=true')
+      const gradle = readFileSync(ctx.sandbox.path('android/build.gradle'), 'utf-8')
+      if (gradle.includes('enableHermes')) return fail('enableHermes still present in build.gradle')
+
+      const legacy = readFileSync(ctx.sandbox.path('src/legacy.js'), 'utf-8')
+      if (!legacy.includes('codegenNativeComponent')) return fail('codegen codemod did not run on src/legacy.js')
+      if (legacy.includes('requireNativeComponent(')) return fail('requireNativeComponent call not rewritten')
+
+      if (!report.provenance.manifest || !ctx.sandbox.exists(report.provenance.manifest.replace(/^\.\//, ''))) {
+        return fail('provenance manifest not written')
+      }
+      return ok(`${report.edits.length} edits applied · react-native 0.76.0 · Hermes + New Arch flags · codegen rewrite · provenance manifest`)
     },
   },
 ]

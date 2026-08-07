@@ -323,5 +323,35 @@ export type {
   RubricResult,
 } from './bench'
 
+export {
+  runUpgrade,
+  planUpgrade,
+  detectVersions,
+  resolveTarget,
+  analyzeUpgradeImpact,
+  summarizeImpact,
+  applyUpgradeCodemods,
+  applyEditsToContent,
+  verifyUpgrade,
+  renderUpgradeReport,
+  MIGRATION_CATALOG,
+  RN_REACT_PAIRS,
+  EXPO_SDK_RN_PAIRS,
+  KNOWN_RN_MINORS,
+  LATEST_KNOWN_RN,
+} from './upgrade'
+export type {
+  UpgradeReport,
+  UpgradeRunOptions,
+  DetectedVersions,
+  MigrationStep,
+  ImpactFinding,
+  CatalogEntry,
+  CodemodEdit,
+  VerifyResult,
+  RiskLevel,
+  StepKind,
+} from './upgrade'
+
 export { safe, safeAsync, bestEffort, bestEffortAsync, ok, err, toError, reportError } from './utils/safe'
 export type { Result } from './utils/safe'

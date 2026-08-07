@@ -178,6 +178,41 @@ Project-specific overrides via `.vectalon/policy.json`.
 
 ---
 
+## Upgrade Copilot (`vectalon upgrade`)
+
+Automated React Native / Expo version upgrades with codemods, AST-grade
+breaking-change impact analysis, and New Architecture migration awareness
+(**Pro tier**):
+
+```bash
+npx vectalon upgrade --to 0.76            # dry-run plan + impact analysis
+npx vectalon upgrade --to 0.76 --apply    # execute codemods + verify
+npx vectalon upgrade --to 0.76 --apply --force  # also apply review steps
+```
+
+The pipeline is **Detect → Catalog → Impact → Plan → Codemods → Verify**:
+
+- **Deterministic planning** — a curated migration catalog (Hermes flag
+  relocation, New Architecture opt-in, `requireNativeComponent` →
+  `codegenNativeComponent`, ReactTestRenderer import fix, SDK / Kotlin /
+  AGP requirements, React pairing) drives known migrations with no LLM
+  involved. Every step is scored `auto` / `review` / `manual` with a total
+  risk label.
+- **Impact analysis** — scans the project's own source for native modules,
+  bridge usage (`NativeModules`, `requireNativeComponent`), and
+  Fabric-hostile patterns so you see exactly which files a major jump will
+  break before touching anything.
+- **Provenance** — `--apply` backs up every edited file under
+  `.vectalon/upgrades/backups/` and writes a machine-readable manifest
+  (`.vectalon/upgrades/<timestamp>-upgrade.json`).
+- **Verification** — the apply loop runs `vectalon doctor`, a typecheck,
+  and a bundle-budget regression gate against a pre-upgrade Metro snapshot.
+
+Also available as MCP tools (`plan_upgrade`, `apply_upgrade`,
+`detect_upgrade_state`). `apply_upgrade` always requires an explicit
+`directory` argument — it never writes to the current working directory by
+accident.
+
 ## MCP Server & Tools
 
 `vectalon serve` exposes 40+ project-aware MCP tools across four categories:

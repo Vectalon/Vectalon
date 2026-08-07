@@ -10,6 +10,7 @@ import {
   SdlcTools,
   KnowledgeTools,
   EcosystemTools,
+  UpgradeTools,
   type ToolContext,
   type ToolRegistry,
 } from './tools'
@@ -78,6 +79,7 @@ export class MCPServer {
       new SdlcTools(ctx),
       new KnowledgeTools(ctx),
       new EcosystemTools(ctx),
+      new UpgradeTools(ctx),
     ]
     this.registerTools()
   }

@@ -92,10 +92,12 @@ export function createProgram(): Command {
   program
     .command('upgrade [directory]')
     .description('Upgrade React Native / Expo with the copilot (impact analysis, codemods, verification)')
-    .option('--to <version>', 'Target version (default: latest stable)')
-    .option('--dry-run', 'Preview changes without applying')
-    .option('--apply', 'Apply safe changes automatically (native patches still require review)')
-    .option('--force', 'Skip confirmation prompts')
+    .option('--to <version>', 'Target version — RN (0.76), Expo SDK (53), or latest (default: latest known stable)')
+    .option('--dry-run', 'Preview the plan + impact without changing files (default)')
+    .option('--apply', 'Execute safe codemods and dependency bumps (native patches still require review; --force applies those too)')
+    .option('--force', 'Skip safety checks: apply review steps automatically, skip confirmation')
+    .option('--json', 'Print the plan/report as JSON')
+    .option('--no-verify', 'Skip post-apply verification (doctor, typecheck, bundle budget gate)')
     .action(upgradeCommand)
 
   program
@@ -243,7 +245,7 @@ export function createProgram(): Command {
   program
     .command('selftest [directory]')
     .description('Test every feature of the harness in a sandbox — visible report + full activity trace of every step, command, and file modification')
-    .option('--category <cat>', 'Run only one category (cli, sdlc, guardrails, knowledge, harness, model, mcp, workflows, ecosystem, bench, adapters, memory)')
+    .option('--category <cat>', 'Run only one category (cli, sdlc, guardrails, knowledge, harness, model, mcp, workflows, ecosystem, bench, adapters, memory, upgrade)')
     .option('--only <id>', 'Run a single check by id')
     .option('--model <provider>', 'Force the model provider for the real-inference check (local/wasm/openai/anthropic)')
     .option('--require-model', 'Fail (instead of warn) when no real model is available for the inference check')

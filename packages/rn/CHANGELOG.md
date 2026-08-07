@@ -5,6 +5,49 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.8] - Unreleased
+
+### Added — Upgrade Copilot (`vectalon upgrade`)
+
+Automated React Native / Expo version upgrades with codemods, AST-grade
+breaking-change impact analysis, and New Architecture migration awareness
+(Pro tier):
+
+- **`src/upgrade/`** — the six-stage pipeline (Detect → Catalog → Impact →
+  Plan → Codemods → Verify):
+  - **Detect** (`detect.ts`): reads `package.json`, `android/build.gradle`,
+    `android/gradle.properties`, `ios/Podfile` for react-native / expo
+    versions, Hermes, New Architecture, Kotlin and SDK levels —
+    deterministic, no network, no subprocesses.
+  - **Catalog** (`catalog.ts`): curated migration catalog of the top
+    breaking changes per release — Hermes flag relocation (0.70), New
+    Architecture opt-in (0.71), `requireNativeComponent` →
+    `codegenNativeComponent` (0.70), ReactTestRenderer import fix (0.73),
+    Android SDK levels (0.74+), Kotlin / AGP requirements (0.77+), React
+    pairing, Expo SDK targets.
+  - **Impact** (`impact.ts`): walks the project's own source for native
+    modules, bridge usage (`NativeModules` / `requireNativeComponent`) and
+    Fabric-hostile patterns, flagging per-file blast radius.
+  - **Plan** (`planner.ts`): step-by-step migration plan with per-step risk
+    and a total risk label; steps are `auto` (safe codemods), `review`
+    (need `--force`) or `manual` (documented instructions).
+  - **Codemods** (`codemods.ts`): applies only with `--apply`; backs up
+    every edited file under `.vectalon/upgrades/backups/` and writes a
+    provenance manifest (`.vectalon/upgrades/<timestamp>-upgrade.json`)
+    recording every edit as an artifact.
+  - **Verify** (`verify.ts`): doctor, typecheck and the bundle-budget
+    regression gate against a pre-upgrade Metro snapshot.
+- **CLI** — `vectalon upgrade [dir]` with `--to <version>`, `--dry-run`
+  (default), `--apply`, `--force` and `--json`. Refuses to run outside an
+  RN/Expo project; `--apply` never targets cwd by accident.
+- **MCP tools** — `plan_upgrade`, `apply_upgrade`, `detect_upgrade_state`
+  (`UpgradeTools` registry). `apply_upgrade` requires an explicit
+  `directory` argument — it never writes to the current working directory.
+- **Self-test** — three new `upgrade` category checks (detect, plan,
+  codemods + provenance) in the `vectalon selftest` suite.
+- **Tests** — 40+ new tests covering detection, catalog, impact, planner,
+  codemods, CLI and MCP tools.
+
 ## [0.1.7] - 2026-08-07
 
 ### Added — Phase K: Feature self-test suite (`vectalon selftest`)

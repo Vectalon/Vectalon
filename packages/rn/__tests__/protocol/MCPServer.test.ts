@@ -75,7 +75,7 @@ describe('MCPServer', () => {
 
   it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(51)
+    expect(names).toHaveLength(54)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -128,6 +128,9 @@ describe('MCPServer', () => {
         'figma_fetch_design',
         'figma_generate_component',
         'check_design_compliance',
+        'plan_upgrade',
+        'apply_upgrade',
+        'detect_upgrade_state',
       ])
     )
   })
@@ -201,6 +204,12 @@ describe('MCPServer', () => {
       }
       if (tool.name === 'build_training_dataset') {
         args.outDir = '.vectalon/training'
+      }
+      // apply_upgrade writes files: point it at the temp fixture project
+      // (never cwd) so the handler stays callable without touching the repo.
+      if (tool.name === 'apply_upgrade') {
+        args.directory = dir
+        args.to = '0.76'
       }
 
       const result = await server.handleToolCall({ id: '1', name: tool.name, arguments: args })
