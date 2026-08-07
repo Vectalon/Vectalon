@@ -41,8 +41,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Configure npm auth
@@ -91,8 +89,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'pnpm'
-          cache-dependency-path: 'pnpm-lock.yaml'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Configure npm auth

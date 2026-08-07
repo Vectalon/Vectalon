@@ -3,6 +3,8 @@
  * Business Source License 1.1 (BSL-1.1)
  */
 
+import { hostname, userInfo } from 'os'
+import { createHash } from 'crypto'
 import { LicenseStore } from './LicenseStore'
 import type { TrialInfo, GitHubUser } from './types'
 
@@ -45,8 +47,7 @@ export class TrialTracker {
 
   private static getDeviceFingerprint(): string {
     // Simple hash of hostname + username
-    const { hostname, username } = require('os')
-    const data = `${hostname()}-${username()}-${process.platform}`
-    return require('crypto').createHash('sha256').update(data).digest('hex').slice(0, 16)
+    const data = `${hostname()}-${userInfo().username}-${process.platform}`
+    return createHash('sha256').update(data).digest('hex').slice(0, 16)
   }
 }

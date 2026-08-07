@@ -4,7 +4,7 @@
  */
 
 import { TIER_CONFIGS } from './types'
-import type { Tier, TierConfig } from './types'
+import type { Tier, TierConfig, Feature, Product } from './types'
 
 export class TierResolver {
   static getConfig(tier: Tier): TierConfig {
@@ -30,11 +30,11 @@ export class TierResolver {
 
   static hasFeature(tier: Tier, feature: string): boolean {
     const config = this.getConfig(tier)
-    return config.features.includes('*') || config.features.includes(feature as any)
+    return config.features.includes('*') || config.features.includes(feature as Feature)
   }
 
   static hasProduct(tier: Tier, product: string): boolean {
     const config = this.getConfig(tier)
-    return config.products.includes(product as any) || config.products.includes('all')
+    return config.products.includes(product as Product) || config.products.includes('all')
   }
 }

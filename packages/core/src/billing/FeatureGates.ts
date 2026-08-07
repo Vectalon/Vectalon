@@ -13,7 +13,7 @@ export class FeatureGates {
   static check(
     required: Tier,
     product: Product,
-    feature: Feature
+    _feature: Feature
   ): TierCheck {
     // 1. Check license
     const licenseInfo = LicenseStore.read()
