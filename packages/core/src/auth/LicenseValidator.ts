@@ -10,7 +10,8 @@ import type { LicenseInfo, LicenseValidationResult } from './types'
 
 function findPublicKey(): string {
   const candidates = [
-    join(__dirname, '..', '..', 'public-key.pem'),     // dist/auth/../../
+    join(__dirname, '..', 'public-key.pem'),              // dist/auth/../
+    join(__dirname, '..', '..', 'public-key.pem'),      // dist/auth/../../
     join(__dirname, '..', '..', '..', 'public-key.pem'), // src/auth/../../../
   ]
   for (const path of candidates) {
