@@ -1,0 +1,5 @@
+# Generated `vectalon feature` workflow runs — these are per-run artifacts that
+# pollute the tool's own repo. User projects keep their own docs/vectalon/ in
+# version control (that's the intended behavior for real apps); here we only
+# track what the package ships, not what it generates while testing itself.
+docs/vectalon/
