@@ -24,6 +24,9 @@ export type { TelemetryEvent } from './telemetry/types'
 export { VectalonConfig } from './config/VectalonConfig'
 export type { ConfigOptions } from './config/types'
 
+// Dev mode
+export { DevMode } from './dev/DevMode'
+
 // Platform interfaces (for product implementations)
 export type { Scanner, ProjectSnapshot } from './platform/Scanner'
 export type { ContextEngine, PromptOptions } from './platform/ContextEngine'

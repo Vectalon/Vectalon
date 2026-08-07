@@ -38,6 +38,13 @@ export function runCLI(): void {
     .name('vectalon')
     .description('The adaptive AI harness for React Native')
     .version(pkg.version)
+    .option('--dev', 'Enable dev mode — bypass all tier/license checks')
+    .hook('preAction', (thisCommand) => {
+      if (thisCommand.opts().dev) {
+        process.env.VECTALON_DEV_MODE = '1'
+        logger.info(pc.yellow('DEV MODE — all features unlocked'))
+      }
+    })
 
   program
     .command('init')
