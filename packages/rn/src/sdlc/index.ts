@@ -72,6 +72,16 @@ export { KpiReportAnalyzer } from './KpiReportAnalyzer'
 export type { KpiMetric, KpiResult, KpiResultMetric, KpiStatus, TelemetryKpiOptions } from './KpiReportAnalyzer'
 export { MaestroFlowWriter } from './MaestroFlowWriter'
 export type { MaestroFlowOptions } from './MaestroFlowWriter'
+export { deriveFromGitHistory, parseCommitHistory, renderGitDerivation, isBreaking, stripCommitPrefix } from './GitHistoryDeriver'
+export type {
+  GitDerivation,
+  GitDerivationOptions,
+  GitDerivationStats,
+  DerivedCommit,
+  DerivedAdr,
+  RawCommit,
+  DerivationCategory,
+} from './GitHistoryDeriver'
 export { NativeModuleGenerator, parseNativeModuleSpec, defaultPackageName } from './NativeModuleGenerator'
 export type {
   NativeModuleSpec,

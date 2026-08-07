@@ -211,6 +211,8 @@ export { ensureReleaseConfigs, generateEasReleaseWorkflow, generateGithubRelease
 export type { ReleaseTemplateOptions, GeneratedReleaseFile } from './adapters/releaseTemplates'
 export { planRelease, renderReleasePlan, parseGitLog, detectBumpType, bumpVersion } from './sdlc/ReleasePlanner'
 export type { ReleasePlan, ParsedCommit, BumpType } from './sdlc/ReleasePlanner'
+export { deriveFromGitHistory, parseCommitHistory, renderGitDerivation, isBreaking } from './sdlc/GitHistoryDeriver'
+export type { GitDerivation, GitDerivationOptions, GitDerivationStats, DerivedCommit, DerivedAdr, DerivationCategory } from './sdlc/GitHistoryDeriver'
 export { monitorRelease, analyzeCrashRate, renderMonitorReport } from './sdlc/CrashMonitor'
 export type { CrashMonitorOptions, CrashSpike, MonitorResult } from './sdlc/CrashMonitor'
 export {

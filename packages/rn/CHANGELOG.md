@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added — Phase K: Living knowledge brain (III-2) — git-history derivation
+
+- **`GitHistoryDeriver`** (`src/sdlc/GitHistoryDeriver.ts`): deterministic
+derivation of SDLC artifacts from `git log` output — “knowledge that writes
+itself.” Parses both `--oneline` and extended `%h|%an|%ai|%s` formats,
+classifies commits into the release-note taxonomy (shared with
+`ReleaseNoteWriter` via the new exported `categorizeChange`), flags breaking
+changes, and produces a **changelog** grouped by category (commit refs +
+BREAKING badges), **release notes** via `ReleaseNoteWriter` (with the detected
+semver bump when a current version is given, reusing the ReleasePlanner bump
+detection), and **ADR drafts** from decision-worthy commits (architecture /
+migration / redesign keywords) rendered through `ADRWriter` as proposed ADRs.
+- **MCP tool**: `derive_from_git_history` — accepts `gitLog` output or a repo
+  `path` (auto-runs `git log --format=%h|%an|%ai|%s -50`); persists the
+  changelog + release notes as a `devops` artifact and each ADR draft as an
+  `architecture` artifact (`includeAdrs: false` skips the ADRs).
+- Exported the module, parser, renderer, and types from the package entry point.
+- 22 new tests (1,336 total, 146 suites).
+
 ### Added — Phase G: Model-backed retrieval
 
 - **`KnowledgeIndex`** (`src/knowledge/KnowledgeIndex.ts`): artifact index with

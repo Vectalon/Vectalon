@@ -249,6 +249,7 @@ Enable items with `vectalon ecosystem --enable <id>`.
 - **TeamStore** — Multi-project team brain with semantic search
 - **Traceability** — Link artifacts to code, tests, and PRs
 - **Refresh** — Pull best practices and dependency suggestions from web sources
+- **Git history derivation** — derive changelog entries, release notes, and ADR drafts from `git log` automatically (MCP `derive_from_git_history` tool) — knowledge that writes itself
 - **Sync** — Git-based push/pull to a hosted remote (`.vectalon/sync.json`)
 - **Telemetry** — Ingest Sentry, Crashlytics, performance traces, analytics events
 

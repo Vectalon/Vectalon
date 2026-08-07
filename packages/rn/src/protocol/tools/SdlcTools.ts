@@ -29,6 +29,8 @@ import { KpiReportAnalyzer } from '../../sdlc/KpiReportAnalyzer'
 import type { KpiMetric } from '../../sdlc/KpiReportAnalyzer'
 import { MaestroFlowWriter } from '../../sdlc/MaestroFlowWriter'
 import { planRelease, renderReleasePlan, parseGitLog } from '../../sdlc/ReleasePlanner'
+import { deriveFromGitHistory, renderGitDerivation } from '../../sdlc/GitHistoryDeriver'
+import { runCommand } from '../../adapters/runCommand'
 import { buildFineTuningDataset, writeDatasetJsonl, renderDatasetSummary } from '../../training/datasetBuilder'
 import { monitorRelease, renderMonitorReport } from '../../sdlc/CrashMonitor'
 import { NativeModuleGenerator, parseNativeModuleSpec } from '../../sdlc/NativeModuleGenerator'
@@ -658,6 +660,49 @@ export class SdlcTools extends ToolRegistry {
     const plan = planRelease(currentVersion, gitLog)
     const content = renderReleasePlan(plan)
     this.persistArtifact('devops', `Release plan: v${plan.nextVersion}`, content)
+    return content
+  }
+
+  @mcpTool('derive_from_git_history', 'Derive changelog entries, release notes, and ADR drafts from git history — knowledge that writes itself. Pass the output of `git log --format=%h|%an|%ai|%s -50` (or `--oneline`) in `gitLog`, or a repo `path` to auto-run the command. Persists a devops artifact (changelog + release notes) plus one architecture artifact per derived ADR draft', {
+    type: 'object',
+    properties: {
+      gitLog: { type: 'string', description: 'Output of `git log --format=%h|%an|%ai|%s -50` (or `--oneline`)' },
+      path: { type: 'string', description: 'Repo path — auto-runs `git log --format=%h|%an|%ai|%s -50` when gitLog is empty' },
+      currentVersion: { type: 'string', description: 'Current semver — the derivation also reports the detected bump and next version' },
+      includeAdrs: { type: 'boolean', description: 'Persist derived ADR drafts as architecture artifacts (default true)' },
+    },
+  })
+  async deriveFromGitHistoryTool(args: Record<string, unknown>): Promise<string> {
+    let logOutput = (args.gitLog as string) || ''
+    const path = (args.path as string | undefined)?.trim()
+    if (!logOutput.trim() && path) {
+      try {
+        const result = await runCommand('git', ['log', '--format=%h|%an|%ai|%s', '-50'], { cwd: path })
+        if (!result.success) {
+          return `Could not read git history in "${path}" — ${result.stderr.trim().split('\n')[0] || `git exited with ${result.exitCode}`}. Pass the gitLog output directly instead.`
+        }
+        logOutput = result.stdout
+      } catch (err) {
+        return `Could not run git log in "${path}": ${err instanceof Error ? err.message : String(err)}. Pass the gitLog output directly instead.`
+      }
+    }
+    if (!logOutput.trim()) {
+      return 'Pass `gitLog` (the output of `git log --format=%h|%an|%ai|%s -50` or `--oneline`) or a repo `path` to derive changelog entries, release notes, and ADR drafts from git history.'
+    }
+
+    const derivation = deriveFromGitHistory(logOutput, {
+      currentVersion: (args.currentVersion as string | undefined) || undefined,
+    })
+    const content = renderGitDerivation(derivation)
+    const range = derivation.stats.dateRange
+      ? `${derivation.stats.dateRange.from} → ${derivation.stats.dateRange.to}`
+      : `${derivation.stats.total} commits`
+    this.persistArtifact('devops', `Git history derivation: ${range}`, content)
+    if (args.includeAdrs !== false) {
+      for (const adr of derivation.adrs) {
+        this.persistArtifact('architecture', `ADR (derived): ${adr.title}`, adr.content)
+      }
+    }
     return content
   }
 
