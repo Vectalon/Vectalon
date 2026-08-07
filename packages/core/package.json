@@ -1,6 +1,6 @@
 {
   "name": "@vectalon-dev/core",
-  "version": "1.0.0-beta.2",
+  "version": "0.1.0",
   "description": "Vectalon core — auth, licensing, billing, telemetry, and platform interfaces",
   "license": "BSL-1.1",
   "author": "Bhishak Sanyal",
