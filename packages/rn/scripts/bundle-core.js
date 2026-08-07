@@ -28,8 +28,11 @@ mkdirSync(VENDOR_DIR, { recursive: true })
 // 2. Copy core dist
 cpSync(join(CORE_ROOT, 'dist'), VENDOR_DIR, { recursive: true, force: true })
 
-// 3. Copy public key
-cpSync(join(CORE_ROOT, 'public-key.pem'), join(VENDOR_DIR, 'public-key.pem'), { force: true })
+// 3. Copy public key (optional — may be in private repo only)
+const publicKeyPath = join(CORE_ROOT, 'public-key.pem')
+if (existsSync(publicKeyPath)) {
+  cpSync(publicKeyPath, join(VENDOR_DIR, 'public-key.pem'), { force: true })
+}
 
 // 4. Create a synthetic package.json so Node resolution treats this as a package
 writeFileSync(

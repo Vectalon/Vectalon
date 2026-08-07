@@ -1,0 +1,4 @@
+packages/core/src/dist
+packages/core/dist
+node_modules
+*.d.ts
