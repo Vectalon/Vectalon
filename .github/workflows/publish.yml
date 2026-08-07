@@ -149,18 +149,21 @@ jobs:
 
       - name: Create GitHub Release
         run: |
+          cat > /tmp/release-notes.md << 'EOF'
+          ## Packages
+
+          - `@vectalon-dev/core` — ${{ steps.version.outputs.core_version }}
+          - `@vectalon-dev/rn` — ${{ steps.version.outputs.rn_version }}
+
+          ### Install
+
+          ```bash
+          npm install @vectalon-dev/core@${{ steps.version.outputs.core_version }}
+          npm install @vectalon-dev/rn@${{ steps.version.outputs.rn_version }}
+          ```
+          EOF
           gh release create ${{ steps.version.outputs.tag }} \
             --title "Release ${{ steps.version.outputs.tag }}" \
-            --notes "## Packages
-
-- \`@vectalon-dev/core\` — ${{ steps.version.outputs.core_version }}
-- \`@vectalon-dev/rn\` — ${{ steps.version.outputs.rn_version }}
-
-### Install
-
-\`\`\`bash
-npm install @vectalon-dev/core@${{ steps.version.outputs.core_version }}
-npm install @vectalon-dev/rn@${{ steps.version.outputs.rn_version }}
-\`\`\`"
+            --notes-file /tmp/release-notes.md
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
