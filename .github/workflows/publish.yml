@@ -146,3 +146,21 @@ jobs:
           git push origin ${{ steps.version.outputs.tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release
+        run: |
+          gh release create ${{ steps.version.outputs.tag }} \
+            --title "Release ${{ steps.version.outputs.tag }}" \
+            --notes "## Packages
+
+- \`@vectalon-dev/core\` — ${{ steps.version.outputs.core_version }}
+- \`@vectalon-dev/rn\` — ${{ steps.version.outputs.rn_version }}
+
+### Install
+
+\`\`\`bash
+npm install @vectalon-dev/core@${{ steps.version.outputs.core_version }}
+npm install @vectalon-dev/rn@${{ steps.version.outputs.rn_version }}
+\`\`\`"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
