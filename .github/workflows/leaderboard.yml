@@ -45,7 +45,7 @@ jobs:
 
       - name: Cache local model
         if: matrix.model == 'local'
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.config/rn-vectalon/models
           key: qwen-model-${{ runner.os }}-${{ hashFiles('src/model/local/presets.ts') }}
