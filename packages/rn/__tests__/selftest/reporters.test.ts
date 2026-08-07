@@ -7,6 +7,12 @@ import {
 } from '../../src/selftest/reporters'
 import { runSelfTest } from '../../src/selftest/runner'
 
+// CI environments (e.g. GitHub Actions sets FORCE_COLOR) make picocolors emit
+// ANSI codes even when piped, so strip them before asserting on text.
+function stripAnsi(value: string): string {
+  return value.replace(/\x1b\[[0-9;]*m/g, '')
+}
+
 describe('self-test reporters', () => {
   let report: Awaited<ReturnType<typeof runSelfTest>>
 
@@ -16,14 +22,14 @@ describe('self-test reporters', () => {
   })
 
   it('terminal report shows the check and a summary', () => {
-    const out = renderTerminalReport(report)
+    const out = stripAnsi(renderTerminalReport(report))
     expect(out).toContain('adapters-run-command')
     expect(out).toContain('1 passed')
     expect(out).toContain('Summary:')
   })
 
   it('terminal summary shows totals and activity without the per-check table', () => {
-    const out = renderTerminalSummary(report)
+    const out = stripAnsi(renderTerminalSummary(report))
     expect(out).toContain('Summary: 1 passed')
     expect(out).toContain('Activity:')
     expect(out).not.toContain('adapters-run-command')
