@@ -52,6 +52,7 @@ Run `npx vectalon <command> --help` for detailed options.
 | `bundle [dir]` | Metro bundle analysis and performance budgets | `--platform <ios\|android>`, `--static` |
 | `profile [dir]` | Hermes runtime profiling: JS-thread blocking, retained objects, leak candidates, baselines + regressions | `--profile <file>`, `--heap <file>`, `--baseline <label>`, `--save-baseline`, `--threshold-ms <n>`, `--json` |
 | `sandbox` | Run a command in an isolated process with no ambient authority (scrubbed env, writes confined to the root, network denied by default) | `-- <command> [args...]`, `--root <dir>`, `--timeout <ms>`, `--cpu <s>`, `--memory <mb>`, `--network`, `--allow-env <names>`, `--json` |
+| `render [dir]` | Compile + headless-render generated TS/TSX in the sandbox — console logs, render tree, runtime errors before the diff | `--entry <file>`, `--file <file>`, `--timeout <ms>`, `--memory <mb>`, `--json` |
 | `ci [dir]` | Self-healing CI workflow generator (EAS / GitHub Actions) | `--dry-run` |
 | `release [dir]` | Autonomous release pipeline: bump, changelog, E2E submit, crash monitor | `--version`, `--changelog`, `--submit`, `--monitor`, `--baseline`, `--hours`, `--json` |
 | `sync [dir]` | Sync team brain to a hosted git remote | `--push`, `--pull`, `--init`, `--remote <url>`, `--branch`, `--force` |
@@ -237,6 +238,36 @@ npx vectalon sandbox --cpu 10 --memory 512 -- jest             # CPU + memory ca
 Also available as the MCP tools `sandbox_run` (requires an explicit `root`
 + `command` — never defaults to the current directory) and `sandbox_backend`.
 
+## Metro-aware Execution Sandbox (`vectalon render`)
+
+Compile generated files through the Metro transform pipeline and **render them
+headlessly** inside the V-1 sandbox — reading console logs, the render tree,
+and runtime errors **before presenting a diff to the user** (**Pro tier**):
+
+```bash
+npx vectalon render --entry src/App.tsx                    # render a project file
+npx vectalon render --entry src/App.tsx --file src/Header.tsx  # compile siblings too
+npx vectalon render --entry src/App.tsx --json             # structured result
+```
+
+- **Transpile** — project Babel with TS/React presets (the exact Metro
+  transform chain when the project ships them), falling back to offline
+  TypeScript `transpileModule`, with a parser-only syntax check as the last
+  resort. A bundled parser backstop catches syntax errors that
+  `transpileModule` silently recovers from (e.g. unclosed JSX).
+- **Headless render** — a self-contained zero-dependency React + react-native
+  shim runs inside the sandbox (no network, no installs): function
+  components, hooks (`useState` / `useEffect` / `useMemo` / `useContext` …),
+  host components (View, Text, FlatList, …), console capture, and a
+  depth/node-capped render tree serialized to JSON.
+- **Self-correcting agents** — a component that throws at render, fails to
+  load, or logs an error is surfaced structurally (`loadError` /
+  `runtimeError` / `logs`) so the agent can fix the JSX/TS before the user
+  ever sees the diff.
+
+Also available as the MCP tool `render_component` (pass a map of
+path → source, get back the compiled modules, render tree, logs, and errors).
+
 ## Upgrade Copilot (`vectalon upgrade`)
 
 Automated React Native / Expo version upgrades with codemods, AST-grade
@@ -384,6 +415,7 @@ packages/rn/
 │   ├── memory/                 # Pattern learning, project memory
 │   ├── model/                  # Routing, local/WASM/remote inference
 │   ├── protocol/               # MCP server, sub-MCP clients, tools
+│   ├── render/                 # Metro-aware execution sandbox (transpile, headless shim, render harness)
 │   ├── sandbox/                # Sandboxed code execution (env scrub, backends, rlimits, bounded runs)
 │   ├── sdlc/                   # 30 SDLC analyzers/writers/generators
 │   ├── training/               # Fine-tuning dataset builder, LoRA plan

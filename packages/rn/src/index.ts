@@ -374,6 +374,28 @@ export type {
 } from './sandbox'
 
 export {
+  renderInSandbox,
+  compileSource,
+  resolveProjectBabel,
+  buildHarnessScript,
+  buildShimFile,
+  renderRenderResult,
+  stringifyRenderTree,
+  RENDER_MARKER,
+  SHIM_SOURCE,
+} from './render'
+export type {
+  RenderFile,
+  RenderOptions,
+  RenderResult,
+  RenderNode,
+  ConsoleLogEntry,
+  CompiledFile,
+  TranspilerKind,
+  RendererKind,
+} from './render'
+
+export {
   parseCpuProfile,
   analyzeCpuProfile,
   analyzeHeapSnapshot,

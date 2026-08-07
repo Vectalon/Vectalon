@@ -17,6 +17,7 @@ import { refreshCommand } from './commands/refresh'
 import { bundleCommand } from './commands/bundle'
 import { profileCommand } from './commands/profile'
 import { sandboxCommand } from './commands/sandbox'
+import { renderCommand } from './commands/render'
 import { daemonCommand } from './commands/daemon'
 import { telemetryCommand } from './commands/telemetry'
 import { authCommand } from './commands/auth'
@@ -156,6 +157,16 @@ export function createProgram(): Command {
     .option('--allow-env <names>', 'Comma-separated ambient env vars to keep')
     .option('--json', 'Print the result as JSON')
     .action((command, args, opts) => sandboxCommand(command, args, opts))
+
+  program
+    .command('render [directory]')
+    .description('Compile + headless-render generated TS/TSX in the sandbox — console logs, render tree, runtime errors before the diff')
+    .option('--entry <file>', 'Entry file to render (required), e.g. src/App.tsx')
+    .option('--file <file>', 'Extra file to compile (repeatable / comma-separated)')
+    .option('--timeout <ms>', 'Wall-clock timeout in ms (default 30000)', Number)
+    .option('--memory <mb>', 'Virtual memory limit in MB')
+    .option('--json', 'Print the structured result as JSON')
+    .action((directory, opts) => renderCommand(directory, opts))
 
   program
     .command('daemon')

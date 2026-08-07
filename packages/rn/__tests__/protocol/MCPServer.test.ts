@@ -75,7 +75,7 @@ describe('MCPServer', () => {
 
   it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(57)
+    expect(names).toHaveLength(58)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -132,6 +132,9 @@ describe('MCPServer', () => {
         'apply_upgrade',
         'detect_upgrade_state',
         'analyze_hermes_profile',
+        'sandbox_run',
+        'sandbox_backend',
+        'render_component',
       ])
     )
   })
@@ -217,6 +220,11 @@ describe('MCPServer', () => {
         args.root = dir
         args.command = 'node'
         args.args = ['-e', 'process.stdout.write("ok")']
+      }
+      // render_component compiles + headlessly renders in a temp sandbox.
+      if (tool.name === 'render_component') {
+        args.files = { 'src/App.tsx': 'import { Text } from "react-native"; export default function App() { return <Text>hi</Text> }' }
+        args.entry = 'src/App.tsx'
       }
 
       const result = await server.handleToolCall({ id: '1', name: tool.name, arguments: args })

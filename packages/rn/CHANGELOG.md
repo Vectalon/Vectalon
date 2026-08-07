@@ -5,7 +5,52 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.10] - Unreleased
+## [0.1.11] - 2026-08-07
+
+### Added — Metro-aware execution sandbox (I-4)
+
+- **`src/render/`** — the flagship "compile + render before the diff" loop:
+  generated TS/TSX is transpiled, executed headlessly inside the V-1 sandbox,
+  and the console logs, render tree, and runtime errors are returned to the
+  caller — so agents self-correct on JSX/TS errors instead of only being
+  lint-aware.
+  - **Transpile** (`compile.ts`): project Babel with TS/React presets (the
+    exact Metro transform chain when the project ships them) → offline
+    TypeScript `transpileModule` → a parser-only syntax check. A bundled
+    `@babel/parser` backstop catches syntax errors that `transpileModule`
+    silently recovers from (e.g. unclosed JSX), so nothing invalid ever
+    reaches the render step.
+  - **Headless shim** (`shim.ts`): a self-contained zero-dependency React +
+    react-native shim (written into the sandbox root, aliased as `react` /
+    `react-native`) implementing `createElement`, function components,
+    `useState` / `useEffect` / `useMemo` / `useCallback` / `useRef` /
+    `useContext` / `createContext`, host components (View, Text, FlatList, …),
+    and a depth/node-capped tree walker that serializes the element tree to
+    JSON — with the render tree carrying real component names and the
+    returned-element shape (no collapsed host nodes).
+  - **Harness** (`harness.ts`): runs inside the sandbox — realpaths the shim
+    once (macOS `/var` → `/private/var` symlink must not create a second
+    module instance with fresh hook state), captures bounded console logs,
+    loads the compiled entry, renders its default export, and prints a single
+    `VECTALON_RENDER:` JSON marker for the parent to parse.
+  - **Orchestrator** (`run.ts`): validates sandbox-relative paths (rejects
+    absolute paths and `..` traversal), writes compiled modules + shim +
+    harness into an isolated temp root, executes under `runSandboxed`
+    (scrubbed env, network denied, timeout/memory bounded), and returns a
+    structured `RenderResult` (`ok`, `transpiler`, `renderer`, `compiled`,
+    `logs`, `tree`, `loadError`, `runtimeError`, `isolation`, `droppedEnv`).
+- **CLI** — `vectalon render [dir] --entry <file> [--file <file> ...]` with
+  `--timeout`, `--memory`, `--json`. Pro tier gated. Prints the transpiler
+  used, renderer, console logs, the render tree, and any errors.
+- **MCP tool** — `render_component` (accepts a map of sandbox-relative
+  path → source content plus an `entry`; returns the structured render
+  result — perfect for an agent verifying its own generated code).
+- **Self-test** — five new `render` category checks (transpile, multi-file
+  imports, console capture, runtime-error surfacing, render-tree shape).
+- **Tests** — 20+ new tests covering the transpile pipeline, the sandbox
+  renderer (with real render-tree assertions), MCP tools, and the CLI.
+
+## [0.1.10] - 2026-08-07
 
 ### Added — Sandboxed code execution (V-1)
 
@@ -41,7 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Tests** — 20+ new tests covering the scrubber, limit wrapper, backends,
   executor, MCP tools, and the CLI command.
 
-## [0.1.9] - Unreleased
+## [0.1.9] - 2026-08-07
 
 ### Added — Hermes performance profiling & runtime regression detection (I-7 / M17)
 

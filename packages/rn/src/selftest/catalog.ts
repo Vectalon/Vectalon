@@ -28,6 +28,7 @@ import { telemetryCommand } from '../cli/commands/telemetry'
 import { daemonCommand } from '../cli/commands/daemon'
 import { ciCommand } from '../cli/commands/ci'
 import { sandboxCommand } from '../cli/commands/sandbox'
+import { renderCommand } from '../cli/commands/render'
 import {
   parseGitLog,
   planRelease,
@@ -52,6 +53,7 @@ import { HashEmbeddingProvider, cosineSimilarity } from '../knowledge/embeddings
 import { Traceability } from '../knowledge/Traceability'
 import { analyzeHermesRuntime, recordPerfBaseline, getLatestPerfBaseline, compareToBaseline } from '../perf'
 import { runSandboxed, scrubEnv, detectBackend } from '../sandbox'
+import { renderInSandbox, compileSource } from '../render'
 import { analyzeSourceFile, parseSource } from '../harness/AstScanner'
 import { detectWorkspace, NO_WORKSPACE } from '../harness/workspace'
 import { ModelRouter } from '../model/ModelRouter'
@@ -179,12 +181,13 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
         daemon: daemonCommand,
         ci: ciCommand,
         sandbox: sandboxCommand,
+        render: renderCommand,
       }
       const missing = Object.entries(actions)
         .filter(([, fn]) => typeof fn !== 'function')
         .map(([name]) => name)
       if (missing.length > 0) return fail(`actions missing: ${missing.join(', ')}`)
-      return ok(`${Object.keys(actions).length} command actions callable (init … sandbox)`)
+      return ok(`${Object.keys(actions).length} command actions callable (init … render)`)
     },
   },
   {
@@ -1293,6 +1296,124 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
       // Process-level: no OS enforcement — report honestly instead of claiming a guarantee.
       ctx.trace.warn(`no OS write confinement on this backend (${backend.isolation}) — writes outside the root are only prevented by convention`)
       return warn('process-level sandbox: write confinement not OS-enforced')
+    },
+  },
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
+  {
+    id: 'render-compile-tsx',
+    name: 'Render: TSX compile',
+    category: 'render',
+    description: 'Generated TSX compiles through the transpile layer (offline TypeScript or project Babel) into callable JS.',
+    run() {
+      const out = compileSource('import { View, Text } from "react-native"; export default function Button() { return <View><Text>hi</Text></View> }', 'src/Button.tsx')
+      if (!out.ok) return fail(`compile failed: ${out.error}`)
+      if (out.transpiler === 'none') return fail('no transpiler resolved')
+      if (out.code && !/require|createElement/.test(out.code)) return fail('compiled output missing module/JSX output')
+      return ok(`compiled via ${out.transpiler}`)
+    },
+  },
+  {
+    id: 'render-compile-error',
+    name: 'Render: JSX error detection',
+    category: 'render',
+    description: 'Malformed JSX fails compilation with a surfaced error — the self-correcting signal before the diff.',
+    run() {
+      const out = compileSource('export default function Bad() { return <View>', 'src/Bad.tsx')
+      if (out.ok) return fail('malformed JSX compiled without error')
+      if (!out.error) return fail('no error message surfaced')
+      return ok(`caught: ${out.error.split('\n')[0].slice(0, 90)}`)
+    },
+  },
+  {
+    id: 'render-headless',
+    name: 'Render: headless component render',
+    category: 'render',
+    description: 'A generated component renders headlessly in the sandbox with a JSON tree + console capture.',
+    async run(_ctx) {
+      const result = await renderInSandbox({
+        files: [
+          { path: 'src/App.tsx', content: `import { View, Text } from "react-native"; export default function App() { return <View style={{flex:1}}><Text>Hello Vectalon</Text></View> }` },
+        ],
+        entry: 'src/App.tsx',
+        timeoutMs: 15_000,
+      })
+      if (!result.ok) return fail(`render failed: ${result.runtimeError || result.loadError}`)
+      if (!result.tree) return fail('no render tree produced')
+      if (result.transpiler === 'none') return fail('no transpiler used')
+      const flat = JSON.stringify(result.tree)
+      if (!flat.includes('Text')) return fail('render tree missing the Text element')
+      if (!flat.includes('Hello Vectalon')) return fail('render tree missing the text child')
+      return ok(`rendered <Text> via ${result.transpiler}/${result.renderer} (${result.durationMs}ms, ${result.isolation})`)
+    },
+  },
+  {
+    id: 'render-console-logs',
+    name: 'Render: console capture',
+    category: 'render',
+    description: 'console.log/warn inside the component are captured and returned with the render result.',
+    async run(_ctx) {
+      const result = await renderInSandbox({
+        files: [
+          {
+            path: 'src/App.tsx',
+            content: `import { Text } from "react-native"; export default function App() { console.log('mount'); console.warn('deprecated'); return <Text>ok</Text> }`,
+          },
+        ],
+        entry: 'src/App.tsx',
+        timeoutMs: 15_000,
+      })
+      if (!result.ok) return fail(`render failed: ${result.runtimeError || result.loadError}`)
+      const logs = result.logs.map(l => l.message)
+      if (!logs.some(m => m.includes('mount'))) return fail(`console.log not captured: ${logs.join(' | ')}`)
+      if (!logs.some(m => m.includes('deprecated'))) return fail('console.warn not captured')
+      return ok(`${result.logs.length} log line(s) captured (log + warn)`)
+    },
+  },
+  {
+    id: 'render-runtime-error',
+    name: 'Render: runtime error detection',
+    category: 'render',
+    description: 'A component that throws at render surfaces the runtime error instead of hanging or crashing.',
+    async run(_ctx) {
+      const result = await renderInSandbox({
+        files: [
+          {
+            path: 'src/App.tsx',
+            content: `import { Text } from "react-native"; export default function App() { throw new Error('boom at render'); return <Text>x</Text> }`,
+          },
+        ],
+        entry: 'src/App.tsx',
+        timeoutMs: 15_000,
+      })
+      if (result.ok) return fail('throwing component rendered ok')
+      if (!result.runtimeError) return fail(`expected runtimeError, got: ${result.loadError || 'none'}`)
+      if (!result.runtimeError.includes('boom at render')) return fail(`unexpected error: ${result.runtimeError}`)
+      return ok(`caught: ${result.runtimeError.slice(0, 80)}`)
+    },
+  },
+  {
+    id: 'render-missing-entry',
+    name: 'Render: missing entry guard',
+    category: 'render',
+    description: 'An entry that does not exist in the file set fails fast with a clear message.',
+    async run(_ctx) {
+      const result = await renderInSandbox({
+        files: [{ path: 'src/App.tsx', content: 'import { Text } from "react-native"; export default function App() { return <Text>hi</Text> }' }],
+        entry: 'src/App.tsx',
+        timeoutMs: 15_000,
+      })
+      if (!result.ok) return fail(`unexpected failure: ${result.runtimeError || result.loadError}`)
+      const missing = await renderInSandbox({
+        files: [{ path: 'src/App.tsx', content: 'import { Text } from "react-native"; export default function App() { return <Text>hi</Text> }' }],
+        entry: 'src/Nope.tsx',
+        timeoutMs: 15_000,
+      })
+      if (missing.ok) return fail('missing entry rendered ok')
+      if (!missing.loadError) return fail('missing entry produced no loadError')
+      return ok(`guarded: ${missing.loadError}`)
     },
   },
 ]

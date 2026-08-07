@@ -13,6 +13,7 @@ import {
   UpgradeTools,
   PerfTools,
   SandboxTools,
+  RenderTools,
   type ToolContext,
   type ToolRegistry,
 } from './tools'
@@ -84,6 +85,7 @@ export class MCPServer {
       new UpgradeTools(ctx),
       new PerfTools(ctx),
       new SandboxTools(ctx),
+      new RenderTools(ctx),
     ]
     this.registerTools()
   }

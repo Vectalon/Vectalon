@@ -99,11 +99,11 @@ npx vectalon serve --model openai     # override the model provider for this run
 
 **What it does**
 
-- Exposes **57 built-in MCP tools** — 50 by default, plus the knowledge-base
+- Exposes **58 built-in MCP tools** — 50 by default, plus the knowledge-base
   and team-brain tools when those services are present (project context, SDLC
   modules, devices & E2E incl. screen-reader control, cross-package impact,
-  release planning & crash monitoring, training-dataset curation, knowledge
-  base, team brain)
+  release planning & crash monitoring, training-dataset curation, sandboxed
+  execution, headless component rendering, knowledge base, team brain)
 - Reads `.vectalon/ecosystem.json` and exposes each **enabled ecosystem MCP
   server as a first-class tool** (Metro MCP, Expo MCP, …) agents auto-discover
 - Loads the resolved model provider from the manifest (or `--model`) and logs
@@ -426,7 +426,7 @@ command to enable real inference (or **fails** under `--require-model`).
 | Option | Description |
 |---|---|
 | `[directory]` | Project root (default: cwd) — only used for the report output dir |
-| `--category <cat>` | Run only one category (`cli`, `sdlc`, `guardrails`, `knowledge`, `harness`, `model`, `mcp`, `workflows`, `ecosystem`, `bench`, `adapters`, `memory`) |
+| `--category <cat>` | Run only one category (`cli`, `sdlc`, `guardrails`, `knowledge`, `harness`, `model`, `mcp`, `workflows`, `ecosystem`, `bench`, `adapters`, `memory`, `upgrade`, `perf`, `sandbox`, `render`) |
 | `--only <id>` | Run a single check by id |
 | `--model <provider>` | Force the model provider for the real-inference check: `local` \| `wasm` \| `openai` \| `anthropic` (default: the project's configured provider, or `local`) |
 | `--require-model` | Fail (instead of warn) when the inference check cannot run a real model (no downloaded GGUF / WASM weights, no API key) — for CI runs that guarantee a model |
@@ -1009,6 +1009,63 @@ directory) and `sandbox_backend`.
 |---|---|
 | 0 | Command succeeded inside the sandbox |
 | 1 | Command failed, timed out, was killed by a limit, tier gate failed, or the root does not exist |
+
+---
+
+## `render`
+
+Compile generated TS/TSX through the **Metro transform pipeline** and
+**render it headlessly** inside the isolated sandbox — reading console logs,
+the render tree, and runtime errors **before presenting a diff to the user**.
+The flagship "agent that ships" capability: agents self-correct on JSX/TS
+errors instead of only being lint-aware. Requires the **Pro tier**.
+
+```bash
+npx vectalon render --entry src/App.tsx                 # render a project file
+npx vectalon render --entry src/App.tsx --file src/Header.tsx  # compile siblings too
+npx vectalon render --entry src/App.tsx --json          # structured result
+npx vectalon render ./my-app --entry src/screens/Home.tsx
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--entry <file>` | Entry file to compile and render (required) |
+| `--file <file>` | Extra files to compile alongside the entry (repeatable, comma-separated) |
+| `--timeout <ms>` | Render wall-clock timeout in ms (default 30000) |
+| `--memory <mb>` | Virtual memory limit in MB for the sandboxed node process |
+| `--json` | Print the structured result as JSON instead of the human report |
+
+**What it does**
+
+- **Transpile** — project Babel with TS/React presets (the exact Metro
+  transform chain when the project ships them), falling back to offline
+  TypeScript `transpileModule`, with a parser-only syntax check as the last
+  resort. A bundled parser backstop catches syntax errors that
+  `transpileModule` silently recovers from (e.g. unclosed JSX) — nothing
+  invalid reaches the render step.
+- **Headless render** — a self-contained zero-dependency React + react-native
+  shim runs inside the sandbox (no network, no installs): function
+  components, hooks (`useState` / `useEffect` / `useMemo` / `useContext` …),
+  host components (View, Text, FlatList, …), bounded console capture, and a
+  depth/node-capped render tree serialized to JSON.
+- **Self-correcting loop** — a component that throws at render, fails to
+  load, or logs an error is surfaced structurally (`loadError` /
+  `runtimeError` / `logs`) so an agent can fix the JSX/TS and re-render
+  before the user ever sees the diff.
+
+The same capability is exposed to agents as the MCP tool `render_component`
+(pass a map of sandbox-relative path → source, get back the compiled modules,
+render tree, logs, and errors).
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Compiled and rendered (or the report was printed) |
+| 1 | Compile/load/render error, missing entry, tier gate failed, or file not found |
 
 ---
 
