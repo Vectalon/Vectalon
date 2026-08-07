@@ -114,7 +114,7 @@ jobs:
         run: pnpm turbo run build
 
       - name: Download model results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: bench/results
           merge-multiple: true
