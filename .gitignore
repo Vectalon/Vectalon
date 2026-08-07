@@ -17,5 +17,6 @@ bench/results/*.json
 # Package manager
 .pnpm-store/
 
-# Private core source — kept in separate private repo
+# Core — source lives in private repo, dist is built in CI
 packages/core/src
+packages/core/dist
