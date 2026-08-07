@@ -1,10 +1,8 @@
 name: Publish Packages
 
 on:
-  # Auto-publish when pushing to main with [publish-*] tags in commit message
   push:
     branches: [main]
-  # Manual fallback via GitHub UI
   workflow_dispatch:
     inputs:
       package:
@@ -32,7 +30,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check for core PAT
+        id: pat
+        env:
+          PAT: ${{ secrets.CORE_REPO_PAT }}
+        run: |
+          if [ -n "$PAT" ]; then
+            echo "has_pat=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_pat=false" >> $GITHUB_OUTPUT
+            echo "::warning::CORE_REPO_PAT not set. Cannot build core from private repo."
+          fi
+
       - name: Checkout core source (private)
+        if: steps.pat.outputs.has_pat == 'true'
         uses: actions/checkout@v4
         with:
           repository: Vectalon/core

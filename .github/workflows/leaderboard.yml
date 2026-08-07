@@ -20,7 +20,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check for core PAT
+        id: pat
+        env:
+          PAT: ${{ secrets.CORE_REPO_PAT }}
+        run: |
+          if [ -n "$PAT" ]; then
+            echo "has_pat=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_pat=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout core source (private)
+        if: steps.pat.outputs.has_pat == 'true'
         uses: actions/checkout@v4
         with:
           repository: Vectalon/core
@@ -90,7 +102,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check for core PAT
+        id: pat
+        env:
+          PAT: ${{ secrets.CORE_REPO_PAT }}
+        run: |
+          if [ -n "$PAT" ]; then
+            echo "has_pat=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_pat=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Checkout core source (private)
+        if: steps.pat.outputs.has_pat == 'true'
         uses: actions/checkout@v4
         with:
           repository: Vectalon/core
