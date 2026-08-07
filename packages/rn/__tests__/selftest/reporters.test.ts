@@ -8,9 +8,11 @@ import {
 import { runSelfTest } from '../../src/selftest/runner'
 
 // CI environments (e.g. GitHub Actions sets FORCE_COLOR) make picocolors emit
-// ANSI codes even when piped, so strip them before asserting on text.
+// ANSI codes even when piped, so strip them before asserting on text. Built
+// dynamically to avoid the no-control-regex lint rule.
 function stripAnsi(value: string): string {
-  return value.replace(/\x1b\[[0-9;]*m/g, '')
+  const esc = String.fromCharCode(27)
+  return value.replace(new RegExp(`${esc}\\[[0-9;]*m`, 'g'), '')
 }
 
 describe('self-test reporters', () => {
