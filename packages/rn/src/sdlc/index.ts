@@ -26,8 +26,8 @@ export { BugTriageAnalyzer } from './BugTriageAnalyzer'
 export type { BugTriage, TriageSeverity, TriagePriority } from './BugTriageAnalyzer'
 export { RootCauseAnalyzer } from './RootCauseAnalyzer'
 export type { RootCauseResult, CrashRootCauseResult, CrashFacts } from './RootCauseAnalyzer'
-export { CodeReviewAnalyzer } from './CodeReviewAnalyzer'
-export type { ReviewFinding } from './CodeReviewAnalyzer'
+export { CodeReviewAnalyzer, formatRuntimeMetricMessage } from './CodeReviewAnalyzer'
+export type { ReviewFinding, PerfRuntimeMetric } from './CodeReviewAnalyzer'
 export {
   reviewCodeWithLLM,
   parseLLMReview,

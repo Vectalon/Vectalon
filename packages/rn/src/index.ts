@@ -353,5 +353,27 @@ export type {
   StepKind,
 } from './upgrade'
 
+export {
+  parseCpuProfile,
+  analyzeCpuProfile,
+  analyzeHeapSnapshot,
+  analyzeHermesRuntime,
+  renderPerfReport,
+  recordPerfBaseline,
+  getLatestPerfBaseline,
+  compareToBaseline,
+  renderBaselineComparison,
+} from './perf'
+export type {
+  PerfAnalysis,
+  PerfFinding,
+  PerfBaselineSummary,
+  PerfCompareResult,
+  PerfAnalyzeOptions,
+  CpuProfileStats,
+  HeapStats,
+  BlockingEvent,
+} from './perf'
+
 export { safe, safeAsync, bestEffort, bestEffortAsync, ok, err, toError, reportError } from './utils/safe'
 export type { Result } from './utils/safe'

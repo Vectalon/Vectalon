@@ -23,6 +23,7 @@ export type SelfTestCategory =
   | 'adapters'
   | 'memory'
   | 'upgrade'
+  | 'perf'
 
 export const SELF_TEST_CATEGORIES: SelfTestCategory[] = [
   'cli',
@@ -38,6 +39,7 @@ export const SELF_TEST_CATEGORIES: SelfTestCategory[] = [
   'adapters',
   'memory',
   'upgrade',
+  'perf',
 ]
 
 export type CheckStatus = 'pass' | 'fail' | 'warn'

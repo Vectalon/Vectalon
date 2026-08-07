@@ -15,6 +15,7 @@ import { modelsCommand } from './commands/models'
 import { policyCommand } from './commands/policy'
 import { refreshCommand } from './commands/refresh'
 import { bundleCommand } from './commands/bundle'
+import { profileCommand } from './commands/profile'
 import { daemonCommand } from './commands/daemon'
 import { telemetryCommand } from './commands/telemetry'
 import { authCommand } from './commands/auth'
@@ -129,6 +130,17 @@ export function createProgram(): Command {
     .option('--platform <type>', 'Bundle platform (ios|android)', 'ios')
     .option('--static', 'Static on-disk checks only (skip the Metro build)')
     .action(bundleCommand)
+
+  program
+    .command('profile [directory]')
+    .description('Analyze Hermes .cpuprofile / heap snapshots — JS-thread blocking, retained objects, leak signals, baselines + regressions')
+    .option('--profile <file>', 'Path to a Hermes .cpuprofile JSON file')
+    .option('--heap <file>', 'Path to a Hermes .heapsnapshot JSON file')
+    .option('--baseline <label>', 'Baseline label in the knowledge base', 'default')
+    .option('--save-baseline', 'Persist this run as the baseline for future comparisons')
+    .option('--threshold-ms <number>', 'JS-thread blocking threshold in ms (default 100)', Number, 100)
+    .option('--json', 'Print the report as JSON instead of markdown')
+    .action(profileCommand)
 
   program
     .command('daemon')

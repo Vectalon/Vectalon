@@ -50,6 +50,7 @@ Run `npx vectalon <command> --help` for detailed options.
 | `doctor [dir]` | Ecosystem + toolchain + leaderboard + model-access diagnostics | `--json`, `--fix` |
 | `selftest [dir]` | Test every feature in a sandbox — live progress + visible report + activity trace; runs REAL model inference when a model/API key is available | `--category <cat>`, `--only <id>`, `--model <provider>`, `--require-model`, `--list`, `--json`, `--open`, `--out <dir>`, `--no-html`, `--verbose` |
 | `bundle [dir]` | Metro bundle analysis and performance budgets | `--platform <ios\|android>`, `--static` |
+| `profile [dir]` | Hermes runtime profiling: JS-thread blocking, retained objects, leak candidates, baselines + regressions | `--profile <file>`, `--heap <file>`, `--baseline <label>`, `--save-baseline`, `--threshold-ms <n>`, `--json` |
 | `ci [dir]` | Self-healing CI workflow generator (EAS / GitHub Actions) | `--dry-run` |
 | `release [dir]` | Autonomous release pipeline: bump, changelog, E2E submit, crash monitor | `--version`, `--changelog`, `--submit`, `--monitor`, `--baseline`, `--hours`, `--json` |
 | `sync [dir]` | Sync team brain to a hosted git remote | `--push`, `--pull`, `--init`, `--remote <url>`, `--branch`, `--force` |
@@ -177,6 +178,32 @@ Project-specific overrides via `.vectalon/policy.json`.
 | `WireframeGenerator` | Low-fidelity wireframe section generation |
 
 ---
+
+## Hermes Runtime Profiling (`vectalon profile`)
+
+Parse Hermes `.cpuprofile` and heap snapshots to surface **measured** runtime
+problems and track them over time (**Pro tier**):
+
+```bash
+npx vectalon profile --profile app.cpuprofile                # JS-thread blocking + hot functions
+npx vectalon profile --heap app.heapsnapshot                  # retained objects + leak candidates
+npx vectalon profile --profile app.cpuprofile --save-baseline # store a baseline in the knowledge base
+npx vectalon profile --profile app.cpuprofile                 # compare against the stored baseline
+```
+
+- **JS-thread blocking** — contiguous sample runs where the JS thread stays
+  in one frame become blocking events: *"useEffect blocks the JS thread for
+  500ms — move to a worklet"*.
+- **Heap** — a first-reach retained-size approximation shows which objects the
+  GC roots actually hold onto ("imageCache retains 20 MB"), and the largest
+  self allocations surface as leak candidates.
+- **Baselines & regressions** — each run can be persisted as an `analytics`
+  artifact in the knowledge base; later runs are compared against it and
+  blocking time up >25% (or retained heap up >30%) flags a regression.
+- **Code review evidence** — `CodeReviewAnalyzer.review(code, lang, metrics)`
+  cites the measured numbers in findings, so reviews point at real blocking
+  code, not just static rules.
+- Also available as the MCP tool `analyze_hermes_profile`.
 
 ## Upgrade Copilot (`vectalon upgrade`)
 

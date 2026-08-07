@@ -5,6 +5,38 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9] - Unreleased
+
+### Added — Hermes performance profiling & runtime regression detection (I-7 / M17)
+
+- **`src/perf/`** — parse Hermes `.cpuprofile` and heap snapshots and turn
+  measured runtime data into actionable findings:
+  - **JS-thread blocking detection** (`cpuprofile.ts`): contiguous sample runs
+    where the JS thread stayed in one frame become blocking events
+    ("useEffect blocks the JS thread for 500ms — move to a worklet"); hot
+    functions are ranked by self time. Supports the flat nodes/samples/
+    timeDeltas layout and the older head-tree layout (hitCount fallback).
+  - **Heap analysis** (`heapsnapshot.ts`): first-reach retained-size
+    approximation per top-level object held by the GC roots (imageCache
+    retains 20 MB), plus largest self-size allocations as leak candidates.
+  - **Baselines in the knowledge base** (`baseline.ts`): each run can be
+    persisted as an `analytics` artifact (same pattern as bundle snapshots)
+    and later runs are compared against it — blocking time up >25% or
+    retained heap up >30% flags a **regression** finding.
+- **Code review integration** — `CodeReviewAnalyzer.review(code, lang, runtime)`
+  accepts Hermes metrics and cites them with concrete numbers, e.g. "useEffect
+  blocks the JS thread for 500ms — move to a worklet or defer off the JS
+  thread." Backward compatible — the static-only path is unchanged.
+- **CLI** — `vectalon profile [dir]` with `--profile <file>`, `--heap <file>`,
+  `--baseline <label>`, `--save-baseline`, `--threshold-ms`, `--json`. Pro tier
+  gated; baselines are stored in and read from the knowledge base.
+- **MCP tool** — `analyze_hermes_profile` (paste `.cpuprofile` / heap JSON,
+  get deterministic findings).
+- **Self-test** — four new `perf` category checks (CPU blocking, heap
+  retained, baseline regression, code-review runtime evidence).
+- **Tests** — 40+ new tests covering both parsers, the analyzer, baseline
+  storage/regressions, the review integration, the CLI, and the MCP tool.
+
 ## [0.1.8] - 2026-08-07
 
 ### Added — Upgrade Copilot (`vectalon upgrade`)

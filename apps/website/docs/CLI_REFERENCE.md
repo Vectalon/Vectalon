@@ -904,6 +904,54 @@ npx vectalon upgrade --to 53 --apply     # Expo SDK target
 
 ---
 
+## `profile`
+
+Analyze Hermes **runtime profiles** — JS-thread blocking events, retained
+objects, and leak candidates — and track them over time with knowledge-base
+baselines. Deterministic (no model calls). Requires the **Pro tier**.
+
+```bash
+npx vectalon profile --profile app.cpuprofile
+npx vectalon profile --heap app.heapsnapshot
+npx vectalon profile --profile app.cpuprofile --save-baseline
+npx vectalon profile --profile app.cpuprofile --baseline release --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root with a `.vectalon/` workspace (default: cwd) |
+| `--profile <file>` | Path to a Hermes `.cpuprofile` JSON file |
+| `--heap <file>` | Path to a Hermes `.heapsnapshot` JSON file |
+| `--baseline <label>` | Baseline label in the knowledge base (default `default`) |
+| `--save-baseline` | Persist this run as the baseline for future comparisons |
+| `--threshold-ms <n>` | JS-thread blocking threshold in ms (default 100) |
+| `--json` | Print the report as JSON instead of markdown |
+
+**What it detects**
+
+- **JS-thread blocking** — contiguous sample runs where the JS thread stayed
+  in one frame longer than the threshold become blocking events with the
+  function, file, line, and duration ("useEffect blocks the JS thread for
+  500ms — move to a worklet").
+- **Hot functions** — total self time per function, ranked.
+- **Retained objects** — a first-reach retained-size approximation per
+  top-level object held by the GC roots ("imageCache retains 20 MB").
+- **Leak candidates** — the largest self-size allocations still reachable.
+- **Regressions** — without `--save-baseline`, the run is compared against the
+  stored baseline: blocking time up >25% or retained heap up >30% flags a
+  regression finding.
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Report printed / baseline saved |
+| 1 | No `.vectalon/` workspace, missing input files, tier gate failed |
+
+---
+
 ## `policy`
 
 Manage project-specific guardrail policy (`.vectalon/policy.json`).

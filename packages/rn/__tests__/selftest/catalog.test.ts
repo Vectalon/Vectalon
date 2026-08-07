@@ -11,7 +11,7 @@ describe('feature catalog', () => {
       expect(check.description.length).toBeGreaterThan(0)
       expect(typeof check.run).toBe('function')
       expect(check.category).toMatch(
-        /^(cli|sdlc|guardrails|knowledge|harness|model|mcp|workflows|ecosystem|bench|adapters|memory|upgrade)$/
+        /^(cli|sdlc|guardrails|knowledge|harness|model|mcp|workflows|ecosystem|bench|adapters|memory|upgrade|perf)$/
       )
     }
   })
@@ -29,6 +29,7 @@ describe('feature catalog', () => {
       'mcp',
       'memory',
       'model',
+      'perf',
       'sdlc',
       'upgrade',
       'workflows',

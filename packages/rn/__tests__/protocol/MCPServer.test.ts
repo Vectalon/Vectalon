@@ -75,7 +75,7 @@ describe('MCPServer', () => {
 
   it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(54)
+    expect(names).toHaveLength(55)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -131,6 +131,7 @@ describe('MCPServer', () => {
         'plan_upgrade',
         'apply_upgrade',
         'detect_upgrade_state',
+        'analyze_hermes_profile',
       ])
     )
   })

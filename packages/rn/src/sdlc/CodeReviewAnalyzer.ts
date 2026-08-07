@@ -5,6 +5,48 @@ export interface ReviewFinding {
   line: number
 }
 
+/**
+ * A runtime metric (from Hermes profiling) that a review can cite as evidence.
+ * When a metric's function name appears in the reviewed code, the review emits
+ * a finding with concrete numbers — e.g. "useEffect blocks the JS thread for
+ * 500ms — move to a worklet".
+ */
+export interface PerfRuntimeMetric {
+  /** Function or component the metric is about, e.g. `useEffect`, `onPress`. */
+  function: string
+  metric: 'blocking' | 'retained-size' | 'leak' | 'regression'
+  /** Millisecond value for blocking metrics. */
+  valueMs?: number
+  /** Byte value for retention/leak metrics. */
+  valueBytes?: number
+  /** Optional source file the metric belongs to. */
+  file?: string
+  detail?: string
+}
+
+/** Turn a runtime metric into a human message (shared with the perf module). */
+export function formatRuntimeMetricMessage(m: PerfRuntimeMetric): string {
+  if (m.metric === 'blocking' && m.valueMs !== undefined) {
+    return `${m.function} blocks the JS thread for ${m.valueMs}ms — move to a worklet or defer off the JS thread.`
+  }
+  if (m.metric === 'retained-size' && m.valueBytes !== undefined) {
+    return `${m.function} retains ${formatRuntimeBytes(m.valueBytes)} on the heap — release references on unmount.`
+  }
+  if (m.metric === 'leak' && m.valueBytes !== undefined) {
+    return `${m.function} holds ${formatRuntimeBytes(m.valueBytes)} of allocation — possible leak if it accumulates across screens.`
+  }
+  if (m.metric === 'regression') {
+    return `${m.function} regressed vs the performance baseline${m.detail ? `: ${m.detail}` : ''}.`
+  }
+  return m.detail || `${m.function} has a runtime performance issue.`
+}
+
+function formatRuntimeBytes(bytes: number): string {
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${bytes} B`
+}
+
 /** Comprehensive rule definitions for JS/TS/React Native code review. */
 export interface RuleDef {
   id: string
@@ -229,7 +271,13 @@ export class CodeReviewAnalyzer {
     this.rules = rules
   }
 
-  review(code: string, _language = 'tsx'): ReviewFinding[] {
+  /**
+   * Review a code file. `runtime` optionally carries Hermes profiling metrics
+   * (blocking / retention / leak / regression); each metric whose function
+   * name appears in the file becomes a runtime-evidence finding with concrete
+   * numbers, so reviews surface measured behavior, not just static rules.
+   */
+  review(code: string, _language = 'tsx', runtime?: PerfRuntimeMetric[]): ReviewFinding[] {
     const findings: ReviewFinding[] = []
     const lines = code.split('\n')
 
@@ -247,7 +295,33 @@ export class CodeReviewAnalyzer {
       }
     }
 
-    return findings
+    if (runtime && runtime.length > 0) {
+      findings.push(...this.runtimeFindings(code, runtime))
+    }
+
+    return findings.sort((a, b) => a.line - b.line)
+  }
+
+  /** Turn matching runtime metrics into findings pinned to the first line the
+   * function name appears on — preferring a call site over an import/mention. */
+  private runtimeFindings(code: string, runtime: PerfRuntimeMetric[]): ReviewFinding[] {
+    const lines = code.split('\n')
+    const out: ReviewFinding[] = []
+    for (const m of runtime) {
+      const esc = escapeRegex(m.function)
+      const callRe = new RegExp(`\\b${esc}\\s*\\(`)
+      const mentionRe = new RegExp(`\\b${esc}\\b`)
+      let lineIdx = lines.findIndex(l => callRe.test(l))
+      if (lineIdx === -1) lineIdx = lines.findIndex(l => mentionRe.test(l))
+      if (lineIdx === -1) continue
+      out.push({
+        severity: m.metric === 'blocking' && (m.valueMs ?? 0) >= 1000 ? 'error' : 'warning',
+        rule: `runtime-${m.metric}`,
+        message: formatRuntimeMetricMessage(m),
+        line: lineIdx + 1,
+      })
+    }
+    return out
   }
 
   render(findings: ReviewFinding[]): string {
@@ -272,6 +346,10 @@ export class CodeReviewAnalyzer {
   getRules(): RuleDef[] {
     return [...this.rules]
   }
+}
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 export { RULES }

@@ -48,6 +48,7 @@ import { ArtifactStore } from '../knowledge/ArtifactStore'
 import { KnowledgeIndex } from '../knowledge/KnowledgeIndex'
 import { HashEmbeddingProvider, cosineSimilarity } from '../knowledge/embeddings'
 import { Traceability } from '../knowledge/Traceability'
+import { analyzeHermesRuntime, recordPerfBaseline, getLatestPerfBaseline, compareToBaseline } from '../perf'
 import { analyzeSourceFile, parseSource } from '../harness/AstScanner'
 import { detectWorkspace, NO_WORKSPACE } from '../harness/workspace'
 import { ModelRouter } from '../model/ModelRouter'
@@ -1082,7 +1083,161 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
       return ok(`${report.edits.length} edits applied · react-native 0.76.0 · Hermes + New Arch flags · codegen rewrite · provenance manifest`)
     },
   },
+  {
+    id: 'perf-cpuprofile-blocking',
+    name: 'Hermes CPU profile: JS-thread blocking + hot functions',
+    category: 'perf',
+    description: 'Parsing a .cpuprofile finds the useEffect run that blocks the JS thread for 500ms and ranks hot functions.',
+    run(_ctx) {
+      const profile = {
+        startTime: 0,
+        endTime: 16000000,
+        nodes: [
+          { id: 1, callFrame: { functionName: '(root)', url: '', lineNumber: 0 }, hitCount: 0, children: [2] },
+          { id: 2, callFrame: { functionName: 'renderApp', url: 'file:///App.tsx', lineNumber: 10 }, hitCount: 0, children: [3] },
+          { id: 3, callFrame: { functionName: 'useEffect', url: 'file:///App.tsx', lineNumber: 42 }, hitCount: 0, children: [] },
+        ],
+        samples: [1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 2, 1],
+        timeDeltas: [1000, 1000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 1000, 1000, 1000],
+      }
+      const analysis = analyzeHermesRuntime({ cpuProfile: profile }, { blockingThresholdMs: 100 })
+      const blocking = analysis.findings.filter(f => f.category === 'blocking')
+      if (blocking.length === 0) return fail('no blocking finding for the 500ms useEffect run')
+      const top = blocking[0]
+      if (top.target !== 'useEffect') return fail(`expected useEffect, got ${top.target}`)
+      if (!top.message.includes('blocks the JS thread for 500ms')) {
+        return fail(`expected 500ms block in message: ${top.message}`)
+      }
+      if (analysis.cpu?.hotFunctions[0]?.functionName !== 'useEffect') {
+        return fail('useEffect should be the hottest function by self time')
+      }
+      return ok(`${top.message} — ${analysis.cpu?.hotFunctions.length ?? 0} hot function(s) ranked`)
+    },
+  },
+  {
+    id: 'perf-heap-retained',
+    name: 'Hermes heap snapshot: retained objects + leak candidates',
+    category: 'perf',
+    description: 'Parsing a .heapsnapshot finds the imageCache object retaining 20 MB and flags the big string allocation.',
+    run(_ctx) {
+      const heap = buildHeapFixture()
+      const analysis = analyzeHermesRuntime({ heapSnapshot: heap }, { retainedThresholdBytes: 1024 * 1024 })
+      const retained = analysis.findings.filter(f => f.category === 'retained-size')
+      if (retained.length === 0) return fail('no retained-size finding')
+      if (retained[0].target !== 'imageCache') return fail(`expected imageCache, got ${retained[0].target}`)
+      if (analysis.heap?.topSelf[0]?.name !== 'bigPayload') return fail('bigPayload should be the top self allocation')
+      return ok(`imageCache retains ${retained[0].metric} · top allocation ${analysis.heap?.topSelf[0]?.name} (${analysis.heap?.topSelf[0]?.selfBytes} B)`)
+    },
+  },
+  {
+    id: 'perf-baseline-regression',
+    name: 'Perf baselines + regression detection',
+    category: 'perf',
+    description: 'Recording a baseline and comparing a slower run flags the blocking-time regression from the knowledge base.',
+    run(ctx) {
+      const store = new ArtifactStore(ctx.sandbox.root)
+      try {
+        const baseline = buildCpuProfile(200) // 200ms block
+        const slower = buildCpuProfile(600) // 600ms block — +200%
+        const baselineAnalysis = analyzeHermesRuntime({ cpuProfile: baseline })
+        recordPerfBaseline(store, baselineAnalysis, 'selftest')
+        const stored = getLatestPerfBaseline(store, 'selftest')
+        if (!stored) return fail('baseline not persisted')
+        const slowerAnalysis = analyzeHermesRuntime({ cpuProfile: slower })
+        const compare = compareToBaseline(slowerAnalysis, stored, {})
+        if (compare.regressions.length === 0) return fail('expected a blocking regression')
+        if (compare.regressions[0].category !== 'regression') return fail('regression category mismatch')
+        return ok(`${compare.regressions.length} regression(s) — blocking +${(compare.deltas.blockingPct ?? 0).toFixed(0)}%`)
+      } finally {
+        store.close()
+      }
+    },
+  },
+  {
+    id: 'perf-code-review-runtime',
+    name: 'Code review surfaces runtime metrics',
+    category: 'perf',
+    description: 'CodeReviewAnalyzer cites Hermes metrics in findings: "useEffect blocks the JS thread for 500ms — move to a worklet".',
+    run() {
+      const code = [
+        "import React, { useEffect } from 'react'",
+        'export function Feed() {',
+        '  useEffect(() => {',
+        '    heavyWork() // 500ms JS-thread block measured in the profile',
+        '  }, [])',
+        '  return null',
+        '}',
+      ].join('\n')
+      const findings = new CodeReviewAnalyzer().review(code, 'tsx', [
+        { function: 'useEffect', metric: 'blocking', valueMs: 500 },
+      ])
+      const runtime = findings.find(f => f.rule === 'runtime-blocking')
+      if (!runtime) return fail('no runtime-blocking finding')
+      if (!runtime.message.includes('blocks the JS thread for 500ms')) {
+        return fail(`expected measured message: ${runtime.message}`)
+      }
+      if (!runtime.message.includes('move to a worklet')) return fail('missing worklet suggestion')
+      return ok(runtime.message)
+    },
+  },
 ]
+
+/** Small synthetic-root heap snapshot fixture (2 retained subtrees). */
+function buildHeapFixture(): Record<string, unknown> {
+  // Node layout: [type, name, id, self_size, edge_count, trace_node_id, detachedness]
+  // strings: 0:'', 1:'imageCache', 2:'bigPayload', 3:'logs'
+  const strings = ['', 'imageCache', 'bigPayload', 'logs']
+  // node 0: synthetic root (edges -> 1, 3); node 1: object imageCache (edge -> 2);
+  // node 2: string bigPayload (20 MB self, inline name); node 3: array logs (1 MB self).
+  const nodes: (number | string)[] = [
+    10, 0, 1, 0, 2, 0, 0, // synthetic root
+    3, 1, 2, 1024, 1, 0, 0, // object imageCache
+    2, 'bigPayload', 3, 20 * 1024 * 1024, 0, 0, 0, // string bigPayload
+    1, 3, 4, 1024 * 1024, 0, 0, 0, // array logs
+  ]
+  // Edge layout: [type, name_or_index, to_node] — to_node = nodeIndex * 7
+  const edges = [
+    1, 0, 7, // root -> node 1
+    1, 0, 21, // root -> node 3
+    1, 0, 14, // imageCache -> node 2
+  ]
+  return {
+    snapshot: {
+      meta: {
+        node_fields: ['type', 'name', 'id', 'self_size', 'edge_count', 'trace_node_id', 'detachedness'],
+        node_types: [
+          ['hidden', 'array', 'string', 'object', 'code', 'closure', 'regexp', 'number', 'context', 'native', 'synthetic', 'concatenated string', 'sliced string', 'symbol', 'bigint', 'object shape'],
+          'string', 'number', 'number', 'number', 'number', 'number',
+        ],
+        edge_fields: ['type', 'name_or_index', 'to_node'],
+        edge_types: [['context', 'element', 'property', 'internal', 'hidden', 'shortcut', 'weak'], 'string_or_number', 'node'],
+      },
+      node_count: 4,
+      edge_count: 3,
+    },
+    nodes,
+    edges,
+    strings,
+  }
+}
+
+/** CPU profile with a single blocking run of `blockMs` in `useEffect`. */
+function buildCpuProfile(blockMs: number): Record<string, unknown> {
+  const runSamples = Math.max(2, Math.round(blockMs / 50))
+  const samples = [1, 2, ...new Array(runSamples).fill(3), 1]
+  const timeDeltas = [1000, 1000, ...new Array(runSamples).fill(50000), 1000]
+  return {
+    startTime: 0,
+    endTime: (samples.length * 50000) + 2000000,
+    nodes: [
+      { id: 1, callFrame: { functionName: '(root)', url: '', lineNumber: 0 }, hitCount: 0, children: [2] },
+      { id: 2, callFrame: { functionName: 'renderApp', url: 'file:///App.tsx', lineNumber: 10 }, hitCount: 0, children: [3] },
+      { id: 3, callFrame: { functionName: 'useEffect', url: 'file:///App.tsx', lineNumber: 42 }, hitCount: 0, children: [] },
+    ],
+    samples,
+    timeDeltas,
+  }
+}
 
 export function getFeatureCheck(id: string): FeatureCheck | undefined {
   return FEATURE_CATALOG.find(c => c.id === id)
