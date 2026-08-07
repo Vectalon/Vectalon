@@ -27,11 +27,12 @@ import { benchCommand } from './commands/bench'
 import { leaderboardCommand } from './commands/leaderboard'
 import { impactCommand } from './commands/impact'
 import { doctorCommand } from './commands/doctor'
+import { selftestCommand } from './commands/selftest'
 import { logger } from './logger'
 import pkg from '../../package.json'
 import { dynamicImport } from '../utils/dynamicImport'
 
-export function runCLI(): void {
+export function createProgram(): Command {
   const program = new Command()
 
   program
@@ -240,6 +241,22 @@ export function runCLI(): void {
     .action(impactCommand)
 
   program
+    .command('selftest [directory]')
+    .description('Test every feature of the harness in a sandbox — visible report + full activity trace of every step, command, and file modification')
+    .option('--category <cat>', 'Run only one category (cli, sdlc, guardrails, knowledge, harness, model, mcp, workflows, ecosystem, bench, adapters, memory)')
+    .option('--only <id>', 'Run a single check by id')
+    .option('--model <provider>', 'Force the model provider for the real-inference check (local/wasm/openai/anthropic)')
+    .option('--require-model', 'Fail (instead of warn) when no real model is available for the inference check')
+    .option('--list', 'List all checks and exit')
+    .option('--json', 'Print the JSON report to stdout instead of files')
+    .option('--no-html', 'Skip writing the HTML dashboard')
+    .option('--open', 'Open the HTML dashboard in the browser after the run')
+    .option('--no-open', 'Do not auto-open the dashboard (default when not a TTY)')
+    .option('--out <dir>', 'Report output directory (default .vectalon/selftest)')
+    .option('--verbose', 'Echo every recorded activity step to the terminal after the run')
+    .action(selftestCommand)
+
+  program
     .command('leaderboard [directory]')
     .description('Merge per-model benchmark results into a timestamped BENCHMARK_RESULTS.md leaderboard')
     .option('--out <path>', 'Output file (default BENCHMARK_RESULTS.md)')
@@ -248,6 +265,11 @@ export function runCLI(): void {
     .option('--pr-comment', 'Print a compact PR comment (with upsert marker) instead of writing markdown')
     .action(leaderboardCommand)
 
+  return program
+}
+
+export function runCLI(): void {
+  const program = createProgram()
   const argv = process.argv
   const supportsClack = majorNode() > 20 || (majorNode() === 20 && (minorNode() > 12 || (minorNode() === 12 && patchNode() >= 0)))
   const interactiveEligible = argv.length <= 2 && process.stdin.isTTY && supportsClack
@@ -294,6 +316,7 @@ async function runInteractive(): Promise<void> {
       { value: 'train', label: 'Fine-tune dataset', hint: 'Curate RN training data from benchmark references + LoRA plan' },
       { value: 'ecosystem', label: 'Manage ecosystem', hint: 'Enable MCP servers, skills, tools, and hooks (Expo & RN-CLI)' },
       { value: 'doctor', label: 'Run doctor', hint: 'Verify every enabled ecosystem item is installed and reachable' },
+      { value: 'selftest', label: 'Run self-test', hint: 'Test every feature — visible report + activity trace' },
       { value: 'bench', label: 'Run benchmark', hint: 'Score the harness on the RN coding tests (11 scenarios)' },
       { value: 'leaderboard', label: 'Update leaderboard', hint: 'Merge bench/results into BENCHMARK_RESULTS.md' },
       { value: 'sync', label: 'Sync team brain', hint: 'Push/pull .vectalon/knowledge to a hosted git remote' },
@@ -519,6 +542,12 @@ async function runInteractive(): Promise<void> {
   if (action === 'doctor') {
     doctorCommand('', {})
     p.outro('Doctor complete')
+    return
+  }
+
+  if (action === 'selftest') {
+    await selftestCommand('', {})
+    p.outro('Self-test complete')
     return
   }
 

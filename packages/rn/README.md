@@ -48,6 +48,7 @@ Run `npx vectalon <command> --help` for detailed options.
 | `feature [prompt]` | Full SDLC workflow: PRD → design → architecture → implementation → tests → code-review → PR → docs | `--workflow`, `--resume`, `--from`, `--ticket <key>`, `--push`, `--device`, `--heal-interactive`, `--dry-run`, `--model <provider>` |
 | `upgrade [dir]` | React Native / Expo upgrade copilot (impact, codemods, verification) | `--to <version>`, `--dry-run`, `--apply`, `--force` |
 | `doctor [dir]` | Ecosystem + toolchain + leaderboard + model-access diagnostics | `--json`, `--fix` |
+| `selftest [dir]` | Test every feature in a sandbox — live progress + visible report + activity trace; runs REAL model inference when a model/API key is available | `--category <cat>`, `--only <id>`, `--model <provider>`, `--require-model`, `--list`, `--json`, `--open`, `--out <dir>`, `--no-html`, `--verbose` |
 | `bundle [dir]` | Metro bundle analysis and performance budgets | `--platform <ios\|android>`, `--static` |
 | `ci [dir]` | Self-healing CI workflow generator (EAS / GitHub Actions) | `--dry-run` |
 | `release [dir]` | Autonomous release pipeline: bump, changelog, E2E submit, crash monitor | `--version`, `--changelog`, `--submit`, `--monitor`, `--baseline`, `--hours`, `--json` |

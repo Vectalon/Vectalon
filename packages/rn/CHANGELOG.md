@@ -5,6 +5,53 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7] - 2026-08-07
+
+### Added — Phase K: Feature self-test suite (`vectalon selftest`)
+
+- **`src/selftest/`** — a sandboxed, deterministic, offline suite that tests
+every feature of the package and makes the package's behavior visible to
+clients:
+  - **`FEATURE_CATALOG`** (`catalog.ts`): 41 checks across 12 categories —
+    CLI (version, command actions, logger, `init` scaffolding), SDLC
+    (release planner, release-note writer, git-history derivation, ADR,
+    stories, test cases, code review, SWOT, tradeoffs, threat model),
+    guardrails (rule catalog, engine, policy), knowledge (artifact store,
+    knowledge index, embeddings), harness (scanner, workspace detection),
+    model (router, tool-calling protocol, WASM presets), MCP (server tool
+    surface, subprocess parsing), workflows (catalog, state persistence),
+    ecosystem (catalog, config, recommendations), bench (scoring, rubric,
+    scenario pack), adapters (runCommand, git round-trip, CI templates,
+    registry), and memory (project memory, pattern learner).
+  - **`ActivityTracer`** (`trace.ts`): records every step, shell command, and
+    file write per check — the “what is this package doing” log; the
+    `Sandbox` gives each check an isolated temp dir whose writes are traced
+    automatically (never touches the user's project).
+  - **Live progress streaming** (`progress.ts`): results stream to stderr as
+    each check finishes — a clack-style spinner + progress bar in a TTY,
+    plain `✔`/`✖`/`⚠` lines (no ANSI) when piped/CI — via optional
+    `onStart`/`onDone` hooks on `runSelfTest`; `--json` keeps stderr quiet.
+  - **Real model inference** (`model-inference`): the model check runs an
+    actual inference through the configured provider (local GGUF via
+    `vectalon pull`, cached WASM weights, or a remote API key) and verifies
+    the model-generated output — it never passes on the deterministic
+    fallback stub. No model/API key → warns with the exact command to enable
+    real inference, or fails under `--require-model`; `--model <provider>`
+    forces the provider.
+  - **`runSelfTest`** (`runner.ts`): runs checks with `--category`/`--only`
+    filters, aggregates per-check durations, statuses, and activity counts.
+  - **Reporters** (`reporters.ts`): terminal table summary, a human-readable
+    `report.log` activity trace, raw `report.json`, and a **self-contained
+    HTML dashboard** (no network) with per-check cards, status/category
+    filters, and expandable activity traces.
+- **CLI command**: `vectalon selftest [dir]` (`--list`, `--category <cat>`,
+  `--only <id>`, `--json`, `--open`, `--out <dir>`, `--no-html`, `--verbose`)
+  — writes `report.json`/`report.log`/`report.html` to `.vectalon/selftest/`
+  and exits non-zero when any check fails. Also exposed in the interactive
+  menu. `createProgram()` is now exported from the CLI module so command
+  registration is testable.
+- 23 new tests (1,359 total, 151 suites).
+
 ## [Unreleased]
 
 ### Added — Phase K: Living knowledge brain (III-2) — git-history derivation

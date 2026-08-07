@@ -381,6 +381,71 @@ still cause exit code 1.
 
 ---
 
+## `selftest`
+
+Test **every feature of the harness** in isolated temp sandboxes — CLI
+commands, SDLC modules, guardrails, knowledge base, harness scanner, model
+router, MCP tools, workflows, ecosystem, bench, adapters, and memory. The
+suite is deterministic and offline (no model calls, no network, no changes to
+your project) and produces a **visible report** plus a full **activity trace**
+so clients can see exactly what the package does: every step, every shell
+command, and every file created or modified.
+
+```bash
+npx vectalon selftest               # run all checks, write report + dashboard
+npx vectalon selftest --list        # list every check id and exit
+npx vectalon selftest --category knowledge   # only the knowledge category
+npx vectalon selftest --only sdlc-git-derivation  # a single check
+npx vectalon selftest --json        # print the JSON report to stdout (CI)
+npx vectalon selftest --open        # open the HTML dashboard in the browser
+npx vectalon selftest --out ./reports  # write artifacts elsewhere
+```
+
+**Live progress.** Results stream to stderr as each check finishes — a
+clack-style spinner + progress bar while running in a TTY, plain `✔`/`✖`/`⚠`
+status lines when piped or in CI — so a failing check is visible the moment it
+happens, before the suite finishes. The final summary is printed to stdout.
+
+**Real model inference.** The `model-inference` check runs an **actual**
+inference through the configured provider — local GGUF (via `vectalon pull`),
+the zero-config WASM runtime (when weights are cached), or a remote API — and
+verifies the model-generated output. It never passes on the deterministic
+fallback stub: if no model or API key is available it **warns** with the exact
+command to enable real inference (or **fails** under `--require-model`).
+
+**Output** (written to `.vectalon/selftest/` by default)
+
+| File | Contents |
+|---|---|
+| `report.json` | Raw report for CI ingestion (checks, statuses, steps, durations) |
+| `report.log` | Human-readable activity trace: every step, command, and file write |
+| `report.html` | Self-contained dashboard (no network) with per-check cards and expandable activity traces |
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) — only used for the report output dir |
+| `--category <cat>` | Run only one category (`cli`, `sdlc`, `guardrails`, `knowledge`, `harness`, `model`, `mcp`, `workflows`, `ecosystem`, `bench`, `adapters`, `memory`) |
+| `--only <id>` | Run a single check by id |
+| `--model <provider>` | Force the model provider for the real-inference check: `local` \| `wasm` \| `openai` \| `anthropic` (default: the project's configured provider, or `local`) |
+| `--require-model` | Fail (instead of warn) when the inference check cannot run a real model (no downloaded GGUF / WASM weights, no API key) — for CI runs that guarantee a model |
+| `--list` | Print every check id and exit |
+| `--json` | Print the JSON report to stdout instead of writing files |
+| `--no-html` | Skip writing the HTML dashboard |
+| `--open` | Open the HTML dashboard in the browser after the run |
+| `--out <dir>` | Report output directory (default `.vectalon/selftest`) |
+| `--verbose` | Echo every recorded activity step to the terminal after the run |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | No check failed (warnings are allowed) |
+| 1 | One or more checks failed, or an unknown `--category`/`--only` value |
+
+---
+
 ## `bundle`
 
 Build the Metro bundle and enforce **performance budgets** — fully deterministic,

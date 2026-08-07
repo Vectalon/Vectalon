@@ -210,6 +210,43 @@ export type { CiTemplateOptions, GeneratedCiFile } from './adapters/ciTemplates'
 export { ensureReleaseConfigs, generateEasReleaseWorkflow, generateGithubReleaseWorkflow } from './adapters/releaseTemplates'
 export type { ReleaseTemplateOptions, GeneratedReleaseFile } from './adapters/releaseTemplates'
 export { planRelease, renderReleasePlan, parseGitLog, detectBumpType, bumpVersion } from './sdlc/ReleasePlanner'
+
+export {
+  FEATURE_CATALOG,
+  getFeatureCheck,
+  listFeatureChecks,
+  categorizeChecks,
+  runSelfTest,
+  totalsForRuns,
+  ActivityTracer,
+  Sandbox,
+  createTracedRunner,
+  LiveProgressReporter,
+  renderTerminalReport,
+  renderTerminalSummary,
+  renderActivityLog,
+  renderHtmlReport,
+  renderJsonReport,
+  SELF_TEST_CATEGORIES,
+} from './selftest'
+export type { SelfTestProgressHooks, LiveProgressReporterOptions, ModelProviderChoice } from './selftest'
+export type {
+  FeatureCheck,
+  CheckResult,
+  CheckRun,
+  SelfTestContext,
+  SelfTestCategory,
+  SelfTestOptions,
+  SelfTestReport,
+  SelfTestTotals,
+  SelfTestActivity,
+  TraceStep,
+  TraceStepKind,
+  TraceCommand,
+  TraceWrite,
+  TraceArtifact,
+  CheckStatus,
+} from './selftest'
 export type { ReleasePlan, ParsedCommit, BumpType } from './sdlc/ReleasePlanner'
 export { deriveFromGitHistory, parseCommitHistory, renderGitDerivation, isBreaking } from './sdlc/GitHistoryDeriver'
 export type { GitDerivation, GitDerivationOptions, GitDerivationStats, DerivedCommit, DerivedAdr, DerivationCategory } from './sdlc/GitHistoryDeriver'
