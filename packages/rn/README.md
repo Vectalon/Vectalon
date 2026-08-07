@@ -323,9 +323,11 @@ Start a 14-day free trial: `npx vectalon auth --github`
 
 ---
 
-## Dev Mode
+## Dev Mode (Internal Only)
 
-Bypass all tier and license checks for unrestricted development testing:
+> ⚠️ **For Vectalon contributors and maintainers only.** Not intended for end users.
+
+Bypasses all tier and license checks so the team can test every feature during development:
 
 ```bash
 # CLI flag
@@ -343,7 +345,7 @@ In dev mode:
 - Telemetry tracking is skipped (no noise)
 - A yellow banner prints on startup
 
-**Never use in production.**
+**Never use in production. End users should use the free tier or start a trial instead.**
 
 ---
 
