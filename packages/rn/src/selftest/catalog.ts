@@ -57,6 +57,7 @@ import { renderInSandbox, compileSource } from '../render'
 import { analyzeSourceFile, parseSource } from '../harness/AstScanner'
 import { detectWorkspace, NO_WORKSPACE } from '../harness/workspace'
 import { ModelRouter } from '../model/ModelRouter'
+import { getRemoteProviderInfo, REMOTE_PROVIDERS, apiKeyEnvFor, activeModelLabel, isRemoteKeyMissing } from '../model/setup'
 import { hasDownloadedModel } from '../model/local/ModelStore'
 import { getDefaultPreset } from '../model/local/presets'
 import { wasmCacheReady } from '../model/local/wasmPresets'
@@ -134,7 +135,7 @@ const RN_PROJECT_FILES: Record<string, string> = {
   ].join('\n'),
 }
 
-const MODEL_PROVIDERS: ModelProviderChoice[] = ['local', 'wasm', 'openai', 'anthropic']
+const MODEL_PROVIDERS: ModelProviderChoice[] = ['local', 'wasm', 'openai', 'anthropic', 'azure-openai', 'ollama', 'vllm', 'groq']
 
 const SAMPLE_GIT_LOG = [
   'a1b2c3d feat: add login screen',
@@ -612,19 +613,36 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
         return ok(`${provider} inference returned ${response.content.trim().length} chars of real model output`)
       }
 
-      // Remote providers need an API key in the environment.
+      // Remote providers: keyless local servers (ollama/vllm) need no env var;
+      // every other remote provider needs its API key in the environment.
       const config = resolveProjectModelConfig(ctx.projectRoot)
-      const keyEnv = config?.apiKeyEnv || `${provider.toUpperCase()}_API_KEY`
-      if (!process.env[keyEnv]) {
-        return missing(`no ${keyEnv} environment variable set — export it (and configure \`vectalon init --model ${provider}\`) to enable real remote inference`)
+      const info = getRemoteProviderInfo(provider)
+      if (info?.apiKeyEnv) {
+        const keyEnv = config?.apiKeyEnv || info.apiKeyEnv
+        if (!process.env[keyEnv]) {
+          return missing(`no ${keyEnv} environment variable set — export it (and configure \`vectalon init --model ${provider}\`) to enable real remote inference`)
+        }
+        ctx.trace.step(`remote provider ${provider} configured via ${keyEnv}`)
+      } else {
+        ctx.trace.step(`keyless remote provider ${provider} — expects a server at ${info?.baseUrl}`)
       }
-      ctx.trace.step(`remote provider ${provider} configured via ${keyEnv}`)
       const router = new ModelRouter({ projectRoot: ctx.projectRoot })
       router.initialize({ provider, modelName: config?.modelName, apiKeyEnv: config?.apiKeyEnv })
       ctx.trace.step(`calling ${provider} with a real prompt…`)
-      const response = await router.generate({ prompt, maxTokens: 32 })
-      if (!response.content.trim()) return fail('the model returned empty output')
-      return ok(`${provider} inference returned ${response.content.trim().length} chars of model output`)
+      try {
+        const response = await router.generate({ prompt, maxTokens: 32 })
+        if (!response.content.trim()) return fail('the model returned empty output')
+        return ok(`${provider} inference returned ${response.content.trim().length} chars of model output`)
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err)
+        // A server that answered with an error (bad key/model) is a hard
+        // failure; a server that is simply unreachable (keyless local server
+        // not running) is an environment warning.
+        if (/API error|HTTP \d+|Unauthorized|rate limit|quota/i.test(message)) {
+          return fail(`${provider} call failed: ${message.slice(0, 160)}`)
+        }
+        return missing(`could not reach ${provider}: ${message.slice(0, 120)}`)
+      }
     },
   },
   {
@@ -654,6 +672,30 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
       const preset = getWasmPreset()
       if (!preset.id) return fail('default preset has no id')
       return ok(`${WASM_MODEL_PRESETS.length} presets; default=${preset.id}`)
+    },
+  },
+  {
+    id: 'model-provider-registry',
+    name: 'Custom model provider registry',
+    category: 'model',
+    description:
+      'Every remote provider (OpenAI, Anthropic, Azure OpenAI, Ollama, vLLM, Groq) is registered with a default model, API-key env (or none), a base URL, and the correct request kind — labels render and keyless providers are never flagged as key-missing.',
+    run() {
+      for (const info of REMOTE_PROVIDERS) {
+        if (!info.defaultModel) return fail(`${info.id} has no default model`)
+        if (!info.baseUrl) return fail(`${info.id} has no base URL`)
+        if (info.kind === 'azure' && !info.apiVersion) return fail(`${info.id} is missing an api-version`)
+        if (info.apiKeyEnv && apiKeyEnvFor(info.id) !== info.apiKeyEnv) return fail(`${info.id} apiKeyEnv does not resolve`)
+        const label = activeModelLabel(info.id)
+        if (!label.includes(info.defaultModel)) return fail(`${info.id} label did not render: ${label}`)
+        if (info.apiKeyEnv && !process.env[info.apiKeyEnv] && !isRemoteKeyMissing(info.id)) {
+          return fail(`${info.id} with an unset key should be flagged as key-missing`)
+        }
+      }
+      for (const id of ['ollama', 'vllm']) {
+        if (isRemoteKeyMissing(id)) return fail(`${id} should not require a key`)
+      }
+      return ok(`${REMOTE_PROVIDERS.length} remote providers registered — defaults, key envs, labels, and keyless flags verified`)
     },
   },
 

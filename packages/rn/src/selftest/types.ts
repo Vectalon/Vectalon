@@ -84,7 +84,15 @@ export interface CommandResult {
   exitCode: number
 }
 
-export type ModelProviderChoice = 'local' | 'wasm' | 'openai' | 'anthropic'
+export type ModelProviderChoice =
+  | 'local'
+  | 'wasm'
+  | 'openai'
+  | 'anthropic'
+  | 'azure-openai'
+  | 'ollama'
+  | 'vllm'
+  | 'groq'
 
 export interface SelfTestContext {
   /** Isolated temp directory for this check — cleaned up after the run. */

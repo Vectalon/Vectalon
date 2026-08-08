@@ -130,4 +130,88 @@ describe('RemoteProvider', () => {
     expect(body.model).toBe('gpt-4o')
     expect(body.messages).toContainEqual({ role: 'user', content: 'hi' })
   })
+
+  it('calls Azure OpenAI with the deployments path, api-version, and api-key header', async () => {
+    mockFetchResponse({ choices: [{ message: { content: 'hello from azure' } }] })
+
+    const provider = new RemoteProvider('azure-openai')
+    const response = await provider.generate({ prompt: 'hi', temperature: 0.5 })
+
+    expect(response.content).toBe('hello from azure')
+    expect(response.provider).toBe('azure-openai')
+
+    const [url, init] = (global.fetch as jest.Mock).mock.calls[0]
+    expect(url).toBe(
+      'https://<resource>.openai.azure.com/openai/deployments/<deployment>/chat/completions?api-version=2024-06-01'
+    )
+    expect(init.headers['api-key']).toBe('sk-test')
+    expect(init.headers.Authorization).toBeUndefined()
+    const body = JSON.parse(init.body)
+    // Azure derives the deployment from the URL path — the body omits `model`
+    // so deployments that reject a mismatched model field don't fail.
+    expect(body.model).toBeUndefined()
+    expect(body.temperature).toBe(0.5)
+  })
+
+  it('calls Groq with bearer auth on its OpenAI-compatible endpoint', async () => {
+    mockFetchResponse({ choices: [{ message: { content: 'groq reply' } }] })
+
+    // Global config carries a gpt-4o modelName; an explicit config wins.
+    const provider = new RemoteProvider('groq', { modelName: 'llama-3.3-70b-versatile' })
+    const response = await provider.generate({ prompt: 'hi' })
+
+    expect(response.content).toBe('groq reply')
+    expect(response.provider).toBe('groq')
+
+    const [url, init] = (global.fetch as jest.Mock).mock.calls[0]
+    expect(url).toBe('https://api.groq.com/openai/v1/chat/completions')
+    expect(init.headers.Authorization).toBe('Bearer sk-test')
+    const body = JSON.parse(init.body)
+    expect(body.model).toBe('llama-3.3-70b-versatile')
+  })
+
+  it('calls Ollama without an Authorization header (keyless local server)', async () => {
+    mockFetchResponse({ choices: [{ message: { content: 'ollama reply' } }] })
+
+    // No global apiKey (the beforeEach global config is cleared) → no key, no
+    // bearer header, and the registry default model is used.
+    setConfig('modelConfig', {})
+    const provider = new RemoteProvider('ollama')
+    const response = await provider.generate({ prompt: 'hi' })
+
+    expect(response.content).toBe('ollama reply')
+    expect(response.provider).toBe('ollama')
+
+    const [url, init] = (global.fetch as jest.Mock).mock.calls[0]
+    expect(url).toBe('http://localhost:11434/v1/chat/completions')
+    expect(init.headers.Authorization).toBeUndefined()
+    expect(JSON.parse(init.body).model).toBe('llama3.1')
+  })
+
+  it('calls vLLM on its OpenAI-compatible endpoint', async () => {
+    mockFetchResponse({ choices: [{ message: { content: 'vllm reply' } }] })
+
+    const provider = new RemoteProvider('vllm')
+    const response = await provider.generate({ prompt: 'hi' })
+
+    expect(response.content).toBe('vllm reply')
+    expect(response.provider).toBe('vllm')
+
+    const [url] = (global.fetch as jest.Mock).mock.calls[0]
+    expect(url).toBe('http://localhost:8000/v1/chat/completions')
+  })
+
+  it('honors an endpoint override and a custom model name from the config', async () => {
+    mockFetchResponse({ choices: [{ message: { content: 'custom endpoint' } }] })
+
+    const provider = new RemoteProvider('vllm', {
+      modelName: 'my-served-model',
+      endpoint: 'http://localhost:9999/custom/v1',
+    })
+    await provider.generate({ prompt: 'hi' })
+
+    const [url, init] = (global.fetch as jest.Mock).mock.calls[0]
+    expect(url).toBe('http://localhost:9999/custom/v1/chat/completions')
+    expect(JSON.parse(init.body).model).toBe('my-served-model')
+  })
 })

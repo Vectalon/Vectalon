@@ -5,6 +5,43 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.13] - 2026-08-08
+
+### Added — Custom model provider support (M19)
+
+- **Provider registry** (`model/setup.ts`) — a single source of truth for every
+  remote provider: `openai`, `anthropic`, and the new **`azure-openai`**,
+  **`groq`**, **`ollama`**, and **`vllm`**, each with a default model, API-key
+  env var (or none), base URL, and wire kind. `MODEL_PROVIDERS`,
+  `REMOTE_MODEL_DEFAULTS`, `apiKeyEnvFor`, `detectModelAvailability`,
+  `buildModelConfig`, `activeModelLabel`, and `isRemoteKeyMissing` are all
+  registry-driven now — keyless local servers (Ollama/vLLM) are never flagged
+  as key-missing.
+- **`RemoteProvider`** (`model/providers/RemoteProvider.ts`) — dispatches on
+  the registry's wire kind: `openai` (Chat Completions + Bearer — also Groq
+  and the OpenAI-compatible endpoints of local Ollama/vLLM), `anthropic`
+  (Messages + `x-api-key`), and a new `azure` format (deployments path +
+  `api-key` header + `api-version` query). An `endpoint` override (per
+  project in `modelConfig.endpoint` or via global config) points custom
+  servers anywhere; empty bearer headers are skipped for keyless servers.
+- **`ModelRouter`** — threads `endpoint` through to the provider and reports
+  the new providers in `getProviderStatus()`.
+- **Embedding seam** (`knowledge/remoteEmbeddings.ts`) — a new
+  `AzureOpenAIEmbeddingProvider` (deployments path + `api-key` +
+  `api-version`) and resolution for `azure-openai` (`AZURE_OPENAI_API_KEY`),
+  `ollama` (`http://localhost:11434/v1`, `nomic-embed-text`), and `vllm`
+  (`http://localhost:8000/v1`, `BAAI/bge-m3`) alongside the existing
+  OpenAI / OpenAI-compatible providers — exported from the knowledge barrel.
+- **CLI** — `vectalon init` offers the new providers in the interactive
+  picker (with key/label hints), `--model` validation and key-missing
+  warnings are registry-driven across `serve`, `feature`, `bench`, and
+  `doctor` (doctor's `ma-model` check now reports keyless providers as ready).
+- **Self-test** — a new `model-provider-registry` check validates that every
+  remote provider is registered with a default model, key env, base URL, and
+  correct wire kind (labels render, keyless flags are honest).
+- **Tests** — 30+ new/updated tests covering the registry, the Azure / Groq /
+  Ollama / vLLM wire calls, router routing + status, and the embedding seam.
+
 ## [0.1.12] - 2026-08-08
 
 ### Added — VS Code extension marketplace publish (M12)

@@ -27,7 +27,7 @@ import {
 } from '../../selftest'
 import type { ModelProviderChoice, SelfTestCategory } from '../../selftest'
 
-const MODEL_PROVIDERS: ModelProviderChoice[] = ['local', 'wasm', 'openai', 'anthropic']
+const MODEL_PROVIDERS: ModelProviderChoice[] = ['local', 'wasm', 'openai', 'anthropic', 'azure-openai', 'ollama', 'vllm', 'groq']
 
 export interface SelftestOptions {
   category?: string

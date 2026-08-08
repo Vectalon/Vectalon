@@ -54,7 +54,7 @@ export function createProgram(): Command {
     .command('init')
     .description('Initialize vectalon in your React Native project')
     .argument('[directory]', 'Project root directory')
-    .option('--model <provider>', 'Default model provider (local/openai/anthropic)')
+    .option('--model <provider>', 'Default model provider (local|wasm|openai|anthropic|azure-openai|ollama|vllm|groq)')
     .action(initCommand)
 
   program
@@ -62,7 +62,7 @@ export function createProgram(): Command {
     .description('Start the vectalon MCP server for agent connections')
     .option('-p, --port <number>', 'HTTP server port', Number, 0)
     .option('--protocol <type>', 'Protocol type (mcp/stdio/sse/http)', 'mcp')
-    .option('--model <provider>', 'Model provider (local/openai/anthropic)')
+    .option('--model <provider>', 'Model provider (local|wasm|openai|anthropic|azure-openai|ollama|vllm|groq)')
     .action(serveCommand)
 
   program
@@ -83,7 +83,7 @@ export function createProgram(): Command {
     .option('--json', 'Output as JSON')
     .option('--verbose', 'Show full phase output')
     .option('--dry-run', 'Simulate adapters without running real commands')
-    .option('--model <provider>', 'Model provider (local/openai/anthropic)')
+    .option('--model <provider>', 'Model provider (local|wasm|openai|anthropic|azure-openai|ollama|vllm|groq)')
     .option('--push', 'Allow git push and PR creation (default: local branch/commit only)')
     .option('--device', 'Run device/simulator build checks (iOS/Android) during verification')
     .option('--heal-interactive', 'Prompt before applying each self-healing code-review fix (accept/reject/retry)')
@@ -258,7 +258,7 @@ export function createProgram(): Command {
   program
     .command('bench')
     .description('Run the RN coding tests benchmark (deterministic baseline or real-model leaderboard)')
-    .option('--model <provider>', 'Model provider (local/openai/anthropic) — run the real-model leaderboard pass')
+    .option('--model <provider>', 'Model provider (local|wasm|openai|anthropic|azure-openai|ollama|vllm|groq) — run the real-model leaderboard pass')
     .option('--suite <id>', 'Only run scenarios in the given suite (core-ui, data-flow, forms-security, navigation, a11y, perf, refactor)')
     .option('--live', 'Run real tests/typecheck/lint for correctness scoring (slow)')
     .option('--install', 'Run npm install in each temp project before live correctness checks')
@@ -285,7 +285,7 @@ export function createProgram(): Command {
     .description('Test every feature of the harness in a sandbox — visible report + full activity trace of every step, command, and file modification')
     .option('--category <cat>', 'Run only one category (cli, sdlc, guardrails, knowledge, harness, model, mcp, workflows, ecosystem, bench, adapters, memory, upgrade, perf, sandbox)')
     .option('--only <id>', 'Run a single check by id')
-    .option('--model <provider>', 'Force the model provider for the real-inference check (local/wasm/openai/anthropic)')
+    .option('--model <provider>', 'Force the model provider for the real-inference check (local|wasm|openai|anthropic|azure-openai|ollama|vllm|groq)')
     .option('--require-model', 'Fail (instead of warn) when no real model is available for the inference check')
     .option('--list', 'List all checks and exit')
     .option('--json', 'Print the JSON report to stdout instead of files')

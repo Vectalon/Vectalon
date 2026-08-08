@@ -3,6 +3,7 @@ import { LocalProvider } from './providers/LocalProvider'
 import { RemoteProvider } from './providers/RemoteProvider'
 import { WasmProvider } from './providers/WasmProvider'
 import type { ModelConfig, ModelRequest, ModelResponse, ModelProviderType } from './types'
+import { REMOTE_PROVIDERS } from './setup'
 import { wasmZeroConfigEnabled } from './zeroConfig'
 import { getDefaultPreset } from './local/presets'
 import { getWasmPreset } from './local/wasmPresets'
@@ -50,6 +51,7 @@ export class ModelRouter {
       this.remoteProviders.set(this.provider, new RemoteProvider(this.provider, {
         modelName: config?.modelName,
         apiKeyEnv: config?.apiKeyEnv,
+        endpoint: config?.endpoint,
       }, {
         projectRoot: this.projectRoot,
       }))
@@ -87,12 +89,16 @@ export class ModelRouter {
   }
 
   async getProviderStatus(): Promise<Record<string, boolean>> {
-    return {
+    const status: Record<string, boolean> = {
       local: this.localProvider?.isReady() ?? false,
       wasm: this.wasmProvider?.isReady() ?? false,
-      openai: this.remoteProviders.has('openai'),
-      anthropic: this.remoteProviders.has('anthropic'),
     }
+    // Derived from the registry so future remote providers are reported
+    // automatically instead of requiring a manual entry here.
+    for (const info of REMOTE_PROVIDERS) {
+      status[info.id] = this.remoteProviders.has(info.id)
+    }
+    return status
   }
 
   isLocalFallback(): boolean {

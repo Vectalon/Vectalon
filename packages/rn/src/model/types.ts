@@ -1,4 +1,13 @@
-export type ModelProviderType = 'local' | 'wasm' | 'openai' | 'anthropic' | 'custom'
+export type ModelProviderType =
+  | 'local'
+  | 'wasm'
+  | 'openai'
+  | 'anthropic'
+  | 'azure-openai'
+  | 'ollama'
+  | 'vllm'
+  | 'groq'
+  | 'custom'
 
 /** A tool the model may call (OpenAI-style function shape). */
 export interface ToolDefinition {

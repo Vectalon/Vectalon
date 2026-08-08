@@ -48,7 +48,7 @@ describe('ModelRouter', () => {
     expect(response.content).toBe('remote reply')
   })
 
-  it('reports provider status', async () => {
+  it('reports provider status for local, wasm, and every remote provider', async () => {
     const router = new ModelRouter()
     router.initialize({ provider: 'local' })
     await expect(router.getProviderStatus()).resolves.toEqual({
@@ -56,7 +56,47 @@ describe('ModelRouter', () => {
       wasm: false,
       openai: false,
       anthropic: false,
+      'azure-openai': false,
+      ollama: false,
+      vllm: false,
+      groq: false,
     })
+  })
+
+  it('reports a custom remote provider as ready when initialized', async () => {
+    const router = new ModelRouter()
+    router.initialize({ provider: 'groq' })
+    const status = await router.getProviderStatus()
+    expect(status.groq).toBe(true)
+    expect(status.openai).toBe(false)
+  })
+
+  it('routes to a custom provider (groq) with its own base URL', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: 'groq via router' } }] }),
+    }) as unknown as typeof fetch
+
+    const router = new ModelRouter()
+    router.initialize({ provider: 'groq' })
+    const response = await router.generate({ prompt: 'hi' })
+    expect(response.provider).toBe('groq')
+    expect(response.content).toBe('groq via router')
+    const [url] = (global.fetch as jest.Mock).mock.calls[0]
+    expect(url).toBe('https://api.groq.com/openai/v1/chat/completions')
+  })
+
+  it('threads an endpoint override through to the remote provider', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: 'ok' } }] }),
+    }) as unknown as typeof fetch
+
+    const router = new ModelRouter()
+    router.initialize({ provider: 'vllm', endpoint: 'http://localhost:9000/v1' })
+    await router.generate({ prompt: 'hi' })
+    const [url] = (global.fetch as jest.Mock).mock.calls[0]
+    expect(url).toBe('http://localhost:9000/v1/chat/completions')
   })
 
   it('routes to the wasm provider when chosen explicitly', async () => {

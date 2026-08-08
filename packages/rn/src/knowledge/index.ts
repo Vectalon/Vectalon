@@ -16,6 +16,7 @@ export type { EmbeddingProvider } from './embeddings'
 export {
   OpenAIEmbeddingProvider,
   OpenAICompatibleEmbeddingProvider,
+  AzureOpenAIEmbeddingProvider,
   createRemoteEmbeddingProvider,
 } from './remoteEmbeddings'
 export type { RemoteEmbeddingProvider, OpenAIEmbeddingOptions } from './remoteEmbeddings'

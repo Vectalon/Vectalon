@@ -2,6 +2,7 @@ import { writeFileSync } from 'fs'
 import { logger } from '../logger'
 import { ModelRouter } from '../../model/ModelRouter'
 import type { ModelProviderType } from '../../model/types'
+import { isModelSetupProvider, MODEL_PROVIDERS } from '../../model/setup'
 import { runBenchmarkFromDir } from '../../bench/runner'
 import { formatBenchmarkReport } from '../../bench/report'
 import { defaultScenariosDir } from '../../bench/loader'
@@ -31,12 +32,10 @@ export interface BenchCommandOptions {
   tolerance?: number
 }
 
-const VALID_PROVIDERS = ['local', 'wasm', 'openai', 'anthropic']
-
 export async function benchCommand(options: BenchCommandOptions): Promise<void> {
-  if (options.model && !VALID_PROVIDERS.includes(options.model)) {
+  if (options.model && !isModelSetupProvider(options.model)) {
     logger.error(`Unknown model provider: ${options.model}`)
-    logger.info(`Available providers: ${VALID_PROVIDERS.join(', ')}`)
+    logger.info(`Available providers: ${MODEL_PROVIDERS.join(', ')}`)
     process.exit(1)
   }
 

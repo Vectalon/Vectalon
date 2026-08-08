@@ -13,7 +13,7 @@ import type { ModelProviderType } from '../../model/types'
 import type { ContextSnapshot } from '../../harness/types'
 import { getIntent, type WorkflowIntent, type IntentPrediction } from '../../workflows/phases/intent'
 import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
-import { activeModelLabel, isRemoteKeyMissing } from '../../model/setup'
+import { activeModelLabel, isRemoteKeyMissing, isModelSetupProvider, getRemoteProviderInfo, MODEL_PROVIDERS } from '../../model/setup'
 import { getWasmPreset } from '../../model/local/wasmPresets'
 import { dynamicImport } from '../../utils/dynamicImport'
 import { setFileChangeWriter, formatFileChange, computeFileChange, type FileChange } from '../../utils/fileDiff'
@@ -104,10 +104,9 @@ export async function featureCommand(
     process.exit(1)
   }
 
-  const VALID_PROVIDERS = ['local', 'wasm', 'openai', 'anthropic']
-  if (options.model && !VALID_PROVIDERS.includes(options.model)) {
+  if (options.model && !isModelSetupProvider(options.model)) {
     log.error(`Unknown model provider: ${options.model}`)
-    log.info(`Available providers: ${VALID_PROVIDERS.join(', ')}`)
+    log.info(`Available providers: ${MODEL_PROVIDERS.join(', ')}`)
     process.exit(1)
   }
 
@@ -215,7 +214,8 @@ export async function featureCommand(
   if (!options.json) {
     log.info(`Model: ${pc.bold(activeModel)}`)
     if (isRemoteKeyMissing(provider, modelConfig)) {
-      log.warn(`No API key found for ${provider}. Set ${modelConfig?.apiKeyEnv || provider.toUpperCase() + '_API_KEY'} in your environment or export it before running.`)
+      const keyEnv = modelConfig?.apiKeyEnv || getRemoteProviderInfo(provider)?.apiKeyEnv || `${provider.toUpperCase()}_API_KEY`
+      log.warn(`No API key found for ${provider}. Set ${keyEnv} in your environment or export it before running.`)
     }
     if (modelRouter.isZeroConfigActive()) {
       const wasm = getWasmPreset()

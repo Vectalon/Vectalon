@@ -116,10 +116,18 @@ Run `npx vectalon` with no arguments (Node `>=20.12`, TTY required) to launch an
 |----------|------|---------|
 | **local** | GGUF (node-llama-cpp) | Qwen2.5-Coder presets. Fully offline. Skills inlined into system prompt. |
 | **wasm** | ONNX / WASM (@huggingface/transformers) | Zero-config quantized model. Downloads on first use. No API key, no native build. |
-| **openai** | Remote | Chat Completions API (default `gpt-4o`). |
-| **anthropic** | Remote | Messages API (default `claude-sonnet-4-20250514`). |
+| **openai** | Remote | Chat Completions API (default `gpt-4o`), `OPENAI_API_KEY`. |
+| **anthropic** | Remote | Messages API (default `claude-sonnet-4-20250514`), `ANTHROPIC_API_KEY`. |
+| **azure-openai** | Remote | Azure OpenAI deployments (default `gpt-4o`), `AZURE_OPENAI_API_KEY`; set the endpoint to your resource + deployment (e.g. `https://<resource>.openai.azure.com/openai/deployments/<deployment>`). |
+| **groq** | Remote | OpenAI-compatible fast inference (default `llama-3.3-70b-versatile`), `GROQ_API_KEY`. |
+| **ollama** | Local server | OpenAI-compatible `/v1` endpoint on `http://localhost:11434` (default `llama3.1`). No API key. |
+| **vllm** | Local server | OpenAI-compatible `/v1` endpoint on `http://localhost:8000` (default `qwen2.5-coder-7b-instruct`). No API key. |
 
-Set default provider during `vectalon init` or override per-command with `--model <provider>`.
+Remote providers are configured entirely from the environment (keys are never
+written to disk); `--model` picks the provider, and the endpoint / model can be
+overridden per project in `.vectalon/rn-vectalon.json` (`modelConfig.endpoint`,
+`modelConfig.modelName`). Set the default provider during `vectalon init` or
+override per-command with `--model <provider>`.
 
 ---
 

@@ -14,6 +14,7 @@ import { logger } from '../logger'
 import { runDoctor, runDoctorFixes, type DoctorCheckers, type DoctorFixer, type FixAttempt, type ToolchainCheckOptions, type LeaderboardCheckOptions, type ModelAccessCheckOptions } from '../../ecosystem'
 import { hasDownloadedModel } from '../../model/local/ModelStore'
 import { getDefaultPreset } from '../../model/local/presets'
+import type { ModelSetupProvider } from '../../model/setup'
 import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
 
 export interface DoctorOptions {
@@ -156,7 +157,7 @@ export function doctorCommand(directory: string, options: DoctorOptions): void {
   const leaderboardOptions = { localModelPresetId: getDefaultPreset().id, ...(options.leaderboard || {}) }
   // The configured model provider comes from .vectalon/rn-vectalon.json (set by
   // `vectalon init`); the doctor warns when that model can't reach tools.
-  const resolvedProvider = resolveProjectModelProvider(root) as 'local' | 'wasm' | 'openai' | 'anthropic'
+  const resolvedProvider = resolveProjectModelProvider(root) as ModelSetupProvider
   const projectModelConfig = resolveProjectModelConfig(root)
   const modelOptions: ModelAccessCheckOptions = {
     provider: resolvedProvider,

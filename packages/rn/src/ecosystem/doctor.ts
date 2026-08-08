@@ -4,6 +4,8 @@ import { listEcosystemItems, getEcosystemItem } from './catalog'
 import { readEcosystemConfig } from './config'
 import type { EcosystemItem } from './types'
 import { reportError } from '../utils/safe'
+import { getRemoteProviderInfo } from '../model/setup'
+import type { ModelSetupProvider } from '../model/setup'
 
 export type DoctorStatus = 'ok' | 'missing' | 'warning'
 
@@ -189,7 +191,7 @@ export type ModelAccessItemId = (typeof MODEL_ACCESS_ITEM_IDS)[number]
 
 export interface ModelAccessCheckOptions {
   /** Configured provider ('local' when unset — the default). */
-  provider?: 'local' | 'wasm' | 'openai' | 'anthropic'
+  provider?: ModelSetupProvider
   /** Local model preset id to verify is downloaded (default qwen2.5-coder-1.5b). */
   modelPresetId?: string
   /** Env var carrying the remote API key (default per provider). */
@@ -240,16 +242,27 @@ export function checkModelAccess(
       detail: 'wasm provider — ONNX/WASM Qwen2.5-Coder downloads on first use (no API key, no native build)',
     })
   } else {
-    const apiKeyEnv = options.apiKeyEnv || (provider === 'openai' ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY')
-    if (checkers.env(apiKeyEnv)) {
-      results.push({ ...base('ma-model', 'Configured model'), status: 'ok', detail: `${provider} provider ready (${apiKeyEnv} set)` })
-    } else {
+    const info = getRemoteProviderInfo(provider)
+    if (info && !info.apiKeyEnv) {
+      // Keyless local servers (Ollama/vLLM): there is no env var to verify —
+      // the request either reaches the local server or fails at call time.
       results.push({
         ...base('ma-model', 'Configured model'),
-        status: 'warning',
-        detail: `${provider} provider configured but ${apiKeyEnv} is not set — tool calling will fail`,
-        hint: `Export ${apiKeyEnv} in your environment (or run \`vectalon init\` to switch to the local model)`,
+        status: 'ok',
+        detail: `${info.label} provider — no API key required; ensure a server is running at ${info.baseUrl}`,
       })
+    } else {
+      const apiKeyEnv = options.apiKeyEnv || info?.apiKeyEnv || ''
+      if (apiKeyEnv && checkers.env(apiKeyEnv)) {
+        results.push({ ...base('ma-model', 'Configured model'), status: 'ok', detail: `${provider} provider ready (${apiKeyEnv} set)` })
+      } else {
+        results.push({
+          ...base('ma-model', 'Configured model'),
+          status: 'warning',
+          detail: `${provider} provider configured but ${apiKeyEnv} is not set — tool calling will fail`,
+          hint: `Export ${apiKeyEnv} in your environment (or run \`vectalon init\` to switch to the local model)`,
+        })
+      }
     }
   }
 

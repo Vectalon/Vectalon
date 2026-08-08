@@ -12,7 +12,8 @@ import { KnowledgeRefreshService } from '../../knowledge/refresh'
 import { startEnabledMcpClients } from '../../protocol/subMcp'
 import type { McpClientHandle } from '../../protocol/subMcp'
 import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
-import { activeModelLabel, isRemoteKeyMissing } from '../../model/setup'
+import { activeModelLabel, isRemoteKeyMissing, getRemoteProviderInfo } from '../../model/setup'
+import type { ModelProviderType } from '../../model/types'
 import { getWasmPreset } from '../../model/local/wasmPresets'
 import { printSyncStatus } from './sync'
 import { existsSync, readFileSync } from 'fs'
@@ -57,7 +58,7 @@ export async function serveCommand(options: {
     projectRoot: root,
     zeroConfigEnabled: options.modelProvider ? false : undefined,
   })
-  const modelProvider = resolveProjectModelProvider(root, options.modelProvider) as 'local' | 'wasm' | 'openai' | 'anthropic'
+  const modelProvider = resolveProjectModelProvider(root, options.modelProvider) as ModelProviderType
   const modelConfig = resolveProjectModelConfig(root)
   modelRouter.initialize({ provider: modelProvider, modelName: modelConfig?.modelName, apiKeyEnv: modelConfig?.apiKeyEnv })
 
@@ -68,7 +69,8 @@ export async function serveCommand(options: {
       : activeModelLabel(modelProvider, modelConfig)
   logger.info(`Model: ${activeModel}`)
   if (isRemoteKeyMissing(modelProvider, modelConfig)) {
-    logger.warn(`No API key found for ${modelProvider}. Set ${modelConfig?.apiKeyEnv || modelProvider.toUpperCase() + '_API_KEY'} in your environment or export it before connecting agents.`)
+    const keyEnv = modelConfig?.apiKeyEnv || getRemoteProviderInfo(modelProvider)?.apiKeyEnv || `${modelProvider.toUpperCase()}_API_KEY`
+    logger.warn(`No API key found for ${modelProvider}. Set ${keyEnv} in your environment or export it before connecting agents.`)
   }
   if (modelRouter.isZeroConfigActive()) {
     logger.info(`Zero-config WASM model (${getWasmPreset().modelId}) will download on first tool use — RN_VECTALON_NO_WASM=1 to disable`)

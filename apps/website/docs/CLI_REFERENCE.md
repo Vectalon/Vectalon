@@ -36,6 +36,10 @@ npx vectalon init --model local    # use the local Qwen2.5-Coder provider
 npx vectalon init --model wasm     # zero-config ONNX/WASM provider (downloads on first use)
 npx vectalon init --model openai   # remote OpenAI provider (reads OPENAI_API_KEY)
 npx vectalon init --model anthropic  # remote Anthropic provider (ANTHROPIC_API_KEY)
+npx vectalon init --model azure-openai  # Azure OpenAI deployments (AZURE_OPENAI_API_KEY)
+npx vectalon init --model groq     # Groq fast inference (GROQ_API_KEY)
+npx vectalon init --model ollama   # local Ollama server — no API key
+npx vectalon init --model vllm     # local vLLM server — no API key
 ```
 
 **Options**
@@ -43,7 +47,7 @@ npx vectalon init --model anthropic  # remote Anthropic provider (ANTHROPIC_API_
 | Option | Description |
 |---|---|
 | `[directory]` | Project root to scan (default: cwd) |
-| `--model <provider>` | Default model provider: `local` \| `wasm` \| `openai` \| `anthropic` |
+| `--model <provider>` | Default model provider: `local` \| `wasm` \| `openai` \| `anthropic` \| `azure-openai` \| `groq` \| `ollama` \| `vllm` |
 
 **What it does**
 
@@ -95,7 +99,7 @@ npx vectalon serve --model openai     # override the model provider for this run
 |---|---|
 | `-p, --port <number>` | HTTP server port (default `0` = auto-assign) |
 | `--protocol <type>` | `mcp` \| `stdio` \| `sse` \| `http` (default `mcp`) |
-| `--model <provider>` | Model provider: `local` \| `wasm` \| `openai` \| `anthropic` |
+| `--model <provider>` | Model provider: `local` \| `wasm` \| `openai` \| `anthropic` \| `azure-openai` \| `groq` \| `ollama` \| `vllm` |
 
 **What it does**
 
@@ -233,7 +237,7 @@ npx vectalon feature --ticket MOB-123 --push   # ticket-to-PR: read the ticket, 
 | `--json` | Output as JSON |
 | `--verbose` | Show full phase output |
 | `--dry-run` | Simulate adapters without running real commands |
-| `--model <provider>` | Model provider: `local` \| `wasm` \| `openai` \| `anthropic` |
+| `--model <provider>` | Model provider: `local` \| `wasm` \| `openai` \| `anthropic` \| `azure-openai` \| `groq` \| `ollama` \| `vllm` |
 | `--push` | Allow git push and PR creation (default: local branch/commit only) |
 | `--device` | Run device/simulator build checks during verification |
 | `--heal-interactive` | Prompt before applying each self-healing review fix |
@@ -428,7 +432,7 @@ command to enable real inference (or **fails** under `--require-model`).
 | `[directory]` | Project root (default: cwd) — only used for the report output dir |
 | `--category <cat>` | Run only one category (`cli`, `sdlc`, `guardrails`, `knowledge`, `harness`, `model`, `mcp`, `workflows`, `ecosystem`, `bench`, `adapters`, `memory`, `upgrade`, `perf`, `sandbox`, `render`) |
 | `--only <id>` | Run a single check by id |
-| `--model <provider>` | Force the model provider for the real-inference check: `local` \| `wasm` \| `openai` \| `anthropic` (default: the project's configured provider, or `local`) |
+| `--model <provider>` | Force the model provider for the real-inference check: `local` \| `wasm` \| `openai` \| `anthropic` \| `azure-openai` \| `groq` \| `ollama` \| `vllm` (default: the project's configured provider, or `local`) |
 | `--require-model` | Fail (instead of warn) when the inference check cannot run a real model (no downloaded GGUF / WASM weights, no API key) — for CI runs that guarantee a model |
 | `--list` | Print every check id and exit |
 | `--json` | Print the JSON report to stdout instead of writing files |
@@ -693,7 +697,7 @@ npx vectalon bench --baseline bench/baseline.json  # CI regression gate (exit 1 
 
 | Option | Description |
 |---|---|
-| `--model <provider>` | `local` \| `wasm` \| `openai` \| `anthropic` — run the real-model pass |
+| `--model <provider>` | `local` \| `wasm` \| `openai` \| `anthropic` \| `azure-openai` \| `groq` \| `ollama` \| `vllm` — run the real-model pass |
 | `--suite <id>` | Only one suite: `core-ui` \| `data-flow` \| `forms-security` \| `navigation` \| `a11y` \| `perf` \| `refactor` |
 | `--live` | Run real tests/typecheck/lint for correctness (slow) |
 | `--install` | `npm install` each temp project before the live checks (use with `--live` when the fixture project has a `package.json` but no `node_modules`) |
@@ -781,7 +785,7 @@ npx vectalon leaderboard bench/results --pr-comment   # compact PR comment to st
 | 1 | No result files found in the directory |
 
 **Nightly leaderboard (M5)** — `.github/workflows/leaderboard.yml` runs
-`vectalon bench --live --install --model` on a `[local, openai, anthropic]`
+`vectalon bench --live --install --model` on a `[local, openai, anthropic, azure-openai, groq, ollama, vllm]`
 matrix at 03:00 UTC daily (or on `workflow_dispatch`), skips remote providers
 whose API key secret is unset, uploads each model's result as an artifact, then
 merges them with this command and commits the timestamped

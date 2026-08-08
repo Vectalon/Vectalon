@@ -18,6 +18,7 @@ import {
   detectModelAvailability,
   buildModelConfig,
   isModelSetupProvider,
+  getRemoteProviderInfo,
   MODEL_PROVIDERS,
 } from '../../model/setup'
 import type { ModelSetupProvider, ProjectModelConfig } from '../../model/setup'
@@ -182,13 +183,17 @@ function logModelSetup(model: ResolvedModelSetup): void {
     return
   }
   const config = model.modelConfig
-  const envSet = model.provider === 'openai'
-    ? !!process.env.OPENAI_API_KEY
-    : !!process.env.ANTHROPIC_API_KEY
-  const keyStatus = envSet ? 'set' : 'NOT set'
-  logger.dim(`  Model: ${model.provider} provider — ${config?.modelName || 'default'} via ${config?.apiKeyEnv || model.provider.toUpperCase() + '_API_KEY'} (${keyStatus}).`)
+  const info = getRemoteProviderInfo(model.provider)
+  if (!info) return
+  if (!info.apiKeyEnv) {
+    logger.dim(`  Model: ${info.label} provider — ${config?.modelName || info.defaultModel} at ${config?.endpoint || info.baseUrl} (no API key required).`)
+    return
+  }
+  const env = config?.apiKeyEnv || info.apiKeyEnv
+  const envSet = !!process.env[env]
+  logger.dim(`  Model: ${info.label} provider — ${config?.modelName || info.defaultModel} via ${env} (${envSet ? 'set' : 'NOT set'}).`)
   if (!envSet) {
-    logger.dim(`  Export your API key: export ${config?.apiKeyEnv || model.provider.toUpperCase() + '_API_KEY'}=sk-...`)
+    logger.dim(`  Export your API key: export ${env}=sk-...`)
   }
 }
 
@@ -235,6 +240,10 @@ async function setupModelProvider(options: Record<string, unknown>): Promise<Res
       },
       { value: 'openai', label: 'OpenAI', hint: availability.openaiKeySet ? 'OPENAI_API_KEY set' : 'needs OPENAI_API_KEY' },
       { value: 'anthropic', label: 'Anthropic', hint: availability.anthropicKeySet ? 'ANTHROPIC_API_KEY set' : 'needs ANTHROPIC_API_KEY' },
+      { value: 'azure-openai', label: 'Azure OpenAI', hint: availability.azureOpenaiKeySet ? 'AZURE_OPENAI_API_KEY set' : 'needs AZURE_OPENAI_API_KEY' },
+      { value: 'ollama', label: 'Ollama', hint: 'local server — no API key' },
+      { value: 'vllm', label: 'vLLM', hint: 'local server — no API key' },
+      { value: 'groq', label: 'Groq', hint: availability.groqKeySet ? 'GROQ_API_KEY set' : 'needs GROQ_API_KEY' },
     ],
   })
 
