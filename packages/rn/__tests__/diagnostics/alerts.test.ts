@@ -4,8 +4,9 @@
  * sets VECTALON_ALERT_WEBHOOK before requiring the module and stubs globalThis
  * fetch to record POSTs instead of hitting the real endpoint.
  */
-import { readFileSync, writeFileSync } from 'fs'
-import { TrialTracker } from '@vectalon-dev/core'
+import { mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { join } from 'path'
+import { TrialTracker, LicenseStore } from '@vectalon-dev/core'
 import { createTempProject, cleanup, useTempConfig } from '../helpers/tmp'
 import { resetConfig } from '../../src/config'
 
@@ -30,14 +31,22 @@ describe('admin alert webhook (P2-19)', () => {
   let alerts: AlertsModule
   const now = 1700000000000
 
-  beforeAll(async () => {
-    alerts = (await import('../../src/diagnostics/alerts')) as unknown as AlertsModule
-  })
-
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Order matters: the config dir + webhook env must be in place BEFORE the
+    // (fresh) module import, because alerts.ts and @vectalon-dev/core capture
+    // both at load time. A cached import or stale config dir silently disables
+    // alerting or leaks a prior test's trial.
     root = createTempProject({ 'package.json': '{}' })
     configDir = useTempConfig()
     resetConfig()
+    // Core's LicenseStore hardcodes ~/.config/vectalon (ignores the temp
+    // config dir), so a trial started in one test persists for every later
+    // test. Clear it before each test to isolate license state.
+    LicenseStore.clearTrial()
+    process.env.VECTALON_ALERT_WEBHOOK = 'https://discord.example/webhook'
+    jest.resetModules()
+    alerts = (await import('../../src/diagnostics/alerts')) as unknown as AlertsModule
+
     fetchMock = jest.fn(async () => ({ ok: true, status: 200 }))
     globalThis.fetch = fetchMock as unknown as typeof fetch
   })
@@ -45,7 +54,10 @@ describe('admin alert webhook (P2-19)', () => {
   afterEach(() => {
     cleanup(root)
     cleanup(configDir)
-    delete globalThis.fetch
+    LicenseStore.clearTrial()
+    // `fetch` is a required (non-optional) global in newer TS libs, so delete
+    // needs a cast — CI's TS is stricter than the local dev toolchain.
+    delete (globalThis as unknown as { fetch?: unknown }).fetch
   })
 
   function event(message: string, stack = 'Error: boom\n    at a.ts:1:1\n    at b.ts:2:2', ts = now - 1000): Record<string, unknown> {
@@ -140,6 +152,7 @@ describe('admin alert webhook (P2-19)', () => {
   })
 
   it('does not alert for stale heartbeats on free tier', async () => {
+    mkdirSync(join(alerts.heartbeatStatePath(root), '..'), { recursive: true })
     writeFileSync(alerts.heartbeatStatePath(root), JSON.stringify({ kind: 'serve', lastPingAt: now - 60 * 60 * 1000 }))
     alerts.checkHeartbeatStaleness(root, now)
     await new Promise(r => setTimeout(r, 10))

@@ -188,8 +188,9 @@ export function hasActiveLicense(): boolean {
       const validation = LicenseValidator.validate(license.key)
       if (validation.valid) return true
     }
-    const days = TrialTracker.daysRemaining()
-    return typeof days === 'number' && days >= 0
+    // isActive() (not daysRemaining()) — a cleared/empty trial record has no
+    // expiresAt and must not count as an active license.
+    return TrialTracker.isActive()
   } catch {
     return false
   }
