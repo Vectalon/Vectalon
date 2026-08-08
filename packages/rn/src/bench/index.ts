@@ -37,5 +37,11 @@ export {
   loadBaselineFile,
   compareToBaseline,
   formatBaselineComparison,
+  gateBenchRelease,
+  overallAdherenceOf,
+  guardrailFailedRateOf,
+  RELATIVE_COMPOSITE_FLOOR,
+  ADHERENCE_DROP_LIMIT,
+  GUARDRAIL_FAILED_DELTA_LIMIT,
 } from './baseline'
-export type { BaselineAxisDelta, BaselineComparison } from './baseline'
+export type { BaselineAxisDelta, BaselineComparison, BenchGateResult } from './baseline'

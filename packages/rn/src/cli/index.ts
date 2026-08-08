@@ -33,6 +33,7 @@ import { doctorCommand } from './commands/doctor'
 import { selftestCommand } from './commands/selftest'
 import { supportCommand } from './commands/support'
 import { logger } from './logger'
+import { attachFileLogging } from './logfile'
 import pkg from '../../package.json'
 import { dynamicImport } from '../utils/dynamicImport'
 import { captureError, flushErrorQueue, writeDiagnosticsBundle } from '../diagnostics'
@@ -325,10 +326,17 @@ export function createProgram(): Command {
 
 export async function runCLI(): Promise<void> {
   installGlobalErrorHandlers()
+  // P1-12: every command mirrors logger lines to .vectalon/logs/vectalon.log
+  // (rotating, 5 × 10 MB); --diagnostics turns on debug-level capture too.
+  attachFileLogging(process.cwd())
   const program = createProgram()
   const argv = process.argv
   const diagnostics = takeDiagnosticsFlag(argv)
   if (diagnostics) {
+    // Capture debug lines in the file log for the whole run. This mutates the
+    // shared env (children inherit VECTALON_DEBUG=1) — benign: nothing
+    // downstream reads it, and sandboxed commands scrub the env anyway.
+    process.env.VECTALON_DEBUG = '1'
     // Tracked so the process-exit handler can always emit a bundle (even when
     // a command calls process.exit(1) directly, e.g. doctor in a broken
     // project); the catch path attaches the full stack trace.

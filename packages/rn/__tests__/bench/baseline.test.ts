@@ -4,6 +4,12 @@ import {
   loadBaselineFile,
   compareToBaseline,
   formatBaselineComparison,
+  gateBenchRelease,
+  overallAdherenceOf,
+  guardrailFailedRateOf,
+  RELATIVE_COMPOSITE_FLOOR,
+  ADHERENCE_DROP_LIMIT,
+  GUARDRAIL_FAILED_DELTA_LIMIT,
 } from '../../src/bench'
 import type { BenchScenarioRun, BenchSuiteSummary, BenchSummary } from '../../src/bench'
 import { createTempProject, cleanup } from '../helpers/tmp'
@@ -141,5 +147,76 @@ describe('bench baseline (M4)', () => {
     const fail = formatBaselineComparison(compareToBaseline(failing, summary()), DEFAULT_BASELINE_TOLERANCE)
     expect(fail).toContain('REGRESSIONS')
     expect(fail).toContain('Baseline FAILED')
+  })
+})
+
+describe('release gate (P1-11)', () => {
+  it('passes when every budget is met', () => {
+    const gate = gateBenchRelease(summary(), summary())
+    expect(gate.ok).toBe(true)
+    expect(gate.reasons).toHaveLength(0)
+  })
+
+  it('blocks when overallRelativeComposite drops below the floor', () => {
+    const current = summary({ overallRelativeComposite: RELATIVE_COMPOSITE_FLOOR - 0.01 })
+    const gate = gateBenchRelease(current, summary())
+    expect(gate.ok).toBe(false)
+    expect(gate.reasons.join(' ')).toContain('relative composite')
+    expect(gate.reasons.join(' ')).toContain('release floor')
+  })
+
+  it('passes when relative composite sits exactly at the floor', () => {
+    const gate = gateBenchRelease(summary({ overallRelativeComposite: RELATIVE_COMPOSITE_FLOOR }), summary())
+    expect(gate.ok).toBe(true)
+  })
+
+  it('blocks when the guardrail failed rate increases beyond the delta limit', () => {
+    const current = summary({ overallGuardrails: 1 - GUARDRAIL_FAILED_DELTA_LIMIT - 0.005 })
+    const gate = gateBenchRelease(current, summary())
+    expect(gate.ok).toBe(false)
+    expect(gate.reasons.join(' ')).toContain('guardrail failed rate')
+  })
+
+  it('allows a guardrail failed-rate increase within the delta limit', () => {
+    const current = summary({ overallGuardrails: 1 - GUARDRAIL_FAILED_DELTA_LIMIT + 0.005 })
+    const gate = gateBenchRelease(current, summary())
+    expect(gate.ok).toBe(true)
+  })
+
+  it('blocks when overall adherence drops more than the 5% limit', () => {
+    const current = summary({
+      runs: [
+        run('rn-01-login-screen', { axes: { correctness: null, adherence: 0.6, guardrails: 1 } }),
+        run('rn-02-flatlist-fetch', { axes: { correctness: null, adherence: 0.6, guardrails: 1 } }),
+      ],
+    })
+    // baseline adherence is 0.67 → drop 0.07 > 0.05.
+    expect(overallAdherenceOf(current)).toBeCloseTo(0.6, 5)
+    const gate = gateBenchRelease(current, summary())
+    expect(gate.ok).toBe(false)
+    expect(gate.reasons.join(' ')).toContain('adherence')
+  })
+
+  it('allows an adherence drop at exactly the 5% limit', () => {
+    const current = summary({
+      runs: [
+        run('rn-01-login-screen', { axes: { correctness: null, adherence: 0.67 - ADHERENCE_DROP_LIMIT, guardrails: 1 } }),
+        run('rn-02-flatlist-fetch', { axes: { correctness: null, adherence: 0.67 - ADHERENCE_DROP_LIMIT, guardrails: 1 } }),
+      ],
+    })
+    const gate = gateBenchRelease(current, summary())
+    expect(gate.ok).toBe(true)
+  })
+
+  it('skips gates whose inputs are N/A (no false blocks on partial runs)', () => {
+    const current = summary({ overallRelativeComposite: null, overallGuardrails: null })
+    const baseline = summary({ overallRelativeComposite: null, overallGuardrails: null })
+    const gate = gateBenchRelease(current, baseline)
+    expect(gate.ok).toBe(true)
+  })
+
+  it('guardrailFailedRateOf inverts the pass rate', () => {
+    expect(guardrailFailedRateOf(summary({ overallGuardrails: 0.97 }))).toBeCloseTo(0.03, 5)
+    expect(guardrailFailedRateOf(summary({ overallGuardrails: null }))).toBeNull()
   })
 })

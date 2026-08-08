@@ -12,6 +12,7 @@ import { KnowledgeRefreshService } from '../../knowledge/refresh'
 import { startEnabledMcpClients } from '../../protocol/subMcp'
 import type { McpClientHandle } from '../../protocol/subMcp'
 import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
+import { warnIfRnVersionAhead } from '../../upgrade/drift'
 import { activeModelLabel, isRemoteKeyMissing, getRemoteProviderInfo } from '../../model/setup'
 import type { ModelProviderType } from '../../model/types'
 import { getWasmPreset } from '../../model/local/wasmPresets'
@@ -48,6 +49,11 @@ export async function serveCommand(options: {
   const snapshot = engine.getSnapshot()
   if (snapshot) {
     learner.learnFromComponents(snapshot.components)
+    // P1-14: surface RN versions ahead of the rule set so agent users see the
+    // accuracy caveat up front, before any guardrail runs on this project.
+    if (snapshot.project.reactNativeVersion) {
+      warnIfRnVersionAhead(snapshot.project.reactNativeVersion)
+    }
   }
   engine.attachPatternStore(memory)
 

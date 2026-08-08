@@ -6,7 +6,7 @@ import { isModelSetupProvider, MODEL_PROVIDERS } from '../../model/setup'
 import { runBenchmarkFromDir } from '../../bench/runner'
 import { formatBenchmarkReport } from '../../bench/report'
 import { defaultScenariosDir } from '../../bench/loader'
-import { DEFAULT_BASELINE_TOLERANCE, loadBaselineFile, compareToBaseline, formatBaselineComparison } from '../../bench/baseline'
+import { DEFAULT_BASELINE_TOLERANCE, loadBaselineFile, compareToBaseline, formatBaselineComparison, gateBenchRelease } from '../../bench/baseline'
 import type { BenchSummary } from '../../bench/types'
 
 export interface BenchCommandOptions {
@@ -134,6 +134,16 @@ export async function benchCommand(options: BenchCommandOptions): Promise<void> 
       process.exit(1)
     }
     logger.success('Baseline OK — no axis regressed beyond tolerance')
+
+    // P1-11: the release gate runs on top of the per-axis comparison — the
+    // relative-composite floor, the guardrail failed-rate delta, and the
+    // adherence drop. Any trip blocks the release (CI fails the workflow).
+    const gate = gateBenchRelease(summary, baseline)
+    if (!gate.ok) {
+      for (const reason of gate.reasons) logger.error(`Release gate BLOCKED: ${reason}`)
+      process.exit(1)
+    }
+    logger.success('Release gate OK — relative composite floor, guardrail failed rate, and adherence all within budget')
   }
 
   renderCompletionLine(summary)

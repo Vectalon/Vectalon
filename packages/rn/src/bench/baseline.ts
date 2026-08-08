@@ -180,8 +180,76 @@ export function compareToBaseline(
   return { ok, regressions, improvements, missing, added }
 }
 
+/* ------------------------------------------------------------------ */
+/* P1-11: release regression gate                                      */
+/* ------------------------------------------------------------------ */
+
+/** Absolute floor for the overall relative-to-human composite. */
+export const RELATIVE_COMPOSITE_FLOOR = 0.95
+/** Max allowed adherence drop vs baseline (5 percentage points). */
+export const ADHERENCE_DROP_LIMIT = 0.05
+/** Max allowed rise in the guardrail failed rate vs baseline (1 point). */
+export const GUARDRAIL_FAILED_DELTA_LIMIT = 0.01
+
+export interface BenchGateResult {
+  ok: boolean
+  /** Human-readable reasons the release is blocked (empty when ok). */
+  reasons: string[]
+}
+
+/** Average per-run adherence over the whole summary (null when none scored). */
+export function overallAdherenceOf(summary: BenchSummary): number | null {
+  const values = summary.runs.map(r => r.axes.adherence).filter((v): v is number => v !== null)
+  return values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : null
+}
+
+/** Guardrail failed rate (1 − pass rate); null when overallGuardrails is N/A. */
+export function guardrailFailedRateOf(summary: BenchSummary): number | null {
+  return summary.overallGuardrails === null ? null : 1 - summary.overallGuardrails
+}
+
 function pct(n: number): string {
   return `${(n * 100).toFixed(1)}%`
+}
+
+/**
+ * P1-11 release gate. Blocks a release when:
+ *   1. overallRelativeComposite drops below 0.95 (absolute floor),
+ *   2. the overall guardrail failed rate increased vs baseline,
+ *   3. overall adherence dropped more than 5 points vs baseline.
+ * These are the ship-blocking rules on top of the per-axis `compareToBaseline`
+ * regression check; the release workflow runs both.
+ */
+export function gateBenchRelease(current: BenchSummary, baseline: BenchSummary): BenchGateResult {
+  const reasons: string[] = []
+
+  if (current.overallRelativeComposite !== null && current.overallRelativeComposite < RELATIVE_COMPOSITE_FLOOR) {
+    reasons.push(
+      `overall relative composite ${pct(current.overallRelativeComposite)} is below the ${pct(RELATIVE_COMPOSITE_FLOOR)} release floor`
+    )
+  }
+
+  const curFailed = guardrailFailedRateOf(current)
+  const baseFailed = guardrailFailedRateOf(baseline)
+  // Same 1e-9 epsilon as the adherence check: float subtraction noise at a
+  // delta exactly on the limit must not false-positive.
+  if (curFailed !== null && baseFailed !== null && curFailed - baseFailed > GUARDRAIL_FAILED_DELTA_LIMIT + 1e-9) {
+    reasons.push(
+      `guardrail failed rate rose from ${pct(baseFailed)} (baseline) to ${pct(curFailed)} (limit +${pct(GUARDRAIL_FAILED_DELTA_LIMIT)})`
+    )
+  }
+
+  const curAdherence = overallAdherenceOf(current)
+  const baseAdherence = overallAdherenceOf(baseline)
+  // 1e-9 epsilon so a drop that is mathematically exactly at the limit (float
+  // subtraction noise) is not flagged as a regression.
+  if (curAdherence !== null && baseAdherence !== null && baseAdherence - curAdherence > ADHERENCE_DROP_LIMIT + 1e-9) {
+    reasons.push(
+      `overall adherence dropped from ${pct(baseAdherence)} (baseline) to ${pct(curAdherence)} (limit −${pct(ADHERENCE_DROP_LIMIT)})`
+    )
+  }
+
+  return { ok: reasons.length === 0, reasons }
 }
 
 /** Human-readable comparison summary for the CLI. */

@@ -5,6 +5,34 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.19] - 2026-08-08
+
+### Added — P1: proactive monitoring (you know before clients do)
+
+- **Release regression gate in CI (P1-11)** — the publish workflow now runs a
+  `bench-gate` job (same release trigger as the publish job) that blocks the
+  release when the benchmark degrades: overall relative-to-human composite
+  below 0.95, the overall guardrail failed rate increased vs baseline, or
+  overall adherence dropped more than 5 points. Runs on top of the existing
+  per-axis `--baseline` comparison; the PR workflow's bench job gets the same
+  stricter gate automatically.
+- **Rotating file logger (P1-12)** — every `logger.info/warn/error/debug`
+  call is mirrored to `.vectalon/logs/vectalon.log` with ISO timestamps,
+  capped at 5 files × 10 MB (`.1` … `.4` rotation). `vectalon …
+  --diagnostics` sets `VECTALON_DEBUG=1` so debug lines are captured too.
+  Best-effort I/O: a read-only project never breaks a command.
+- **Nightly smoke test against real templates (P1-13)** — a new
+  `nightly-smoke` workflow runs `vectalon init`, `doctor`, `selftest`, and a
+  real `serve` boot (HTTP `/health` poll) every night against three real
+  project templates: Expo SDK 51, RN CLI 0.74, and RN 0.72 — catching
+  ecosystem drift (Metro changes, version-detection regressions, init/serve
+  crashes on fresh projects) before users do. Run it on demand via
+  `workflow_dispatch`.
+- **RN version drift warning (P1-14)** — `vectalon init` and `vectalon
+  serve` now emit a loud warning when the project's React Native version is
+  newer than the newest version the rule set knows (`0.81.0`): “Some
+  guardrails, codemods, and upgrade steps may be inaccurate.”
+
 ## [0.1.18] - 2026-08-08
 
 ### Added — P0 hardening: existing features must never break

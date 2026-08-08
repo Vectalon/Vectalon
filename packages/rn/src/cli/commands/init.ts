@@ -30,6 +30,7 @@ import {
 import type { ModelSetupProvider, ProjectModelConfig } from '../../model/setup'
 import { dynamicImport } from '../../utils/dynamicImport'
 import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
+import { warnIfRnVersionAhead } from '../../upgrade/drift'
 import {
   detectInitState,
   snapshotProjectFiles,
@@ -169,6 +170,8 @@ async function runInitPhases(
   if (!snapshot.project.reactNativeVersion) {
     logger.warn('no react-native dependency detected in package.json.')
     logger.dim('         rn-vectalon is designed for React Native projects (>= 0.72.0).')
+  } else {
+    warnIfRnVersionAhead(snapshot.project.reactNativeVersion)
   }
   logger.info(`Found ${snapshot.components.length} component(s)`)
 

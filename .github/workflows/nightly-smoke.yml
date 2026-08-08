@@ -1,0 +1,86 @@
+name: Nightly Smoke
+
+# P1-13: every night, run vectalon init / doctor / selftest / serve against
+# three real project templates (Expo SDK 51, RN CLI 0.74, and an older RN
+# 0.72) so ecosystem drift — Metro changes breaking reporter wiring, version
+# detection regressions, init/serve crashes on fresh projects — is caught
+# before users hit it. Any failing step fails the job loudly.
+
+on:
+  schedule:
+    - cron: '23 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: expo-sdk-51
+            scaffold: npx --yes create-expo-app@2 expo51 --template blank@sdk-51 --no-install
+            dir: expo51
+          - name: rn-cli-074
+            scaffold: npx --yes @react-native-community/cli@13 init RNDemo --version 0.74.5 --skip-install
+            dir: RNDemo
+          - name: rn-072
+            scaffold: npx --yes @react-native-community/cli@11 init RNDemo --version 0.72.5 --skip-install
+            dir: RNDemo
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for core PAT
+        id: pat
+        env:
+          PAT: ${{ secrets.CORE_REPO_PAT }}
+        run: |
+          if [ -n "$PAT" ]; then
+            echo "has_pat=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_pat=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout core source (private)
+        if: steps.pat.outputs.has_pat == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: Vectalon/core
+          path: packages/core/src
+          token: ${{ secrets.CORE_REPO_PAT }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm turbo run build --filter=@vectalon-dev/rn
+
+      - name: Scaffold template (${{ matrix.name }})
+        run: ${{ matrix.scaffold }}
+
+      - name: Install template dependencies
+        working-directory: ${{ matrix.dir }}
+        run: npm install --no-audit --no-fund
+
+      - name: Run nightly smoke (init, doctor, selftest, serve)
+        working-directory: ${{ matrix.dir }}
+        run: bash "$GITHUB_WORKSPACE/packages/rn/scripts/nightly-smoke.sh" . "$GITHUB_WORKSPACE/packages/rn/bin/rn-vectalon.js"
+
+      - name: Upload smoke log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-log-${{ matrix.name }}
+          path: /tmp/vectalon-nightly-smoke.log

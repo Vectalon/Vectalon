@@ -17,8 +17,65 @@ env:
   CI: true
 
 jobs:
+  # P1-11: the release regression gate. Runs the deterministic benchmark
+  # against the committed baseline (packages/rn/bench/baseline.json) and fails
+  # the release when the per-axis comparison trips (any axis > 1pt drop) or the
+  # P1-11 gate trips (relative composite < 0.95, guardrail failed rate up, or
+  # adherence down > 5%). The release job below depends on this one.
+  bench-gate:
+    runs-on: ubuntu-latest
+    # Only run for release-triggering pushes / dispatches (same condition as
+    # publish-rn) so routine main pushes don't duplicate ci.yml's bench job.
+    if: >
+      (github.event_name == 'workflow_dispatch' &&
+       github.event.inputs.package == '@vectalon-dev/rn')
+      ||
+      (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-rn]'))
+      ||
+      (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-both]'))
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for core PAT
+        id: pat
+        env:
+          PAT: ${{ secrets.CORE_REPO_PAT }}
+        run: |
+          if [ -n "$PAT" ]; then
+            echo "has_pat=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_pat=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout core source (private)
+        if: steps.pat.outputs.has_pat == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: Vectalon/core
+          path: packages/core/src
+          token: ${{ secrets.CORE_REPO_PAT }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm turbo run build --filter=@vectalon-dev/rn
+
+      - name: Benchmark regression gate
+        run: node packages/rn/bin/rn-vectalon.js bench --baseline packages/rn/bench/baseline.json
+
   publish-rn:
     runs-on: ubuntu-latest
+    needs: [bench-gate]
     if: >
       (github.event_name == 'workflow_dispatch' &&
        github.event.inputs.package == '@vectalon-dev/rn')

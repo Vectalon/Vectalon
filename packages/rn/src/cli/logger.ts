@@ -1,4 +1,5 @@
 import pc from 'picocolors'
+import { writeLogLine } from './logfile'
 
 /**
  * In-memory ring buffer of the last N log lines (ANSI codes stripped). The
@@ -29,16 +30,19 @@ export function getLogLines(max = RING_MAX): string[] {
 export const logger = {
   info(msg: string): void {
     pushRing(msg)
+    writeLogLine('info', msg)
     process.stderr.write(`${pc.cyan('ℹ')} ${msg}\n`)
   },
 
   success(msg: string): void {
     pushRing(msg)
+    writeLogLine('info', msg)
     process.stderr.write(`${pc.green('✔')} ${msg}\n`)
   },
 
   warn(msg: string): void {
     pushRing(msg)
+    writeLogLine('warn', msg)
     process.stderr.write(`${pc.yellow('⚠')} ${msg}\n`)
   },
 
@@ -47,22 +51,26 @@ export const logger = {
     pushRing(msg)
     const enabled = process.env.VECTALON_DEBUG === '1' || process.env.VECTALON_DEBUG === 'true'
     if (enabled) {
+      writeLogLine('debug', msg)
       process.stderr.write(`${pc.dim('·')} ${msg}\n`)
     }
   },
 
   error(msg: string): void {
     pushRing(msg)
+    writeLogLine('error', msg)
     process.stderr.write(`${pc.red('✖')} ${msg}\n`)
   },
 
   step(n: number, msg: string): void {
     pushRing(msg)
+    writeLogLine('info', msg)
     process.stderr.write(`${pc.blue(`[${n}]`)} ${msg}\n`)
   },
 
   dim(msg: string): void {
     pushRing(stripAnsi(msg))
+    writeLogLine('info', msg)
     process.stderr.write(pc.dim(msg) + '\n')
   },
 
