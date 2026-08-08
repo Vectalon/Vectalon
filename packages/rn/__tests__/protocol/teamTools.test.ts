@@ -151,9 +151,11 @@ describe('MCPServer team tools', () => {
   it('search_knowledge returns helpful messages for empty queries and no matches', async () => {
     const server = createServer(buildTeamStore())
 
+    // P2-18: a missing required query is a structured validation error.
     const noQuery = await server.handleToolCall({ id: '1', name: 'search_knowledge', arguments: {} })
-    expect(noQuery.isError).not.toBe(true)
-    expect(noQuery.content).toContain('No query')
+    expect(noQuery.isError).toBe(true)
+    expect(noQuery.content).toContain('Invalid tool arguments')
+    expect(noQuery.content).toContain('query')
 
     const noMatch = await server.handleToolCall({
       id: '1',

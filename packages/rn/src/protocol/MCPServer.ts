@@ -6,6 +6,8 @@ import { ArtifactStore } from '../knowledge/ArtifactStore'
 import { TeamStore } from '../knowledge/TeamStore'
 import { reportError } from '../utils/safe'
 import { collectHealthReport } from '../diagnostics/health'
+import { validateToolArgs, formatValidationIssues } from './validate'
+import type { ModelResponse } from '../model/types'
 import pkg from '../../package.json'
 import {
   CoreTools,
@@ -27,10 +29,46 @@ export interface MCPServerOptions {
    * When true, device-control tools (device_boot, device_screenshot, …)
    * execute real simulator/emulator commands. Defaults to false — tools
    * describe the command they would run (safe, deterministic, CI-friendly).
+   * Forced off in safe mode.
    */
   deviceControlLive?: boolean
   /** Project root used by the deep /health checks (default: cwd). */
   root?: string
+  /**
+   * P2-17 safe mode: model generation returns a stub, file-writing tools and
+   * device-control live execution are disabled (not advertised, not callable).
+   * For running Vectalon in CI or on customer machines with zero side effects
+   * — and the escape hatch if a model provider goes haywire.
+   */
+  safeMode?: boolean
+}
+
+/** The stub every model call returns in safe mode (P2-17). */
+export const SAFE_MODE_STUB =
+  '[Safe mode: model generation is disabled. Run `vectalon serve` without --safe-mode to enable real model calls.]'
+
+/**
+ * Tool names that write files into the project or execute devices — removed
+ * from the advertised + callable surface in safe mode (P2-17). device_* is
+ * matched by prefix so future device tools are covered automatically.
+ */
+const SAFE_MODE_DISABLED_TOOLS = new Set([
+  'execute_workflow',
+  'build_training_dataset',
+  'scaffold_native_module',
+])
+
+/** Wrap a router so generate() returns the safe-mode stub, delegating all else. */
+function createSafeModeRouter(delegate: ModelRouter): ModelRouter {
+  return new Proxy(delegate, {
+    get(target, prop, receiver) {
+      if (prop === 'generate') {
+        return async (): Promise<ModelResponse> => ({ content: SAFE_MODE_STUB, provider: 'safe-mode' })
+      }
+      const value = Reflect.get(target, prop, receiver)
+      return typeof value === 'function' ? value.bind(target) : value
+    },
+  }) as unknown as ModelRouter
 }
 
 /**
@@ -50,6 +88,7 @@ export class MCPServer {
   private teamStore: TeamStore | null
   private subMcpClients: McpClientHandle[]
   private deviceControlLive: boolean
+  private safeMode: boolean
   private root: string
   private httpServer: import('http').Server | null = null
 
@@ -68,8 +107,13 @@ export class MCPServer {
     this.artifactStore = artifactStore
     this.teamStore = teamStore
     this.subMcpClients = subMcpClients
-    this.deviceControlLive = options.deviceControlLive === true
+    this.safeMode = options.safeMode === true
+    this.deviceControlLive = options.deviceControlLive === true && !this.safeMode
     this.root = options.root || process.cwd()
+    // P2-17: in safe mode every model call through the server returns a stub.
+    if (this.safeMode) {
+      this.modelRouter = createSafeModeRouter(modelRouter)
+    }
 
     const ctx: ToolContext = {
       engine: this.engine,
@@ -118,6 +162,14 @@ export class MCPServer {
       return { id: call.id, content: `Unknown tool: ${call.name}`, isError: true }
     }
 
+    // P2-18: validate args against the tool's declared inputSchema before the
+    // handler runs — a missing/empty/wrong-typed required field becomes a
+    // structured MCP error, never a TypeError deep inside the handler.
+    const issues = validateToolArgs(call.arguments, this.inputSchemaFor(call.name))
+    if (issues.length > 0) {
+      return { id: call.id, content: formatValidationIssues(issues), isError: true }
+    }
+
     try {
       const content = await handler(call.arguments)
       return { id: call.id, content }
@@ -142,11 +194,13 @@ export class MCPServer {
       }))
     )
 
-    // Declared tools from the registries, gated by service availability.
+    // Declared tools from the registries, gated by service availability and
+    // safe mode (file-writing + device tools are hidden in --safe-mode).
     const registeredTools: AgentTool[] = []
     for (const registry of this.toolRegistries) {
       for (const def of registry.metadata()) {
         if (!this.serviceAvailable(def.requires)) continue
+        if (!this.toolAllowedInSafeMode(def.name)) continue
         registeredTools.push({
           name: def.name,
           description: def.description,
@@ -192,10 +246,29 @@ export class MCPServer {
     for (const registry of this.toolRegistries) {
       for (const tool of registry.tools()) {
         if (this.serviceAvailable(tool.requires)) {
-          this.tools.set(tool.name, tool.handler)
+          if (this.toolAllowedInSafeMode(tool.name)) {
+            this.tools.set(tool.name, tool.handler)
+          }
         }
       }
     }
+  }
+
+  /** True when the tool may run in safe mode (P2-17). */
+  private toolAllowedInSafeMode(name: string): boolean {
+    if (!this.safeMode) return true
+    if (name.startsWith('device_')) return false
+    return !SAFE_MODE_DISABLED_TOOLS.has(name)
+  }
+
+  /** The declared inputSchema for a tool name (for validation, P2-18). */
+  private inputSchemaFor(name: string): Record<string, unknown> | undefined {
+    for (const registry of this.toolRegistries) {
+      for (const def of registry.metadata()) {
+        if (def.name === name) return def.inputSchema
+      }
+    }
+    return undefined
   }
 
   private serviceAvailable(requires: 'artifactStore' | 'teamStore' | undefined): boolean {

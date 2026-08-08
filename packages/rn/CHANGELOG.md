@@ -5,6 +5,42 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.20] - 2026-08-08
+
+### Added — P2: operational excellence for a paid product
+
+- **`vectalon status` (P2-15)** — the first command you ask a customer to run.
+  One read-only report: daemon running? (pid, port, health), MCP server
+  reachable? (tool count), model provider status (ready/degraded with the
+  missing-key hint), last background refresh time, license/trial days
+  remaining, and `.vectalon/` disk usage. Every probe is wrapped so one
+  broken source degrades to a line instead of killing the report.
+- **Graceful shutdown & stale-state cleanup (P2-16)** — serve and daemon now
+  handle uncaught exceptions: close the server, remove the daemon.json state
+  file, exit non-zero. On startup the daemon always verifies the recorded PID
+  is alive and the port responds; a stale/crashed state is wiped instead of
+  being trusted.
+- **MCP safe mode (P2-17)** — `vectalon serve --safe-mode` disables model
+  generation (every call returns a stub), file-writing tools, and device
+  control. Run Vectalon in CI or on customer machines with zero side effects
+  — and the escape hatch if a model provider goes haywire. Safe mode is
+  reported in the tool list and health checks.
+- **Tool input validation (P2-18)** — every `@mcpTool` handler now validates
+  its declared `inputSchema` `required` fields before running. A missing or
+  wrong-typed required field returns a structured 400-style MCP error naming
+  the field, instead of a `TypeError: Cannot read property` deep in a
+  handler. Empty strings are allowed where schemas permit them.
+- **Admin alert webhook (P2-19)** — when error telemetry sees ≥5 errors with
+  the same stack signature within an hour, or a serve/daemon heartbeat goes
+  silent for >30 min from an active license, a structured alert (stack
+  fingerprint, affected versions, OS counts, commands) is POSTed to a
+  Discord/Slack webhook (`VECTALON_ALERT_WEBHOOK`). Per-signature dedupe
+  state in the user config dir; off by default; best-effort sends.
+- **SUPPORT_RUNBOOK.md (P2-20)** — customer-facing support runbook: exact
+  commands to ask for (`vectalon status`, `vectalon doctor --json`,
+  `vectalon support --upload`), how to read `.vectalon/logs/`, what error
+  codes mean, and the three most common root causes with fixes.
+
 ## [0.1.19] - 2026-08-08
 
 ### Added — P1: proactive monitoring (you know before clients do)

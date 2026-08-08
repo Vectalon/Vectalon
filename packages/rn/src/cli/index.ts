@@ -19,6 +19,7 @@ import { profileCommand } from './commands/profile'
 import { sandboxCommand } from './commands/sandbox'
 import { renderCommand } from './commands/render'
 import { daemonCommand } from './commands/daemon'
+import { statusCommand } from './commands/status'
 import { telemetryCommand } from './commands/telemetry'
 import { authCommand } from './commands/auth'
 import { ciCommand } from './commands/ci'
@@ -70,6 +71,7 @@ export function createProgram(): Command {
     .option('-p, --port <number>', 'HTTP server port', Number, 0)
     .option('--protocol <type>', 'Protocol type (mcp/stdio/sse/http)', 'mcp')
     .option('--model <provider>', 'Model provider (local|wasm|openai|anthropic|azure-openai|ollama|vllm|groq)')
+    .option('--safe-mode', 'CI-safe mode: model generation returns stubs, file-writing and device-control tools are disabled')
     .action(serveCommand)
 
   program
@@ -174,6 +176,11 @@ export function createProgram(): Command {
     .option('--memory <mb>', 'Virtual memory limit in MB')
     .option('--json', 'Print the structured result as JSON')
     .action((directory, opts) => renderCommand(directory, opts))
+
+  program
+    .command('status')
+    .description('One-line-each overview: daemon (pid/port/health), MCP server + tool count, model provider state, last refresh, license/trial days remaining, and .vectalon/ disk usage — the first thing to run in a support session')
+    .action(statusCommand)
 
   program
     .command('daemon')
@@ -451,6 +458,7 @@ async function runInteractive(): Promise<void> {
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Refresh knowledge', hint: 'Update best practices and dependency suggestions from the web' },
       { value: 'bundle', label: 'Analyze bundle', hint: 'Metro bundle snapshot + performance budgets' },
+      { value: 'status', label: 'Show status', hint: 'Daemon, MCP, model, refresh, license, disk — one screen' },
       { value: 'daemon', label: 'Live Metro daemon', hint: 'Watch bundle size and JS thread health continuously' },
       { value: 'telemetry', label: 'Ingest telemetry', hint: 'Sentry/Crashlytics/traces/analytics into the knowledge base' },
       { value: 'impact', label: 'Analyze impact', hint: 'Cross-package blast radius of changed files (monorepo)' },
@@ -552,6 +560,12 @@ async function runInteractive(): Promise<void> {
   if (action === 'bundle') {
     await bundleCommand('', {})
     p.outro('Bundle analysis complete')
+    return
+  }
+
+  if (action === 'status') {
+    await statusCommand()
+    p.outro('Status shown')
     return
   }
 

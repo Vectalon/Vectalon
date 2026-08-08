@@ -18,6 +18,7 @@ import { platform, release, arch } from 'os'
 import pkg from '../../package.json'
 import { configDirPath, getConfig, setConfig } from '../config'
 import { reportError } from '../utils/safe'
+import { checkErrorClusterAlert } from './alerts'
 import type { ErrorReport } from './types'
 
 export const DEFAULT_TELEMETRY_BASE_URL = 'https://telemetry.vectalon.dev'
@@ -148,6 +149,10 @@ export async function flushErrorQueue(options: FlushErrorQueueOptions = {}): Pro
   const queuePath = options.queuePath || queuePathFor()
   const queue = readErrorQueue(queuePath)
   if (queue.length === 0) return 0
+
+  // P2-19: a signature cluster in this batch (≥5 identical fingerprints in
+  // 1h) posts to the admin webhook before the batch is flushed/cleared.
+  checkErrorClusterAlert(queue, options._now)
 
   const fetchFn = options.fetchFn || globalThis.fetch
   const endpoint = options.endpoint || ERROR_ENDPOINT

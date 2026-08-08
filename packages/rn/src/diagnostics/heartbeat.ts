@@ -13,6 +13,7 @@ import { join } from 'path'
 import pkg from '../../package.json'
 import { platform, release, arch } from 'os'
 import { HEARTBEAT_ENDPOINT, errorsEnabled } from './errorReporter'
+import { recordHeartbeatPing } from './alerts'
 import { reportError } from '../utils/safe'
 import type { HeartbeatPayload } from './types'
 
@@ -82,6 +83,11 @@ export async function sendHeartbeat(options: HeartbeatOptions): Promise<boolean>
       body: JSON.stringify(payload),
       signal: AbortSignal.timeout(10_000),
     })
+    if (res.ok) {
+      // P2-19: record the successful ping so a later run can detect a
+      // heartbeat that went silent for >30 min (stale-state alert).
+      recordHeartbeatPing(options.root, options.kind)
+    }
     return res.ok
   } catch (err) {
     reportError(err, 'heartbeat: sending liveness ping')

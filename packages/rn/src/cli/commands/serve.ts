@@ -22,6 +22,7 @@ import { join, basename, resolve } from 'path'
 import { logger } from '../logger'
 import { startHeartbeat } from '../../diagnostics/heartbeat'
 import type { HeartbeatHandle } from '../../diagnostics/heartbeat'
+import { checkHeartbeatStaleness } from '../../diagnostics/alerts'
 
 interface TeamConfig {
   team?: string
@@ -32,6 +33,8 @@ export async function serveCommand(options: {
   port?: number
   protocol?: string
   modelProvider?: string
+  /** P2-17: stub model output, no file-writing/device tools (CI-safe). */
+  safeMode?: boolean
 }): Promise<void> {
   const root = process.cwd()
   const vectalonDir = join(root, '.vectalon')
@@ -39,6 +42,14 @@ export async function serveCommand(options: {
   if (!existsSync(vectalonDir)) {
     logger.error('No .vectalon/ directory found. Run `vectalon init` first.')
     process.exit(1)
+  }
+
+  // P2-19: a previous serve whose heartbeat went silent for >30 min (from an
+  // active license) surfaces here — the next run is what reports the gap.
+  checkHeartbeatStaleness(root)
+
+  if (options.safeMode) {
+    logger.warn('SAFE MODE — model generation returns stubs; file-writing and device-control tools are disabled')
   }
 
   const engine = new ContextEngine(root)
@@ -101,9 +112,11 @@ export async function serveCommand(options: {
   }
 
   const server = new MCPServer(engine, modelRouter, protocol as 'mcp' | 'stdio' | 'sse' | 'http', artifactStore, teamStore, subMcpClients, {
-    // `vectalon serve` runs locally — device tools execute real commands.
+    // `vectalon serve` runs locally — device tools execute real commands
+    // (forced off by safe mode).
     deviceControlLive: true,
     root,
+    safeMode: options.safeMode,
   })
 
   // Kill spawned sub-MCP servers (and their npx grandchildren) on shutdown,
@@ -112,6 +125,7 @@ export async function serveCommand(options: {
   let heartbeat: HeartbeatHandle | null = null
   const shutdown = (): void => {
     heartbeat?.stop()
+    server.close()
     for (const client of subMcpClients) client.close()
   }
   if (subMcpClients.length > 0 || process.env.NODE_ENV !== 'test') {
@@ -123,6 +137,14 @@ export async function serveCommand(options: {
     process.on('SIGTERM', () => {
       shutdown()
       process.exit(143)
+    })
+    // P2-16: an uncaught exception must not leave the port bound — close the
+    // server and exit non-zero. (The global handler in cli/index.ts logs +
+    // captures telemetry; this one is the graceful close.)
+    process.on('uncaughtException', (err) => {
+      logger.error(`serve crashed: ${err.message}`)
+      shutdown()
+      process.exit(1)
     })
   }
 

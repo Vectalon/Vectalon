@@ -158,7 +158,10 @@ describe('MCPServer', () => {
       if (tool.name === 'write_user_stories') args.feature = 'Onboarding'
       if (tool.name === 'define_acceptance_criteria') args.story = 'As a user, I want to sign up'
       if (tool.name === 'analyze_support_tickets') args.tickets = 'App crashed on startup'
-      if (tool.name === 'run_gap_analysis') args.desired = 'sync'
+      if (tool.name === 'run_gap_analysis') {
+        args.desired = 'sync'
+        args.current = 'none'
+      }
       if (tool.name === 'write_test_plan') args.feature = 'Onboarding'
       if (tool.name === 'triage_bugs') args.bugs = 'App crashed on startup'
       if (tool.name === 'analyze_root_cause') args.issue = 'null is not an object'
@@ -221,6 +224,27 @@ describe('MCPServer', () => {
         args.command = 'node'
         args.args = ['-e', 'process.stdout.write("ok")']
       }
+      // device_tap/device_swipe declare required coordinates (P2-18).
+      if (tool.name === 'device_tap') {
+        args.x = 100
+        args.y = 200
+      }
+      if (tool.name === 'device_swipe') {
+        args.x1 = 0
+        args.y1 = 0
+        args.x2 = 100
+        args.y2 = 200
+      }
+      if (tool.name === 'device_set_voiceover') {
+        args.enabled = true
+      }
+      if (tool.name === 'figma_fetch_design') {
+        args.fileKey = 'abc123'
+      }
+      if (tool.name === 'device_open_url') {
+        args.platform = 'ios'
+        args.url = 'myapp://home'
+      }
       // render_component compiles + headlessly renders in a temp sandbox.
       if (tool.name === 'render_component') {
         args.files = { 'src/App.tsx': 'import { Text } from "react-native"; export default function App() { return <Text>hi</Text> }' }
@@ -228,15 +252,21 @@ describe('MCPServer', () => {
       }
 
       const result = await server.handleToolCall({ id: '1', name: tool.name, arguments: args })
-      expect(result.isError).not.toBe(true)
+      if (result.isError === true) {
+        throw new Error(`tool ${tool.name} errored: ${result.content.slice(0, 200)}`)
+      }
       expect(result.content.length).toBeGreaterThan(0)
     }
   })
 
   it('run_agent runs the local agent loop over the SDK tools', async () => {
     const server = createServer()
+    // P2-18: missing required args are a structured validation error, not a
+    // handler-level guess.
     const missing = await server.handleToolCall({ id: '0', name: 'run_agent', arguments: {} })
-    expect(missing.content).toContain('Missing prompt')
+    expect(missing.isError).toBe(true)
+    expect(missing.content).toContain('Invalid tool arguments')
+    expect(missing.content).toContain('prompt')
 
     const result = await server.handleToolCall({
       id: '1',
@@ -355,7 +385,8 @@ describe('MCPServer', () => {
     expect(JSON.parse(clean.content).ok).toBe(true)
 
     const missing = await server.handleToolCall({ id: '3', name: 'check_guardrails', arguments: {} })
-    expect(missing.content).toContain('Missing required field')
+    expect(missing.isError).toBe(true)
+    expect(missing.content).toContain('Invalid tool arguments')
   })
 
   it('analyze_impact reports the blast radius for changed files', async () => {
@@ -370,8 +401,9 @@ describe('MCPServer', () => {
     expect(result.content).toContain('**Changed:** `src/Home.tsx`')
 
     const missing = await server.handleToolCall({ id: '2', name: 'analyze_impact', arguments: {} })
-    expect(missing.isError).not.toBe(true)
-    expect(missing.content).toContain('Pass `changedFiles`')
+    expect(missing.isError).toBe(true)
+    expect(missing.content).toContain('Invalid tool arguments')
+    expect(missing.content).toContain('changedFiles')
   })
 
   it('plan_release renders a release plan from git log', async () => {
@@ -438,10 +470,20 @@ describe('MCPServer', () => {
     expect(open.content).toContain('adb shell am start')
     expect(open.content).toContain('myapp://home')
 
-    // Missing coordinates are a graceful failure result, not a thrown error.
+    // Missing coordinates are a structured validation error, not a thrown one.
     const tap = await server.handleToolCall({ id: '3', name: 'device_tap', arguments: {} })
-    expect(tap.isError).not.toBe(true)
-    expect(tap.content).toContain('Failed')
+    expect(tap.isError).toBe(true)
+    expect(tap.content).toContain('Invalid tool arguments')
+    expect(tap.content).toContain('x')
+
+    // Valid coordinates still describe the dry-run command.
+    const validTap = await server.handleToolCall({
+      id: '4',
+      name: 'device_tap',
+      arguments: { x: 100, y: 200 },
+    })
+    expect(validTap.isError).not.toBe(true)
+    expect(validTap.content).toContain('[dry-run]')
   })
 
   it('generate_maestro_flow renders a YAML flow from acceptance criteria', async () => {
@@ -595,5 +637,55 @@ describe('MCPServer', () => {
     expect(logs.isError).not.toBe(true)
     expect(logs.content.length).toBeGreaterThan(0)
     expect(logs.content).not.toContain('[dry-run]')
+  })
+
+  it('safe mode stubs model output and hides file-writing/device tools (P2-17)', async () => {
+    const engine = new ContextEngine(dir)
+    engine.init()
+    const router = new ModelRouter()
+    router.initialize({ provider: 'local' })
+    const server = new MCPServer(engine, router, 'mcp', null, null, [], { safeMode: true })
+
+    const names = server.getToolList().map(t => t.name)
+    expect(names).toContain('check_guardrails') // read-only tools stay
+    expect(names).not.toContain('device_boot')
+    expect(names).not.toContain('device_tap')
+    expect(names).not.toContain('execute_workflow')
+    expect(names).not.toContain('build_training_dataset')
+    expect(names).not.toContain('scaffold_native_module')
+
+    // A model-backed tool returns the stub, never a real generation.
+    const gen = await server.handleToolCall({ id: '1', name: 'generate_component', arguments: { name: 'Button' } })
+    expect(gen.isError).not.toBe(true)
+    expect(gen.content).toContain('Safe mode')
+
+    // Disabled tools are not callable, even directly.
+    const dev = await server.handleToolCall({ id: '2', name: 'device_boot', arguments: {} })
+    expect(dev.isError).toBe(true)
+    expect(dev.content).toContain('Unknown tool')
+
+    // deviceControlLive is forced off even when explicitly requested.
+    const live = new MCPServer(engine, router, 'mcp', null, null, [], { safeMode: true, deviceControlLive: true })
+    expect(live.getToolList().some(t => t.name === 'device_boot')).toBe(false)
+  })
+
+  it('returns structured errors for missing or wrong-typed required fields (P2-18)', async () => {
+    const server = createServer()
+    const missing = await server.handleToolCall({
+      id: '1',
+      name: 'execute_workflow',
+      arguments: { workflowId: 'feature-development' },
+    })
+    expect(missing.isError).toBe(true)
+    expect(missing.content).toContain('Invalid tool arguments')
+    expect(missing.content).toContain('prompt')
+
+    const wrongType = await server.handleToolCall({
+      id: '2',
+      name: 'execute_workflow',
+      arguments: { workflowId: 'feature-development', prompt: 42 },
+    })
+    expect(wrongType.isError).toBe(true)
+    expect(wrongType.content).toContain('expected string')
   })
 })

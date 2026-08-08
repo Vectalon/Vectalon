@@ -4,6 +4,7 @@ import { logger } from '../logger'
 import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { startDaemon, stopDaemon, daemonStatus, runProbeCycle } from '../../daemon'
 import { startHeartbeat } from '../../diagnostics/heartbeat'
+import { checkHeartbeatStaleness } from '../../diagnostics/alerts'
 import { resolveProjectModelProvider } from '../../projectManifest'
 
 export interface DaemonCommandOptions {
@@ -23,6 +24,9 @@ export async function daemonCommand(options: DaemonCommandOptions): Promise<void
     logger.error('No .vectalon/ directory found. Run `vectalon init` first.')
     process.exit(1)
   }
+
+  // P2-19: surface a silent heartbeat (>30 min, active license) on the next run.
+  checkHeartbeatStaleness(root)
 
   if (options.stop) {
     const result = stopDaemon(root)

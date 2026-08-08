@@ -91,6 +91,16 @@ export async function startDaemon(
       `A vectalon daemon is already running (pid ${existing.pid}, port ${existing.port}). Stop it with \`vectalon daemon --stop\` first.`
     )
   }
+  // P2-16: the state file says a daemon ran but its pid is dead — stale state
+  // from a crash. Wipe it so a fresh daemon starts clean (no phantom owner).
+  if (existing && !pidAlive(existing.pid)) {
+    log.warn(`Stale daemon state (pid ${existing.pid} is dead) — clearing ${daemonStatePath(root)}`)
+    try {
+      rmSync(daemonStatePath(root), { force: true })
+    } catch (err) {
+      reportError(err, 'daemon: clearing stale state file')
+    }
+  }
 
   // 1. Metro reporter — write it, optionally wire it into metro.config.js.
   writeMetroReporter(root)
@@ -184,6 +194,7 @@ export async function startDaemon(
     process.removeListener('exit', onExit)
     process.removeListener('SIGINT', onSigint)
     process.removeListener('SIGTERM', onSigterm)
+    process.removeListener('uncaughtException', onUncaught)
   }
   const onExit = (): void => close()
   const onSigint = (): void => {
@@ -194,9 +205,18 @@ export async function startDaemon(
     close()
     process.exit(143)
   }
+  // P2-16: a crash must not leave the port bound or the state file behind —
+  // close everything and exit non-zero (the global CLI handler also logs +
+  // captures telemetry).
+  const onUncaught = (err: Error): void => {
+    reportError(err, 'daemon: uncaught exception')
+    close()
+    process.exit(1)
+  }
   process.once('exit', onExit)
   process.once('SIGINT', onSigint)
   process.once('SIGTERM', onSigterm)
+  process.once('uncaughtException', onUncaught)
 
   return { port, close }
 }
