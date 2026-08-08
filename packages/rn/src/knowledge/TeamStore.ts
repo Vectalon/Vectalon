@@ -5,6 +5,7 @@ import type { IndexedArtifact } from './KnowledgeIndex'
 import { reportError } from '../utils/safe'
 import type { EmbeddingProvider } from './embeddings'
 import type { RemoteEmbeddingProvider } from './remoteEmbeddings'
+import type { Provenance } from './provenance'
 import type { Artifact, ArtifactRole, ArtifactType } from './artifactTypes'
 
 export interface ProjectRegistration {
@@ -25,9 +26,16 @@ export interface TeamSearchResult {
   artifact: Artifact
   project: string
   team?: string
+  /** Relevance score (lexical + weighted semantic). */
   score: number
+  /** What retrieval sorts by: score × confidenceFactor. */
+  rankedScore: number
   lexicalScore: number
   semanticScore: number | null
+  /** Deterministic 0..1 provenance confidence. */
+  confidence: number
+  /** Full provenance record (source, staleness date, refreshed at). */
+  provenance: Provenance
 }
 
 export interface ProjectSummary {
@@ -88,8 +96,11 @@ export class TeamStore {
         project: r.project || '',
         team: r.team,
         score: r.score,
+        rankedScore: r.rankedScore,
         lexicalScore: r.lexicalScore,
         semanticScore: r.semanticScore,
+        confidence: r.confidence,
+        provenance: r.provenance,
       }))
     } catch (err) {
       // A dead embedding endpoint must never break search; degrade to the
@@ -131,8 +142,11 @@ export class TeamStore {
         project: r.project || '',
         team: r.team,
         score: r.score,
+        rankedScore: r.rankedScore,
         lexicalScore: r.lexicalScore,
         semanticScore: r.semanticScore,
+        confidence: r.confidence,
+        provenance: r.provenance,
       }))
   }
 

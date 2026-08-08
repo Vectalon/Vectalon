@@ -155,7 +155,7 @@ export class KnowledgeTools extends ToolRegistry {
     })
   }
 
-  @mcpTool('search_knowledge', 'Search artifacts across the team brain, ranked by relevance, scoped by team, project, and type', {
+  @mcpTool('search_knowledge', 'Search artifacts across the team brain, ranked by relevance × provenance confidence (recent, high-confidence context wins), scoped by team, project, and type', {
     type: 'object',
     properties: {
       query: { type: 'string' },
@@ -195,6 +195,13 @@ export class KnowledgeTools extends ToolRegistry {
         project: r.project,
         team: r.team || null,
         score: r.score,
+        rankedScore: r.rankedScore,
+        confidence: r.confidence,
+        provenance: {
+          source: r.provenance.source,
+          stalenessDate: r.provenance.stalenessDate,
+          refreshedAt: r.provenance.refreshedAt,
+        },
         lexicalScore: r.lexicalScore,
         semanticScore: r.semanticScore,
         artifact: {

@@ -58,6 +58,13 @@ import { JsonArtifactStore } from '../knowledge/JsonArtifactStore'
 import { ArtifactStore } from '../knowledge/ArtifactStore'
 import { KnowledgeIndex } from '../knowledge/KnowledgeIndex'
 import { HashEmbeddingProvider, cosineSimilarity } from '../knowledge/embeddings'
+import {
+  computeConfidence,
+  artifactProvenance,
+  confidenceFactor,
+  rankByConfidence,
+  patternProvenance,
+} from '../knowledge/provenance'
 import { Traceability } from '../knowledge/Traceability'
 import { analyzeHermesRuntime, recordPerfBaseline, getLatestPerfBaseline, compareToBaseline } from '../perf'
 import { runSandboxed, scrubEnv, detectBackend } from '../sandbox'
@@ -576,6 +583,78 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
       const v3 = provider.embed('unrelated topic')
       if (cosineSimilarity(v1, v3) >= 1) return fail('different texts should not be perfectly similar')
       return ok(`embedding dim ${v1.length}, deterministic, cosine sanity checked`)
+    },
+  },
+  {
+    id: 'knowledge-provenance',
+    name: 'Knowledge provenance & confidence scoring',
+    category: 'knowledge',
+    description: 'Every artifact gets a deterministic confidence (source × status × recency); KnowledgeIndex ranks by score × confidence so fresh, high-confidence context beats stale docs; patterns carry provenance.',
+    run(ctx) {
+      const now = Date.now()
+      const DAY = 24 * 3600_000
+      type ProvenanceArtifact = import('../knowledge/artifactTypes').Artifact
+      const mkArtifact = (id: string, overrides: Partial<ProvenanceArtifact> = {}): ProvenanceArtifact => ({
+        id,
+        type: 'product',
+        title: 'Retention',
+        content: 'cohort growth tactics',
+        source: 'import',
+        status: 'draft',
+        createdAt: now,
+        updatedAt: now,
+        version: 1,
+        meta: {},
+        links: [],
+        checksum: id,
+        history: [],
+        ...overrides,
+      })
+
+      // Fresh generated/active beats stale deprecated with equal relevance.
+      const fresh = mkArtifact('fresh', { source: 'generated', status: 'active', updatedAt: now })
+      const stale = mkArtifact('stale', { status: 'deprecated', updatedAt: now - 400 * DAY })
+      const ranked = rankByConfidence(
+        [
+          { artifact: stale, score: 5 },
+          { artifact: fresh, score: 5 },
+        ],
+        { now }
+      )
+      if (ranked[0].artifact.id !== 'fresh') return fail('stale doc outranked a fresh high-confidence doc')
+      if (ranked[0].confidence <= ranked[1].confidence) return fail('fresh doc confidence not higher')
+
+      // Deterministic scoring: generated×active = 1.0, import×draft = 0.6.
+      if (computeConfidence(fresh, { now }) !== 1) return fail(`expected confidence 1, got ${computeConfidence(fresh, { now })}`)
+      if (computeConfidence(mkArtifact('mid'), { now }) !== 0.6) return fail('import×draft confidence mismatch')
+      if (confidenceFactor(1) !== 1) return fail('confidenceFactor(1) should be 1')
+
+      const prov = artifactProvenance(fresh, { now })
+      if (prov.source !== 'generated') return fail('provenance source mismatch')
+      if (prov.stalenessDate !== now + 90 * DAY) return fail('staleness date mismatch')
+
+      // KnowledgeIndex search surfaces provenance on results.
+      const index = new KnowledgeIndex()
+      index.add({ artifact: fresh, project: 'a' })
+      index.add({ artifact: stale, project: 'b' })
+      const results = index.search('retention')
+      if (results.length !== 2) return fail('expected 2 search results')
+      if (results[0].artifact.id !== 'fresh') return fail('KnowledgeIndex did not rank fresh over stale')
+      if (typeof results[0].confidence !== 'number') return fail('search result missing confidence')
+
+      // Learned patterns carry provenance.
+      const pat = patternProvenance({ source: 'learner', lastSeen: now, confidence: 0.9 }, { now })
+      if (pat.source !== 'learner') return fail('pattern provenance source mismatch')
+
+      // Real persistence round-trip: an artifact stored in the KB survives
+      // with its provenance fields intact.
+      const store = new ArtifactStore(ctx.sandbox.root, { engine: 'json' })
+      const saved = store.add({ type: 'product', title: 'Retention', content: 'cohort growth tactics', source: 'import', status: 'draft' })
+      const readBack = store.get(saved.id)
+      if (!readBack) return fail('artifact did not persist to the store')
+      if (readBack.source !== 'import' || readBack.status !== 'draft') return fail('persisted artifact lost its provenance fields')
+      ctx.sandbox.recordWrite('.vectalon/knowledge/artifacts.json')
+      return ok(`confidence: generated×active=1, import×draft=0.6; fresh (${results[0].confidence}) ranked over stale (${results[1].confidence}); pattern source=${pat.source}; artifact round-trip intact`)
     },
   },
 

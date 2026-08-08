@@ -8,6 +8,18 @@ export { SqliteArtifactStore, artifactDbPath, openDatabase, isSqliteAvailable } 
 export { JsonArtifactStore } from './JsonArtifactStore'
 export { TeamStore } from './TeamStore'
 export { KnowledgeIndex } from './KnowledgeIndex'
+export {
+  SOURCE_CONFIDENCE,
+  STATUS_CONFIDENCE,
+  stalenessDate,
+  recencyFactor,
+  computeConfidence,
+  artifactProvenance,
+  confidenceFactor,
+  rankByConfidence,
+  patternProvenance,
+} from './provenance'
+export type { Provenance, ProvenanceOptions, PatternSource } from './provenance'
 export { Traceability } from './Traceability'
 export { RoleEngine } from './RoleEngine'
 export { ARTIFACT_TYPES, ARTIFACT_ROLES, ROLE_ARTIFACT_TYPES, checksum } from './artifactTypes'

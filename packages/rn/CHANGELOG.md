@@ -5,6 +5,27 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.15] - 2026-08-08
+
+### Added — Knowledge provenance & confidence scoring (III-3)
+
+- **Provenance module** (`knowledge/provenance.ts`) — every artifact gets a
+  deterministic 0..1 confidence (source trust × status × recency decay), a
+  staleness date (last updated + 90-day TTL), and a source. Learned patterns
+  carry provenance too (`source: learner | manual | web` with staleness
+  decay on `lastSeen`).
+- **Confidence-ranked retrieval** — `KnowledgeIndex.search` / `searchRemote`
+  now sort by relevance × `confidenceFactor`, so recent, high-confidence
+  context ranks above stale or speculative docs; every result carries
+  `confidence`, `provenance`, and `rankedScore`. `TeamStore` and the
+  `search_knowledge` MCP tool surface them to agents.
+- **Helpers** — `computeConfidence`, `artifactProvenance`, `stalenessDate`,
+  `recencyFactor`, `confidenceFactor`, `rankByConfidence`, and
+  `patternProvenance` are exported from the package (deterministic, no model
+  calls; `now` injectable for tests).
+- **Selftest** — new `knowledge-provenance` check verifies scoring, staleness
+  decay, confidence ranking, and pattern provenance end-to-end.
+
 ## [0.1.14] - 2026-08-08
 
 ### Added — Crash-rate anomaly detection & auto-rollout gates (M18)

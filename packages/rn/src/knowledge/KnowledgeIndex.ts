@@ -2,6 +2,8 @@ import { cosineSimilarity } from './embeddings'
 import type { EmbeddingProvider } from './embeddings'
 import type { RemoteEmbeddingProvider } from './remoteEmbeddings'
 import type { Artifact, ArtifactType } from './artifactTypes'
+import { rankByConfidence } from './provenance'
+import type { Provenance, ProvenanceOptions, RankedResult } from './provenance'
 
 export interface IndexedArtifact {
   artifact: Artifact
@@ -9,7 +11,7 @@ export interface IndexedArtifact {
   team?: string
 }
 
-export interface KnowledgeSearchOptions {
+export interface KnowledgeSearchOptions extends ProvenanceOptions {
   team?: string
   project?: string
   type?: ArtifactType
@@ -22,7 +24,14 @@ export interface KnowledgeSearchResult {
   team?: string
   lexicalScore: number
   semanticScore: number | null
+  /** Relevance score (lexical + weighted semantic). */
   score: number
+  /** Deterministic 0..1 provenance confidence. */
+  confidence: number
+  /** Full provenance record (source, staleness date, refreshed at). */
+  provenance: Provenance
+  /** What retrieval sorts by: score × confidenceFactor. */
+  rankedScore: number
 }
 
 const TITLE_WEIGHT = 3
@@ -121,21 +130,37 @@ export class KnowledgeIndex {
     const maxSemantic = Math.max(Number.EPSILON, ...scored.map(r => r.semantic))
     const limit = typeof options.limit === 'number' && options.limit >= 0 ? options.limit : DEFAULT_LIMIT
 
-    return scored
-      .sort(
-        (a, b) =>
-          this.combinedRemote(b, maxLexical, maxSemantic) - this.combinedRemote(a, maxLexical, maxSemantic) ||
-          b.doc.artifact.updatedAt - a.doc.artifact.updatedAt
-      )
+    // Single scorer: rankByConfidence attaches provenance + confidence and
+    // sorts by relevance × confidenceFactor, then recency — the same ranking
+    // definition every retrieval path uses.
+    const byId = new Map(scored.map(r => [r.doc.artifact.id, r]))
+    return rankByConfidence(
+      scored.map(r => ({ artifact: r.doc.artifact, score: this.combinedRemote(r, maxLexical, maxSemantic) })),
+      options
+    )
       .slice(0, limit)
-      .map(r => ({
-        artifact: r.doc.artifact,
-        project: r.doc.project,
-        team: r.doc.team,
-        lexicalScore: r.lexical / maxLexical,
-        semanticScore: r.semantic,
-        score: this.combinedRemote(r, maxLexical, maxSemantic),
-      }))
+      .map(ranked => this.toResult(byId.get(ranked.artifact.id)!, maxLexical, maxSemantic, options, true, ranked))
+  }
+
+  private toResult(
+    r: ScoredDocument,
+    maxLexical: number,
+    maxSemantic: number,
+    options: KnowledgeSearchOptions,
+    remote: boolean,
+    ranked: RankedResult
+  ): KnowledgeSearchResult {
+    return {
+      artifact: ranked.artifact,
+      project: r.doc.project,
+      team: r.doc.team,
+      lexicalScore: r.lexical / maxLexical,
+      semanticScore: remote ? r.semantic : this.provider ? r.semantic : null,
+      score: ranked.score,
+      confidence: ranked.confidence,
+      provenance: ranked.provenance,
+      rankedScore: ranked.rankedScore,
+    }
   }
 
   private combinedRemote(r: ScoredDocument, maxLexical: number, maxSemantic: number): number {
@@ -181,21 +206,14 @@ export class KnowledgeIndex {
     const maxSemantic = Math.max(Number.EPSILON, ...scored.map(r => r.semantic))
     const limit = typeof options.limit === 'number' && options.limit >= 0 ? options.limit : DEFAULT_LIMIT
 
-    return scored
-      .sort(
-        (a, b) =>
-          this.combined(b, maxLexical, maxSemantic) - this.combined(a, maxLexical, maxSemantic) ||
-          b.doc.artifact.updatedAt - a.doc.artifact.updatedAt
-      )
+    // Same single scorer as searchRemote (see above).
+    const byId = new Map(scored.map(r => [r.doc.artifact.id, r]))
+    return rankByConfidence(
+      scored.map(r => ({ artifact: r.doc.artifact, score: this.combined(r, maxLexical, maxSemantic) })),
+      options
+    )
       .slice(0, limit)
-      .map(r => ({
-        artifact: r.doc.artifact,
-        project: r.doc.project,
-        team: r.doc.team,
-        lexicalScore: r.lexical / maxLexical,
-        semanticScore: this.provider ? r.semantic : null,
-        score: this.combined(r, maxLexical, maxSemantic),
-      }))
+      .map(ranked => this.toResult(byId.get(ranked.artifact.id)!, maxLexical, maxSemantic, options, false, ranked))
   }
 
   private combined(r: ScoredDocument, maxLexical: number, maxSemantic: number): number {

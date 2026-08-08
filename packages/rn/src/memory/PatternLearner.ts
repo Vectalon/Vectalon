@@ -1,3 +1,5 @@
+import type { PatternSource } from '../knowledge/provenance'
+
 export interface Pattern {
   id: string
   pattern: string
@@ -7,6 +9,8 @@ export interface Pattern {
   firstSeen: number
   lastSeen: number
   category: 'naming' | 'architecture' | 'styling' | 'routing' | 'state' | 'testing'
+  /** Provenance: how this pattern was learned (learner / manual / web). */
+  source?: PatternSource
 }
 
 export interface PatternStore {
@@ -43,6 +47,7 @@ export class PatternLearner {
         firstSeen: 0,
         lastSeen: Date.now(),
         category: 'styling',
+        source: 'learner',
       })
     }
 
@@ -57,6 +62,7 @@ export class PatternLearner {
         firstSeen: 0,
         lastSeen: Date.now(),
         category: 'routing',
+        source: 'learner',
       })
     }
   }
@@ -86,6 +92,7 @@ export class PatternLearner {
           firstSeen: 0,
           lastSeen: Date.now(),
           category: 'naming',
+          source: 'learner',
         })
       }
       if (camelCaseCount / total > 0.5) {
@@ -98,6 +105,7 @@ export class PatternLearner {
           firstSeen: 0,
           lastSeen: Date.now(),
           category: 'naming',
+          source: 'learner',
         })
       }
     }

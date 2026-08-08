@@ -420,6 +420,13 @@ Enable items with `vectalon ecosystem --enable <id>`.
 
 - **ArtifactStore** — SQLite-backed with vector search (`cosineSimilarity`)
 - **TeamStore** — Multi-project team brain with semantic search
+- **Provenance & confidence** — every artifact carries a deterministic
+  confidence score (`source × status × recency`), a staleness date (last
+  updated + 90-day TTL), and its source; learned patterns carry provenance
+  too. `KnowledgeIndex` ranks results by **relevance × confidence**, so agents
+  trust recent, high-confidence context over stale or speculative guesses —
+  and the `search_knowledge` MCP tool surfaces `confidence` and `rankedScore`
+  on every hit
 - **Traceability** — Link artifacts to code, tests, and PRs
 - **Refresh** — Pull best practices and dependency suggestions from web sources
 - **Git history derivation** — derive changelog entries, release notes, and ADR drafts from `git log` automatically (MCP `derive_from_git_history` tool) — knowledge that writes itself

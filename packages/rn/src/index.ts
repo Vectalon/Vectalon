@@ -128,6 +128,18 @@ export type { Pattern, PatternStore } from './memory'
 export { ArtifactStore, TeamStore, KnowledgeIndex, Traceability, RoleEngine, ARTIFACT_TYPES, ARTIFACT_ROLES, ROLE_ARTIFACT_TYPES, checksum } from './knowledge'
 export { cosineSimilarity, HashEmbeddingProvider } from './knowledge'
 export { OpenAIEmbeddingProvider, OpenAICompatibleEmbeddingProvider, createRemoteEmbeddingProvider } from './knowledge'
+export {
+  SOURCE_CONFIDENCE,
+  STATUS_CONFIDENCE,
+  stalenessDate,
+  recencyFactor,
+  computeConfidence,
+  artifactProvenance,
+  confidenceFactor,
+  rankByConfidence,
+  patternProvenance,
+} from './knowledge'
+export type { Provenance, ProvenanceOptions, PatternSource } from './knowledge'
 export { ArtifactSync, readSyncConfig, writeSyncConfig, createArtifactSync, DEFAULT_SYNC_BRANCH } from './knowledge'
 export type { EmbeddingProvider, RemoteEmbeddingProvider } from './knowledge'
 export type { ArtifactSyncConfig, SyncResult, SyncOptions } from './knowledge'

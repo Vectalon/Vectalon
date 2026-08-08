@@ -107,7 +107,13 @@ npx vectalon serve --model openai     # override the model provider for this run
   and team-brain tools when those services are present (project context, SDLC
   modules, devices & E2E incl. screen-reader control, cross-package impact,
   release planning & crash monitoring, training-dataset curation, sandboxed
-  execution, headless component rendering, knowledge base, team brain)
+  execution, headless component rendering, knowledge base, team brain). The
+  knowledge tools (`search_knowledge`, team-brain search) rank hits by
+  **relevance × confidence** — every artifact carries a provenance-derived
+  confidence score (`source × status × recency`), a staleness date (last
+  updated + 90-day TTL), and its source — so agents trust recent,
+  high-confidence context over stale or speculative guesses; each hit surfaces
+  `confidence` and `rankedScore`
 - Reads `.vectalon/ecosystem.json` and exposes each **enabled ecosystem MCP
   server as a first-class tool** (Metro MCP, Expo MCP, …) agents auto-discover
 - Loads the resolved model provider from the manifest (or `--model`) and logs
