@@ -5,6 +5,44 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.18] - 2026-08-08
+
+### Added — P0 hardening: existing features must never break
+
+- **Model router resilience (P0-7)** — `generate()` never throws: a primary
+  failure is retried once, then walks a fallback chain (remote → local native
+  → WASM → a deterministic stub carrying the clear, aggregated error). New
+  per-provider **circuit breaker** (`model/circuitBreaker.ts`): 3 failures
+  inside a 60s window short-circuit a provider for 5 minutes (half-open trial
+  after cooldown — a failed trial re-opens immediately). Circuit state is
+  exposed via `getCircuitSnapshots()` for health/diagnostics.
+- **Hardened `vectalon init` (P0-6)** — full rollback + idempotency via a
+  durable transaction record (`.vectalon/.init-state.json`): a failed init
+  leaves the project recoverable. Next run detects the dirty state and offers
+  `--resume` (continue from the last completed phase) or `--clean-restart`
+  (restore originals + delete init-created files). A completed init is a
+  no-op unless `--force`. Invalid `--model` values now throw instead of
+  killing the host process.
+- **Self-healing doctor (P0-10)** — every probe runs through a defensive
+  wrapper (`defensiveCheckers`), so one broken checker (missing
+  better-sqlite3, node-llama-cpp load failure) can never kill the whole
+  report. New `vectalon doctor --selftest` verifies doctor's own probes work.
+- **Guardrail parse protection (P0-9)** — AST analysis runs through a guarded
+  analyzer (`guardrails/analyze.ts`) with a deterministic node budget in
+  `AstScanner`; every rule degrades per-file via `safe()`. A corrupted or
+  experimental-syntax file emits exactly one "Vectalon: could not parse file"
+  diagnostic instead of crashing the run (or the extension host on save).
+- **Resilient VS Code extension (P0-8)** — server spawn retries 3× with
+  exponential backoff; a failed connect offers **Retry** / **Restart Server**
+  (which actually work — the connecting lock is released before the prompt);
+  a background reconnect loop re-probes every 30s (re-reading `url`/
+  `autoStart` settings) so the extension recovers after sleep/wake; guardrail
+  checks on save are non-blocking and silently skip when the server is down.
+- **Selftest honesty fix** — the `model-inference` check now detects the
+  router's aggregate fallback stub and reports the underlying reason: a
+  server answering with an error (bad key/model) fails; an unreachable
+  server warns — never a dishonest pass.
+
 ## [0.1.17] - 2026-08-08
 
 ### Added

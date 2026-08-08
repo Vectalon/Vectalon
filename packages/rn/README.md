@@ -43,11 +43,11 @@ Run `npx vectalon <command> --help` for detailed options.
 
 | Command | Description | Key Options |
 |---------|-------------|-------------|
-| `init [dir]` | Initialize `.vectalon/` workspace, detect flavor, set model provider | `--model <provider>` |
+| `init [dir]` | Initialize `.vectalon/` workspace, detect flavor, set model provider — transactional: a failed init is recoverable (resume / clean restart) and a completed one is a no-op | `--model <provider>`, `--resume`, `--clean-restart`, `--force` |
 | `serve` | Start the MCP server (MCP/stdio/SSE/HTTP) | `-p <port>`, `--protocol <type>`, `--model <provider>` |
 | `feature [prompt]` | Full SDLC workflow: PRD → design → architecture → implementation → tests → code-review → PR → docs | `--workflow`, `--resume`, `--from`, `--ticket <key>`, `--push`, `--device`, `--heal-interactive`, `--dry-run`, `--model <provider>` |
 | `upgrade [dir]` | React Native / Expo upgrade copilot (impact, codemods, verification) | `--to <version>`, `--dry-run`, `--apply`, `--force` |
-| `doctor [dir]` | Ecosystem + toolchain + leaderboard + model-access diagnostics | `--json`, `--fix` |
+| `doctor [dir]` | Ecosystem + toolchain + leaderboard + model-access diagnostics — every probe is wrapped so one broken checker never kills the report | `--json`, `--fix`, `--selftest` |
 | `selftest [dir]` | Test every feature in a sandbox — live progress + visible report + activity trace; runs REAL model inference when a model/API key is available | `--category <cat>`, `--only <id>`, `--model <provider>`, `--require-model`, `--list`, `--json`, `--open`, `--out <dir>`, `--no-html`, `--verbose` |
 | `bundle [dir]` | Metro bundle analysis and performance budgets | `--platform <ios\|android>`, `--static` |
 | `profile [dir]` | Hermes runtime profiling: JS-thread blocking, retained objects, leak candidates, baselines + regressions | `--profile <file>`, `--heap <file>`, `--baseline <label>`, `--save-baseline`, `--threshold-ms <n>`, `--json` |

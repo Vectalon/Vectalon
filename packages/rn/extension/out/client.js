@@ -29,6 +29,20 @@ class McpHttpClient {
             return false;
         }
     }
+    /**
+     * Fast reachability check with a short override timeout (P0-8): used before
+     * guardrail runs so a down server skips silently instead of hanging the
+     * editor on a 15s request timeout.
+     */
+    async pingQuick(timeoutMs = 2_000) {
+        try {
+            await this.request('/tools', { method: 'GET' }, timeoutMs);
+            return true;
+        }
+        catch {
+            return false;
+        }
+    }
     /** GET /tools — the advertised tool list. */
     async listTools() {
         const data = await this.request('/tools', { method: 'GET' });
@@ -65,9 +79,9 @@ class McpHttpClient {
         }
         return data;
     }
-    async request(path, init) {
+    async request(path, init, timeoutMs) {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), this.timeoutMs);
+        const timer = setTimeout(() => controller.abort(), timeoutMs ?? this.timeoutMs);
         try {
             const response = await this.fetchImpl(`${this.baseUrl}${path}`, {
                 ...init,

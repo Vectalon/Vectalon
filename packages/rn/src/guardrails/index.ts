@@ -6,12 +6,15 @@
 import { GuardrailRule, GuardrailResult, GuardrailConventions, GuardrailFinding } from './types'
 import { rules } from './rules'
 import { PolicyEngine, initPolicy, runPolicy, defaultPolicy, defaultCodeReviewPolicy } from './PolicyEngine'
-import { runGuardrails, formatGuardrailResult } from './engine'
+import { runGuardrails, formatGuardrailResult, RULE_CRASH_MESSAGE } from './engine'
+import { analyzeSourceGuarded, PARSE_FAILURE_MESSAGE } from './analyze'
 
 export { GuardrailRule, GuardrailResult }
 export type { GuardrailConventions, GuardrailFinding }
 export { rules }
 export { PolicyEngine, initPolicy, runPolicy, defaultPolicy, defaultCodeReviewPolicy }
 export type { PolicyConfig, PolicyRuleOverride, PolicyCustomRule, PolicyOptions, PolicyRunResult, CodeReviewPolicy } from './PolicyEngine'
-export { runGuardrails, formatGuardrailResult }
+export { runGuardrails, formatGuardrailResult, RULE_CRASH_MESSAGE }
 export type { GuardrailOptions } from './engine'
+export { analyzeSourceGuarded, PARSE_FAILURE_MESSAGE }
+export type { GuardedAnalysis, GuardedAnalysisOptions } from './analyze'

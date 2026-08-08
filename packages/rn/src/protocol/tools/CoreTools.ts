@@ -5,9 +5,10 @@ import { runAgentLoop } from '../../model/toolCalling'
 import { WorkflowEngine, getWorkflow, listWorkflows, createWorkflowState } from '../../workflows'
 import { createAdapters } from '../../adapters'
 import { TestCaseWriter } from '../../sdlc/TestCaseWriter'
-import { runGuardrails } from '../../guardrails'
+import { runGuardrails, RULE_CRASH_MESSAGE } from '../../guardrails'
 import { analyzeCrossPackageImpact, renderImpactReport } from '../../harness'
 import type { GuardrailConventions } from '../../guardrails'
+import { safe } from '../../utils/safe'
 
 const LATEST_KNOWN: Record<string, string> = {
   'react-native': '0.74.0',
@@ -263,8 +264,32 @@ export class CoreTools extends ToolRegistry {
     const content = (args.content as string) || ''
     const filePath = (args.filePath as string) || 'snippet.tsx'
     if (!content) return 'Missing required field: content'
-    const result = runGuardrails({ filePath, content, conventions: this.conventionsFromSnapshot() })
-    return JSON.stringify(result, null, 2)
+    // P0-9: the run is wrapped in safe() and every rule already degrades
+    // per-rule — a corrupted file emits one clear diagnostic instead of
+    // crashing the guardrail run (or the extension host calling it on save).
+    const result = safe(
+      () => runGuardrails({ filePath, content, conventions: this.conventionsFromSnapshot() }),
+      'check_guardrails'
+    )
+    if (!result.ok) {
+      return JSON.stringify({
+        filePath,
+        passed: 0,
+        failed: 1,
+        skipped: 0,
+        ok: false,
+        findings: [
+          {
+            rule: 'parse',
+            severity: 'warning',
+            passed: false,
+            message: `${RULE_CRASH_MESSAGE} (${result.error.message})`,
+            line: 1,
+          },
+        ],
+      }, null, 2)
+    }
+    return JSON.stringify(result.value, null, 2)
   }
 
   @mcpTool('write_test', 'Write a test file for a given component or module; pass acceptance criteria for deterministic cases', {

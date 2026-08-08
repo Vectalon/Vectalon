@@ -178,19 +178,51 @@ export function parseSource(content: string, fileName: string): BabelNode | null
 
 const SKIP_KEYS = new Set(['loc', 'start', 'end', 'extra', 'comments', 'tokens', 'leadingComments', 'trailingComments', 'innerComments'])
 
+/**
+ * Thrown when an AST walk exceeds its node budget — protects the harness
+ * (and the guardrail path) from pathological ASTs and infinite loops.
+ */
+export class AstBudgetError extends Error {
+  constructor(budget: number) {
+    super(`AST walk exceeded the ${budget}-node budget — file too large or malformed`)
+    this.name = 'AstBudgetError'
+  }
+}
+
+/**
+ * Default per-file AST node budget (generous for real projects, bounded so a
+ * corrupted or adversarial file can never hang a guardrail run).
+ *
+ * NOTE: internal references must use the LOCAL `AST_NODE_BUDGET_DEFAULT`
+ * binding, not the exported name — TypeScript compiles references to exported
+ * consts as `exports.X`, and AstScanner sits inside the (intentional) safe →
+ * config import cycle, where a TDZ on `exports` makes that throw.
+ */
+const AST_NODE_BUDGET_DEFAULT = 250_000
+export const DEFAULT_AST_NODE_BUDGET = AST_NODE_BUDGET_DEFAULT
+
+interface WalkBudget {
+  remaining: number
+}
+
 /** Depth-first walk of every AST node (object or array of objects with a `type`). */
 export function walk(
   node: unknown,
   visit: (node: BabelNode, parent: BabelNode | null) => void,
-  parent: BabelNode | null = null
+  parent: BabelNode | null = null,
+  budget: WalkBudget = { remaining: AST_NODE_BUDGET_DEFAULT }
 ): void {
   if (Array.isArray(node)) {
-    for (const item of node) walk(item, visit, parent)
+    for (const item of node) walk(item, visit, parent, budget)
     return
   }
   if (!node || typeof node !== 'object') return
   const n = node as BabelNode
   if (typeof n.type !== 'string') return
+  budget.remaining--
+  if (budget.remaining <= 0) {
+    throw new AstBudgetError(AST_NODE_BUDGET_DEFAULT)
+  }
   visit(n, parent)
   for (const key of Object.keys(n)) {
     if (SKIP_KEYS.has(key)) continue
@@ -198,11 +230,11 @@ export function walk(
     if (Array.isArray(value)) {
       for (const item of value) {
         if (item && typeof item === 'object' && typeof (item as BabelNode).type === 'string') {
-          walk(item, visit, n)
+          walk(item, visit, n, budget)
         }
       }
     } else if (value && typeof value === 'object' && typeof (value as BabelNode).type === 'string') {
-      walk(value, visit, n)
+      walk(value, visit, n, budget)
     }
   }
 }
@@ -311,7 +343,7 @@ function unstableDepsIn(node: unknown): string[] | null {
  * `{ x: y }`) since those are not variable references, and MemberExpression
  * property names (`obj.prop` contributes `obj`, not `prop`).
  */
-function collectIdentifierRefs(node: unknown, out: Set<string>): void {
+function collectIdentifierRefs(node: unknown, out: Set<string>, budget: WalkBudget): void {
   walk(node, (n, parent) => {
     if (n.type !== 'Identifier') return
     // Skip property keys of object literals/classes.
@@ -332,7 +364,7 @@ function collectIdentifierRefs(node: unknown, out: Set<string>): void {
       return
     }
     out.add((n as { name: string }).name)
-  })
+  }, null, budget)
 }
 /** Wrapper factories whose argument is the real component (memo, forwardRef, connect, …). */
 const WRAPPER_FACTORIES = new Set(['memo', 'forwardRef', 'connect', 'withNavigation', 'withRouter', 'observer', 'injectIntl', 'styled'])
@@ -368,13 +400,28 @@ interface ComponentCandidate {
   isNamedExport: boolean
 }
 
+export interface AnalyzeSourceOptions {
+  /** Max AST nodes to visit before bailing (infinite-loop protection). */
+  nodeBudget?: number
+}
+
 /**
  * Analyze a single source file into structured knowledge. Returns null when
- * the file cannot be parsed.
+ * the file cannot be parsed. Bounded by a node budget so a corrupted or
+ * adversarial file degrades to null instead of hanging the caller.
  */
-export function analyzeSourceFile(content: string, filePath: string): SourceAnalysis | null {
+export function analyzeSourceFile(
+  content: string,
+  filePath: string,
+  options: AnalyzeSourceOptions = {}
+): SourceAnalysis | null {
   const ast = parseSource(content, filePath)
   if (!ast) return null
+  const budget: WalkBudget = { remaining: options.nodeBudget ?? AST_NODE_BUDGET_DEFAULT }
+  // Every walk in this analysis shares one budget, so a pathological file is
+  // bounded file-wide, not per-traversal.
+  const walkFile = (node: unknown, visit: (n: BabelNode, p: BabelNode | null) => void): void =>
+    walk(node, visit, null, budget)
 
   const imports: ImportInfo[] = []
   const exports: ExportInfo[] = []
@@ -392,7 +439,7 @@ export function analyzeSourceFile(content: string, filePath: string): SourceAnal
 
   const candidates: ComponentCandidate[] = []
 
-  walk(ast, (node) => {
+  walkFile(ast, (node) => {
     switch (node.type) {
       case 'ImportDeclaration': {
         const source = (node as { source: { value: string } }).source.value
@@ -579,7 +626,7 @@ export function analyzeSourceFile(content: string, filePath: string): SourceAnal
     let jsxCount = 0
     let isNavigatorContainer = false
     const body = cand.kind === 'class' ? (cand.node as { body: BabelNode }).body : cand.node
-    walk(body, (n) => {
+    walkFile(body, (n) => {
       if (n.type === 'CallExpression') {
         const callee = (n as { callee: BabelNode }).callee
         if (callee.type === 'Identifier') {
@@ -597,7 +644,7 @@ export function analyzeSourceFile(content: string, filePath: string): SourceAnal
               const cb = args[0]
               if (cb && typeof cb === 'object' && (cb as BabelNode).type === 'ArrowFunctionExpression') {
                 const refs = new Set<string>()
-                collectIdentifierRefs((cb as { body: unknown }).body, refs)
+                collectIdentifierRefs((cb as { body: unknown }).body, refs, budget)
                 bodyRefs = [...refs]
               }
               if (hasDeps) {
@@ -663,7 +710,7 @@ export function analyzeSourceFile(content: string, filePath: string): SourceAnal
   }
 
   // StyleSheet usage: file-level convention flag.
-  walk(ast, (n) => {
+  walkFile(ast, (n) => {
     if (n.type !== 'MemberExpression') return
     const me = n as { object: unknown; property: unknown }
     if (me.object && typeof me.object === 'object' && (me.object as BabelNode).type === 'Identifier') {
@@ -676,7 +723,7 @@ export function analyzeSourceFile(content: string, filePath: string): SourceAnal
   })
 
   // Export flags + HOC wrapping on the default export.
-  const hocResult = analyzeDefaultExportHocs(ast)
+  const hocResult = analyzeDefaultExportHocs(ast, budget)
   for (const exp of exports) {
     if (exp.kind === 'default') {
       let defaultName = exp.name
@@ -835,7 +882,7 @@ function openingAttributes(opening: BabelNode): { name?: string; component?: str
 }
 
 /** Detect HOC wrappers around the default export (withNavigation(X), connect()(X), …). */
-function analyzeDefaultExportHocs(ast: BabelNode): { componentRef: string | null; hocs: string[] } {
+function analyzeDefaultExportHocs(ast: BabelNode, budget: WalkBudget): { componentRef: string | null; hocs: string[] } {
   let result: { componentRef: string | null; hocs: string[] } = { componentRef: null, hocs: [] }
   walk(ast, (node) => {
     if (node.type !== 'ExportDefaultDeclaration') return
@@ -888,7 +935,7 @@ function analyzeDefaultExportHocs(ast: BabelNode): { componentRef: string | null
       componentRef: inner.type === 'Identifier' ? (inner as { name: string }).name : null,
       hocs: hocs.reverse(),
     }
-  })
+  }, null, budget)
   return result
 }
 

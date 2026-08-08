@@ -38,6 +38,9 @@ export {
   runDoctor,
   fixForMissing,
   runDoctorFixes,
+  defensiveCheckers,
+  probeFailuresOf,
+  runDoctorSelfTest,
   TOOLCHAIN_ITEM_IDS,
   LEADERBOARD_ITEM_IDS,
   MODEL_ACCESS_ITEM_IDS,
@@ -57,6 +60,8 @@ export type {
   DoctorFix,
   FixAttempt,
   DoctorFixer,
+  ProbeFailure,
+  DoctorSelfTestResult,
 } from './doctor'
 export type { EcosystemConfig, EcosystemExport } from './config'
 export type {

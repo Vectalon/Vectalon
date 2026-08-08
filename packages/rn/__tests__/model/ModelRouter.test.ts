@@ -1,5 +1,6 @@
 import { ModelRouter } from '../../src/model/ModelRouter'
 import { WasmProvider } from '../../src/model/providers/WasmProvider'
+import { CircuitBreaker } from '../../src/model/circuitBreaker'
 import { setConfig, resetConfig } from '../../src/config'
 import { useTempConfig, cleanup } from '../helpers/tmp'
 
@@ -19,9 +20,12 @@ describe('ModelRouter', () => {
     cleanup(configDir)
   })
 
-  it('throws when generating before initialize', async () => {
+  it('never throws when generating before initialize — returns a clear stub instead (P0-7)', async () => {
     const router = new ModelRouter()
-    await expect(router.generate({ prompt: 'hi' })).rejects.toThrow(/No provider available/)
+    const response = await router.generate({ prompt: 'hi' })
+    expect(response.provider).toBe('local')
+    expect(response.content).toContain('hi')
+    expect(response.content).toMatch(/No provider available|Model fallback/)
   })
 
   it('routes to the provider chosen at initialize, ignoring global config', async () => {
@@ -137,5 +141,41 @@ describe('ModelRouter', () => {
     expect(response.content).toContain('Local model fallback')
     expect(loader).not.toHaveBeenCalled()
     expect(router.isZeroConfigActive()).toBe(false)
+  })
+
+  it('falls back to a deterministic stub with a clear message when the remote is down (P0-7)', async () => {
+    global.fetch = jest.fn().mockRejectedValue(new Error('connection refused')) as unknown as typeof fetch
+    const router = new ModelRouter()
+    router.initialize({ provider: 'openai' })
+
+    const response = await router.generate({ prompt: 'hi', systemPrompt: 'sys' })
+    // Never throws: the last rung of the chain is the stub, labeled with the
+    // configured provider so callers know what was attempted.
+    expect(response.provider).toBe('openai')
+    expect(response.content).toContain('hi')
+    expect(response.content).toContain('openai failed: connection refused')
+  })
+
+  it('short-circuits a failing remote after 3 failures in 60s and recovers after the cooldown (P0-7)', async () => {
+    let now = 0
+    const circuit = new CircuitBreaker({ maxFailures: 3, windowMs: 60_000, cooldownMs: 300_000, now: () => now })
+    const fetchMock = jest.fn().mockRejectedValue(new Error('down')) as unknown as typeof fetch
+    global.fetch = fetchMock
+    const router = new ModelRouter({ circuitBreaker: circuit })
+    router.initialize({ provider: 'openai' })
+
+    // Call 1: unknown provider → 2 attempts (retry). Call 2: 1 attempt (3rd
+    // failure inside the window) → circuit opens. Call 3: short-circuited.
+    await router.generate({ prompt: 'x' })
+    await router.generate({ prompt: 'x' })
+    const short = await router.generate({ prompt: 'x' })
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+    expect(short.content).toContain('short-circuited')
+    expect(circuit.snapshot('openai').state).toBe('open')
+
+    // After the cooldown the circuit goes half-open and the remote is tried again.
+    now = 300_001
+    await router.generate({ prompt: 'x' })
+    expect(fetchMock).toHaveBeenCalledTimes(4)
   })
 })

@@ -58,6 +58,9 @@ export function createProgram(): Command {
     .description('Initialize vectalon in your React Native project')
     .argument('[directory]', 'Project root directory')
     .option('--model <provider>', 'Default model provider (local|wasm|openai|anthropic|azure-openai|ollama|vllm|groq)')
+    .option('--resume', 'Resume an interrupted init from its last completed phase')
+    .option('--clean-restart', 'Roll back an interrupted init (restore originals) and start over')
+    .option('--force', 'Re-initialize even when the project is already initialized')
     .action(initCommand)
 
   program
@@ -257,6 +260,7 @@ export function createProgram(): Command {
     .description('Check that every enabled ecosystem item is installed and reachable')
     .option('--json', 'Print the report as JSON')
     .option('--fix', 'Auto-install missing ecosystem items and toolchain components, then re-check')
+    .option('--selftest', 'Verify the doctor\'s own probes work, then exit')
     .action(doctorCommand)
 
   program

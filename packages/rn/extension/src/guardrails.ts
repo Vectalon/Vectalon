@@ -1,10 +1,16 @@
 import * as vscode from 'vscode'
 import { McpHttpClient } from './client'
 import { parseGuardrailResult, failingFindings, severityToNumber, summarize } from './guardrailResult'
+import { withTimeout } from './retry'
 import { log } from './output'
 
 /** Debounce guardrail runs triggered by editor/save events. */
 const RUN_DEBOUNCE_MS = 400
+/** Hard cap on a single guardrail check (P0-9) — never hang the editor. */
+const RUN_TIMEOUT_MS = 3_000
+
+/** The single diagnostic emitted when a file cannot be analyzed (P0-9). */
+const PARSE_FAILURE_MESSAGE = 'Vectalon: could not parse file'
 
 export interface GuardrailRunner {
   /** Run guardrails on a document and push findings to the Problems panel. */
@@ -22,21 +28,48 @@ export function createGuardrailRunner(
   let debounceTimer: NodeJS.Timeout | null = null
   let lastSummary = ''
 
+  const setParseFailure = (uri: vscode.Uri): void => {
+    lastSummary = PARSE_FAILURE_MESSAGE
+    const range = new vscode.Range(0, 0, 0, 0)
+    diagnostics.set(uri, [
+      new vscode.Diagnostic(range, PARSE_FAILURE_MESSAGE, vscode.DiagnosticSeverity.Warning),
+    ])
+  }
+
   const runNow = async (uri: vscode.Uri): Promise<void> => {
+    let document: vscode.TextDocument
     try {
-      const document = await vscode.workspace.openTextDocument(uri)
+      document = await vscode.workspace.openTextDocument(uri)
+    } catch (err) {
+      log(`Guardrails: could not open ${uri.fsPath}: ${err instanceof Error ? err.message : String(err)}`)
+      return
+    }
+    try {
+      // P0-8: fast availability pre-check (2s cap) — a down server skips
+      // silently instead of blocking the editor on the default 15s timeout.
+      if (!(await client.pingQuick())) {
+        log(`Guardrails: server not reachable — skipping check for ${uri.fsPath} (non-blocking)`)
+        return
+      }
       const content = document.getText()
       if (!content.trim()) {
         diagnostics.delete(uri)
         return
       }
-      const raw = await client.callTool('check_guardrails', {
-        content,
-        filePath: uri.fsPath,
-      })
+      // P0-9: a 3s cap on the request — a hung server check degrades to one
+      // diagnostic, never a frozen editor or extension host.
+      const raw = await withTimeout(
+        client.callTool('check_guardrails', {
+          content,
+          filePath: uri.fsPath,
+        }),
+        RUN_TIMEOUT_MS,
+        'guardrail check'
+      )
       const result = parseGuardrailResult(raw.content)
       if (!result) {
         log(`Unparseable guardrail result for ${uri.fsPath}`)
+        setParseFailure(uri)
         return
       }
       const entries: [vscode.Uri, vscode.Diagnostic[]] = [uri, []]
@@ -55,6 +88,7 @@ export function createGuardrailRunner(
       diagnostics.set(entries[0], entries[1])
     } catch (err) {
       log(`Guardrail check failed: ${err instanceof Error ? err.message : String(err)}`)
+      setParseFailure(uri)
     }
   }
 

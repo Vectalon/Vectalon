@@ -4,6 +4,8 @@
  */
 
 export { ModelRouter } from './ModelRouter'
+export { CircuitBreaker } from './circuitBreaker'
+export type { CircuitBreakerOptions, CircuitSnapshot, CircuitState } from './circuitBreaker'
 export { WasmProvider } from './providers/WasmProvider'
 export type { WasmProviderOptions } from './providers/WasmProvider'
 export { wasmZeroConfigEnabled } from './zeroConfig'

@@ -10,6 +10,9 @@ import {
   checkModelAccess,
   fixForMissing,
   runDoctorFixes,
+  defensiveCheckers,
+  probeFailuresOf,
+  runDoctorSelfTest,
   MODEL_ACCESS_ITEM_IDS,
   type DoctorCheckers,
   type DoctorFixer,
@@ -564,6 +567,75 @@ describe('ecosystem doctor', () => {
       const result = fixer.run(fix.command, fix.args, dir)
       expect(result.success).toBe(false)
       expect(result.output.split(/\r?\n/)[0]).toContain('EACCES')
+    })
+  })
+
+  describe('doctor self-healing (P0-10)', () => {
+    function throwingCheckers(): DoctorCheckers {
+      return {
+        packageInstalled: () => {
+          throw new Error('broken require')
+        },
+        run: () => {
+          throw new Error('broken spawn')
+        },
+        dirExists: () => {
+          throw new Error('broken stat')
+        },
+        env: () => {
+          throw new Error('broken env')
+        },
+        portOpen: () => {
+          throw new Error('broken net')
+        },
+        platform: 'darwin',
+        hasModel: () => {
+          throw new Error('broken store')
+        },
+        writable: () => {
+          throw new Error('broken access')
+        },
+      }
+    }
+
+    it('defensiveCheckers turns throwing probes into neutral values and records them', () => {
+      const defensive = defensiveCheckers(throwingCheckers())
+      expect(defensive.packageInstalled('x')).toBe(false)
+      expect(defensive.run('x', [])).toEqual({ success: false, output: '' })
+      expect(defensive.dirExists('/x')).toBe(false)
+      expect(defensive.env('PATH')).toBeUndefined()
+      expect(defensive.portOpen(1)).toBe(false)
+      expect(defensive.hasModel('x')).toBe(false)
+      expect(defensive.writable('/x')).toBe(false)
+      const failures = probeFailuresOf(defensive)
+      expect(failures.length).toBeGreaterThanOrEqual(6)
+      expect(failures.every(f => f.checker && f.message)).toBe(true)
+    })
+
+    it('runDoctor never throws even with a fully broken checker set', () => {
+      mkdirSync(join(dir, '.vectalon'), { recursive: true })
+      writeFileSync(join(dir, '.vectalon', 'ecosystem.json'), JSON.stringify({ version: '1.0.0', enabled: ['zustand'] }))
+      writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'app', version: '1.0.0' }))
+
+      const report = runDoctor(dir, defensiveCheckers(throwingCheckers()))
+      // The report is complete — broken probes degraded to missing/warning.
+      expect(report.checks.length).toBe(1)
+      expect(report.toolchain.length).toBeGreaterThan(0)
+      expect(report.leaderboard.length).toBe(4)
+      expect(report.model.length).toBe(4)
+    })
+
+    it('runDoctorSelfTest reports healthy probes as ok', () => {
+      const results = runDoctorSelfTest(dir, makeCheckers({ run: () => ({ success: true, output: 'v20.11.0' }) }))
+      expect(results.length).toBeGreaterThan(0)
+      expect(results.every(r => r.ok)).toBe(true)
+    })
+
+    it('runDoctorSelfTest flags a broken probe', () => {
+      const results = runDoctorSelfTest(dir, makeCheckers({ run: () => { throw new Error('spawn is broken') } }))
+      expect(results.some(r => !r.ok)).toBe(true)
+      const broken = results.find(r => !r.ok)!
+      expect(broken.detail).toContain('spawn is broken')
     })
   })
 })

@@ -1,6 +1,7 @@
 import { spawn, type ChildProcess } from 'child_process'
 import { McpHttpClient } from './client'
 import { portFromUrl, baseUrlFromPort } from './urls'
+import { withRetries } from './retry'
 import { log } from './output'
 
 export { portFromUrl, baseUrlFromPort }
@@ -27,6 +28,27 @@ export async function isReachable(client: McpHttpClient): Promise<boolean> {
 }
 
 const SPAWN_TIMEOUT_MS = 20_000
+const DEFAULT_SPAWN_ATTEMPTS = 3
+
+/**
+ * Spawn `vectalon serve --protocol http --port <port>` with retries (P0-8):
+ * up to `attempts` tries with exponential backoff (1s, 2s, …). A flaky first
+ * spawn (port race, slow bundler init) no longer leaves the extension dead.
+ */
+export function spawnServerWithRetry(
+  workspaceRoot: string,
+  port: number,
+  options: { attempts?: number; log?: (msg: string) => void } = {}
+): Promise<ServerHandle> {
+  const attempts = options.attempts ?? DEFAULT_SPAWN_ATTEMPTS
+  const logger = options.log || log
+  return withRetries(() => spawnServer(workspaceRoot, port), {
+    attempts,
+    baseMs: 1_000,
+    label: `spawning vectalon serve on port ${port}`,
+    log: logger,
+  })
+}
 
 /**
  * Spawn `vectalon serve --protocol http --port <port>` in the workspace and

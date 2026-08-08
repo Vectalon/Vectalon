@@ -2,12 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.baseUrlFromPort = exports.portFromUrl = void 0;
 exports.isReachable = isReachable;
+exports.spawnServerWithRetry = spawnServerWithRetry;
 exports.spawnServer = spawnServer;
 const child_process_1 = require("child_process");
 const client_1 = require("./client");
 const urls_1 = require("./urls");
 Object.defineProperty(exports, "portFromUrl", { enumerable: true, get: function () { return urls_1.portFromUrl; } });
 Object.defineProperty(exports, "baseUrlFromPort", { enumerable: true, get: function () { return urls_1.baseUrlFromPort; } });
+const retry_1 = require("./retry");
 const output_1 = require("./output");
 /**
  * Manages the `vectalon serve --protocol http` child process. The extension
@@ -21,6 +23,22 @@ async function isReachable(client) {
     return client.ping();
 }
 const SPAWN_TIMEOUT_MS = 20_000;
+const DEFAULT_SPAWN_ATTEMPTS = 3;
+/**
+ * Spawn `vectalon serve --protocol http --port <port>` with retries (P0-8):
+ * up to `attempts` tries with exponential backoff (1s, 2s, …). A flaky first
+ * spawn (port race, slow bundler init) no longer leaves the extension dead.
+ */
+function spawnServerWithRetry(workspaceRoot, port, options = {}) {
+    const attempts = options.attempts ?? DEFAULT_SPAWN_ATTEMPTS;
+    const logger = options.log || output_1.log;
+    return (0, retry_1.withRetries)(() => spawnServer(workspaceRoot, port), {
+        attempts,
+        baseMs: 1_000,
+        label: `spawning vectalon serve on port ${port}`,
+        log: logger,
+    });
+}
 /**
  * Spawn `vectalon serve --protocol http --port <port>` in the workspace and
  * wait until the port banner appears (or the process exits / times out).

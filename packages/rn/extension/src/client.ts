@@ -64,6 +64,20 @@ export class McpHttpClient {
     }
   }
 
+  /**
+   * Fast reachability check with a short override timeout (P0-8): used before
+   * guardrail runs so a down server skips silently instead of hanging the
+   * editor on a 15s request timeout.
+   */
+  async pingQuick(timeoutMs = 2_000): Promise<boolean> {
+    try {
+      await this.request<unknown>('/tools', { method: 'GET' }, timeoutMs)
+      return true
+    } catch {
+      return false
+    }
+  }
+
   /** GET /tools — the advertised tool list. */
   async listTools(): Promise<AgentTool[]> {
     const data = await this.request<{ tools?: unknown }>('/tools', { method: 'GET' })
@@ -102,9 +116,9 @@ export class McpHttpClient {
     return data
   }
 
-  private async request<T>(path: string, init: RequestInit): Promise<T> {
+  private async request<T>(path: string, init: RequestInit, timeoutMs?: number): Promise<T> {
     const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), this.timeoutMs)
+    const timer = setTimeout(() => controller.abort(), timeoutMs ?? this.timeoutMs)
     try {
       const response = await this.fetchImpl(`${this.baseUrl}${path}`, {
         ...init,

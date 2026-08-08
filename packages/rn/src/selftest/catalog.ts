@@ -173,7 +173,9 @@ function warn(detail: string): CheckResult {
 
 /** True when a model response is the deterministic fallback stub, not real output. */
 function isModelFallback(content: string): boolean {
-  return content.includes('[Local model fallback:')
+  // LocalProvider/WasmProvider degrade to '[Local model fallback: …]';
+  // ModelRouter's P0-7 fallback chain degrades to '[Model fallback: …]'.
+  return content.includes('[Local model fallback:') || content.includes('[Model fallback:')
 }
 
 /** Minimal React Native project fixture used by several checks. */
@@ -792,7 +794,7 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
         ctx.trace.step(`calling the ${provider} provider with a real prompt…`)
         const response = await router.generate({ prompt, maxTokens: 32 })
         if (isModelFallback(response.content)) {
-          const reason = response.content.split('\n')[0].replace('[Local model fallback: ', '').replace(/]$/, '') || 'degraded to the stub'
+          const reason = response.content.split('\n')[0].replace('[Local model fallback: ', '').replace(/[.]]?$/, '') || 'degraded to the stub'
           return missing(`inference degraded to the stub: ${reason}`)
         }
         if (!response.content.trim()) return fail('the model returned empty output')
@@ -817,13 +819,32 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
       ctx.trace.step(`calling ${provider} with a real prompt…`)
       try {
         const response = await router.generate({ prompt, maxTokens: 32 })
+        // P0-7: the router's fallback chain never throws — a provider failure
+        // degrades to the deterministic stub carrying the underlying error.
+        // Detect it and report the real reason instead of a dishonest pass.
+        if (isModelFallback(response.content)) {
+          const firstLine = response.content.split('\n')[0]
+          const routerStub = firstLine.includes('[Model fallback:')
+          const reason = (
+            routerStub
+              ? firstLine.replace(/^\[Model fallback: every provider failed — /, '').replace(/\. No model output was generated\.?\]$/, '')
+              : firstLine.replace('[Local model fallback: ', '').replace(/[.]]?$/, '')
+          ).trim()
+          const reasonText = reason || 'degraded to the deterministic stub'
+          // A server that answered with an error (bad key/model) is a hard
+          // failure; a server that is simply unreachable (keyless local server
+          // not running) is an environment warning.
+          if (/API error|HTTP \d+|Unauthorized|rate limit|quota/i.test(reasonText)) {
+            return fail(`${provider} call failed: ${reasonText.slice(0, 160)}`)
+          }
+          return missing(`could not reach ${provider}: ${reasonText.slice(0, 120)}`)
+        }
         if (!response.content.trim()) return fail('the model returned empty output')
         return ok(`${provider} inference returned ${response.content.trim().length} chars of model output`)
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err)
-        // A server that answered with an error (bad key/model) is a hard
-        // failure; a server that is simply unreachable (keyless local server
-        // not running) is an environment warning.
+        // Defensive: the router should never throw, but keep the honest
+        // classification if a future path regresses to throwing.
         if (/API error|HTTP \d+|Unauthorized|rate limit|quota/i.test(message)) {
           return fail(`${provider} call failed: ${message.slice(0, 160)}`)
         }

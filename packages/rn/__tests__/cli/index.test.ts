@@ -165,13 +165,8 @@ describe('initCommand', () => {
     expect(manifest.modelConfig).toEqual({ modelName: 'claude-sonnet-4-20250514', apiKeyEnv: 'ANTHROPIC_API_KEY' })
   })
 
-  it('exits with code 1 on an unknown --model provider', async () => {
-    const exitSpy = jest
-      .spyOn(process, 'exit')
-      .mockImplementation((() => { throw new Error('exit called') }) as unknown as (code?: string | number | null) => never)
-
-    await expect(initCommand(dir, { model: 'gemini' })).rejects.toThrow('exit called')
-    expect(exitSpy).toHaveBeenCalledWith(1)
+  it('throws on an unknown --model provider (never process.exit — initCommand is in-process callable)', async () => {
+    await expect(initCommand(dir, { model: 'gemini' })).rejects.toThrow('Unknown model provider: gemini')
   })
 })
 

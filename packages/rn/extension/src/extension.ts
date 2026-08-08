@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 import { McpHttpClient } from './client'
 import type { HealthReport } from './client'
-import { portFromUrl, spawnServer, isReachable, type ServerHandle } from './serverManager'
+import { portFromUrl, spawnServerWithRetry, isReachable, type ServerHandle } from './serverManager'
 import { createGuardrailRunner, isCheckableFile } from './guardrails'
 import { KnowledgeTreeProvider } from './knowledgeTree'
 import { registerCommands } from './commands'
@@ -10,6 +10,11 @@ import { getOutputChannel, log, disposeOutputChannel } from './output'
 let server: ServerHandle | null = null
 let statusBar: vscode.StatusBarItem | null = null
 let treeProvider: KnowledgeTreeProvider | null = null
+let reconnectTimer: NodeJS.Timeout | null = null
+let connecting = false
+
+/** How often the background loop re-probes a dropped server (P0-8). */
+const RECONNECT_INTERVAL_MS = 30_000
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
   log('Vectalon extension activating')
@@ -47,10 +52,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     tree
   )
 
-  // Start MCP server command (also the status-bar fallback).
+  // Start / stop MCP server commands (also the status-bar fallback).
   context.subscriptions.push(
     vscode.commands.registerCommand('vectalon.startServer', async () => {
       await connect(baseUrl, autoStart)
+    }),
+    vscode.commands.registerCommand('vectalon.restartServer', async () => {
+      await restartServer(baseUrl, autoStart)
     }),
     vscode.commands.registerCommand('vectalon.stopServer', () => {
       disconnect()
@@ -76,51 +84,129 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     )
   }
 
-  // Connect at startup: reachable server wins; otherwise auto-start the CLI.
+  // Connect at startup: reachable server wins; otherwise auto-start the CLI
+  // with retries. The background loop keeps the connection alive afterwards
+  // (e.g. after laptop sleep).
   await connect(baseUrl, autoStart)
+  startReconnectLoop(baseUrl, autoStart)
   log('Vectalon extension activated')
 }
 
-async function connect(baseUrl: string, autoStart: boolean): Promise<void> {
-  if (server) {
-    updateStatus(true, '')
-    return
-  }
-  updateStatus(false, 'connecting…')
-  const probe = new McpHttpClient(baseUrl)
-  if (await isReachable(probe)) {
-    server = { client: probe, baseUrl, child: null, stop: () => undefined }
-    onConnected()
-    // Deep health (P0-4): surface healthy | degraded | critical + the failing
-    // checks in the status-bar tooltip, best-effort. Guarded so a slow health
-    // response can never flip the status bar back to "connected" after the
-    // user has disconnected.
-    void probe.getHealth().then((health: HealthReport | null) => {
-      if (health && server?.client === probe) updateStatus(true, '', health)
-    })
-    return
-  }
-  if (!autoStart) {
-    updateStatus(false, '')
-    void vscode.window.showWarningMessage(
-      `Vectalon server not reachable at ${baseUrl}. Run \`vectalon serve --protocol http\` or enable vectalon.autoStart.`
-    )
-    return
-  }
-  const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd()
+/**
+ * Establish a connection. A reachable server wins; otherwise (autoStart) the
+ * CLI is spawned with up to 3 attempts and exponential backoff. On total
+ * failure an error notification offers Retry / Restart Server. Background
+ * attempts (`silent`) log instead of notifying so the reconnect loop never
+ * spams the user.
+ */
+async function connect(baseUrl: string, autoStart: boolean, silent = false): Promise<void> {
+  if (server || connecting) return
+  connecting = true
   try {
+    updateStatus(false, 'connecting…')
+    const probe = new McpHttpClient(baseUrl)
+    if (await isReachable(probe)) {
+      server = { client: probe, baseUrl, child: null, stop: () => undefined }
+      onConnected()
+      // Deep health (P0-4): surface healthy | degraded | critical + the failing
+      // checks in the status-bar tooltip, best-effort. Guarded so a slow health
+      // response can never flip the status bar back to "connected" after the
+      // user has disconnected.
+      void probe.getHealth().then((health: HealthReport | null) => {
+        if (health && server?.client === probe) updateStatus(true, '', health)
+      })
+      return
+    }
+    if (!autoStart) {
+      updateStatus(false, '')
+      if (!silent) {
+        void vscode.window.showWarningMessage(
+          `Vectalon server not reachable at ${baseUrl}. Run \`vectalon serve --protocol http\` or enable vectalon.autoStart.`
+        )
+      }
+      return
+    }
+    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd()
     updateStatus(false, 'starting…')
-    server = await spawnServer(workspaceRoot, portFromUrl(baseUrl))
-    onConnected()
-  } catch (err) {
+    try {
+      // P0-8: 3 spawn attempts with exponential backoff (1s, 2s) instead of a
+      // single 20s try-and-give-up.
+      server = await spawnServerWithRetry(workspaceRoot, portFromUrl(baseUrl))
+      onConnected()
+    } catch (err) {
+      server = null
+      const message = err instanceof Error ? err.message : String(err)
+      log(`Failed to start vectalon serve: ${message}`)
+      if (silent) {
+        updateStatus(false, 'offline (reconnect pending)')
+        return
+      }
+      // Release the lock before the notification resolves so the Retry /
+      // Restart Server actions actually run instead of bouncing off the
+      // `connecting` guard (the finally below is too late for them).
+      connecting = false
+      const action = await vscode.window.showErrorMessage(
+        `Vectalon: could not start the MCP server — ${message}`,
+        'Retry',
+        'Restart Server'
+      )
+      if (action === 'Retry') {
+        await connect(baseUrl, autoStart)
+      } else if (action === 'Restart Server') {
+        await restartServer(baseUrl, autoStart)
+      }
+    }
+  } finally {
+    connecting = false
+  }
+}
+
+/** Kill any child process and re-establish the connection. */
+async function restartServer(baseUrl: string, autoStart: boolean): Promise<void> {
+  if (server) {
+    server.stop()
     server = null
-    const message = err instanceof Error ? err.message : String(err)
-    log(`Failed to start vectalon serve: ${message}`)
-    void vscode.window.showWarningMessage(`Vectalon: could not start the MCP server — ${message}`)
+  }
+  updateStatus(false, 'restarting…')
+  await connect(baseUrl, autoStart)
+}
+
+/**
+ * Background reconnect loop (P0-8): every 30s, if the server is unreachable
+ * (dropped, laptop sleep, port taken over), attempt a silent reconnect. Stops
+ * when the user explicitly stops the server or the extension deactivates.
+ */
+function startReconnectLoop(baseUrl: string, autoStart: boolean): void {
+  if (reconnectTimer) return
+  reconnectTimer = setInterval(() => {
+    void (async () => {
+      if (connecting) return
+      // Re-read the config each tick so url/autoStart changes take effect
+      // without a window reload.
+      const config = vscode.workspace.getConfiguration('vectalon')
+      const liveBaseUrl = config.get<string>('url') || baseUrl
+      const liveAutoStart = config.get<boolean>('autoStart', autoStart)
+      if (server) {
+        const alive = await server.client.pingQuick(3_000)
+        if (alive) return
+        log('Vectalon server dropped (sleep/wake or process exit) — reconnecting')
+        server.stop()
+        server = null
+      }
+      await connect(liveBaseUrl, liveAutoStart, true)
+    })()
+  }, RECONNECT_INTERVAL_MS)
+}
+
+function stopReconnectLoop(): void {
+  if (reconnectTimer) {
+    clearInterval(reconnectTimer)
+    reconnectTimer = null
   }
 }
 
 function disconnect(): void {
+  stopReconnectLoop()
   server?.stop()
   server = null
   updateStatus(false, '')
@@ -159,6 +245,7 @@ function updateStatus(connected: boolean, detail: string, health?: HealthReport 
 }
 
 export function deactivate(): void {
+  stopReconnectLoop()
   disconnect()
   disposeOutputChannel()
 }

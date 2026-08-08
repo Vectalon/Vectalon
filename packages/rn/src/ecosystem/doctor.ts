@@ -3,9 +3,171 @@ import { join } from 'path'
 import { listEcosystemItems, getEcosystemItem } from './catalog'
 import { readEcosystemConfig } from './config'
 import type { EcosystemItem } from './types'
-import { reportError } from '../utils/safe'
+import { reportError, safe } from '../utils/safe'
 import { getRemoteProviderInfo } from '../model/setup'
 import type { ModelSetupProvider } from '../model/setup'
+
+/**
+ * Probe failure recorded by `defensiveCheckers` — a checker that threw. The
+ * doctor keeps going (that is the whole point of P0-10); these are surfaced
+ * via `runDoctorSelfTest` and logged contextually.
+ */
+export interface ProbeFailure {
+  checker: string
+  context: string
+  message: string
+}
+
+/**
+ * Wrap every checker in safe() so a single broken probe can never kill the
+ * whole report (P0-10). A throwing probe returns a neutral value — `false`,
+ * an empty run result, `undefined` env — and is recorded as a ProbeFailure
+ * instead of propagating. This covers the built-in checkers AND injected
+ * checkers (tests, the fixer proxy), which is what makes the doctor
+ * self-healing: one missing native module (better-sqlite3, node-llama-cpp)
+ * degrades that one check, never the report.
+ */
+export function defensiveCheckers(checkers: DoctorCheckers): DoctorCheckers {
+  const failures: ProbeFailure[] = []
+  const record = (checker: string, context: string, error: unknown): undefined => {
+    failures.push({ checker, context, message: error instanceof Error ? error.message : String(error) })
+    return undefined
+  }
+
+  const wrapped: DoctorCheckers = {
+    packageInstalled(packageName: string): boolean {
+      const result = safe(() => checkers.packageInstalled(packageName), `doctor probe packageInstalled(${packageName})`)
+      return result.ok ? result.value : !!record('packageInstalled', packageName, result.error)
+    },
+    run(command: string, args: string[]): { success: boolean; output: string } {
+      const result = safe(() => checkers.run(command, args), `doctor probe run(${command})`)
+      if (result.ok) return result.value
+      record('run', command, result.error)
+      return { success: false, output: '' }
+    },
+    dirExists(dir: string): boolean {
+      const result = safe(() => checkers.dirExists(dir), `doctor probe dirExists(${dir})`)
+      return result.ok ? result.value : !!record('dirExists', dir, result.error)
+    },
+    env(name: string): string | undefined {
+      const result = safe(() => checkers.env(name), `doctor probe env(${name})`)
+      return result.ok ? result.value : record('env', name, result.error)
+    },
+    portOpen(port: number): boolean {
+      const result = safe(() => checkers.portOpen(port), `doctor probe portOpen(${port})`)
+      return result.ok ? result.value : !!record('portOpen', String(port), result.error)
+    },
+    get platform(): NodeJS.Platform {
+      const result = safe(() => checkers.platform, 'doctor probe platform')
+      return result.ok ? result.value : process.platform
+    },
+    hasModel(presetId: string): boolean {
+      const result = safe(() => checkers.hasModel(presetId), `doctor probe hasModel(${presetId})`)
+      return result.ok ? result.value : !!record('hasModel', presetId, result.error)
+    },
+    writable(dir: string): boolean {
+      const result = safe(() => checkers.writable(dir), `doctor probe writable(${dir})`)
+      return result.ok ? result.value : !!record('writable', dir, result.error)
+    },
+  }
+
+  // Expose the recorded probe failures (runDoctorSelfTest reads them).
+  ;(wrapped as unknown as { __probeFailures: () => ProbeFailure[] }).__probeFailures = () => failures
+  return wrapped
+}
+
+/** Read the probe failures recorded by defensiveCheckers (or [] if unwrapped). */
+export function probeFailuresOf(checkers: DoctorCheckers): ProbeFailure[] {
+  const probe = (checkers as unknown as { __probeFailures?: () => ProbeFailure[] }).__probeFailures
+  return probe ? probe() : []
+}
+
+/**
+ * One self-test probe: does this checker complete (without throwing) on a
+ * benign input? Verifies the doctor's own wiring — a broken probe here means
+ * every report that uses it would silently degrade.
+ */
+export interface DoctorSelfTestResult {
+  id: string
+  name: string
+  ok: boolean
+  detail: string
+}
+
+/**
+ * `doctor --selftest` — verify the doctor's own probes work (P0-10). Each
+ * probe runs against a benign input through defensiveCheckers; the result is
+ * ok when the probe completed (a `false` answer is fine — e.g. port 1 is
+ * legitimately closed). Probe *throws* are reported as failures.
+ */
+export function runDoctorSelfTest(root: string, checkers: DoctorCheckers): DoctorSelfTestResult[] {
+  const defensive = defensiveCheckers(checkers)
+  const base = (id: string, name: string): Pick<DoctorSelfTestResult, 'id' | 'name'> => ({ id, name })
+
+  const results: DoctorSelfTestResult[] = []
+
+  const node = defensive.run('node', ['--version'])
+  results.push({
+    ...base('selftest-node', 'node --version probe'),
+    ok: true,
+    detail: node.success ? `responded (${node.output.trim().slice(0, 40)})` : 'did not respond',
+  })
+
+  const java = defensive.run('java', ['-version'])
+  results.push({
+    ...base('selftest-java', 'java -version probe'),
+    ok: true,
+    detail: java.success ? 'responded' : 'not found on PATH (fine — checked lazily)',
+  })
+
+  results.push({
+    ...base('selftest-dir', 'dirExists(cwd)'),
+    ok: true,
+    detail: defensive.dirExists(root) ? 'true' : 'false',
+  })
+
+  results.push({
+    ...base('selftest-writable', 'writable(cwd)'),
+    ok: true,
+    detail: defensive.writable(root) ? 'true' : 'false',
+  })
+
+  results.push({
+    ...base('selftest-env', 'env(PATH)'),
+    ok: true,
+    detail: defensive.env('PATH') ? 'set' : 'unset',
+  })
+
+  results.push({
+    ...base('selftest-port', 'portOpen(1) probe (expect false, no throw)'),
+    ok: true,
+    detail: defensive.portOpen(1) ? 'open' : 'closed (expected)',
+  })
+
+  results.push({
+    ...base('selftest-model', 'hasModel(nonexistent) probe'),
+    ok: true,
+    detail: defensive.hasModel('__selftest_nonexistent__') ? 'true (unexpected)' : 'false (expected)',
+  })
+
+  results.push({
+    ...base('selftest-package', 'packageInstalled(@vectalon-dev/rn) probe'),
+    ok: true,
+    detail: defensive.packageInstalled('@vectalon-dev/rn') ? 'resolvable' : 'not resolvable from this project (probe still works)',
+  })
+
+  // Probe failures recorded by the defensive wrapper = broken probes.
+  const failures = probeFailuresOf(defensive)
+  for (const failure of failures) {
+    results.push({
+      ...base(`selftest-${failure.checker}`, `${failure.checker} probe threw`),
+      ok: false,
+      detail: `${failure.context}: ${failure.message}`,
+    })
+  }
+
+  return results
+}
 
 export type DoctorStatus = 'ok' | 'missing' | 'warning'
 

@@ -11,7 +11,7 @@ import { spawnSync } from 'child_process'
 import Table from 'cli-table'
 import pc from 'picocolors'
 import { logger } from '../logger'
-import { runDoctor, runDoctorFixes, type DoctorCheckers, type DoctorFixer, type FixAttempt, type ToolchainCheckOptions, type LeaderboardCheckOptions, type ModelAccessCheckOptions } from '../../ecosystem'
+import { runDoctor, runDoctorFixes, defensiveCheckers, runDoctorSelfTest, type DoctorCheckers, type DoctorFixer, type FixAttempt, type ToolchainCheckOptions, type LeaderboardCheckOptions, type ModelAccessCheckOptions } from '../../ecosystem'
 import { hasDownloadedModel } from '../../model/local/ModelStore'
 import { getDefaultPreset } from '../../model/local/presets'
 import type { ModelSetupProvider } from '../../model/setup'
@@ -21,6 +21,8 @@ export interface DoctorOptions {
   json?: boolean
   /** Auto-install missing ecosystem items and toolchain components, then re-check. */
   fix?: boolean
+  /** Verify the doctor's own probes work (P0-10), then exit. */
+  selftest?: boolean
   /** Injectable checkers — tests pass stubs so no real subprocesses run. */
   checkers?: DoctorCheckers
   /** Injectable fix runner — tests pass stubs so no real installs run. */
@@ -153,7 +155,31 @@ function renderFixTable(attempts: FixAttempt[]): void {
 export function doctorCommand(directory: string, options: DoctorOptions): void {
   const root = resolve(directory || process.cwd())
   const hasEcosystem = existsSync(resolve(root, '.vectalon', 'ecosystem.json'))
-  const checkers = options.checkers || realCheckers(root)
+  // P0-10: every probe runs through safe() so a single broken probe (missing
+  // native module, broken binary) degrades that one check — never the report.
+  const checkers = defensiveCheckers(options.checkers || realCheckers(root))
+
+  if (options.selftest) {
+    const results = runDoctorSelfTest(root, checkers)
+    const table = new Table({
+      head: ['Status', 'Probe', 'Detail'],
+      style: { head: ['cyan'] },
+      colWidths: [10, 34, 60],
+    })
+    for (const result of results) {
+      table.push([result.ok ? pc.green('OK') : pc.red('BROKEN'), result.name, result.detail])
+    }
+    process.stdout.write(table.toString() + '\n')
+    logger.info('')
+    const broken = results.filter(r => !r.ok)
+    if (broken.length === 0) {
+      logger.success(`Doctor self-test passed — all ${results.length} probes work.`)
+    } else {
+      logger.error(`${broken.length} doctor probe(s) are broken — reports using them will silently degrade.`)
+      process.exit(1)
+    }
+    return
+  }
   const leaderboardOptions = { localModelPresetId: getDefaultPreset().id, ...(options.leaderboard || {}) }
   // The configured model provider comes from .vectalon/rn-vectalon.json (set by
   // `vectalon init`); the doctor warns when that model can't reach tools.

@@ -53,6 +53,16 @@ describe('McpHttpClient', () => {
     expect(await client.ping()).toBe(false)
   })
 
+  it('pingQuick returns true for a live server and false when down (P0-8)', async () => {
+    const alive = fakeFetch(async () => ({ ok: true, status: 200, json: async () => ({ tools: [] }) }))
+    expect(await new McpHttpClient('http://localhost:8765', { fetch: alive }).pingQuick(500)).toBe(true)
+
+    const dead = fakeFetch(async () => {
+      throw new Error('ECONNREFUSED')
+    })
+    expect(await new McpHttpClient('http://localhost:1', { fetch: dead }).pingQuick(500)).toBe(false)
+  })
+
   it('surfaces tool-level errors without throwing', async () => {
     const fetchImpl = fakeFetch(async () => ({
       ok: true,
