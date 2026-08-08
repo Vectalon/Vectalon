@@ -5,6 +5,31 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.14] - 2026-08-08
+
+### Added — Crash-rate anomaly detection & auto-rollout gates (M18)
+
+- **Z-score anomaly detector** (`sdlc/CrashAnomalyDetector.ts`) — buckets
+  timestamped crashes into hourly windows, derives a mean + stdDev baseline
+  from the historical buckets, and flags a window whose rate exceeds
+  **baseline + n·stdDev** (default 3σ) as an anomaly — the auto-rollout gate.
+- **Knowledge-base baselines** — after each healthy window the baseline is
+  persisted as a `telemetry` artifact (`recordCrashBaseline` /
+  `getLatestCrashBaseline`, capped at 10 per project), so the next release is
+  compared against accumulated history. A spike window never overwrites the
+  baseline — the gate stays strict until rollback or fix.
+- **Auto-filed incidents** — `monitorReleaseAnomaly` files an incident (via
+  the existing `IncidentAnalyzer`) with a rollback suggestion when the z-score
+  threshold is breached; healthy windows persist the refreshed baseline.
+- **`vectalon release --monitor` integration** — timestamped telemetry exports
+  now run the z-score analysis automatically (new `--zscore <n>` option);
+  untimestamped exports or an explicit `--baseline` keep the classic ratio
+  check. The MCP `check_crash_rate` tool does the same when the crash JSON
+  carries timestamps.
+- **Selftest** — new `sdlc-crash-anomaly` check exercises bucketing,
+  baseline derivation, spike detection (z ≥ 3σ → rollback), incident filing,
+  and the KB baseline round-trip.
+
 ## [0.1.13] - 2026-08-08
 
 ### Added — Custom model provider support (M19)

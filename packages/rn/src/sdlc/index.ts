@@ -82,6 +82,22 @@ export type {
   RawCommit,
   DerivationCategory,
 } from './GitHistoryDeriver'
+export {
+  bucketCrashSeries,
+  deriveAnomalyBaseline,
+  detectCrashAnomaly,
+  recordCrashBaseline,
+  getLatestCrashBaseline,
+  monitorReleaseAnomaly,
+  renderAnomalyReport,
+} from './CrashAnomalyDetector'
+export type {
+  CrashRateSample,
+  CrashAnomalyBaseline,
+  CrashAnomalyOptions,
+  CrashAnomalyResult,
+  AnomalyMonitorResult,
+} from './CrashAnomalyDetector'
 export { NativeModuleGenerator, parseNativeModuleSpec, defaultPackageName } from './NativeModuleGenerator'
 export type {
   NativeModuleSpec,

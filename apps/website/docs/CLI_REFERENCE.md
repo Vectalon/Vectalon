@@ -540,7 +540,8 @@ npx vectalon release                          # plan: version bump + changelog
 npx vectalon release --changelog              # print only the changelog
 npx vectalon release --submit                 # write the release workflow
 npx vectalon release --monitor                # monitor crash rate (24h window)
-npx vectalon release --monitor --telemetry telemetry/ --baseline 2.5
+npx vectalon release --monitor --telemetry telemetry/ --zscore 4   # tighter gate
+npx vectalon release --monitor --telemetry telemetry/ --baseline 2.5  # ratio check
 npx vectalon release --version 2.1.0          # explicit current version
 npx vectalon release --json                   # release plan as JSON
 ```
@@ -553,9 +554,10 @@ npx vectalon release --json                   # release plan as JSON
 | `--version <v>` | Current version (default: `package.json` version) |
 | `--changelog` | Print only the generated changelog and exit |
 | `--submit` | Write the release workflow — EAS Workflows for Expo, GitHub Actions for bare RN CLI (quality → Maestro E2E on the device farm → store submission → scheduled 24h monitor) |
-| `--monitor` | Ingest telemetry and monitor the crash rate for spikes |
+| `--monitor` | Ingest telemetry and monitor the crash rate for spikes — **z-score anomaly detection** on the time series when crashes have timestamps (see below) |
 | `--telemetry <dir>` | Telemetry exports directory for `--monitor` (default `.vectalon/telemetry`) |
-| `--baseline <rate>` | Baseline crash rate per 1k sessions for spike detection |
+| `--baseline <rate>` | Baseline crash rate per 1k sessions for the classic ratio spike check (overrides z-score) |
+| `--zscore <n>` | Z-score threshold for anomaly detection (default `3` = baseline + 3σ) |
 | `--hours <n>` | Monitoring window in hours (default `24`) |
 | `--json` | Print the release plan as JSON |
 
@@ -572,9 +574,16 @@ npx vectalon release --json                   # release plan as JSON
   Play Console** (EAS submit / fastlane), and schedules a **24h crash-rate
   monitor** job
 - **`--monitor`** ingests Sentry / Crashlytics exports via the telemetry
-  service, computes the crash rate per 1k sessions/day, and when it exceeds
-  the baseline × threshold (default 2×) **auto-files an incident** (via the
-  IncidentAnalyzer) **and suggests a rollback**
+  service. With timestamped crashes it runs **z-score anomaly detection**:
+  crashes are bucketed into hourly windows (rates normalized to crashes per
+  1k sessions/day), the historical buckets form a mean + stdDev baseline, and
+  a window exceeding **baseline + n·stdDev** (default 3σ) auto-files an
+  incident **and suggests a rollback** — the auto-rollout gate. After each
+  healthy window the baseline is persisted in the knowledge base (a
+  `telemetry` artifact), so the next release compares against accumulated
+  history; a spike window never overwrites it. Thin history reports a
+  `watch`; untimestamped exports or an explicit `--baseline` fall back to the
+  classic ratio check (rate vs baseline × threshold, default 2×)
 
 **Exit codes**
 

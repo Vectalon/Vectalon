@@ -54,7 +54,7 @@ Run `npx vectalon <command> --help` for detailed options.
 | `sandbox` | Run a command in an isolated process with no ambient authority (scrubbed env, writes confined to the root, network denied by default) | `-- <command> [args...]`, `--root <dir>`, `--timeout <ms>`, `--cpu <s>`, `--memory <mb>`, `--network`, `--allow-env <names>`, `--json` |
 | `render [dir]` | Compile + headless-render generated TS/TSX in the sandbox — console logs, render tree, runtime errors before the diff | `--entry <file>`, `--file <file>`, `--timeout <ms>`, `--memory <mb>`, `--json` |
 | `ci [dir]` | Self-healing CI workflow generator (EAS / GitHub Actions) | `--dry-run` |
-| `release [dir]` | Autonomous release pipeline: bump, changelog, E2E submit, crash monitor | `--version`, `--changelog`, `--submit`, `--monitor`, `--baseline`, `--hours`, `--json` |
+| `release [dir]` | Autonomous release pipeline: bump, changelog, E2E submit, crash-rate monitor (z-score anomaly detection + auto-rollout gate) | `--version`, `--changelog`, `--submit`, `--monitor`, `--baseline`, `--zscore <n>`, `--hours`, `--json` |
 | `sync [dir]` | Sync team brain to a hosted git remote | `--push`, `--pull`, `--init`, `--remote <url>`, `--branch`, `--force` |
 | `telemetry [dir]` | Ingest Sentry/Crashlytics/traces/analytics and analyze | `--path <dir>`, `--no-analyze` |
 | `daemon` | Live Metro/Hermes companion daemon | `-p <port>`, `--metro-port`, `--stop`, `--status`, `--once`, `--wire-metro`, `--no-device-probe` |
@@ -159,7 +159,8 @@ Project-specific overrides via `.vectalon/policy.json`.
 | `BugTriageAnalyzer` | Triage severity/priority classifier |
 | `CodeReviewAnalyzer` | Static code-review finding generator |
 | `ComponentGenerator` | React Native component code generator |
-| `CrashMonitor` | Post-release crash-rate spike detection |
+| `CrashMonitor` | Post-release crash-rate spike detection (ratio baseline) |
+| `CrashAnomalyDetector` | Z-score anomaly detection on the crash-rate time series + auto-rollout gates + knowledge-base baselines |
 | `DebugAnalyzer` | Debug strategy and breakpoint recommendations |
 | `DesignComplianceChecker` | Enforce design-system token compliance |
 | `DesignSystemExtractor` | Extract design tokens and system definitions |
@@ -245,6 +246,37 @@ npx vectalon sandbox --cpu 10 --memory 512 -- jest             # CPU + memory ca
 
 Also available as the MCP tools `sandbox_run` (requires an explicit `root`
 + `command` — never defaults to the current directory) and `sandbox_backend`.
+
+## Crash-Rate Anomaly Detection (`vectalon release --monitor`)
+
+Beyond the fixed ratio check, the release monitor now runs **statistical
+anomaly detection** on the crash-rate time series (**Pro tier**):
+
+```bash
+npx vectalon release --monitor                          # z-score anomaly detection (24h window)
+npx vectalon release --monitor --telemetry telemetry/   # point at the exports dir
+npx vectalon release --monitor --zscore 4               # tighter gate: baseline + 4σ
+npx vectalon release --monitor --baseline 2.5           # classic ratio check instead
+```
+
+- **Time series** — crashes with timestamps (Sentry / Crashlytics exports)
+  are bucketed into hourly windows; each bucket is normalized to crashes per
+  1k sessions per day.
+- **Z-score baseline** — the mean and stdDev of the historical buckets form
+  the baseline. A window whose rate exceeds **baseline + n·stdDev** (default
+  3σ) is flagged as an anomaly: the harness auto-files an incident artifact
+  (via `IncidentAnalyzer`) and **recommends rollback** — the auto-rollout
+  gate.
+- **Self-learning knowledge base** — after each healthy window the baseline
+  is persisted as a `telemetry` artifact, so the next release is compared
+  against the accumulated history. A spike window never overwrites the
+  baseline — the gate stays strict until the release is rolled back or fixed.
+- **Graceful degradation** — untimestamped exports (or an explicit
+  `--baseline`) fall back to the classic ratio check; thin history reports a
+  `watch` instead of a false alarm.
+
+Also available as the MCP tool `check_crash_rate` (pass crash JSON with
+`timestamp`s to get the z-score analysis).
 
 ## Metro-aware Execution Sandbox (`vectalon render`)
 

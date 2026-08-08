@@ -3,6 +3,7 @@ import { join, resolve } from 'path'
 import { logger } from '../logger'
 import { planRelease, renderReleasePlan } from '../../sdlc/ReleasePlanner'
 import { monitorRelease } from '../../sdlc/CrashMonitor'
+import { monitorReleaseAnomaly } from '../../sdlc/CrashAnomalyDetector'
 import { TelemetryIngestionService } from '../../knowledge/telemetry'
 import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { ensureReleaseConfigs } from '../../adapters/releaseTemplates'
@@ -18,6 +19,7 @@ interface ReleaseOptions {
   monitor?: boolean
   telemetry?: string
   baseline?: number
+  zscore?: number
   hours?: number
   json?: boolean
 }
@@ -68,24 +70,10 @@ export async function releaseCommand(directory: string, options: ReleaseOptions)
   // -- 3. Monitor -- //
   if (options.monitor) {
     const store = new ArtifactStore(root)
-    const service = new TelemetryIngestionService(store)
-    const dir = options.telemetry
-      ? resolve(root, options.telemetry)
-      : TelemetryIngestionService.findDefaultDir(root)
-
-    if (dir && existsSync(dir)) {
-      const result = service.ingestDirectory(dir)
-      logger.info(`Monitored ${result.crashes.length} crash(es) in ${result.filesScanned} telemetry file(s)`)
-      const monitor = monitorRelease(result.crashes as ParsedCrash[], {
-        baselineRate: options.baseline ?? null,
-        windowHours: options.hours ?? 24,
-      })
-      logger.out(monitor.report + '\n')
-      if (monitor.incident) {
-        logger.warn('Crash-rate spike detected — review the incident and consider rollback.')
-      }
-    } else {
-      logger.warn('No telemetry exports found for monitoring. Pass --telemetry <dir> or drop exports into .vectalon/telemetry.')
+    try {
+      await runMonitor(root, store, options)
+    } finally {
+      store.close()
     }
   }
 
@@ -130,5 +118,44 @@ async function readGitLog(root: string): Promise<string> {
   } catch (err) {
     reportError(err, 'release: reading git log')
     return ''
+  }
+}
+
+/**
+ * Ingest telemetry for the monitoring window and run the crash-rate gate.
+ * Z-score anomaly detection runs when the crashes carry timestamps (a time
+ * series can be built); the ratio baseline stays available for explicit
+ * `--baseline` or untimestamped exports.
+ */
+async function runMonitor(root: string, store: ArtifactStore, options: ReleaseOptions): Promise<void> {
+  const service = new TelemetryIngestionService(store)
+  const dir = options.telemetry
+    ? resolve(root, options.telemetry)
+    : TelemetryIngestionService.findDefaultDir(root)
+
+  if (!dir || !existsSync(dir)) {
+    logger.warn('No telemetry exports found for monitoring. Pass --telemetry <dir> or drop exports into .vectalon/telemetry.')
+    return
+  }
+
+  const result = service.ingestDirectory(dir)
+  const crashes = result.crashes as ParsedCrash[]
+  logger.info(`Monitored ${crashes.length} crash(es) in ${result.filesScanned} telemetry file(s)`)
+
+  const hasTimestamps = crashes.some(c => typeof c.timestamp === 'number')
+  const monitor =
+    hasTimestamps && options.baseline === undefined
+      ? monitorReleaseAnomaly(
+          crashes,
+          { windowHours: options.hours ?? 24, zScoreThreshold: options.zscore },
+          store
+        )
+      : monitorRelease(crashes, {
+          baselineRate: options.baseline ?? null,
+          windowHours: options.hours ?? 24,
+        })
+  logger.out(monitor.report + '\n')
+  if (monitor.incident) {
+    logger.warn('Crash-rate spike detected — review the incident and consider rollback.')
   }
 }

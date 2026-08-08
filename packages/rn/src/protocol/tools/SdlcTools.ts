@@ -33,6 +33,7 @@ import { deriveFromGitHistory, renderGitDerivation } from '../../sdlc/GitHistory
 import { runCommand } from '../../adapters/runCommand'
 import { buildFineTuningDataset, writeDatasetJsonl, renderDatasetSummary } from '../../training/datasetBuilder'
 import { monitorRelease, renderMonitorReport } from '../../sdlc/CrashMonitor'
+import { monitorReleaseAnomaly, renderAnomalyReport } from '../../sdlc/CrashAnomalyDetector'
 import { NativeModuleGenerator, parseNativeModuleSpec } from '../../sdlc/NativeModuleGenerator'
 import { parseTelemetryContent } from '../../knowledge/telemetry'
 import { parseMetroStats, analyzeBundleStats, checkBundleBudgets, checkStaticBudgets, type BudgetFinding } from '../../utils/bundleAnalyzer'
@@ -706,11 +707,12 @@ export class SdlcTools extends ToolRegistry {
     return content
   }
 
-  @mcpTool('check_crash_rate', 'Monitor the crash rate after a release: pass telemetry crash JSON (from `analyze_crash` / `vectalon telemetry`) plus a baseline rate per 1k sessions; flags a spike and auto-files an incident with a rollback suggestion when the rate exceeds the baseline × threshold', {
+  @mcpTool('check_crash_rate', 'Monitor the crash rate after a release: pass telemetry crash JSON (from `analyze_crash` / `vectalon telemetry`). When the crashes carry timestamps it runs z-score anomaly detection over the hourly time series (spike = baseline + n·stdDev, default 3σ) and auto-files an incident with a rollback suggestion; pass a `baselineRate` per 1k sessions for the classic ratio check (also used for untimestamped exports)', {
     type: 'object',
     properties: {
       crashes: { type: 'string' },
       baselineRate: { type: 'number' },
+      zScoreThreshold: { type: 'number' },
       windowHours: { type: 'number' },
       threshold: { type: 'number' },
       sessions: { type: 'number' },
@@ -729,7 +731,22 @@ export class SdlcTools extends ToolRegistry {
     if (crashes.length === 0) {
       return 'No crash events found — pass `crashes` with kind: "crash" (from `analyze_crash` / `vectalon telemetry`).'
     }
-    const monitor = monitorRelease(crashes as ParsedCrash[], {
+    const parsedCrashes = crashes as ParsedCrash[]
+    const hasTimestamps = parsedCrashes.some(c => typeof c.timestamp === 'number')
+
+    // Z-score anomaly detection when the exports carry timestamps (a time
+    // series can be built); the ratio baseline handles untimestamped exports.
+    if (hasTimestamps && args.baselineRate === undefined) {
+      const monitor = monitorReleaseAnomaly(parsedCrashes, {
+        windowHours: typeof args.windowHours === 'number' ? args.windowHours : undefined,
+        zScoreThreshold: typeof args.zScoreThreshold === 'number' ? args.zScoreThreshold : undefined,
+      })
+      const content = renderAnomalyReport(monitor.result, monitor.incident)
+      this.persistArtifact('operations', `Crash monitor: ${monitor.result.detected ? 'anomaly' : 'healthy'}`, content)
+      return content
+    }
+
+    const monitor = monitorRelease(parsedCrashes, {
       baselineRate: typeof args.baselineRate === 'number' ? args.baselineRate : null,
       windowHours: typeof args.windowHours === 'number' ? args.windowHours : undefined,
       threshold: typeof args.threshold === 'number' ? args.threshold : undefined,

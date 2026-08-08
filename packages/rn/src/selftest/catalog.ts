@@ -45,6 +45,14 @@ import { CodeReviewAnalyzer } from '../sdlc/CodeReviewAnalyzer'
 import { SWOTAnalyzer } from '../sdlc/SWOTAnalyzer'
 import { TradeoffAnalyzer } from '../sdlc/TradeoffAnalyzer'
 import { ThreatModeler } from '../sdlc/ThreatModeler'
+import {
+  bucketCrashSeries,
+  deriveAnomalyBaseline,
+  detectCrashAnomaly,
+  monitorReleaseAnomaly,
+  recordCrashBaseline,
+  getLatestCrashBaseline,
+} from '../sdlc/CrashAnomalyDetector'
 import { rules, runGuardrails, runPolicy, defaultPolicy } from '../guardrails'
 import { JsonArtifactStore } from '../knowledge/JsonArtifactStore'
 import { ArtifactStore } from '../knowledge/ArtifactStore'
@@ -92,6 +100,7 @@ import { generateGithubActionsWorkflow, generateEasWorkflow } from '../adapters/
 import { ProjectMemory } from '../memory/ProjectMemory'
 import { PatternLearner } from '../memory/PatternLearner'
 import { createAdapters } from '../adapters'
+import type { ParsedCrash } from '../knowledge/telemetry'
 import type { CheckResult, FeatureCheck, ModelProviderChoice } from './types'
 
 function ok(detail: string): CheckResult {
@@ -396,6 +405,54 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
       const rendered = new ThreatModeler().render(threats)
       if (!rendered.includes('Authentication')) return fail('render missing the feature')
       return ok(`${threats.length} threat(s) modeled`)
+    },
+  },
+  {
+    id: 'sdlc-crash-anomaly',
+    name: 'Crash-rate anomaly detection (z-score)',
+    category: 'sdlc',
+    description: 'Bucket timestamped crashes into a time series, derive a mean/stdDev baseline, flag a spike above baseline + 3σ with a rollback gate, and persist the baseline in the knowledge base.',
+    run(ctx) {
+      const HOUR = 3600_000
+      const base = Date.now() - 24 * HOUR
+      const mkCrash = (id: string, hour: number): ParsedCrash => ({
+        kind: 'crash',
+        id,
+        source: 'crashlytics',
+        release: '2.1.0',
+        timestamp: base + hour * HOUR,
+        frames: [],
+      })
+      // 10 steady buckets of 1 crash each, then a spike bucket of 12 crashes.
+      const steady = Array.from({ length: 10 }, (_, i) => mkCrash(`s${i}`, i))
+      const spike = Array.from({ length: 12 }, (_, i) => mkCrash(`sp${i}`, 10))
+
+      const series = bucketCrashSeries(steady, { bucketHours: 1 })
+      if (series.length !== 10) return fail(`expected 10 buckets, got ${series.length}`)
+      const baseline = deriveAnomalyBaseline(series, { minSamples: 5 })
+      if (!baseline) return fail('baseline not derived from steady history')
+      if (baseline.stdDev !== 0) return fail('steady buckets should have zero variance')
+
+      const healthy = detectCrashAnomaly(steady, { minSamples: 5 })
+      if (healthy.detected) return fail('steady series flagged as an anomaly')
+
+      const result = detectCrashAnomaly([...steady, ...spike], { minSamples: 5 })
+      if (!result.detected) return fail('spike was not detected')
+      if (result.action !== 'rollback') return fail(`expected rollback action, got ${result.action}`)
+      if (result.zScore === null || result.zScore < 3) return fail(`expected z >= 3, got ${result.zScore}`)
+
+      // Baseline persistence round-trip through the knowledge base.
+      const store = new ArtifactStore(ctx.sandbox.root, { engine: 'json' })
+      recordCrashBaseline(store, baseline)
+      const stored = getLatestCrashBaseline(store)
+      if (!stored) return fail('baseline did not persist')
+      if (Math.abs(stored.mean - baseline.mean) > 1e-9) return fail('persisted baseline mean mismatch')
+
+      const monitor = monitorReleaseAnomaly([...steady, ...spike], { minSamples: 5 })
+      if (!monitor.incident) return fail('spike did not auto-file an incident')
+      if (!monitor.report.includes('roll back the release')) return fail('report missing the rollback suggestion')
+
+      return ok(`10-bucket baseline (σ=${baseline.stdDev}), spike z=${result.zScore}σ → rollback gate + incident + KB baseline round-trip`)
     },
   },
 

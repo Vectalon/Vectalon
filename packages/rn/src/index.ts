@@ -253,6 +253,22 @@ export type { GitDerivation, GitDerivationOptions, GitDerivationStats, DerivedCo
 export { monitorRelease, analyzeCrashRate, renderMonitorReport } from './sdlc/CrashMonitor'
 export type { CrashMonitorOptions, CrashSpike, MonitorResult } from './sdlc/CrashMonitor'
 export {
+  bucketCrashSeries,
+  deriveAnomalyBaseline,
+  detectCrashAnomaly,
+  recordCrashBaseline,
+  getLatestCrashBaseline,
+  monitorReleaseAnomaly,
+  renderAnomalyReport,
+} from './sdlc/CrashAnomalyDetector'
+export type {
+  CrashRateSample,
+  CrashAnomalyBaseline,
+  CrashAnomalyOptions,
+  CrashAnomalyResult,
+  AnomalyMonitorResult,
+} from './sdlc/CrashAnomalyDetector'
+export {
   buildFineTuningDataset,
   writeDatasetJsonl,
   renderDatasetSummary,
