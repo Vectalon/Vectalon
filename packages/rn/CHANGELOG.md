@@ -5,6 +5,30 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.17] - 2026-08-08
+
+### Added
+
+- **Telemetry backend** (`apps/telemetry`) — a zero-runtime-dependency
+  TypeScript service that backs the client's diagnostics pipeline: `POST
+  /v1/errors`, `POST /v1/heartbeat`, and `POST /v1/support` (gzipped support
+  bundles forwarded to the support address with a delivery token), plus
+  `GET /v1/health`, recent-event list endpoints, and a self-contained health
+  dashboard. Storage auto-selects Upstash KV (Vercel) → JSON files → memory;
+  support email via Resend. Hardened against gzip bombs, oversized bodies,
+  and untrusted recipients. Deployable on Vercel or any Node server — point
+  the client at it with `RN_VECTALON_TELEMETRY_URL`.
+
+### Fixed
+
+- **VS Code Marketplace publish path** — both `publish.yml` and
+  `vsce-publish.yml` now invoke `scripts/publish-vsce.js` from its real path
+  (`packages/rn/scripts/`); the previous repo-root path silently failed
+  under `continue-on-error`, so the extension upload never ran. Marketplace
+  distribution is parked as a future priority (see the enhancement plan)
+  pending the `VSCE_PAT` secret and publisher registration — the extension
+  upload stays non-blocking.
+
 ## [0.1.16] - 2026-08-08
 
 ### Added — Diagnostics & error telemetry (P0: client visibility)
