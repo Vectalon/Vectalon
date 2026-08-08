@@ -101,6 +101,14 @@ async function connect(baseUrl, autoStart) {
     if (await (0, serverManager_1.isReachable)(probe)) {
         server = { client: probe, baseUrl, child: null, stop: () => undefined };
         onConnected();
+        // Deep health (P0-4): surface healthy | degraded | critical + the failing
+        // checks in the status-bar tooltip, best-effort. Guarded so a slow health
+        // response can never flip the status bar back to "connected" after the
+        // user has disconnected.
+        void probe.getHealth().then((health) => {
+            if (health && server?.client === probe)
+                updateStatus(true, '', health);
+        });
         return;
     }
     if (!autoStart) {
@@ -136,14 +144,22 @@ function onConnected() {
         }
     });
 }
-function updateStatus(connected, detail) {
+function updateStatus(connected, detail, health) {
     void vscode.commands.executeCommand('setContext', 'vectalon.connected', connected);
     if (!statusBar)
         return;
     statusBar.text = connected ? '$(plug) Vectalon' : '$(plug) Vectalon (offline)';
-    statusBar.tooltip = connected
+    let tooltip = connected
         ? `Connected to ${server?.baseUrl || 'http://localhost'}`
         : `Vectalon MCP server is ${detail || 'offline'}. Click to start it.`;
+    if (connected && health) {
+        tooltip += `\nHealth: ${health.status}`;
+        const failing = health.checks.filter(c => c.status !== 'ok');
+        for (const check of failing.slice(0, 4)) {
+            tooltip += `\n  ${check.status === 'fail' ? '✖' : '⚠'} ${check.name}: ${check.detail}`;
+        }
+    }
+    statusBar.tooltip = tooltip;
     statusBar.command = connected ? 'vectalon.projectContext' : 'vectalon.startServer';
 }
 function deactivate() {

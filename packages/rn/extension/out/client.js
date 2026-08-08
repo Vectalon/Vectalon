@@ -37,6 +37,22 @@ class McpHttpClient {
         }
         return data.tools;
     }
+    /**
+     * GET /health — the deep health report (healthy | degraded | critical +
+     * checks[]). Returns null when the server predates the endpoint (404).
+     */
+    async getHealth() {
+        try {
+            const data = await this.request('/health', { method: 'GET' });
+            if (!data || !Array.isArray(data.checks) || typeof data.status !== 'string') {
+                return null;
+            }
+            return data;
+        }
+        catch {
+            return null;
+        }
+    }
     /** POST /call — invoke a tool with the given arguments. */
     async callTool(name, args = {}) {
         const data = await this.request('/call', {

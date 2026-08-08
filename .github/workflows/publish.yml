@@ -92,7 +92,7 @@ jobs:
         continue-on-error: true
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: node ./scripts/publish-vsce.js "$(node -p "require('./packages/rn/package.json').version")"
+        run: node packages/rn/scripts/publish-vsce.js "$(node -p "require('./packages/rn/package.json').version")"
 
   tag-release:
     runs-on: ubuntu-latest

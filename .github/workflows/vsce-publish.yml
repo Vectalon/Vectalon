@@ -64,4 +64,4 @@ jobs:
       - name: Publish to the VS Code Marketplace
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: node ./scripts/publish-vsce.js "${{ steps.version.outputs.VERSION }}"
+        run: node packages/rn/scripts/publish-vsce.js "${{ steps.version.outputs.VERSION }}"
