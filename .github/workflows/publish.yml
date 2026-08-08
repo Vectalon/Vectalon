@@ -85,6 +85,15 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      # A marketplace hiccup (bad token, upload outage) must never fail the
+      # release *after* npm already published — the manual vsce-publish
+      # workflow is the retry path.
+      - name: Publish VS Code extension to the Marketplace
+        continue-on-error: true
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: node ./scripts/publish-vsce.js "$(node -p "require('./packages/rn/package.json').version")"
+
   tag-release:
     runs-on: ubuntu-latest
     needs: [publish-rn]

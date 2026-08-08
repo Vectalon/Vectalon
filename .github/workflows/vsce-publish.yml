@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to publish (defaults to the latest git tag, e.g. 1.2.3)'
+        description: 'Version to publish (defaults to the current packages/rn version, e.g. 0.1.12)'
         required: false
         type: string
 
@@ -17,22 +17,48 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check for core PAT
+        id: pat
+        env:
+          PAT: ${{ secrets.CORE_REPO_PAT }}
+        run: |
+          if [ -n "$PAT" ]; then
+            echo "has_pat=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_pat=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::CORE_REPO_PAT not set. Cannot build core from private repo."
+          fi
+
+      - name: Checkout core source (private)
+        if: steps.pat.outputs.has_pat == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: Vectalon/core
+          path: packages/core/src
+          token: ${{ secrets.CORE_REPO_PAT }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
+          cache: 'pnpm'
+          cache-dependency-path: 'pnpm-lock.yaml'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
-      - name: Resolve version (latest tag unless overridden)
+      # Repo tags are rn-vX-core-vY (not plain semver), so default to the
+      # current package version rather than parsing a tag.
+      - name: Resolve version (explicit input or the current package version)
         id: version
         run: |
           if [ -n "${{ github.event.inputs.version }}" ]; then
             echo "VERSION=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
           else
-            echo "VERSION=$(git describe --tags --abbrev=0 | sed 's/^v//')" >> "$GITHUB_OUTPUT"
+            echo "VERSION=$(node -p "require('./packages/rn/package.json').version")" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Publish to the VS Code Marketplace

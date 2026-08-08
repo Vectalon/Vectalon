@@ -323,7 +323,7 @@ The `vectalon` VS Code extension (in `extension/`) provides:
 - **Auto-start MCP server** on activation (configurable)
 - **Knowledge Base tree view** in the sidebar
 - **Guardrail checks on save** — surfaced in the Problems panel
-- **7 command-palette workflows**:
+- **9 command-palette workflows**:
   - Run Feature Workflow
   - Review Code (current file)
   - Check Guardrails (current file)
@@ -331,9 +331,16 @@ The `vectalon` VS Code extension (in `extension/`) provides:
   - Show Project Context
   - Search Knowledge Base
   - Refresh Knowledge View
+  - Start MCP Server
+  - Stop MCP Server
 - **Webview preview** for workflow results and code reviews
 
-Install from the VS Code marketplace (search "Vectalon").
+**Marketplace** — published as `vectalon-dev.vectalon` (search "Vectalon" in
+the Extensions view). Every `[publish-rn]` release packages a new `.vsix`
+(`scripts/publish-vsce.js`) and publishes it, so VS Code's auto-update keeps
+you current. Full marketplace metadata lives in `extension/package.json`
+(gallery banner, badges, icon) and the Marketplace changelog is
+`extension/CHANGELOG.md`.
 
 ---
 

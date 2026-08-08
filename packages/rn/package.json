@@ -1,6 +1,6 @@
 {
   "name": "@vectalon-dev/rn",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "The adaptive AI harness for React Native — project-aware SDLC intelligence for any agent",
   "license": "BSL-1.1",
   "author": "Bhishak Sanyal",
@@ -107,6 +107,7 @@
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
     "@vectalon-dev/core": "workspace:^",
+    "@vscode/vsce": "^3.9.2",
     "eslint": "^8.57.0",
     "jest": "^30.4.2",
     "semantic-release": "^25.0.8",

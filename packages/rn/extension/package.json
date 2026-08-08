@@ -10,6 +10,29 @@
     "type": "git",
     "url": "git+https://github.com/Vectalon/Vectalon.git"
   },
+  "homepage": "https://github.com/Vectalon/Vectalon",
+  "bugs": {
+    "url": "https://github.com/Vectalon/Vectalon/issues"
+  },
+  "galleryBanner": {
+    "color": "#1E1E2E",
+    "theme": "dark"
+  },
+  "badges": [
+    {
+      "url": "https://github.com/Vectalon/Vectalon/actions/workflows/ci.yml/badge.svg",
+      "href": "https://github.com/Vectalon/Vectalon/actions/workflows/ci.yml",
+      "description": "CI status"
+    },
+    {
+      "url": "https://github.com/Vectalon/Vectalon/actions/workflows/publish.yml/badge.svg",
+      "href": "https://github.com/Vectalon/Vectalon/actions/workflows/publish.yml",
+      "description": "Release pipeline"
+    }
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
   "engines": {
     "vscode": "1.95.0"
   },
@@ -110,6 +133,7 @@
     }
   },
   "scripts": {
+    "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -w -p ./",
     "lint": "eslint src --ext .ts",

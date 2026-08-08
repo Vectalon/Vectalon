@@ -63,16 +63,17 @@ code --install-extension vectalon-local.vsix
 - `npm run typecheck:ext` — typecheck the extension
 - `npm run lint:ext` — lint the extension
 - Unit tests for the pure modules live in `__tests__/extension/` and run with the root Jest suite.
-- `npx vsce package` — build a `.vsix` (requires the extension compiled via `npx tsc -p extension/`)
+- `npx vsce package` — build a `.vsix` (runs `vscode:prepublish`, so the extension is compiled first, then packages the files listed by `npx vsce ls`)
 - `node scripts/publish-vsce.js <version>` — compile + package + publish to the Marketplace (uses the `VSCE_PAT` token; skips the upload with a warning when it's unset)
-- Publishing runs automatically on every `semantic-release` via `@semantic-release/exec` in `.releaserc.json` — the release version is written into the `.vsix`, packaged, and uploaded. Marketplace `publisher` is `vectalon-dev`.
+- **Every `[publish-rn]` release publishes the extension** — the `publish.yml` workflow runs `scripts/publish-vsce.js` with the released version right after the npm publish, so the Marketplace always matches the npm release (and VS Code auto-update picks it up). The **Publish VS Code extension (manual)** workflow (`workflow_dispatch`) is the retry / publish-any-version path.
+- Marketplace metadata (`galleryBanner`, badges, icon, `extensionKind`) lives in `extension/package.json`; the Marketplace **Changelog** tab is fed by `extension/CHANGELOG.md`.
 
 ### One-time marketplace bootstrap
 
 Before the first publish can succeed:
 
 1. **Register the publisher** — `npx vsce create-publisher vectalon-dev` (or reuse an existing publisher you own) and accept the Marketplace agreement.
-2. **Create a Marketplace PAT** — a VS Code Marketplace personal access token (from `dev.azure.com` — *not* a GitHub token), stored as the **`VSCE_PAT`** GitHub secret on the `Release` workflow (and, optionally, the `vsce-publish` workflow).
-3. Trigger a release — or run the **Publish VS Code extension (manual)** workflow (`workflow_dispatch`) to publish a specific version, which also serves as the retry path if an automated upload ever fails after npm + GitHub already released.
+2. **Create a Marketplace PAT** — a VS Code Marketplace personal access token (from `dev.azure.com` — *not* a GitHub token), stored as the **`VSCE_PAT`** GitHub secret on the `publish.yml` workflow (and the `vsce-publish` workflow).
+3. Trigger a `[publish-rn]` release — or run the **Publish VS Code extension (manual)** workflow (`workflow_dispatch`) to publish a specific version, which also serves as the retry path if an automated upload ever fails.
 
-Note: the committed `extension/package.json` version is the baseline only — published `.vsix` files always carry the semantic-release version. To test a real upload locally: `export VSCE_PAT=… && node scripts/publish-vsce.js 0.1.0` (compiles, packages to `/tmp`, and uploads).
+Note: the committed `extension/package.json` version is the baseline only — published `.vsix` files always carry the release version. To test a real upload locally: `export VSCE_PAT=… && node scripts/publish-vsce.js 0.1.0` (compiles, packages to `/tmp`, and uploads).

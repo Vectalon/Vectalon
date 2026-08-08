@@ -5,6 +5,27 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.12] - 2026-08-08
+
+### Added — VS Code extension marketplace publish (M12)
+
+- **Marketplace metadata** (`extension/package.json`): `galleryBanner` (dark
+  `#1E1E2E`), CI + release badges, `homepage`, `bugs`, explicit
+  `extensionKind: ["workspace"]`, and a `vscode:prepublish` hook so a bare
+  `vsce package` always compiles fresh. `extension/CHANGELOG.md` feeds the
+  Marketplace **Changelog** tab.
+- **Release-flow publish** — every `[publish-rn]` release now publishes the
+  `.vsix` to the VS Code Marketplace right after the npm publish
+  (`scripts/publish-vsce.js` with the released version), so the README's
+  promised auto-publish finally runs. `@vscode/vsce` is a devDependency, so
+  packaging is deterministic in CI.
+- **CI packaging gate** (`pr.yml`) — PRs now `vsce package` the extension and
+  list the shipped files, so a broken icon / metadata / `.vscodeignore` fails
+  the PR, and a stale compiled `out/` trips the uncommitted-artifacts check.
+- **Manual workflow fixed** (`vsce-publish.yml`) — the manual publish / retry
+  workflow previously ran `npm ci` in a pnpm workspace and could not install;
+  it now uses the repo's pnpm install (with the private-core checkout).
+
 ## [0.1.11] - 2026-08-07
 
 ### Added — Metro-aware execution sandbox (I-4)

@@ -59,6 +59,13 @@ jobs:
       - name: Run tests
         run: pnpm turbo run test
 
+      - name: Verify the VS Code extension packages for the Marketplace
+        run: |
+          cd packages/rn/extension
+          npx vsce package --out /tmp/vectalon-check.vsix
+          echo "--- files shipped in the .vsix ---"
+          npx vsce ls
+
       - name: Check for uncommitted build artifacts
         run: |
           if [ -n "$(git status --porcelain)" ]; then
