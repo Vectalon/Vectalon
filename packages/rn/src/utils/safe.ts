@@ -16,6 +16,7 @@
  * failures that operators should see by default.
  */
 import { logger } from '../cli/logger'
+import { captureError } from '../diagnostics/errorReporter'
 
 export type Result<T, E = Error> = { ok: true; value: T } | { ok: false; error: E }
 
@@ -40,6 +41,10 @@ export function reportError(error: unknown, context: string, level: 'debug' | 'w
   safe(() => {
     if (level === 'warn') {
       logger.warn(message)
+      // Warn-level failures are genuinely exceptional — queue them for the
+      // error telemetry pipeline (opt-out, errors only; captureError never
+      // throws). Debug-level probe noise stays out of the queue.
+      safe(() => captureError(error, process.argv.slice(2)[0] || 'vectalon', context))
     } else {
       logger.debug(message)
     }

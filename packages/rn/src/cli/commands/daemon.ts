@@ -3,6 +3,8 @@ import { join, resolve } from 'path'
 import { logger } from '../logger'
 import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { startDaemon, stopDaemon, daemonStatus, runProbeCycle } from '../../daemon'
+import { startHeartbeat } from '../../diagnostics/heartbeat'
+import { resolveProjectModelProvider } from '../../projectManifest'
 
 export interface DaemonCommandOptions {
   port?: number
@@ -41,6 +43,10 @@ export async function daemonCommand(options: DaemonCommandOptions): Promise<void
       logger.info(
         `Daemon: running (pid ${status.pid}, port ${status.port}, started ${new Date(status.startedAt || 0).toISOString()}, health ${status.health})`
       )
+      for (const check of status.checks || []) {
+        const icon = check.status === 'ok' ? '✔' : check.status === 'warn' ? '⚠' : '✖'
+        logger.dim(`  ${icon} ${check.name}: ${check.detail}`)
+      }
     }
     return
   }
@@ -76,6 +82,13 @@ export async function daemonCommand(options: DaemonCommandOptions): Promise<void
     logger.info("Wire it into metro.config.js: reporter: require('./.vectalon/metro/vectalon-reporter.js') (or rerun with --wire-metro)")
     logger.info('Watching: Metro build events (bundle size + build errors) and Hermes JS-thread health')
     logger.info('Stop with: vectalon daemon --stop')
+    // Liveness heartbeat (every 5 min, opt-out). The daemon process lives
+    // until --stop/SIGTERM, so the unref'd interval dies with the process.
+    startHeartbeat({
+      kind: 'daemon',
+      root,
+      modelProvider: resolveProjectModelProvider(root),
+    })
   } catch (err) {
     logger.error(err instanceof Error ? err.message : String(err))
     process.exit(1)

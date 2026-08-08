@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import { McpHttpClient } from './client'
+import type { HealthReport } from './client'
 import { portFromUrl, spawnServer, isReachable, type ServerHandle } from './serverManager'
 import { createGuardrailRunner, isCheckableFile } from './guardrails'
 import { KnowledgeTreeProvider } from './knowledgeTree'
@@ -90,6 +91,13 @@ async function connect(baseUrl: string, autoStart: boolean): Promise<void> {
   if (await isReachable(probe)) {
     server = { client: probe, baseUrl, child: null, stop: () => undefined }
     onConnected()
+    // Deep health (P0-4): surface healthy | degraded | critical + the failing
+    // checks in the status-bar tooltip, best-effort. Guarded so a slow health
+    // response can never flip the status bar back to "connected" after the
+    // user has disconnected.
+    void probe.getHealth().then((health: HealthReport | null) => {
+      if (health && server?.client === probe) updateStatus(true, '', health)
+    })
     return
   }
   if (!autoStart) {
@@ -132,13 +140,21 @@ function onConnected(): void {
   })
 }
 
-function updateStatus(connected: boolean, detail: string): void {
+function updateStatus(connected: boolean, detail: string, health?: HealthReport | null): void {
   void vscode.commands.executeCommand('setContext', 'vectalon.connected', connected)
   if (!statusBar) return
   statusBar.text = connected ? '$(plug) Vectalon' : '$(plug) Vectalon (offline)'
-  statusBar.tooltip = connected
+  let tooltip = connected
     ? `Connected to ${server?.baseUrl || 'http://localhost'}`
     : `Vectalon MCP server is ${detail || 'offline'}. Click to start it.`
+  if (connected && health) {
+    tooltip += `\nHealth: ${health.status}`
+    const failing = health.checks.filter(c => c.status !== 'ok')
+    for (const check of failing.slice(0, 4)) {
+      tooltip += `\n  ${check.status === 'fail' ? '✖' : '⚠'} ${check.name}: ${check.detail}`
+    }
+  }
+  statusBar.tooltip = tooltip
   statusBar.command = connected ? 'vectalon.projectContext' : 'vectalon.startServer'
 }
 

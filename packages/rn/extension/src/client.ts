@@ -19,6 +19,21 @@ export interface ToolResult {
   isError?: boolean
 }
 
+/** One deep-health check from GET /health. */
+export interface HealthCheck {
+  name: string
+  status: 'ok' | 'warn' | 'fail'
+  detail: string
+}
+
+/** Structured /health response (P0-4). */
+export interface HealthReport {
+  status: 'healthy' | 'degraded' | 'critical'
+  checks: HealthCheck[]
+  timestamp?: number
+  version?: string
+}
+
 export interface McpClientOptions {
   /** fetch-compatible implementation (injected for tests). */
   fetch?: typeof fetch
@@ -56,6 +71,22 @@ export class McpHttpClient {
       throw new Error('Unexpected /tools response shape')
     }
     return data.tools as AgentTool[]
+  }
+
+  /**
+   * GET /health — the deep health report (healthy | degraded | critical +
+   * checks[]). Returns null when the server predates the endpoint (404).
+   */
+  async getHealth(): Promise<HealthReport | null> {
+    try {
+      const data = await this.request<HealthReport>('/health', { method: 'GET' })
+      if (!data || !Array.isArray(data.checks) || typeof data.status !== 'string') {
+        return null
+      }
+      return data
+    } catch {
+      return null
+    }
   }
 
   /** POST /call — invoke a tool with the given arguments. */

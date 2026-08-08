@@ -447,3 +447,6 @@ export type {
 
 export { safe, safeAsync, bestEffort, bestEffortAsync, ok, err, toError, reportError } from './utils/safe'
 export type { Result } from './utils/safe'
+
+export * from './diagnostics'
+

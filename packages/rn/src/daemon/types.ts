@@ -75,5 +75,7 @@ export interface DaemonStatus {
   pid?: number
   startedAt?: number
   health?: string
+  /** Deep checks from the daemon's GET /health when present. */
+  checks?: Array<{ name: string; status: string; detail: string }>
   probe?: ProbeResult
 }

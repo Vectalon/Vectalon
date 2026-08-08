@@ -126,6 +126,7 @@ export async function startDaemon(
       lastProbe,
       reporter: hasMetroReporter(root) ? metroReporterPath(root).replace(root, '.') : null,
     }),
+    healthChecks: () => daemonHealthChecks(root),
     log,
   })
   const port = await server.start(options.port ?? 0)
@@ -223,6 +224,27 @@ export function isDaemonRunning(root: string): boolean {
   return !!state && pidAlive(state.pid)
 }
 
+/** Deep checks for the daemon's GET /health: state file + writable store. */
+function daemonHealthChecks(root: string): Array<import('../diagnostics/types').HealthCheck> {
+  const checks: Array<import('../diagnostics/types').HealthCheck> = []
+  const state = readDaemonState(root)
+  checks.push(
+    state && pidAlive(state.pid)
+      ? { name: 'daemon-state', status: 'ok', detail: `daemon pid ${state.pid} alive on port ${state.port}` }
+      : { name: 'daemon-state', status: 'fail', detail: 'state file missing or pid not alive' }
+  )
+  const probePath = join(root, '.vectalon', '.health-probe')
+  try {
+    mkdirSync(join(root, '.vectalon'), { recursive: true })
+    writeFileSync(probePath, 'ok')
+    rmSync(probePath, { force: true })
+    checks.push({ name: 'artifact-store', status: 'ok', detail: 'knowledge base writable' })
+  } catch {
+    checks.push({ name: 'artifact-store', status: 'fail', detail: '.vectalon/ is not writable' })
+  }
+  return checks
+}
+
 /** Daemon status for `vectalon daemon --status`. */
 export async function daemonStatus(root: string): Promise<DaemonStatus> {
   const state = readDaemonState(root)
@@ -231,12 +253,14 @@ export async function daemonStatus(root: string): Promise<DaemonStatus> {
     return { running: false, port: state.port, pid: state.pid, startedAt: state.startedAt, health: 'stale' }
   }
   let health = 'unknown'
+  let checks: DaemonStatus['checks']
   try {
     const res = await fetch(`http://127.0.0.1:${state.port}/health`)
-    const body = (await res.json()) as { status?: string }
+    const body = (await res.json()) as { status?: string; checks?: DaemonStatus['checks'] }
     health = body.status || 'unknown'
+    checks = body.checks
   } catch (err) {
     health = 'unreachable'
   }
-  return { running: true, port: state.port, pid: state.pid, startedAt: state.startedAt, health }
+  return { running: true, port: state.port, pid: state.pid, startedAt: state.startedAt, health, checks }
 }

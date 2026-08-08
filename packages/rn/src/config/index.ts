@@ -17,6 +17,11 @@ function configDir(): string {
   return process.env.RN_VECTALON_CONFIG_DIR || join(homedir(), '.config', 'rn-vectalon')
 }
 
+/** Absolute path of the user config dir (used by diagnostics queue + bundles). */
+export function configDirPath(): string {
+  return configDir()
+}
+
 function configPath(): string {
   return join(configDir(), 'config.json')
 }

@@ -10,9 +10,11 @@
  */
 
 import { readFileSync } from 'fs'
+import { createServer } from 'http'
 import { join } from 'path'
 import pkg from '../../package.json'
 import { logger } from '../cli/logger'
+import { supportCommand } from '../cli/commands/support'
 import { initCommand } from '../cli/commands/init'
 import { serveCommand } from '../cli/commands/serve'
 import { doctorCommand } from '../cli/commands/doctor'
@@ -107,11 +109,58 @@ import { generateGithubActionsWorkflow, generateEasWorkflow } from '../adapters/
 import { ProjectMemory } from '../memory/ProjectMemory'
 import { PatternLearner } from '../memory/PatternLearner'
 import { createAdapters } from '../adapters'
+import {
+  captureError,
+  flushErrorQueue,
+  queuePathFor,
+  writeDiagnosticsBundle,
+  collectHealthReport,
+  aggregateHealth,
+  buildHeartbeatPayload,
+  sendHeartbeat,
+  buildSupportBundle,
+  uploadSupportBundle,
+  tokenForRoot,
+} from '../diagnostics'
 import type { ParsedCrash } from '../knowledge/telemetry'
 import type { CheckResult, FeatureCheck, ModelProviderChoice } from './types'
 
 function ok(detail: string): CheckResult {
   return { status: 'pass', detail }
+}
+
+/** Start a local HTTP server that captures the next POST body, then resolves. */
+function capturePostBody(): {
+  url: Promise<string>
+  body: Promise<Buffer>
+  close: () => void
+} {
+  const chunks: Buffer[] = []
+  let resolveBody!: (b: Buffer) => void
+  let resolveReady!: (port: number) => void
+  const body = new Promise<Buffer>(resolve => {
+    resolveBody = resolve
+  })
+  const ready = new Promise<number>(resolve => {
+    resolveReady = resolve
+  })
+  const server = createServer((req, res) => {
+    req.on('data', c => chunks.push(c as Buffer))
+    req.on('end', () => {
+      resolveBody(Buffer.concat(chunks))
+      res.writeHead(200, { 'Content-Type': 'application/json' })
+      res.end('{}')
+    })
+  })
+  server.listen(0, () => {
+    const address = server.address()
+    resolveReady(typeof address === 'object' && address ? address.port : 0)
+  })
+  return {
+    url: ready.then(port => `http://127.0.0.1:${port}`),
+    body,
+    close: () => server.close(),
+  }
 }
 
 function fail(detail: string): CheckResult {
@@ -199,6 +248,7 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
         ci: ciCommand,
         sandbox: sandboxCommand,
         render: renderCommand,
+        support: supportCommand,
       }
       const missing = Object.entries(actions)
         .filter(([, fn]) => typeof fn !== 'function')
@@ -1592,6 +1642,172 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
       if (missing.ok) return fail('missing entry rendered ok')
       if (!missing.loadError) return fail('missing entry produced no loadError')
       return ok(`guarded: ${missing.loadError}`)
+    },
+  },
+
+  // ---------------------------------------------------------------------------
+  // Diagnostics & error telemetry
+  // ---------------------------------------------------------------------------
+  {
+    id: 'diagnostics-error-queue',
+    name: 'Error telemetry pipeline (queue → flush)',
+    category: 'diagnostics',
+    description: 'captureError persists a structured report to the queue file; flushErrorQueue POSTs it to the endpoint and clears the queue on success (errors-only, opt-out).',
+    async run(ctx) {
+      const queuePath = join(ctx.sandbox.root, 'telemetry-queue.json')
+      const captured = captureError(new Error('selftest boom'), 'selftest', 'diagnostics check', {
+        queuePath,
+        enabled: true,
+        includeStack: true,
+        _now: 1_700_000_000_000,
+      })
+      if (!captured) return fail('captureError returned nothing')
+      if (captured.message !== 'selftest boom') return fail('report message mismatch')
+      if (!captured.command || !captured.version || !captured.os) return fail('report missing command/version/os fields')
+      if (!ctx.sandbox.exists('telemetry-queue.json')) return fail('queue file was not written')
+
+      const server = await capturePostBody()
+      const url = await server.url
+      const flushed = await flushErrorQueue({
+        queuePath,
+        enabled: true,
+        endpoint: `${url}/v1/errors`,
+      })
+      if (flushed !== 1) return fail(`expected 1 flushed event, got ${flushed}`)
+      const body = JSON.parse((await server.body).toString('utf-8')) as { events: Array<{ message: string }> }
+      server.close()
+      if (!Array.isArray(body.events) || body.events[0].message !== 'selftest boom') return fail('uploaded body does not carry the event')
+      if (ctx.sandbox.exists('telemetry-queue.json')) return fail('queue was not cleared after a successful flush')
+      return ok('capture → queue file → POST → queue cleared (1 event, errors-only)')
+    },
+  },
+  {
+    id: 'diagnostics-bundle',
+    name: '--diagnostics bundle',
+    category: 'diagnostics',
+    description: 'writeDiagnosticsBundle emits .vectalon/diagnostics-bundle.json with environment, RN/Expo versions, model provider, log tail, and .vectalon state.',
+    run(ctx) {
+      ctx.sandbox.json('package.json', {
+        name: 'SelftestApp',
+        version: '1.0.0',
+        dependencies: { react: '18.2.0', 'react-native': '0.72.0', expo: '49.0.0' },
+      })
+      ctx.sandbox.json('.vectalon/rn-vectalon.json', {
+        version: '0.1.0',
+        projectName: 'SelftestApp',
+        rnVersion: '0.72.0',
+        initializedAt: Date.now(),
+        modelProvider: 'openai',
+      })
+      const path = writeDiagnosticsBundle({ command: 'selftest', root: ctx.sandbox.root })
+      if (!ctx.sandbox.exists('.vectalon/diagnostics-bundle.json')) return fail('bundle file not written')
+      const bundle = JSON.parse(readFileSync(path, 'utf-8')) as {
+        command: string
+        environment: { nodeVersion: string }
+        project: { rnVersion?: string; expoVersion?: string; modelProvider?: string; projectType: string }
+        logLines: string[]
+        vectalonState: unknown[]
+      }
+      if (bundle.command !== 'selftest') return fail('bundle command mismatch')
+      if (!bundle.environment.nodeVersion) return fail('bundle missing node version')
+      if (bundle.project.rnVersion !== '0.72.0' || bundle.project.expoVersion !== '49.0.0') return fail('bundle missing RN/Expo versions')
+      if (bundle.project.modelProvider !== 'openai') return fail('bundle missing model provider')
+      if (bundle.project.projectType !== 'expo') return fail('project type detection failed')
+      if (!Array.isArray(bundle.logLines) || bundle.logLines.length === 0) return fail('bundle missing the log tail')
+      if (!Array.isArray(bundle.vectalonState)) return fail('bundle missing .vectalon state')
+      ctx.sandbox.recordWrite('.vectalon/diagnostics-bundle.json')
+      return ok(`bundle written: ${bundle.logLines.length} log lines, rn ${bundle.project.rnVersion}, provider ${bundle.project.modelProvider}`)
+    },
+  },
+  {
+    id: 'diagnostics-health',
+    name: 'Deep /health checks',
+    category: 'diagnostics',
+    description: 'collectHealthReport returns healthy | degraded | critical with checks[] for config, artifact store, and model provider; aggregation is deterministic.',
+    async run(ctx) {
+      ctx.sandbox.json('.vectalon/rn-vectalon.json', {
+        version: '0.1.0',
+        projectName: 'SelftestApp',
+        rnVersion: '0.72.0',
+        initializedAt: Date.now(),
+        modelProvider: 'local',
+      })
+      const report = await collectHealthReport({ root: ctx.sandbox.root })
+      if (!['healthy', 'degraded', 'critical'].includes(report.status)) return fail(`unexpected status ${report.status}`)
+      const names = report.checks.map(c => c.name)
+      for (const required of ['project-config', 'artifact-store', 'model-provider']) {
+        if (!names.includes(required)) return fail(`missing check ${required}`)
+      }
+      if (aggregateHealth([{ name: 'a', status: 'ok', detail: '' }]) !== 'healthy') return fail('all-ok must aggregate to healthy')
+      if (aggregateHealth([{ name: 'a', status: 'ok', detail: '' }, { name: 'b', status: 'warn', detail: '' }]) !== 'degraded') return fail('a warn must aggregate to degraded')
+      if (aggregateHealth([{ name: 'a', status: 'warn', detail: '' }, { name: 'b', status: 'fail', detail: '' }]) !== 'critical') return fail('a fail must aggregate to critical')
+      const failing = report.checks.filter(c => c.status === 'fail')
+      if (report.status === 'critical' && failing.length === 0) return fail('critical status without any failing check')
+      return ok(`status=${report.status} · ${report.checks.length} checks (${names.join(', ')})`)
+    },
+  },
+  {
+    id: 'diagnostics-heartbeat',
+    name: 'Liveness heartbeat',
+    category: 'diagnostics',
+    description: 'buildHeartbeatPayload produces a valid liveness payload; sendHeartbeat POSTs it to the endpoint (not usage tracking).',
+    async run(ctx) {
+      const payload = buildHeartbeatPayload({ kind: 'serve', root: ctx.sandbox.root, modelProvider: 'openai (gpt-4o)' })
+      if (payload.kind !== 'serve') return fail('payload kind mismatch')
+      if (!payload.version || !payload.pid || !payload.os) return fail('payload missing version/pid/os')
+      if (payload.activeModelProvider !== 'openai (gpt-4o)') return fail('payload missing the active model provider')
+      const server = await capturePostBody()
+      const url = await server.url
+      const sent = await sendHeartbeat({
+        kind: 'daemon',
+        root: ctx.sandbox.root,
+        modelProvider: 'local',
+        fetchFn: globalThis.fetch,
+        endpoint: `${url}/v1/heartbeat`,
+        enabled: true,
+      })
+      server.close()
+      if (!sent) return fail('heartbeat POST was not accepted')
+      const body = JSON.parse((await server.body).toString('utf-8')) as { kind: string; activeModelProvider: string }
+      if (body.kind !== 'daemon') return fail('heartbeat body kind mismatch')
+      return ok(`payload valid (${payload.kind}), POST accepted (${body.activeModelProvider})`)
+    },
+  },
+  {
+    id: 'diagnostics-support',
+    name: 'Support bundle upload (sanitized)',
+    category: 'diagnostics',
+    description: 'buildSupportBundle redacts secrets from package.json and carries the error queue + token; uploadSupportBundle POSTs the gzipped bundle and returns the token.',
+    async run(ctx) {
+      ctx.sandbox.json('package.json', {
+        name: 'app',
+        version: '1.0.0',
+        dependencies: { 'react-native': '0.72.0' },
+        scripts: { start: 'expo start' },
+        apiKey: 'sk-test-1234567890abcdef',
+        nested: { clientSecret: 'secret-value-123' },
+      })
+      // Capture an error into the project queue so the bundle carries it.
+      const queuePath = queuePathFor(ctx.sandbox.root)
+      captureError(new Error('support queue boom'), 'selftest', 'support check', { queuePath, enabled: true })
+      const token = tokenForRoot(ctx.sandbox.root)
+      const bundle = buildSupportBundle({ root: ctx.sandbox.root, token })
+      const pkg = bundle.packageJson as Record<string, unknown>
+      if (pkg.apiKey !== '[REDACTED]') return fail('top-level apiKey was not redacted')
+      const nested = pkg.nested as Record<string, unknown>
+      if (nested.clientSecret !== '[REDACTED]') return fail('nested secret was not redacted')
+      if (bundle.errorQueue.length !== 1) return fail(`expected 1 queued error, got ${bundle.errorQueue.length}`)
+      if (!bundle.token.startsWith('RN-')) return fail(`unexpected token ${bundle.token}`)
+      if (bundle.recipient !== 'neofaceless22@gmail.com') return fail('recipient mismatch')
+
+      const server = await capturePostBody()
+      const url = await server.url
+      const uploaded = await uploadSupportBundle(bundle, { endpoint: `${url}/v1/support` })
+      server.close()
+      if (uploaded !== token) return fail('upload did not return the token')
+      const raw = (await server.body) as Buffer
+      if (raw[0] !== 0x1f || raw[1] !== 0x8b) return fail('upload body is not gzipped')
+      return ok(`bundle ${raw.length} bytes gzipped, token ${token}, secrets redacted, error queue attached`)
     },
   },
 ]

@@ -5,6 +5,47 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.16] - 2026-08-08
+
+### Added — Diagnostics & error telemetry (P0: client visibility)
+
+- **Structured error telemetry pipeline** (`diagnostics/errorReporter.ts`) —
+  replaces anonymous usage tracking with errors-only, opt-out reporting:
+  crash dumps, stack traces, and CLI command context are queued to a local
+  JSON file (deduped by message, capped at 50) and POSTed to the Vectalon
+  error endpoint. Disabled via `telemetry.enabled=false` /
+  `telemetry.errors=false` in the user config, and always off in dev/test
+  mode. `reportError(…, 'warn')` and uncaught exceptions/unhandled rejections
+  feed it automatically.
+- **`--diagnostics` flag on every command** — `vectalon <command>
+  --diagnostics` writes `.vectalon/diagnostics-bundle.json` with Node/OS
+  versions, RN/Expo versions, model provider, the full stack trace (on
+  failure), the last 5000 log lines, and a sanitized listing of `.vectalon/`.
+  The CLI logger now keeps an in-memory ring buffer of the last 5000 lines.
+- **Liveness heartbeats** — `vectalon serve` and `vectalon daemon` POST a
+  lightweight ping (version, uptime, active model provider, OS, project
+  type) every 5 minutes (`diagnostics/heartbeat.ts`). Not usage tracking —
+  broken releases become visible within one interval.
+- **Deep `/health` endpoint** — the MCP HTTP server's `GET /health` now
+  returns `healthy | degraded | critical` + `checks[]` covering the model
+  provider (key present + reachable), artifact store writability, sub-MCP
+  client responsiveness, and `vectalon init` config validity
+  (`diagnostics/health.ts`). The daemon's `/health` carries checks too, and
+  `vectalon daemon --status` prints them.
+- **`vectalon support --upload`** — collects a sanitized support bundle
+  (logs, pending error queue, last crash report, sanitized package.json,
+  `.vectalon` state), stamps it with a support token (`RN-XXXXXXXX`), and
+  uploads it gzipped to the support pipeline, which routes it to the support
+  address. Secrets (API keys, tokens, credentials) are redacted recursively
+  before upload; the bundle is also saved to
+  `.vectalon/support-bundle.json`.
+- **VS Code extension** — the status-bar tooltip now surfaces the server's
+  deep health (healthy / degraded / critical + failing checks) via a new
+  `GET /health` client method.
+- **Selftest** — new `diagnostics` category with 5 checks (error queue
+  round-trip, bundle emission, deep health aggregation, heartbeat POST,
+  sanitized support upload), all verified against a local HTTP server.
+
 ## [0.1.15] - 2026-08-08
 
 ### Added — Knowledge provenance & confidence scoring (III-3)

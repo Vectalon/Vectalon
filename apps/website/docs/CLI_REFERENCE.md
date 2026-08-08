@@ -436,7 +436,7 @@ command to enable real inference (or **fails** under `--require-model`).
 | Option | Description |
 |---|---|
 | `[directory]` | Project root (default: cwd) — only used for the report output dir |
-| `--category <cat>` | Run only one category (`cli`, `sdlc`, `guardrails`, `knowledge`, `harness`, `model`, `mcp`, `workflows`, `ecosystem`, `bench`, `adapters`, `memory`, `upgrade`, `perf`, `sandbox`, `render`) |
+| `--category <cat>` | Run only one category (`cli`, `sdlc`, `guardrails`, `knowledge`, `harness`, `model`, `mcp`, `workflows`, `ecosystem`, `bench`, `adapters`, `memory`, `upgrade`, `perf`, `sandbox`, `render`, `diagnostics`) |
 | `--only <id>` | Run a single check by id |
 | `--model <provider>` | Force the model provider for the real-inference check: `local` \| `wasm` \| `openai` \| `anthropic` \| `azure-openai` \| `groq` \| `ollama` \| `vllm` (default: the project's configured provider, or `local`) |
 | `--require-model` | Fail (instead of warn) when the inference check cannot run a real model (no downloaded GGUF / WASM weights, no API key) — for CI runs that guarantee a model |
@@ -1229,6 +1229,36 @@ npx vectalon pull <preset>     # download a specific preset
 
 ---
 
+## `support`
+
+Collect and upload a **sanitized support bundle** so bug reports arrive
+structured instead of as log dumps: the last log lines, the pending error
+queue, the last crash report, a sanitized `package.json`, and a listing of
+`.vectalon/`. Secrets (API keys, tokens, credentials) are redacted
+recursively before upload; the bundle is stamped with a support token
+(`RN-XXXXXXXX`) and also saved locally to `.vectalon/support-bundle.json`.
+
+```bash
+# Print usage / what the upload includes
+npx vectalon support
+
+# Upload the bundle (offline → bundle is saved locally, retry later)
+npx vectalon support --upload
+```
+
+| Option | Description |
+|---|---|
+| `--upload` | Upload the sanitized bundle and print the support token |
+| `--out <path>` | Write the bundle to a custom path (default `.vectalon/support-bundle.json`) |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Bundle collected (upload success or offline fallback) |
+
+---
+
 ## `models`
 
 List available and downloaded local models, including the zero-config WASM
@@ -1243,3 +1273,28 @@ npx vectalon models
 | Code | When |
 |---|---|
 | 0 | Always (list printed) |
+
+---
+
+## Global `--diagnostics` flag
+
+`--diagnostics` works on **every** command (before or after the subcommand):
+
+```bash
+npx vectalon init --diagnostics
+npx vectalon serve --protocol http --diagnostics
+```
+
+It captures Node/OS versions, RN/Expo versions, the model provider used, the
+full stack trace (when the command failed), the **last 5000 log lines**, and a
+sanitized listing of `.vectalon/`, then writes
+`.vectalon/diagnostics-bundle.json`. Paste that file into a support ticket or
+auto-upload it with `vectalon support --upload`.
+
+Error telemetry (errors-only, opt-out) and the 5-minute liveness heartbeats
+from `serve`/`daemon` are disabled in dev mode (`--dev`) and test runs, and
+can be turned off with `telemetry.enabled=false` or `telemetry.errors=false`
+in `~/.config/rn-vectalon/config.json`. The deep `GET /health` endpoint on
+`vectalon serve --protocol http` returns `healthy | degraded | critical`
+plus `checks[]` (model provider, artifact store, sub-MCP clients, init
+config).

@@ -19,6 +19,8 @@ import { printSyncStatus } from './sync'
 import { existsSync, readFileSync } from 'fs'
 import { join, basename, resolve } from 'path'
 import { logger } from '../logger'
+import { startHeartbeat } from '../../diagnostics/heartbeat'
+import type { HeartbeatHandle } from '../../diagnostics/heartbeat'
 
 interface TeamConfig {
   team?: string
@@ -95,13 +97,18 @@ export async function serveCommand(options: {
   const server = new MCPServer(engine, modelRouter, protocol as 'mcp' | 'stdio' | 'sse' | 'http', artifactStore, teamStore, subMcpClients, {
     // `vectalon serve` runs locally — device tools execute real commands.
     deviceControlLive: true,
+    root,
   })
 
-  // Kill spawned sub-MCP servers (and their npx grandchildren) on shutdown.
+  // Kill spawned sub-MCP servers (and their npx grandchildren) on shutdown,
+  // and stop the liveness heartbeat (its interval is unref'd, but a clean
+  // stop avoids one final spurious ping during teardown).
+  let heartbeat: HeartbeatHandle | null = null
   const shutdown = (): void => {
+    heartbeat?.stop()
     for (const client of subMcpClients) client.close()
   }
-  if (subMcpClients.length > 0) {
+  if (subMcpClients.length > 0 || process.env.NODE_ENV !== 'test') {
     process.on('exit', shutdown)
     process.on('SIGINT', () => {
       shutdown()
@@ -126,6 +133,13 @@ export async function serveCommand(options: {
   if (typeof boundPort === 'number') {
     logger.info(`HTTP server listening on http://localhost:${boundPort}`)
   }
+
+  // Liveness heartbeat (every 5 min, opt-out via telemetry.enabled=false).
+  heartbeat = startHeartbeat({
+    kind: 'serve',
+    root,
+    modelProvider: activeModel,
+  })
 }
 
 const BACKGROUND_REFRESH_INTERVAL_MS = 60 * 60 * 1000

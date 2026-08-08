@@ -125,6 +125,11 @@ export class ModelRouter {
     return this.zeroConfigEnabled()
   }
 
+  /** The provider id this router is currently initialized with (health checks). */
+  getProviderId(): ModelProviderType {
+    return this.provider
+  }
+
   /**
    * Human-readable label of the model that will actually generate code: the
    * WASM model when the zero-config tier is active for 'local', the GGUF

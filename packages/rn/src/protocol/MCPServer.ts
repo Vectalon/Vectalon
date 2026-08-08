@@ -5,6 +5,8 @@ import { ModelRouter } from '../model/ModelRouter'
 import { ArtifactStore } from '../knowledge/ArtifactStore'
 import { TeamStore } from '../knowledge/TeamStore'
 import { reportError } from '../utils/safe'
+import { collectHealthReport } from '../diagnostics/health'
+import pkg from '../../package.json'
 import {
   CoreTools,
   SdlcTools,
@@ -27,6 +29,8 @@ export interface MCPServerOptions {
    * describe the command they would run (safe, deterministic, CI-friendly).
    */
   deviceControlLive?: boolean
+  /** Project root used by the deep /health checks (default: cwd). */
+  root?: string
 }
 
 /**
@@ -46,6 +50,7 @@ export class MCPServer {
   private teamStore: TeamStore | null
   private subMcpClients: McpClientHandle[]
   private deviceControlLive: boolean
+  private root: string
   private httpServer: import('http').Server | null = null
 
   constructor(
@@ -64,6 +69,7 @@ export class MCPServer {
     this.teamStore = teamStore
     this.subMcpClients = subMcpClients
     this.deviceControlLive = options.deviceControlLive === true
+    this.root = options.root || process.cwd()
 
     const ctx: ToolContext = {
       engine: this.engine,
@@ -269,6 +275,22 @@ export class MCPServer {
         return
       }
 
+      // Deep health: model provider reachable, artifact store writable,
+      // sub-MCP clients responsive, `vectalon init` config valid. The VS Code
+      // extension surfaces this in the status-bar tooltip. 200 regardless of
+      // status — the body carries healthy | degraded | critical + checks[].
+      if (method === 'GET' && path === '/health') {
+        const report = await collectHealthReport({
+          root: this.root,
+          version: pkg.version,
+          modelRouter: this.modelRouter,
+          artifactStore: this.artifactStore,
+          subMcpClients: this.subMcpClients,
+        })
+        sendJson(200, report)
+        return
+      }
+
       // Tool discovery.
       if (method === 'GET' && (path === '/' || path === '/tools')) {
         sendJson(200, { tools: this.getToolList(), status: 'running' })
@@ -313,7 +335,7 @@ export class MCPServer {
         return
       }
 
-      if (path === '/call' || path === '/invoke' || path === '/' || path === '/tools') {
+      if (path === '/call' || path === '/invoke' || path === '/' || path === '/tools' || path === '/health') {
         sendJson(405, { error: `Method ${method} not allowed on ${path}` })
         return
       }

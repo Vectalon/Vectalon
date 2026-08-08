@@ -69,12 +69,14 @@ Run `npx vectalon <command> --help` for detailed options.
 | `policy [dir]` | Manage project-specific guardrail policy | `--init`, `--check <file>` |
 | `pull [preset]` | Download local model preset (default Qwen2.5-Coder-1.5b) | `[preset-id]` |
 | `models` | List available and downloaded local models | — |
+| `support [dir]` | Collect + upload a sanitized support bundle (logs, error queue, crash report, package.json, `.vectalon` state) with a support token | `--upload`, `--out <path>` |
 
 ### Global flags
 
 | Flag | Description |
 |------|-------------|
 | `--dev` | **Dev mode** — bypass all tier/license checks. All features unlock. |
+| `--diagnostics` | Write `.vectalon/diagnostics-bundle.json` (environment, last 5000 log lines, model provider, `.vectalon` state) — works on **every** command |
 | `-h, --help` | Display help for command |
 | `-V, --version` | Output the version number |
 
@@ -443,6 +445,25 @@ Enable items with `vectalon ecosystem --enable <id>`.
 - Hermes JS-thread health
 - Bundle deltas (what changed, impact)
 - Auto-generates reporter output for CI
+
+---
+
+## Diagnostics & Error Telemetry
+
+Production visibility without usage tracking — **errors only, opt-out**.
+
+| Capability | How it works |
+|------------|--------------|
+| **Error pipeline** | Structured crash dumps (stack, CLI command, version, OS) queue to `<config>/telemetry-queue.json` and POST to the Vectalon error endpoint. `reportError(…, 'warn')`, uncaught exceptions, and unhandled rejections feed it. |
+| **`--diagnostics`** | `vectalon <command> --diagnostics` writes `.vectalon/diagnostics-bundle.json` — Node/OS, RN/Expo versions, model provider, last 5000 log lines, sanitized `.vectalon` listing, full stack on failure. Paste it into a support ticket. |
+| **Heartbeats** | `serve` and `daemon` POST a liveness ping every 5 min (version, uptime, model provider, OS, project type). A broken release is visible within one interval. |
+| **Deep `/health`** | `vectalon serve --protocol http` → `GET /health` returns `healthy \| degraded \| critical` + `checks[]`: model provider reachable, artifact store writable, sub-MCP responsive, init config valid. The VS Code status bar tooltip shows it. |
+| **`support --upload`** | Sanitized bundle (logs, error queue, crash report, package.json, `.vectalon` state) → gzipped upload with a `RN-XXXXXXXX` token; secrets redacted recursively. |
+
+Privacy: all telemetry is **opt-out** — set `telemetry.enabled=false` (or
+`telemetry.errors=false`) in `~/.config/rn-vectalon/config.json`. Dev mode and
+`NODE_ENV=test` never send anything. Override the endpoint with
+`RN_VECTALON_TELEMETRY_URL`.
 
 ---
 

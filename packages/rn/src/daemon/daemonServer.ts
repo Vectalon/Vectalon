@@ -1,4 +1,5 @@
 import { reportError } from '../utils/safe'
+import type { HealthCheck } from '../diagnostics/types'
 import type { IngestResult, MetroEvent } from './types'
 
 export interface DaemonServerOptions {
@@ -6,6 +7,8 @@ export interface DaemonServerOptions {
   handleMetroEvent: (event: MetroEvent) => IngestResult
   /** Extra fields for GET /status. */
   getStatus: () => Record<string, unknown>
+  /** Deep checks attached to GET /health (state file, writable store, …). */
+  healthChecks?: () => HealthCheck[]
   log?: { info: (m: string) => void; warn: (m: string) => void; debug: (m: string) => void }
 }
 
@@ -77,7 +80,13 @@ export class DaemonServer {
       }
 
       if (method === 'GET' && path === '/health') {
-        sendJson(200, { status: 'ok', pid: process.pid })
+        // Liveness stays `status: 'ok'`; the optional deep checks ride along
+        // so `vectalon daemon --status` can show what is actually healthy.
+        sendJson(200, {
+          status: 'ok',
+          pid: process.pid,
+          checks: this.options.healthChecks ? this.options.healthChecks() : [],
+        })
         return
       }
 

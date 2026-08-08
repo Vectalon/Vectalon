@@ -26,6 +26,7 @@ export type SelfTestCategory =
   | 'perf'
   | 'sandbox'
   | 'render'
+  | 'diagnostics'
 
 export const SELF_TEST_CATEGORIES: SelfTestCategory[] = [
   'cli',
@@ -44,6 +45,7 @@ export const SELF_TEST_CATEGORIES: SelfTestCategory[] = [
   'perf',
   'sandbox',
   'render',
+  'diagnostics',
 ]
 
 export type CheckStatus = 'pass' | 'fail' | 'warn'

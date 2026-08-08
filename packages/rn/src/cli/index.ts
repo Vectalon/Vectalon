@@ -31,9 +31,11 @@ import { leaderboardCommand } from './commands/leaderboard'
 import { impactCommand } from './commands/impact'
 import { doctorCommand } from './commands/doctor'
 import { selftestCommand } from './commands/selftest'
+import { supportCommand } from './commands/support'
 import { logger } from './logger'
 import pkg from '../../package.json'
 import { dynamicImport } from '../utils/dynamicImport'
+import { captureError, flushErrorQueue, writeDiagnosticsBundle } from '../diagnostics'
 
 export function createProgram(): Command {
   const program = new Command()
@@ -43,6 +45,7 @@ export function createProgram(): Command {
     .description('The adaptive AI harness for React Native')
     .version(pkg.version)
     .option('--dev', 'Enable dev mode — bypass all tier/license checks')
+    .option('--diagnostics', 'Write .vectalon/diagnostics-bundle.json (environment, last 5000 log lines, project state) — works on every command')
     .hook('preAction', (thisCommand) => {
       if (thisCommand.opts().dev) {
         process.env.VECTALON_DEV_MODE = '1'
@@ -257,6 +260,13 @@ export function createProgram(): Command {
     .action(doctorCommand)
 
   program
+    .command('support [directory]')
+    .description('Collect a structured support bundle — sanitized logs, error queue, crash report, package.json, and .vectalon state — and upload it to the Vectalon support pipeline (you get a token to paste into a ticket)')
+    .option('--upload', 'Upload the sanitized bundle and print the support token')
+    .option('--out <path>', 'Write the bundle to a custom path (default .vectalon/support-bundle.json)')
+    .action(supportCommand)
+
+  program
     .command('bench')
     .description('Run the RN coding tests benchmark (deterministic baseline or real-model leaderboard)')
     .option('--model <provider>', 'Model provider (local|wasm|openai|anthropic|azure-openai|ollama|vllm|groq) — run the real-model leaderboard pass')
@@ -284,7 +294,7 @@ export function createProgram(): Command {
   program
     .command('selftest [directory]')
     .description('Test every feature of the harness in a sandbox — visible report + full activity trace of every step, command, and file modification')
-    .option('--category <cat>', 'Run only one category (cli, sdlc, guardrails, knowledge, harness, model, mcp, workflows, ecosystem, bench, adapters, memory, upgrade, perf, sandbox)')
+    .option('--category <cat>', 'Run only one category (cli, sdlc, guardrails, knowledge, harness, model, mcp, workflows, ecosystem, bench, adapters, memory, upgrade, perf, sandbox, render, diagnostics)')
     .option('--only <id>', 'Run a single check by id')
     .option('--model <provider>', 'Force the model provider for the real-inference check (local|wasm|openai|anthropic|azure-openai|ollama|vllm|groq)')
     .option('--require-model', 'Fail (instead of warn) when no real model is available for the inference check')
@@ -309,21 +319,101 @@ export function createProgram(): Command {
   return program
 }
 
-export function runCLI(): void {
+export async function runCLI(): Promise<void> {
+  installGlobalErrorHandlers()
   const program = createProgram()
   const argv = process.argv
+  const diagnostics = takeDiagnosticsFlag(argv)
+  if (diagnostics) {
+    // Tracked so the process-exit handler can always emit a bundle (even when
+    // a command calls process.exit(1) directly, e.g. doctor in a broken
+    // project); the catch path attaches the full stack trace.
+    pendingDiagnostics = { command: commandName(argv) }
+    process.on('exit', () => {
+      if (pendingDiagnostics) writeDiagnosticsBundle(pendingDiagnostics)
+    })
+  }
   const supportsClack = majorNode() > 20 || (majorNode() === 20 && (minorNode() > 12 || (minorNode() === 12 && patchNode() >= 0)))
   const interactiveEligible = argv.length <= 2 && process.stdin.isTTY && supportsClack
 
   if (interactiveEligible) {
-    runInteractive().catch((err: Error) => {
-      logger.error(err.message)
+    try {
+      await runInteractive()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      logger.error(message)
+      if (diagnostics) {
+        writeDiagnosticsBundle({ command: 'interactive', errorStack: err instanceof Error ? err.stack : undefined })
+      }
+      await flushErrorQueue()
       process.exit(1)
-    })
-  } else {
-    program.parse(argv)
+    }
+    return
+  }
+
+  // Eager write so `--diagnostics` is visible immediately; the exit handler
+  // refreshes it with the final state (log tail included).
+  if (diagnostics) {
+    const path = writeDiagnosticsBundle({ command: commandName(argv) })
+    logger.info(`Diagnostics bundle written to ${path}`)
+  }
+
+  try {
+    await program.parseAsync(argv)
+    // Drain any warn-level errors captured during the run (best-effort).
+    await flushErrorQueue()
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    logger.error(message)
+    if (diagnostics && pendingDiagnostics) {
+      pendingDiagnostics.errorStack = err instanceof Error ? err.stack : undefined
+      writeDiagnosticsBundle(pendingDiagnostics)
+    }
+    // Errors-only, opt-out telemetry: queue + best-effort flush, then exit 1.
+    await flushErrorQueue()
+    process.exit(1)
   }
 }
+
+/** The subcommand name (e.g. "init") for diagnostics context. */
+function commandName(argv: string[]): string {
+  return argv[2] || 'vectalon'
+}
+
+/**
+ * `--diagnostics` works on EVERY command: strip it from argv (so commander
+ * accepts it on any subcommand) and let runCLI write the bundle afterwards.
+ */
+function takeDiagnosticsFlag(argv: string[]): boolean {
+  const idx = argv.indexOf('--diagnostics')
+  if (idx === -1) return false
+  argv.splice(idx, 1)
+  return true
+}
+
+/**
+ * Global crash capture: uncaught exceptions and unhandled rejections are
+ * queued for the error telemetry pipeline (opt-out, errors only) with CLI
+ * command context. Never installed in tests.
+ */
+function installGlobalErrorHandlers(): void {
+  if (process.env.NODE_ENV === 'test') return
+  const cmd = (): string => process.argv.slice(2)[0] || 'vectalon'
+  process.on('uncaughtException', (err: Error) => {
+    logger.error(err.message)
+    captureError(err, cmd(), 'uncaught exception')
+    void flushErrorQueue().finally(() => process.exit(1))
+  })
+  process.on('unhandledRejection', (reason: unknown) => {
+    const err = reason instanceof Error ? reason : new Error(String(reason))
+    logger.error(err.message)
+    captureError(err, cmd(), 'unhandled rejection')
+    void flushErrorQueue()
+  })
+}
+
+/** Diagnostics bundle to write on process exit (set when --diagnostics runs). */
+let pendingDiagnostics: { command: string; errorStack?: string } | null = null
 
 function majorNode(): number {
   return parseInt(process.versions.node.split('.')[0], 10)
