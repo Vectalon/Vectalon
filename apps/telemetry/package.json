@@ -1,0 +1,22 @@
+{
+  "name": "@vectalon-dev/telemetry",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vectalon telemetry backend — errors-only ingest, liveness heartbeats, support-bundle uploads (→ email), and a health dashboard. Runs on Vercel or any Node server.",
+  "license": "BSL-1.1",
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test __tests__/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "@vercel/node": "^5.1.7",
+    "tsx": "^4.19.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=20.12.0"
+  }
+}
