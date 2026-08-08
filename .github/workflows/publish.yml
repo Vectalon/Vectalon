@@ -124,19 +124,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Build the release body from the released version's CHANGELOG section
+      # (see packages/rn/scripts/release-notes.js) so every release ships with
+      # real what's-new/breaking-change notes, never a bare template. Falls
+      # back to a minimal body pointing at the CHANGELOG when no entry exists.
+      - name: Generate release notes from CHANGELOG
+        run: node packages/rn/scripts/release-notes.js "${{ steps.version.outputs.rn_version }}" "${{ steps.version.outputs.core_version }}" > /tmp/release-notes.md
+
       - name: Create GitHub Release
         run: |
-          cat > /tmp/release-notes.md << 'EOF'
-          ## @vectalon-dev/rn — ${{ steps.version.outputs.rn_version }}
-
-          Core version (bundled): ${{ steps.version.outputs.core_version }}
-
-          ### Install
-
-          ```bash
-          npm install @vectalon-dev/rn@${{ steps.version.outputs.rn_version }}
-          ```
-          EOF
           gh release create ${{ steps.version.outputs.tag }} \
             --title "Release ${{ steps.version.outputs.tag }}" \
             --notes-file /tmp/release-notes.md
