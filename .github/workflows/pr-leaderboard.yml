@@ -58,7 +58,7 @@ jobs:
           # The nightly workflow force-commits bench/results/*.json; when they
           # are absent (e.g. before the first nightly run), the CLI exits 1 —
           # skip gracefully instead of failing the PR check.
-          if ! node bin/rn-vectalon.js leaderboard bench/results --pr-comment > comment.md 2>/dev/null; then
+          if ! node packages/rn/bin/rn-vectalon.js leaderboard packages/rn/bench/results --pr-comment > comment.md 2>/dev/null; then
             echo "No committed leaderboard results yet — nothing to comment"
             rm -f comment.md
             exit 0

@@ -65,6 +65,22 @@ describe('LocalProvider', () => {
     expect(response.content).toContain('base')
     expect(response.content).not.toContain('## Enabled project skills (best practices)')
   })
+
+  it('defaults to the shared RN-coder system prompt when none is provided', async () => {
+    const provider = new LocalProvider()
+    const response = await provider.generate({ prompt: 'hello' })
+    // No model downloaded -> fallback echoes the resolved system prompt, which
+    // must now be the RN-focused default (was previously undefined).
+    expect(response.content).toContain('You are a senior React Native engineer.')
+    expect(response.content).toContain('Use StyleSheet.create for styles; never inline style objects.')
+  })
+
+  it('prefers a caller-provided system prompt over the default', async () => {
+    const provider = new LocalProvider()
+    const response = await provider.generate({ prompt: 'hello', systemPrompt: 'custom guidance' })
+    expect(response.content).toContain('custom guidance')
+    expect(response.content).not.toContain('You are a senior React Native engineer.')
+  })
 })
 
 describe('createChatSessionOptions', () => {

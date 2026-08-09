@@ -2,6 +2,7 @@ import type { ModelRequest, ModelResponse } from '../types'
 import { getWasmPreset, wasmCacheDir, wasmDtype, wasmCacheReady } from '../local/wasmPresets'
 import { buildSkillsSystemPrompt, enrichWithSkills } from '../../ecosystem/skills'
 import { buildToolCallSystemPrompt } from '../toolCalling'
+import { RN_CODER_SYSTEM_PROMPT } from '../prompts'
 import { logger } from '../../cli/logger'
 import { reportError } from '../../utils/safe'
 import { dynamicImport } from '../../utils/dynamicImport'
@@ -95,7 +96,7 @@ export class WasmProvider {
   }
 
   async generate(request: ModelRequest): Promise<ModelResponse> {
-    const baseSystem = request.systemPrompt || 'You are an expert React Native developer assistant.'
+    const baseSystem = request.systemPrompt || RN_CODER_SYSTEM_PROMPT
     const systemPrompt = enrichWithSkills(this.projectRoot, this.skillsLoader, baseSystem) ?? baseSystem
 
     try {

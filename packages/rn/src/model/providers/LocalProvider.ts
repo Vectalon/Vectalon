@@ -4,6 +4,7 @@ import { runInference, probeNativeModule } from '../local/inference'
 import { hasDownloadedModel } from '../local/ModelStore'
 import { buildSkillsSystemPrompt, enrichWithSkills } from '../../ecosystem/skills'
 import { TOOL_CALL_SCHEMA } from '../toolCalling'
+import { RN_CODER_SYSTEM_PROMPT } from '../prompts'
 import { logger } from '../../cli/logger'
 
 export interface LocalProviderOptions {
@@ -75,8 +76,14 @@ export class LocalProvider {
 
     // Enrich the system prompt with the project's enabled skills when we know
     // the project root. The enriched prompt flows to both the real inference
-    // path and the no-model fallback so the skills are always visible.
-    const systemPrompt = enrichWithSkills(this.projectRoot, this.skillsLoader, request.systemPrompt)
+    // path and the no-model fallback so the skills are always visible. A
+    // caller-provided prompt wins; otherwise the shared RN-focused default
+    // steers even a bare generate() call toward idiomatic React Native.
+    const systemPrompt = enrichWithSkills(
+      this.projectRoot,
+      this.skillsLoader,
+      request.systemPrompt || RN_CODER_SYSTEM_PROMPT
+    )
 
     const preset = getDefaultPreset()
     // Only attempt native inference when the optional node-llama-cpp module

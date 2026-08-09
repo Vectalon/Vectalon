@@ -32,9 +32,10 @@ interface AlertsModule {
   errorFingerprint: (event: { stack?: string; message: string; timestamp?: number }) => string
   buildAlertText: (payload: Record<string, unknown>) => string
   checkErrorClusterAlert: (events: Array<Record<string, unknown>>, now?: number) => void
-  recordHeartbeatPing: (root: string, kind: string) => void
+  recordHeartbeatPing: (root: string | undefined, kind: string) => void
   checkHeartbeatStaleness: (root: string, now?: number) => void
   heartbeatStatePath: (root: string) => string
+  sendAdminAlert: (payload: Record<string, unknown>) => Promise<boolean>
   ALERT_WEBHOOK_URL: string
 }
 
@@ -92,6 +93,13 @@ describe('admin alert webhook (P2-19)', () => {
     expect(alerts.errorFingerprint({ message: 'no stack', timestamp: now } as never)).toBe('no stack')
   })
 
+  it('falls back to the message when the stack has no usable frames', () => {
+    const blankFrames = alerts.errorFingerprint({ message: 'boom', stack: 'Error: boom\n   \n   ' } as never)
+    expect(blankFrames).toBe('boom')
+    // Empty message → 'unknown' so the fingerprint is never a blank string.
+    expect(alerts.errorFingerprint({ message: '', timestamp: now } as never)).toBe('unknown')
+  })
+
   it('builds readable alert text for both payload types', () => {
     const cluster = alerts.buildAlertText({
       type: 'error-cluster',
@@ -108,6 +116,10 @@ describe('admin alert webhook (P2-19)', () => {
     const stale = alerts.buildAlertText({ type: 'heartbeat-stale', kind: 'serve', lastPingAt: now, version: '0.1.20' })
     expect(stale).toContain('heartbeat silent')
     expect(stale).toContain('serve')
+
+    // Unknown payload type → raw JSON dump.
+    const raw = alerts.buildAlertText({ type: 'mystery', extra: 1 })
+    expect(raw).toContain('mystery')
   })
 
   it('alerts once when ≥5 same-signature errors arrive inside the 1h window', async () => {
@@ -127,6 +139,13 @@ describe('admin alert webhook (P2-19)', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
+  it('no-ops on empty or non-array event batches', async () => {
+    alerts.checkErrorClusterAlert([], now)
+    alerts.checkErrorClusterAlert(undefined as never, now)
+    await new Promise(r => setTimeout(r, 10))
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('dedupes: one alert per signature per window', async () => {
     const events = Array.from({ length: 5 }, (_, i) => event(`boom ${i}`) as never)
     alerts.checkErrorClusterAlert(events, now)
@@ -139,11 +158,34 @@ describe('admin alert webhook (P2-19)', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
+  it('recovers from a corrupted alert-state file (no crash, still alerts)', async () => {
+    // Corrupt the persisted dedupe state so readAlertState hits its catch path.
+    const stateFile = join(configDir, 'alerts-state.json')
+    mkdirSync(configDir, { recursive: true })
+    writeFileSync(stateFile, '{ not json', 'utf-8')
+
+    const events = Array.from({ length: 5 }, (_, i) => event(`boom ${i}`) as never)
+    alerts.checkErrorClusterAlert(events, now)
+    await new Promise(r => setTimeout(r, 10))
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
   it('records successful heartbeat pings to .vectalon/heartbeat.json', () => {
     alerts.recordHeartbeatPing(root, 'serve')
     const state = JSON.parse(readFileSync(alerts.heartbeatStatePath(root), 'utf-8'))
     expect(state.kind).toBe('serve')
     expect(typeof state.lastPingAt).toBe('number')
+  })
+
+  it('no-ops without a project root and preserves existing ping state', () => {
+    alerts.recordHeartbeatPing(undefined, 'serve')
+    // Corrupted existing state is replaced by a fresh ping, not thrown on.
+    const path = alerts.heartbeatStatePath(root)
+    mkdirSync(join(path, '..'), { recursive: true })
+    writeFileSync(path, '{ nope', 'utf-8')
+    alerts.recordHeartbeatPing(root, 'daemon')
+    const state = JSON.parse(readFileSync(path, 'utf-8'))
+    expect(state.kind).toBe('daemon')
   })
 
   it('alerts when an active-license heartbeat went silent for >30 min', async () => {
@@ -165,11 +207,55 @@ describe('admin alert webhook (P2-19)', () => {
     expect(body.content).toContain('heartbeat silent')
   })
 
+  it('does not alert when there is no heartbeat file or it is malformed', async () => {
+    // No heartbeat recorded yet → nothing to be stale about.
+    alerts.checkHeartbeatStaleness(root, now)
+    await new Promise(r => setTimeout(r, 10))
+    expect(fetchMock).not.toHaveBeenCalled()
+
+    // Malformed JSON state → same silence.
+    const path = alerts.heartbeatStatePath(root)
+    mkdirSync(join(path, '..'), { recursive: true })
+    writeFileSync(path, 'not json', 'utf-8')
+    alerts.checkHeartbeatStaleness(root, now)
+    await new Promise(r => setTimeout(r, 10))
+    expect(fetchMock).not.toHaveBeenCalled()
+
+    // lastPingAt missing / not a number → ignored.
+    writeFileSync(path, JSON.stringify({ kind: 'serve' }), 'utf-8')
+    alerts.checkHeartbeatStaleness(root, now)
+    await new Promise(r => setTimeout(r, 10))
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
   it('does not alert for stale heartbeats on free tier', async () => {
     mkdirSync(join(alerts.heartbeatStatePath(root), '..'), { recursive: true })
     writeFileSync(alerts.heartbeatStatePath(root), JSON.stringify({ kind: 'serve', lastPingAt: now - 60 * 60 * 1000 }))
     alerts.checkHeartbeatStaleness(root, now)
     await new Promise(r => setTimeout(r, 10))
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('dedupes the stale-heartbeat alert to once per stale window', async () => {
+    TrialTracker.start({ id: 1, login: 'tester' }, 'team')
+    const path = alerts.heartbeatStatePath(root)
+    mkdirSync(join(path, '..'), { recursive: true })
+
+    // First stale check fires the alert (send resolves ok → alertedAt persisted).
+    writeFileSync(path, JSON.stringify({ kind: 'serve', lastPingAt: now - 60 * 60 * 1000 }))
+    alerts.checkHeartbeatStaleness(root, now)
+    await new Promise(r => setTimeout(r, 10))
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+
+    // Same stale window again → no second alert.
+    alerts.checkHeartbeatStaleness(root, now + 60_000)
+    await new Promise(r => setTimeout(r, 10))
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('returns false when the webhook POST fails (best-effort)', async () => {
+    fetchMock.mockRejectedValueOnce(new Error('network down'))
+    const ok = await alerts.sendAdminAlert({ type: 'heartbeat-stale', kind: 'serve', lastPingAt: now } as never)
+    expect(ok).toBe(false)
   })
 })

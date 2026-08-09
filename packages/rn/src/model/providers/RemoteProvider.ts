@@ -1,6 +1,7 @@
 import type { ModelRequest, ModelResponse } from '../types'
 import { getConfig } from '../../config'
 import { buildSkillsSystemPrompt, enrichWithSkills } from '../../ecosystem/skills'
+import { RN_CODER_SYSTEM_PROMPT } from '../prompts'
 import { getRemoteProviderInfo } from '../setup'
 import type { ProjectModelConfig } from '../setup'
 
@@ -78,7 +79,7 @@ export class RemoteProvider {
 
   async generate(request: ModelRequest): Promise<ModelResponse> {
     const context = request.context ? `\nContext:\n${request.context}\n` : ''
-    const baseSystem = request.systemPrompt || 'You are an expert React Native developer assistant.'
+    const baseSystem = request.systemPrompt || RN_CODER_SYSTEM_PROMPT
     // Enrich with the project's enabled skills (mirrors LocalProvider) so
     // remote generations follow the same best-practice guidance.
     const systemPrompt = enrichWithSkills(this.projectRoot, this.skillsLoader, baseSystem) ?? baseSystem

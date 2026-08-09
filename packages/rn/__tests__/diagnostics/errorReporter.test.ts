@@ -1,4 +1,4 @@
-import { existsSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { createServer } from 'http'
 import { createTempProject, cleanup } from '../helpers/tmp'
@@ -119,6 +119,35 @@ describe('error telemetry pipeline (P0-1)', () => {
     const report = captureError(new Error('nope'), 'init', undefined, { queuePath, enabled: false })
     expect(report).toBeNull()
     expect(existsSync(queuePath)).toBe(false)
+  })
+
+  it('flushes nothing when the queue is empty or disabled', async () => {
+    expect(await flushErrorQueue({ queuePath, enabled: true })).toBe(0)
+    captureError(new Error('kept'), 'serve', undefined, { queuePath, enabled: true })
+    expect(await flushErrorQueue({ queuePath, enabled: false })).toBe(0)
+    expect(existsSync(queuePath)).toBe(true)
+  })
+
+  it('keeps the queue when the transport throws (never drops events)', async () => {
+    captureError(new Error('kept2'), 'serve', undefined, { queuePath, enabled: true })
+    const flushed = await flushErrorQueue({
+      queuePath,
+      enabled: true,
+      fetchFn: (() => Promise.reject(new Error('network down'))) as typeof fetch,
+    })
+    expect(flushed).toBe(0)
+    expect(readErrorQueue(queuePath)).toHaveLength(1)
+  })
+
+  it('returns an empty list for a missing, corrupt, or non-array queue file', () => {
+    expect(readErrorQueue(queuePath)).toHaveLength(0)
+    mkdirSync(join(queuePath, '..'), { recursive: true })
+    writeFileSync(queuePath, '{ nope', 'utf-8')
+    expect(readErrorQueue(queuePath)).toHaveLength(0)
+    writeFileSync(queuePath, JSON.stringify({ not: 'an array' }), 'utf-8')
+    expect(readErrorQueue(queuePath)).toHaveLength(0)
+    writeFileSync(queuePath, JSON.stringify([{ message: 'ok' }, { nope: true }]), 'utf-8')
+    expect(readErrorQueue(queuePath)).toHaveLength(1)
   })
 
   it('uses the user config dir queue when no root is given', () => {

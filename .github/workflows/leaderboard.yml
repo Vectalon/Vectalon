@@ -60,18 +60,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.config/rn-vectalon/models
-          key: qwen-model-${{ runner.os }}-${{ hashFiles('src/model/local/presets.ts') }}
+          key: qwen-model-${{ runner.os }}-${{ hashFiles('packages/rn/src/model/local/presets.ts') }}
 
       - name: Download local model
         if: matrix.model == 'local'
-        run: node bin/rn-vectalon.js pull
+        run: node packages/rn/bin/rn-vectalon.js pull
 
       - name: Run benchmark pass
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          mkdir -p bench/results
+          mkdir -p packages/rn/bench/results
           # Remote providers need a configured key; skip cleanly when missing so
           # one missing secret does not fail the whole nightly run.
           if [ "${{ matrix.model }}" = "openai" ] && [ -z "$OPENAI_API_KEY" ]; then
@@ -82,14 +82,14 @@ jobs:
             echo "::warning::ANTHROPIC_API_KEY not set — skipping anthropic pass"
             exit 0
           fi
-          node bin/rn-vectalon.js bench --live --install --model "${{ matrix.model }}" \
-            --json -o "bench/results/${{ matrix.model }}.json"
+          node packages/rn/bin/rn-vectalon.js bench --live --install --model "${{ matrix.model }}" \
+            --json -o "packages/rn/bench/results/${{ matrix.model }}.json"
 
       - name: Upload results
         uses: actions/upload-artifact@v4
         with:
           name: bench-results-${{ matrix.model }}
-          path: bench/results/${{ matrix.model }}.json
+          path: packages/rn/bench/results/${{ matrix.model }}.json
           if-no-files-found: warn
 
   leaderboard:
@@ -140,11 +140,11 @@ jobs:
       - name: Download model results
         uses: actions/download-artifact@v4
         with:
-          path: bench/results
+          path: packages/rn/bench/results
           merge-multiple: true
 
       - name: Generate BENCHMARK_RESULTS.md
-        run: node bin/rn-vectalon.js leaderboard bench/results --out BENCHMARK_RESULTS.md
+        run: node packages/rn/bin/rn-vectalon.js leaderboard packages/rn/bench/results --out BENCHMARK_RESULTS.md
 
       - name: Commit and push leaderboard
         run: |
@@ -157,8 +157,8 @@ jobs:
           # comments from structured data without re-running the model matrix.
           # Guard the glob: a fully-skipped matrix (no API keys) produces no
           # files and a bare pathspec would error the commit step.
-          if ls bench/results/*.json >/dev/null 2>&1; then
-            git add -f bench/results/*.json
+          if ls packages/rn/bench/results/*.json >/dev/null 2>&1; then
+            git add -f packages/rn/bench/results/*.json
           fi
           if git diff --cached --quiet; then
             echo "No leaderboard changes — nothing to commit"
