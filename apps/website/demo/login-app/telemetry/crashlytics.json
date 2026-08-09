@@ -1,0 +1,56 @@
+[
+  {
+    "crash_id": "cr-0",
+    "occurred_at": "2025-08-03T14:06:40.000Z",
+    "platform": "Android",
+    "exception": "TypeError: Cannot read property \"email\" of undefined",
+    "session": {
+      "app_version": "1.0.0"
+    }
+  },
+  {
+    "crash_id": "cr-1",
+    "occurred_at": "2025-08-03T13:06:40.000Z",
+    "platform": "Android",
+    "exception": "TypeError: Cannot read property \"email\" of undefined",
+    "session": {
+      "app_version": "1.0.0"
+    }
+  },
+  {
+    "crash_id": "cr-2",
+    "occurred_at": "2025-08-03T12:06:40.000Z",
+    "platform": "Android",
+    "exception": "TypeError: Cannot read property \"email\" of undefined",
+    "session": {
+      "app_version": "1.0.0"
+    }
+  },
+  {
+    "crash_id": "cr-3",
+    "occurred_at": "2025-08-03T11:06:40.000Z",
+    "platform": "Android",
+    "exception": "TypeError: Cannot read property \"email\" of undefined",
+    "session": {
+      "app_version": "1.0.0"
+    }
+  },
+  {
+    "crash_id": "cr-4",
+    "occurred_at": "2025-08-03T10:06:40.000Z",
+    "platform": "Android",
+    "exception": "TypeError: Cannot read property \"email\" of undefined",
+    "session": {
+      "app_version": "1.0.0"
+    }
+  },
+  {
+    "crash_id": "cr-5",
+    "occurred_at": "2025-08-03T09:06:40.000Z",
+    "platform": "Android",
+    "exception": "TypeError: Cannot read property \"email\" of undefined",
+    "session": {
+      "app_version": "1.0.0"
+    }
+  }
+]

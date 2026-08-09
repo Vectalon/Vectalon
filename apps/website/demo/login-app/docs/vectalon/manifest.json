@@ -1,0 +1,13 @@
+{
+  "version": "0.1.0",
+  "projectName": "login-app",
+  "rnVersion": "0.79.0",
+  "tooling": "expo",
+  "expoSdkVersion": "~53.0.0",
+  "initializedAt": 1786265370174,
+  "modelProvider": "local",
+  "autoLearn": true,
+  "modelConfig": {
+    "modelName": "qwen2.5-coder-3b"
+  }
+}

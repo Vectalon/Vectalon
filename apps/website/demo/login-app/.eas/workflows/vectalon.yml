@@ -1,0 +1,14 @@
+name: vectalon-ci
+
+on:
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  quality:
+    name: Lint, typecheck, and test
+    steps:
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test

@@ -1,0 +1,21 @@
+# Readiness report
+
+# Readiness report
+
+Feature: create a login screen with email password
+
+## Acceptance criteria
+- [x] PRD generated and scoped
+- [x] Design/UX approach defined
+- [x] Architecture decision recorded
+- [x] Implementation tasks created
+- [x] Code changes or removal plan generated
+- [x] Verification completed
+
+## Go / No-go
+Status: GO — verification completed. All checks passed and the feature is ready for review.
+
+## Recommended reviewers
+- Mobile lead (architecture and native config)
+- Security lead (if auth or token handling is involved)
+- QA lead (test coverage and edge cases)

@@ -8,6 +8,8 @@ Project-aware SDLC intelligence for any agent — CLI, MCP server, VS Code exten
 
 > **New here?** Read the [**Onboarding Guide**](../apps/website/docs/ONBOARDING.md) — a step-by-step tour of every feature, from first `init` to shipping — or watch the [**Daily Loop video script**](../apps/website/docs/VIDEO_SCRIPT.md) (13-min walkthrough: init → selftest → feature → review → release). For the full command reference, see [**CLI Reference**](../apps/website/docs/CLI_REFERENCE.md).
 
+> **Want the project from the video?** The demo app the Daily Loop walkthrough builds — a login screen on Expo SDK 53, feature workflow run end-to-end — lives at [**`apps/website/demo/login-app`**](../apps/website/demo/login-app/), with a [**shoot/replay guide**](../apps/website/demo/login-app/REPLAY.md) for recording each clip.
+
 ---
 
 ## Installation
