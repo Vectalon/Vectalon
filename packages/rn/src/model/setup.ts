@@ -1,4 +1,4 @@
-import { getDefaultPreset } from './local/presets'
+import { getDefaultPreset, getPreset } from './local/presets'
 import { hasDownloadedModel } from './local/ModelStore'
 import { getWasmPreset, wasmCacheReady } from './local/wasmPresets'
 
@@ -179,7 +179,10 @@ export function isModelSetupProvider(value: string): value is ModelSetupProvider
  */
 export function activeModelLabel(provider: string, config?: ProjectModelConfig): string {
   if (provider === 'local') {
-    return `local (${getDefaultPreset().id})`
+    // A manifest may name a local GGUF preset (e.g. qwen2.5-coder-3b) via
+    // modelConfig.modelName — label the actual model, not just the default.
+    const presetId = config?.modelName && getPreset(config.modelName) ? config.modelName : getDefaultPreset().id
+    return `local (${presetId})`
   }
   if (provider === 'wasm') {
     return `wasm (${getWasmPreset().modelId})`

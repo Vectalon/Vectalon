@@ -6,6 +6,7 @@ import {
   fixCodeWithLLM,
   buildFixPrompt,
   extractFixedCode,
+  verifyLLMReview,
   type LLMCodeReview,
 } from '../../src/sdlc/LLMCodeReviewer'
 import type { ModelRouter } from '../../src/model/ModelRouter'
@@ -104,6 +105,79 @@ describe('reviewCodeWithLLM', () => {
     })), { code: 'x', fileName: 'a.ts' })
     expect(review).not.toBeNull()
     expect(review!.verdict).toBe('approved')
+  })
+
+  it('drops LLM findings whose rule signal is absent from the code (hallucination guard)', async () => {
+    // The model claims a .map() key issue and an http URL — the code has neither.
+    const review = await reviewCodeWithLLM(mockRouter(JSON.stringify({
+      verdict: 'changes-requested',
+      summary: 'Several issues',
+      findings: [
+        { severity: 'error', rule: 'missing-key-prop', message: 'no key', line: 12 },
+        { severity: 'error', rule: 'no-http-url', message: 'http url', line: 14 },
+        { severity: 'warning', rule: 'no-any', message: 'any type', line: 3 },
+      ],
+    })), { code: 'export const a = 1', fileName: 'a.ts' })
+    expect(review).not.toBeNull()
+    expect(review!.findings).toHaveLength(0)
+    expect(review!.verdict).toBe('approved')
+  })
+
+  it('keeps LLM findings whose signal is genuinely present', async () => {
+    const review = await reviewCodeWithLLM(mockRouter(JSON.stringify({
+      verdict: 'changes-requested',
+      summary: 'Real problems',
+      findings: [
+        { severity: 'error', rule: 'no-http-url', message: 'http url', line: 2 },
+        { severity: 'warning', rule: 'no-any', message: 'any type', line: 4 },
+      ],
+    })), {
+      code: 'const url = "http://api.example.com";\nexport const x: any = 1',
+      fileName: 'a.ts',
+    })
+    expect(review).not.toBeNull()
+    expect(review!.findings.map(f => f.rule)).toEqual(['no-http-url', 'no-any'])
+    expect(review!.verdict).toBe('changes-requested')
+  })
+
+  it('keeps findings for rules without a verifiable signal (conservative)', async () => {
+    const review = await reviewCodeWithLLM(mockRouter(JSON.stringify({
+      verdict: 'changes-requested',
+      summary: 'Refactor',
+      findings: [
+        { severity: 'warning', rule: 'magic-number', message: 'extract const', line: 3 },
+      ],
+    })), { code: 'const w = 320', fileName: 'a.ts' })
+    expect(review).not.toBeNull()
+    expect(review!.findings).toHaveLength(1)
+    expect(review!.verdict).toBe('changes-requested')
+  })
+})
+
+describe('verifyLLMReview', () => {
+  it('flips to approved when every finding was hallucinated', () => {
+    const review: LLMCodeReview = {
+      verdict: 'changes-requested',
+      summary: 'issues',
+      findings: [{ severity: 'error', rule: 'missing-key-prop', message: 'no key', line: 12 }],
+      source: 'llm',
+    }
+    const verified = verifyLLMReview(review, 'export const a = 1')
+    expect(verified.verdict).toBe('approved')
+    expect(verified.findings).toEqual([])
+    expect(verified.summary).toContain('cleared by code verification')
+  })
+
+  it('keeps supported findings unchanged when the signal is present', () => {
+    const review: LLMCodeReview = {
+      verdict: 'changes-requested',
+      summary: 'issues',
+      findings: [{ severity: 'error', rule: 'no-ts-ignore', message: 'no ts-ignore', line: 1 }],
+      source: 'llm',
+    }
+    const verified = verifyLLMReview(review, '// @ts-ignore\nexport const a = 1')
+    expect(verified.findings).toHaveLength(1)
+    expect(verified.verdict).toBe('changes-requested')
   })
 })
 

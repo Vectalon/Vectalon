@@ -1,5 +1,5 @@
 import type { ModelRequest, ModelResponse } from '../types'
-import { getDefaultPreset } from '../local/presets'
+import { getDefaultPreset, getPreset } from '../local/presets'
 import { runInference, probeNativeModule } from '../local/inference'
 import { hasDownloadedModel } from '../local/ModelStore'
 import { buildSkillsSystemPrompt, enrichWithSkills } from '../../ecosystem/skills'
@@ -14,6 +14,14 @@ export interface LocalProviderOptions {
    * every local generation so the model follows the project's best practices.
    */
   projectRoot?: string
+  /**
+   * Optional local preset id override (e.g. 'qwen2.5-coder-3b'). When set and
+   * the preset is known, inference runs against that model instead of the
+   * default 1.5B preset — lets projects opt into the higher-quality model via
+   * the manifest's modelConfig.modelName. Unknown ids fall back to the
+   * default preset.
+   */
+  presetId?: string
   /** Injectable skills-to-system-prompt builder (defaults to the ecosystem
    * loader). Tests inject a stub to verify the wiring without touching disk. */
   skillsLoader?: (root: string, systemPrompt?: string) => string | undefined
@@ -33,11 +41,22 @@ export class LocalProvider {
   private readonly projectRoot?: string
   private readonly skillsLoader: (root: string, systemPrompt?: string) => string | undefined
   private readonly nativeProbe: () => Promise<true | 'missing' | 'failed'>
+  private readonly presetId?: string
 
   constructor(options: LocalProviderOptions = {}) {
     this.projectRoot = options.projectRoot
     this.skillsLoader = options.skillsLoader || buildSkillsSystemPrompt
     this.nativeProbe = options.nativeProbe || probeNativeModule
+    this.presetId = options.presetId
+  }
+
+  /** The preset to run inference against: the configured override when known, else the default. */
+  private resolvePreset() {
+    if (this.presetId) {
+      const override = getPreset(this.presetId)
+      if (override) return override
+    }
+    return getDefaultPreset()
   }
 
   /**
@@ -85,7 +104,7 @@ export class LocalProvider {
       request.systemPrompt || RN_CODER_SYSTEM_PROMPT
     )
 
-    const preset = getDefaultPreset()
+    const preset = this.resolvePreset()
     // Only attempt native inference when the optional node-llama-cpp module
     // actually loaded AND a model is downloaded; otherwise degrade to the
     // deterministic stub with a clear warning.

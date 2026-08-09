@@ -265,7 +265,14 @@ export async function featureCommand(
   if (options.healSeverity !== undefined) inputs.healSeverity = options.healSeverity
 
   const workflowEngine = new WorkflowEngine()
-  const engineOptions = options.from ? { fromPhase: options.from } : undefined
+  // Resume must flow through to the engine: without resume: true the loaded
+  // state's completed phases would re-run (regenerating files the model
+  // already wrote). with --from <phase> the engine starts at that phase.
+  const engineOptions: { fromPhase?: string; resume?: boolean } | undefined = options.resume
+    ? { resume: true, ...(options.from ? { fromPhase: options.from } : {}) }
+    : options.from
+      ? { fromPhase: options.from }
+      : undefined
   let result: WorkflowState
   try {
     result = await workflowEngine.run(workflow, {

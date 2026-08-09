@@ -155,7 +155,12 @@ export async function reviewCodeWithLLM(
     if (content.includes('[Local model fallback') || content.includes('no downloaded model')) {
       return null
     }
-    return parseLLMReview(content)
+    const review = parseLLMReview(content)
+    // Deterministic hallucination guard: a small model may report findings for
+    // constructs that do not exist in the file. Verify every supported rule
+    // against the actual code before the review is trusted (or healed on).
+    if (!review) return null
+    return verifyLLMReview(review, options.code)
   } catch (err) {
     reportError(err, 'LLMCodeReviewer: LLM review failed', 'warn')
     return null
@@ -246,7 +251,77 @@ export async function fixCodeWithLLM(
   }
 }
 
-/** Claude-style console rendering of an LLM code review. */
+/**
+ * Signals that must actually be present in the reviewed code for an LLM
+ * finding to be credible. Small local models (e.g. Qwen2.5-Coder-1.5B/3B)
+ * reliably pattern-match rule names from the prompt and emit findings for
+ * constructs that do not exist in the file (a "missing-key-prop" claim on a
+ * file with no `.map()`, a "no-http-url" claim on a file with no URL).
+ * Every finding whose rule carries a positive signal here is dropped when the
+ * signal is absent — a deterministic guard so the review gate only fails on
+ * findings the code can actually support.
+ *
+ * Rules without a signal (verdict/summary-only, or fuzzy rules like
+ * "magic-number") are never filtered — absence of evidence keeps them.
+ */
+export const LLM_RULE_SIGNALS: Record<string, RegExp> = {
+  'missing-key-prop': /\.map\s*\(/,
+  'missing-key-in-map': /\.map\s*\(/,
+  'missing-key': /\.map\s*\(/,
+  'no-http-url': /https?:\/\//,
+  'no-hardcoded-urls': /https?:\/\//,
+  'missing-use-effect-cleanup': /useEffect/,
+  'use-effect-missing-deps': /useEffect/,
+  'use-effect-cleanup': /useEffect/,
+  'no-ts-ignore': /@ts-ignore/,
+  'no-eval': /\beval\s*\(|new\s+Function/,
+  'no-inner-html': /innerHTML|dangerouslySetInnerHTML/,
+  'no-console-log': /console\.(log|debug|warn|info)/,
+  'no-any': /:\s*any\b|<any>/,
+  'no-non-null-assertion': /[A-Za-z0-9_)\]\}]+!\b/,
+  'var-usage': /\bvar\s+/,
+  'no-var-declarations': /\bvar\s+/,
+  'loose-equality': /[^=!]==[^=]|![=][^=]/,
+  'todo-comment': /TODO|FIXME|HACK/,
+  'inline-style': /style=\{/,
+  'no-inline-styles': /style=\{/,
+  'no-secrets-in-code': /(api[_-]?key|password|secret|token)\s*[:=]\s*['"][^'"]+/i,
+  'no-hardcoded-secrets': /(api[_-]?key|password|secret|token)\s*[:=]\s*['"][^'"]+/i,
+  'no-empty-catch': /catch\s*(\([^)]*\))?\s*\{\s*\}/,
+  'missing-accessibility': /(TouchableOpacity|TouchableHighlight|TouchableWithoutFeedback|Pressable|Button|TextInput)/,
+  'accessibility-labels': /(TouchableOpacity|TouchableHighlight|TouchableWithoutFeedback|Pressable|Button|TextInput)/,
+  'no-sync-native-module-calls': /NativeModules|TurboModuleRegistry/,
+  'no-set-native-props': /setNativeProps/,
+  'no-forward-ref': /forwardRef/,
+  'no-ref-mutation-in-render': /\.current\s*=/,
+  'use-outside-suspense': /useSyncExternalStore|useTransition|useDeferredValue/,
+  'unstable-dependency-array': /useEffect|useCallback|useMemo/,
+  'compiler-auto-memoization': /useMemo|useCallback/,
+}
+
+/**
+ * Drop LLM findings whose rule's positive signal is absent from the code
+ * (deterministic guard against small-model hallucination). Returns a new
+ * review with only the supported findings; the verdict flips to approved and
+ * the summary notes the filter when everything was cleared.
+ */
+export function verifyLLMReview(review: LLMCodeReview, code: string): LLMCodeReview {
+  const kept = review.findings.filter(f => {
+    const signal = LLM_RULE_SIGNALS[f.rule]
+    if (!signal) return true
+    return signal.test(code)
+  })
+  if (kept.length === review.findings.length) return review
+  if (kept.length === 0) {
+    return {
+      verdict: 'approved',
+      summary: review.summary ? `${review.summary} (unsupported findings cleared by code verification)` : 'Unsupported findings cleared by code verification',
+      findings: [],
+      source: 'llm',
+    }
+  }
+  return { ...review, findings: kept }
+}
 export function formatLLMReview(review: LLMCodeReview): string {
   const verdictIcon = review.verdict === 'approved' ? pc.green('✅') : pc.red('🚫')
   const lines = [

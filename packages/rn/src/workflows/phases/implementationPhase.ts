@@ -659,10 +659,15 @@ export function generateAddFeatureImplementation(
 
   const screenContent = [
     `// ${screenFile}`,
-    "import { Text, TouchableOpacity, ActivityIndicator, StyleSheet, SafeAreaView } from 'react-native';",
+    "import React from 'react';",
+    "import { Text, TouchableOpacity, ActivityIndicator, StyleSheet, SafeAreaView } from 'react-native';", 
     `import { use${featureName} } from '../hooks/use${featureName}';`,
     '',
-    `export function ${featureName}Screen(): JSX.Element {`,
+    // React 19 types removed the global JSX namespace, so annotate with
+    // React.JSX.Element (imported above). Only for TS projects — a return-type
+    // annotation is invalid syntax in a .jsx file, and the typescript-strict
+    // guardrail rule that wants it applies to .tsx? files only.
+    `export function ${featureName}Screen()${conventions.hasTypeScript ? ': React.JSX.Element' : ''} {`,
     `  const { run, loading, error, data } = use${featureName}();`,
     '',
     '  return (',

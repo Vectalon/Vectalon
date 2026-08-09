@@ -113,6 +113,8 @@ describe('model setup helpers', () => {
 
   it('labels the active model with provider and model name', () => {
     expect(activeModelLabel('local')).toBe('local (qwen2.5-coder-1.5b)')
+    expect(activeModelLabel('local', { modelName: 'qwen2.5-coder-3b' })).toBe('local (qwen2.5-coder-3b)')
+    expect(activeModelLabel('local', { modelName: 'gpt-4o' })).toBe('local (qwen2.5-coder-1.5b)')
     expect(activeModelLabel('wasm')).toBe('wasm (onnx-community/Qwen2.5-Coder-0.5B-Instruct)')
     expect(activeModelLabel('openai', { modelName: 'gpt-4o', apiKeyEnv: 'OPENAI_API_KEY' })).toBe('openai (gpt-4o)')
     expect(activeModelLabel('anthropic')).toBe('anthropic (claude-sonnet-4-20250514)')

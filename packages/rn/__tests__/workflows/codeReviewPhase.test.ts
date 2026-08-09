@@ -528,9 +528,11 @@ describe('codeReviewPhase', () => {
           phase('implementation', 'Implementation', [
             {
               type: 'engineering',
-              title: 'Bad.ts',
-              content: 'const style = { color: "red" }',
-              path: 'src/Bad.ts',
+              title: 'Bad.tsx',
+              // Real JSX inline style so the LLM inline-style finding is
+              // supported by the code (the hallucination guard verifies it).
+              content: 'export function Bad() { return <View style={{ color: "red" }} /> }',
+              path: 'src/Bad.tsx',
             },
           ]),
         ],

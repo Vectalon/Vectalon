@@ -99,7 +99,9 @@ describe('testPhase (TDD)', () => {
     expect(written).toHaveLength(3)
 
     const paths = written.map(a => a.path)
-    expect(paths.some(p => p!.endsWith('src/__tests__/Login.ts'))).toBe(true)
+    // The screen test renders JSX, so it lives in .tsx; hook + service tests
+    // contain no JSX and stay .ts.
+    expect(paths.some(p => p!.endsWith('src/__tests__/Login.tsx'))).toBe(true)
     expect(paths.some(p => p!.endsWith('src/__tests__/useLogin.ts'))).toBe(true)
     expect(paths.some(p => p!.endsWith('src/__tests__/LoginApi.ts'))).toBe(true)
 
@@ -111,7 +113,7 @@ describe('testPhase (TDD)', () => {
   it('uses named imports that match the implementation scaffold contract', async () => {
     const result = await testPhase.run(makeContext(projectRoot, 'Login'))
 
-    const screenTest = result.artifacts.find(a => a.path?.endsWith('src/__tests__/Login.ts'))
+    const screenTest = result.artifacts.find(a => a.path?.endsWith('src/__tests__/Login.tsx'))
     const hookTest = result.artifacts.find(a => a.path?.endsWith('src/__tests__/useLogin.ts'))
     const serviceTest = result.artifacts.find(a => a.path?.endsWith('src/__tests__/LoginApi.ts'))
 
@@ -158,8 +160,8 @@ describe('testPhase (TDD)', () => {
     const result = await testPhase.run(makeContext(projectRoot, 'Login'))
 
     expect(result.output).toContain('.vectalon/generated')
-    expect(existsSync(join(projectRoot, 'src/__tests__/Login.ts'))).toBe(false)
-    expect(existsSync(join(projectRoot, '.vectalon/generated/src/__tests__/Login.ts'))).toBe(true)
+    expect(existsSync(join(projectRoot, 'src/__tests__/Login.tsx'))).toBe(false)
+    expect(existsSync(join(projectRoot, '.vectalon/generated/src/__tests__/Login.tsx'))).toBe(true)
     expect(existsSync(join(projectRoot, '.vectalon/generated/src/__tests__/useLogin.ts'))).toBe(true)
     expect(existsSync(join(projectRoot, '.vectalon/generated/src/__tests__/LoginApi.ts'))).toBe(true)
   })
@@ -169,7 +171,7 @@ describe('testPhase (TDD)', () => {
 
     const result = await testPhase.run(makeContext(projectRoot, 'Login'))
 
-    expect(existsSync(join(projectRoot, 'src/__tests__/Login.ts'))).toBe(true)
+    expect(existsSync(join(projectRoot, 'src/__tests__/Login.tsx'))).toBe(true)
     expect(result.output).not.toContain('.vectalon/generated')
   })
 

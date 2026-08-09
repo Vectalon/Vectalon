@@ -36,6 +36,10 @@ export const testPhase: WorkflowPhase = {
     const intent = (await getIntent(ctx)).intent
     const conventions = detectConventions(ctx.snapshot)
     const ext = conventions.hasTypeScript ? 'ts' : 'js'
+    // The screen test renders JSX (render(<FeatureScreen />)) — it must live in
+    // a .tsx/.jsx file or tsc rejects it with TS1005. The hook and service tests
+    // contain no JSX and stay .ts/.js.
+    const jsxExt = conventions.hasTypeScript ? 'tsx' : 'jsx'
     const featureName = sanitizeFileName(ctx.prompt) || 'Feature'
     const camelName = featureName.charAt(0).toLowerCase() + featureName.slice(1)
     const projectRoot = ctx.projectRoot
@@ -103,7 +107,7 @@ export const testPhase: WorkflowPhase = {
 
     // 1. Screen component test
     testFiles.push({
-      path: `src/__tests__/${featureName}.${ext}`,
+      path: `src/__tests__/${featureName}.${jsxExt}`,
       content: [
         `// TDD test suite for ${featureName} — written before implementation.`,
         `// Run \`npm test ${featureName}\` to verify the implementation satisfies these requirements.`,
@@ -113,8 +117,9 @@ export const testPhase: WorkflowPhase = {
         `import { ${featureName}Screen } from '../screens/${featureName}Screen';`,
         '',
         `describe('${featureName}Screen', () => {`,
-        `  it('renders the ${featureName} title', () => {`,
-        `    const { getByText } = render(<${featureName}Screen />);`,
+        // RNTL v14 made render() async — await it or tsc errors on the result type.
+        `  it('renders the ${featureName} title', async () => {`,
+        `    const { getByText } = await render(<${featureName}Screen />);`,
         `    expect(getByText('${featureName}')).toBeDefined();`,
         '  });',
         '});',
@@ -132,15 +137,16 @@ export const testPhase: WorkflowPhase = {
         `import { use${featureName} } from '../hooks/use${featureName}';`,
         '',
         `describe('use${featureName}', () => {`,
-        `  it('starts in the default state', () => {`,
-        `    const { result } = renderHook(() => use${featureName}());`,
+        // RNTL v14 made renderHook() async — await it or tsc errors on the result type.
+        `  it('starts in the default state', async () => {`,
+        `    const { result } = await renderHook(() => use${featureName}());`,
         '    expect(result.current.loading).toBe(false);',
         '    expect(result.current.error).toBeNull();',
         '    expect(result.current.data).toBeNull();',
         '  });',
         '',
         `  it('stores the result after running', async () => {`,
-        `    const { result } = renderHook(() => use${featureName}());`,
+        `    const { result } = await renderHook(() => use${featureName}());`,
         '    await act(async () => {',
         '      await result.current.run();',
         '    });',

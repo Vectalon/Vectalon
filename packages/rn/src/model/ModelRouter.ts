@@ -5,7 +5,7 @@ import { WasmProvider } from './providers/WasmProvider'
 import type { ModelConfig, ModelRequest, ModelResponse, ModelProviderType } from './types'
 import { REMOTE_PROVIDERS } from './setup'
 import { wasmZeroConfigEnabled } from './zeroConfig'
-import { getDefaultPreset } from './local/presets'
+import { getDefaultPreset, getPreset } from './local/presets'
 import { getWasmPreset } from './local/wasmPresets'
 import { hasDownloadedModel } from './local/ModelStore'
 import { CircuitBreaker } from './circuitBreaker'
@@ -38,6 +38,7 @@ export class ModelRouter {
   private readonly zeroConfigOverride?: boolean
   private readonly projectRoot?: string
   private readonly circuit: CircuitBreaker
+  private localPresetId?: string
 
   constructor(options: ModelRouterOptions = {}) {
     this.injectedWasmProvider = options.wasmProvider
@@ -47,11 +48,27 @@ export class ModelRouter {
   }
 
   /**
+   * The local GGUF preset id this router will use: the configured override
+   * (modelConfig.modelName from the project manifest) when it names a known
+   * local preset, otherwise the default 1.5B preset.
+   */
+  private activeLocalPresetId(): string {
+    if (this.localPresetId && getPreset(this.localPresetId)) return this.localPresetId
+    return getDefaultPreset().id
+  }
+
+  /**
    * @param config provider choice plus optional project-level model settings
    *   (modelName / apiKeyEnv from .vectalon/rn-vectalon.json via init).
    */
   initialize(config?: Partial<ModelConfig>): void {
     this.provider = config?.provider || (getConfig('modelProvider') as ModelProviderType) || 'local'
+    // A project manifest may name a local GGUF preset (e.g. qwen2.5-coder-3b)
+    // via modelConfig.modelName — honor it for local inference so projects can
+    // opt into the higher-quality model. Remotes keep their own modelName.
+    if (this.provider === 'local') {
+      this.localPresetId = config?.modelName
+    }
 
     if (this.provider === 'local') {
       void this.getLocalProvider().initialize()
@@ -154,7 +171,7 @@ export class ModelRouter {
    */
   isZeroConfigActive(): boolean {
     if (this.provider !== 'local' || !this.localProvider) return false
-    if (hasDownloadedModel(getDefaultPreset().id)) return false
+    if (hasDownloadedModel(this.activeLocalPresetId())) return false
     return this.zeroConfigEnabled()
   }
 
@@ -188,7 +205,7 @@ export class ModelRouter {
       if (this.isZeroConfigActive()) {
         return `local → wasm (${getWasmPreset().modelId})`
       }
-      return `local (${getDefaultPreset().id})`
+      return `local (${this.activeLocalPresetId()})`
     }
     return this.provider
   }
@@ -222,7 +239,7 @@ export class ModelRouter {
       // Settle the node-llama-cpp capability probe before choosing the path,
       // so a fire-and-forget initialize() never races the decision.
       await this.localProvider.initialize()
-      const nativeReady = this.localProvider.isNativeAvailable() && hasDownloadedModel(getDefaultPreset().id)
+      const nativeReady = this.localProvider.isNativeAvailable() && hasDownloadedModel(this.activeLocalPresetId())
       if (nativeReady) {
         return this.tryProvider({ id: 'local', run: () => this.localProvider!.generate(request) })
       }
@@ -265,7 +282,7 @@ export class ModelRouter {
   private async buildFallbackAttempts(request: ModelRequest): Promise<ProviderAttempt[]> {
     const local = this.getLocalProvider()
     await local.initialize()
-    const localNative = local.isNativeAvailable() && hasDownloadedModel(getDefaultPreset().id)
+    const localNative = local.isNativeAvailable() && hasDownloadedModel(this.activeLocalPresetId())
 
     const attempts: ProviderAttempt[] = []
     if (localNative) {
@@ -296,7 +313,10 @@ export class ModelRouter {
 
   private getLocalProvider(): LocalProvider {
     if (!this.localProvider) {
-      this.localProvider = new LocalProvider({ projectRoot: this.projectRoot })
+      this.localProvider = new LocalProvider({
+        projectRoot: this.projectRoot,
+        presetId: this.activeLocalPresetId(),
+      })
       void this.localProvider.initialize()
     }
     return this.localProvider

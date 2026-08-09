@@ -81,6 +81,14 @@ describe('LocalProvider', () => {
     expect(response.content).toContain('custom guidance')
     expect(response.content).not.toContain('You are a senior React Native engineer.')
   })
+
+  it('resolves an unknown preset override to the default preset', async () => {
+    const provider = new LocalProvider({ presetId: 'not-a-real-preset' })
+    // No model downloaded -> fallback echoes the resolved system prompt; the
+    // preset resolution itself must not throw and must not invent a model.
+    const response = await provider.generate({ prompt: 'hello' })
+    expect(response.content).toContain('Local model fallback')
+  })
 })
 
 describe('createChatSessionOptions', () => {

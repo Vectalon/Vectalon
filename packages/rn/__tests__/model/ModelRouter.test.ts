@@ -128,6 +128,22 @@ describe('ModelRouter', () => {
     expect(router.getActiveLabel()).toContain('wasm')
   })
 
+  it('honors a local preset override from modelConfig.modelName (e.g. qwen2.5-coder-3b)', async () => {
+    const router = new ModelRouter()
+    router.initialize({ provider: 'local', modelName: 'qwen2.5-coder-3b' })
+    // No 3B model downloaded in the test env -> the zero-config tier is off and
+    // the fallback stub answers, but the active label must name the 3B preset.
+    const response = await router.generate({ prompt: 'hi' })
+    expect(response.provider).toBe('local')
+    expect(router.getActiveLabel()).toBe('local (qwen2.5-coder-3b)')
+  })
+
+  it('ignores a local preset override that is not a known preset id', async () => {
+    const router = new ModelRouter()
+    router.initialize({ provider: 'local', modelName: 'gpt-4o' })
+    expect(router.getActiveLabel()).toBe('local (qwen2.5-coder-1.5b)')
+  })
+
   it('does not auto-tier when the zero-config tier is disabled (e.g. tests)', async () => {
     const loader = jest.fn(async () => {
       throw new Error('the wasm loader must not be invoked when the tier is disabled')

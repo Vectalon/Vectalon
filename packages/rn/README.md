@@ -6,6 +6,8 @@ Project-aware SDLC intelligence for any agent — CLI, MCP server, VS Code exten
 
 [Website](https://vectalon.in) · [Docs](https://vectalon.in/docs) · [Pricing](https://vectalon.in/pricing)
 
+> **New here?** Read the [**Onboarding Guide**](../apps/website/docs/ONBOARDING.md) — a step-by-step tour of every feature, from first `init` to shipping — or watch the [**Daily Loop video script**](../apps/website/docs/VIDEO_SCRIPT.md) (13-min walkthrough: init → selftest → feature → review → release). For the full command reference, see [**CLI Reference**](../apps/website/docs/CLI_REFERENCE.md).
+
 ---
 
 ## Installation
