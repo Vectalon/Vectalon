@@ -229,6 +229,42 @@ function parseToolErrors(output: string): Array<{ file: string; line: number; me
   return results
 }
 
+/** Count typecheck errors reported against a specific artifact path (suffix/basename tolerant). */
+function typeErrorsIn(output: string, artifactPath: string): number {
+  const norm = artifactPath.replace(/\\/g, '/')
+  const base = norm.split('/').pop() || norm
+  return parseToolErrors(output).filter(e => {
+    const f = e.file.replace(/\\/g, '/')
+    return f.endsWith(norm) || norm.endsWith(f) || f.endsWith('/' + base) || f === base
+  }).length
+}
+
+/**
+ * Run the project typecheck once and return per-path error counts (0 for
+ * clean paths). Returns null when the project has no typecheck script or the
+ * command throws — callers then skip the compile gate (cannot verify).
+ */
+async function typecheckCountsFor(
+  testRunner: { runTypeCheck?: () => Promise<{ success: boolean; stdout: string; stderr: string }> } | undefined,
+  paths: string[]
+): Promise<Map<string, number> | null> {
+  if (!testRunner || typeof testRunner.runTypeCheck !== 'function' || paths.length === 0) return null
+  try {
+    const result = await testRunner.runTypeCheck()
+    const counts = new Map<string, number>()
+    if (result.success) {
+      for (const p of paths) counts.set(p, 0)
+      return counts
+    }
+    const output = `${result.stdout}\n${result.stderr}`
+    for (const p of paths) counts.set(p, typeErrorsIn(output, p))
+    return counts
+  } catch (err) {
+    reportError(err, 'codeReview: typecheck gate during heal')
+    return null
+  }
+}
+
 export const codeReviewPhase: WorkflowPhase = {
   id: 'code-review',
   name: 'Code review',
@@ -293,6 +329,11 @@ export const codeReviewPhase: WorkflowPhase = {
     // Snapshot of pre-heal file contents (path -> original), so a failed heal
     // can restore the originals instead of leaving the model's last broken fix.
     const healedFiles = new Map<string, string>()
+    // Files whose last model fix failed the compile gate — never re-heal them
+    // in this phase (per-file cap) so the loop can't churn on an unfixable file.
+    const compileRejected = new Set<string>()
+    const testRunner = ctx.adapters?.testRunner
+    const compileGateAvailable = Boolean(testRunner && typeof testRunner.runTypeCheck === 'function')
     let allFindings: FileReview[] = []
 
     async function reviewAll(): Promise<{ errors: number; warnings: number; infos: number; reviewed: FileReview[] }> {
@@ -375,7 +416,22 @@ export const codeReviewPhase: WorkflowPhase = {
 
     async function healErrors(reviewed: FileReview[], threshold: number): Promise<number> {
       let fixed = 0
+
+      // Compile gate: establish per-file baseline type-error counts once per
+      // batch so a fix is only accepted when it measurably reduces (or keeps
+      // at zero) the file's type errors. Null when no gate is available.
+      const gate = compileGateAvailable ? await typecheckCountsFor(testRunner, reviewed.map(f => f.file)) : null
+      const baseline = gate ?? null
+
       for (const file of reviewed) {
+        // Per-file cap: a file whose last model fix failed the compile gate is
+        // never re-healed in this phase, so the loop can't churn on an
+        // unfixable file (each revert costs a full typecheck).
+        if (compileRejected.has(file.file)) {
+          healLog.push(`- \`${file.file}\`: skipped (previous fix failed the compile gate)`)
+          continue
+        }
+
         const errorFindings: LLMReviewFinding[] = [
           ...file.ruleFindings.filter(f => severityAtLeast(f.severity, threshold)),
           ...(file.llmReview?.findings.filter(f => severityAtLeast(f.severity, threshold)) ?? []),
@@ -392,6 +448,45 @@ export const codeReviewPhase: WorkflowPhase = {
         const fixedContent = await fixWithReview(file, errorFindings, content)
         if (!fixedContent) continue
 
+        if (baseline) {
+          // Write the candidate, re-run the typecheck, and keep the fix only
+          // when it strictly reduces this file's type errors (or keeps a
+          // clean file clean). A fix that makes no compile progress (same
+          // error count) is rejected too — otherwise the heal loop churns on
+          // files the model cannot actually fix. The check is per-file, so a
+          // fix that breaks a *different* file (e.g. an export-signature
+          // change breaking an importer) is not caught here — the re-review
+          // and verification phases still surface those.
+          const written = writeFixedFile(projectRoot, file.file, fixedContent)
+          if (!written) continue
+          const before = baseline.get(file.file) ?? 0
+          const after = await typecheckCountsFor(testRunner, [file.file])
+          const afterCount = after?.get(file.file) ?? Number.MAX_SAFE_INTEGER
+          const worsened = afterCount > before
+          const noProgress = before > 0 && afterCount === before
+          if (after === null || worsened || noProgress) {
+            compileRejected.add(file.file)
+            const reverted = writeFixedFile(projectRoot, file.file, content)
+            if (after === null) {
+              healLog.push(`- \`${file.file}\`: fix skipped (compile gate unavailable)${reverted ? '; reverted' : '; revert failed'}`)
+            } else if (noProgress) {
+              healLog.push(`- \`${file.file}\`: fix rejected by compile gate (${before} → ${afterCount} type error(s), no progress); reverted`)
+            } else {
+              healLog.push(`- \`${file.file}\`: fix rejected by compile gate (${before} → ${afterCount} type error(s))${reverted ? '; reverted' : '; revert failed'}`)
+            }
+            continue
+          }
+          // Remember the original so a failed heal can put it back.
+          if (!healedFiles.has(file.file)) {
+            healedFiles.set(file.file, content)
+          }
+          file.artifact.content = fixedContent
+          fixed++
+          healLog.push(`- \`${file.file}\`: fixed ${errorFindings.length} finding(s) (compile gate: ${before} → ${afterCount} type error(s))`)
+          continue
+        }
+
+        // No compile gate available: trust the model fix as before.
         const written = writeFixedFile(projectRoot, file.file, fixedContent)
         if (written) {
           // Remember the original so a failed heal can put it back.
@@ -620,7 +715,7 @@ export const codeReviewPhase: WorkflowPhase = {
       '',
       `**Summary:** ${totalErrors} error(s), ${totalWarnings} warning(s), ${totalInfos} info note(s)`,
       `**Files reviewed:** ${(implPhase.artifacts || []).length + (testPhase?.artifacts || []).length}`,
-      `**Heal policy:** ${maxAttempts} attempt(s), severity ≥ ${healSeverity}, tool checks ${doToolChecks ? 'on' : 'off'}`,
+      `**Heal policy:** ${maxAttempts} attempt(s), severity ≥ ${healSeverity}, tool checks ${doToolChecks ? 'on' : 'off'}, compile gate ${compileGateAvailable ? 'on' : 'off'}`,
       llmReviewed
         ? '**Reviewer:** LLM + rule-based analyzer'
         : '**Reviewer:** rule-based analyzer (LLM unavailable)',

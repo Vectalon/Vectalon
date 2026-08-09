@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs'
+import { join } from 'path'
 import { codeReviewPhase } from '../../src/workflows/phases/codeReviewPhase'
 import type { WorkflowContext, PhaseResult, WorkflowArtifact, TestRunnerAdapter } from '../../src/adapters/types'
 import type { ModelRouter } from '../../src/model/ModelRouter'
@@ -744,6 +746,394 @@ describe('codeReviewPhase', () => {
       expect(result.status).toBe('failed')
       expect(fixCall).toBe(1)
       expect(result.output).toContain('fix rejected by user')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('accepts a fix that clears type errors (compile gate)', async () => {
+    const dir = createTempProject({})
+    try {
+      // Baseline typecheck reports 1 error in the file; the model fix makes
+      // it compile clean, so the gate accepts (1 → 0) and the phase passes.
+      let typecheckCalls = 0
+      let fixCall = 0
+      const testRunner: TestRunnerAdapter = {
+        name: 'test',
+        runTests: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+        runLint: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+        runTypeCheck: jest.fn(async () => {
+          typecheckCalls++
+          // Baseline (call 1) fails with 1 error; after the fix it passes.
+          return typecheckCalls === 1
+            ? { success: false, stdout: 'src/Bad.ts(2,5): error TS2322: Type \'string\' is not assignable to type \'number\'.\n', stderr: '', exitCode: 1 }
+            : { success: true, stdout: '', stderr: '', exitCode: 0 }
+        }),
+      }
+      const router = {
+        generate: jest.fn(async (req: ModelRequest) => {
+          const prompt = req.prompt || ''
+          if (prompt.includes('# Findings to resolve')) {
+            fixCall++
+            return { content: 'const value: number = 1', provider: 'test' }
+          }
+          return prompt.includes('Bad.ts')
+            ? fixCall > 0
+              ? { content: JSON.stringify({ verdict: 'approved', summary: 'Fixed', findings: [] }), provider: 'test' }
+              : {
+                  content: JSON.stringify({
+                    verdict: 'changes-requested',
+                    summary: 'Uses any',
+                    findings: [{ severity: 'error', rule: 'no-any', message: 'Avoid any', line: 1 }],
+                  }),
+                  provider: 'test',
+                }
+            : { content: JSON.stringify({ verdict: 'approved', summary: 'Clean', findings: [] }), provider: 'test' }
+        }),
+      } as unknown as ModelRouter
+
+      const ctx = makeContext({
+        phases: [
+          phase('implementation', 'Implementation', [
+            {
+              type: 'engineering',
+              title: 'Bad.ts',
+              content: 'const value: any = "x"',
+              path: 'src/Bad.ts',
+            },
+          ]),
+        ],
+      }, router, dir, { adapters: { testRunner } as WorkflowContext['adapters'] })
+
+      const result = await codeReviewPhase.run(ctx)
+
+      expect(result.status).toBe('completed')
+      expect(fixCall).toBe(1)
+      expect(result.output).toContain('compile gate: 1 → 0 type error(s)')
+      // The accepted fix is on disk.
+      expect(readFileSync(join(dir, 'src/Bad.ts'), 'utf-8')).toBe('const value: number = 1')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('rejects a fix that makes type errors worse and reverts the file (compile gate)', async () => {
+    const dir = createTempProject({})
+    try {
+      // Baseline is clean (0 errors); the model fix introduces a type error,
+      // so the gate rejects it (0 → 1), reverts to the original, and caps the
+      // file so the loop never churns on it again.
+      let typecheckCalls = 0
+      let fixCall = 0
+      const testRunner: TestRunnerAdapter = {
+        name: 'test',
+        runTests: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+        runLint: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+        runTypeCheck: jest.fn(async () => {
+          typecheckCalls++
+          // Baseline (call 1) passes; after the bad fix it fails with 1 error.
+          return typecheckCalls === 1
+            ? { success: true, stdout: '', stderr: '', exitCode: 0 }
+            : { success: false, stdout: 'src/Bad.ts(2,5): error TS2322: Type \'string\' is not assignable to type \'number\'.\n', stderr: '', exitCode: 1 }
+        }),
+      }
+      const router = {
+        generate: jest.fn(async (req: ModelRequest) => {
+          const prompt = req.prompt || ''
+          if (prompt.includes('# Findings to resolve')) {
+            fixCall++
+            return { content: 'const value: number = "x"', provider: 'test' }
+          }
+          return prompt.includes('Bad.ts')
+            ? {
+                content: JSON.stringify({
+                  verdict: 'changes-requested',
+                  summary: 'Uses any',
+                  findings: [{ severity: 'error', rule: 'no-any', message: 'Avoid any', line: 1 }],
+                }),
+                provider: 'test',
+              }
+            : { content: JSON.stringify({ verdict: 'approved', summary: 'Clean', findings: [] }), provider: 'test' }
+        }),
+      } as unknown as ModelRouter
+
+      const ctx = makeContext({
+        phases: [
+          phase('implementation', 'Implementation', [
+            {
+              type: 'engineering',
+              title: 'Bad.ts',
+              content: 'const value: any = "x"',
+              path: 'src/Bad.ts',
+            },
+          ]),
+        ],
+      }, router, dir, { adapters: { testRunner } as WorkflowContext['adapters'] })
+
+      const result = await codeReviewPhase.run(ctx)
+
+      expect(result.status).toBe('failed')
+      expect(fixCall).toBe(1)
+      expect(result.output).toContain('fix rejected by compile gate (0 → 1 type error(s)); reverted')
+      expect(result.output).toContain('No files could be auto-fixed')
+      // The file was reverted to the original content.
+      expect(readFileSync(join(dir, 'src/Bad.ts'), 'utf-8')).toBe('const value: any = "x"')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('caps a file after a rejected fix: never re-heals it in later attempts', async () => {
+    const dir = createTempProject({})
+    try {
+      // Both files fail review with an error finding. A's fix makes type
+      // errors worse (rejected + capped); B's fix compiles clean (accepted),
+      // so the heal loop continues. On the next heal attempt, capped A is
+      // skipped without calling the model again.
+      let typecheckCalls = 0
+      const fixCalls: string[] = []
+      let bFixed = false
+      const testRunner: TestRunnerAdapter = {
+        name: 'test',
+        runTests: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+        runLint: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+        runTypeCheck: jest.fn(async () => {
+          typecheckCalls++
+          if (typecheckCalls === 1 || typecheckCalls === 4) return { success: true, stdout: '', stderr: '', exitCode: 0 }
+          if (typecheckCalls === 2) {
+            // After A's fix: fails with an error in A.ts.
+            return { success: false, stdout: 'src/A.ts(2,5): error TS2322: Type \'string\' is not assignable to type \'number\'.\n', stderr: '', exitCode: 1 }
+          }
+          // After B's fix: passes.
+          return { success: true, stdout: '', stderr: '', exitCode: 0 }
+        }),
+      }
+      const router = {
+        generate: jest.fn(async (req: ModelRequest) => {
+          const prompt = req.prompt || ''
+          if (prompt.includes('# Findings to resolve')) {
+            if (prompt.includes('src/A.ts')) fixCalls.push('A')
+            if (prompt.includes('src/B.ts')) {
+              fixCalls.push('B')
+              bFixed = true
+            }
+            return prompt.includes('src/A.ts')
+              ? { content: 'export const a: number = "x"', provider: 'test' }
+              : { content: 'export const b: number = 2', provider: 'test' }
+          }
+          // Review calls: A always flagged; B only until its fix lands.
+          const findings = { verdict: 'changes-requested', summary: 'Uses any', findings: [{ severity: 'error', rule: 'no-any', message: 'Avoid any', line: 1 }] }
+          return {
+            content: JSON.stringify(prompt.includes('src/A.ts') || !bFixed ? findings : { verdict: 'approved', summary: 'Clean', findings: [] }),
+            provider: 'test',
+          }
+        }),
+      } as unknown as ModelRouter
+
+      const ctx = makeContext({
+        phases: [
+          phase('implementation', 'Implementation', [
+            { type: 'engineering', title: 'A.ts', content: 'export const a: any = 1', path: 'src/A.ts' },
+            { type: 'engineering', title: 'B.ts', content: 'export const b: any = 2', path: 'src/B.ts' },
+          ]),
+        ],
+      }, router, dir, { adapters: { testRunner } as WorkflowContext['adapters'] })
+
+      const result = await codeReviewPhase.run(ctx)
+
+      expect(result.status).toBe('failed')
+      // A was attempted once and never again despite its finding persisting.
+      expect(fixCalls).toEqual(['A', 'B'])
+      expect(result.output).toContain('fix rejected by compile gate (0 → 1 type error(s)); reverted')
+      expect(result.output).toContain('skipped (previous fix failed the compile gate)')
+      // A reverted to original; B was accepted then restored to original when
+      // the phase ultimately failed (A's finding persisted).
+      expect(readFileSync(join(dir, 'src/A.ts'), 'utf-8')).toBe('export const a: any = 1')
+      expect(readFileSync(join(dir, 'src/B.ts'), 'utf-8')).toBe('export const b: any = 2')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('rejects a fix that makes no typecheck progress (same error count)', async () => {
+    const dir = createTempProject({})
+    try {
+      // Baseline already has 1 error; the model fix leaves it at 1 (fixes one
+      // error, introduces another) — no compile progress, so the gate rejects
+      // it rather than letting the heal loop churn on an unfixable file.
+      let fixCall = 0
+      const testRunner: TestRunnerAdapter = {
+        name: 'test',
+        runTests: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+        runLint: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+        runTypeCheck: jest.fn(async () => ({
+          success: false,
+          stdout: 'src/Bad.ts(2,5): error TS2322: Type \'string\' is not assignable to type \'number\'.\n',
+          stderr: '',
+          exitCode: 1,
+        })),
+      }
+      const router = {
+        generate: jest.fn(async (req: ModelRequest) => {
+          const prompt = req.prompt || ''
+          if (prompt.includes('# Findings to resolve')) {
+            fixCall++
+            return { content: 'const value: number = "x"', provider: 'test' }
+          }
+          return prompt.includes('Bad.ts')
+            ? {
+                content: JSON.stringify({
+                  verdict: 'changes-requested',
+                  summary: 'Uses any',
+                  findings: [{ severity: 'error', rule: 'no-any', message: 'Avoid any', line: 1 }],
+                }),
+                provider: 'test',
+              }
+            : { content: JSON.stringify({ verdict: 'approved', summary: 'Clean', findings: [] }), provider: 'test' }
+        }),
+      } as unknown as ModelRouter
+
+      const ctx = makeContext({
+        phases: [
+          phase('implementation', 'Implementation', [
+            {
+              type: 'engineering',
+              title: 'Bad.ts',
+              content: 'const value: any = "x"',
+              path: 'src/Bad.ts',
+            },
+          ]),
+        ],
+      }, router, dir, { adapters: { testRunner } as WorkflowContext['adapters'] })
+
+      const result = await codeReviewPhase.run(ctx)
+
+      expect(result.status).toBe('failed')
+      expect(fixCall).toBe(1)
+      expect(result.output).toContain('no progress); reverted')
+      expect(readFileSync(join(dir, 'src/Bad.ts'), 'utf-8')).toBe('const value: any = "x"')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('reverts and caps when the typecheck becomes unavailable mid-heal', async () => {
+    const dir = createTempProject({})
+    try {
+      // Baseline succeeds; the verification typecheck after writing the fix
+      // throws (e.g. tsc binary disappears). The gate must treat that as
+      // "cannot verify" — revert, cap, and keep the loop honest.
+      let fixCall = 0
+      let typecheckCalls = 0
+      const testRunner: TestRunnerAdapter = {
+        name: 'test',
+        runTests: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+        runLint: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+        runTypeCheck: jest.fn(async () => {
+          typecheckCalls++
+          // Baseline (call 1) succeeds; the post-fix verification crashes.
+          if (typecheckCalls === 1) return { success: true, stdout: '', stderr: '', exitCode: 0 }
+          throw new Error('tsc crashed')
+        }),
+      }
+      const router = {
+        generate: jest.fn(async (req: ModelRequest) => {
+          const prompt = req.prompt || ''
+          if (prompt.includes('# Findings to resolve')) {
+            fixCall++
+            return { content: 'const value: number = 1', provider: 'test' }
+          }
+          return prompt.includes('Bad.ts')
+            ? {
+                content: JSON.stringify({
+                  verdict: 'changes-requested',
+                  summary: 'Uses any',
+                  findings: [{ severity: 'error', rule: 'no-any', message: 'Avoid any', line: 1 }],
+                }),
+                provider: 'test',
+              }
+            : { content: JSON.stringify({ verdict: 'approved', summary: 'Clean', findings: [] }), provider: 'test' }
+        }),
+      } as unknown as ModelRouter
+
+      const ctx = makeContext({
+        phases: [
+          phase('implementation', 'Implementation', [
+            {
+              type: 'engineering',
+              title: 'Bad.ts',
+              content: 'const value: any = "x"',
+              path: 'src/Bad.ts',
+            },
+          ]),
+        ],
+      }, router, dir, { adapters: { testRunner } as WorkflowContext['adapters'] })
+
+      const result = await codeReviewPhase.run(ctx)
+
+      expect(result.status).toBe('failed')
+      expect(fixCall).toBe(1)
+      expect(result.output).toContain('compile gate unavailable')
+      expect(result.output).toContain('reverted')
+      expect(readFileSync(join(dir, 'src/Bad.ts'), 'utf-8')).toBe('const value: any = "x"')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('falls back to trusting fixes when the project has no typecheck script', async () => {
+    const dir = createTempProject({})
+    try {
+      // No runTypeCheck on the runner → compile gate is off; heals trust the
+      // model fix exactly as before, and the report says so.
+      let fixCall = 0
+      const testRunner: TestRunnerAdapter = {
+        name: 'test',
+        runTests: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+        runLint: jest.fn(async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 })),
+      } as TestRunnerAdapter
+      const router = {
+        generate: jest.fn(async (req: ModelRequest) => {
+          const prompt = req.prompt || ''
+          if (prompt.includes('# Findings to resolve')) {
+            fixCall++
+            return { content: 'const value: number = 1', provider: 'test' }
+          }
+          return prompt.includes('Bad.ts')
+            ? fixCall > 0
+              ? { content: JSON.stringify({ verdict: 'approved', summary: 'Fixed', findings: [] }), provider: 'test' }
+              : {
+                  content: JSON.stringify({
+                    verdict: 'changes-requested',
+                    summary: 'Uses any',
+                    findings: [{ severity: 'error', rule: 'no-any', message: 'Avoid any', line: 1 }],
+                  }),
+                  provider: 'test',
+                }
+            : { content: JSON.stringify({ verdict: 'approved', summary: 'Clean', findings: [] }), provider: 'test' }
+        }),
+      } as unknown as ModelRouter
+
+      const ctx = makeContext({
+        phases: [
+          phase('implementation', 'Implementation', [
+            {
+              type: 'engineering',
+              title: 'Bad.ts',
+              content: 'const value: any = 1',
+              path: 'src/Bad.ts',
+            },
+          ]),
+        ],
+      }, router, dir, { adapters: { testRunner } as WorkflowContext['adapters'] })
+
+      const result = await codeReviewPhase.run(ctx)
+
+      expect(result.status).toBe('completed')
+      expect(fixCall).toBe(1)
+      expect(result.output).toContain('compile gate off')
+      expect(result.output).toContain('fixed 1 finding(s)')
+      expect(readFileSync(join(dir, 'src/Bad.ts'), 'utf-8')).toBe('const value: number = 1')
     } finally {
       cleanup(dir)
     }
