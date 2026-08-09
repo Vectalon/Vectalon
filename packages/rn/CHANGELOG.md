@@ -5,6 +5,40 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.22] - 2026-08-09
+
+### Added
+
+- **Compile-checked self-healing** — the code-review fix loop now typechecks
+  every LLM fix (`tsc`) before accepting it: a fix that doesn't reduce the
+  error count is reverted, and heals are capped per file. Agents can no longer
+  "fix" code into a worse state. Backed by an end-to-end golden test that runs
+  the real TypeScript compiler.
+- **Golden test harness + CLI demo** — `runGoldenFeatureWorkflow` replays the
+  full 13-phase feature workflow against a scaffold with a scripted model
+  router (no model download, deterministic), turning the demo into a
+  CI-detectable regression harness. Ships a non-Expo CLI demo
+  (`apps/website/demo/cli-app`) proving the toolchain isn't Expo-only, and a
+  deterministic generator for the Expo login demo
+  (`scripts/generate-expo-demo.js`) so both demos are regenerable.
+- **RN best-practices in generated code** — generated screens now use
+  `Pressable` over `TouchableOpacity`, ternaries over `{x && <…>}` leaked
+  renders, and `borderCurve: "continuous"` with `borderRadius`. Templates
+  typecheck on Expo SDK 53 / React 19. Both demo projects were regenerated to
+  ship the new patterns.
+- **New guardrail rules** — `use-pressable` + `no-leaked-render` added to the
+  on-save guardrails (36 total), matching the analyzer exactly (same regex and
+  message), so the editor flags them on save too.
+- **New code-review analyzer rules** — `animation-layout-props`,
+  `animation-press-gesture`, `navigation-native-stack`, and
+  `list-scrollview-map` from the Vercel RN skills audit. All six RN
+  best-practices rules carry `LLM_RULE_SIGNALS` entries, so LLM findings on
+  them are hallucination-verified against the actual code (33 rules total).
+- **Docs & diagrams** — README and CLI reference refreshed with every command
+  and feature (including `vectalon status` and `serve --safe-mode`), and
+  Excalidraw diagrams of the 13-phase feature workflow and the
+  compile-checked healing loop.
+
 ## [0.1.21] - 2026-08-09
 
 ### Fixed
