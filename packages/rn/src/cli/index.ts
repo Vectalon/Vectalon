@@ -28,7 +28,7 @@ import { trainCommand } from './commands/train'
 import { ecosystemCommand } from './commands/ecosystem'
 import { syncCommand } from './commands/sync'
 import { benchCommand } from './commands/bench'
-import { leaderboardCommand } from './commands/leaderboard'
+import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
 import { impactCommand } from './commands/impact'
 import { doctorCommand } from './commands/doctor'
 import { selftestCommand } from './commands/selftest'
@@ -326,7 +326,11 @@ export function createProgram(): Command {
     .option('--json', 'Print the merged runs as JSON instead of markdown')
     .option('--timestamp <iso>', 'Override the leaderboard timestamp (default now)')
     .option('--pr-comment', 'Print a compact PR comment (with upsert marker) instead of writing markdown')
-    .action(leaderboardCommand)
+    // Commander passes (directory, options); merge the positional into dir so
+    // both `leaderboard bench/results` and `leaderboard --json` behave alike.
+    .action((directory: string | undefined, opts: LeaderboardCommandOptions) =>
+      leaderboardCommand({ ...opts, dir: directory || opts.dir })
+    )
 
   return program
 }
