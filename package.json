@@ -5,7 +5,8 @@
   "description": "Vectalon monorepo — the adaptive AI harness for React Native and beyond",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "!apps/website/demo/**"
   ],
   "scripts": {
     "build": "turbo run build",

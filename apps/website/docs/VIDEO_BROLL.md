@@ -18,6 +18,23 @@ should be recorded live during narration.
 
 ---
 
+## Demo project (use this for every clip)
+
+All six clips are shot in the **same app** — the login-feature demo project the
+video builds, committed in-repo at
+[**`apps/website/demo/login-app`**](../demo/login-app/). It already contains
+the completed feature workflow's paper trail (`docs/vectalon/...`, 11 phase
+docs + workflow-state showing 13/13 phases green), the Hermes `app.cpuprofile`
+fixture, the `telemetry/` Sentry/Crashlytics exports, and a
+[**`REPLAY.md`**](../demo/login-app/REPLAY.md) shoot guide with per-clip reset +
+re-run commands and the dev-CLI alias.
+
+Clone the repo, `cd apps/website/demo/login-app && npm ci`, then follow
+REPLAY.md — **never re-run the 10-minute feature workflow live**; the capture
+in `docs/vectalon/` is the footage.
+
+---
+
 ## Clip 1 — `init` (video section 3, 1:00–2:30)
 
 | Field | Value |

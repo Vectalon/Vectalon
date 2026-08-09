@@ -62,8 +62,15 @@ npx vectalon selftest    # tests EVERY feature live, with progress + real model 
 `selftest` is the killer onboarding tool: it runs real checks for every module
 (CLI, SDLC, guardrails, knowledge, MCP tools, workflows, bench, sandbox…) with
 live progress, and writes `report.json` / `report.log` / `report.html` under
-`.vectalon/selftest/`. Run `npx vectalon selftest --list` to see every check
-ID. If selftest passes, the whole package works.
+`.vectalon/selftest/`. Run `npx vectalon selftest --list` to see everycheck ID. If selftest passes, the whole package works.
+
+**Want to see it all working before you touch your own project?** Clone the
+[**demo app the onboarding video builds**](../demo/login-app/) — a login-screen
+feature on Expo SDK 53 with the full workflow already run end-to-end
+(`docs/vectalon/` inside it shows every phase doc + a green workflow state).
+`cd apps/website/demo/login-app && npm ci`, then run `vectalon doctor`,
+`vectalon selftest`, and `vectalon bundle --static` against it to watch the
+tools work on a real project.
 
 ---
 

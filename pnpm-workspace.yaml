@@ -1,3 +1,7 @@
 packages:
   - apps/*
   - packages/*
+  # apps/website/demo/login-app is a scratch demo (own npm lockfile + jest
+  # config); keep it out of the workspace so pnpm/turbo/CI never install or
+  # test it, even if the globs above are broadened.
+  - '!apps/website/demo/**'
