@@ -23,7 +23,7 @@ should be recorded live during narration.
 All six clips are shot in the **same app** — the login-feature demo project the
 video builds, committed in-repo at
 [**`apps/website/demo/login-app`**](../demo/login-app/). It already contains
-the completed feature workflow's paper trail (`docs/vectalon/...`, 11 phase
+the completed feature workflow's paper trail (`docs/vectalon/...`, 13 phase
 docs + workflow-state showing 13/13 phases green), the Hermes `app.cpuprofile`
 fixture, the `telemetry/` Sentry/Crashlytics exports, and a
 [**`REPLAY.md`**](../demo/login-app/REPLAY.md) shoot guide with per-clip reset +

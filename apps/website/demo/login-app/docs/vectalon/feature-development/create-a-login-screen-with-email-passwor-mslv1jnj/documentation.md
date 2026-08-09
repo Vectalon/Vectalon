@@ -13,7 +13,7 @@
 
 ## README.md
 ```markdown
-### Add feature: login
+### Add feature: create a login screen with email password
 
 This feature adds a new screen and API integration.
 

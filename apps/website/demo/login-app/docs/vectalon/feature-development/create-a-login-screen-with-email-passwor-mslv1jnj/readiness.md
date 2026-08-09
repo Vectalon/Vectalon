@@ -13,7 +13,7 @@ Feature: create a login screen with email password
 - [x] Verification completed
 
 ## Go / No-go
-Status: GO — verification completed. All checks passed and the feature is ready for review.
+Status: GO — verification completed. However, verification ran in simulation mode. Configure real test/simulator adapters before merging.
 
 ## Recommended reviewers
 - Mobile lead (architecture and native config)

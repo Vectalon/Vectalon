@@ -1,6 +1,6 @@
 # Feature scoping and impact analysis
 
-# Add feature: login
+# Add feature: create a login screen with email password
 
 Detected intent: add-feature
 
@@ -9,6 +9,9 @@ Detected intent: add-feature
 - Navigation
 - Session management
 - Secure storage
+- Screen components
+- Navigation registration
+- UI tests
 
 ## New dependencies to evaluate
 - @react-native-async-storage/async-storage or react-native-keychain

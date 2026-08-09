@@ -14,7 +14,7 @@ describe('useCreateLoginScreenEmailPassword', () => {
   it('stores the result after running', async () => {
     const { result } = await renderHook(() => useCreateLoginScreenEmailPassword());
     await act(async () => {
-      await result.current.run('a@b.com', 'secret');
+      await result.current.run();
     });
     expect(result.current.data).toBe('ok');
     expect(result.current.loading).toBe(false);

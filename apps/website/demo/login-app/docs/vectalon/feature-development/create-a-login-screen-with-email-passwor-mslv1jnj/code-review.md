@@ -2,60 +2,47 @@
 
 # Code Review Report
 
-**Summary:** 0 error(s), 3 warning(s), 13 info note(s)
+**Summary:** 0 error(s), 2 warning(s), 5 info note(s)
 **Files reviewed:** 9
-**Heal policy:** 3 attempt(s), severity ≥ error, tool checks on
+**Heal policy:** 3 attempt(s), severity ≥ error, tool checks on, compile gate on
 **Reviewer:** LLM + rule-based analyzer
 
 ## Findings by file
 
-### src/screens/CreateLoginScreenEmailPasswordScreen.tsx
+### src/services/CreateLoginScreenEmailPasswordApi.ts
 
-**LLM review:** 🚫 changes requested — Several issues found in the code, including missing key props, security risks, and missing cleanup functions.
-🟡 **missing-accessibility** (line 20): The interactive element does not have an accessibilityLabel and accessibilityRole. This can lead to accessibility issues. — *suggestion:* Add accessibilityLabel and accessibilityRole to the interactive element.
-
-**Rule-based findings:**
-🟡 **unreachable-code** (line 25): Code after return/throw/break is unreachable.
-🟡 **missing-accessibility** (line 51): Interactive elements should have accessibilityLabel and accessibilityRole.
-🔵 **magic-number** (line 72): Extract magic numbers into named constants.
-🔵 **magic-number** (line 76): Extract magic numbers into named constants.
-🔵 **magic-number** (line 77): Extract magic numbers into named constants.
-🔵 **magic-number** (line 78): Extract magic numbers into named constants.
-🔵 **magic-number** (line 79): Extract magic numbers into named constants.
-🔵 **magic-number** (line 82): Extract magic numbers into named constants.
-🔵 **magic-number** (line 89): Extract magic numbers into named constants.
-🔵 **magic-number** (line 90): Extract magic numbers into named constants.
-🔵 **magic-number** (line 91): Extract magic numbers into named constants.
+**LLM review:** ✅ approved — Clean code (golden replay)
 
 ### src/hooks/useCreateLoginScreenEmailPassword.ts
 
-**LLM review:** ✅ approved — The code contains several issues that need to be addressed to ensure correctness, security, and accessibility. (unsupported findings cleared by code verification)
+**LLM review:** ✅ approved — Clean code (golden replay)
 
-### src/services/CreateLoginScreenEmailPasswordApi.ts
+### src/screens/CreateLoginScreenEmailPasswordScreen.tsx
 
-**LLM review:** ✅ approved — The code contains several issues that need to be addressed. (unsupported findings cleared by code verification)
-
-**Rule-based findings:**
-🔵 **magic-number** (line 7): Extract magic numbers into named constants.
-
-### /private/tmp/vectalon-demo/login-app/src/__tests__/CreateLoginScreenEmailPassword.tsx
-
-**LLM review:** ✅ approved — The code contains several issues that need to be addressed before merging. (unsupported findings cleared by code verification)
-
-### /private/tmp/vectalon-demo/login-app/src/__tests__/useCreateLoginScreenEmailPassword.ts
-
-**LLM review:** ✅ approved — Several issues found in the code, including missing cleanup functions, security risks, and accessibility issues. (unsupported findings cleared by code verification)
-
-### /private/tmp/vectalon-demo/login-app/src/__tests__/CreateLoginScreenEmailPasswordApi.ts
-
-**LLM review:** ✅ approved — The code contains several issues that need to be addressed. (unsupported findings cleared by code verification)
+**LLM review:** ✅ approved — Clean code (golden replay)
 
 **Rule-based findings:**
-🔵 **magic-number** (line 7): Extract magic numbers into named constants.
+🟡 **unreachable-code** (line 9): Code after return/throw/break is unreachable.
+🟡 **missing-accessibility** (line 15): Interactive elements should have accessibilityLabel and accessibilityRole.
+🔵 **magic-number** (line 28): Extract magic numbers into named constants.
+🔵 **magic-number** (line 29): Extract magic numbers into named constants.
+🔵 **magic-number** (line 30): Extract magic numbers into named constants.
 
-### /private/tmp/vectalon-demo/login-app/.maestro/CreateLoginScreenEmailPassword.yaml
+### /Users/bhishaksanyal/Documents/Github/Vectalon/apps/website/demo/login-app/src/__tests__/CreateLoginScreenEmailPassword.tsx
 
-**LLM review:** ✅ approved — The code contains several issues that need to be addressed before merging. (unsupported findings cleared by code verification)
+**LLM review:** ✅ approved — Clean code (golden replay)
+
+### /Users/bhishaksanyal/Documents/Github/Vectalon/apps/website/demo/login-app/src/__tests__/useCreateLoginScreenEmailPassword.ts
+
+**LLM review:** ✅ approved — Clean code (golden replay)
+
+### /Users/bhishaksanyal/Documents/Github/Vectalon/apps/website/demo/login-app/src/__tests__/CreateLoginScreenEmailPasswordApi.ts
+
+**LLM review:** ✅ approved — Clean code (golden replay)
+
+### /Users/bhishaksanyal/Documents/Github/Vectalon/apps/website/demo/login-app/.maestro/CreateLoginScreenEmailPassword.yaml
+
+**LLM review:** ✅ approved — Clean code (golden replay)
 
 
 ## Rules checked
@@ -76,7 +63,13 @@
 🟡 `missing-use-effect-cleanup` — warnings: useEffect subscriptions, timers, or listeners should return a cleanup function.
 🟡 `use-effect-missing-deps` — warnings: useEffect dependency array may be missing values used inside.
 🟡 `missing-accessibility` — warnings: Interactive elements should have accessibilityLabel and accessibilityRole.
+🟡 `use-pressable` — warnings: Prefer Pressable over TouchableOpacity — Pressable offers full press-state control and better accessibility defaults.
+🟡 `no-leaked-render` — warnings: Avoid {value && <Component />} when value can be a falsy string or number — use {value ? <Component /> : null} to prevent a production crash (or coerce with !!value &&).
 🟡 `inline-deps-object` — warnings: Avoid creating new objects/arrays inside useEffect/useCallback dependency arrays — causes unnecessary re-runs.
+🟡 `animation-layout-props` — warnings: Animate only transform and opacity — width/height/top/left/margin/padding trigger layout recalculation on every frame.
+🟡 `animation-press-gesture` — warnings: Animated press states should use GestureDetector with Gesture.Tap() (UI-thread worklets) instead of onPressIn/onPressOut (JS thread).
+🟡 `navigation-native-stack` — warnings: Use the native navigators — @react-navigation/native-stack or native tabs — instead of the JS @react-navigation/stack or bottom-tabs.
+🟡 `list-scrollview-map` — warnings: ScrollView renders every child at once — use a virtualizer (FlashList or LegendList) for mapped lists.
 🟡 `var-usage` — warnings: Use let or const instead of var.
 🟡 `loose-equality` — warnings: Use strict equality (=== / !==) instead of == / !=.
 🔵 `todo-comment` — infos: Address the TODO or FIXME before merge.

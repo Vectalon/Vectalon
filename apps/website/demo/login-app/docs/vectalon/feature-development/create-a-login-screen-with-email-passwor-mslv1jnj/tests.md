@@ -8,10 +8,10 @@ Acceptance criteria source: PRD / acceptance criteria captured
 
 ## Test files written (4)
 
-- `/private/tmp/vectalon-demo/login-app/src/__tests__/CreateLoginScreenEmailPassword.tsx`
-- `/private/tmp/vectalon-demo/login-app/src/__tests__/useCreateLoginScreenEmailPassword.ts`
-- `/private/tmp/vectalon-demo/login-app/src/__tests__/CreateLoginScreenEmailPasswordApi.ts`
-- `/private/tmp/vectalon-demo/login-app/.maestro/CreateLoginScreenEmailPassword.yaml`
+- `/Users/bhishaksanyal/Documents/Github/Vectalon/apps/website/demo/login-app/src/__tests__/CreateLoginScreenEmailPassword.tsx`
+- `/Users/bhishaksanyal/Documents/Github/Vectalon/apps/website/demo/login-app/src/__tests__/useCreateLoginScreenEmailPassword.ts`
+- `/Users/bhishaksanyal/Documents/Github/Vectalon/apps/website/demo/login-app/src/__tests__/CreateLoginScreenEmailPasswordApi.ts`
+- `/Users/bhishaksanyal/Documents/Github/Vectalon/apps/website/demo/login-app/.maestro/CreateLoginScreenEmailPassword.yaml`
 
 ## E2E flow
 

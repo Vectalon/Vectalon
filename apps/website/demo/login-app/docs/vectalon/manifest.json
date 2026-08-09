@@ -1,10 +1,10 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.21",
   "projectName": "login-app",
   "rnVersion": "0.79.0",
   "tooling": "expo",
   "expoSdkVersion": "~53.0.0",
-  "initializedAt": 1786265370174,
+  "initializedAt": 1786283445468,
   "modelProvider": "local",
   "autoLearn": true,
   "modelConfig": {
