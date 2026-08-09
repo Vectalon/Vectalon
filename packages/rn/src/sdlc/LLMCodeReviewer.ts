@@ -290,6 +290,8 @@ export const LLM_RULE_SIGNALS: Record<string, RegExp> = {
   'no-empty-catch': /catch\s*(\([^)]*\))?\s*\{\s*\}/,
   'missing-accessibility': /(TouchableOpacity|TouchableHighlight|TouchableWithoutFeedback|Pressable|Button|TextInput)/,
   'accessibility-labels': /(TouchableOpacity|TouchableHighlight|TouchableWithoutFeedback|Pressable|Button|TextInput)/,
+  'use-pressable': /\bTouchableOpacity\b/,
+  'no-leaked-render': /\{\s*[A-Za-z_$][\w$.?]*\s*&&\s*</,
   'no-sync-native-module-calls': /NativeModules|TurboModuleRegistry/,
   'no-set-native-props': /setNativeProps/,
   'no-forward-ref': /forwardRef/,

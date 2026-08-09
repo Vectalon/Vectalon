@@ -26,13 +26,13 @@ declare module 'react' {
 }
 declare module 'react-native' {
   const Text: any
-  const TouchableOpacity: any
+  const Pressable: any
   const ActivityIndicator: any
   const StyleSheet: any
   const SafeAreaView: any
   const View: any
   const TextInput: any
-  export { Text, TouchableOpacity, ActivityIndicator, StyleSheet, SafeAreaView, View, TextInput }
+  export { Text, Pressable, ActivityIndicator, StyleSheet, SafeAreaView, View, TextInput }
 }
 declare module '@testing-library/react-native' {
   const render: any

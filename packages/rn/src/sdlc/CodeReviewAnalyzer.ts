@@ -170,6 +170,18 @@ const RULES: RuleDef[] = [
       !line.includes('accessibilityLabel') &&
       !line.includes('accessibilityRole'),
   },
+  {
+    id: 'use-pressable',
+    severity: 'warning',
+    message: 'Prefer Pressable over TouchableOpacity — Pressable offers full press-state control and better accessibility defaults.',
+    test: (line) => /\bTouchableOpacity\b/.test(line),
+  },
+  {
+    id: 'no-leaked-render',
+    severity: 'warning',
+    message: 'Avoid {value && <Component />} when value can be a falsy string or number — use {value ? <Component /> : null} to prevent a production crash (or coerce with !!value &&).',
+    test: (line) => /\{\s*[A-Za-z_$][\w$.?]*\s*&&\s*</.test(line),
+  },
 
   // Performance
   {
