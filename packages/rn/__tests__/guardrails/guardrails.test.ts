@@ -5,15 +5,15 @@ describe('guardrails', () => {
     const result = runGuardrails({
       filePath: 'src/screens/HomeScreen.tsx',
       content: [
-        "import { Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';",
+        "import { Text, Pressable, StyleSheet, SafeAreaView } from 'react-native';",
         '',
         'export function HomeScreen(): JSX.Element {',
         '  return (',
         '    <SafeAreaView style={styles.container}>',
         '      <Text>Hello</Text>',
-        '      <TouchableOpacity onPress={() => {}} accessibilityLabel="Go">',
+        '      <Pressable onPress={() => {}} accessibilityLabel="Go">',
         '        <Text>Go</Text>',
-        '      </TouchableOpacity>',
+        '      </Pressable>',
         '    </SafeAreaView>',
         '  );',
         '}',
@@ -100,6 +100,49 @@ describe('guardrails', () => {
     const finding = result.findings.find(f => f.rule === 'No explicit any types')
     expect(finding).toBeDefined()
     expect(finding?.passed).toBe(false)
+  })
+
+  it('flags TouchableOpacity with use-pressable', () => {
+    const result = runGuardrails({
+      filePath: 'src/screens/Bad.tsx',
+      content:
+        "import { TouchableOpacity } from 'react-native';\nexport function Bad() { return <TouchableOpacity onPress={() => {}} accessibilityLabel=\"Go\"><Text>Go</Text></TouchableOpacity>; }",
+    })
+
+    const finding = result.findings.find(f => f.rule === 'Prefer Pressable over TouchableOpacity')
+    expect(finding).toBeDefined()
+    expect(finding?.passed).toBe(false)
+    expect(finding?.severity).toBe('warning')
+  })
+
+  it('flags leaked falsy renders with no-leaked-render', () => {
+    const result = runGuardrails({
+      filePath: 'src/screens/Bad.tsx',
+      content: 'export function Bad() { return <View>{error && <Text>{error.message}</Text>}</View>; }',
+    })
+
+    const finding = result.findings.find(f => f.rule === 'No leaked falsy values in JSX')
+    expect(finding).toBeDefined()
+    expect(finding?.passed).toBe(false)
+    expect(finding?.severity).toBe('warning')
+  })
+
+  it('respects the no-leaked-render escape hatches', () => {
+    const coerced = runGuardrails({
+      filePath: 'src/screens/Ok.tsx',
+      content: 'export function Ok() { return <View>{!!error && <Text>x</Text>}</View>; }',
+    })
+    const coercedFinding = coerced.findings.find(f => f.rule === 'No leaked falsy values in JSX')
+    expect(coercedFinding).toBeDefined()
+    expect(coercedFinding?.passed).toBe(true)
+
+    const ternary = runGuardrails({
+      filePath: 'src/screens/Ok.tsx',
+      content: 'export function Ok() { return <View>{error ? <Text>{error.message}</Text> : null}</View>; }',
+    })
+    const ternaryFinding = ternary.findings.find(f => f.rule === 'No leaked falsy values in JSX')
+    expect(ternaryFinding).toBeDefined()
+    expect(ternaryFinding?.passed).toBe(true)
   })
 
   it('flags deprecated AsyncStorage import', () => {

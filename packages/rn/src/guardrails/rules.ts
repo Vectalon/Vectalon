@@ -291,6 +291,42 @@ export const rules: GuardrailRule[] = [
     },
   },
   {
+    id: 'use-pressable',
+    name: 'Prefer Pressable over TouchableOpacity',
+    description: 'Pressable offers full press-state control (pressed/hovered/disabled) and better accessibility defaults than TouchableOpacity.',
+    severity: 'warning',
+    applicable: ({ filePath }) => /\.(tsx|jsx)$/.test(filePath),
+    check: ({ content }) => {
+      const match = content.match(/\bTouchableOpacity\b/)
+      if (match) {
+        return {
+          passed: false,
+          message: 'Prefer Pressable over TouchableOpacity — Pressable offers full press-state control and better accessibility defaults.',
+          line: findLine(content, match.index || 0),
+        }
+      }
+      return { passed: true }
+    },
+  },
+  {
+    id: 'no-leaked-render',
+    name: 'No leaked falsy values in JSX',
+    description: 'Avoid {value && <Component />} when value can be a falsy string or number — a leaked 0 or empty string renders on screen. Use {value ? <Component /> : null} or coerce with !!value &&.',
+    severity: 'warning',
+    applicable: ({ filePath }) => /\.(tsx|jsx)$/.test(filePath),
+    check: ({ content }) => {
+      const match = content.match(/\{\s*[A-Za-z_$][\w$.?]*\s*&&\s*</)
+      if (match) {
+        return {
+          passed: false,
+          message: 'Avoid {value && <Component />} — a falsy string/number leaks to the screen; use a ternary or !!value &&',
+          line: findLine(content, match.index || 0),
+        }
+      }
+      return { passed: true }
+    },
+  },
+  {
     id: 'no-deprecated-apis',
     name: 'No deprecated React Native APIs',
     description: 'Avoid deprecated APIs such as ListView, AsyncStorage from react-native, or AlertIOS.',

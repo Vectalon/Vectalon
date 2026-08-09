@@ -193,6 +193,41 @@ const RULES: RuleDef[] = [
       /\[\s*\{/.test(line),
   },
 
+  // Animation (GPU-accelerated) + Navigation + Lists
+  {
+    id: 'animation-layout-props',
+    severity: 'warning',
+    message: 'Animate only transform and opacity — width/height/top/left/margin/padding trigger layout recalculation on every frame.',
+    test: (line) =>
+      /\b(?:width|height|top|left|right|bottom|gap|margin\w*|padding\w*|flex\w*):\s*(?:withTiming|withSpring|withRepeat|withSequence|withDelay)\s*\(/.test(line),
+  },
+  {
+    id: 'animation-press-gesture',
+    severity: 'warning',
+    message: 'Animated press states should use GestureDetector with Gesture.Tap() (UI-thread worklets) instead of onPressIn/onPressOut (JS thread).',
+    test: (line, lines) => {
+      if (!/onPressIn\s*=|onPressOut\s*=/.test(line)) return false
+      // Only when the file actually animates — plain press handlers without
+      // animation are fine on Pressable.
+      const file = lines.join('\n')
+      return /useAnimatedStyle|useSharedValue|Animated\.(View|Text|Image|ScrollView)/.test(file)
+    },
+  },
+  {
+    id: 'navigation-native-stack',
+    severity: 'warning',
+    message: 'Use the native navigators — @react-navigation/native-stack or native tabs — instead of the JS @react-navigation/stack or bottom-tabs.',
+    test: (line) => /from\s+['"]@react-navigation\/(stack|bottom-tabs)['"]/.test(line),
+  },
+  {
+    id: 'list-scrollview-map',
+    severity: 'warning',
+    message: 'ScrollView renders every child at once — use a virtualizer (FlashList or LegendList) for mapped lists.',
+    // File-level heuristic: a .map anywhere in the file (possibly in another
+    // component) flags the ScrollView line. Acceptable at warning severity.
+    test: (line, lines) => /<ScrollView\b/.test(line) && lines.some(l => /\.map\s*\(/.test(l)),
+  },
+
   // Code quality
   {
     id: 'var-usage',

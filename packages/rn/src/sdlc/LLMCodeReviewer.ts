@@ -292,6 +292,12 @@ export const LLM_RULE_SIGNALS: Record<string, RegExp> = {
   'accessibility-labels': /(TouchableOpacity|TouchableHighlight|TouchableWithoutFeedback|Pressable|Button|TextInput)/,
   'use-pressable': /\bTouchableOpacity\b/,
   'no-leaked-render': /\{\s*[A-Za-z_$][\w$.?]*\s*&&\s*</,
+  'animation-layout-props': /\b(?:width|height|top|left|right|bottom|gap|margin\w*|padding\w*|flex\w*):\s*(?:withTiming|withSpring|withRepeat|withSequence|withDelay)\s*\(/,
+  // Mirrors the rule: onPressIn/Out must coexist with an animation token in
+  // the file (plain press handlers without animation are not flagged).
+  'animation-press-gesture': /^(?=[\s\S]*onPress(In|Out)\s*=)(?=[\s\S]*(?:useAnimatedStyle|useSharedValue|Animated\.(View|Text|Image|ScrollView)))/,
+  'navigation-native-stack': /@react-navigation\/(stack|bottom-tabs)/,
+  'list-scrollview-map': /<ScrollView\b/,
   'no-sync-native-module-calls': /NativeModules|TurboModuleRegistry/,
   'no-set-native-props': /setNativeProps/,
   'no-forward-ref': /forwardRef/,
