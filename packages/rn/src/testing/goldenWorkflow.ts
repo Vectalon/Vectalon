@@ -21,15 +21,17 @@
  * trail) via scripts/generate-cli-demo.js, keeping the demo and the CI test in
  * lockstep.
  */
-import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'fs'
-import { join, dirname } from 'path'
+import { mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync, statSync } from 'fs'
+import { join, dirname, relative } from 'path'
+import * as ts from 'typescript'
 import { ContextEngine } from '../harness/ContextEngine'
 import { WorkflowEngine } from '../workflows/WorkflowEngine'
 import { featureDevelopmentWorkflow } from '../workflows/definitions/featureDevelopment'
 import { createWorkflowState, saveWorkflowState } from '../workflows/WorkflowState'
 import { createAdapters } from '../adapters'
 import { sanitizeFileName } from '../workflows/phases/helpers'
-import type { WorkflowState, WorkflowContext } from '../adapters/types'
+import { reportError } from '../utils/safe'
+import type { WorkflowState, WorkflowContext, TestRunnerAdapter, TestOptions, TestResult } from '../adapters/types'
 import type { ModelRouter } from '../model/ModelRouter'
 import type { ModelRequest } from '../model/types'
 
@@ -53,12 +55,25 @@ export interface ScriptedModelOptions {
    */
   useFallbackScaffold?: boolean
   /**
-   * Override the LLM review response (e.g. a hallucinated finding) instead of
-   * the default approved verdict. Default: approved with no findings.
+   * Override the LLM review response per file (e.g. a hallucinated finding).
+   * Receives the file name under review; return the review JSON. Default:
+   * approved with no findings.
    */
-  review?: () => string
+  review?: (fileName: string) => string
+  /**
+   * Override the LLM fix response per file. Receives the file name being
+   * fixed; return the COMPLETE corrected file content. Used by the
+   * compile-gate end-to-end test to script a genuinely breaking fix.
+   */
+  fix?: (fileName: string) => string
   /** Called for every generate() so tests can count calls per kind. */
   onGenerate?: (info: GoldenGenerateInfo) => void
+}
+
+/** Extract the file name from a review or fix prompt (# File under review / # File to fix). */
+function fileNameFromPrompt(prompt: string): string {
+  const m = prompt.match(/# (?:File under review|File to fix)\s*\n([^\n]+)/)
+  return m ? m[1].trim() : ''
 }
 
 function classify(req: ModelRequest): GoldenGenerateKind {
@@ -201,11 +216,14 @@ export function createScriptedModelRouter(options: ScriptedModelOptions): ModelR
         }
       } else if (kind === 'review') {
         content = options.review
-          ? options.review()
+          ? options.review(fileNameFromPrompt(req.prompt || ''))
           : JSON.stringify({ verdict: 'approved', summary: 'Clean code (golden replay)', findings: [] })
       } else if (kind === 'fix') {
-        // The review approves, so a fix is never requested in the happy path.
-        content = '// golden replay: no fix requested'
+        // The review approves in the happy path, so a fix is only requested
+        // when a test scripts one (e.g. the compile-gate end-to-end test).
+        content = options.fix
+          ? options.fix(fileNameFromPrompt(req.prompt || ''))
+          : '// golden replay: no fix requested'
       }
 
       return { content, provider: 'golden' }
@@ -265,6 +283,68 @@ export function cliScaffoldFiles(): Record<string, string> {
       "  testEnvironment: 'node',",
       "  testMatch: ['**/src/__tests__/index.test.ts'],",
       '}',
+      '',
+    ].join('\n'),
+    // The scratch project has no react/react-native/node_modules installed, but
+    // the workflow generates RN-style modules and the compile-gate test runner
+    // typechecks them with the REAL TypeScript compiler. These ambient
+    // declarations let that offline compile resolve cleanly and deterministically
+    // — module resolution noise is neutralized, real type bugs still surface.
+    'src/ambient.d.ts': [
+      '/**',
+      ' * Ambient declarations for the golden scratch project.',
+      ' * The scratch CLI app has no react/react-native runtime installed, but the',
+      ' * feature workflow generates RN-style modules. These declarations let the',
+      ' * real TypeScript compile (GoldenTypeCheckTestRunner) resolve those imports',
+      ' * deterministically offline — module noise is neutralized, real type bugs',
+      ' * (e.g. a number assigned to a string) still surface.',
+      ' *',
+      ' * The committed cli-app demo ships a copy of this file, where it is inert:',
+      ' * that tsconfig only includes src/index.ts + src/__tests__/index.test.ts, so',
+      ' * these globals never collide with installed @types packages.',
+      ' */',
+      "declare module 'react' {",
+      '  declare function useState<T>(initial: T): [T, (value: T | ((prev: T) => T)) => void]',
+      '  declare function useCallback<T extends (...args: never[]) => unknown>(callback: T, deps: readonly unknown[]): T',
+      '  declare function useEffect(effect: () => void | (() => void), deps?: readonly unknown[]): void',
+      '  declare function useMemo<T>(factory: () => T, deps: readonly unknown[]): T',
+      '  const React: any',
+      '  namespace React {',
+      '    namespace JSX {',
+      '      type Element = any',
+      '    }',
+      '  }',
+      '  export default React',
+      '  export { useState, useCallback, useEffect, useMemo }',
+      '}',
+      "declare module 'react-native' {",
+      '  const Text: any',
+      '  const TouchableOpacity: any',
+      '  const ActivityIndicator: any',
+      '  const StyleSheet: any',
+      '  const SafeAreaView: any',
+      '  const View: any',
+      '  const TextInput: any',
+      '  export { Text, TouchableOpacity, ActivityIndicator, StyleSheet, SafeAreaView, View, TextInput }',
+      '}',
+      "declare module '@testing-library/react-native' {",
+      '  const render: any',
+      '  const renderHook: any',
+      '  const act: any',
+      '  const fireEvent: any',
+      '  const waitFor: any',
+      '  export { render, renderHook, act, fireEvent, waitFor }',
+      '}',
+      'declare const describe: any',
+      'declare const it: any',
+      'declare const test: any',
+      'declare const expect: any',
+      'declare const beforeEach: any',
+      'declare const afterEach: any',
+      'declare const jest: any',
+      'declare const process: { argv: string[]; exit(code?: number): never }',
+      'declare const require: any',
+      'declare const module: any',
       '',
     ].join('\n'),
     '.gitignore': ['node_modules/', 'dist/', '.vectalon/', '*.log', 'coverage/', ''].join('\n'),
@@ -328,11 +408,102 @@ export function writeCliScaffold(root: string): void {
 export interface GoldenWorkflowOptions {
   prompt?: string
   useFallbackScaffold?: boolean
-  review?: () => string
+  review?: (fileName: string) => string
+  fix?: (fileName: string) => string
   /** Reuse a saved state (resume replay). When absent a fresh state is created. */
   state?: WorkflowState
   resume?: boolean
+  /** Override the test-runner adapter (e.g. the real typecheck runner). */
+  testRunner?: TestRunnerAdapter
   onGenerate?: (info: GoldenGenerateInfo) => void
+}
+
+/**
+ * Test-runner adapter whose runTypeCheck runs the REAL TypeScript compiler
+ * (ts.createProgram) over the scratch project's src/ tree — no node_modules
+ * required. Clean code compiles clean; a genuinely breaking fix surfaces a
+ * TSxxxx diagnostic the compile gate can count and revert on. Tests and lint
+ * stay simulated (deterministic), matching the console adapter's behavior.
+ */
+export class GoldenTypeCheckTestRunner implements TestRunnerAdapter {
+  name = 'golden-typecheck'
+
+  constructor(private root: string) {}
+
+  async runTests(_options?: TestOptions): Promise<TestResult> {
+    return { success: true, stdout: 'Mock test run: all tests passed', stderr: '', exitCode: 0, summary: '0 failures (mock)' }
+  }
+
+  async runLint(): Promise<TestResult> {
+    return { success: true, stdout: 'Mock lint: no issues', stderr: '', exitCode: 0 }
+  }
+
+  async runPrettier(): Promise<TestResult> {
+    return { success: true, stdout: 'Mock prettier: no issues', stderr: '', exitCode: 0 }
+  }
+
+  async runTypeCheck(): Promise<TestResult> {
+    try {
+      const program = ts.createProgram(this.sourceFiles(), this.compilerOptions())
+      const diagnostics = ts.getPreEmitDiagnostics(program)
+      if (diagnostics.length === 0) {
+        return { success: true, stdout: 'Type check: no errors', stderr: '', exitCode: 0 }
+      }
+      const lines = diagnostics.map(d => {
+        if (!d.file || d.start === undefined) {
+          return `error TS${d.code}: ${ts.flattenDiagnosticMessageText(d.messageText, ' ')}`
+        }
+        const pos = d.file.getLineAndCharacterOfPosition(d.start)
+        return `${relative(this.root, d.file.fileName)}(${pos.line + 1},${pos.character + 1}): error TS${d.code}: ${ts.flattenDiagnosticMessageText(d.messageText, ' ')}`
+      })
+      return { success: false, stdout: lines.join('\n'), stderr: '', exitCode: 1, summary: `${diagnostics.length} type error(s)` }
+    } catch (err) {
+      reportError(err, 'goldenTypeCheck: compiler crashed')
+      return { success: false, stdout: '', stderr: String(err), exitCode: 1, summary: 'typecheck crashed' }
+    }
+  }
+
+  /** All source + declaration files under src/ (the ambient .d.ts included). */
+  private sourceFiles(): string[] {
+    const src = join(this.root, 'src')
+    if (!existsSync(src)) return []
+    const files: string[] = []
+    const walk = (dir: string): void => {
+      for (const entry of readdirSync(dir)) {
+        const full = join(dir, entry)
+        const st = statSync(full)
+        if (st.isDirectory()) walk(full)
+        else if (/\.tsx?$/.test(entry)) files.push(full)
+      }
+    }
+    walk(src)
+    // readdirSync order is not guaranteed across platforms — sort so the
+    // program (and its diagnostics) are byte-for-byte reproducible.
+    return files.sort()
+  }
+
+  /** Scaffold-mirroring compiler options (respects tsconfig, forces noEmit + jsx). */
+  private compilerOptions(): ts.CompilerOptions {
+    const forced: ts.CompilerOptions = {
+      noEmit: true,
+      skipLibCheck: true,
+      jsx: ts.JsxEmit.React,
+      // Module resolution for ambient 'react'/'react-native' declarations needs
+      // classic node resolution with esModuleInterop for default imports.
+      moduleResolution: ts.ModuleResolutionKind.Node10,
+      esModuleInterop: true,
+    }
+    const configPath = join(this.root, 'tsconfig.json')
+    if (!existsSync(configPath)) return forced
+    try {
+      const raw = JSON.parse(readFileSync(configPath, 'utf-8')) as { compilerOptions?: Record<string, unknown> }
+      const parsed = ts.convertCompilerOptionsFromJson(raw.compilerOptions || {}, dirname(configPath))
+      return { ...parsed.options, ...forced }
+    } catch (err) {
+      reportError(err, 'goldenTypeCheck: reading tsconfig')
+      return forced
+    }
+  }
 }
 
 /** Shape of the committed docs/vectalon/manifest.json (what `init` would write). */
@@ -385,10 +556,12 @@ export async function runGoldenFeatureWorkflow(
   const engine = new ContextEngine(root)
   const snapshot = engine.refresh()
   const adapters = createAdapters({ root, dryRun: true })
+  if (options.testRunner) adapters.testRunner = options.testRunner
   const modelRouter = createScriptedModelRouter({
     prompt,
     useFallbackScaffold: options.useFallbackScaffold,
     review: options.review,
+    fix: options.fix,
     onGenerate: options.onGenerate,
   })
   const state = options.state ?? createWorkflowState('feature-development', prompt)
