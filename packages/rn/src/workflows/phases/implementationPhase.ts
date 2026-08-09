@@ -134,22 +134,53 @@ function selectFixCheck(
   return pick ? { name: pick.name, run: () => (pick.run as () => Promise<TestResult>)() } : null
 }
 
+/**
+ * Repair the small-model JSON failure mode: Qwen2.5-Coder and similar models
+ * emit the file envelope with `content` as a backtick template literal instead
+ * of a JSON string (valid JS, invalid JSON). Convert every backtick-delimited
+ * content value into a properly escaped JSON string so the envelope parses.
+ * Only applied after strict JSON.parse fails, so well-formed model output is
+ * untouched. Best-effort: if the repaired text still fails to parse, callers
+ * fall through to the markdown/path extractors as before.
+ */
+export function repairTemplateLiteralJson(text: string): string {
+  // Match: "content": ` ... ` where the closing backtick is followed by , or
+  // } (with optional trailing whitespace). The code body is captured verbatim
+  // and JSON-escaped. Non-greedy body: stops at the first backtick that ends
+  // a value, so template literals *inside* the code (followed by ; ) or ) do
+  // not terminate it early.
+  const contentRe = /("content"\s*:\s*)`([\s\S]*?)`(\s*(?:,|}))/gm
+  return text.replace(contentRe, (_match, prefix: string, code: string, suffix: string) => {
+    const escaped = code
+      .replace(/\\/g, '\\\\')
+      .replace(/"/g, '\\"')
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '\\r')
+      .replace(/\t/g, '\\t')
+    return `${prefix}"${escaped}"${suffix}`
+  })
+}
+
 function extractJsonFiles(content: string): GeneratedImplementation | null {
   const jsonBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/)
   const jsonText = jsonBlockMatch ? jsonBlockMatch[1].trim() : content.trim()
 
-  try {
-    const parsed = JSON.parse(jsonText) as GeneratedImplementation
-    if (Array.isArray(parsed.files)) {
-      const files = parsed.files
-        .map(f => ({ path: f.path, content: f.content }))
-        .filter(f => isSafeProjectPath(f.path) && typeof f.content === 'string')
-      if (files.length > 0) {
-        return { files, notes: parsed.notes }
+  // Two parse attempts: strict first, then the template-literal repair for
+  // small models that emit backtick content (invalid JSON otherwise).
+  for (const candidate of [jsonText, repairTemplateLiteralJson(jsonText)]) {
+    try {
+      const parsed = JSON.parse(candidate) as GeneratedImplementation
+      if (Array.isArray(parsed.files)) {
+        const files = parsed.files
+          .map(f => ({ path: f.path, content: f.content }))
+          .filter(f => isSafeProjectPath(f.path) && typeof f.content === 'string')
+        if (files.length > 0) {
+          return { files, notes: parsed.notes }
+        }
       }
+    } catch (err) {
+      reportError(err, 'implementation: parsing model output')
     }
-  } catch (err) {
-    reportError(err, 'implementation: parsing model output')
   }
 
   return null
@@ -224,6 +255,9 @@ export function buildImplementationPrompt(ctx: {
     'The JSON must have this exact shape:',
     '{"files":[{"path":"src/...","content":"..."}],"notes":"..."}',
     'Each file must be a complete, self-contained source file.',
+    'IMPORTANT: in the JSON, every "content" value must be a JSON string with',
+    'escaped newlines (\n). Never wrap file content in backticks or template',
+    'literals — the whole reply must be valid JSON that parses as-is.',
     '',
     'CRITICAL: Tests have already been written for this feature (TDD).',
     'Your implementation MUST satisfy the existing tests.',
@@ -326,7 +360,9 @@ async function generateModelImplementation(
     context: ctx.snapshot
       ? `Project: ${ctx.snapshot.project.name}, React Native ${ctx.snapshot.project.reactNativeVersion || 'unknown'}`
       : undefined,
-    maxTokens: 4096,
+    // 8192 gives local models room to finish a multi-file JSON envelope
+    // without truncating mid-JSON (4096 was dropping entire runs to zero files).
+    maxTokens: 8192,
     temperature: 0.2,
   })
 
@@ -476,7 +512,7 @@ async function generateFixImplementation(
       context: ctx.snapshot
         ? `Project: ${ctx.snapshot.project.name}, React Native ${ctx.snapshot.project.reactNativeVersion || 'unknown'}`
         : undefined,
-      maxTokens: 4096,
+      maxTokens: 8192,
       temperature: 0.2,
     })
     raw = response.content
@@ -857,7 +893,7 @@ async function modelCleanPackageUsages(
     const response = await modelRouter.generate({
       systemPrompt,
       prompt,
-      maxTokens: 4096,
+      maxTokens: 8192,
       temperature: 0.2,
     })
     raw = response.content

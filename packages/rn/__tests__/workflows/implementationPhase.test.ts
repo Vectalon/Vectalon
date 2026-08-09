@@ -111,6 +111,36 @@ describe('implementationPhase', () => {
     expect(result.artifacts[0].path).toBe('src/screens/AddLoginScreenScreen.tsx')
   })
 
+  it('parses model output where file content is a backtick template literal (small-model failure mode)', async () => {
+    // Qwen2.5-Coder and similar small models emit the JSON envelope with
+    // `content` as a backtick template literal instead of a JSON string —
+    // invalid JSON that used to score 0 files on the leaderboard. The repair
+    // pass must recover the files.
+    const response = [
+      '```json',
+      '{',
+      '  "files": [',
+      '    {',
+      '      "path": "src/screens/AddLoginScreenScreen.tsx",',
+      '      "content": `',
+      '        import React from \'react\';',
+      '        export function LoginScreen() { return null; }',
+      '      `',
+      '    }',
+      '  ],',
+      '  "notes": "A complete screen."',
+      '}',
+      '```',
+    ].join('\n')
+    const router = createMockModelRouter(response)
+    const result = await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
+
+    expect(result.artifacts).toHaveLength(1)
+    expect(result.artifacts[0].path).toBe('src/screens/AddLoginScreenScreen.tsx')
+    const screenPath = join(projectRoot, 'src/screens/AddLoginScreenScreen.tsx')
+    expect(readFileSync(screenPath, 'utf-8')).toContain('export function LoginScreen')
+  })
+
   it('writes model-generated JSON files to disk', async () => {
     const response = JSON.stringify({
       files: [

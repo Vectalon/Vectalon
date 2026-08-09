@@ -18,13 +18,17 @@ export interface ModelGenerateOptions {
   modelRouter: ModelRouter
   /** Override generation temperature (default 0.2, matching the harness). */
   temperature?: number
-  /** Override max tokens (default 4096, matching the harness). */
+  /**
+   * Override max tokens (default 8192). Small local models (Qwen2.5-Coder)
+   * need the headroom to finish a multi-file JSON envelope — at 4096 they
+   * truncate mid-JSON and the run scores zero files.
+   */
   maxTokens?: number
 }
 
 /** Build a generate seam that drives the real model for a scenario. */
 export function createModelGenerate(options: ModelGenerateOptions): (scenario: BenchScenario) => Promise<BenchGeneratedFile[]> {
-  const { modelRouter, temperature = 0.2, maxTokens = 4096 } = options
+  const { modelRouter, temperature = 0.2, maxTokens = 8192 } = options
 
   return async (scenario: BenchScenario): Promise<BenchGeneratedFile[]> => {
     const snapshot = benchmarkSnapshot()
