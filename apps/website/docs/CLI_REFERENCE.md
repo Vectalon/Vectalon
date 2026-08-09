@@ -5,9 +5,9 @@ available as `npx vectalon <command>` (or `vectalon <command>` when installed
 globally or linked).
 
 Running `npx vectalon` with no arguments opens an **interactive menu** covering
-the most common actions (init, feature, refresh, impact, ecosystem, doctor,
-bench, bundle, daemon, telemetry, ci, release, train, leaderboard, sync,
-policy, serve, import, pull, models, help).
+the most common actions (init, feature, refresh, bundle, status, daemon,
+telemetry, impact, ci, release, train, ecosystem, doctor, selftest, bench,
+leaderboard, sync, policy, serve, import, pull, models, help).
 
 ---
 
@@ -100,10 +100,11 @@ npx vectalon serve --model openai     # override the model provider for this run
 | `-p, --port <number>` | HTTP server port (default `0` = auto-assign) |
 | `--protocol <type>` | `mcp` \| `stdio` \| `sse` \| `http` (default `mcp`) |
 | `--model <provider>` | Model provider: `local` \| `wasm` \| `openai` \| `anthropic` \| `azure-openai` \| `groq` \| `ollama` \| `vllm` |
+| `--safe-mode` | **Safe mode** — CI/debug escape hatch: model generation returns stubs, file-writing tools are disabled, and device-control live execution is off. No risk of side effects on customer machines |
 
 **What it does**
 
-- Exposes **58 built-in MCP tools** — 50 by default, plus the knowledge-base
+- Exposes **60 built-in MCP tools** — 50 core tools by default, plus the knowledge-base
   and team-brain tools when those services are present (project context, SDLC
   modules, devices & E2E incl. screen-reader control, cross-package impact,
   release planning & crash monitoring, training-dataset curation, sandboxed
@@ -116,6 +117,10 @@ npx vectalon serve --model openai     # override the model provider for this run
   `confidence` and `rankedScore`
 - Reads `.vectalon/ecosystem.json` and exposes each **enabled ecosystem MCP
   server as a first-class tool** (Metro MCP, Expo MCP, …) agents auto-discover
+- With **`--safe-mode`**: model tools return deterministic stubs, file-writing
+  and device-control tools are absent from the tool list, and the server logs
+  `SAFE MODE` at startup — run Vectalon in CI or on customer machines without
+  side effects
 - Loads the resolved model provider from the manifest (or `--model`) and logs
   it at startup, warning when a remote API key is missing
 - Registers sibling projects from `.vectalon/team.json` (team brain)
@@ -268,7 +273,7 @@ npx vectalon feature --ticket MOB-123 --push   # ticket-to-PR: read the ticket, 
 - Writes each phase's document to **`docs/vectalon/<workflow>/<run>/`** (under
   the project's `docs/`, so the team sees them in version control — not in the
   gitignored `.vectalon/` workspace)
-- Applies **guardrails** (25 rules + `.vectalon/policy.json`) before writing
+- Applies **guardrails** (36 rules + `.vectalon/policy.json`) before writing
   files, and streams **live diffs** for every code change
 - **Zero-config WASM**: with no GGUF model downloaded and the tier enabled,
   a `local` run auto-tiers to the ONNX/WASM model — weights download on first
@@ -453,6 +458,32 @@ command to enable real inference (or **fails** under `--require-model`).
 |---|---|
 | 0 | No check failed (warnings are allowed) |
 | 1 | One or more checks failed, or an unknown `--category`/`--only` value |
+
+---
+
+## `status`
+
+One read-only health screen — the **first thing you ask a customer to run.**
+Prints daemon status (pid, port, health), MCP server reachability + registered
+tool count, model provider status (`ready` / `degraded` with the exact fix
+hint), last background knowledge refresh, license/trial days remaining, and
+`.vectalon/` disk usage. Every probe is wrapped, so a single broken source
+(stale pid file, missing license, unresponsive port) degrades to a line
+instead of killing the report — and a silent heartbeat (>30 min, active
+license) surfaces the admin alert path too.
+
+```bash
+npx vectalon status
+```
+
+**Options** — none; runs against the current working directory.
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Status printed |
+| 1 | No `.vectalon/` directory found |
 
 ---
 
@@ -1273,6 +1304,36 @@ npx vectalon models
 | Code | When |
 |---|---|
 | 0 | Always (list printed) |
+
+---
+
+## `auth`
+
+Manage your license and trial: activate a license key, authenticate with
+GitHub (to start a trial), log out, or show the current auth status.
+
+```bash
+npx vectalon auth                     # show current auth status (default)
+npx vectalon auth --license <key>     # activate a license key
+npx vectalon auth --github            # authenticate with GitHub (starts a 14-day trial)
+npx vectalon auth --logout            # clear the license and revert to the free tier
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `--license <key>` | Activate a license key (prints tier, expiry, and covered products) |
+| `--github` | GitHub OAuth device flow — used to start a trial |
+| `--status` | Show the current auth status (same as the default) |
+| `--logout` | Clear the stored license and trial |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Success (license activated, logged out, or status printed) |
+| 1 | The `--license` key was invalid |
 
 ---
 

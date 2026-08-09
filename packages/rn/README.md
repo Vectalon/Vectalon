@@ -48,11 +48,12 @@ Run `npx vectalon <command> --help` for detailed options.
 | Command | Description | Key Options |
 |---------|-------------|-------------|
 | `init [dir]` | Initialize `.vectalon/` workspace, detect flavor, set model provider — transactional: a failed init is recoverable (resume / clean restart) and a completed one is a no-op | `--model <provider>`, `--resume`, `--clean-restart`, `--force` |
-| `serve` | Start the MCP server (MCP/stdio/SSE/HTTP) | `-p <port>`, `--protocol <type>`, `--model <provider>` |
+| `serve` | Start the MCP server (MCP/stdio/SSE/HTTP) | `-p <port>`, `--protocol <type>`, `--model <provider>`, `--safe-mode` |
 | `feature [prompt]` | Full SDLC workflow: PRD → design → architecture → implementation → tests → code-review → PR → docs | `--workflow`, `--resume`, `--from`, `--ticket <key>`, `--push`, `--device`, `--heal-interactive`, `--dry-run`, `--model <provider>` |
 | `upgrade [dir]` | React Native / Expo upgrade copilot (impact, codemods, verification) | `--to <version>`, `--dry-run`, `--apply`, `--force` |
 | `doctor [dir]` | Ecosystem + toolchain + leaderboard + model-access diagnostics — every probe is wrapped so one broken checker never kills the report | `--json`, `--fix`, `--selftest` |
 | `selftest [dir]` | Test every feature in a sandbox — live progress + visible report + activity trace; runs REAL model inference when a model/API key is available | `--category <cat>`, `--only <id>`, `--model <provider>`, `--require-model`, `--list`, `--json`, `--open`, `--out <dir>`, `--no-html`, `--verbose` |
+| `status` | One read-only health screen — daemon (pid/port/health), MCP reachability + tool count, model provider ready/degraded, last background refresh, license/trial days remaining, `.vectalon/` disk usage. Every probe is wrapped so one broken source degrades to a line. The first thing you ask a customer to run | — |
 | `bundle [dir]` | Metro bundle analysis and performance budgets | `--platform <ios\|android>`, `--static` |
 | `profile [dir]` | Hermes runtime profiling: JS-thread blocking, retained objects, leak candidates, baselines + regressions | `--profile <file>`, `--heap <file>`, `--baseline <label>`, `--save-baseline`, `--threshold-ms <n>`, `--json` |
 | `sandbox` | Run a command in an isolated process with no ambient authority (scrubbed env, writes confined to the root, network denied by default) | `-- <command> [args...]`, `--root <dir>`, `--timeout <ms>`, `--cpu <s>`, `--memory <mb>`, `--network`, `--allow-env <names>`, `--json` |
@@ -96,6 +97,7 @@ Run `npx vectalon` with no arguments (Node `>=20.12`, TTY required) to launch an
   ○ Run feature workflow
   ○ Refresh knowledge
   ○ Analyze bundle
+  ○ Show status
   ○ Live Metro daemon
   ○ Ingest telemetry
   ○ Analyze impact
@@ -104,6 +106,7 @@ Run `npx vectalon` with no arguments (Node `>=20.12`, TTY required) to launch an
   ○ Fine-tune dataset
   ○ Manage ecosystem
   ○ Run doctor
+  ○ Run self-test
   ○ Run benchmark
   ○ Update leaderboard
   ○ Sync team brain
@@ -112,6 +115,7 @@ Run `npx vectalon` with no arguments (Node `>=20.12`, TTY required) to launch an
   ○ Import artifacts
   ○ Download local model
   ○ List models
+  ○ Show help
 ```
 
 ---
@@ -139,9 +143,9 @@ override per-command with `--model <provider>`.
 
 ## Guardrails
 
-35+ built-in rules enforced on every code generation and file save:
+36 built-in rules enforced on every code generation and file save:
 
-**Code Quality**: `no-console-log`, `no-inline-styles`, `no-hardcoded-urls`, `no-secrets-in-code`, `no-any-type`, `proper-error-handling`, `no-unused-imports`, `no-direct-state-mutation`, `proper-hook-deps`, `no-heavy-work-in-render`, `use-keyboard-avoiding-view`, `accessibility-labels`, `no-deprecated-apis`, `platform-aware-code`, `proper-navigation-types`, `consistent-naming`, `use-safe-area`, `no-todos-in-code`, `typescript-strict`, `proper-image-assets`, `memoize-expensive-components`, `no-mutation-in-hooks`, `use-strict-equality`, `no-var-declarations`, `proper-export-style`
+**Code Quality**: `no-console-log`, `no-inline-styles`, `no-hardcoded-urls`, `no-secrets-in-code`, `no-any-type`, `proper-error-handling`, `no-unused-imports`, `no-direct-state-mutation`, `proper-hook-deps`, `no-heavy-work-in-render`, `use-keyboard-avoiding-view`, `accessibility-labels`, `no-deprecated-apis`, `platform-aware-code`, `proper-navigation-types`, `consistent-naming`, `use-safe-area`, `no-todos-in-code`, `typescript-strict`, `proper-image-assets`, `memoize-expensive-components`, `no-mutation-in-hooks`, `use-strict-equality`, `no-var-declarations`, `proper-export-style`, `use-pressable`, `no-leaked-render`
 
 **New Architecture**: `no-set-native-props`, `no-sync-native-module-calls`, `missing-turbomodule-spec`
 
@@ -150,6 +154,13 @@ override per-command with `--model <provider>`.
 **React Compiler**: `compiler-auto-memoization`
 
 Project-specific overrides via `.vectalon/policy.json`.
+
+The code-review analyzer ships a complementary **33-rule deterministic rule
+set** that catches the same patterns in reviews (not just on save), including
+RN best practices: `use-pressable`, `no-leaked-render`, `animation-layout-props`,
+`animation-press-gesture`, `navigation-native-stack`, and
+`list-scrollview-map`. Every LLM finding on these rules is hallucination-verified
+against the actual code before it counts.
 
 ---
 
@@ -175,7 +186,7 @@ Project-specific overrides via `.vectalon/policy.json`.
 | `IncidentAnalyzer` | Incident severity, impact, and cause-bucket analysis |
 | `KpiReportAnalyzer` | KPI dashboards and telemetry-derived metrics |
 | `LintFixer` | Automatic lint error remediation |
-| `LLMCodeReviewer` | LLM-powered code review with self-healing fix loop |
+| `LLMCodeReviewer` | LLM-powered code review with a **compile-gated self-healing fix loop** — every LLM fix is typechecked (`tsc`) before it is accepted and reverted when it does not reduce the error count |
 | `MaestroFlowWriter` | YAML E2E test-flow generation for Maestro |
 | `NativeModuleGenerator` | TurboModule / native component scaffolding (iOS/Android/TS) |
 | `RefactorSuggester` | Refactoring recommendations with risk/effort scoring |
@@ -351,7 +362,7 @@ accident.
 
 ## MCP Server & Tools
 
-`vectalon serve` exposes 40+ project-aware MCP tools across four categories:
+`vectalon serve` exposes 60+ project-aware MCP tools across four categories:
 
 - **CoreTools** — project scanning, context building, file reading, AST analysis
 - **EcosystemTools** — catalog browsing, skill loading, ecosystem doctor
@@ -481,13 +492,13 @@ packages/rn/
 │   ├── adapters/               # External tool adapters (git, PM, test runner, simulator, design)
 │   ├── bench/                  # Benchmark harness (scoring, runner, leaderboard, baseline)
 │   ├── cli/
-│   │   ├── commands/           # 24 CLI command files
+│   │   ├── commands/           # 28 CLI command files
 │   │   ├── index.ts            # CLI entry + interactive mode
 │   │   └── logger.ts           # Output abstraction
 │   ├── config/                 # Global configuration
 │   ├── daemon/                 # Metro/Hermes live companion
 │   ├── ecosystem/              # Catalog, config, skills, doctor
-│   ├── guardrails/             # 35+ rules, engine, policy system
+│   ├── guardrails/             # 36 rules, engine, policy system
 │   ├── harness/                # Scanner, AST, knowledge graph, impact
 │   ├── index.ts                # Package main export
 │   ├── knowledge/              # Stores, embeddings, telemetry, sync, refresh
@@ -499,7 +510,7 @@ packages/rn/
 │   ├── sdlc/                   # 30 SDLC analyzers/writers/generators
 │   ├── training/               # Fine-tuning dataset builder, LoRA plan
 │   ├── utils/                  # Bundle analysis, Figma, diff, native scan, visual diff
-│   └── workflows/              # Feature-development workflow engine + 17 phases
+│   └── workflows/              # Feature-development workflow engine + 13 phases
 ├── extension/                  # VS Code extension
 │   └── src/
 │       ├── extension.ts        # Extension lifecycle
@@ -523,7 +534,7 @@ packages/rn/
 
 | Tier | Price | Features |
 |------|-------|----------|
-| **Free** | $0 | Project scanning, 40+ MCP tools, component generation, test writing, ecosystem doctor, benchmark suite |
+| **Free** | $0 | Project scanning, 60+ MCP tools, component generation, test writing, ecosystem doctor, benchmark suite |
 | **Pro** | $19/mo | + Upgrade Copilot, Self-healing CI, Bundle Budgets, Advanced Guardrails (New Architecture, React Compiler) |
 | **Team** | $99/seat/mo | + Team Brain, Cloud Sync, Custom Models (Azure/Ollama/vLLM), Priority Inference |
 
