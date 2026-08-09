@@ -1,0 +1,11 @@
+{
+  "version": "0.1.21",
+  "projectName": "cli-app",
+  "tooling": "rn-cli",
+  "initializedAt": 1786272612201,
+  "modelProvider": "local",
+  "autoLearn": true,
+  "modelConfig": {
+    "modelName": "qwen2.5-coder-3b"
+  }
+}

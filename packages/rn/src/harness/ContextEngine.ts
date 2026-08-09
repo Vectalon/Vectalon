@@ -201,6 +201,10 @@ export class ContextEngine {
 
   private persist(): void {
     if (!this.snapshot) return
+    // refresh() may run on a project that was never init'ed (e.g. the golden
+    // replay harness) — make sure the .vectalon context dir exists before
+    // writing the snapshot artifacts.
+    mkdirSync(this.contextDir, { recursive: true })
     writeFileSync(
       join(this.contextDir, 'snapshot.json'),
       JSON.stringify(this.snapshot, null, 2)

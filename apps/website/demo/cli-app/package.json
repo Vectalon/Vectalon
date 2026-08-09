@@ -1,0 +1,23 @@
+{
+  "name": "cli-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Scratch TypeScript CLI project for the Vectalon daily-loop demo (non-Expo).",
+  "main": "dist/index.js",
+  "bin": {
+    "cli-app": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^26.1.2",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.4.0"
+  }
+}
