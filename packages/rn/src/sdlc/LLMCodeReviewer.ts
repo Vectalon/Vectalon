@@ -278,7 +278,7 @@ export const LLM_RULE_SIGNALS: Record<string, RegExp> = {
   'no-inner-html': /innerHTML|dangerouslySetInnerHTML/,
   'no-console-log': /console\.(log|debug|warn|info)/,
   'no-any': /:\s*any\b|<any>/,
-  'no-non-null-assertion': /[A-Za-z0-9_)\]\}]+!\b/,
+  'no-non-null-assertion': /[A-Za-z0-9_)\]}]+!\b/,
   'var-usage': /\bvar\s+/,
   'no-var-declarations': /\bvar\s+/,
   'loose-equality': /[^=!]==[^=]|![=][^=]/,
