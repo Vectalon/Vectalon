@@ -5,6 +5,46 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.28] - 2026-08-10
+
+### Added
+
+- **Structured workflow output — the terminal explains itself.** `vectalon
+  feature` no longer dumps raw walls of text. During a run, the spinner shows
+  exactly where you are in the SDLC (`[9/13] Verification…`) and every command
+  that executes surfaces live (`[9/13] Verification ▸ yarn test`) with a
+  ✓/✖ + exit code + duration written to a command feed. On failure, the
+  13k-char verification dump is replaced by a parsed failure card: which
+  checks failed (with exit codes), the first failing check's output excerpt,
+  and pointers to the **full report file**, the rotating **command log**, and
+  the **resume command**. The final summary lists numbered SDLC stages with
+  durations, files created/modified, every document artifact plus a generated
+  `index.md` (one link previews all of a run's docs), commands run, and a
+  context block (model, intent, skills inlined).
+- **Doctor failure card.** `vectalon doctor` renders its missing checks as a
+  numbered fix list with `[auto]`/`[manual]` tags resolved through the real
+  auto-fix commands, an auto-fix count (`N auto-fixable with vectalon doctor
+  --fix`), and the rotating log pointer — clear steps to fix each error.
+- **`run_agent` markdown report.** serve/MCP tool results now render as a
+  structured report: the answer, a tool-call table with ✅ executed / ⚠️
+  skipped marks, and iteration counts. `AgentLoopCall` gains a `skipped` flag
+  (set on repeat-skip paths) that is never serialized into the model-visible
+  history, so agent behavior is unchanged.
+- **Failed verification checks become project memory.** After each workflow
+  run, failed verification checks are distilled into the L0→L3 memory as
+  error facts (`lint failed (exit 1): .vectalon/metro/vectalon-reporter.js`)
+  so future runs know the project's recurring failures and surface them in
+  the model prompt. Extraction is noise-filtered (jest banners, coverage
+  tables, console.debug/log/warn blocks are dropped; `console.error` content
+  is kept as a failure signal) and absolute paths are relativized against the
+  project root so facts survive checkout moves.
+
+### Changed
+
+- Failed-workflow output now points at `docs/vectalon/feature-development/
+  <id>/verification.md` and `.vectalon/logs/vectalon.log` instead of flooding
+  the terminal with the raw report.
+
 ## [0.1.27] - 2026-08-10
 
 ### Added
