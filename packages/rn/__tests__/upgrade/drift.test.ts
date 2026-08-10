@@ -19,7 +19,7 @@ describe('RN version drift warning (P1-14)', () => {
     expect(rnIsAheadOfRuleSet(`0.${latest}.0`)).toBe(false)
     expect(rnIsAheadOfRuleSet(`0.${latest + 1}.0`)).toBe(true)
     expect(rnIsAheadOfRuleSet('0.72.5')).toBe(false)
-    expect(rnIsAheadOfRuleSet('0.82.0')).toBe(true)
+    expect(rnIsAheadOfRuleSet(`0.${latest + 2}.0`)).toBe(true)
     expect(rnIsAheadOfRuleSet('garbage')).toBe(false)
   })
 

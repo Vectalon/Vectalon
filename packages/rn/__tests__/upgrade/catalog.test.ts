@@ -1,6 +1,6 @@
 import { createTempProject, cleanup } from '../helpers/tmp'
 import { detectVersions } from '../../src/upgrade/detect'
-import { MIGRATION_CATALOG, RN_REACT_PAIRS, EXPO_SDK_RN_PAIRS, resolveTargetRn } from '../../src/upgrade/catalog'
+import { MIGRATION_CATALOG, RN_REACT_PAIRS, EXPO_SDK_RN_PAIRS, KNOWN_RN_MINORS, LATEST_KNOWN_RN, resolveTargetRn } from '../../src/upgrade/catalog'
 import { applyEditsToContent } from '../../src/upgrade/codemods'
 import type { CatalogContext, ImpactFinding } from '../../src/upgrade'
 
@@ -31,17 +31,20 @@ describe('catalog integrity', () => {
   })
 
   it('has the paired react version for every known RN minor', () => {
-    for (const minor of [71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81]) {
+    for (const minor of KNOWN_RN_MINORS) {
       expect(RN_REACT_PAIRS[minor]).toBeTruthy()
     }
     expect(RN_REACT_PAIRS[76]).toBe('18.3.1')
     expect(RN_REACT_PAIRS[78]).toBe('19.0.0')
+    expect(RN_REACT_PAIRS[86]).toBe('19.2.3')
   })
 
   it('maps Expo SDKs to paired RN minors', () => {
     expect(EXPO_SDK_RN_PAIRS[50]).toBe(73)
     expect(EXPO_SDK_RN_PAIRS[52]).toBe(76)
     expect(EXPO_SDK_RN_PAIRS[53]).toBe(79)
+    expect(EXPO_SDK_RN_PAIRS[55]).toBe(83)
+    expect(EXPO_SDK_RN_PAIRS[57]).toBe(86)
   })
 })
 
@@ -57,8 +60,8 @@ describe('resolveTargetRn', () => {
   })
 
   it('defaults to the latest known stable', () => {
-    expect(resolveTargetRn(null)).toBe('0.81.0')
-    expect(resolveTargetRn('latest')).toBe('0.81.0')
+    expect(resolveTargetRn(null)).toBe(LATEST_KNOWN_RN)
+    expect(resolveTargetRn('latest')).toBe(LATEST_KNOWN_RN)
   })
 })
 

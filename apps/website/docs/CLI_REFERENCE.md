@@ -909,6 +909,7 @@ npx vectalon upgrade --to 0.76 --json    # plan as JSON (CI-friendly)
 npx vectalon upgrade --to 0.76 --dry-run # explicit dry-run: no writes
 npx vectalon upgrade --to 0.76 --apply   # execute safe codemods + verify
 npx vectalon upgrade --to 0.76 --apply --force  # also apply risky review steps
+npx vectalon upgrade --to 0.86.2 --diff  # also print the official rn-diff-purge template diff
 npx vectalon upgrade --to 53 --apply     # Expo SDK target
 ```
 
@@ -921,6 +922,7 @@ npx vectalon upgrade --to 53 --apply     # Expo SDK target
 | `--dry-run` | Preview the plan + impact analysis without touching files (default) |
 | `--apply` | Execute codemods and dependency bumps, then verify |
 | `--force` | Also apply `review` steps (New Architecture flips, SDK level bumps) |
+| `--diff` | Also fetch and print the official **rn-diff-purge** template diff (categorized native `android/`/`ios/` vs JS/TS `App.tsx`/`index.js`/configs) for this upgrade — live from GitHub, always current even for releases newer than the catalog. Bare RN CLI only (Expo uses expo-upgrade) |
 | `--json` | Print the report as JSON instead of markdown |
 
 **Workflow stages**
@@ -937,7 +939,11 @@ npx vectalon upgrade --to 53 --apply     # Expo SDK target
    (`NativeModules` / `requireNativeComponent`), and Fabric-hostile patterns.
 4. **Plan** — step-by-step migration plan with per-step risk and a total
    risk label; steps are `auto` (safe codemods), `review` (risky — need
-   `--force`), or `manual` (documented instructions).
+   `--force`), or `manual` (documented instructions). Every bare RN CLI plan
+   includes an `rn-diff-purge` manual step pointing at the official
+   community-maintained template diff — which always surfaces **both the
+   native and the JS/TS changes to apply**, even for releases newer than the
+   catalog.
 5. **Codemods** — applies only with `--apply`; backs up every edited file
    under `.vectalon/upgrades/backups/` and writes a provenance manifest
    (`.vectalon/upgrades/<timestamp>-upgrade.json`) recording every edit.

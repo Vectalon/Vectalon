@@ -9,7 +9,7 @@
 
 import { ToolRegistry } from './base'
 import { mcpTool } from './decorators'
-import { runUpgrade, planUpgrade, detectVersions, describeDetection } from '../../upgrade'
+import { runUpgrade, planUpgrade, detectVersions, describeDetection, parseRnDiff, fetchRnDiffPurge, rnDiffPurgeUrl } from '../../upgrade'
 import type { UpgradeReport } from '../../upgrade'
 
 const SCHEMA = {
@@ -92,6 +92,49 @@ export class UpgradeTools extends ToolRegistry {
       verify: false,
     })
     return JSON.stringify(compact(report), null, 2)
+  }
+
+  @mcpTool(
+    'get_rn_upgrade_diff',
+    'Fetch the official rn-diff-purge template diff for a from→to React Native upgrade and categorize every changed file as native (android/, ios/, Gemfile) vs JS/TS (App.tsx, index.js, babel/metro/ts config, package.json) vs other — the exact template changes to apply for a CLI app upgrade, live from rn-diff-purge (always current, works for versions newer than Vectalon\'s catalog). Pass the raw unified diff in `diff` to parse offline deterministically.',
+    {
+      type: 'object',
+      properties: {
+        from: { type: 'string', description: 'Current React Native version (e.g. 0.72.5)' },
+        to: { type: 'string', description: 'Target React Native version (e.g. 0.86.2)' },
+        diff: { type: 'string', description: 'Optional: the raw unified diff content to parse instead of fetching (deterministic, offline)' },
+        timeoutMs: { type: 'number', description: 'Fetch timeout in ms (default 15000)' },
+      },
+      required: ['from', 'to'],
+    }
+  )
+  async getRnUpgradeDiffTool(args: Record<string, unknown>): Promise<string> {
+    const from = typeof args.from === 'string' ? args.from : ''
+    const to = typeof args.to === 'string' ? args.to : ''
+    if (!from || !to) {
+      return JSON.stringify({ error: 'get_rn_upgrade_diff requires from and to versions (e.g. from=0.72.5 to=0.86.2)' }, null, 2)
+    }
+    const raw = typeof args.diff === 'string' && args.diff ? args.diff : null
+    try {
+      if (raw) {
+        // Deterministic offline mode: parse the caller-provided diff.
+        return JSON.stringify(parseRnDiff(raw, from, to), null, 2)
+      }
+      const timeoutMs = typeof args.timeoutMs === 'number' && args.timeoutMs > 0 ? args.timeoutMs : undefined
+      const summary = await fetchRnDiffPurge(from, to, timeoutMs ? { timeoutMs } : {})
+      return JSON.stringify(summary, null, 2)
+    } catch (err) {
+      // Soft failure: report the error + hints inline instead of throwing so
+      // agents can fall back to pasting the diff content.
+      return JSON.stringify(
+        {
+          error: err instanceof Error ? err.message : String(err),
+          hint: `Fetch the diff manually from ${rnDiffPurgeUrl(from, to)} (or the Upgrade Helper) and pass its content in \`diff\`.`,
+        },
+        null,
+        2
+      )
+    }
   }
 
   @mcpTool(

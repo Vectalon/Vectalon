@@ -12,7 +12,7 @@ import { resolve } from 'path'
 import { readlineConfirm } from '../../utils/readlineConfirm'
 import pc from 'picocolors'
 import { logger } from '../logger'
-import { runUpgrade } from '../../upgrade'
+import { runUpgrade, fetchRnDiffPurge, renderRnDiffSummary, type RnDiffPurgeSummary } from '../../upgrade'
 import { renderUpgradeReport } from '../../upgrade/report'
 
 export interface UpgradeOptions {
@@ -27,6 +27,8 @@ export interface UpgradeOptions {
   json?: boolean
   /** Run post-apply verification (doctor, typecheck, bundle gate). Default true. */
   verify?: boolean
+  /** Fetch the official rn-diff-purge template diff (native + JS/TS) and print a categorized summary. */
+  diff?: boolean
 }
 
 export async function upgradeCommand(directory: string, options: UpgradeOptions): Promise<void> {
@@ -74,10 +76,40 @@ export async function upgradeCommand(directory: string, options: UpgradeOptions)
     },
   })
 
+  // --diff: surface the official rn-diff-purge template changes (native AND
+  // JS/TS) for this upgrade. Fetched live so it is always current — even for
+  // releases newer than the catalog; a network failure degrades to a warning
+  // and never fails the command.
+  let rnDiff: RnDiffPurgeSummary | null = null
+  if (options.diff) {
+    // rn-diff-purge tracks the bare RN CLI template only — Expo has its own
+    // upgrade path (npx expo install / expo-upgrade), so gate --diff to rn-cli.
+    if (report.tooling !== 'rn-cli') {
+      logger.warn('--diff covers bare RN CLI apps only (rn-diff-purge tracks the CLI template) — Expo upgrades use expo-upgrade instead.')
+    } else {
+      const from = report.from.rnVersion
+      const to = report.target
+      if (from && to && from !== to) {
+        try {
+          rnDiff = await fetchRnDiffPurge(from, to)
+        } catch (err) {
+          logger.warn(`rn-diff-purge diff unavailable: ${err instanceof Error ? err.message : String(err)}`)
+        }
+      } else {
+        logger.warn('--diff needs a detectable current react-native version and a target version.')
+      }
+    }
+  }
+
   if (options.json) {
-    process.stdout.write(JSON.stringify(report, null, 2) + '\n')
+    process.stdout.write(JSON.stringify(rnDiff ? { ...report, rnDiff } : report, null, 2) + '\n')
   } else {
     renderUpgradeReport(report)
+    if (rnDiff) {
+      logger.info('')
+      logger.info(pc.bold(pc.cyan('Official template diff (rn-diff-purge)')))
+      process.stdout.write(renderRnDiffSummary(rnDiff) + '\n')
+    }
   }
 
   // Exit codes: fatal detection errors, codemod failures, or failed verify.

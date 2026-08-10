@@ -96,6 +96,17 @@ describe('ecosystem doctor', () => {
     expect(missing.hint).toContain('npx expo mcp')
   })
 
+  it('reports rn-diff-purge as built-in ok (fetched live — nothing to install)', () => {
+    const item = getEcosystemItem('rn-diff-purge')!
+    const result = checkEcosystemItem(item, dir, makeCheckers())
+    expect(result.status).toBe('ok')
+    expect(result.detail).toContain('built-in')
+    // No npm-install bait: rn-diff-purge is not on npm, so the doctor must
+    // never hand back an install hint or an auto-fix for it.
+    expect(result.hint).toBeUndefined()
+    expect(fixForMissing(result, dir)).toBeNull()
+  })
+
   it('reports a global binary tool (fastlane) by probing PATH', () => {
     const item = getEcosystemItem('fastlane')!
     const ok = checkEcosystemItem(item, dir, makeCheckers({ run: () => ({ success: true, output: 'fastlane 2.220.0' }) }))
@@ -469,7 +480,7 @@ describe('ecosystem doctor', () => {
       const item = getEcosystemItem('metro-mcp')!
       const check = checkEcosystemItem(item, dir, makeCheckers())
       const fix = fixForMissing(check, dir)!
-      expect(fix.args).toEqual(['install', '-D', '@steve228uk/metro-mcp'])
+      expect(fix.args).toEqual(['install', '-D', 'metro-mcp'])
     })
 
     it('installs dev-time hooks with -D per the catalog install string', () => {

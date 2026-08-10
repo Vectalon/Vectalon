@@ -84,7 +84,7 @@ import { WASM_MODEL_PRESETS, getWasmPreset } from '../model/local/wasmPresets'
 import { ContextEngine } from '../harness/ContextEngine'
 import { detectVersions } from '../upgrade/detect'
 import { planUpgrade } from '../upgrade/planner'
-import { runUpgrade } from '../upgrade'
+import { runUpgrade, parseRnDiff } from '../upgrade'
 import { MCPServer } from '../protocol/MCPServer'
 import { parseMcpCommand } from '../protocol/subMcp'
 import { listWorkflows, getWorkflow } from '../workflows'
@@ -924,7 +924,7 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
       const tools = server.getToolList()
       if (tools.length < 50) return fail(`expected >= 50 tools, got ${tools.length}`)
       const names = tools.map(t => t.name)
-      const required = ['get_project_context', 'write_release_notes', 'derive_from_git_history', 'check_guardrails', 'analyze_impact']
+      const required = ['get_project_context', 'write_release_notes', 'derive_from_git_history', 'check_guardrails', 'analyze_impact', 'get_rn_upgrade_diff']
       const missing = required.filter(n => !names.includes(n))
       if (missing.length > 0) return fail(`missing tools: ${missing.join(', ')}`)
       const malformed = tools.filter(t => !t.description || !t.inputSchema)
@@ -940,7 +940,7 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
     category: 'mcp',
     description: 'parseMcpCommand splits install strings into command + args (npx gets --yes).',
     run() {
-      const npx = parseMcpCommand('npx @steve228uk/metro-mcp --port 9000')
+      const npx = parseMcpCommand('npx metro-mcp --port 9000')
       if (npx.command !== 'npx' || !npx.args.includes('--yes')) return fail('npx install string not parsed correctly')
       const direct = parseMcpCommand('maestro test flows')
       if (direct.command !== 'maestro') return fail('direct command not parsed')
@@ -1295,6 +1295,55 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
       const pkgAfter = JSON.parse(readFileSync(ctx.sandbox.path('package.json'), 'utf-8')) as { dependencies: Record<string, string> }
       if (pkgAfter.dependencies['react-native'] !== '0.72.5') return fail('dry-run modified package.json!')
       return ok(`${plan.steps.length} steps · ${plan.edits.length} edits · ${plan.impact.length} impact findings — files untouched`)
+    },
+  },
+  {
+    id: 'upgrade-rn-diff-purge',
+    name: 'rn-diff-purge diff parsing (native + JS/TS)',
+    category: 'upgrade',
+    description: 'Parse a real rn-diff-purge unified diff (offline fixture) and classify native (android/, ios/) vs JS/TS changes — the template awareness behind every CLI upgrade plan.',
+    run() {
+      const SAMPLE = [
+        'diff --git a/RnDiffApp/package.json b/RnDiffApp/package.json',
+        'index 3fa7672061..83ba1f2adc 100644',
+        '--- a/RnDiffApp/package.json',
+        '+++ b/RnDiffApp/package.json',
+        '@@ -13,4 +13,4 @@',
+        '     "react": "19.2.3",',
+        '-    "react-native": "0.84.0",',
+        '+    "react-native": "0.85.0",',
+        'diff --git a/RnDiffApp/App.tsx b/RnDiffApp/App.tsx',
+        'new file mode 100644',
+        'index 0000000..1111111',
+        '--- /dev/null',
+        '+++ b/RnDiffApp/App.tsx',
+        '@@ -0,0 +1,2 @@',
+        "+import React from 'react';",
+        '+export default function App() { return null; }',
+        'diff --git a/RnDiffApp/android/app/build.gradle b/RnDiffApp/android/app/build.gradle',
+        'index 1111111..2222222 100644',
+        '--- a/RnDiffApp/android/app/build.gradle',
+        '+++ b/RnDiffApp/android/app/build.gradle',
+        '@@ -3,3 +3,3 @@',
+        '-    compileSdkVersion = 35',
+        '+    compileSdkVersion = 36',
+        'diff --git a/RnDiffApp/ios/Podfile b/RnDiffApp/ios/Podfile',
+        'deleted file mode 100644',
+        'index 2222222..0000000',
+        '--- a/RnDiffApp/ios/Podfile',
+        '+++ /dev/null',
+        '@@ -1,2 +0,0 @@',
+        "-platform :ios, '13.0'",
+        '-use_react_native!',
+      ].join('\n')
+      const parsed = parseRnDiff(SAMPLE, '0.84.0', '0.85.0')
+      if (parsed.totalFiles !== 4) return fail(`expected 4 files, got ${parsed.totalFiles}`)
+      if (parsed.native.fileCount !== 2) return fail(`expected 2 native files, got ${parsed.native.fileCount}`)
+      if (!parsed.native.files.some(f => f.path === 'android/app/build.gradle')) return fail('android/app/build.gradle not classified as native')
+      if (!parsed.native.files.some(f => f.path === 'ios/Podfile' && f.status === 'removed')) return fail('ios/Podfile removal not classified as native')
+      if (!parsed.jsTs.files.some(f => f.path === 'App.tsx' && f.status === 'added')) return fail('App.tsx not classified as JS/TS added')
+      if (parsed.jsTs.additions < 2) return fail('js-ts additions miscounted')
+      return ok(`${parsed.totalFiles} files: ${parsed.native.fileCount} native · ${parsed.jsTs.fileCount} JS/TS · +${parsed.totalAdditions} −${parsed.totalDeletions} — both layers surfaced`)
     },
   },
   {

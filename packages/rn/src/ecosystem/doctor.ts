@@ -577,6 +577,18 @@ export function checkEcosystemItem(
     }
   }
 
+  // rn-diff-purge is a built-in data source now: Vectalon fetches the template
+  // diffs live (vectalon upgrade --diff / the get_rn_upgrade_diff MCP tool).
+  // It is not an npm package and there is nothing to install — report ok
+  // instead of an unactionable warning.
+  if (item.id === 'rn-diff-purge') {
+    return {
+      ...base,
+      status: 'ok',
+      detail: 'built-in — upgrade diffs fetched live (vectalon upgrade --diff / get_rn_upgrade_diff)',
+    }
+  }
+
   // mcp + tool + hook all resolve an npm package when one is known.
   const packageName = item.packageName || packageFromInstall(item.install)
   if (packageName) {
@@ -586,7 +598,10 @@ export function checkEcosystemItem(
     // npx-only tools are fetch-on-demand; still try a bounded binary probe.
     const probe = GLOBAL_BIN_PROBE[item.id]
     if (item.install.startsWith('npx') || probe) {
-      const binName = probe ? item.id : packageName
+      // Probe the executable name, not the npm package name: scoped packages
+      // publish an unscoped bin (e.g. @ohah/react-native-mcp-server →
+      // react-native-mcp-server) and an install tag (@rc) is not an executable.
+      const binName = probe ? item.id : packageName.replace(/^@[^/]+\//, '').replace(/@[^@]+$/, '')
       const args = probe || ['--version']
       const result = checkers.run(binName, args)
       if (result.success) {

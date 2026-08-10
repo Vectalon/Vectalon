@@ -335,6 +335,7 @@ breaking-change impact analysis, and New Architecture migration awareness
 npx vectalon upgrade --to 0.76            # dry-run plan + impact analysis
 npx vectalon upgrade --to 0.76 --apply    # execute codemods + verify
 npx vectalon upgrade --to 0.76 --apply --force  # also apply review steps
+npx vectalon upgrade --to 0.86.2 --diff   # + official rn-diff-purge template diff
 ```
 
 The pipeline is **Detect → Catalog → Impact → Plan → Codemods → Verify**:
@@ -345,6 +346,15 @@ The pipeline is **Detect → Catalog → Impact → Plan → Codemods → Verify
   AGP requirements, React pairing) drives known migrations with no LLM
   involved. Every step is scored `auto` / `review` / `manual` with a total
   risk label.
+- **rn-diff-purge integration** — every bare RN CLI plan includes an
+  `rn-diff-purge` manual step pointing at the official community-maintained
+  template diff between your exact from→to versions. It always surfaces
+  **both the native (`android/`, `ios/`) and JS/TS (`App.tsx`, `index.js`,
+  babel/metro/ts configs) changes to apply** — the same data the Upgrade
+  Helper shows — and `--diff` fetches and categorizes it live from GitHub,
+  so upgrades are current even for releases newer than the catalog. Also
+  available as the MCP tool `get_rn_upgrade_diff` (fetch live or parse an
+  inline diff offline).
 - **Impact analysis** — scans the project's own source for native modules,
   bridge usage (`NativeModules`, `requireNativeComponent`), and
   Fabric-hostile patterns so you see exactly which files a major jump will

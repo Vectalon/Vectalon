@@ -108,6 +108,7 @@ export function createProgram(): Command {
     .option('--dry-run', 'Preview the plan + impact without changing files (default)')
     .option('--apply', 'Execute safe codemods and dependency bumps (native patches still require review; --force applies those too)')
     .option('--force', 'Skip safety checks: apply review steps automatically, skip confirmation')
+    .option('--diff', 'Fetch the official rn-diff-purge template diff (native + JS/TS changes to apply) for this upgrade and print a categorized summary — live from GitHub (requires network)')
     .option('--json', 'Print the plan/report as JSON')
     .option('--no-verify', 'Skip post-apply verification (doctor, typecheck, bundle budget gate)')
     .action(upgradeCommand)

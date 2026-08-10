@@ -75,7 +75,7 @@ describe('MCPServer', () => {
 
   it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(58)
+    expect(names).toHaveLength(59)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -249,6 +249,16 @@ describe('MCPServer', () => {
       if (tool.name === 'render_component') {
         args.files = { 'src/App.tsx': 'import { Text } from "react-native"; export default function App() { return <Text>hi</Text> }' }
         args.entry = 'src/App.tsx'
+      }
+      // get_rn_upgrade_diff requires from/to; pass an inline diff so the
+      // handler parses offline — no network in unit tests.
+      if (tool.name === 'get_rn_upgrade_diff') {
+        args.from = '0.72.5'
+        args.to = '0.76.0'
+        args.diff =
+          'diff --git a/RnDiffApp/package.json b/RnDiffApp/package.json\n' +
+          '--- a/RnDiffApp/package.json\n+++ b/RnDiffApp/package.json\n' +
+          '@@ -1 +1 @@\n-old\n+new\n'
       }
 
       const result = await server.handleToolCall({ id: '1', name: tool.name, arguments: args })

@@ -21,6 +21,19 @@ export { planUpgrade, resolveTarget } from './planner'
 export { applyUpgradeCodemods, applyEditsToContent, renderUpgradeMarkdown } from './codemods'
 export { verifyUpgrade } from './verify'
 export { renderUpgradeReport } from './report'
+export {
+  rnDiffPurgeUrl,
+  upgradeHelperUrl,
+  classifyRnDiffPath,
+  parseRnDiff,
+  parseRnDiffFiles,
+  summarizeRnDiff,
+  fetchRnDiffPurge,
+  renderRnDiffSummary,
+  type RnDiffBucket,
+  type RnDiffFileChange,
+  type RnDiffPurgeSummary,
+} from './rnDiffPurge'
 
 /**
  * Run the full upgrade pipeline for a project root.

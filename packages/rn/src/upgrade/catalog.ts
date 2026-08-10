@@ -34,6 +34,11 @@ export const RN_REACT_PAIRS: Record<number, string> = {
   79: '19.1.0',
   80: '19.1.0',
   81: '19.1.0',
+  82: '19.1.1',
+  83: '19.2.0',
+  84: '19.2.3',
+  85: '19.2.3',
+  86: '19.2.3',
 }
 
 /** Expo SDK → paired React Native minor (official pairing table). */
@@ -44,13 +49,16 @@ export const EXPO_SDK_RN_PAIRS: Record<number, number> = {
   52: 76,
   53: 79,
   54: 81,
+  55: 83,
+  56: 85,
+  57: 86,
 }
 
 /** Known stable RN minors this catalog understands (highest = default target). */
-export const KNOWN_RN_MINORS = [71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81]
+export const KNOWN_RN_MINORS = [71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86]
 
 /** Latest known stable RN version used when --to is omitted or 'latest'. */
-export const LATEST_KNOWN_RN = '0.81.0'
+export const LATEST_KNOWN_RN = '0.86.2'
 
 /* ------------------------------------------------------------------ */
 /* Codemod helpers — all emit substring edits that compose safely      */
@@ -582,4 +590,9 @@ export function resolveTargetRn(target: string | null): string | null {
 /** Highest KNOWN_RN_MINORS (for --to latest). */
 export function latestKnownRnMinor(): number {
   return Math.max(...KNOWN_RN_MINORS)
+}
+
+/** Highest Expo SDK the pairing table maps (default --to for Expo projects). */
+export function latestKnownExpoSdk(): number {
+  return Math.max(...Object.keys(EXPO_SDK_RN_PAIRS).map(Number))
 }

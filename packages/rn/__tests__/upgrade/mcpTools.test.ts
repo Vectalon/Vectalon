@@ -29,12 +29,13 @@ function toolCtx(): ToolContext {
 }
 
 describe('UpgradeTools', () => {
-  it('advertises three upgrade tools', () => {
+  it('advertises the upgrade tools', () => {
     const tools = new UpgradeTools(toolCtx())
     const names = tools.metadata().map(t => t.name)
     expect(names).toContain('plan_upgrade')
     expect(names).toContain('apply_upgrade')
     expect(names).toContain('detect_upgrade_state')
+    expect(names).toContain('get_rn_upgrade_diff')
   })
 
   it('plans an upgrade deterministically', async () => {
@@ -70,5 +71,35 @@ describe('UpgradeTools', () => {
     } finally {
       cleanup(dir)
     }
+  })
+
+  it('parses a provided rn-diff-purge diff offline (deterministic)', async () => {
+    const tools = new UpgradeTools(toolCtx())
+    const diff = [
+      'diff --git a/RnDiffApp/android/app/build.gradle b/RnDiffApp/android/app/build.gradle',
+      '--- a/RnDiffApp/android/app/build.gradle',
+      '+++ b/RnDiffApp/android/app/build.gradle',
+      '@@ -1 +1 @@',
+      '-    compileSdkVersion = 35',
+      '+    compileSdkVersion = 36',
+      'diff --git a/RnDiffApp/App.tsx b/RnDiffApp/App.tsx',
+      'new file mode 100644',
+      '--- /dev/null',
+      '+++ b/RnDiffApp/App.tsx',
+      '@@ -0,0 +1 @@',
+      '+export const App = () => null;',
+    ].join('\n')
+    const out = await tools.getRnUpgradeDiffTool({ from: '0.84.0', to: '0.85.0', diff })
+    const parsed = JSON.parse(out) as { totalFiles: number; native: { fileCount: number }; jsTs: { fileCount: number } }
+    expect(parsed.totalFiles).toBe(2)
+    expect(parsed.native.fileCount).toBe(1)
+    expect(parsed.jsTs.fileCount).toBe(1)
+  })
+
+  it('requires from and to for get_rn_upgrade_diff', async () => {
+    const tools = new UpgradeTools(toolCtx())
+    const out = await tools.getRnUpgradeDiffTool({})
+    const parsed = JSON.parse(out) as { error: string }
+    expect(parsed.error).toContain('requires from and to')
   })
 })

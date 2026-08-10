@@ -3,6 +3,7 @@ import { createTempProject, cleanup } from '../helpers/tmp'
 import { planUpgrade, resolveTarget } from '../../src/upgrade/planner'
 import { analyzeUpgradeImpact } from '../../src/upgrade/impact'
 import { detectVersions } from '../../src/upgrade/detect'
+import { LATEST_KNOWN_RN, latestKnownExpoSdk } from '../../src/upgrade/catalog'
 
 const FIXTURE: Record<string, string> = {
   'package.json': JSON.stringify({
@@ -48,8 +49,8 @@ describe('resolveTarget', () => {
   })
 
   it('defaults to latest known when omitted', () => {
-    expect(resolveTarget(undefined, 'rn-cli')?.target).toBe('0.81.0')
-    expect(resolveTarget('latest', 'expo')?.target).toBe('53')
+    expect(resolveTarget(undefined, 'rn-cli')?.target).toBe(LATEST_KNOWN_RN)
+    expect(resolveTarget('latest', 'expo')?.target).toBe(String(latestKnownExpoSdk()))
   })
 
   it('rejects garbage targets', () => {
@@ -72,6 +73,10 @@ describe('planUpgrade', () => {
       expect(ids).toContain('rn-070-hermes-flag')
       expect(ids).toContain('rn-071-newarch-flag')
       expect(ids).toContain('rn-070-codegen-native-component')
+      // The official template diff is always part of a bare CLI plan.
+      const rnDiffStep = plan.steps.find(s => s.id === 'rn-diff-purge')
+      expect(rnDiffStep?.kind).toBe('manual')
+      expect(rnDiffStep?.manual.some(m => m.includes('0.72.5..0.76.0.diff'))).toBe(true)
       expect(plan.impact.length).toBeGreaterThan(0)
       expect(plan.totalRisk).toBeGreaterThan(0)
       // dry-run: nothing on disk

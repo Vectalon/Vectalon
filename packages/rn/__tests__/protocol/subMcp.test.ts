@@ -39,9 +39,9 @@ const METRO_ITEM = getEcosystemItem('metro-mcp')!
 
 describe('parseMcpCommand', () => {
   it('adds --yes to npx commands', () => {
-    expect(parseMcpCommand('npx @steve228uk/metro-mcp')).toEqual({
+    expect(parseMcpCommand('npx metro-mcp')).toEqual({
       command: 'npx',
-      args: ['--yes', '@steve228uk/metro-mcp'],
+      args: ['--yes', 'metro-mcp'],
     })
     expect(parseMcpCommand('npx expo mcp')).toEqual({ command: 'npx', args: ['--yes', 'expo', 'mcp'] })
   })
