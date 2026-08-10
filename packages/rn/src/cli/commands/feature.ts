@@ -1,7 +1,6 @@
 import { existsSync, writeFileSync, readFileSync } from 'fs'
 import { join } from 'path'
 import pc from 'picocolors'
-import Table from 'cli-table'
 import { ContextEngine } from '../../harness/ContextEngine'
 import { ProjectMemory } from '../../memory/ProjectMemory'
 import { PatternLearner } from '../../memory/PatternLearner'
@@ -19,10 +18,13 @@ import { activeModelLabel, isRemoteKeyMissing, isModelSetupProvider, getRemotePr
 import { getWasmPreset } from '../../model/local/wasmPresets'
 import { dynamicImport } from '../../utils/dynamicImport'
 import { setFileChangeWriter, formatFileChange, computeFileChange, type FileChange } from '../../utils/fileDiff'
+import { setCommandListener } from '../../adapters/runCommand'
+import { getLogFilePath } from '../logfile'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
 import type { ImprovementSuggestion } from '../../knowledge/refresh'
 import { readEnabledSkills, formatSkillsPreview } from '../../ecosystem'
-import { workflowDocsDir } from '../../workflows/phases/documentWriter'
+import { workflowDocsDir, writeWorkflowIndex } from '../../workflows/phases/documentWriter'
+import { renderWorkflowSummary, renderFailureCard, renderStageLine, stripAnsi, failedCheckFacts, type SummaryContext } from '../workflowReport'
 import type { HealDecision } from '../../adapters/types'
 
 export interface FeatureCommandOptions {
@@ -233,8 +235,10 @@ export async function featureCommand(
   // does, then hand the memoized prediction to the engine so every phase reuses
   // it — one model call per run instead of per phase.
   const outputs: Record<string, string> = {}
+  let intentLine = ''
   if (!options.json) {
-    log.info(await detectIntentLine({ prompt, snapshot, modelRouter, outputs }))
+    intentLine = await detectIntentLine({ prompt, snapshot, modelRouter, outputs })
+    log.info(intentLine)
     // Stream Claude-style file-change logs with diffs to stderr while the
     // spinner (stdout) keeps animating. The writer is a no-op when unset.
     setFileChangeWriter((change: FileChange) => {
@@ -275,6 +279,37 @@ export async function featureCommand(
     : options.from
       ? { fromPhase: options.from }
       : undefined
+
+  // Live SDLC stage + command feed. Commands that run through runCommand emit
+  // start/complete events; we surface the running command on the spinner and
+  // collect outcomes for the summary's "Commands run" section. Cleared in the
+  // finally block so it never leaks into later runs.
+  const totalPhases = workflow.phases.length
+  const runCommands: SummaryContext['commands'] = []
+  let currentPhaseLabel = ''
+  if (!options.json) {
+    setCommandListener((event) => {
+      if (!event.result) {
+        // Command started — show what is actually running on the spinner.
+        s.message(`[${currentPhaseLabel}] ${pc.dim('▸')} ${pc.dim(event.command)}`)
+        return
+      }
+      const dur = event.durationMs !== undefined ? ` (${Math.round(event.durationMs / 1000)}s)` : ''
+      const mark = event.result.success ? pc.dim('✓') : pc.red('✖')
+      const exit = event.result.success ? '' : pc.red(` exit ${event.result.exitCode}`)
+      process.stderr.write(`    ${mark} ${event.command}${pc.dim(dur)}${exit}\n`)
+      // Restore the stage label so the spinner doesn't sit on the finished
+      // command while the phase continues.
+      s.message(`${currentPhaseLabel}...`)
+      runCommands.push({
+        command: event.command,
+        exitCode: event.result.exitCode,
+        success: event.result.success,
+        durationMs: event.durationMs,
+      })
+    })
+  }
+
   let result: WorkflowState
   try {
     result = await workflowEngine.run(workflow, {
@@ -313,20 +348,28 @@ export async function featureCommand(
     }, {
       ...engineOptions,
       onPhaseStart: (phase) => {
-        s.message(`${phase.name}...`)
+        const idx = workflow.phases.findIndex(p => p.id === phase.id)
+        currentPhaseLabel = `[${idx + 1}/${totalPhases}] ${phase.name}`
+        s.message(`${currentPhaseLabel}...`)
       },
       onPhaseComplete: (phase, phaseResult) => {
+        const idx = workflow.phases.findIndex(p => p.id === phase.id)
         if (phaseResult.status === 'failed') {
           s.stop(`${phase.name} failed`)
         } else {
           s.message(`${phase.name} completed`)
+          if (!options.json) {
+            process.stderr.write(renderStageLine(phaseResult, idx, totalPhases) + '\n')
+          }
         }
       },
     })
   } finally {
-    // All file writes happen inside the workflow run; detach the writer so it
-    // never leaks into later runs (json mode, MCP server, subsequent CLI runs).
+    // All file writes happen inside the workflow run; detach the writer and
+    // command listener so neither leaks into later runs (json mode, MCP
+    // server, subsequent CLI runs).
     setFileChangeWriter(null)
+    setCommandListener(null)
   }
 
   saveWorkflowState(root, result)
@@ -346,6 +389,11 @@ export async function featureCommand(
       .flatMap(p => extractLLMFindings(p.output || ''))
       .map(f => f.replace(/[🔴🟡🔵]\s*/u, '').trim())
       .filter(Boolean)
+    // Failed verification checks become error facts too, so the project's
+    // recurring failures ("lint fails on .vectalon/metro/vectalon-reporter.js")
+    // are learned and surfaced in future runs' memory context.
+    const verificationPhase = result.phases.find(p => p.id === 'verification')
+    const verificationFacts = verificationPhase ? failedCheckFacts(verificationPhase.output || '', root) : []
     distiller.ingestSession({
       id: result.id,
       workflowId: workflow.id,
@@ -357,7 +405,10 @@ export async function featureCommand(
         const p = a.path as string
         return p.startsWith(root) ? p.slice(root.length + 1) : p
       }),
-      facts: reviewFindings.map(statement => ({ category: 'error' as const, statement })),
+      facts: [
+        ...reviewFindings.map(statement => ({ category: 'error' as const, statement })),
+        ...verificationFacts,
+      ],
       entries: result.phases.map(p => ({
         kind: 'tool' as const,
         tool: p.id,
@@ -377,7 +428,14 @@ export async function featureCommand(
     process.stdout.write(json + '\n')
   } else {
     s.stop(result.status === 'completed' ? 'Workflow completed' : 'Workflow failed')
-    renderSummary(result, workflow.name, root, note, log, activeModel)
+    renderSummary(result, workflow.name, root, note, log, {
+      model: activeModel,
+      intentLabel: intentLine.split('\n')[0]?.replace('Detected intent: ', '') || undefined,
+      skills: readEnabledSkills(root).map(s => s.name),
+      commands: runCommands,
+      logFile: getLogFilePath(),
+      prompt,
+    })
 
     if (options.verbose) {
       process.stdout.write('\n## Detailed output\n\n')
@@ -452,75 +510,71 @@ function extractLLMFindings(output: string): string[] {
   return findings.slice(0, 12)
 }
 
+interface RenderSummaryContext {
+  model: string
+  intentLabel?: string
+  skills: string[]
+  commands: SummaryContext['commands']
+  logFile?: string | null
+  prompt: string
+}
+
 function renderSummary(
   result: WorkflowState,
   workflowName: string,
   root: string,
   note: (message: string, title?: string) => void,
   log: { error: (message: string) => void; info: (message: string) => void },
-  activeModel: string
+  ctx: RenderSummaryContext
 ): void {
-  const phaseTable = new Table({
-    head: ['Phase', 'Status', 'Files'],
-    style: { head: ['cyan'] },
-    colWidths: [32, 16, 38],
-  })
-  const fileArtifacts = result.phases.flatMap(p => p.artifacts).filter(a => a.path && a.type !== 'document')
-  for (const p of result.phases) {
-    const statusColor = p.status === 'completed' ? pc.green : p.status === 'failed' ? pc.red : pc.yellow
-    const phaseFiles = p.artifacts
-      .filter(a => a.path && a.type !== 'document')
-      .map(a => {
-        const path = a.path ?? ''
-        return path.startsWith(root) ? path.slice(root.length + 1) : path
-      })
-    const filesCell = phaseFiles.length > 0 ? phaseFiles.join(', ') : '—'
-    phaseTable.push([p.name, statusColor(p.status), filesCell])
-  }
-
   const docsDir = workflowDocsDir(root, result.workflowId, result.id)
+  const docFiles = result.phases
+    .flatMap(p => p.artifacts)
+    .filter(a => a.path && a.type === 'document')
+    .map(a => {
+      const p = a.path as string
+      return p.startsWith(root) ? p.slice(root.length + 1) : p
+    })
 
-  const lines: string[] = [
-    `Workflow: ${workflowName}`,
-    `ID: ${result.id}`,
-    `Status: ${result.status === 'completed' ? 'completed' : 'failed'}`,
-    `Model: ${activeModel}`,
-    '',
-    phaseTable.toString(),
-  ]
-
-  if (fileArtifacts.length > 0) {
-    lines.push('')
-    lines.push(pc.bold('Files created or modified:'))
-    for (const artifact of fileArtifacts) {
-      const displayPath = artifact.path?.startsWith(root) ? artifact.path.slice(root.length + 1) : artifact.path
-      lines.push(`  ${pc.green('✔')} ${displayPath}`)
-    }
+  // Write the docs index — the single link that previews every document a run
+  // produced. Best-effort: never breaks the summary on a read-only project.
+  try {
+    writeWorkflowIndex(root, result.workflowId, result.id, result, result.phases.flatMap(p => p.artifacts), {
+      prompt: ctx.prompt,
+      model: ctx.model,
+      status: result.status,
+    })
+  } catch (err) {
+    reportError(err, 'feature: writing docs index', 'warn')
   }
 
-  // Surface LLM review findings inline when code review fails.
-  const codeReviewPhase = result.phases.find(p => p.id === 'code-review')
-  if (codeReviewPhase?.status === 'failed') {
-    const findings = extractLLMFindings(codeReviewPhase.output)
-    if (findings.length > 0) {
-      lines.push('')
-      lines.push(pc.bold('Code review findings:'))
-      for (const f of findings) {
-        lines.push(pc.red(f))
-      }
-    }
-  }
-
-  lines.push('')
-  lines.push(`Documents saved to ${docsDir}`)
-
-  note(lines.join('\n'), 'Summary')
+  const summary = renderWorkflowSummary(result, workflowName, root, {
+    model: ctx.model,
+    intentLabel: ctx.intentLabel,
+    skills: ctx.skills,
+    commands: ctx.commands,
+    docFiles,
+    docsDir,
+    logFile: ctx.logFile,
+  })
+  // Strip ANSI before the box: clack's note() sizes the border from raw line
+  // width, and colored lines would misalign it (the broken box in the pasted
+  // output). Colors still render in stage lines and the failure card.
+  note(stripAnsi(summary), 'Summary')
 
   const failedPhase = result.phases.find(p => p.status === 'failed')
   if (failedPhase) {
-    log.error(`Failed phase: ${failedPhase.name}`)
+    // Structured failure card instead of the raw markdown wall: which checks
+    // failed (with exit codes), the first failing output excerpt, and where to
+    // find the full report, the command log, and how to resume.
+    const docArtifact = failedPhase.artifacts.find(a => a.type === 'document' && a.path)
+    const docsFile = docArtifact
+      ? docArtifact.path!.startsWith(root)
+        ? docArtifact.path!.slice(root.length + 1)
+        : docArtifact.path!
+      : `${docsDir}/${failedPhase.id}.md`
     process.stdout.write('\n')
-    process.stdout.write(failedPhase.output)
+    process.stdout.write(renderFailureCard(failedPhase, { docsFile, stateId: result.id, logFile: ctx.logFile }) + '\n')
     process.stdout.write('\n')
   }
 }

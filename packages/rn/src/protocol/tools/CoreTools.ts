@@ -19,6 +19,40 @@ const LATEST_KNOWN: Record<string, string> = {
 }
 
 /**
+ * Structured markdown summary for a run_agent loop: the answer, an
+ * executed/skipped counts line, and a per-call table with ✓/⚠ marks. The
+ * table keeps the model's own output intact while making the tool usage
+ * (what actually ran, what was skipped as a repeat) legible to the caller.
+ */
+export function renderAgentResult(result: {
+  answer: string
+  iterations: number
+  calls: Array<{ tool: string; result: string; skipped?: boolean }>
+}): string {
+  const executed = result.calls.filter(c => !c.skipped).length
+  const skipped = result.calls.length - executed
+  const calls = result.calls.map((c, i) => {
+    const mark = c.skipped ? '⚠️' : '✅'
+    const status = c.skipped ? 'skipped (repeat)' : 'executed'
+    const snippet = c.result
+      .replace(/\n+/g, ' ')
+      .trim()
+      .slice(0, 120)
+    return `| ${i + 1} | \`${c.tool}\` | ${mark} ${status} | ${snippet} |`
+  }).join('\n')
+  return [
+    '## Agent result',
+    '',
+    result.answer,
+    '',
+    `_Tool calls: ${executed} executed · ${skipped} skipped · ${result.iterations} iteration(s)_`,
+    ...(result.calls.length > 0
+      ? ['', '| # | Tool | Status | Result (truncated) |', '|---|---|---|---|', calls]
+      : []),
+  ].join('\n')
+}
+
+/**
  * Core harness tools — project context, patterns, model generation, guardrails,
  * the agent loop, and workflow execution.
  */
@@ -75,15 +109,7 @@ export class CoreTools extends ToolRegistry {
       },
     })
 
-    const calls = result.calls.map(c => `- \`${c.tool}\` → ${c.result.slice(0, 200)}`).join('\n')
-    return [
-      '## Agent result',
-      '',
-      result.answer,
-      '',
-      `_Tool calls: ${result.calls.length} across ${result.iterations} iteration(s)_`,
-      ...(result.calls.length > 0 ? ['', '### Tool call log', '', calls] : []),
-    ].join('\n')
+    return renderAgentResult(result)
   }
 
   @mcpTool('execute_workflow', 'Run a named SDLC workflow end-to-end for a given prompt (e.g. feature-development)', {

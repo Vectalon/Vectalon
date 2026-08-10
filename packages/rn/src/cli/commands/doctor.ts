@@ -11,12 +11,13 @@ import { spawnSync } from 'child_process'
 import pc from 'picocolors'
 import { logger } from '../logger'
 import { renderTable, colorStatus } from '../table'
+import { renderDoctorCard } from '../workflowReport'
+import { getLogFilePath } from '../logfile'
 import {
   runDoctor,
   runDoctorFixes,
   defensiveCheckers,
   runDoctorSelfTest,
-  listEcosystemItems,
   readEcosystemConfig,
   recommendEcosystemSetup,
   detectProjectFlavor,
@@ -184,26 +185,28 @@ function renderSectionTable(head: string[], rows: DoctorCheckResult[]): void {
   process.stdout.write(renderTable(table as Array<Array<string | number>>, { head }) + '\n')
 }
 
-/** Numbered fix steps for every missing check — the "clear steps to fix" ask. */
-function renderFixSteps(root: string, missing: DoctorCheckResult[]): void {
+/**
+ * Numbered fix steps for every missing check — the "clear steps to fix" ask,
+ * rendered as a structured failure card (✖ header, auto/manual tags, log
+ * pointer) that mirrors the workflow failure card.
+ */
+function renderFixCard(root: string, missing: DoctorCheckResult[], warnings: number, okCount: number): void {
   if (missing.length === 0) return
-  logger.info('')
-  logger.info(pc.bold(`Fix steps (${missing.length} missing):`))
-  let autoCount = 0
-  missing.forEach((check, i) => {
+  const items = missing.map((check) => {
     const fix = fixForMissing(check, root)
-    if (fix && !fix.manual) autoCount++
-    const label = fix ? fix.label : check.hint || check.detail
-    const kind = fix ? (fix.manual ? pc.yellow('manual') : pc.green('auto')) : pc.dim('info')
-    logger.info(`  ${i + 1}. [${kind}] ${label}`)
-    if (fix && fix.manual) logger.dim(`       ${check.detail}`)
+    return {
+      id: check.id,
+      name: check.name,
+      category: check.category,
+      detail: check.detail,
+      fixLabel: fix ? fix.label : check.hint || check.detail,
+      manual: fix ? fix.manual : true,
+    }
   })
+  const autoCount = items.filter(i => !i.manual).length
   logger.info('')
-  if (autoCount > 0) {
-    logger.info(`Run \`vectalon doctor --fix\` to auto-apply ${autoCount} of the steps above, or use \`vectalon ecosystem --enable <id>\` to opt in per item.`)
-  } else {
-    logger.info('These are manual steps — follow each command, then re-run `vectalon doctor`.')
-  }
+  process.stdout.write(renderDoctorCard({ missing: items, warnings, okCount, autoCount, logFile: getLogFilePath() }) + '\n')
+  logger.info('')
 }
 
 /** Recommended-but-not-enabled ecosystem items for the detected flavor. */
@@ -337,9 +340,10 @@ export function doctorCommand(directory: string, options: DoctorOptions): void {
   renderSectionTable(['Status', 'Check', 'Detail', 'Hint'], report.model)
   logger.info('')
 
-  // Clear numbered fix steps for everything that's missing.
+  // Clear numbered fix steps for everything that's missing — a structured
+  // failure card with auto/manual tags and a log pointer.
   const allMissing = [...report.checks, ...report.toolchain, ...report.leaderboard, ...report.model].filter(c => c.status === 'missing')
-  renderFixSteps(root, allMissing)
+  renderFixCard(root, allMissing, report.warningCount, report.okCount)
 
   // Upgrade readiness check
   logger.info('')

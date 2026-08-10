@@ -284,6 +284,9 @@ describe('MCPServer', () => {
     // No model is downloaded in tests, so the loop reports the unparseable
     // fallback output instead of hallucinating tools.
     expect(result.content).toContain('parseable tool call or answer')
+    // The structured summary carries the executed/skipped counts line.
+    expect(result.content).toContain('Tool calls:')
+    expect(result.content).toContain('iteration(s)')
   })
 
   it('returns an error result for unknown tools', async () => {

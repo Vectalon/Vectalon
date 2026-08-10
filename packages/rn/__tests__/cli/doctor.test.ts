@@ -260,6 +260,81 @@ describe('doctorCommand', () => {
     expect(exit).toHaveBeenCalledWith(1)
   })
 
+  it('renders a structured failure card with fix commands and a log pointer', () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    writeFileSync(
+      join(dir, '.vectalon', 'ecosystem.json'),
+      JSON.stringify({ version: '1.0.0', enabled: ['zustand'] })
+    )
+
+    let out = ''
+    jest.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+    jest.spyOn(process.stderr, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+    // Missing items -> the command exits 1; mock it or the jest worker dies.
+    const exit = jest.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('exit')
+    }) as unknown as (code?: string | number | null) => never)
+
+    try {
+      doctorCommand(dir, {
+        checkers: { ...okCheckers(), packageInstalled: () => false, env: () => undefined },
+      })
+    } catch {
+      // exit mocked to throw
+    }
+
+    // The failure card lists the missing check with its auto-fix command.
+    expect(out).toContain('✖ ')
+    expect(out).toContain('missing')
+    expect(out).toContain('Fix steps')
+    expect(out).toContain('zustand')
+    expect(out).toContain('npm install zustand')
+    expect(out).toContain('vectalon doctor --fix')
+    expect(out).toContain('Where to look next')
+    expect(out).toContain('Re-run:')
+    expect(exit).toHaveBeenCalledWith(1)
+  })
+
+  it('renders no failure card when nothing is missing', () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    writeFileSync(
+      join(dir, '.vectalon', 'ecosystem.json'),
+      JSON.stringify({ version: '1.0.0', enabled: [] })
+    )
+
+    let out = ''
+    jest.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+    jest.spyOn(process.stderr, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+    const exit = jest.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('exit')
+    }) as unknown as (code?: string | number | null) => never)
+
+    try {
+      doctorCommand(dir, { checkers: okCheckers() })
+    } catch {
+      // exit mocked to throw
+    }
+
+    // No missing checks → no failure card (warnings may still print for the
+    // unset leaderboard keys, but warnings never render the ✖ card), and the
+    // command returns without exiting non-zero.
+    expect(out).not.toContain('Fix steps')
+    expect(out).not.toContain('✖ ')
+    expect(exit).not.toHaveBeenCalled()
+  })
+
   it('honors a custom Metro port via the toolchain option', () => {
     mkdirSync(join(dir, '.vectalon'), { recursive: true })
     writeFileSync(join(dir, '.vectalon', 'ecosystem.json'), JSON.stringify({ version: '1.0.0', enabled: [] }))

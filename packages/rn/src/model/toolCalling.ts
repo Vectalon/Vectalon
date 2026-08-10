@@ -175,6 +175,8 @@ export interface AgentLoopCall {
   tool: string
   arguments: Record<string, unknown>
   result: string
+  /** True when the call was skipped as a repeat (never executed). */
+  skipped?: boolean
 }
 
 export interface AgentLoopResult {
@@ -265,14 +267,14 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<AgentLoop
 
     // Read-only tools run at most once — a repeat is always a loop.
     if (READ_ONLY_ONCE_TOOLS.has(parsed.tool) && calls.some(c => c.tool === parsed.tool)) {
-      calls.push({ tool: parsed.tool, arguments: parsed.arguments, result: repeatedToolNotice(parsed.tool) })
+      calls.push({ tool: parsed.tool, arguments: parsed.arguments, result: repeatedToolNotice(parsed.tool), skipped: true })
       continue
     }
 
     // Exact-repeat calls on any tool are a loop signal.
     const signature = callSignature(parsed.tool, parsed.arguments)
     if (seenSignatures.has(signature)) {
-      calls.push({ tool: parsed.tool, arguments: parsed.arguments, result: repeatedToolNotice(parsed.tool) })
+      calls.push({ tool: parsed.tool, arguments: parsed.arguments, result: repeatedToolNotice(parsed.tool), skipped: true })
       continue
     }
     seenSignatures.add(signature)
