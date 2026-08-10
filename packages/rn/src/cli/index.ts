@@ -24,6 +24,7 @@ import { authCommand } from './commands/auth'
 import { ciCommand } from './commands/ci'
 import { releaseCommand } from './commands/release'
 import { ecosystemCommand } from './commands/ecosystem'
+import { listEcosystemItems } from '../ecosystem'
 import { syncCommand } from './commands/sync'
 import { benchCommand } from './commands/bench'
 import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
@@ -233,6 +234,7 @@ export function createProgram(): Command {
     .option('--flavor <type>', 'Filter by project flavor (expo|rn-cli)')
     .option('--enable <id>', 'Enable an ecosystem item and record it in .vectalon/ecosystem.json')
     .option('--disable <id>', 'Disable an enabled ecosystem item')
+    .option('--info <id>', 'Show install command + capabilities for one item')
     .option('--export', 'Export enabled items as an MCP client config fragment')
     .option('--json', 'Print the export as JSON')
     .action(ecosystemCommand)
@@ -629,8 +631,9 @@ async function runInteractive(): Promise<void> {
     const item = await p.select({
       message: 'Ecosystem action',
       options: [
-        { value: 'list', label: 'List catalog', hint: 'Show all MCPs, skills, tools, hooks' },
+        { value: 'list', label: 'List catalog', hint: 'Grouped by category, enabled items marked' },
         { value: 'enable', label: 'Enable an item', hint: 'Pick from the catalog and record it in .vectalon/ecosystem.json' },
+        { value: 'info', label: 'View item details', hint: 'Install command + capabilities for one item' },
         { value: 'export', label: 'Export MCP config', hint: 'Print enabled MCP servers as an agent config fragment' },
       ],
     })
@@ -646,15 +649,27 @@ async function runInteractive(): Promise<void> {
       ecosystemCommand('', { export: true })
       return
     }
-    const enable = await p.text({
-      message: 'Ecosystem item id to enable',
-      placeholder: 'e.g. metro-mcp, expo-skills, maestro',
+    // Pick from the catalog instead of typing an id blind — clack's list is
+    // type-to-filter, so 38 items stay manageable.
+    const catalogItems = listEcosystemItems({})
+    const options = catalogItems.map(ec => ({
+      value: ec.id,
+      label: `${ec.id} — ${ec.name}`,
+      hint: `${ec.category} · ${ec.flavor}`,
+    }))
+    const picked = await p.select({
+      message: item === 'info' ? 'Ecosystem item to inspect' : 'Ecosystem item to enable',
+      options,
     })
-    if (p.isCancel(enable)) {
+    if (p.isCancel(picked)) {
       p.outro('Cancelled')
       return
     }
-    ecosystemCommand('', { enable: enable as string })
+    if (item === 'info') {
+      ecosystemCommand('', { info: picked as string })
+      return
+    }
+    ecosystemCommand('', { enable: picked as string })
     p.outro('Ecosystem updated')
     return
   }
