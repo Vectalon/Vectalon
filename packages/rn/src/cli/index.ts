@@ -171,7 +171,12 @@ export function createProgram(): Command {
     .command('render [directory]')
     .description('Compile + headless-render generated TS/TSX in the sandbox — console logs, render tree, runtime errors before the diff')
     .option('--entry <file>', 'Entry file to render (required), e.g. src/App.tsx')
-    .option('--file <file>', 'Extra file to compile (repeatable / comma-separated)')
+    .option(
+      '--file <file>',
+      'Extra file to compile (repeatable / comma-separated)',
+      (val: string, prev: string[] = []) => prev.concat(val.split(',').map(s => s.trim()).filter(Boolean)),
+      []
+    )
     .option('--timeout <ms>', 'Wall-clock timeout in ms (default 30000)', Number)
     .option('--memory <mb>', 'Virtual memory limit in MB')
     .option('--json', 'Print the structured result as JSON')

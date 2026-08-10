@@ -23,13 +23,24 @@ export interface RenderCommandOptions {
   /** Entry file to render (required). */
   entry?: string
   /** Extra files to compile alongside the entry (repeatable, comma-separated). */
-  file?: string[]
+  file?: string[] | string
   /** Wall-clock timeout in ms. */
   timeout?: number
   /** Virtual memory limit in MB. */
   memory?: number
   /** JSON output. */
   json?: boolean
+}
+
+/**
+ * Normalize `--file` values. Commander delivers a single option as a plain
+ * string (and the CLI registration collects repeated flags into an array), so
+ * accept both shapes and split on commas (trimmed, empties dropped).
+ */
+export function normalizeRenderFiles(file: string[] | string | undefined): string[] {
+  if (!file) return []
+  const list = Array.isArray(file) ? file : [file]
+  return list.flatMap(f => f.split(',')).map(f => f.trim()).filter(Boolean)
 }
 
 export async function renderCommand(directory: string, options: RenderCommandOptions): Promise<void> {
@@ -56,7 +67,7 @@ export async function renderCommand(directory: string, options: RenderCommandOpt
     process.exit(1)
   }
 
-  const paths = [entry, ...(options.file || [])].map(p => resolve(root, p))
+  const paths = [entry, ...normalizeRenderFiles(options.file)].map(p => resolve(root, p))
   const files: RenderFile[] = []
   for (const p of paths) {
     if (!existsSync(p)) {
