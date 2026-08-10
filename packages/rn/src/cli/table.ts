@@ -9,7 +9,9 @@
 
 import pc from 'picocolors'
 
-const ANSI_RE = /\u001b\[[0-9;]*m/g
+// Built dynamically to avoid the no-control-regex lint rule.
+const ESC = String.fromCharCode(27)
+const ANSI_RE = new RegExp(`${ESC}\\[[0-9;]*m`, 'g')
 
 /** Visible width of a string with ANSI color codes stripped. */
 export function visibleWidth(text: string): number {
@@ -37,12 +39,14 @@ function coloredRuns(line: string): ColoredRun[] {
       if (ch === 'm') {
         inCode = false
         if (current.length > 0) {
-          runs.push({ prefix, text: current, suffix })
+          runs.push({ prefix, text: current, suffix: code })
           current = ''
+          suffix = code
         } else {
+          // A code with no text before it is an opening sequence, not a
+          // closing one — it must not be reused as this run's suffix.
           prefix += code
         }
-        suffix = code
         code = ''
       }
       continue

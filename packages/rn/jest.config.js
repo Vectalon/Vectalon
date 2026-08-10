@@ -4,6 +4,9 @@ module.exports = {
   roots: ['<rootDir>/__tests__'],
   testMatch: ['**/*.test.ts'],
   moduleFileExtensions: ['ts', 'js', 'json'],
+  // Runs before any test module loads so picocolors sees FORCE_COLOR=1 and
+  // ANSI-aware assertions are deterministic in CI (where stdout is not a TTY).
+  setupFiles: ['<rootDir>/jest.setup.js'],
   clearMocks: true,
   restoreMocks: true,
   // Coverage gate: `npm run test:coverage` fails CI when a PR drops overall
