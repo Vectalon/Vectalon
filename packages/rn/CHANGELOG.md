@@ -5,6 +5,34 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.26] - 2026-08-10
+
+### Fixed
+
+- **run_agent loop works with small local models** — the agent loop no longer
+dies with an opaque "reached the iteration cap" message when a 1.5B/3B model
+keeps re-calling tools. When the tool-call budget (maxIterations) or per-run
+tool cap (maxToolCalls, default 8) is exhausted, one extra generation runs
+with a system prompt that forbids tool calls and synthesizes an answer from
+the history. Read-only tools (`get_project_context`, `list_artifacts`,
+knowledge reads, analysis tools) are skipped on repeat — their result is
+already in the history — and exact-argument-repeat calls on any tool are
+detected as loops. The tool-calling prompt tells the model to answer as
+soon as it has what it needs.
+
+### Removed
+
+- **`vectalon train` and the fine-tune dataset feature** — the command, the
+  `build_training_dataset` MCP tool, `src/training/` (dataset builder + LoRA
+  plan), the interactive-menu entry, the `FINE_TUNING.md` guide, and the
+  public training exports are gone. Model/knowledge quality is Vectalon's
+  job to own end-to-end (web intel + knowledge base + prompt engineering),
+  not something users curate. `bench/references` and the relative-to-human
+  scoring it feeds are **kept** — that pack is a live part of the benchmark
+  pipeline (per-scenario "Relative to human reference", the leaderboard
+  vs-human column, and the M6 CI gate), not train-only data. MCP tool count
+  is now 58.
+
 ## [0.1.25] - 2026-08-10
 
 ### Added
