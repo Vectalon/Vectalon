@@ -7,9 +7,9 @@ import {
 } from '../../src/selftest/reporters'
 import { runSelfTest } from '../../src/selftest/runner'
 
-// CI environments (e.g. GitHub Actions sets FORCE_COLOR) make picocolors emit
-// ANSI codes even when piped, so strip them before asserting on text. Built
-// dynamically to avoid the no-control-regex lint rule.
+// jest.setup.js forces FORCE_COLOR=1, so ANSI codes are emitted even when the
+// stream is piped — strip them before asserting on text. Built dynamically to
+// avoid the no-control-regex lint rule.
 function stripAnsi(value: string): string {
   const esc = String.fromCharCode(27)
   return value.replace(new RegExp(`${esc}\\[[0-9;]*m`, 'g'), '')

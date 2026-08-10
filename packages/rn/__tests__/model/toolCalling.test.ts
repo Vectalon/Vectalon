@@ -141,15 +141,73 @@ describe('runAgentLoop', () => {
     expect(execute).not.toHaveBeenCalled()
   })
 
-  it('caps iterations when the model never answers', async () => {
-    const router = routerReturning('{"tool":"review_code","arguments":{}}')
+  it('forces a final answer pass when the model never answers (no opaque cap)', async () => {
+    const router = routerReturning(
+      '{"tool":"review_code","arguments":{"code":"a"}}',
+      '{"tool":"review_code","arguments":{"code":"b"}}',
+      '{"tool":"review_code","arguments":{"code":"c"}}',
+      '{"answer":"forced answer from history"}'
+    )
     const execute = jest.fn(async () => 'ok')
 
     const result = await runAgentLoop({ modelRouter: router, prompt: 'loop', tools: TOOLS, execute, maxIterations: 3 })
-    expect(result.answer).toContain('iteration cap')
-    expect(result.iterations).toBe(3)
+    // The budget (3 rounds) was consumed by tool calls; the loop then ran ONE
+    // extra final-answer generation instead of returning a cap message.
+    expect(result.answer).toBe('forced answer from history')
     expect(result.calls).toHaveLength(3)
     expect(execute).toHaveBeenCalledTimes(3)
+    // The final pass asked for an answer, not another tool call.
+    const finalPass = router.generate.mock.calls[3][0] as ModelRequest
+    expect(finalPass.prompt).toContain('unverified tool output')
+    expect(finalPass.systemPrompt).toContain('Do NOT call any tool')
+  })
+
+  it('reports the raw output when the forced answer pass is also unparseable', async () => {
+    const router = routerReturning(
+      '{"tool":"review_code","arguments":{"code":"a"}}',
+      '{"tool":"review_code","arguments":{"code":"b"}}',
+      'still not json'
+    )
+    const execute = jest.fn(async () => 'ok')
+
+    const result = await runAgentLoop({ modelRouter: router, prompt: 'loop', tools: TOOLS, execute, maxIterations: 2 })
+    expect(result.answer).toContain('ran out of tool-call budget')
+    expect(result.answer).toContain('still not json')
+    expect(execute).toHaveBeenCalledTimes(2)
+  })
+
+  it('skips repeated read-only tool calls and nudges the model to answer', async () => {
+    const router = routerReturning(
+      '{"tool":"get_project_context","arguments":{}}',
+      '{"tool":"get_project_context","arguments":{}}',
+      '{"answer":"the project uses react-native"}'
+    )
+    const execute = jest.fn(async (name: string) => `result-of-${name}`)
+
+    const result = await runAgentLoop({ modelRouter: router, prompt: 'what is the project?', tools: TOOLS, execute })
+    expect(result.answer).toBe('the project uses react-native')
+    // Only ONE real execution — the repeat was skipped, not re-run.
+    expect(execute).toHaveBeenCalledTimes(1)
+    expect(result.calls).toHaveLength(2)
+    expect(result.calls[1].result).toContain('already called')
+    // The skip notice went back to the model.
+    const followUp = router.generate.mock.calls[2][0] as ModelRequest
+    expect(followUp.prompt).toContain('Do not call it again')
+  })
+
+  it('caps total tool calls per run with a forced final answer', async () => {
+    const router = routerReturning(
+      '{"tool":"review_code","arguments":{"code":"a"}}',
+      '{"tool":"review_code","arguments":{"code":"b"}}',
+      '{"tool":"review_code","arguments":{"code":"c"}}',
+      '{"answer":"budget reached"}'
+    )
+    const execute = jest.fn(async () => 'ok')
+
+    const result = await runAgentLoop({ modelRouter: router, prompt: 'loop', tools: TOOLS, execute, maxToolCalls: 2 })
+    expect(result.answer).toBe('budget reached')
+    expect(execute).toHaveBeenCalledTimes(2)
+    expect(result.calls).toHaveLength(2)
   })
 
   it('feeds tool errors back to the model', async () => {
