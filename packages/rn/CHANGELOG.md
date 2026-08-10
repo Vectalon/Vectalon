@@ -5,6 +5,45 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.24] - 2026-08-10
+
+### Added
+
+- **rn-diff-purge upgrade diffs (native + JS/TS)** — Vectalon now consumes the
+  community-maintained template diffs from
+  `react-native-community/rn-diff-purge` — the exact data the Upgrade Helper
+  shows — so CLI-app upgrades always surface **both** the native
+  (`android/`, `ios/`, Gemfile) and JS/TS (`App.tsx`, `index.js`,
+  babel/metro/ts configs, `package.json`) template changes to apply, even for
+  releases newer than the local catalog. Every bare RN CLI plan includes an
+  `rn-diff-purge` manual step; `vectalon upgrade --diff` fetches and
+  categorizes the diff live (soft-degrades on network failure); agents get the
+  `get_rn_upgrade_diff` MCP tool (live fetch or offline diff parse).
+- **Current React Native / Expo catalog** — upgrade knowledge extended to RN
+  0.82–0.86 (`LATEST_KNOWN_RN 0.86.2`) and Expo SDK 55–57, with
+  `latestKnownExpoSdk()` / `latestKnownRnMinor()` helpers so `--to latest`
+  can never go stale again. Also fixed four ecosystem MCP entries pointing at
+  nonexistent npm packages, and rn-diff-purge is now a built-in data source
+  the doctor reports as OK (nothing to install).
+- **Self-maintaining knowledge base** — `vectalon init` scans the repo and
+  seeds the artifact knowledge base automatically (project snapshot,
+  knowledge graph, code graph, native configuration, learned patterns),
+  `vectalon serve` re-seeds it hourly in the background, and
+  `vectalon refresh` on demand — knowledge maintenance is Vectalon's job, no
+  manual import step. The `vectalon import` command has been removed.
+
+### Fixed
+
+- **`--json` exit codes in render/sandbox** — failing runs now exit 1 in JSON
+  mode too (previously a script consuming `--json` saw exit 0 on
+  `"ok": false`).
+- **NaN timeout / memory limits** — `--timeout abc` no longer instantly
+  SIGTERMs the sandbox process group (commander's Number processor turned it
+  into NaN); `--memory <mb>` actually applies now (both commands lacked the
+  Number processor, so the value arrived as a string and was silently
+  dropped). The guards are shared at the choke point across render, the
+  sandbox CLI, and `sandbox_run`.
+
 ## [0.1.23] - 2026-08-10
 
 ### Added
