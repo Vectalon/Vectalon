@@ -1,6 +1,7 @@
 import type { ModelRequest, ModelResponse } from '../types'
 import { getWasmPreset, wasmCacheDir, wasmDtype, wasmCacheReady } from '../local/wasmPresets'
 import { buildSkillsSystemPrompt, enrichWithSkills } from '../../ecosystem/skills'
+import { buildMemorySystemPrompt, enrichWithMemory } from '../../memory'
 import { buildWebIntelSystemPrompt, enrichWithIntel } from '../../knowledge/intel'
 import { buildToolCallSystemPrompt } from '../toolCalling'
 import { RN_CODER_SYSTEM_PROMPT } from '../prompts'
@@ -21,6 +22,9 @@ export interface WasmProviderOptions {
   /** Injectable web-intel-to-system-prompt builder (defaults to the knowledge
    * loader). Tests inject a stub to verify the wiring without touching disk. */
   intelLoader?: (root: string, systemPrompt?: string) => string | undefined
+  /** Injectable distilled-memory-to-system-prompt builder (defaults to the
+   * memory distiller loader). Tests inject a stub to verify the wiring. */
+  memoryLoader?: (root: string, systemPrompt?: string) => string | undefined
   /**
    * Injectable @huggingface/transformers loader (defaults to the real dynamic
    * import). Tests inject a stub so the pipeline is never actually loaded and
@@ -64,12 +68,14 @@ export class WasmProvider {
   private readonly projectRoot?: string
   private readonly skillsLoader: (root: string, systemPrompt?: string) => string | undefined
   private readonly intelLoader: (root: string, systemPrompt?: string) => string | undefined
+  private readonly memoryLoader: (root: string, systemPrompt?: string) => string | undefined
   private readonly loadTransformers: () => Promise<unknown>
 
   constructor(options: WasmProviderOptions = {}) {
     this.projectRoot = options.projectRoot
     this.skillsLoader = options.skillsLoader || buildSkillsSystemPrompt
     this.intelLoader = options.intelLoader || buildWebIntelSystemPrompt
+    this.memoryLoader = options.memoryLoader || buildMemorySystemPrompt
     this.loadTransformers =
       options.loadTransformers || (() => dynamicImport<TransformersModule>('@huggingface/transformers'))
   }
@@ -104,7 +110,8 @@ export class WasmProvider {
   async generate(request: ModelRequest): Promise<ModelResponse> {
     const baseSystem = request.systemPrompt || RN_CODER_SYSTEM_PROMPT
     const skillsPrompt = enrichWithSkills(this.projectRoot, this.skillsLoader, baseSystem) ?? baseSystem
-    const systemPrompt = enrichWithIntel(this.projectRoot, this.intelLoader, skillsPrompt) ?? skillsPrompt
+    const memoryPrompt = enrichWithMemory(this.projectRoot, this.memoryLoader, skillsPrompt) ?? skillsPrompt
+    const systemPrompt = enrichWithIntel(this.projectRoot, this.intelLoader, memoryPrompt) ?? memoryPrompt
 
     try {
       const generator = await this.getPipeline()

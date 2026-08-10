@@ -76,6 +76,22 @@ describe('WasmProvider', () => {
     expect(messages[0].content).toContain('RN 0.82 released')
   })
 
+  it('inlines distilled memory into the system prompt when a project root is set', async () => {
+    const mod = makeTransformers()
+    const provider = new WasmProvider({
+      projectRoot: '/tmp/irrelevant',
+      loadTransformers: async () => mod,
+      memoryLoader: (root, systemPrompt) => `${systemPrompt}\n\n## Project memory\n\n- Convention: PascalCase components`,
+    })
+
+    await provider.generate({ prompt: 'hi', systemPrompt: 'base' })
+
+    const [messages] = mod.generator.mock.calls[0]
+    expect(messages[0].content).toContain('base')
+    expect(messages[0].content).toContain('## Project memory')
+    expect(messages[0].content).toContain('- Convention: PascalCase components')
+  })
+
   it('does not load web intel without a projectRoot', async () => {
     const mod = makeTransformers()
     const provider = new WasmProvider({ loadTransformers: async () => mod })

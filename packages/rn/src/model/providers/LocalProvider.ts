@@ -3,6 +3,7 @@ import { getDefaultPreset, getPreset } from '../local/presets'
 import { runInference, probeNativeModule } from '../local/inference'
 import { hasDownloadedModel } from '../local/ModelStore'
 import { buildSkillsSystemPrompt, enrichWithSkills } from '../../ecosystem/skills'
+import { buildMemorySystemPrompt, enrichWithMemory } from '../../memory'
 import { buildWebIntelSystemPrompt, enrichWithIntel } from '../../knowledge/intel'
 import { TOOL_CALL_SCHEMA } from '../toolCalling'
 import { RN_CODER_SYSTEM_PROMPT } from '../prompts'
@@ -29,6 +30,9 @@ export interface LocalProviderOptions {
   /** Injectable web-intel-to-system-prompt builder (defaults to the knowledge
    * loader). Tests inject a stub to verify the wiring without touching disk. */
   intelLoader?: (root: string, systemPrompt?: string) => string | undefined
+  /** Injectable distilled-memory-to-system-prompt builder (defaults to the
+   * memory distiller loader). Tests inject a stub to verify the wiring. */
+  memoryLoader?: (root: string, systemPrompt?: string) => string | undefined
   /**
    * Injectable node-llama-cpp capability probe (defaults to the real dynamic
    * import). Tests inject a stub to verify the degrade path without loading
@@ -45,6 +49,7 @@ export class LocalProvider {
   private readonly projectRoot?: string
   private readonly skillsLoader: (root: string, systemPrompt?: string) => string | undefined
   private readonly intelLoader: (root: string, systemPrompt?: string) => string | undefined
+  private readonly memoryLoader: (root: string, systemPrompt?: string) => string | undefined
   private readonly nativeProbe: () => Promise<true | 'missing' | 'failed'>
   private readonly presetId?: string
 
@@ -52,6 +57,7 @@ export class LocalProvider {
     this.projectRoot = options.projectRoot
     this.skillsLoader = options.skillsLoader || buildSkillsSystemPrompt
     this.intelLoader = options.intelLoader || buildWebIntelSystemPrompt
+    this.memoryLoader = options.memoryLoader || buildMemorySystemPrompt
     this.nativeProbe = options.nativeProbe || probeNativeModule
     this.presetId = options.presetId
   }
@@ -107,7 +113,8 @@ export class LocalProvider {
     // call toward idiomatic React Native.
     const basePrompt = request.systemPrompt || RN_CODER_SYSTEM_PROMPT
     const skillsPrompt = enrichWithSkills(this.projectRoot, this.skillsLoader, basePrompt) ?? basePrompt
-    const systemPrompt = enrichWithIntel(this.projectRoot, this.intelLoader, skillsPrompt) ?? skillsPrompt
+    const memoryPrompt = enrichWithMemory(this.projectRoot, this.memoryLoader, skillsPrompt) ?? skillsPrompt
+    const systemPrompt = enrichWithIntel(this.projectRoot, this.intelLoader, memoryPrompt) ?? memoryPrompt
 
     const preset = this.resolvePreset()
     // Only attempt native inference when the optional node-llama-cpp module

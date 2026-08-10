@@ -87,6 +87,18 @@ describe('LocalProvider', () => {
     expect(response.content).toContain('base')
   })
 
+  it('uses an injected memory loader when provided', async () => {
+    const provider = new LocalProvider({
+      projectRoot: '/tmp/irrelevant',
+      // Mirrors the real loader contract: base system prompt + appended memory.
+      memoryLoader: (root, systemPrompt) => `${systemPrompt}\n\n## Project memory\n\n- Convention: PascalCase components`,
+    })
+    const response = await provider.generate({ prompt: 'hi', systemPrompt: 'base' })
+    expect(response.content).toContain('## Project memory')
+    expect(response.content).toContain('- Convention: PascalCase components')
+    expect(response.content).toContain('base')
+  })
+
   it('does not load skills without a projectRoot', async () => {
     const provider = new LocalProvider()
     const response = await provider.generate({ prompt: 'hi', systemPrompt: 'base' })

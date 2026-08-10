@@ -18,7 +18,7 @@ interface SessionRecord {
   actions: number
 }
 
-interface DecisionRecord {
+export interface DecisionRecord {
   id: string
   timestamp: number
   action: string
@@ -71,6 +71,11 @@ export class ProjectMemory implements PatternStore {
       outcome,
     })
     this.save()
+  }
+
+  /** Decisions recorded through recordDecision (newest first). */
+  getDecisions(): DecisionRecord[] {
+    return [...this.store.decisions].reverse()
   }
 
   private load(): MemoryStore {

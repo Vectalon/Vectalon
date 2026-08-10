@@ -1,6 +1,7 @@
 import type { ModelRequest, ModelResponse } from '../types'
 import { getConfig } from '../../config'
 import { buildSkillsSystemPrompt, enrichWithSkills } from '../../ecosystem/skills'
+import { buildMemorySystemPrompt, enrichWithMemory } from '../../memory'
 import { buildWebIntelSystemPrompt, enrichWithIntel } from '../../knowledge/intel'
 import { RN_CODER_SYSTEM_PROMPT } from '../prompts'
 import { getRemoteProviderInfo } from '../setup'
@@ -19,6 +20,9 @@ export interface RemoteProviderOptions {
   /** Injectable web-intel-to-system-prompt builder (defaults to the knowledge
    * loader). Tests inject a stub to verify the wiring without touching disk. */
   intelLoader?: (root: string, systemPrompt?: string) => string | undefined
+  /** Injectable distilled-memory-to-system-prompt builder (defaults to the
+   * memory distiller loader). Tests inject a stub to verify the wiring. */
+  memoryLoader?: (root: string, systemPrompt?: string) => string | undefined
 }
 
 interface OpenAIResponse {
@@ -51,6 +55,7 @@ export class RemoteProvider {
   private readonly projectRoot?: string
   private readonly skillsLoader: (root: string, systemPrompt?: string) => string | undefined
   private readonly intelLoader: (root: string, systemPrompt?: string) => string | undefined
+  private readonly memoryLoader: (root: string, systemPrompt?: string) => string | undefined
 
   /**
    * @param config project-level overrides from .vectalon/rn-vectalon.json
@@ -82,16 +87,19 @@ export class RemoteProvider {
     this.projectRoot = options.projectRoot
     this.skillsLoader = options.skillsLoader || buildSkillsSystemPrompt
     this.intelLoader = options.intelLoader || buildWebIntelSystemPrompt
+    this.memoryLoader = options.memoryLoader || buildMemorySystemPrompt
   }
 
   async generate(request: ModelRequest): Promise<ModelResponse> {
     const context = request.context ? `\nContext:\n${request.context}\n` : ''
     const baseSystem = request.systemPrompt || RN_CODER_SYSTEM_PROMPT
-    // Enrich with the project's enabled skills AND the latest web intel
-    // (mirrors LocalProvider) so remote generations follow the same
-    // best-practice guidance and current ecosystem decisions.
+    // Enrich with the project's enabled skills, distilled memory, and the
+    // latest web intel (mirrors LocalProvider) so remote generations follow
+    // the same best-practice guidance, learned project knowledge, and
+    // current ecosystem decisions.
     const skillsPrompt = enrichWithSkills(this.projectRoot, this.skillsLoader, baseSystem) ?? baseSystem
-    const systemPrompt = enrichWithIntel(this.projectRoot, this.intelLoader, skillsPrompt) ?? skillsPrompt
+    const memoryPrompt = enrichWithMemory(this.projectRoot, this.memoryLoader, skillsPrompt) ?? skillsPrompt
+    const systemPrompt = enrichWithIntel(this.projectRoot, this.intelLoader, memoryPrompt) ?? memoryPrompt
     const fullPrompt = `${context}${request.prompt}`
 
     if (this.kind === 'anthropic') {

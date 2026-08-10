@@ -5,6 +5,8 @@ import Table from 'cli-table'
 import { ContextEngine } from '../../harness/ContextEngine'
 import { ProjectMemory } from '../../memory/ProjectMemory'
 import { PatternLearner } from '../../memory/PatternLearner'
+import { MemoryDistiller } from '../../memory/MemoryDistiller'
+import { reportError } from '../../utils/safe'
 import { ModelRouter } from '../../model/ModelRouter'
 import { createAdapters } from '../../adapters'
 import { WorkflowEngine, getWorkflow, listWorkflows, createWorkflowState, saveWorkflowState, loadWorkflowState, listWorkflowStates } from '../../workflows'
@@ -328,6 +330,44 @@ export async function featureCommand(
   }
 
   saveWorkflowState(root, result)
+
+  // L0→L3 memory: record this workflow run as a raw session and distill it
+  // into the project's learned knowledge (persona + scenario lessons) so
+  // future generations' system prompts carry what this project has taught
+  // us — the same enrichment path as web intel. Never breaks the workflow.
+  try {
+    const distiller = new MemoryDistiller(root)
+    distiller.learnFromPatterns(memory.getActivePatterns())
+    distiller.learnFromDecisions(memory.getDecisions())
+    const artifactFiles = result.phases.flatMap(p => p.artifacts).filter(a => a.path && a.type !== 'document')
+    // Review findings are extracted from the FULL phase outputs (not the
+    // truncated L0 entries) so a finding past the entry cap is never lost.
+    const reviewFindings = result.phases
+      .flatMap(p => extractLLMFindings(p.output || ''))
+      .map(f => f.replace(/[🔴🟡🔵]\s*/u, '').trim())
+      .filter(Boolean)
+    distiller.ingestSession({
+      id: result.id,
+      workflowId: workflow.id,
+      startedAt: result.createdAt,
+      endedAt: Date.now(),
+      outcome: result.status === 'completed' ? 'completed' : 'failed',
+      summary: prompt.slice(0, 200),
+      files: artifactFiles.map(a => {
+        const p = a.path as string
+        return p.startsWith(root) ? p.slice(root.length + 1) : p
+      }),
+      facts: reviewFindings.map(statement => ({ category: 'error' as const, statement })),
+      entries: result.phases.map(p => ({
+        kind: 'tool' as const,
+        tool: p.id,
+        text: `${p.name}: ${(p.output || '').slice(0, 600)}`,
+        at: result.updatedAt,
+      })),
+    })
+  } catch (err) {
+    reportError(err, 'feature: memory distillation')
+  }
 
   if (options.json) {
     const json = JSON.stringify(result, null, 2)

@@ -97,6 +97,22 @@ describe('RemoteProvider', () => {
     expect(body.system).toContain('base')
   })
 
+  it('uses an injected memory loader for Anthropic', async () => {
+    mockFetchResponse({ content: [{ text: 'ok' }] })
+
+    const provider = new RemoteProvider('anthropic', undefined, {
+      projectRoot: '/tmp/irrelevant',
+      memoryLoader: (_root, systemPrompt) => `${systemPrompt}\n\n## Project memory\n\n- Convention: PascalCase components`,
+    })
+    await provider.generate({ prompt: 'hi', systemPrompt: 'base' })
+
+    const [, init] = (global.fetch as jest.Mock).mock.calls[0]
+    const body = JSON.parse(init.body)
+    expect(body.system).toContain('## Project memory')
+    expect(body.system).toContain('- Convention: PascalCase components')
+    expect(body.system).toContain('base')
+  })
+
   it('does not load skills without a projectRoot', async () => {
     mockFetchResponse({ choices: [{ message: { content: 'ok' } }] })
 
