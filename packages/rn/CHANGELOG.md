@@ -5,6 +5,36 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.27] - 2026-08-10
+
+### Added
+
+- **L0→L3 agent memory (MemoryDistiller)** — Vectalon now distills what each
+  project teaches it. Agent sessions (every `vectalon feature` workflow run)
+  are captured as raw memory (L0), distilled deterministically into atomic
+  facts (L1), occurrence-weighted scenario lessons (L2), and a stable project
+  persona — stack, conventions, known issues (L3) — persisted under
+  `.vectalon/knowledge/memory/distilled.json`. The distilled memory is
+  inlined into every model system prompt exactly like web intel, so local,
+  remote, and WASM providers all generate from what this project has already
+  learned. Fully offline and deterministic — no model calls, no new
+  infrastructure.
+- **Professional `vectalon ecosystem` UX** — the catalog is now grouped by
+  category (MCP servers / Agent skills / Tools / Hooks) with ✓/— status marks
+  and full IDs that are never truncated (no more `react-native-upgrad…` you
+  can't copy). The 38-item capabilities dump is gone from the list; new
+  `vectalon ecosystem --info <id>` shows a single-item card (description,
+  install command, capabilities, enable/disable hint). The interactive menu's
+  Enable / View-details actions pick from the catalog via type-to-filter
+  select instead of typing an id blind.
+
+### Fixed
+
+- Scenario occurrences now count the sessions that produced a fact (dedup no
+  longer collapses repeated lessons), `lastSeen` advances correctly, and
+  code-review findings survive the L0 entry cap (extracted from full phase
+  outputs).
+
 ## [0.1.26] - 2026-08-10
 
 ### Fixed
