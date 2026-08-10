@@ -5,6 +5,26 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.23] - 2026-08-10
+
+### Added
+
+- **Scripted terminal demo recording** — 8 deterministic VHS tapes walk every
+  CLI feature (init, status, doctor, selftest, feature workflow, sandbox,
+  render, profile, bundle, release, ecosystem, models, upgrade) against the
+  CLI demo in dev mode, rendered to `apps/website/demo/recording/clips/*.mp4`
+  plus a concatenated `full-demo.mp4`. No model downloads, re-recordable
+  anytime via the recording guide; linked from the README next to the
+  Onboarding Guide.
+
+### Fixed
+
+- **`render --file` comma-list bug** — the flag spread the comma-separated
+  value into characters (`...'a,b'` → `'a'`, `','`, `'b'`), so passing
+  multiple files failed with `File not found: .../s`. The value is now
+  normalized (string or array, split on commas, trimmed) and covered by unit
+  tests; the demo clip shows the broken → fixed before/after.
+
 ## [0.1.22] - 2026-08-09
 
 ### Added
