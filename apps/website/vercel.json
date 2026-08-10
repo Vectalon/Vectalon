@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "framework": "nextjs",
+  "buildCommand": "next build",
+  "outputDirectory": ".next",
+  "regions": ["iad1"],
+  "env": {
+    "DATA_DIR": "/tmp/vectalon-data"
+  }
+}
