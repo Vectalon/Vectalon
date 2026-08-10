@@ -8,6 +8,8 @@ export { SqliteArtifactStore, artifactDbPath, openDatabase, isSqliteAvailable } 
 export { JsonArtifactStore } from './JsonArtifactStore'
 export { TeamStore } from './TeamStore'
 export { KnowledgeIndex } from './KnowledgeIndex'
+export { seedKnowledgeBaseFromScan, maintainKnowledgeBase } from './seed'
+export type { KnowledgeSeedOptions, KnowledgeSeedResult } from './seed'
 export {
   SOURCE_CONFIDENCE,
   STATUS_CONFIDENCE,

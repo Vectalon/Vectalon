@@ -47,7 +47,7 @@ Run `npx vectalon <command> --help` for detailed options.
 
 | Command | Description | Key Options |
 |---------|-------------|-------------|
-| `init [dir]` | Initialize `.vectalon/` workspace, detect flavor, set model provider — transactional: a failed init is recoverable (resume / clean restart) and a completed one is a no-op | `--model <provider>`, `--resume`, `--clean-restart`, `--force` |
+| `init [dir]` | Initialize `.vectalon/` workspace, detect flavor, set model provider, and **build the knowledge base automatically from a repo scan** (project snapshot, knowledge graph, code graph, native config, learned patterns — no manual import needed) — transactional: a failed init is recoverable (resume / clean restart) and a completed one is a no-op | `--model <provider>`, `--resume`, `--clean-restart`, `--force` |
 | `serve` | Start the MCP server (MCP/stdio/SSE/HTTP) | `-p <port>`, `--protocol <type>`, `--model <provider>`, `--safe-mode` |
 | `feature [prompt]` | Full SDLC workflow: PRD → design → architecture → implementation → tests → code-review → PR → docs | `--workflow`, `--resume`, `--from`, `--ticket <key>`, `--push`, `--device`, `--heal-interactive`, `--dry-run`, `--model <provider>` |
 | `upgrade [dir]` | React Native / Expo upgrade copilot (impact, codemods, verification) | `--to <version>`, `--dry-run`, `--apply`, `--force` |
@@ -68,8 +68,7 @@ Run `npx vectalon <command> --help` for detailed options.
 | `leaderboard [dir]` | Merge benchmark results into `BENCHMARK_RESULTS.md` | `--out <path>`, `--json`, `--timestamp`, `--pr-comment` |
 | `train [dir]` | Curate fine-tuning dataset from benchmark references + LoRA plan | `--build`, `--plan`, `--out <dir>`, `--base <model>`, `--scenarios <dir>`, `--references <dir>`, `--json` |
 | `ecosystem [dir]` | Browse/enable MCP servers, skills, tools, hooks | `--category <mcp\|skill\|tool\|hook>`, `--flavor <expo\|rn-cli>`, `--enable <id>`, `--disable <id>`, `--export`, `--json` |
-| `import <target>` | Import SDLC artifacts (markdown/JSON) into knowledge base | `--type <type>`, `--title <title>` |
-| `refresh [dir]` | Refresh knowledge from web sources + improvement suggestions | `--force` |
+| `refresh [dir]` | Refresh knowledge from web sources + improvement suggestions, and re-seed the repo-derived knowledge-base artifacts (idempotent) | `--force` |
 | `auth` | Manage license/trial, activate keys, GitHub OAuth | `--license <key>`, `--github`, `--status`, `--logout` |
 | `policy [dir]` | Manage project-specific guardrail policy | `--init`, `--check <file>` |
 | `pull [preset]` | Download local model preset (default Qwen2.5-Coder-1.5b) | `[preset-id]` |
@@ -112,7 +111,6 @@ Run `npx vectalon` with no arguments (Node `>=20.12`, TTY required) to launch an
   ○ Sync team brain
   ○ Manage policy
   ○ Start MCP server
-  ○ Import artifacts
   ○ Download local model
   ○ List models
   ○ Show help
@@ -376,7 +374,7 @@ accident.
 
 - **CoreTools** — project scanning, context building, file reading, AST analysis
 - **EcosystemTools** — catalog browsing, skill loading, ecosystem doctor
-- **KnowledgeTools** — artifact search, import, traceability, team brain queries
+- **KnowledgeTools** — artifact search, traceability, team brain queries
 - **SdlcTools** — invoke any SDLC analyzer/writer/generator on demand
 
 Protocols: `mcp` (default), `stdio`, `sse`, `http`.

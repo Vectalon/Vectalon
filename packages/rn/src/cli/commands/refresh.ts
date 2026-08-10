@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from 'fs'
 import { join, resolve } from 'path'
 import { logger } from '../logger'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
+import { maintainKnowledgeBase } from '../../knowledge'
 
 interface RefreshOptions {
   force?: boolean
@@ -68,5 +69,15 @@ export async function refreshCommand(directory: string, options: RefreshOptions)
     }
   } else {
     logger.info('No improvement suggestions at this time')
+  }
+
+  // Knowledge maintenance is Vectalon's responsibility: re-scan the repo and
+  // re-seed the repo-derived artifacts (idempotent) so the knowledge base
+  // tracks code changes even when nothing changed upstream.
+  try {
+    const seeded = maintainKnowledgeBase(root)
+    logger.info(`Knowledge base maintained from repo scan (${seeded.total} artifact(s), ${seeded.updated} refreshed)`)
+  } catch (err) {
+    logger.warn(`Repo-scan knowledge maintenance failed: ${err instanceof Error ? err.message : String(err)}`)
   }
 }

@@ -11,6 +11,7 @@
 import { ContextEngine } from '../../harness/ContextEngine'
 import { ProjectMemory } from '../../memory/ProjectMemory'
 import { PatternLearner } from '../../memory/PatternLearner'
+import { seedKnowledgeBaseFromScan } from '../../knowledge'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { logger } from '../logger'
@@ -181,6 +182,24 @@ async function runInitPhases(
   engine.attachPatternStore(memory)
   completePhase(root, state, 'scan')
   completePhase(root, state, 'memory')
+
+  // --- phase: knowledge ---
+  // Knowledge is Vectalon's responsibility, never the customer's: seed the
+  // artifact knowledge base from the scan (project snapshot, knowledge graph,
+  // code graph, native config, learned patterns) so agents have project
+  // context immediately — no manual import step. The same idempotent seed runs
+  // on every periodic refresh so it tracks code changes automatically.
+  if (!resumeFrom.has('knowledge')) {
+    // Never let knowledge seeding fail init — warn and continue; the periodic
+    // refresh (serve / `vectalon refresh`) will re-attempt the seed.
+    try {
+      const seeded = seedKnowledgeBaseFromScan(root, { engine, patternStore: memory })
+      logger.info(pc.bold(`Knowledge base seeded from repo scan (${seeded.created} created, ${seeded.updated} updated, ${seeded.total} artifacts)`))
+    } catch (err) {
+      reportError(err, 'init: knowledge base seeding failed — continuing (refresh will retry)', 'warn')
+    }
+    completePhase(root, state, 'knowledge')
+  }
 
   const vectalonDir = join(root, '.vectalon')
 

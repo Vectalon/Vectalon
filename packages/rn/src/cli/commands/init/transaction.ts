@@ -39,6 +39,7 @@ export const INIT_TOUCHED_FILES = [
 export type InitPhase =
   | 'scan'
   | 'memory'
+  | 'knowledge'
   | 'gitignore'
   | 'model'
   | 'manifest'
@@ -49,6 +50,7 @@ export type InitPhase =
 export const INIT_PHASES: readonly InitPhase[] = [
   'scan',
   'memory',
+  'knowledge',
   'gitignore',
   'model',
   'manifest',

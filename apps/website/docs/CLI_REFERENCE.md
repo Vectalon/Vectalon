@@ -7,7 +7,7 @@ globally or linked).
 Running `npx vectalon` with no arguments opens an **interactive menu** covering
 the most common actions (init, feature, refresh, bundle, status, daemon,
 telemetry, impact, ci, release, train, ecosystem, doctor, selftest, bench,
-leaderboard, sync, policy, serve, import, pull, models, help).
+leaderboard, sync, policy, serve, pull, models, help).
 
 ---
 
@@ -66,6 +66,13 @@ npx vectalon init --model vllm     # local vLLM server — no API key
 - Scans `package.json` dependencies and **auto-enables matching ecosystem
   items** (zustand, gesture-handler, reanimated, mmkv, flash-list, husky,
   lint-staged, …), logging each detection
+- **Builds the knowledge base automatically** — from the repo scan it seeds the
+  artifact knowledge base with a project snapshot, knowledge graph, code graph,
+  native configuration, and learned patterns, so agents get project context
+  through `search_knowledge` immediately. No manual import step: knowledge
+  maintenance is Vectalon's job, and the same idempotent seed re-runs on every
+  periodic refresh (hourly in `serve`, or `vectalon refresh`) so the knowledge
+  base tracks code changes on its own
 
 **Exit codes**
 
@@ -150,8 +157,11 @@ curl -X POST http://localhost:8931/call \
   -H 'Content-Type: application/json' \
   -d '{"name":"get_project_context","arguments":{}}'
 ```
-- Starts a **background knowledge refresh** scheduler (hourly) and runs an
-  immediate refresh when the cache is stale
+- Starts a **background knowledge maintenance** loop (hourly): refreshes web
+  knowledge + improvement suggestions AND re-scans the repo, re-seeding the
+  repo-derived artifacts (project snapshot, knowledge graph, code graph,
+  native configuration, learned patterns) so the knowledge base tracks code
+  changes automatically; runs an immediate pass when the cache is stale
 
 **Exit codes**
 
@@ -1175,6 +1185,10 @@ npx vectalon refresh --force      # refresh regardless
 - Compares your `package.json` dependencies against the fetched data and writes
   **improvement suggestions** to
   `.vectalon/knowledge/refresh/suggestions.json`
+- Re-scans the repo and re-seeds the repo-derived knowledge-base artifacts
+  (project snapshot, knowledge graph, code graph, native configuration,
+  learned patterns) — idempotent, so the knowledge base tracks code changes
+  without any customer action
 
 **Exit codes**
 
@@ -1215,36 +1229,6 @@ npx vectalon sync --push --force               # run even if disabled in config
 |---|---|
 | 0 | Config created, or push/pull succeeded |
 | 1 | No `.vectalon/`, `--init` without `--remote`, no `sync.json`, or sync failed |
-
----
-
-## `import`
-
-Import SDLC artifacts (markdown/JSON) into the knowledge base.
-
-```bash
-npx vectalon import docs/prd.md
-npx vectalon import docs/
-npx vectalon import docs/prd.md --type product --title "Mobile App PRD"
-```
-
-**Options**
-
-| Option | Description |
-|---|---|
-| `<target>` | File or directory to import (required) |
-| `--type <type>` | Artifact type: `business` \| `research` \| `product` \| `requirements` \| `design` \| `architecture` \| `engineering` \| `data` \| `security` \| `qa` \| `devops` \| `operations` \| `analytics` |
-| `--title <title>` | Artifact title |
-
-Type resolution order: `--type` flag → frontmatter `type:` → keyword detection.
-JSON files may be a single `{ title, type, content }` object or an array.
-
-**Exit codes**
-
-| Code | When |
-|---|---|
-| 0 | Import completed (duplicates skipped by checksum) |
-| 1 | Invalid target or import failure |
 
 ---
 

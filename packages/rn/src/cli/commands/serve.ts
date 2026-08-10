@@ -9,6 +9,7 @@ import { HashEmbeddingProvider } from '../../knowledge/embeddings'
 import { reportError } from '../../utils/safe'
 import { createRemoteEmbeddingProvider } from '../../knowledge/remoteEmbeddings'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
+import { seedKnowledgeBaseFromScan, maintainKnowledgeBase } from '../../knowledge'
 import { startEnabledMcpClients } from '../../protocol/subMcp'
 import type { McpClientHandle } from '../../protocol/subMcp'
 import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
@@ -67,6 +68,17 @@ export async function serveCommand(options: {
     }
   }
   engine.attachPatternStore(memory)
+
+  // Seed the artifact knowledge base from the repo scan (idempotent) so agents
+  // get project context through search_knowledge immediately. Knowledge
+  // maintenance is Vectalon's job, not the customer's; a failure never blocks
+  // serving (the hourly loop retries).
+  try {
+    const seeded = seedKnowledgeBaseFromScan(root, { engine, patternStore: memory })
+    logger.info(`Knowledge base: ${seeded.total} artifact(s) from repo scan`)
+  } catch (err) {
+    logger.warn(`Knowledge base seeding failed (hourly maintenance will retry): ${err instanceof Error ? err.message : String(err)}`)
+  }
 
   // The model provider comes from --model, else the project manifest set by
   // `vectalon init` (which also records the model name + API-key env var).
@@ -192,6 +204,13 @@ function startBackgroundRefresh(root: string): void {
       })
       if (result.suggestions.length > 0) {
         logger.info(`Background refresh: ${result.suggestions.length} improvement suggestion(s) available`)
+      }
+      // Keep the repo-derived knowledge base current too — re-scan + idempotent
+      // re-seed so code changes land in the KB automatically (no customer
+      // action, ever). A web-source failure never blocks the local re-seed.
+      const scanResult = maintainKnowledgeBase(root)
+      if (scanResult.updated > 0) {
+        logger.info(`Background refresh: knowledge base updated from repo scan (${scanResult.updated} artifact(s) refreshed, ${scanResult.total} total)`)
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)

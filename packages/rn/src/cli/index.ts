@@ -7,7 +7,6 @@ import { Command } from 'commander'
 import pc from 'picocolors'
 import { initCommand } from './commands/init'
 import { serveCommand } from './commands/serve'
-import { importCommand } from './commands/import'
 import { featureCommand } from './commands/feature'
 import { upgradeCommand } from './commands/upgrade'
 import { pullCommand } from './commands/pull'
@@ -73,14 +72,6 @@ export function createProgram(): Command {
     .option('--model <provider>', 'Model provider (local|wasm|openai|anthropic|azure-openai|ollama|vllm|groq)')
     .option('--safe-mode', 'CI-safe mode: model generation returns stubs, file-writing and device-control tools are disabled')
     .action(serveCommand)
-
-  program
-    .command('import')
-    .description('Import SDLC artifacts (markdown/JSON) into the knowledge base')
-    .argument('<target>', 'File or directory to import')
-    .option('--type <type>', 'Artifact type (business, research, product, requirements, design, architecture, engineering, data, security, qa, devops, operations, analytics)')
-    .option('--title <title>', 'Artifact title')
-    .action(importCommand)
 
   program
     .command('feature [prompt]')
@@ -483,7 +474,6 @@ async function runInteractive(): Promise<void> {
       { value: 'sync', label: 'Sync team brain', hint: 'Push/pull .vectalon/knowledge to a hosted git remote' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
       { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
-      { value: 'import', label: 'Import artifacts', hint: 'Add markdown/JSON to the knowledge base' },
       { value: 'pull', label: 'Download local model', hint: 'Download the default Qwen2.5-Coder model' },
       { value: 'models', label: 'List models', hint: 'Show available and downloaded local models' },
       { value: 'help', label: 'Show help', hint: 'Print command reference' },
@@ -543,21 +533,6 @@ async function runInteractive(): Promise<void> {
       return
     }
     await serveCommand({ protocol: protocol as string })
-    return
-  }
-
-  if (action === 'import') {
-    const target = await p.text({
-      message: 'File or directory to import',
-      placeholder: './docs',
-      validate: value => value ? undefined : 'Target is required',
-    })
-    if (p.isCancel(target)) {
-      p.outro('Cancelled')
-      return
-    }
-    await importCommand(target as string, {})
-    p.outro('Import complete')
     return
   }
 

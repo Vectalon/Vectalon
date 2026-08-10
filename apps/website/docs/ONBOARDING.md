@@ -164,10 +164,15 @@ Start/Stop MCP Server) with a webview preview for results.
 ### 3.4 The knowledge base (your team's memory)
 
 Everything Vectalon learns lands in a searchable store with **provenance +
-confidence scores** (recent, high-confidence context wins):
+confidence scores** (recent, high-confidence context wins). Knowledge
+maintenance is Vectalon's job — no manual import step:
 
-- `npx vectalon import ./PRD.md` — import artifacts manually
-- `npx vectalon refresh` — pull best practices + dependency suggestions from the web
+- `npx vectalon init` — scans the repo and seeds the knowledge base with a
+  project snapshot, knowledge graph, code graph, native configuration, and
+  learned patterns automatically
+- `npx vectalon refresh` — pull best practices + dependency suggestions from
+  the web and re-seed the repo-derived artifacts (idempotent); `serve` runs
+  this maintenance hourly in the background
 - `npx vectalon sync --push` / `--pull` — team brain across projects via a git remote
 - `npx vectalon telemetry --path exports/` — ingest Sentry/Crashlytics and get
   data-driven crash analysis
