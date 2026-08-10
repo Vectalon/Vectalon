@@ -17,6 +17,6 @@ bench/results/*.json
 # Package manager
 .pnpm-store/
 
-# Core — source lives in private repo, dist is built in CI
+# Core — source lives in the private Vectalon/core repo; only the compiled
+# dist is committed so apps (website) can build standalone on Vercel.
 packages/core/src
-packages/core/dist
