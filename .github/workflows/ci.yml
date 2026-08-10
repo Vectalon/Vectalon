@@ -236,12 +236,18 @@ jobs:
       - name: Build core + website
         run: pnpm turbo run build --filter=@vectalon-dev/website
 
+      # Deploy with the official Vercel CLI — the previous
+      # `vercel/actions/deploy@v5` reference was a broken action path
+      # (vercel/actions has no `deploy` action at v5, and the third-party
+      # amondnet/vercel-action doesn't accept `project-name` / `prod-mode`
+      # inputs, so the step failed with "Can't find action.yml"). The CLI
+      # reads VERCEL_ORG_ID + VERCEL_PROJECT_ID from the environment, so it
+      # targets the existing `vectalon` project with no project link and no
+      # third-party action.
       - name: Deploy to Vercel (vectalon.in)
-        uses: vercel/actions/deploy@v5
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          project-name: vectalon
-          working-directory: apps/website
-          prod-mode: true
+        working-directory: apps/website
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: npx --yes vercel@latest deploy --prod --yes --token="$VERCEL_TOKEN"
