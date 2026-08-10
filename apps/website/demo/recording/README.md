@@ -23,9 +23,15 @@ with [VHS](https://github.com/charmbracelet/vhs) (charmbracelet).
 | 02 | `02-status-doctor.tape` | `status` health screen + `doctor` probe report |
 | 03 | `03-selftest.tape` | `selftest` — live spinner/progress, per-check pass/fail stream |
 | 04 | `04-feature.tape` | `feature` — the 13-phase workflow + paper trail |
-| 05 | `05-render-sandbox.tape` | `sandbox` isolated exec + `render` Metro compile-and-render |
+| 05 | `05-render-sandbox.tape` | `sandbox` isolated exec + `render` Metro compile-and-render as a before/after of the `--file` comma-list fix (broken → fixed) |
 | 06 | `06-profile-bundle-release.tape` | `profile` Hermes analysis, `bundle --static` budgets, `release` plan |
 | 07 | `07-ecosystem-models-upgrade.tape` | `ecosystem`, `models`, `upgrade` (catalog-based migration) |
+
+Tape 05's "before" beat is driven by `scripts/render-broken.sh`: it backs up
+`packages/rn/dist`, reverts the two fix hunks (commander `--file` processor +
+`normalizeRenderFiles`), runs the render so the char-spread failure shows, then
+restores dist via `trap`. Re-rendering the tape is safe — dist always comes back
+intact (verify with `grep -c normalizeRenderFiles dist/cli/commands/render.js`).
 
 ## Regenerate
 
@@ -57,6 +63,9 @@ Notes:
 
 - Tapes run from `recording/` and `cd ../cli-app` — the committed `clips/` are
   canonical; re-rendering produces near-identical output.
+- The `05` before/after assumes `dist/` is the current fixed build; if a future
+  change rewrites the two hunks the script reverts, update
+  `scripts/render-broken.sh` to match.
 - Some tapes end with a `Sleep` so the final frame holds before the encoder cuts.
 - VHS v0.11 syntax: space-separated commands (`Output "path"`), no `Set Prompt` /
   `Pause`, and single-quoted `Type '...'` strings keep inner double quotes intact
