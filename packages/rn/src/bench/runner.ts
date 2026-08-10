@@ -200,10 +200,15 @@ export function shouldRunScenario(scenario: BenchScenario, filter: BenchRunOptio
 }
 
 export async function runBenchmark(scenarios: BenchScenario[], options: BenchRunOptions = {}): Promise<BenchSummary> {
+  const selected = scenarios.filter(s => shouldRunScenario(s, options.filter))
+  const total = selected.length
   const runs: BenchScenarioRun[] = []
-  for (const scenario of scenarios) {
-    if (!shouldRunScenario(scenario, options.filter)) continue
-    runs.push(await runScenario(scenario, options))
+  for (let i = 0; i < total; i++) {
+    const scenario = selected[i]
+    options.onScenarioStart?.({ index: i + 1, total, scenario })
+    const run = await runScenario(scenario, options)
+    options.onScenarioComplete?.({ index: i + 1, total, scenario, run })
+    runs.push(run)
   }
 
   const bySuite = new Map<string, BenchScenarioRun[]>()

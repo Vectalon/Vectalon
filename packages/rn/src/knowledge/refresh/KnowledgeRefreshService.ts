@@ -1,6 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { reportError } from '../../utils/safe'
+import { collectIntel } from './intel'
+import type { IntelItem } from './types'
 import type {
   KnowledgeRefreshOptions,
   RefreshResult,
@@ -15,6 +17,7 @@ import { createDefaultFetcher } from './fetchers'
 const REFRESH_DIR = 'refresh'
 const CACHE_FILE = 'cache.json'
 const SUGGESTIONS_FILE = 'suggestions.json'
+const INTEL_FILE = 'intel.json'
 const SEVERE_BEHIND = 2
 const WARNING_BEHIND = 1
 
@@ -30,11 +33,18 @@ interface SuggestionStore {
   lastRefreshAt: number
 }
 
+interface IntelStore {
+  version: number
+  lastRefreshAt: number
+  items: IntelItem[]
+}
+
 export class KnowledgeRefreshService {
   private projectRoot: string
   private refreshDir: string
   private cachePath: string
   private suggestionsPath: string
+  private intelPath: string
   private fetcher: WebFetcher
   private sources: KnowledgeSource[]
 
@@ -43,6 +53,7 @@ export class KnowledgeRefreshService {
     this.refreshDir = join(this.projectRoot, '.vectalon', 'knowledge', REFRESH_DIR)
     this.cachePath = join(this.refreshDir, CACHE_FILE)
     this.suggestionsPath = join(this.refreshDir, SUGGESTIONS_FILE)
+    this.intelPath = join(this.refreshDir, INTEL_FILE)
     this.fetcher = options.fetcher || createDefaultFetcher()
     this.sources = options.sources || defaultSources
     this.ensureDir()
@@ -124,15 +135,28 @@ export class KnowledgeRefreshService {
     }
 
     const suggestions = this.generateSuggestions(documents, deps, sourceLibraryMap)
+    const intel = collectIntel(documents, id => this.sources.find(s => s.id === id))
     this.saveCache({ version: 1, lastRefreshAt: now, documents })
     this.saveSuggestions({ version: 1, suggestions, lastRefreshAt: now })
+    this.saveIntel({ version: 1, lastRefreshAt: now, items: intel })
 
     return {
       fetchedAt: now,
       documents,
       suggestions,
+      intel,
       errors,
     }
+  }
+
+  /** Headlines collected from the latest web refresh (empty before first refresh). */
+  getIntel(): IntelItem[] {
+    return this.loadIntel().items
+  }
+
+  /** When the web intel was last refreshed (0 before the first refresh). */
+  getIntelFetchedAt(): number {
+    return this.loadIntel().lastRefreshAt
   }
 
   getSuggestions(): ImprovementSuggestion[] {
@@ -233,6 +257,22 @@ export class KnowledgeRefreshService {
 
   private saveSuggestions(store: SuggestionStore): void {
     writeFileSync(this.suggestionsPath, JSON.stringify(store, null, 2), 'utf-8')
+  }
+
+  private loadIntel(): IntelStore {
+    if (!existsSync(this.intelPath)) {
+      return { version: 1, lastRefreshAt: 0, items: [] }
+    }
+    try {
+      return JSON.parse(readFileSync(this.intelPath, 'utf-8')) as IntelStore
+    } catch (err) {
+      reportError(err, 'KnowledgeRefresh: reading web intel cache')
+      return { version: 1, lastRefreshAt: 0, items: [] }
+    }
+  }
+
+  private saveIntel(store: IntelStore): void {
+    writeFileSync(this.intelPath, JSON.stringify(store, null, 2), 'utf-8')
   }
 }
 

@@ -1,6 +1,7 @@
 import type { ModelRequest, ModelResponse } from '../types'
 import { getWasmPreset, wasmCacheDir, wasmDtype, wasmCacheReady } from '../local/wasmPresets'
 import { buildSkillsSystemPrompt, enrichWithSkills } from '../../ecosystem/skills'
+import { buildWebIntelSystemPrompt, enrichWithIntel } from '../../knowledge/intel'
 import { buildToolCallSystemPrompt } from '../toolCalling'
 import { RN_CODER_SYSTEM_PROMPT } from '../prompts'
 import { logger } from '../../cli/logger'
@@ -17,6 +18,9 @@ export interface WasmProviderOptions {
   /** Injectable skills-to-system-prompt builder (defaults to the ecosystem
    * loader). Tests inject a stub to verify the wiring without touching disk. */
   skillsLoader?: (root: string, systemPrompt?: string) => string | undefined
+  /** Injectable web-intel-to-system-prompt builder (defaults to the knowledge
+   * loader). Tests inject a stub to verify the wiring without touching disk. */
+  intelLoader?: (root: string, systemPrompt?: string) => string | undefined
   /**
    * Injectable @huggingface/transformers loader (defaults to the real dynamic
    * import). Tests inject a stub so the pipeline is never actually loaded and
@@ -59,11 +63,13 @@ export class WasmProvider {
   private generatorPromise: Promise<GeneratorFn> | null = null
   private readonly projectRoot?: string
   private readonly skillsLoader: (root: string, systemPrompt?: string) => string | undefined
+  private readonly intelLoader: (root: string, systemPrompt?: string) => string | undefined
   private readonly loadTransformers: () => Promise<unknown>
 
   constructor(options: WasmProviderOptions = {}) {
     this.projectRoot = options.projectRoot
     this.skillsLoader = options.skillsLoader || buildSkillsSystemPrompt
+    this.intelLoader = options.intelLoader || buildWebIntelSystemPrompt
     this.loadTransformers =
       options.loadTransformers || (() => dynamicImport<TransformersModule>('@huggingface/transformers'))
   }
@@ -97,7 +103,8 @@ export class WasmProvider {
 
   async generate(request: ModelRequest): Promise<ModelResponse> {
     const baseSystem = request.systemPrompt || RN_CODER_SYSTEM_PROMPT
-    const systemPrompt = enrichWithSkills(this.projectRoot, this.skillsLoader, baseSystem) ?? baseSystem
+    const skillsPrompt = enrichWithSkills(this.projectRoot, this.skillsLoader, baseSystem) ?? baseSystem
+    const systemPrompt = enrichWithIntel(this.projectRoot, this.intelLoader, skillsPrompt) ?? skillsPrompt
 
     try {
       const generator = await this.getPipeline()

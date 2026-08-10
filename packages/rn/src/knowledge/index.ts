@@ -24,6 +24,13 @@ export {
 export type { Provenance, ProvenanceOptions, PatternSource } from './provenance'
 export { Traceability } from './Traceability'
 export { RoleEngine } from './RoleEngine'
+export {
+  readCachedIntel,
+  formatIntelContext,
+  buildWebIntelSystemPrompt,
+  enrichWithIntel,
+} from './intel'
+export type { WebIntelContextOptions } from './intel'
 export { ARTIFACT_TYPES, ARTIFACT_ROLES, ROLE_ARTIFACT_TYPES, checksum } from './artifactTypes'
 export { cosineSimilarity, HashEmbeddingProvider } from './embeddings'
 export type { EmbeddingProvider } from './embeddings'

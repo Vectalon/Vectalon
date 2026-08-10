@@ -10,7 +10,7 @@ export interface KnowledgeSource {
   description: string
   urls: string[]
   refreshIntervalMs: number
-  type: 'docs' | 'changelog' | 'registry' | 'best-practices'
+  type: 'docs' | 'changelog' | 'registry' | 'best-practices' | 'news'
   metadata?: Record<string, string>
 }
 
@@ -39,7 +39,18 @@ export interface RefreshResult {
   fetchedAt: number
   documents: FetchedDocument[]
   suggestions: ImprovementSuggestion[]
+  /** Web intel headlines collected from news/changelog sources. */
+  intel: IntelItem[]
   errors: { sourceId: string; url: string; error: string }[]
+}
+
+export interface IntelItem {
+  sourceId: string
+  sourceName: string
+  title: string
+  url: string
+  publishedAt?: string
+  fetchedAt: number
 }
 
 export interface KnowledgeRefreshOptions {

@@ -34,6 +34,7 @@ import { selftestCommand } from './commands/selftest'
 import { supportCommand } from './commands/support'
 import { logger } from './logger'
 import { attachFileLogging } from './logfile'
+import { installStderrNoiseFilter } from '../model/local/inference'
 import pkg from '../../package.json'
 import { dynamicImport } from '../utils/dynamicImport'
 import { captureError, flushErrorQueue, writeDiagnosticsBundle } from '../diagnostics'
@@ -262,10 +263,13 @@ export function createProgram(): Command {
 
   program
     .command('doctor [directory]')
-    .description('Check that every enabled ecosystem item is installed and reachable')
+    .description('Diagnose ecosystem items, native toolchain, leaderboard readiness, model access + web intel — with numbered fix steps and quick enable/disable')
     .option('--json', 'Print the report as JSON')
     .option('--fix', 'Auto-install missing ecosystem items and toolchain components, then re-check')
     .option('--selftest', 'Verify the doctor\'s own probes work, then exit')
+    .option('--enable <id>', 'Enable a single ecosystem item and exit (writes .vectalon/ecosystem.json)')
+    .option('--disable <id>', 'Disable a single ecosystem item and exit')
+    .option('--enable-recommended', 'Enable every ecosystem item recommended for this project\'s flavor, then exit')
     .action(doctorCommand)
 
   program
@@ -334,6 +338,11 @@ export function createProgram(): Command {
 
 export async function runCLI(): Promise<void> {
   installGlobalErrorHandlers()
+  // The llama.cpp tokenizer emits known-harmless "load: control-looking token"
+  // noise to stderr (dispatched asynchronously from the native addon, so it
+  // can fire at any time). Install the process-wide noise filter up front so
+  // it can never corrupt CLI output — before any model load or MCP wiring.
+  installStderrNoiseFilter()
   // P1-12: every command mirrors logger lines to .vectalon/logs/vectalon.log
   // (rotating, 5 × 10 MB); --diagnostics turns on debug-level capture too.
   attachFileLogging(process.cwd())

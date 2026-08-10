@@ -1,11 +1,23 @@
-import { existsSync } from 'fs'
+import { existsSync, statSync } from 'fs'
 import { join } from 'path'
+
+/** File mtime in ms, or 0 when stat fails (treat as stale). */
+function statMtime(path: string): number {
+  try {
+    return statSync(path).mtimeMs
+  } catch (err) {
+    reportError(err, `doctor: statting ${path}`)
+    return 0
+  }
+}
 import { listEcosystemItems, getEcosystemItem } from './catalog'
 import { readEcosystemConfig } from './config'
-import type { EcosystemItem } from './types'
+import type { EcosystemItem, ProjectFlavor } from './types'
 import { reportError, safe } from '../utils/safe'
 import { getRemoteProviderInfo } from '../model/setup'
 import type { ModelSetupProvider } from '../model/setup'
+import { readCachedIntel } from '../knowledge/intel'
+import { detectProjectFlavor } from './config'
 
 /**
  * Probe failure recorded by `defensiveCheckers` — a checker that threw. The
@@ -193,6 +205,8 @@ export interface DoctorReport {
   leaderboard: DoctorCheckResult[]
   /** Model-access checks: can the configured model reach tools/MCPs/skills. */
   model: DoctorCheckResult[]
+  /** Detected project flavor ('expo' | 'rn-cli' | 'both'). */
+  flavor: ProjectFlavor
   enabledCount: number
   okCount: number
   missingCount: number
@@ -346,8 +360,9 @@ export function checkLeaderboardReadiness(
   return results
 }
 
-/** Model-access check ids: can the configured model reach tools/MCPs/skills. */
-export const MODEL_ACCESS_ITEM_IDS = ['ma-model', 'ma-ecosystem', 'ma-skills', 'ma-mcp'] as const
+/** Model-access check ids: can the configured model reach tools/MCPs/skills
+ * and stay current with web intel. */
+export const MODEL_ACCESS_ITEM_IDS = ['ma-model', 'ma-ecosystem', 'ma-skills', 'ma-mcp', 'ma-intel'] as const
 
 export type ModelAccessItemId = (typeof MODEL_ACCESS_ITEM_IDS)[number]
 
@@ -492,6 +507,45 @@ export function checkModelAccess(
       status: 'warning',
       detail: `${reachableMcps.length}/${enabledMcps.length} MCP servers reachable — the rest are skipped by run_agent`,
       hint: missing ? `Install with: ${missing.install}` : 'Install each MCP server with its catalog install command',
+    })
+  }
+
+  // 5. ma-intel — is the model fed current ecosystem intel? Vectalon keeps
+  //    itself (and the model) cutting edge by periodically refreshing web
+  //    headlines; a stale/absent cache means generation runs on last-known
+  //    guidance. Warns (never blocks) since refresh is background/optional.
+  let intelCount = 0
+  try {
+    intelCount = readCachedIntel(root).length
+  } catch (err) {
+    reportError(err, 'doctor: reading web intel cache')
+  }
+  // The intel cache lives under .vectalon/knowledge/refresh/intel.json; we
+  // surface its freshness via the file's mtime when present. News sources
+  // refresh every 6-12h (and `vectalon serve` every hour), so anything older
+  // than 48h means the auto-refresh isn't running — flag it.
+  const intelPath = join(root, '.vectalon', 'knowledge', 'refresh', 'intel.json')
+  const intelAgeMs = existsSync(intelPath) ? Date.now() - statMtime(intelPath) : Infinity
+  const intelStale = !existsSync(intelPath) || intelAgeMs > 48 * 60 * 60 * 1000
+  if (intelCount === 0) {
+    results.push({
+      ...base('ma-intel', 'Web intel (model currency)'),
+      status: 'warning',
+      detail: 'no web intel cached yet — the model runs on last-known guidance until the first refresh',
+      hint: 'Run `vectalon refresh` (or `vectalon serve`, which refreshes hourly) to feed the model current RN releases/news',
+    })
+  } else if (intelStale) {
+    results.push({
+      ...base('ma-intel', 'Web intel (model currency)'),
+      status: 'warning',
+      detail: `${intelCount} headline(s) cached but stale (>48h old) — the auto-refresh may not be running; refresh to keep the model current`,
+      hint: 'Run `vectalon refresh --force` (or `vectalon serve`, which refreshes hourly)',
+    })
+  } else {
+    results.push({
+      ...base('ma-intel', 'Web intel (model currency)'),
+      status: 'ok',
+      detail: `${intelCount} headline(s) cached and current — the model system prompt stays aligned with the latest RN ecosystem`,
     })
   }
 
@@ -657,6 +711,7 @@ export function runEcosystemDoctor(root: string, checkers: DoctorCheckers): Doct
     toolchain: [],
     leaderboard: [],
     model: [],
+    flavor: detectProjectFlavor(root),
     enabledCount: enabled.length,
     okCount: checks.filter(c => c.status === 'ok').length,
     missingCount: checks.filter(c => c.status === 'missing').length,
@@ -857,6 +912,7 @@ export function runDoctor(
     toolchain,
     leaderboard,
     model,
+    flavor: ecosystem.flavor || detectProjectFlavor(root),
     okCount: all.filter(c => c.status === 'ok').length,
     missingCount: all.filter(c => c.status === 'missing').length,
     warningCount: all.filter(c => c.status === 'warning').length,

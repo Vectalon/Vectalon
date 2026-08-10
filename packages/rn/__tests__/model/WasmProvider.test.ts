@@ -60,6 +60,33 @@ describe('WasmProvider', () => {
     )
   })
 
+  it('inlines web intel into the system prompt when a project root is set', async () => {
+    const mod = makeTransformers()
+    const provider = new WasmProvider({
+      projectRoot: '/tmp/irrelevant',
+      loadTransformers: async () => mod,
+      // Mirrors the real loader contract: base prompt + appended intel.
+      intelLoader: (root, systemPrompt) => `${systemPrompt}\n\n## Latest React Native ecosystem intel\n\n- RN 0.82 released`,
+    })
+
+    await provider.generate({ prompt: 'hi', systemPrompt: 'base' })
+
+    const [messages] = mod.generator.mock.calls[0]
+    expect(messages[0].content).toContain('base')
+    expect(messages[0].content).toContain('RN 0.82 released')
+  })
+
+  it('does not load web intel without a projectRoot', async () => {
+    const mod = makeTransformers()
+    const provider = new WasmProvider({ loadTransformers: async () => mod })
+
+    await provider.generate({ prompt: 'hi', systemPrompt: 'base' })
+
+    const [messages] = mod.generator.mock.calls[0]
+    expect(messages[0].content).toContain('base')
+    expect(messages[0].content).not.toContain('Latest React Native ecosystem intel')
+  })
+
   it('adds tool-call envelope instructions when tools are provided', async () => {
     const mod = makeTransformers()
     mod.generator.mockResolvedValue([{ generated_text: '{"answer":"ok"}' }])

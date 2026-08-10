@@ -256,6 +256,59 @@ describe('bench deterministic baseline runner', () => {
     expect(filtered.suites.map(s => s.suite)).toEqual(['core-ui'])
   })
 
+  it('reports live per-scenario progress (start before complete, 1-based index, total)', async () => {
+    const scenarios: BenchScenario[] = [
+      validScenario({ id: 'rn-a', suite: 'core-ui' }),
+      validScenario({ id: 'rn-b', suite: 'data-flow' }),
+      validScenario({ id: 'rn-c', suite: 'core-ui' }),
+      validScenario({ id: 'rn-d', suite: 'navigation' }),
+    ]
+    const events: Array<{ kind: string; index: number; total: number; id: string; composite: number | null }> = []
+    const summary = await runBenchmark(scenarios, {
+      generate: () => [{ path: 'src/x.tsx', content: 'export const x = 1;' }],
+      onScenarioStart: ({ index, total, scenario }) => {
+        events.push({ kind: 'start', index, total, id: scenario.id, composite: null })
+      },
+      onScenarioComplete: ({ index, total, scenario, run }) => {
+        events.push({ kind: 'done', index, total, id: scenario.id, composite: run.composite })
+      },
+    })
+
+    expect(summary.runs).toHaveLength(4)
+    // Each scenario starts then completes, in order, with correct 1-based indices.
+    expect(events.map(e => `${e.kind}:${e.index}/${e.total}:${e.id}`)).toEqual([
+      'start:1/4:rn-a',
+      'done:1/4:rn-a',
+      'start:2/4:rn-b',
+      'done:2/4:rn-b',
+      'start:3/4:rn-c',
+      'done:3/4:rn-c',
+      'start:4/4:rn-d',
+      'done:4/4:rn-d',
+    ])
+    // Every completed run reports a numeric composite.
+    for (const e of events.filter(e => e.kind === 'done')) {
+      expect(e.composite).not.toBeNull()
+    }
+  })
+
+  it('reports progress only for the scenarios that pass the filter', async () => {
+    const scenarios: BenchScenario[] = [
+      validScenario({ id: 'rn-a', suite: 'core-ui' }),
+      validScenario({ id: 'rn-b', suite: 'data-flow' }),
+      validScenario({ id: 'rn-c', suite: 'core-ui' }),
+    ]
+    const started: string[] = []
+    await runBenchmark(scenarios, {
+      filter: { suite: 'core-ui' },
+      generate: () => [{ path: 'src/x.tsx', content: 'export const x = 1;' }],
+      onScenarioStart: ({ index, total, scenario }) => {
+        started.push(`${index}/${total} ${scenario.id}`)
+      },
+    })
+    expect(started).toEqual(['1/2 rn-a', '2/2 rn-c'])
+  })
+
   it('runBenchmarkFromDir runs only the scaffold-able subset by default', async () => {
     const { summary, problems } = await runBenchmarkFromDir({})
     expect(problems).toEqual([])

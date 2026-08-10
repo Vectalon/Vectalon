@@ -454,14 +454,45 @@ describe('ecosystem doctor', () => {
       }
     })
 
-    it('exposes exactly the four model-access check ids', () => {
-      expect(MODEL_ACCESS_ITEM_IDS).toEqual(['ma-model', 'ma-ecosystem', 'ma-skills', 'ma-mcp'])
+    it('exposes exactly the model-access check ids (incl. web intel)', () => {
+      expect(MODEL_ACCESS_ITEM_IDS).toEqual(['ma-model', 'ma-ecosystem', 'ma-skills', 'ma-mcp', 'ma-intel'])
     })
 
     it('runDoctor includes the model section in its report', () => {
       const report = runDoctor(dir, makeCheckers())
-      expect(report.model.map(c => c.id)).toEqual(['ma-model', 'ma-ecosystem', 'ma-skills', 'ma-mcp'])
+      expect(report.model.map(c => c.id)).toEqual(['ma-model', 'ma-ecosystem', 'ma-skills', 'ma-mcp', 'ma-intel'])
       expect(report.missingCount).toBeGreaterThanOrEqual(1) // ma-model missing
+    })
+
+    it('warns for web intel when nothing is cached yet', () => {
+      const checks = checkModelAccess(dir, makeCheckers({ hasModel: () => true }))
+      const intel = checks.find(c => c.id === 'ma-intel')!
+      expect(intel.status).toBe('warning')
+      expect(intel.hint).toContain('vectalon refresh')
+    })
+
+    it('reports web intel OK when a fresh cache exists', () => {
+      const dirWithIntel = mkdtempSync(join(tmpdir(), 'vectalon-intel-'))
+      try {
+        mkdirSync(join(dirWithIntel, '.vectalon', 'knowledge', 'refresh'), { recursive: true })
+        writeFileSync(
+          join(dirWithIntel, '.vectalon', 'knowledge', 'refresh', 'intel.json'),
+          JSON.stringify({ version: 1, lastRefreshAt: Date.now(), items: [{ title: 'RN 0.82 released', url: 'https://x', fetchedAt: Date.now() }] })
+        )
+        const checks = checkModelAccess(dirWithIntel, makeCheckers({ hasModel: () => true }))
+        const intel = checks.find(c => c.id === 'ma-intel')!
+        expect(intel.status).toBe('ok')
+        expect(intel.detail).toContain('1 headline')
+      } finally {
+        rmSync(dirWithIntel, { recursive: true, force: true })
+      }
+    })
+
+    it('reports detectProjectFlavor from package.json', () => {
+      mkdirSync(join(dir, '.vectalon'), { recursive: true })
+      writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'app', dependencies: { expo: '52.0.0' } }))
+      const report = runDoctor(dir, makeCheckers())
+      expect(report.flavor).toBe('expo')
     })
   })
 
@@ -633,7 +664,7 @@ describe('ecosystem doctor', () => {
       expect(report.checks.length).toBe(1)
       expect(report.toolchain.length).toBeGreaterThan(0)
       expect(report.leaderboard.length).toBe(4)
-      expect(report.model.length).toBe(4)
+      expect(report.model.length).toBe(5)
     })
 
     it('runDoctorSelfTest reports healthy probes as ok', () => {

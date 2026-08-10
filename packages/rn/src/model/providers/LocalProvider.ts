@@ -3,6 +3,7 @@ import { getDefaultPreset, getPreset } from '../local/presets'
 import { runInference, probeNativeModule } from '../local/inference'
 import { hasDownloadedModel } from '../local/ModelStore'
 import { buildSkillsSystemPrompt, enrichWithSkills } from '../../ecosystem/skills'
+import { buildWebIntelSystemPrompt, enrichWithIntel } from '../../knowledge/intel'
 import { TOOL_CALL_SCHEMA } from '../toolCalling'
 import { RN_CODER_SYSTEM_PROMPT } from '../prompts'
 import { logger } from '../../cli/logger'
@@ -25,6 +26,9 @@ export interface LocalProviderOptions {
   /** Injectable skills-to-system-prompt builder (defaults to the ecosystem
    * loader). Tests inject a stub to verify the wiring without touching disk. */
   skillsLoader?: (root: string, systemPrompt?: string) => string | undefined
+  /** Injectable web-intel-to-system-prompt builder (defaults to the knowledge
+   * loader). Tests inject a stub to verify the wiring without touching disk. */
+  intelLoader?: (root: string, systemPrompt?: string) => string | undefined
   /**
    * Injectable node-llama-cpp capability probe (defaults to the real dynamic
    * import). Tests inject a stub to verify the degrade path without loading
@@ -40,12 +44,14 @@ export class LocalProvider {
   private initializePromise: Promise<void> | null = null
   private readonly projectRoot?: string
   private readonly skillsLoader: (root: string, systemPrompt?: string) => string | undefined
+  private readonly intelLoader: (root: string, systemPrompt?: string) => string | undefined
   private readonly nativeProbe: () => Promise<true | 'missing' | 'failed'>
   private readonly presetId?: string
 
   constructor(options: LocalProviderOptions = {}) {
     this.projectRoot = options.projectRoot
     this.skillsLoader = options.skillsLoader || buildSkillsSystemPrompt
+    this.intelLoader = options.intelLoader || buildWebIntelSystemPrompt
     this.nativeProbe = options.nativeProbe || probeNativeModule
     this.presetId = options.presetId
   }
@@ -93,16 +99,15 @@ export class LocalProvider {
       await this.initialize()
     }
 
-    // Enrich the system prompt with the project's enabled skills when we know
-    // the project root. The enriched prompt flows to both the real inference
-    // path and the no-model fallback so the skills are always visible. A
-    // caller-provided prompt wins; otherwise the shared RN-focused default
-    // steers even a bare generate() call toward idiomatic React Native.
-    const systemPrompt = enrichWithSkills(
-      this.projectRoot,
-      this.skillsLoader,
-      request.systemPrompt || RN_CODER_SYSTEM_PROMPT
-    )
+    // Enrich the system prompt with the project's enabled skills AND the
+    // latest web intel when we know the project root. The enriched prompt
+    // flows to both the real inference path and the no-model fallback so the
+    // skills + intel are always visible. A caller-provided prompt wins;
+    // otherwise the shared RN-focused default steers even a bare generate()
+    // call toward idiomatic React Native.
+    const basePrompt = request.systemPrompt || RN_CODER_SYSTEM_PROMPT
+    const skillsPrompt = enrichWithSkills(this.projectRoot, this.skillsLoader, basePrompt) ?? basePrompt
+    const systemPrompt = enrichWithIntel(this.projectRoot, this.intelLoader, skillsPrompt) ?? skillsPrompt
 
     const preset = this.resolvePreset()
     // Only attempt native inference when the optional node-llama-cpp module

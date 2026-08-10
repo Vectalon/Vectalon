@@ -71,6 +71,18 @@ export async function refreshCommand(directory: string, options: RefreshOptions)
     logger.info('No improvement suggestions at this time')
   }
 
+  // Web intel keeps the model current — surface the headlines it just collected.
+  if (result.intel.length > 0) {
+    logger.info(`${result.intel.length} web intel headline(s) — the model system prompt now reflects the latest RN ecosystem`)
+    for (const item of result.intel.slice(0, 8)) {
+      const date = item.publishedAt ? ` (${item.publishedAt.slice(0, 10)})` : ''
+      logger.dim(`  • ${item.title}${date} — ${item.sourceName}`)
+    }
+    if (result.intel.length > 8) logger.dim(`  … ${result.intel.length - 8} more`)
+  } else {
+    logger.info('No web intel headlines collected this refresh')
+  }
+
   // Knowledge maintenance is Vectalon's responsibility: re-scan the repo and
   // re-seed the repo-derived artifacts (idempotent) so the knowledge base
   // tracks code changes even when nothing changed upstream.

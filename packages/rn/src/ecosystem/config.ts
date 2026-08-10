@@ -9,6 +9,32 @@ export interface EcosystemConfig {
   enabled: string[]
 }
 
+/**
+ * Detect the project flavor from package.json (Expo-managed vs bare RN-CLI).
+ * Mirrors the Scanner's rule: `expo` in (dev)dependencies or `@expo/config`
+ * present ⇒ expo; otherwise a bare RN-CLI project. Returns 'both' when the
+ * manifest is unreadable/absent so the baseline recommendation still applies.
+ */
+export function detectProjectFlavor(root: string): ProjectFlavor {
+  try {
+    const path = join(root, 'package.json')
+    if (!existsSync(path)) return 'both'
+    const pkg = JSON.parse(readFileSync(path, 'utf-8')) as {
+      dependencies?: Record<string, string>
+      devDependencies?: Record<string, string>
+    }
+    const expo = pkg.dependencies?.expo || pkg.devDependencies?.expo
+    const expoConfig = pkg.devDependencies?.['@expo/config'] || pkg.dependencies?.['@expo/config']
+    const rn = pkg.dependencies?.['react-native'] || pkg.devDependencies?.['react-native']
+    if (expo || expoConfig) return 'expo'
+    if (rn) return 'rn-cli'
+    return 'both'
+  } catch (err) {
+    reportError(err, 'ecosystem: detecting project flavor')
+    return 'both'
+  }
+}
+
 const DEFAULT_CONFIG: EcosystemConfig = { version: '1.0.0', enabled: [] }
 
 function configPath(root: string): string {

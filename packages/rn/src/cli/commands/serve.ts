@@ -9,7 +9,7 @@ import { HashEmbeddingProvider } from '../../knowledge/embeddings'
 import { reportError } from '../../utils/safe'
 import { createRemoteEmbeddingProvider } from '../../knowledge/remoteEmbeddings'
 import { KnowledgeRefreshService } from '../../knowledge/refresh'
-import { seedKnowledgeBaseFromScan, maintainKnowledgeBase } from '../../knowledge'
+import { seedKnowledgeBaseFromScan, maintainKnowledgeBase, readCachedIntel } from '../../knowledge'
 import { startEnabledMcpClients } from '../../protocol/subMcp'
 import type { McpClientHandle } from '../../protocol/subMcp'
 import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
@@ -168,6 +168,7 @@ export async function serveCommand(options: {
   }
 
   startBackgroundRefresh(root)
+  printWebIntelStatus(root)
 
   const boundPort = await server.start(options.port || 0)
   if (typeof boundPort === 'number') {
@@ -183,6 +184,23 @@ export async function serveCommand(options: {
 }
 
 const BACKGROUND_REFRESH_INTERVAL_MS = 60 * 60 * 1000
+
+/**
+ * Surface the web-intel state at serve startup so it's obvious the model is
+ * fed current ecosystem news with zero user action: headline count + freshness
+ * when cached, or a note that the first background pass will fetch it.
+ */
+function printWebIntelStatus(root: string): void {
+  // readCachedIntel never throws (it swallows read errors and returns []).
+  const items = readCachedIntel(root)
+  if (items.length === 0) {
+    logger.info('Web intel: none cached yet — the first background refresh will fetch RN releases/news automatically')
+    return
+  }
+  const newest = items.reduce((max, i) => Math.max(max, i.fetchedAt), 0)
+  const hoursAgo = Math.round((Date.now() - newest) / (60 * 60 * 1000))
+  logger.info(`Web intel: ${items.length} headline(s) cached (newest ${hoursAgo}h ago) — the model's system prompt is kept current automatically`)
+}
 
 function startBackgroundRefresh(root: string): void {
   const refreshService = new KnowledgeRefreshService({ projectRoot: root })
@@ -204,6 +222,9 @@ function startBackgroundRefresh(root: string): void {
       })
       if (result.suggestions.length > 0) {
         logger.info(`Background refresh: ${result.suggestions.length} improvement suggestion(s) available`)
+      }
+      if (result.intel.length > 0) {
+        logger.info(`Background refresh: ${result.intel.length} web intel headline(s) — model prompt kept current`)
       }
       // Keep the repo-derived knowledge base current too — re-scan + idempotent
       // re-seed so code changes land in the KB automatically (no customer

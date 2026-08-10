@@ -48,6 +48,34 @@ describe('LocalProvider', () => {
     }
   })
 
+  it('inlines cached web intel into the system prompt of local generations', async () => {
+    // The intel cache is exactly what `vectalon refresh` / the serve
+    // background loop writes — so the local model really reaches the
+    // auto-refreshed web knowledge.
+    const dir = createTempProject({
+      '.vectalon/knowledge/refresh/intel.json': JSON.stringify({
+        version: 1,
+        lastRefreshAt: Date.now(),
+        items: [
+          { sourceId: 'rn-releases', sourceName: 'RN Releases', title: 'React Native 0.82 released', url: 'https://github.com/facebook/react-native/releases', publishedAt: '2026-08-03T00:00:00Z', fetchedAt: Date.now() },
+        ],
+      }),
+    })
+    try {
+      const provider = new LocalProvider({ projectRoot: dir })
+      const response = await provider.generate({
+        prompt: 'build a settings screen',
+        systemPrompt: 'be concise',
+      })
+      // No model downloaded -> fallback echoes the (enriched) system prompt.
+      expect(response.content).toContain('be concise')
+      expect(response.content).toContain('## Latest React Native ecosystem intel')
+      expect(response.content).toContain('React Native 0.82 released')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
   it('uses an injected skills loader when provided', async () => {
     const provider = new LocalProvider({
       projectRoot: '/tmp/irrelevant',

@@ -1,8 +1,8 @@
 import { resolve } from 'path'
-import Table from 'cli-table'
 import pc from 'picocolors'
 import { logger } from '../logger'
-import { listEcosystemItems, getEcosystemItem, enableEcosystemItem, disableEcosystemItem, exportEcosystemConfig } from '../../ecosystem'
+import { renderTable } from '../table'
+import { listEcosystemItems, getEcosystemItem, enableEcosystemItem, disableEcosystemItem, exportEcosystemConfig, readEcosystemConfig, detectProjectFlavor } from '../../ecosystem'
 
 interface EcosystemOptions {
   category?: string
@@ -86,32 +86,31 @@ export function ecosystemCommand(directory: string, options: EcosystemOptions): 
     return
   }
 
-  // Default: list the catalog, optionally filtered.
+  // Default: list the catalog, optionally filtered, with the project's enabled
+  // items marked so users can see at a glance what's on and what's not.
   const items = listEcosystemItems({ category: options.category, flavor: options.flavor })
   if (items.length === 0) {
     logger.warn('No ecosystem items match that filter.')
     return
   }
 
-  const table = new Table({
-    head: ['ID', 'Category', 'Name', 'Flavor', 'Description'],
-    style: { head: ['cyan'] },
-    colWidths: [22, 10, 26, 10, 70],
-  })
-  for (const item of items) {
+  const enabled = new Set(readEcosystemConfig(root).enabled)
+  const flavorLabel = detectProjectFlavor(root)
+  const rows = items.map(item => {
     const flavorColor = item.flavor === 'expo' ? pc.blue : item.flavor === 'rn-cli' ? pc.yellow : pc.white
-    table.push([
+    return [
+      enabled.has(item.id) ? pc.green('✓ enabled') : pc.dim('—'),
       item.id,
       item.category,
       item.name,
       flavorColor(item.flavor),
-      `${item.description.slice(0, 100)}${item.description.length > 100 ? '…' : ''}`,
-    ])
-  }
+      item.description,
+    ]
+  })
 
-  logger.info(pc.bold(`Ecosystem catalog v1.0.0 — ${items.length} item(s)`))
+  logger.info(pc.bold(`Ecosystem catalog v1.0.0 — ${items.length} item(s) · project flavor: ${flavorLabel}`))
   logger.info('')
-  process.stdout.write(table.toString() + '\n')
+  process.stdout.write(renderTable(rows as Array<Array<string | number>>, { head: ['Enabled', 'ID', 'Category', 'Name', 'Flavor', 'Description'] }) + '\n')
   logger.info('')
   logger.info('Usage:')
   logger.info('  vectalon ecosystem --enable <id>     enable an item (writes .vectalon/ecosystem.json)')

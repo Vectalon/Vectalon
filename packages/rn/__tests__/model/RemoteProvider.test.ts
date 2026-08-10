@@ -110,6 +110,37 @@ describe('RemoteProvider', () => {
     expect(system.content).not.toContain('## Enabled project skills')
   })
 
+  it('inlines cached web intel into the OpenAI system message', async () => {
+    // The intel cache is exactly what `vectalon refresh` / the serve
+    // background loop writes — so this proves the model really reaches the
+    // auto-refreshed web knowledge.
+    const dir = createTempProject({
+      '.vectalon/knowledge/refresh/intel.json': JSON.stringify({
+        version: 1,
+        lastRefreshAt: Date.now(),
+        items: [
+          { sourceId: 'rn-releases', sourceName: 'RN Releases', title: 'React Native 0.82 released', url: 'https://github.com/facebook/react-native/releases', publishedAt: '2026-08-03T00:00:00Z', fetchedAt: Date.now() },
+        ],
+      }),
+    })
+    try {
+      mockFetchResponse({ choices: [{ message: { content: 'ok' } }] })
+
+      const provider = new RemoteProvider('openai', undefined, { projectRoot: dir })
+      await provider.generate({ prompt: 'build a screen', systemPrompt: 'be concise' })
+
+      const [, init] = (global.fetch as jest.Mock).mock.calls[0]
+      const body = JSON.parse(init.body)
+      const system = body.messages.find((m: { role: string }) => m.role === 'system')
+      expect(system.content).toContain('be concise')
+      expect(system.content).toContain('## Latest React Native ecosystem intel')
+      expect(system.content).toContain('React Native 0.82 released')
+      expect(system.content).toContain('https://github.com/facebook/react-native/releases')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
   it('calls the Anthropic messages endpoint', async () => {
     mockFetchResponse({
       content: [{ text: 'hello from anthropic' }],

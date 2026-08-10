@@ -5,6 +5,64 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Web intel pipeline — the model stays current with the RN ecosystem.**
+  `vectalon refresh` now fetches React Native release announcements, Expo
+  changelog entries, and community newsletter headlines from GitHub releases /
+  blog RSS / Atom feeds, extracts the top headlines, and persists them to
+  `.vectalon/knowledge/refresh/intel.json`. The local, WASM, and remote model
+  system prompts inline these headlines, so every generation knows the latest
+  RN releases, breaking changes, and ecosystem news — not stale training data.
+  Eight news sources are included: RN releases (GitHub Atom), RN blog, Expo
+  changelog, Expo releases, React Native Weekly, **Hacker News React Native
+  stories** (Algolia API), **GitHub's most-starred React Native repos**
+  (search API), and the **Callstack monthly Open Source Report** (blog RSS) —
+  the extractor now also parses JSON APIs (`hits` / `items` shapes) in
+  addition to RSS/Atom/HTML.
+
+- **`vectalon serve` auto-refreshes everything — zero user action.** The
+  background loop (immediately when stale, then hourly) fetches web intel +
+  dependency suggestions, re-seeds the repo-derived knowledge base, and keeps
+  the model prompt current. Serve startup now prints the web-intel status so
+  it's obvious the model is fed live ecosystem news.
+
+- **Doctor future vision.** The doctor now detects the project flavor (Expo vs
+  bare RN-CLI) from package.json and shows it in the header, renders a
+  "Recommended but not enabled" section with quick enable commands, and
+  prints numbered fix steps for every missing check with auto/manual labels.
+  The `--enable <id>`, `--disable <id>`, and `--enable-recommended` flags on
+  `vectalon doctor` let you toggle ecosystem items without leaving the doctor.
+
+- **Table rendering — no more truncation.** The doctor and ecosystem commands
+  now use a new ANSI-aware, word-wrapping table renderer (`renderTable`).
+  Long hints and descriptions are never elided with "…" — every Detail and
+  Hint column wraps cleanly and is fully visible. The ecosystem listing also
+  gains an "Enabled" column showing which items are already on.
+
+### Changed
+
+- **Benchmark UX — no more silent hangs or leaked noise.** Model-backed bench
+  runs now print live per-scenario progress (`[n/total]` start + composite on
+  completion) and announce the first-scenario model warm-up, so a leaderboard
+  pass shows movement instead of staring at a blank terminal.
+
+### Fixed
+
+- **Shared inference engine** — the first model load now creates one
+  llama.cpp engine and reuses it for every inference in the process (previously
+  each call re-loaded the GGUF and registered a new `beforeExit` cleanup
+  listener, which surfaced as `MaxListenersExceededWarning` on long runs like
+  the 11-scenario benchmark and re-paid the multi-second model load per
+  scenario).
+- **llama.cpp tokenizer noise can never corrupt CLI output** — the
+  `load: control-looking token ...` warnings (dispatched asynchronously by the
+  native addon, so the old per-inference suppression could be raced past) are
+  now filtered by a permanent process-wide stderr filter installed at CLI
+  startup.
+
 ## [0.1.24] - 2026-08-10
 
 ### Added

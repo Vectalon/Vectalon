@@ -8,10 +8,30 @@ import { existsSync, accessSync, constants } from 'fs'
 import { LicenseStore, LicenseValidator, TrialTracker } from '@vectalon-dev/core'
 import { reportError } from '../../utils/safe'
 import { spawnSync } from 'child_process'
-import Table from 'cli-table'
 import pc from 'picocolors'
 import { logger } from '../logger'
-import { runDoctor, runDoctorFixes, defensiveCheckers, runDoctorSelfTest, type DoctorCheckers, type DoctorFixer, type FixAttempt, type ToolchainCheckOptions, type LeaderboardCheckOptions, type ModelAccessCheckOptions } from '../../ecosystem'
+import { renderTable, colorStatus } from '../table'
+import {
+  runDoctor,
+  runDoctorFixes,
+  defensiveCheckers,
+  runDoctorSelfTest,
+  listEcosystemItems,
+  readEcosystemConfig,
+  recommendEcosystemSetup,
+  detectProjectFlavor,
+  enableEcosystemItem,
+  disableEcosystemItem,
+  enableEcosystemItems,
+  fixForMissing,
+  type DoctorCheckers,
+  type DoctorFixer,
+  type FixAttempt,
+  type DoctorCheckResult,
+  type ToolchainCheckOptions,
+  type LeaderboardCheckOptions,
+  type ModelAccessCheckOptions,
+} from '../../ecosystem'
 import { hasDownloadedModel } from '../../model/local/ModelStore'
 import { getDefaultPreset } from '../../model/local/presets'
 import type { ModelSetupProvider } from '../../model/setup'
@@ -23,6 +43,12 @@ export interface DoctorOptions {
   fix?: boolean
   /** Verify the doctor's own probes work (P0-10), then exit. */
   selftest?: boolean
+  /** Toggle one ecosystem item on (write .vectalon/ecosystem.json) and exit. */
+  enable?: string
+  /** Toggle one ecosystem item off and exit. */
+  disable?: string
+  /** Enable every item recommended for the detected project flavor, then exit. */
+  enableRecommended?: boolean
   /** Injectable checkers — tests pass stubs so no real subprocesses run. */
   checkers?: DoctorCheckers
   /** Injectable fix runner — tests pass stubs so no real installs run. */
@@ -139,44 +165,107 @@ function realFixer(root: string): DoctorFixer {
 }
 
 function renderFixTable(attempts: FixAttempt[]): void {
-  const table = new Table({
-    head: ['Status', 'Item', 'Command', 'Detail'],
-    style: { head: ['cyan'] },
-    colWidths: [14, 22, 46, 44],
+  const rows = attempts.map(a => [
+    a.status === 'fixed' ? pc.green('FIXED') : a.status === 'failed' ? pc.red('FAILED') : pc.yellow('SKIPPED'),
+    a.name,
+    a.label,
+    a.detail,
+  ])
+  process.stdout.write(renderTable(rows as Array<Array<string | number>>, { head: ['Status', 'Item', 'Command', 'Detail'] }) + '\n')
+}
+
+function statusCell(check: DoctorCheckResult): string {
+  return colorStatus(check.status === 'ok' ? 'OK' : check.status === 'missing' ? 'MISSING' : 'WARN')
+}
+
+/** Render a doctor section's 4-column table (toolchain/leaderboard/model). */
+function renderSectionTable(head: string[], rows: DoctorCheckResult[]): void {
+  const table = rows.map(c => [statusCell(c), c.name, c.detail, c.hint || ''])
+  process.stdout.write(renderTable(table as Array<Array<string | number>>, { head }) + '\n')
+}
+
+/** Numbered fix steps for every missing check — the "clear steps to fix" ask. */
+function renderFixSteps(root: string, missing: DoctorCheckResult[]): void {
+  if (missing.length === 0) return
+  logger.info('')
+  logger.info(pc.bold(`Fix steps (${missing.length} missing):`))
+  let autoCount = 0
+  missing.forEach((check, i) => {
+    const fix = fixForMissing(check, root)
+    if (fix && !fix.manual) autoCount++
+    const label = fix ? fix.label : check.hint || check.detail
+    const kind = fix ? (fix.manual ? pc.yellow('manual') : pc.green('auto')) : pc.dim('info')
+    logger.info(`  ${i + 1}. [${kind}] ${label}`)
+    if (fix && fix.manual) logger.dim(`       ${check.detail}`)
   })
-  for (const attempt of attempts) {
-    const status =
-      attempt.status === 'fixed' ? pc.green('FIXED') : attempt.status === 'failed' ? pc.red('FAILED') : pc.yellow('SKIPPED')
-    table.push([status, attempt.name, attempt.label, attempt.detail])
+  logger.info('')
+  if (autoCount > 0) {
+    logger.info(`Run \`vectalon doctor --fix\` to auto-apply ${autoCount} of the steps above, or use \`vectalon ecosystem --enable <id>\` to opt in per item.`)
+  } else {
+    logger.info('These are manual steps — follow each command, then re-run `vectalon doctor`.')
   }
-  process.stdout.write(table.toString() + '\n')
+}
+
+/** Recommended-but-not-enabled ecosystem items for the detected flavor. */
+function recommendedNotEnabled(root: string): DoctorCheckResult[] {
+  const config = readEcosystemConfig(root)
+  const recommended = recommendEcosystemSetup(detectProjectFlavor(root))
+  return recommended
+    .filter(item => !config.enabled.includes(item.id))
+    .map(item => ({
+      id: item.id,
+      name: item.name,
+      category: item.category,
+      flavor: item.flavor,
+      status: 'warning' as const,
+      detail: item.description,
+      hint: `Enable: \`vectalon doctor --enable ${item.id}\``,
+    }))
 }
 
 export function doctorCommand(directory: string, options: DoctorOptions): void {
   const root = resolve(directory || process.cwd())
   const hasEcosystem = existsSync(resolve(root, '.vectalon', 'ecosystem.json'))
+  const continueExit = (code: number): never => process.exit(code)
+
+  // Quick toggles: `--enable <id>` / `--disable <id>` / `--enable-recommended`.
+  if (options.enable) {
+    const result = enableEcosystemItem(root, options.enable)
+    if (!result.enabled) {
+      logger.error(result.message)
+      continueExit(1)
+    }
+    logger.success(result.message)
+    logger.dim(`Config written to ${result.path}`)
+    return
+  }
+  if (options.disable) {
+    const result = disableEcosystemItem(root, options.disable)
+    logger.success(result.message)
+    return
+  }
+  if (options.enableRecommended) {
+    const { enabled, path } = enableEcosystemItems(root, recommendEcosystemSetup(detectProjectFlavor(root)).map(i => i.id))
+    logger.success(`Enabled ${enabled.length} recommended ecosystem item(s) for this project.`)
+    logger.dim(`Config written to ${path}`)
+    return
+  }
+
   // P0-10: every probe runs through safe() so a single broken probe (missing
   // native module, broken binary) degrades that one check — never the report.
   const checkers = defensiveCheckers(options.checkers || realCheckers(root))
 
   if (options.selftest) {
     const results = runDoctorSelfTest(root, checkers)
-    const table = new Table({
-      head: ['Status', 'Probe', 'Detail'],
-      style: { head: ['cyan'] },
-      colWidths: [10, 34, 60],
-    })
-    for (const result of results) {
-      table.push([result.ok ? pc.green('OK') : pc.red('BROKEN'), result.name, result.detail])
-    }
-    process.stdout.write(table.toString() + '\n')
+    const table = results.map(r => [r.ok ? pc.green('OK') : pc.red('BROKEN'), r.name, r.detail])
+    process.stdout.write(renderTable(table as Array<Array<string | number>>, { head: ['Status', 'Probe', 'Detail'] }) + '\n')
     logger.info('')
     const broken = results.filter(r => !r.ok)
     if (broken.length === 0) {
       logger.success(`Doctor self-test passed — all ${results.length} probes work.`)
     } else {
       logger.error(`${broken.length} doctor probe(s) are broken — reports using them will silently degrade.`)
-      process.exit(1)
+      continueExit(1)
     }
     return
   }
@@ -208,82 +297,49 @@ export function doctorCommand(directory: string, options: DoctorOptions): void {
 
   if (options.json) {
     process.stdout.write(JSON.stringify(report, null, 2) + '\n')
-    process.exit(report.missingCount > 0 ? 1 : 0)
+    continueExit(report.missingCount > 0 ? 1 : 0)
   }
 
   if (!hasEcosystem) {
     logger.warn('No .vectalon/ecosystem.json found — skipping ecosystem checks. Run `vectalon init` to enable them.')
   } else if (report.enabledCount === 0) {
-    logger.warn('No ecosystem items enabled. Run `vectalon ecosystem --enable <id>` to opt in.')
+    logger.warn('No ecosystem items enabled. Run `vectalon doctor --enable-recommended` to enable the recommended set for this project.')
   }
 
-  logger.info(pc.bold(`vectalon doctor — ${report.enabledCount} enabled ecosystem item(s) + native toolchain + nightly leaderboard + model access`))
+  const flavorLabel = report.flavor === 'expo' ? 'Expo project' : report.flavor === 'rn-cli' ? 'bare RN-CLI project' : 'project'
+  logger.info(pc.bold(`vectalon doctor — ${flavorLabel} · ${report.enabledCount} enabled ecosystem item(s) + native toolchain + nightly leaderboard + model access`))
   logger.info('')
 
   if (report.checks.length > 0) {
-    const table = new Table({
-      head: ['Status', 'ID', 'Category', 'Detail', 'Hint'],
-      style: { head: ['cyan'] },
-      colWidths: [10, 22, 10, 52, 44],
-    })
+    const table = report.checks.map(c => [statusCell(c), c.id, c.category, c.detail, c.hint || ''])
+    process.stdout.write(renderTable(table as Array<Array<string | number>>, { head: ['Status', 'ID', 'Category', 'Detail', 'Hint'] }) + '\n')
+    logger.info('')
+  }
 
-    for (const check of report.checks) {
-      const statusColor =
-        check.status === 'ok' ? pc.green('OK') : check.status === 'missing' ? pc.red('MISSING') : pc.yellow('WARN')
-      table.push([statusColor, check.id, check.category, check.detail, check.hint || ''])
-    }
-
-    process.stdout.write(table.toString() + '\n')
+  // Recommended-but-not-enabled section — the "future vision / easy enable" ask.
+  const recommended = recommendedNotEnabled(root)
+  if (recommended.length > 0) {
+    logger.info(pc.bold(`Recommended for this ${report.flavor === 'expo' ? 'Expo' : report.flavor === 'rn-cli' ? 'RN-CLI' : 'RN'} project (not enabled)`))
+    const table = recommended.map(c => [pc.cyan('—'), c.id, c.category, c.detail, c.hint || ''])
+    process.stdout.write(renderTable(table as Array<Array<string | number>>, { head: ['', 'ID', 'Category', 'What it gives you', 'Enable'] }) + '\n')
     logger.info('')
   }
 
   logger.info(pc.bold('Native toolchain'))
-  const toolchainTable = new Table({
-    head: ['Status', 'Check', 'Detail', 'Hint'],
-    style: { head: ['cyan'] },
-    colWidths: [10, 26, 50, 46],
-  })
-
-  for (const check of report.toolchain) {
-    const statusColor =
-      check.status === 'ok' ? pc.green('OK') : check.status === 'missing' ? pc.red('MISSING') : pc.yellow('WARN')
-    toolchainTable.push([statusColor, check.name, check.detail, check.hint || ''])
-  }
-
-  process.stdout.write(toolchainTable.toString() + '\n')
+  renderSectionTable(['Status', 'Check', 'Detail', 'Hint'], report.toolchain)
   logger.info('')
 
   logger.info(pc.bold('Nightly leaderboard readiness (M5)'))
-  const leaderboardTable = new Table({
-    head: ['Status', 'Check', 'Detail', 'Hint'],
-    style: { head: ['cyan'] },
-    colWidths: [10, 30, 56, 46],
-  })
-
-  for (const check of report.leaderboard) {
-    const statusColor =
-      check.status === 'ok' ? pc.green('OK') : check.status === 'missing' ? pc.red('MISSING') : pc.yellow('WARN')
-    leaderboardTable.push([statusColor, check.name, check.detail, check.hint || ''])
-  }
-
-  process.stdout.write(leaderboardTable.toString() + '\n')
+  renderSectionTable(['Status', 'Check', 'Detail', 'Hint'], report.leaderboard)
   logger.info('')
 
-  logger.info(pc.bold('Model access (tools / MCP / skills)'))
-  const modelTable = new Table({
-    head: ['Status', 'Check', 'Detail', 'Hint'],
-    style: { head: ['cyan'] },
-    colWidths: [10, 26, 56, 46],
-  })
-
-  for (const check of report.model) {
-    const statusColor =
-      check.status === 'ok' ? pc.green('OK') : check.status === 'missing' ? pc.red('MISSING') : pc.yellow('WARN')
-    modelTable.push([statusColor, check.name, check.detail, check.hint || ''])
-  }
-
-  process.stdout.write(modelTable.toString() + '\n')
+  logger.info(pc.bold('Model access (tools / MCP / skills / web intel)'))
+  renderSectionTable(['Status', 'Check', 'Detail', 'Hint'], report.model)
   logger.info('')
+
+  // Clear numbered fix steps for everything that's missing.
+  const allMissing = [...report.checks, ...report.toolchain, ...report.leaderboard, ...report.model].filter(c => c.status === 'missing')
+  renderFixSteps(root, allMissing)
 
   // Upgrade readiness check
   logger.info('')
@@ -304,7 +360,7 @@ export function doctorCommand(directory: string, options: DoctorOptions): void {
     logger.success(`All ${report.okCount} check(s) passed — toolchain and ecosystem are ready.`)
   } else {
     if (report.missingCount > 0) {
-      logger.error(`${report.missingCount} check(s) missing: follow the hinted commands, then re-run \`vectalon doctor\`.`)
+      logger.error(`${report.missingCount} check(s) missing: follow the numbered Fix steps above, then re-run \`vectalon doctor\`.`)
     }
     if (report.warningCount > 0) {
       logger.warn(`${report.warningCount} check(s) could not be fully verified (or are optional on this platform).`)
@@ -312,6 +368,6 @@ export function doctorCommand(directory: string, options: DoctorOptions): void {
   }
 
   if (report.missingCount > 0) {
-    process.exit(1)
+    continueExit(1)
   }
 }

@@ -19,6 +19,7 @@ export {
   applyEcosystemRecommendations,
   detectEcosystemItemsFromDependencies,
   enableEcosystemItems,
+  detectProjectFlavor,
 } from './config'
 export {
   readSkillContent,

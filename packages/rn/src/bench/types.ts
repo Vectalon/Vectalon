@@ -142,6 +142,13 @@ export interface BenchRunOptions {
   filter?: { suite?: string; scaffoldable?: boolean; ids?: string[] }
   /** Executor for live correctness commands (injectable for tests). */
   runCommand?: (cmd: string, args: string[], opts: { cwd: string }) => Promise<{ success: boolean; exitCode: number; stdout: string; stderr: string }>
+  /**
+   * Live progress hooks (V5 UX): called as each scenario starts and finishes,
+   * so a long model-backed pass shows movement instead of hanging silently.
+   * `index` is 1-based within the filtered run set; `total` is the count.
+   */
+  onScenarioStart?: (info: { index: number; total: number; scenario: BenchScenario }) => void
+  onScenarioComplete?: (info: { index: number; total: number; scenario: BenchScenario; run: BenchScenarioRun }) => void
 }
 
 /** Validate a parsed scenario file; returns a list of problems (empty = valid). */

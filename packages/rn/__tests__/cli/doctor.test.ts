@@ -117,7 +117,7 @@ describe('doctorCommand', () => {
     })
 
     expect(() => doctorCommand(dir, { checkers: okCheckers() })).not.toThrow()
-    expect(out).toContain('Model access (tools / MCP / skills)')
+    expect(out).toContain('Model access (tools / MCP / skills / web intel)')
     expect(out).toContain('Configured model')
     expect(out).toContain('Ecosystem items enabled')
   })
@@ -172,7 +172,7 @@ describe('doctorCommand', () => {
       // no-op: exit mocked to throw
     }
     const parsed = JSON.parse(jsonOutput) as { model: Array<{ id: string; status: string }> }
-    expect(parsed.model.map(c => c.id)).toEqual(['ma-model', 'ma-ecosystem', 'ma-skills', 'ma-mcp'])
+    expect(parsed.model.map(c => c.id)).toEqual(['ma-model', 'ma-ecosystem', 'ma-skills', 'ma-mcp', 'ma-intel'])
     // ma-model is ok (okCheckers.hasModel -> true); warnings don't exit non-zero.
     expect(parsed.model.find(c => c.id === 'ma-model')!.status).toBe('ok')
     expect(exit).toHaveBeenCalledWith(0)

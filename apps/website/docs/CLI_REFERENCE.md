@@ -341,16 +341,19 @@ npx vectalon ecosystem --export --json      # ... as JSON
 
 ## `doctor`
 
-Verify that every enabled ecosystem item is installed and reachable, that the
-native toolchain is ready to build and run the project, and that the **nightly
-leaderboard prerequisites** are met so a scheduled leaderboard run doesn't
-fail silently.
+Diagnose the project: enabled ecosystem items, native toolchain, nightly
+leaderboard readiness, model access, and web-intel freshness. Every section
+outputs a wrapping table (no truncation — every Detail and Hint is fully
+visible), and each missing check comes with a numbered fix step.
 
 ```bash
-npx vectalon doctor                 # human-readable report
-npx vectalon doctor --json          # machine-readable report
-npx vectalon doctor --fix           # auto-install missing items, then re-check
-npx vectalon doctor ./my-app        # check a specific project
+npx vectalon doctor                         # human-readable report
+npx vectalon doctor --json                  # machine-readable report
+npx vectalon doctor --fix                   # auto-install missing items, then re-check
+npx vectalon doctor --enable metro-mcp      # quick-toggle an item on
+npx vectalon doctor --disable maestro       # quick-toggle an item off
+npx vectalon doctor ./my-app                # check a specific project
+npx vectalon doctor --selftest              # verify the doctor's own probes work
 ```
 
 **Options**
@@ -360,6 +363,10 @@ npx vectalon doctor ./my-app        # check a specific project
 | `[directory]` | Project root (default: cwd) |
 | `--json` | Print the report as JSON |
 | `--fix` | Auto-install missing ecosystem items and toolchain components, then re-check |
+| `--selftest` | Verify the doctor's own probes work (P0-10), then exit |
+| `--enable <id>` | Enable a single ecosystem item and exit (writes `.vectalon/ecosystem.json`) |
+| `--disable <id>` | Disable a single ecosystem item and exit |
+| `--enable-recommended` | Enable every ecosystem item recommended for the project's detected flavor, then exit |
 
 **Checks**
 
@@ -373,9 +380,23 @@ npx vectalon doctor ./my-app        # check a specific project
   `ANTHROPIC_API_KEY` secrets set (warn when unset), the default Qwen local
   model downloaded (warn with a `vectalon pull` hint), and `bench/results/`
   present + writable (missing with a `mkdir -p bench/results` hint)
+- **Model access + web intel** — the configured model is usable and can reach
+  MCPs / skills; web intel (RN release notes, Expo changelog, community
+  newsletter headlines) is cached and current — so the model system prompt
+  stays aligned with the latest ecosystem decisions even during offline
+  generation
 
 Every check prints a status (`OK`/`MISSING`/`WARN`) with an actionable fix
-hint. Toolchain checks run even without an ecosystem config.
+hint. Toolchain checks run even without an ecosystem config. When the project
+is an Expo project the header says "Expo project"; when a bare RN-CLI project
+it says "bare RN-CLI project" — so the flavor is always visible.
+
+**Recommended-but-not-enabled section** — items the ecosystem catalog
+recommends for the detected project flavor that haven't been enabled yet.
+Each row shows the enable command so there is no ambiguity about what to run.
+
+**Numbered fix steps** — every missing check is listed with a step number,
+its install command (or manual instruction), and an auto/manual label.
 
 **`--fix` auto-remediation**
 
@@ -749,7 +770,11 @@ npx vectalon bench --scenarios ./my-evals --references ./my-refs  # + custom hum
 npx vectalon bench --baseline bench/baseline.json  # CI regression gate (exit 1 on regression)
 ```
 
-**Options**
+Model-backed passes (`--model`) report **live per-scenario progress** — each
+scenario prints `[n/total]` as it starts and its composite as it completes, so
+a long leaderboard run shows movement instead of a silent hang. The first
+scenario also announces the model-engine warm-up (the GGUF load that used to
+look like a freeze).
 
 | Option | Description |
 |---|---|
@@ -1185,6 +1210,14 @@ npx vectalon refresh --force      # refresh regardless
 - Compares your `package.json` dependencies against the fetched data and writes
   **improvement suggestions** to
   `.vectalon/knowledge/refresh/suggestions.json`
+- **Web intel** — fetches the latest React Native release announcements, Expo
+  changelog entries, community newsletter headlines, Hacker News React Native
+  stories, GitHub's most-starred React Native repositories, and the Callstack
+  monthly Open Source Report from GitHub releases / blog RSS / Atom feeds and
+  JSON APIs, extracts the top headlines, and persists them to
+  `.vectalon/knowledge/refresh/intel.json`. Headlines are then inlined into the
+  local, WASM, and remote model system prompts, so every generation is aware
+  of the most recent ecosystem decisions.
 - Re-scans the repo and re-seeds the repo-derived knowledge-base artifacts
   (project snapshot, knowledge graph, code graph, native configuration,
   learned patterns) — idempotent, so the knowledge base tracks code changes

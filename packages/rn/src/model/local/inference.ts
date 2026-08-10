@@ -101,6 +101,135 @@ export function shouldSuppressStderrLine(line: string): boolean {
   return line.includes('control-looking token')
 }
 
+/** The noise pattern the filter hunts for, split across any number of writes. */
+const NOISE_PATTERN = 'control-looking token'
+
+/**
+ * A held partial longer than this cannot be a split noise line — llama.cpp
+ * emits the tokenizer warning as one short line — so it is flushed instead of
+ * held. Guards against a newline-less progress write that merely ends in a
+ * single-char pattern prefix (e.g. `c`) batching up forever.
+ */
+const NOISE_LINE_MAX_LENGTH = NOISE_PATTERN.length + 96
+
+/**
+ * True when `partial` — the tail of a line that has not yet seen a newline —
+ * could still grow into the noise pattern (i.e. some suffix of it is a prefix
+ * of the pattern). Used to decide whether a newline-less chunk must be held
+ * back for the next write or can pass straight through.
+ */
+export function couldBecomeNoiseLine(partial: string): boolean {
+  if (partial.length === 0) return false
+  const start = Math.max(0, partial.length - NOISE_PATTERN.length)
+  for (let i = start; i < partial.length; i++) {
+    if (NOISE_PATTERN.startsWith(partial.slice(i))) return true
+  }
+  return false
+}
+
+/**
+ * Install a permanent, process-wide stderr line filter that swallows the
+ * known-harmless llama.cpp tokenizer noise for the lifetime of the process.
+ *
+ * Why permanent instead of per-inference? llama.cpp logs are marshalled from
+ * the native addon to the JS thread asynchronously (node-llama-cpp buffers log
+ * chunks and dispatches them on the microtask queue), so a tokenizer warning
+ * can land AFTER a per-inference wrapper has already restored the original
+ * stderr writer. A filter installed once, at the first model load, can never
+ * be raced past.
+ *
+ * Decision per newline-less partial:
+ * - contains the full pattern (even without a newline) → dropped;
+ * - could still grow into the pattern AND is short enough to be a split noise
+ *   line → held for the next write;
+ * - anything else — progress bars that overwrite a line with `\r` and no
+ *   newline, ordinary partial writes — forwarded immediately.
+ *
+ * A still-held partial is suppressed (never written) on process exit, and the
+ * filter is idempotent: calling it more than once is a no-op.
+ */
+let noiseFilterInstalled = false
+let exitFlushRegistered = false
+
+export function installStderrNoiseFilter(): void {
+  if (noiseFilterInstalled) return
+  noiseFilterInstalled = true
+
+  // stderr is a synchronous fd write; the default utf8 encoding is preserved.
+  const realWrite = process.stderr.write.bind(process.stderr)
+  let buffer = ''
+
+  const write = (
+    chunk: string | Uint8Array,
+    encodingOrCb?: BufferEncoding | ((err?: Error | null | undefined) => void),
+    cb?: (err?: Error | null | undefined) => void
+  ): boolean => {
+    const text = typeof chunk === 'string' ? chunk : Buffer.from(chunk).toString('utf-8')
+    buffer += text
+
+    // Flush every complete line (newline-terminated).
+    let newlineIndex: number
+    while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
+      const line = buffer.slice(0, newlineIndex + 1)
+      buffer = buffer.slice(newlineIndex + 1)
+      if (!shouldSuppressStderrLine(line)) realWrite(line)
+    }
+
+    // Trailing newline-less partial:
+    // 1. Full pattern present → the noise line arrived without its newline.
+    // 2. Short noise-candidate → hold for the next write (split line).
+    // 3. Everything else (progress bars etc.) → forward immediately.
+    if (buffer.length > 0) {
+      if (shouldSuppressStderrLine(buffer)) {
+        buffer = ''
+      } else if (!couldBecomeNoiseLine(buffer) || buffer.length > NOISE_LINE_MAX_LENGTH) {
+        realWrite(buffer)
+        buffer = ''
+      }
+    }
+
+    if (typeof encodingOrCb === 'function') {
+      encodingOrCb(null)
+    } else if (typeof cb === 'function') {
+      cb(null)
+    }
+    return true
+  }
+
+  process.stderr.write = write as typeof process.stderr.write
+
+  // A partial still held at exit is by definition a split noise line whose tail
+  // never arrived (or noise without a newline) — suppress it rather than print
+  // it, so the filter can never leak the very noise it exists to hide.
+  // Registered once per process regardless of how many times the filter is
+  // installed; `beforeExit` drains the buffer, `exit` is then a no-op.
+  if (!exitFlushRegistered) {
+    exitFlushRegistered = true
+    const flushOnExit = (): void => {
+      buffer = ''
+    }
+    process.on('exit', flushOnExit)
+    process.on('beforeExit', flushOnExit)
+  }
+}
+
+/**
+ * Exposed for tests: reset the installed-filter flag so a fresh filter can be
+ * installed in a clean test environment.
+ */
+export function _resetStderrNoiseFilterForTests(): void {
+  noiseFilterInstalled = false
+}
+
+/**
+ * Exposed for tests: drop the shared llama/model caches so each test starts
+ * with a fresh engine (engine reuse is module-level process state).
+ */
+export function _resetSharedEngineForTests(): void {
+  sharedLlamaPromise = null
+  sharedModels.clear()
+}
+
 /**
  * The node-llama-cpp native addon prints tokenizer warnings (e.g.
  * "control-looking token: 128247 '</s>' ...") directly to stderr, bypassing
@@ -153,6 +282,68 @@ export async function withSuppressedTokenizerWarnings<T>(fn: () => Promise<T>): 
   }
 }
 
+/**
+ * Process-wide singleton inference engine. Each `getLlama()` call creates a new
+ * Llama instance that registers a `beforeExit` cleanup listener and reloads the
+ * GGUF from disk — repeated calls (e.g. one per benchmark scenario) leak
+ * listeners and re-pay the multi-second model load every time. We memoize the
+ * llama + model so every inference in the process shares one engine.
+ *
+ * The engine is created lazily on first use and cached for the process
+ * lifetime; a failed load resets the cache so a later call can retry.
+ */
+type LlamaModule = typeof import('node-llama-cpp')
+type SharedLlama = Awaited<ReturnType<LlamaModule['getLlama']>>
+type SharedModel = Awaited<ReturnType<SharedLlama['loadModel']>>
+type SharedContext = Awaited<ReturnType<SharedModel['createContext']>>
+type LlamaContextSequence = ReturnType<SharedContext['getSequence']>
+
+let sharedLlamaPromise: Promise<SharedLlama> | null = null
+
+async function getSharedLlama(): Promise<SharedLlama> {
+  if (!sharedLlamaPromise) {
+    // Install the permanent noise filter at the very first model load: from
+    // here on, llama.cpp tokenizer warnings can never corrupt the terminal
+    // output, no matter when the native addon dispatches them.
+    installStderrNoiseFilter()
+    sharedLlamaPromise = (async () => {
+      const nlc = await dynamicImport<LlamaModule>('node-llama-cpp')
+      const llama = await nlc.getLlama({
+        logger: (level, message) => {
+          if (shouldSuppressStderrLine(message)) return
+          if (level <= nlc.LlamaLogLevel.warn) {
+            const sink = level <= nlc.LlamaLogLevel.error ? console.error : console.warn
+            sink(`[node-llama-cpp] ${message}`)
+          }
+        },
+      })
+      return llama
+    })()
+    // A rejected engine promise must not poison the cache forever: reset so the
+    // next caller retries, while still surfacing the error to this caller.
+    sharedLlamaPromise.catch(() => {
+      sharedLlamaPromise = null
+    })
+  }
+  return sharedLlamaPromise
+}
+
+/** Loaded models keyed by GGUF path: one engine, one model per path, reused across every inference. */
+const sharedModels = new Map<string, Promise<SharedModel>>()
+
+/** Load the GGUF once per process; subsequent inferences reuse the loaded model. */
+async function getSharedModel(llama: SharedLlama, modelPath: string): Promise<SharedModel> {
+  let modelPromise = sharedModels.get(modelPath)
+  if (!modelPromise) {
+    modelPromise = llama.loadModel({ modelPath })
+    modelPromise.catch(() => {
+      sharedModels.delete(modelPath)
+    })
+    sharedModels.set(modelPath, modelPromise)
+  }
+  return modelPromise
+}
+
 export async function runInference(modelId: string, options: InferenceOptions): Promise<InferenceResult> {
   const model = getDownloadedModel(modelId)
   if (!model) {
@@ -166,19 +357,11 @@ export async function runInference(modelId: string, options: InferenceOptions): 
     // the chat wrapper resolves. The logger callback also filters it for the
     // JS-level log path (belt and braces — some builds emit via console).
     return await withSuppressedTokenizerWarnings(async () => {
-      const llama = await nlc.getLlama({
-        logger: (level, message) => {
-          if (shouldSuppressStderrLine(message)) return
-          if (level <= nlc.LlamaLogLevel.warn) {
-            const sink = level <= nlc.LlamaLogLevel.error ? console.error : console.warn
-            sink(`[node-llama-cpp] ${message}`)
-          }
-        },
-      })
-      const llamaModel = await llama.loadModel({ modelPath: model.filePath })
+      const llama = await getSharedLlama()
+      const llamaModel = await getSharedModel(llama, model.filePath)
       const context = await llamaModel.createContext()
       const session = new nlc.LlamaChatSession(
-        createChatSessionOptions(context.getSequence(), options.systemPrompt)
+        createChatSessionOptions(context.getSequence() as LlamaContextSequence, options.systemPrompt)
       )
 
       // Constrained decoding: force the model to emit JSON matching the schema

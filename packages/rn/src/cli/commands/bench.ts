@@ -78,6 +78,21 @@ export async function benchCommand(options: BenchCommandOptions): Promise<void> 
     filter: options.suite ? { suite: options.suite } : undefined,
     scenariosDir: options.scenarios,
     referencesDir: options.references,
+    onScenarioStart: ({ index, total, scenario }) => {
+      // The first generation loads the GGUF and initializes the engine — say
+      // so right where the pause actually is, instead of a blank terminal.
+      if (index === 1 && options.model) {
+        logger.dim('Loading model engine (first scenario warms it; later scenarios reuse it)…')
+      }
+      logger.step(index, `${scenario.title} (${scenario.id}) — generating… [${index}/${total}]`)
+    },
+    onScenarioComplete: ({ index, total, scenario, run }) => {
+      const composite =
+        run.composite !== null ? `${(run.composite * 100).toFixed(0)}%` : 'n/a'
+      const guardrails =
+        run.axes.guardrails !== null ? `${(run.axes.guardrails * 100).toFixed(0)}%` : 'n/a'
+      logger.dim(`  [${index}/${total}] ${scenario.id} → composite ${composite} · guardrails ${guardrails}`)
+    },
   })
 
   for (const problem of problems) {
