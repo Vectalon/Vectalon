@@ -240,12 +240,17 @@ jobs:
       # `vercel/actions/deploy@v5` reference was a broken action path
       # (vercel/actions has no `deploy` action at v5, and the third-party
       # amondnet/vercel-action doesn't accept `project-name` / `prod-mode`
-      # inputs, so the step failed with "Can't find action.yml"). The CLI
-      # reads VERCEL_ORG_ID + VERCEL_PROJECT_ID from the environment, so it
-      # targets the existing `vectalon` project with no project link and no
-      # third-party action.
+      # inputs, so the step failed with "Can't find action.yml").
+      #
+      # The deploy runs from the MONOREPO ROOT (not apps/website): the site
+      # depends on `@vectalon-dev/core` via `workspace:*`, which only resolves
+      # through the pnpm workspace — a standalone apps/website upload cannot
+      # build it. The Vercel project must therefore have its **Root Directory
+      # set to `apps/website`** so Vercel installs at the workspace root and
+      # builds the Next.js app there, bundling the core dist that this job
+      # (re)built above. The CLI reads VERCEL_ORG_ID + VERCEL_PROJECT_ID from
+      # the environment and targets the existing `vectalon` project.
       - name: Deploy to Vercel (vectalon.in)
-        working-directory: apps/website
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
