@@ -102,7 +102,6 @@ Run `npx vectalon` with no arguments (Node `>=20.12`, TTY required) to launch an
   ○ Analyze impact
   ○ Generate CI workflow
   ○ Release pipeline
-  ○ Fine-tune dataset
   ○ Manage ecosystem
   ○ Run doctor
   ○ Run self-test
@@ -516,7 +515,6 @@ packages/rn/
 │   ├── render/                 # Metro-aware execution sandbox (transpile, headless shim, render harness)
 │   ├── sandbox/                # Sandboxed code execution (env scrub, backends, rlimits, bounded runs)
 │   ├── sdlc/                   # 30 SDLC analyzers/writers/generators
-│   ├── training/               # Fine-tuning dataset builder, LoRA plan
 │   ├── utils/                  # Bundle analysis, Figma, diff, native scan, visual diff
 │   └── workflows/              # Feature-development workflow engine + 13 phases
 ├── extension/                  # VS Code extension

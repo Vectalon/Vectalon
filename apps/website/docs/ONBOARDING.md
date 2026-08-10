@@ -214,13 +214,11 @@ npx vectalon release --monitor        # z-score crash anomaly detection + rollba
 flags windows exceeding baseline + n·stdDev (default 3σ) — auto-filing an
 incident and suggesting rollback.
 
-### 3.8 Benchmark & training (for the curious)
+### 3.8 Benchmark (for the curious)
 
 - `npx vectalon bench --live` — 11 coding scenarios scored for
   correctness/adherence/guardrails; `npx vectalon leaderboard` merges results
   into `BENCHMARK_RESULTS.md`. CI regression gate via `--baseline`.
-- `npx vectalon train --build` — curates a fine-tuning dataset from the
-  reference solutions + a LoRA plan.
 
 ### 3.9 Ecosystem catalog (plug in the world)
 

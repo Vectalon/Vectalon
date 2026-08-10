@@ -63,6 +63,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   now filtered by a permanent process-wide stderr filter installed at CLI
   startup.
 
+### Removed
+
+- **`vectalon train` and the fine-tune dataset feature** — the command, the
+  `build_training_dataset` MCP tool, the `src/training/` dataset-builder and
+  LoRA-plan modules, the interactive-menu entry, and the
+  `FINE_TUNING.md` guide are removed. Model/knowledge quality is Vectalon's
+  responsibility to own end-to-end (web intel + knowledge base + prompt
+  engineering), not something users curate themselves. Public exports
+  (`buildFineTuningDataset`, `buildTrainingPlan`, …) are gone too; MCP tool
+  count is 58.
+
 ## [0.1.24] - 2026-08-10
 
 ### Added

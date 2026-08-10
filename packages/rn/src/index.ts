@@ -280,15 +280,6 @@ export type {
   CrashAnomalyResult,
   AnomalyMonitorResult,
 } from './sdlc/CrashAnomalyDetector'
-export {
-  buildFineTuningDataset,
-  writeDatasetJsonl,
-  renderDatasetSummary,
-  exampleToJsonl,
-} from './training/datasetBuilder'
-export type { TrainingExample, DatasetBuildOptions, DatasetStats, DatasetBuildResult } from './training/datasetBuilder'
-export { buildTrainingPlan, renderTrainingPlan, listBaseModels } from './training/trainingPlan'
-export type { TrainingPlan, LoRAConfig, BaseModelId, BaseModelInfo } from './training/trainingPlan'
 export { DeviceController, detectDevicePlatform } from './adapters'
 export type { DeviceControllerOptions, DeviceActionResult, DevicePlatform } from './adapters'
 export { MaestroFlowWriter } from './sdlc'

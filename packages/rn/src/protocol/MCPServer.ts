@@ -54,7 +54,6 @@ export const SAFE_MODE_STUB =
  */
 const SAFE_MODE_DISABLED_TOOLS = new Set([
   'execute_workflow',
-  'build_training_dataset',
   'scaffold_native_module',
 ])
 

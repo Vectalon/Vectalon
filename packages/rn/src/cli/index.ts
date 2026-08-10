@@ -23,7 +23,6 @@ import { telemetryCommand } from './commands/telemetry'
 import { authCommand } from './commands/auth'
 import { ciCommand } from './commands/ci'
 import { releaseCommand } from './commands/release'
-import { trainCommand } from './commands/train'
 import { ecosystemCommand } from './commands/ecosystem'
 import { syncCommand } from './commands/sync'
 import { benchCommand } from './commands/bench'
@@ -226,18 +225,6 @@ export function createProgram(): Command {
     .option('--hours <n>', 'Monitoring window in hours (default 24)', Number)
     .option('--json', 'Print the release plan as JSON')
     .action(releaseCommand)
-
-  program
-    .command('train [directory]')
-    .description('Curate the RN fine-tuning dataset from benchmark reference solutions and generate the LoRA training plan (train → convert → eval via the bench harness)')
-    .option('--build', 'Build the fine-tuning dataset (default)')
-    .option('--plan', 'Also generate the LoRA training plan')
-    .option('--out <dir>', 'Dataset output directory (default .vectalon/training)')
-    .option('--base <model>', 'Base model: qwen2.5-coder-1.5b | qwen2.5-coder-3b | deepseek-coder-1.3b')
-    .option('--scenarios <dir>', 'Custom benchmark scenario pack directory (default bench/scenarios)')
-    .option('--references <dir>', 'Custom reference-solutions directory (default bench/references)')
-    .option('--json', 'Print the dataset/plan as JSON')
-    .action(trainCommand)
 
   program
     .command('ecosystem [directory]')
@@ -474,7 +461,6 @@ async function runInteractive(): Promise<void> {
       { value: 'impact', label: 'Analyze impact', hint: 'Cross-package blast radius of changed files (monorepo)' },
       { value: 'ci', label: 'Generate CI workflow', hint: 'EAS Workflows (Expo) or GitHub Actions (bare RN CLI)' },
       { value: 'release', label: 'Release pipeline', hint: 'Detect version bump, changelog, submit workflow, crash monitor' },
-      { value: 'train', label: 'Fine-tune dataset', hint: 'Curate RN training data from benchmark references + LoRA plan' },
       { value: 'ecosystem', label: 'Manage ecosystem', hint: 'Enable MCP servers, skills, tools, and hooks (Expo & RN-CLI)' },
       { value: 'doctor', label: 'Run doctor', hint: 'Verify every enabled ecosystem item is installed and reachable' },
       { value: 'selftest', label: 'Run self-test', hint: 'Test every feature — visible report + activity trace' },
@@ -612,23 +598,6 @@ async function runInteractive(): Promise<void> {
   if (action === 'ci') {
     await ciCommand('', {})
     p.outro('CI workflow configured')
-    return
-  }
-
-  if (action === 'train') {
-    const mode = await p.select({
-      message: 'Training action',
-      options: [
-        { value: 'dataset', label: 'Build dataset', hint: 'Curate ChatML JSONL from benchmark reference solutions' },
-        { value: 'plan', label: 'Dataset + plan', hint: 'Build dataset and print the LoRA fine-tuning plan' },
-      ],
-    })
-    if (p.isCancel(mode)) {
-      p.outro('Cancelled')
-      return
-    }
-    await trainCommand('', { build: true, plan: mode === 'plan' })
-    p.outro('Training artifacts written to .vectalon/training/')
     return
   }
 

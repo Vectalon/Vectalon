@@ -6,7 +6,7 @@ globally or linked).
 
 Running `npx vectalon` with no arguments opens an **interactive menu** covering
 the most common actions (init, feature, refresh, bundle, status, daemon,
-telemetry, impact, ci, release, train, ecosystem, doctor, selftest, bench,
+telemetry, impact, ci, release, ecosystem, doctor, selftest, bench,
 leaderboard, sync, policy, serve, pull, models, help).
 
 ---
@@ -114,8 +114,8 @@ npx vectalon serve --model openai     # override the model provider for this run
 - Exposes **60 built-in MCP tools** — 50 core tools by default, plus the knowledge-base
   and team-brain tools when those services are present (project context, SDLC
   modules, devices & E2E incl. screen-reader control, cross-package impact,
-  release planning & crash monitoring, training-dataset curation, sandboxed
-  execution, headless component rendering, knowledge base, team brain). The
+  release planning & crash monitoring, sandboxed execution, headless
+  component rendering, knowledge base, team brain). The
   knowledge tools (`search_knowledge`, team-brain search) rank hits by
   **relevance × confidence** — every artifact carries a provenance-derived
   confidence score (`source × status × recency`), a staleness date (last
@@ -659,60 +659,6 @@ npx vectalon release --json                   # release plan as JSON
 |---|---|
 | 0 | Plan printed / workflow written / monitor completed |
 | 1 | No `.vectalon/` directory found |
-
----
-
-## `train`
-
-Curate the **fine-tuning dataset** for an RN code model from the benchmark's
-human reference solutions, and generate the LoRA training plan. The GPU
-training itself runs outside the repo — this command produces the dataset and
-the deterministic plan, and the benchmark suite is the eval harness.
-
-```bash
-npx vectalon train                         # build the dataset (default)
-npx vectalon train --plan                  # dataset + LoRA training plan
-npx vectalon train --base deepseek-coder-1.3b
-npx vectalon train --out ./training-data
-npx vectalon train --scenarios ./my-evals --references ./my-refs
-npx vectalon train --json                  # dataset stats as JSON
-```
-
-**Options**
-
-| Option | Description |
-|---|---|
-| `[directory]` | Project root (default: cwd) |
-| `--build` | Build the fine-tuning dataset (default) |
-| `--plan` | Also generate the LoRA training plan |
-| `--out <dir>` | Dataset output directory (default `.vectalon/training`) |
-| `--base <model>` | Base model: `qwen2.5-coder-1.5b` \| `qwen2.5-coder-3b` \| `deepseek-coder-1.3b` |
-| `--scenarios <dir>` | Custom benchmark scenario pack (default `bench/scenarios`) |
-| `--references <dir>` | Custom reference-solutions directory (default `bench/references`) |
-| `--json` | Print the dataset/plan as JSON |
-
-**What it does**
-
-- Pairs every benchmark scenario's **prompt + fixture project context** with
-  its **gold reference implementation** as a ChatML conversation
-  (`system` = RN expert rules → `user` = prompt + project files → `assistant`
-  = reference files)
-- Writes `rn-finetune-dataset.jsonl` (one ChatML conversation per line —
-  unsloth / axolotl / LLaMA-Factory / transformers compatible) plus a
-  `manifest.json` with per-example ids and token stats
-- `--plan` prints the **LoRA training plan**: base model, rank/alpha/dropout
-  + target modules, epochs scaled to dataset size, learning rate, and the
-  install → train → GGUF-convert → eval command chain
-- The eval step is the benchmark harness: `vectalon bench --model local
-  --live --install` scores the fine-tuned model against the same scenarios
-  the dataset was curated from
-
-**Exit codes**
-
-| Code | When |
-|---|---|
-| 0 | Dataset written (and plan printed with `--plan`) |
-| 1 | No `.vectalon/`, or unknown `--base` model |
 
 ---
 

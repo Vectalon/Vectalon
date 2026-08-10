@@ -75,7 +75,7 @@ describe('MCPServer', () => {
 
   it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(59)
+    expect(names).toHaveLength(58)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -121,7 +121,6 @@ describe('MCPServer', () => {
         'generate_maestro_flow',
         'plan_release',
         'check_crash_rate',
-        'build_training_dataset',
         'scaffold_native_module',
         'visual_capture_reference',
         'visual_check',
@@ -208,9 +207,6 @@ describe('MCPServer', () => {
       if (tool.name === 'check_crash_rate') {
         args.crashes = JSON.stringify([{ kind: 'crash', id: 'c1', source: 'crashlytics', frames: [] }])
         args.baselineRate = 1.0
-      }
-      if (tool.name === 'build_training_dataset') {
-        args.outDir = '.vectalon/training'
       }
       // apply_upgrade writes files: point it at the temp fixture project
       // (never cwd) so the handler stays callable without touching the repo.
@@ -661,7 +657,6 @@ describe('MCPServer', () => {
     expect(names).not.toContain('device_boot')
     expect(names).not.toContain('device_tap')
     expect(names).not.toContain('execute_workflow')
-    expect(names).not.toContain('build_training_dataset')
     expect(names).not.toContain('scaffold_native_module')
 
     // A model-backed tool returns the stub, never a real generation.

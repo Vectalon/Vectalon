@@ -1,5 +1,4 @@
 import { existsSync, readFileSync } from 'fs'
-import { join as pathJoin } from 'path'
 import { ToolRegistry } from './base'
 import { mcpTool } from './decorators'
 import { parseList, parseTickets } from './shared'
@@ -31,7 +30,6 @@ import { MaestroFlowWriter } from '../../sdlc/MaestroFlowWriter'
 import { planRelease, renderReleasePlan, parseGitLog } from '../../sdlc/ReleasePlanner'
 import { deriveFromGitHistory, renderGitDerivation } from '../../sdlc/GitHistoryDeriver'
 import { runCommand } from '../../adapters/runCommand'
-import { buildFineTuningDataset, writeDatasetJsonl, renderDatasetSummary } from '../../training/datasetBuilder'
 import { monitorRelease, renderMonitorReport } from '../../sdlc/CrashMonitor'
 import { monitorReleaseAnomaly, renderAnomalyReport } from '../../sdlc/CrashAnomalyDetector'
 import { NativeModuleGenerator, parseNativeModuleSpec } from '../../sdlc/NativeModuleGenerator'
@@ -754,27 +752,6 @@ export class SdlcTools extends ToolRegistry {
     })
     const content = renderMonitorReport(monitor.spike, monitor.incident)
     this.persistArtifact('operations', `Crash monitor: ${monitor.spike.spiked ? 'spike' : 'healthy'}`, content)
-    return content
-  }
-
-  @mcpTool('build_training_dataset', 'Curate the RN fine-tuning dataset from the benchmark reference solutions: pairs each scenario prompt + fixture context with its gold reference implementation as a ChatML JSONL conversation (unsloth / axolotl / LLaMA-Factory compatible). Writes rn-finetune-dataset.jsonl + manifest under the project and returns the stats', {
-    type: 'object',
-    properties: {
-      outDir: { type: 'string' },
-    },
-  })
-  async buildTrainingDataset(args: Record<string, unknown>): Promise<string> {
-    const root = this.ctx.engine.getSnapshot()?.project.root || process.cwd()
-    const result = buildFineTuningDataset({})
-    if (result.examples.length === 0) {
-      return `No dataset examples could be curated. Problems:\n${result.problems.join('\n') || 'none'}\nSkipped (no reference): ${result.skippedNoReference.join(', ') || 'none'}`
-    }
-    const outDir = (args.outDir as string | undefined)?.trim()
-      ? (args.outDir as string).startsWith('/') ? (args.outDir as string) : pathJoin(root, args.outDir as string)
-      : pathJoin(root, '.vectalon', 'training')
-    const jsonlPath = writeDatasetJsonl(result.examples, result.stats, outDir)
-    const content = renderDatasetSummary(result, jsonlPath)
-    this.persistArtifact('engineering', 'RN fine-tuning dataset', content)
     return content
   }
 

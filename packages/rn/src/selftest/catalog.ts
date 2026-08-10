@@ -25,7 +25,6 @@ import { ecosystemCommand } from '../cli/commands/ecosystem'
 import { syncCommand } from '../cli/commands/sync'
 import { impactCommand } from '../cli/commands/impact'
 import { leaderboardCommand } from '../cli/commands/leaderboard'
-import { trainCommand } from '../cli/commands/train'
 import { telemetryCommand } from '../cli/commands/telemetry'
 import { daemonCommand } from '../cli/commands/daemon'
 import { ciCommand } from '../cli/commands/ci'
@@ -244,7 +243,6 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
         sync: syncCommand,
         impact: impactCommand,
         leaderboard: leaderboardCommand,
-        train: trainCommand,
         telemetry: telemetryCommand,
         daemon: daemonCommand,
         ci: ciCommand,
