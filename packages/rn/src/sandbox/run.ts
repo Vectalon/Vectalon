@@ -81,8 +81,16 @@ export async function runSandboxed(command: string, args: string[], options: San
     let timedOut = false
     let settled = false
 
-    const cap = options.maxOutputBytes ?? DEFAULT_MAX_OUTPUT_BYTES
-    const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS
+    // NaN must never survive here: `NaN ?? default` is NaN, a NaN timeout
+    // fires `setTimeout` immediately (instant kill), and a NaN cap disables
+    // output truncation entirely. Non-finite / non-positive values fall back
+    // to the defaults.
+    const cap = Number.isFinite(options.maxOutputBytes) && (options.maxOutputBytes ?? 0) > 0
+      ? options.maxOutputBytes as number
+      : DEFAULT_MAX_OUTPUT_BYTES
+    const timeoutMs = Number.isFinite(options.timeoutMs) && (options.timeoutMs ?? 0) > 0
+      ? options.timeoutMs as number
+      : DEFAULT_TIMEOUT_MS
 
     const child = spawn(spawnCommand, spawnArgs, {
       cwd: root,

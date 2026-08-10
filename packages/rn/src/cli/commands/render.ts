@@ -43,6 +43,17 @@ export function normalizeRenderFiles(file: string[] | string | undefined): strin
   return list.flatMap(f => f.split(',')).map(f => f.trim()).filter(Boolean)
 }
 
+/**
+ * Sanitize a numeric CLI option (`--timeout`, `--memory`). Commander's
+ * `Number` processor turns garbage input into NaN, and `NaN ?? default` is
+ * NaN — a NaN timeout makes `setTimeout` fire immediately (instant kill) and
+ * a NaN cap disables output capping. Treat non-finite / non-positive values
+ * as "not provided" so defaults apply instead.
+ */
+export function normalizeRenderLimit(value: number | undefined): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined
+}
+
 export async function renderCommand(directory: string, options: RenderCommandOptions): Promise<void> {
   const check = requireTier('pro', 'rn')
 
@@ -82,9 +93,16 @@ export async function renderCommand(directory: string, options: RenderCommandOpt
     files,
     entry: relative(root, resolve(root, entry)),
     projectRoot: root,
-    timeoutMs: options.timeout,
-    memoryMb: options.memory,
+    timeoutMs: normalizeRenderLimit(options.timeout),
+    memoryMb: normalizeRenderLimit(options.memory),
   })
+
+  // Failure must be observable via the exit code in BOTH output modes — a
+  // script consuming `--json` relies on it the same way a human reads the
+  // tree.
+  if (!result.ok) {
+    process.exitCode = 1
+  }
 
   if (options.json) {
     logger.out(JSON.stringify(result, null, 2) + '\n')
@@ -92,7 +110,4 @@ export async function renderCommand(directory: string, options: RenderCommandOpt
   }
 
   logger.out(renderRenderResult(result) + '\n')
-  if (!result.ok) {
-    process.exitCode = 1
-  }
 }

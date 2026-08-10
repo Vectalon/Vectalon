@@ -161,7 +161,7 @@ export function createProgram(): Command {
     .option('--root <dir>', 'Sandbox root — working directory + the only writable location (default: cwd)')
     .option('--timeout <ms>', 'Wall-clock timeout in ms (default 30000)', Number)
     .option('--cpu <seconds>', 'CPU time limit in seconds')
-    .option('--memory <mb>', 'Virtual memory limit in MB')
+    .option('--memory <mb>', 'Virtual memory limit in MB', Number)
     .option('--network', 'Allow outbound network (default: denied where the backend supports it)')
     .option('--allow-env <names>', 'Comma-separated ambient env vars to keep')
     .option('--json', 'Print the result as JSON')
@@ -178,7 +178,7 @@ export function createProgram(): Command {
       []
     )
     .option('--timeout <ms>', 'Wall-clock timeout in ms (default 30000)', Number)
-    .option('--memory <mb>', 'Virtual memory limit in MB')
+    .option('--memory <mb>', 'Virtual memory limit in MB', Number)
     .option('--json', 'Print the structured result as JSON')
     .action((directory, opts) => renderCommand(directory, opts))
 

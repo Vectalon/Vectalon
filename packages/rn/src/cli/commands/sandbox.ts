@@ -78,13 +78,17 @@ export async function sandboxCommand(command: string, args: string[], options: S
     allowEnv,
   })
 
+  // Failure must be observable via the exit code in BOTH output modes — a
+  // script consuming `--json` relies on it the same way a human reads the
+  // report.
+  if (!result.ok) {
+    process.exitCode = 1
+  }
+
   if (options.json) {
     logger.out(JSON.stringify(result, null, 2) + '\n')
     return
   }
 
   logger.out(renderSandboxResult(result) + '\n')
-  if (!result.ok) {
-    process.exitCode = 1
-  }
 }
