@@ -3,6 +3,20 @@ import { join } from 'path'
 import { KnowledgeRefreshService } from '../knowledge/refresh'
 
 /**
+ * Number of persisted improvement suggestions (0 when not initialized or
+ * unreadable) — powers the interactive menu's "View suggestions (N)" entry.
+ * Read-only: never creates `.vectalon/` as a side effect of listing options.
+ */
+export function countPersistedSuggestions(root: string): number {
+  if (!existsSync(join(root, '.vectalon'))) return 0
+  try {
+    return new KnowledgeRefreshService({ projectRoot: root }).getSuggestions().length
+  } catch {
+    return 0
+  }
+}
+
+/**
  * Staleness-aware hint for the interactive menu's "Force refresh knowledge"
  * entry: names how long ago the web intel was last pulled when the cache is
  * stale, and says it forces a pull when fresh. Read-only — never creates

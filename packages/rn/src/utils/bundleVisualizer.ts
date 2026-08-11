@@ -17,6 +17,7 @@ import pc from 'picocolors'
 import type { BundleAnalysis, BudgetFinding } from './bundleAnalyzer'
 import { formatBytes, packageFromModulePath } from './bundleAnalyzer'
 import { alternativeFor, isSwapCandidate, type KnownAlternative, type PackageSignals } from './npmSignals'
+import { escapeHtml } from './html'
 
 export interface TreemapItem {
   name: string
@@ -285,15 +286,6 @@ function formatDate(iso: string | undefined): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return iso
   return d.toISOString().slice(0, 10)
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
 }
 
 const VERDICT_LABEL: Record<BundleReportData['budgetVerdict'], string> = {

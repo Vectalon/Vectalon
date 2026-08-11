@@ -13,6 +13,7 @@ import { pullCommand } from './commands/pull'
 import { modelsCommand } from './commands/models'
 import { policyCommand } from './commands/policy'
 import { refreshCommand } from './commands/refresh'
+import { suggestionsCommand } from './commands/suggestions'
 import { bundleCommand } from './commands/bundle'
 import { profileCommand } from './commands/profile'
 import { sandboxCommand } from './commands/sandbox'
@@ -38,7 +39,7 @@ import { installStderrNoiseFilter } from '../model/local/inference'
 import pkg from '../../package.json'
 import { dynamicImport } from '../utils/dynamicImport'
 import { captureError, flushErrorQueue, writeDiagnosticsBundle } from '../diagnostics'
-import { buildRefreshHint } from './refreshHint'
+import { buildRefreshHint, countPersistedSuggestions } from './refreshHint'
 
 export function createProgram(): Command {
   const program = new Command()
@@ -128,6 +129,17 @@ export function createProgram(): Command {
     .description('Refresh knowledge from web sources and generate improvement suggestions')
     .option('--force', 'Refresh even if the cache is still fresh')
     .action(refreshCommand)
+
+  program
+    .command('suggestions [directory]')
+    .description('List improvement suggestions from the knowledge refresh (outdated dependencies) and act on them — apply the latest version or open the dashboard')
+    .option('--json', 'Print the full suggestions store as JSON (CI/agents)')
+    .option('--limit <n>', 'Cap the number of suggestions listed', Number)
+    .option('--apply <id>', 'Apply one suggestion — npm install the latest version (asks for confirmation in a TTY)')
+    .option('--yes', 'Apply without prompting (with --apply)')
+    .option('--open', 'Write + open the HTML suggestions dashboard in the browser')
+    .option('--out <dir>', 'Dashboard output directory (default .vectalon/suggestions)')
+    .action(suggestionsCommand)
 
   program
     .command('bundle [directory]')
@@ -237,6 +249,7 @@ export function createProgram(): Command {
     .option('--category <type>', 'Filter by category (mcp|skill|tool|hook)')
     .option('--flavor <type>', 'Filter by project flavor (expo|rn-cli)')
     .option('--enable <id>', 'Enable an ecosystem item and record it in .vectalon/ecosystem.json')
+    .option('--force', 'Skip the npm-registry existence check when enabling an MCP item')
     .option('--disable <id>', 'Disable an enabled ecosystem item')
     .option('--info <id>', 'Show install command + capabilities for one item')
     .option('--export', 'Export enabled items as an MCP client config fragment')
@@ -455,6 +468,7 @@ async function runInteractive(): Promise<void> {
   p.intro(pc.bold(pc.cyan('vectalon')))
 
   const refreshHint = buildRefreshHint(process.cwd())
+  const suggestionCount = countPersistedSuggestions(process.cwd())
 
   const action = await p.select({
     message: 'What would you like to do?',
@@ -462,6 +476,7 @@ async function runInteractive(): Promise<void> {
       { value: 'init', label: 'Initialize a project', hint: 'Scan React Native project and create .vectalon/' },
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Force refresh knowledge', hint: refreshHint },
+      { value: 'suggestions', label: suggestionCount > 0 ? `View suggestions (${suggestionCount})` : 'View suggestions', hint: 'Improvement suggestions from the knowledge refresh' },
       { value: 'bundle', label: 'Analyze bundle', hint: 'Metro snapshot + budgets, ASCII bars + HTML treemap dashboard' },
       { value: 'status', label: 'Show status', hint: 'Daemon, MCP, model, refresh, license, disk — one screen' },
       { value: 'daemon', label: 'Live Metro daemon', hint: 'Watch bundle size and JS thread health continuously' },
@@ -542,6 +557,12 @@ async function runInteractive(): Promise<void> {
   if (action === 'refresh') {
     await refreshCommand('', { force: true })
     p.outro('Knowledge refreshed')
+    return
+  }
+
+  if (action === 'suggestions') {
+    await suggestionsCommand('', {})
+    p.outro('Suggestions shown')
     return
   }
 

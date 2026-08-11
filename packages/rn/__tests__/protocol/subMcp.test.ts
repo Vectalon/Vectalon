@@ -4,6 +4,7 @@ import {
   startEnabledMcpClients,
   parseMcpCommand,
   renderMcpContent,
+  failureReason,
   type McpTransport,
   type McpClientHandle,
 } from '../../src/protocol/subMcp'
@@ -48,6 +49,32 @@ describe('parseMcpCommand', () => {
 
   it('passes non-npx commands through', () => {
     expect(parseMcpCommand('gem install fastlane')).toEqual({ command: 'gem', args: ['install', 'fastlane'] })
+  })
+})
+
+describe('failureReason', () => {
+  it('collapses an npm 404 wall into one line naming the package', () => {
+    const stderr = [
+      'npm error code E404',
+      'npm error 404 Not Found - GET https://registry.npmjs.org/@steve228uk%2Fmetro-mcp - Not found',
+      'npm error 404  \'@steve228uk/metro-mcp@*\' is not in this registry.',
+    ]
+    expect(failureReason(stderr, new Error('Command failed'))).toBe('@steve228uk/metro-mcp not found on npm (E404)')
+  })
+
+  it('collapses an ETARGET into a code-only reason', () => {
+    const stderr = ['npm error code ETARGET', 'npm error notarget No matching version found']
+    expect(failureReason(stderr, new Error('Command failed'))).toBe('npm ETARGET')
+  })
+
+  it('detects a missing binary', () => {
+    expect(failureReason(['sh: metro-mcp: command not found'], new Error('spawn ENOENT'))).toBe(
+      'package not installed (command not found)'
+    )
+  })
+
+  it('falls back to the error message for unrelated failures', () => {
+    expect(failureReason([], new Error('expo CLI missing'))).toBe('expo CLI missing')
   })
 })
 

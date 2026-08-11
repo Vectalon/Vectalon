@@ -5,8 +5,8 @@ available as `npx vectalon <command>` (or `vectalon <command>` when installed
 globally or linked).
 
 Running `npx vectalon` with no arguments opens an **interactive menu** covering
-the most common actions (init, feature, refresh, bundle, status, daemon,
-telemetry, impact, ci, release, ecosystem, doctor, selftest, bench,
+the most common actions (init, feature, refresh, suggestions, bundle, status,
+daemon, telemetry, impact, ci, release, ecosystem, doctor, selftest, bench,
 leaderboard, sync, policy, serve, pull, models, help).
 
 ---
@@ -123,7 +123,10 @@ npx vectalon serve --model openai     # override the model provider for this run
   high-confidence context over stale or speculative guesses; each hit surfaces
   `confidence` and `rankedScore`
 - Reads `.vectalon/ecosystem.json` and exposes each **enabled ecosystem MCP
-  server as a first-class tool** (Metro MCP, Expo MCP, …) agents auto-discover
+  server as a first-class tool** (Metro MCP, Expo MCP, …) agents auto-discover.
+  A sub-MCP server that fails to start (missing package, wrong name) logs **one
+  compact warning with the failure reason and install hint** instead of a wall
+  of npm error output; the full stderr is shown only under `VECTALON_DEBUG=1`
 - With **`--safe-mode`**: model tools return deterministic stubs, file-writing
   and device-control tools are absent from the tool list, and the server logs
   `SAFE MODE` at startup — run Vectalon in CI or on customer machines without
@@ -312,7 +315,8 @@ developer tools, and git hooks for React Native / Expo.
 npx vectalon ecosystem                      # list the full catalog
 npx vectalon ecosystem --category mcp       # only MCP servers
 npx vectalon ecosystem --flavor expo        # only Expo-flavored items
-npx vectalon ecosystem --enable metro-mcp   # enable an item
+npx vectalon ecosystem --enable metro-mcp   # enable an item (verified on npm first)
+npx vectalon ecosystem --enable metro-mcp --force  # ... skip the registry check
 npx vectalon ecosystem --disable maestro    # disable an item
 npx vectalon ecosystem --export             # emit MCP client config fragment
 npx vectalon ecosystem --export --json      # ... as JSON
@@ -325,7 +329,8 @@ npx vectalon ecosystem --export --json      # ... as JSON
 | `[directory]` | Project root (default: cwd) |
 | `--category <type>` | `mcp` \| `skill` \| `tool` \| `hook` |
 | `--flavor <type>` | `expo` \| `rn-cli` |
-| `--enable <id>` | Enable an ecosystem item |
+| `--enable <id>` | Enable an ecosystem item — for MCP items, the npm package is first verified to exist on the registry (fail-fast: a confirmed 404 blocks with a clear message instead of surfacing as a serve-time failure). Offline, the check is skipped with a warning |
+| `--force` | Skip the npm-registry existence check when enabling an MCP item |
 | `--disable <id>` | Disable an enabled item |
 | `--export` | Export enabled items as an MCP client config fragment |
 | `--json` | Print the export as JSON |
@@ -373,6 +378,10 @@ npx vectalon doctor --selftest              # verify the doctor's own probes wor
 - **Ecosystem items** — MCP packages resolve locally or respond to a bounded
   probe; tools/hooks resolve from `node_modules` or respond on `PATH`; skills
   exist under `.vectalon/skills/` or `.agents/skills/`
+- **Catalog health** — every enabled MCP item's npm package is checked against
+  the registry (cache-backed, 24h, offline-tolerant): a confirmed 404 warns
+  with the corrected install command, so a stale/wrong catalog entry is caught
+  here instead of as a serve-time `npx` failure
 - **Native toolchain** — Node 20+ (18–19 warns), JDK 17+, Android SDK
   (`ANDROID_HOME`/`adb`), Android emulator AVDs, Xcode & CocoaPods (macOS
   only), Metro dev-server port 8081
@@ -1189,6 +1198,58 @@ npx vectalon refresh --force      # refresh regardless
 |---|---|
 | 0 | Refresh completed (or cache was fresh) |
 | 1 | No `.vectalon/` directory found |
+
+---
+
+## `suggestions`
+
+The **visible, actionable surface** for the improvement suggestions the
+knowledge refresh produces — the "35 improvement suggestion(s) available"
+count you see in `serve` now points somewhere. Lists the persisted
+outdated-dependency suggestions, applies one with a single command, and can
+render an HTML dashboard.
+
+```bash
+npx vectalon suggestions                       # severity-grouped list
+npx vectalon suggestions --json                # raw store for CI/agents
+npx vectalon suggestions --limit 5             # cap the listing
+npx vectalon suggestions --apply lodash --yes  # npm install lodash@^<latest>
+npx vectalon suggestions --apply <id>          # ... asks for confirmation in a TTY
+npx vectalon suggestions --open                # write + open the HTML dashboard
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print the full suggestions store as JSON (CI/agents) |
+| `--limit <n>` | Cap the number of suggestions listed |
+| `--apply <id>` | Apply one suggestion — runs the exact `npm install <library>@^<latest>`. Gated: asks for confirmation in a TTY, or pass `--yes`; in a non-TTY without `--yes` it only prints the command |
+| `--yes` | Apply without prompting (with `--apply`) |
+| `--open` | Write + open a self-contained HTML dashboard (`.vectalon/suggestions/report.html`, no network) — severity cards with current → latest versions, the install command, and an npm link |
+| `--out <dir>` | Dashboard output directory (default `.vectalon/suggestions`) |
+
+**What it does**
+
+- Reads `.vectalon/knowledge/refresh/suggestions.json` (written by
+  `vectalon refresh` and by `serve`'s hourly background loop) — read-only, no
+  network
+- Groups by severity (`❌ error` / `⚠️ warning` / `ℹ️ info`) with the
+  `current → latest` version bump and the exact `--apply` command per row
+- `--apply` matches a suggestion by its full id, its library name, or a
+  `dep-<library>-` id prefix; the install runner is the same `runCommand`
+  adapter used by the workflows
+- The interactive menu's **"View suggestions (N)"** entry and `vectalon
+  status`'s count line link here, and `serve`/`feature` refresh messages now
+  end with `— run \`vectalon suggestions\``
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Listed / JSON printed / applied / dashboard written |
+| 1 | No `.vectalon/` directory, unknown `--apply` id, or the install failed |
 
 ---
 

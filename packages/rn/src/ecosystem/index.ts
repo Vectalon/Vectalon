@@ -31,8 +31,17 @@ export {
 } from './skills'
 export type { SkillSource, SkillsContextOptions, SkillsPreviewOptions } from './skills'
 export {
+  checkPackageOnRegistry,
+  verifyPackageOnRegistry,
+  checkCatalogPackagesOnRegistry,
+  readRegistryCache,
+  writeRegistryCache,
+} from './registry'
+export type { RegistryCheck, RegistryCache } from './registry'
+export {
   checkEcosystemItem,
   runEcosystemDoctor,
+  checkEcosystemCatalogHealth,
   checkNativeToolchain,
   checkLeaderboardReadiness,
   checkModelAccess,

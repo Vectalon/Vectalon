@@ -5,6 +5,7 @@ import {
   runEcosystemDoctor,
   runDoctor,
   checkEcosystemItem,
+  checkEcosystemCatalogHealth,
   checkNativeToolchain,
   checkLeaderboardReadiness,
   checkModelAccess,
@@ -16,6 +17,7 @@ import {
   MODEL_ACCESS_ITEM_IDS,
   type DoctorCheckers,
   type DoctorFixer,
+  type RegistryCheck,
 } from '../../src/ecosystem'
 import { listEcosystemItems, getEcosystemItem } from '../../src/ecosystem'
 
@@ -148,7 +150,23 @@ describe('ecosystem doctor', () => {
     expect(report.checks.map(c => c.id)).toEqual(expect.arrayContaining(['zustand', 'fastlane', 'metro-mcp', 'expo-router']))
   })
 
-  it('returns an empty report when nothing is enabled', () => {
+  it('merges catalog-health checks into the report with a catalog- prefix', () => {
+      mkdirSync(join(dir, '.vectalon'), { recursive: true })
+      writeFileSync(
+        join(dir, '.vectalon', 'ecosystem.json'),
+        JSON.stringify({ version: '1.0.0', enabled: ['metro-mcp'] })
+      )
+      writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'app', version: '1.0.0' }))
+      const catalog: Record<string, RegistryCheck> = {
+        'metro-mcp': { exists: true, verified: true, latestVersion: '0.13.2', checkedAt: Date.now() },
+      }
+      const report = runDoctor(dir, makeCheckers(), { catalogRegistry: catalog })
+      const check = report.checks.find(c => c.id === 'catalog-metro-mcp')!
+      expect(check.status).toBe('ok')
+      expect(check.detail).toContain('0.13.2')
+    })
+
+    it('returns an empty report when nothing is enabled', () => {
     mkdirSync(join(dir, '.vectalon'), { recursive: true })
     writeFileSync(
       join(dir, '.vectalon', 'ecosystem.json'),
@@ -679,5 +697,75 @@ describe('ecosystem doctor', () => {
       const broken = results.find(r => !r.ok)!
       expect(broken.detail).toContain('spawn is broken')
     })
+  })
+})
+
+describe('ecosystem catalog health', () => {
+  let dir: string
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), 'vectalon-cathealth-'))
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+  })
+
+  afterEach(() => rmSync(dir, { recursive: true, force: true }))
+
+  function enable(items: string[]): void {
+    writeFileSync(join(dir, '.vectalon', 'ecosystem.json'), JSON.stringify({ version: '1.0.0', enabled: items }))
+  }
+
+  it('returns no checks when no MCP item is enabled', () => {
+    enable([])
+    expect(checkEcosystemCatalogHealth(dir, makeCheckers())).toEqual([])
+  })
+
+  it('reports ok when the enabled package resolves on the registry', () => {
+    enable(['metro-mcp'])
+    const checks = checkEcosystemCatalogHealth(dir, makeCheckers(), {
+      catalogRegistry: {
+        'metro-mcp': { exists: true, verified: true, latestVersion: '0.13.2', checkedAt: Date.now() },
+      },
+    })
+    expect(checks).toHaveLength(1)
+    expect(checks[0].id).toBe('catalog-metro-mcp')
+    expect(checks[0].status).toBe('ok')
+    expect(checks[0].detail).toContain('resolves on npm')
+  })
+
+  it('warns and names the broken package on a confirmed 404', () => {
+    enable(['react-native-upgrader-mcp'])
+    const checks = checkEcosystemCatalogHealth(dir, makeCheckers(), {
+      catalogRegistry: {
+        'react-native-upgrader-mcp': { exists: false, verified: true, checkedAt: Date.now() },
+      },
+    })
+    expect(checks[0].status).toBe('warning')
+    expect(checks[0].detail).toContain('does not exist on the npm registry')
+    expect(checks[0].hint).toContain('Corrected install')
+  })
+
+  it('reports ok (skipped) when the registry was unreachable — never a false 404', () => {
+    enable(['metro-mcp'])
+    // No catalogRegistry entry at all (offline precompute) → skipped, not missing
+    const checks = checkEcosystemCatalogHealth(dir, makeCheckers())
+    expect(checks[0].status).toBe('ok')
+    expect(checks[0].detail).toContain('skipped')
+    // An unverified entry behaves the same
+    const unverified = checkEcosystemCatalogHealth(dir, makeCheckers(), {
+      catalogRegistry: { 'metro-mcp': { exists: true, verified: false, checkedAt: 0 } },
+    })
+    expect(unverified[0].status).toBe('ok')
+    expect(unverified[0].detail).toContain('skipped')
+  })
+
+  it('ignores disabled MCPs and non-MCP categories', () => {
+    enable(['metro-mcp', 'zustand']) // zustand is a tool — no catalog check
+    const checks = checkEcosystemCatalogHealth(dir, makeCheckers(), {
+      catalogRegistry: {
+        'metro-mcp': { exists: true, verified: true, checkedAt: Date.now() },
+        zustand: { exists: false, verified: true, checkedAt: Date.now() },
+      },
+    })
+    expect(checks.map(c => c.id)).toEqual(['catalog-metro-mcp'])
   })
 })

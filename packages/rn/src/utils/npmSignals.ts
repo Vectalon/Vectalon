@@ -16,6 +16,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { bestEffortAsync } from './safe'
+import { fetchJson } from './http'
 
 export interface PackageSignals {
   /** Latest published version (dist-tags.latest). */
@@ -98,12 +99,10 @@ export function alternativeFor(name: string): KnownAlternative | undefined {
   return KNOWN_ALTERNATIVES[name]
 }
 
-const USER_AGENT = 'vectalon-rn-bundle-visualizer'
 const CACHE_FILE = 'signals.json'
 const DEFAULT_MAX_AGE_MS = 24 * 60 * 60 * 1000
 /** GitHub unauthenticated API budget per run — keeps us under 60 req/h. */
 const STARS_FETCH_LIMIT = 6
-const FETCH_TIMEOUT_MS = 3000
 
 interface CachedSignals extends PackageSignals {
   fetchedAt: number
@@ -114,25 +113,6 @@ export type SignalsCache = Record<string, CachedSignals>
 /** registry.npmjs.org package name (scoped names use %2F). */
 function registryName(name: string): string {
   return name.replace('/', '%2F')
-}
-
-function fetchWithTimeout(url: string, timeoutMs = FETCH_TIMEOUT_MS): Promise<Response> {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), timeoutMs)
-  return fetch(url, {
-    headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
-    signal: controller.signal,
-  }).finally(() => clearTimeout(timer))
-}
-
-async function fetchJson<T>(url: string): Promise<T | null> {
-  try {
-    const res = await fetchWithTimeout(url)
-    if (!res.ok) return null
-    return (await res.json()) as T
-  } catch {
-    return null
-  }
 }
 
 /** Parse a GitHub URL from npm `repository.url`; returns owner/repo or null. */

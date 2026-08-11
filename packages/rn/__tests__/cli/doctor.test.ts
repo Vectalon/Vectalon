@@ -140,11 +140,9 @@ describe('doctorCommand', () => {
     }) as unknown as (code?: string | number | null) => never)
 
     // No OPENAI_API_KEY in the env -> ma-model warns (not missing, so exit 0).
-    try {
-      doctorCommand(dir, { json: true, checkers: okCheckers() }) // okCheckers.env -> undefined
-    } catch {
-      // no-op
-    }
+    // doctorCommand is async: the exit mock's throw arrives as an async
+    // rejection — swallow it (the mock already ran synchronously).
+    void doctorCommand(dir, { json: true, checkers: okCheckers() }).catch(() => {}) // okCheckers.env -> undefined
     const parsed = JSON.parse(jsonOutput) as { model: Array<{ id: string; status: string; detail: string }> }
     const model = parsed.model.find(c => c.id === 'ma-model')!
     expect(model.status).toBe('warning')
@@ -166,11 +164,9 @@ describe('doctorCommand', () => {
       throw new Error('exit')
     }) as unknown as (code?: string | number | null) => never)
 
-    try {
-      doctorCommand(dir, { json: true, checkers: okCheckers() })
-    } catch {
+    void doctorCommand(dir, { json: true, checkers: okCheckers() }).catch(() => {
       // no-op: exit mocked to throw
-    }
+    })
     const parsed = JSON.parse(jsonOutput) as { model: Array<{ id: string; status: string }> }
     expect(parsed.model.map(c => c.id)).toEqual(['ma-model', 'ma-ecosystem', 'ma-skills', 'ma-mcp', 'ma-intel'])
     // ma-model is ok (okCheckers.hasModel -> true); warnings don't exit non-zero.
@@ -191,18 +187,16 @@ describe('doctorCommand', () => {
       throw new Error('exit')
     }) as unknown as (code?: string | number | null) => never)
 
-    try {
-      doctorCommand(dir, {
-        json: true,
-        checkers: {
-          ...okCheckers(),
-          env: name => (name === 'OPENAI_API_KEY' || name === 'ANTHROPIC_API_KEY' ? 'sk-' : undefined),
-        },
-        leaderboard: { localModelPresetId: 'qwen2.5-coder-3b' },
-      })
-    } catch {
+    void doctorCommand(dir, {
+      json: true,
+      checkers: {
+        ...okCheckers(),
+        env: name => (name === 'OPENAI_API_KEY' || name === 'ANTHROPIC_API_KEY' ? 'sk-' : undefined),
+      },
+      leaderboard: { localModelPresetId: 'qwen2.5-coder-3b' },
+    }).catch(() => {
       // no-op: exit mocked to throw
-    }
+    })
     const parsed = JSON.parse(jsonOutput) as { leaderboard: Array<{ id: string; status: string }> }
     expect(parsed.leaderboard.map(c => c.id)).toEqual(['lb-openai-key', 'lb-anthropic-key', 'lb-local-model', 'lb-results-dir'])
     expect(parsed.leaderboard.every(c => c.status === 'ok')).toBe(true)
@@ -226,11 +220,9 @@ describe('doctorCommand', () => {
     }) as unknown as (code?: string | number | null) => never)
 
     // zustand resolves (packageInstalled: true), so nothing is missing -> exit 0.
-    try {
-      doctorCommand(dir, { json: true, checkers: okCheckers() })
-    } catch {
+    void doctorCommand(dir, { json: true, checkers: okCheckers() }).catch(() => {
       // no-op: exit mocked to throw
-    }
+    })
     expect(stdoutSpy).toHaveBeenCalled()
     expect(jsonOutput).toContain('"checks"')
     expect(jsonOutput).toContain('"toolchain"')
@@ -249,14 +241,12 @@ describe('doctorCommand', () => {
     }) as unknown as (code?: string | number | null) => never)
 
     // packageInstalled returns false -> zustand missing -> exit 1.
-    try {
-      doctorCommand(dir, {
-        json: true,
-        checkers: { ...okCheckers(), packageInstalled: () => false },
-      })
-    } catch {
+    void doctorCommand(dir, {
+      json: true,
+      checkers: { ...okCheckers(), packageInstalled: () => false },
+    }).catch(() => {
       // expected
-    }
+    })
     expect(exit).toHaveBeenCalledWith(1)
   })
 
@@ -281,13 +271,11 @@ describe('doctorCommand', () => {
       throw new Error('exit')
     }) as unknown as (code?: string | number | null) => never)
 
-    try {
-      doctorCommand(dir, {
-        checkers: { ...okCheckers(), packageInstalled: () => false, env: () => undefined },
-      })
-    } catch {
+    void doctorCommand(dir, {
+      checkers: { ...okCheckers(), packageInstalled: () => false, env: () => undefined },
+    }).catch(() => {
       // exit mocked to throw
-    }
+    })
 
     // The failure card lists the missing check with its auto-fix command.
     expect(out).toContain('✖ ')
@@ -382,15 +370,13 @@ describe('doctorCommand', () => {
       return { success: true, output: 'ok' }
     }
 
-    try {
-      doctorCommand(dir, {
-        fix: true,
-        checkers: { ...okCheckers(), packageInstalled: () => false },
-        fixer,
-      })
-    } catch {
+    void doctorCommand(dir, {
+      fix: true,
+      checkers: { ...okCheckers(), packageInstalled: () => false },
+      fixer,
+    }).catch(() => {
       // exit mocked to throw
-    }
+    })
 
     expect(calls.some(c => c.command === 'npm' && c.args.includes('zustand'))).toBe(true)
     expect(out).toContain('Attempting to fix missing checks')
@@ -409,11 +395,9 @@ describe('doctorCommand', () => {
     const fixer = okFixer()
     const spy = jest.spyOn(fixer, 'run')
 
-    try {
-      doctorCommand(dir, { fix: true, json: true, checkers: okCheckers(), fixer })
-    } catch {
+    void doctorCommand(dir, { fix: true, json: true, checkers: okCheckers(), fixer }).catch(() => {
       // exit mocked to throw (should be 0)
-    }
+    })
     expect(spy).not.toHaveBeenCalled()
     expect(exit).toHaveBeenCalledWith(0)
   })

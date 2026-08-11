@@ -13,6 +13,7 @@ function statMtime(path: string): number {
 import { listEcosystemItems, getEcosystemItem } from './catalog'
 import { readEcosystemConfig } from './config'
 import type { EcosystemItem, ProjectFlavor } from './types'
+import type { RegistryCheck } from './registry'
 import { reportError, safe } from '../utils/safe'
 import { getRemoteProviderInfo } from '../model/setup'
 import type { ModelSetupProvider } from '../model/setup'
@@ -183,7 +184,7 @@ export function runDoctorSelfTest(root: string, checkers: DoctorCheckers): Docto
 
 export type DoctorStatus = 'ok' | 'missing' | 'warning'
 
-export type DoctorCategory = EcosystemItem['category'] | 'toolchain' | 'leaderboard' | 'model'
+export type DoctorCategory = EcosystemItem['category'] | 'toolchain' | 'leaderboard' | 'model' | 'ecosystem'
 
 export interface DoctorCheckResult {
   id: string
@@ -699,6 +700,73 @@ export function checkEcosystemItem(
   }
 }
 
+export interface DoctorCatalogOptions {
+  /**
+   * Precomputed npm-registry status for enabled MCP package names (async
+   * fetch by the CLI, cache-backed). Absent entries mean "not verified" —
+   * the check reports ok/skipped instead of false-warning offline.
+   */
+  catalogRegistry?: Record<string, RegistryCheck>
+}
+
+/**
+ * Catalog-health check for every ENABLED MCP item: does its npm package
+ * actually exist on the registry? Catches stale/wrong catalog entries before
+ * serve does — the fail-fast counterpart to the quiet spawn handling.
+ *
+ * Pure + sync: the registry status is precomputed by the caller (async,
+ * cache-backed) so this function stays unit-testable without network.
+ */
+export function checkEcosystemCatalogHealth(
+  root: string,
+  _checkers: DoctorCheckers,
+  options: DoctorCatalogOptions = {}
+): DoctorCheckResult[] {
+  const config = readEcosystemConfig(root)
+  const enabledMcps = listEcosystemItems().filter(i => i.category === 'mcp' && config.enabled.includes(i.id))
+  if (enabledMcps.length === 0) return []
+
+  const base = (item: EcosystemItem): Pick<DoctorCheckResult, 'id' | 'name' | 'category' | 'flavor'> => ({
+    id: `catalog-${item.id}`,
+    name: `${item.name} — catalog entry`,
+    category: 'ecosystem',
+    flavor: 'both',
+  })
+
+  return enabledMcps.map(item => {
+    const pkg = item.packageName
+    if (!pkg) {
+      return {
+        ...base(item),
+        status: 'warning',
+        detail: 'no npm package to verify against the registry',
+        hint: item.install,
+      }
+    }
+    const check = options.catalogRegistry?.[pkg]
+    if (!check || !check.verified) {
+      return {
+        ...base(item),
+        status: 'ok',
+        detail: `registry verification skipped (offline or not yet cached) — install: ${item.install}`,
+      }
+    }
+    if (!check.exists) {
+      return {
+        ...base(item),
+        status: 'warning',
+        detail: `catalog entry points at "${pkg}" which does not exist on the npm registry`,
+        hint: `Corrected install: ${item.install}`,
+      }
+    }
+    return {
+      ...base(item),
+      status: 'ok',
+      detail: `"${pkg}" resolves on npm${check.latestVersion ? ` (latest ${check.latestVersion})` : ''}`,
+    }
+  })
+}
+
 /** Run the doctor over every enabled ecosystem item in the project. */
 export function runEcosystemDoctor(root: string, checkers: DoctorCheckers): DoctorReport {
   const config = readEcosystemConfig(root)
@@ -896,19 +964,22 @@ export function checkNativeToolchain(
 }
 
 /** Run the full doctor: enabled ecosystem items + native toolchain +
- * nightly-leaderboard readiness + model access. */
+ * nightly-leaderboard readiness + model access + catalog health. */
 export function runDoctor(
   root: string,
   checkers: DoctorCheckers,
-  options?: ToolchainCheckOptions & LeaderboardCheckOptions & ModelAccessCheckOptions
+  options?: ToolchainCheckOptions & LeaderboardCheckOptions & ModelAccessCheckOptions & DoctorCatalogOptions
 ): DoctorReport {
   const ecosystem = runEcosystemDoctor(root, checkers)
+  const catalog = checkEcosystemCatalogHealth(root, checkers, { catalogRegistry: options?.catalogRegistry })
   const toolchain = checkNativeToolchain(root, checkers, options)
   const leaderboard = checkLeaderboardReadiness(root, checkers, options)
   const model = checkModelAccess(root, checkers, options, ecosystem.checks)
-  const all = [...ecosystem.checks, ...toolchain, ...leaderboard, ...model]
+  const checks = [...ecosystem.checks, ...catalog]
+  const all = [...checks, ...toolchain, ...leaderboard, ...model]
   return {
     ...ecosystem,
+    checks,
     toolchain,
     leaderboard,
     model,

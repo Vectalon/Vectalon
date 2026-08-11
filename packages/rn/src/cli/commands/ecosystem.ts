@@ -10,6 +10,7 @@ import {
   exportEcosystemConfig,
   readEcosystemConfig,
   detectProjectFlavor,
+  verifyPackageOnRegistry,
 } from '../../ecosystem'
 import type { EcosystemCategory, EcosystemItem, ProjectFlavor } from '../../ecosystem'
 
@@ -21,6 +22,8 @@ interface EcosystemOptions {
   info?: string
   export?: boolean
   json?: boolean
+  /** Skip the npm-registry existence check when enabling an MCP item. */
+  force?: boolean
 }
 
 const VALID_CATEGORIES = ['mcp', 'skill', 'tool', 'hook']
@@ -43,7 +46,7 @@ function pad(s: string, width: number): string {
   return s + ' '.repeat(Math.max(0, width - visibleWidth(s)))
 }
 
-export function ecosystemCommand(directory: string, options: EcosystemOptions): void {
+export async function ecosystemCommand(directory: string, options: EcosystemOptions): Promise<void> {
   const root = resolve(directory || process.cwd())
 
   if (options.category && !VALID_CATEGORIES.includes(options.category)) {
@@ -58,6 +61,23 @@ export function ecosystemCommand(directory: string, options: EcosystemOptions): 
   }
 
   if (options.enable) {
+    const item = getEcosystemItem(options.enable)
+    // Fail fast on a broken catalog entry: an MCP item's npm package must
+    // exist before we record it as enabled — otherwise the 404 only surfaces
+    // as a serve-time failure wall. Confirmed-404 blocks; offline proceeds
+    // with a warning; --force skips the check entirely.
+    if (!options.force && item?.category === 'mcp' && item.packageName) {
+      const check = await verifyPackageOnRegistry(item.packageName, root)
+      if (check.verified && !check.exists) {
+        logger.error(`Cannot enable ${options.enable}: "${item.packageName}" does not exist on the npm registry.`)
+        logger.info(`  The catalog entry may be stale or renamed — install: ${item.install}`)
+        logger.info('  Run `vectalon doctor` to verify your setup, or pass --force to enable anyway.')
+        process.exit(1)
+      }
+      if (!check.verified) {
+        logger.warn(`Could not verify "${item.packageName}" on the npm registry (offline?) — enabling anyway.`)
+      }
+    }
     const result = enableEcosystemItem(root, options.enable)
     if (!result.enabled) {
       logger.error(result.message)

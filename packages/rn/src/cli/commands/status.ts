@@ -142,6 +142,10 @@ function printRefresh(root: string): void {
     const refresh = new KnowledgeRefreshService({ projectRoot: root })
     const last = refresh.getLastRefreshAt()
     logger.info(last > 0 ? `Last background refresh: ${new Date(last).toISOString()}` : pc.dim('Last background refresh: never'))
+    const suggestions = refresh.getSuggestions()
+    if (suggestions.length > 0) {
+      logger.info(`${suggestions.length} improvement suggestion(s) — run \`vectalon suggestions\` to review`)
+    }
   } catch {
     logger.dim('Last background refresh: unknown')
   }

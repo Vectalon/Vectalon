@@ -298,10 +298,36 @@ export interface StartMcpClientsOptions {
 }
 
 /**
+ * Collapse a failed server's stderr into one compact, human reason — npm
+ * failure codes (E404/ETARGET) and "command not found" are the common cases;
+ * anything else falls back to the error message.
+ */
+export function failureReason(stderrLines: string[], error: Error): string {
+  const code = stderrLines
+    .map(line => line.match(/npm error(?: code)?\s+([A-Z0-9]+)/i)?.[1])
+    .find(Boolean)
+  if (code) {
+    const pkg = stderrLines.map(line => line.match(/'([^']+)' is not in this registry/)?.[1]).find(Boolean)
+    if (pkg) {
+      // npm's message includes the requested range (`metro-mcp@*`, `@ohah/react-native-mcp-server@rc`) —
+      // strip the trailing version/dist-tag so the hint names the package cleanly.
+      const clean = pkg.replace(/@[\w.*^-]+$/, '')
+      return clean ? `${clean} not found on npm (${code})` : `npm ${code}`
+    }
+    return `npm ${code}`
+  }
+  if (stderrLines.some(line => /command not found/i.test(line))) {
+    return 'package not installed (command not found)'
+  }
+  return error.message
+}
+
+/**
  * Spawn + handshake every enabled ecosystem MCP server for a project root, in
  * parallel (one hung server can't delay the rest). Servers that fail to start
- * (missing package, timeout) are closed and skipped with a warning + install
- * hint; the parent server keeps serving either way.
+ * (missing package, timeout) are closed and skipped with ONE compact warning +
+ * install hint; the full stderr is only shown under VECTALON_DEBUG=1. The
+ * parent server keeps serving either way.
  */
 export async function startEnabledMcpClients(
   root: string,
@@ -311,30 +337,42 @@ export async function startEnabledMcpClients(
   const enabled = listEcosystemItems().filter(i => i.category === 'mcp' && config.enabled.includes(i.id))
 
   const attempts = enabled.map(async item => {
+    // Buffer stderr per server (capped) so a failure reads as one line, not a
+    // wall of npm error output piped through line-by-line.
+    const stderrLines: string[] = []
     const client = options.spawnClient
       ? options.spawnClient(item)
       : spawnClientForItem(item, {
           cwd: options.cwd || root,
-          stderr: line => options.stderr?.(item, line),
+          stderr: line => {
+            stderrLines.push(line)
+            if (stderrLines.length > 5) stderrLines.shift()
+            options.stderr?.(item, line)
+          },
         })
     try {
       await client.start()
-      return { item, client, error: null as Error | null }
+      return { item, client, error: null as Error | null, stderr: stderrLines }
     } catch (err) {
       client.close()
-      return { item, client: null, error: err instanceof Error ? err : new Error(String(err)) }
+      return { item, client: null, error: err instanceof Error ? err : new Error(String(err)), stderr: stderrLines }
     }
   })
 
   const settled = await Promise.all(attempts)
   const started: McpClientHandle[] = []
+  const debug = process.env.VECTALON_DEBUG === '1' || process.env.VECTALON_DEBUG === 'true'
   for (const result of settled) {
     if (result.client) {
       started.push(result.client)
       options.log?.info?.(`Proxied ${result.item.name} (${result.client.tools.length} tool${result.client.tools.length === 1 ? '' : 's'})`)
     } else {
-      options.log?.warn?.(`Could not start sub-MCP ${result.item.name} (${result.item.id}): ${result.error?.message}`)
+      const reason = failureReason(result.stderr, result.error)
+      options.log?.warn?.(`Could not start sub-MCP ${result.item.name} (${result.item.id}): ${reason}`)
       options.log?.warn?.(`  Install with: ${result.item.install}`)
+      if (debug) {
+        for (const line of result.stderr) options.log?.warn?.(`    [stderr] ${line}`)
+      }
     }
   }
   return started

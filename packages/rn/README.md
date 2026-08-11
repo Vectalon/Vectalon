@@ -51,7 +51,7 @@ Run `npx vectalon <command> --help` for detailed options.
 | `serve` | Start the MCP server (MCP/stdio/SSE/HTTP) | `-p <port>`, `--protocol <type>`, `--model <provider>`, `--safe-mode` |
 | `feature [prompt]` | Full SDLC workflow: PRD → design → architecture → implementation → tests → code-review → PR → docs | `--workflow`, `--resume`, `--from`, `--ticket <key>`, `--push`, `--device`, `--heal-interactive`, `--dry-run`, `--model <provider>` |
 | `upgrade [dir]` | React Native / Expo upgrade copilot (impact, codemods, verification) | `--to <version>`, `--dry-run`, `--apply`, `--force` |
-| `doctor [dir]` | Ecosystem + toolchain + leaderboard + model-access diagnostics — every probe is wrapped so one broken checker never kills the report | `--json`, `--fix`, `--selftest` |
+| `doctor [dir]` | Ecosystem + toolchain + leaderboard + model-access diagnostics — every probe is wrapped so one broken checker never kills the report; also validates each enabled MCP catalog entry against npm (cache-backed) so stale package names are caught before serve does | `--json`, `--fix`, `--selftest`, `--enable <id>`, `--disable <id>`, `--enable-recommended` |
 | `selftest [dir]` | Test every feature in a sandbox — live progress + visible report + activity trace; runs REAL model inference when a model/API key is available | `--category <cat>`, `--only <id>`, `--model <provider>`, `--require-model`, `--list`, `--json`, `--open`, `--out <dir>`, `--no-html`, `--verbose` |
 | `status` | One read-only health screen — daemon (pid/port/health), MCP reachability + tool count, model provider ready/degraded, last background refresh, license/trial days remaining, `.vectalon/` disk usage. Every probe is wrapped so one broken source degrades to a line. The first thing you ask a customer to run | — |
 | `bundle [dir]` | Metro bundle analysis and performance budgets — ASCII top-package bars in the terminal + optional interactive HTML treemap dashboard (`--open`) with drill-down and replacement suggestions | `--platform <ios\|android>`, `--static`, `--open`, `--no-html`, `--report <dir>` |
@@ -67,8 +67,9 @@ Run `npx vectalon <command> --help` for detailed options.
 | `bench` | RN coding-test benchmark (deterministic baseline or real-model) | `--model <provider>`, `--suite <id>`, `--live`, `--install`, `--json`, `-o <path>`, `--baseline <file>`, `--tolerance <n>` |
 | `leaderboard [dir]` | Merge benchmark results into `BENCHMARK_RESULTS.md` | `--out <path>`, `--json`, `--timestamp`, `--pr-comment` |
 | `train [dir]` | Curate fine-tuning dataset from benchmark references + LoRA plan | `--build`, `--plan`, `--out <dir>`, `--base <model>`, `--scenarios <dir>`, `--references <dir>`, `--json` |
-| `ecosystem [dir]` | Browse/enable MCP servers, skills, tools, hooks | `--category <mcp\|skill\|tool\|hook>`, `--flavor <expo\|rn-cli>`, `--enable <id>`, `--disable <id>`, `--export`, `--json` |
+| `ecosystem [dir]` | Browse/enable MCP servers, skills, tools, hooks — enabling an MCP verifies its npm package exists first (fail-fast; offline proceeds with a warning) | `--category <mcp\|skill\|tool\|hook>`, `--flavor <expo\|rn-cli>`, `--enable <id>`, `--force`, `--disable <id>`, `--export`, `--json` |
 | `refresh [dir]` | Refresh knowledge from web sources + improvement suggestions, and re-seed the repo-derived knowledge-base artifacts (idempotent) | `--force` |
+| `suggestions [dir]` | List improvement suggestions from the knowledge refresh (outdated dependencies), severity-grouped — and act on them: `--apply <id>` installs the latest version (gated behind confirmation), `--open` renders a self-contained HTML dashboard | `--json`, `--limit <n>`, `--apply <id>`, `--yes`, `--open`, `--out <dir>` |
 | `auth` | Manage license/trial, activate keys, GitHub OAuth | `--license <key>`, `--github`, `--status`, `--logout` |
 | `policy [dir]` | Manage project-specific guardrail policy | `--init`, `--check <file>` |
 | `pull [preset]` | Download local model preset (default Qwen2.5-Coder-1.5b) | `[preset-id]` |
@@ -95,6 +96,7 @@ Run `npx vectalon` with no arguments (Node `>=20.12`, TTY required) to launch an
   ○ Initialize a project
   ○ Run feature workflow
   ○ Force refresh knowledge
+  ○ View suggestions
   ○ Analyze bundle
   ○ Show status
   ○ Live Metro daemon

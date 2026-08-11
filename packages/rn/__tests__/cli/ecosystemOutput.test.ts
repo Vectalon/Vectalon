@@ -7,12 +7,18 @@
  *
  * logger writes to process.stderr, so capture that (same as doctor.test.ts).
  */
-import { mkdtempSync, writeFileSync, mkdirSync } from 'fs'
+import { mkdtempSync, writeFileSync, mkdirSync, readFileSync, existsSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { ecosystemCommand } from '../../src/cli/commands/ecosystem'
+import { verifyPackageOnRegistry } from '../../src/ecosystem'
 
-function makeProject(): string {
+jest.mock('../../src/ecosystem', () => ({
+  ...jest.requireActual('../../src/ecosystem'),
+  verifyPackageOnRegistry: jest.fn(async () => ({ exists: true, verified: true, checkedAt: Date.now() })),
+}))
+
+function makeProject(enable: string[] = ['metro-mcp', 'maestro']): string {
   const dir = mkdtempSync(join(tmpdir(), 'vectalon-eco-'))
   mkdirSync(join(dir, '.vectalon'), { recursive: true })
   writeFileSync(
@@ -21,7 +27,7 @@ function makeProject(): string {
   )
   writeFileSync(
     join(dir, '.vectalon', 'ecosystem.json'),
-    JSON.stringify({ version: '1.0.0', enabled: ['metro-mcp', 'maestro'] })
+    JSON.stringify({ version: '1.0.0', enabled: enable })
   )
   return dir
 }
@@ -86,7 +92,7 @@ describe('vectalon ecosystem output', () => {
     expect(out).toContain('Capabilities')
   })
 
-  it('reports an unknown --info id', () => {
+  it('reports an unknown --info id', async () => {
     const dir = makeProject()
     const origExit = process.exit
     let exited = false
@@ -95,17 +101,104 @@ describe('vectalon ecosystem output', () => {
       throw new Error(`exit ${code}`)
     }) as typeof process.exit
     try {
-      const out = capture(() => {
-        try {
-          ecosystemCommand(dir, { info: 'nope-not-real' })
-        } catch {
-          // process.exit mock throws — expected
-        }
+      const chunks: string[] = []
+      const spy = jest.spyOn(process.stderr, 'write').mockImplementation((chunk: string | Uint8Array) => {
+        chunks.push(String(chunk))
+        return true
       })
-      expect(out).toContain('Unknown ecosystem item')
+      try {
+        // ecosystemCommand is async: the exit mock's throw arrives as an async
+        // rejection — await it (and swallow) so it never escapes as unhandled.
+        await ecosystemCommand(dir, { info: 'nope-not-real' }).catch(() => {})
+      } finally {
+        spy.mockRestore()
+      }
+      expect(stripAnsi(chunks.join(''))).toContain('Unknown ecosystem item')
     } finally {
       process.exit = origExit
     }
     expect(exited).toBe(true)
+  })
+})
+
+describe('vectalon ecosystem --enable registry validation', () => {
+  let dir: string
+  const verifyMock = verifyPackageOnRegistry as jest.Mock
+
+  beforeEach(() => {
+    // Start with nothing enabled so the 404 test can assert the blocked
+    // enable never writes to the config.
+    dir = makeProject([])
+    verifyMock.mockClear()
+  })
+
+  /**
+   * Run ecosystemCommand with a process.exit mock that throws. The command is
+   * async and the 404 path exits AFTER an await, so the mock's throw arrives
+   * as an async rejection — catch it here, and only restore process.exit once
+   * the command has settled (otherwise the rejection hits jest's default exit
+   * mock after restore and crashes the worker).
+   */
+  async function runEnable(extra: { force?: boolean } = {}): Promise<{ out: string; exitCode: number | null }> {
+    const origExit = process.exit
+    let exitCode: number | null = null
+    process.exit = ((code?: number) => {
+      exitCode = code ?? null
+      throw new Error(`exit ${code}`)
+    }) as typeof process.exit
+    try {
+      const chunks: string[] = []
+      const spy = jest.spyOn(process.stderr, 'write').mockImplementation((chunk: string | Uint8Array) => {
+        chunks.push(String(chunk))
+        return true
+      })
+      try {
+        await ecosystemCommand(dir, { enable: 'metro-mcp', ...extra }).catch(() => {
+          // process.exit mock rejection — expected for the 404 path
+        })
+      } finally {
+        spy.mockRestore()
+      }
+      return { out: stripAnsi(chunks.join('')), exitCode }
+    } finally {
+      process.exit = origExit
+    }
+  }
+
+  it('refuses to enable an MCP whose package is a confirmed 404', async () => {
+    verifyMock.mockResolvedValue({ exists: false, verified: true, checkedAt: Date.now() })
+    const { out, exitCode } = await runEnable()
+    expect(exitCode).toBe(1)
+    expect(out).toContain('does not exist on the npm registry')
+    expect(out).toContain('--force')
+    // Config was not written — the enable was blocked.
+    expect(readFileSync(join(dir, '.vectalon', 'ecosystem.json'), 'utf-8')).not.toContain('metro-mcp')
+  })
+
+  it('enables with a warning when the registry is unreachable (offline never blocks)', async () => {
+    verifyMock.mockResolvedValue({ exists: true, verified: false, checkedAt: 0 })
+    const { out, exitCode } = await runEnable()
+    expect(exitCode).toBeNull() // no exit — proceeded
+    expect(out).toContain('Could not verify')
+    expect(out).toContain('Enabled metro-mcp')
+    expect(existsSync(join(dir, '.vectalon', 'ecosystem.json'))).toBe(true)
+  })
+
+  it('--force skips the registry check entirely', async () => {
+    const { exitCode } = await runEnable({ force: true })
+    expect(exitCode).toBeNull()
+    expect(verifyPackageOnRegistry).not.toHaveBeenCalled()
+  })
+
+  it('enables normally when the package resolves', async () => {
+    const { out, exitCode } = await runEnable()
+    expect(exitCode).toBeNull()
+    expect(verifyPackageOnRegistry).toHaveBeenCalledWith('metro-mcp', dir)
+    expect(out).toContain('Enabled metro-mcp')
+  })
+
+  it('does not registry-check non-MCP items (skills/tools)', async () => {
+    await ecosystemCommand(dir, { enable: 'zustand' })
+    expect(verifyPackageOnRegistry).not.toHaveBeenCalled()
   })
 })

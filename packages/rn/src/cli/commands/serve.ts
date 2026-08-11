@@ -117,9 +117,10 @@ export async function serveCommand(options: {
   // Failed servers are skipped with a warning; serve keeps running either way.
   let subMcpClients: McpClientHandle[] = []
   if (process.env.NODE_ENV !== 'test') {
+    // stderr is buffered inside startEnabledMcpClients and collapsed into one
+    // compact warning per failed server (full output only under VECTALON_DEBUG).
     subMcpClients = await startEnabledMcpClients(root, {
       log: { info: message => logger.info(message), warn: message => logger.warn(message) },
-      stderr: (item, line) => logger.dim(`[${item.id}] ${line}`),
     })
   }
 
@@ -221,7 +222,7 @@ function startBackgroundRefresh(root: string): void {
         devDependencies,
       })
       if (result.suggestions.length > 0) {
-        logger.info(`Background refresh: ${result.suggestions.length} improvement suggestion(s) available`)
+        logger.info(`Background refresh: ${result.suggestions.length} improvement suggestion(s) — run \`vectalon suggestions\` to review`)
       }
       if (result.intel.length > 0) {
         logger.info(`Background refresh: ${result.intel.length} web intel headline(s) — model prompt kept current`)

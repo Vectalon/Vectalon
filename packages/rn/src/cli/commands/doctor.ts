@@ -24,6 +24,8 @@ import {
   enableEcosystemItem,
   disableEcosystemItem,
   enableEcosystemItems,
+  listEcosystemItems,
+  checkCatalogPackagesOnRegistry,
   fixForMissing,
   type DoctorCheckers,
   type DoctorFixer,
@@ -32,6 +34,7 @@ import {
   type ToolchainCheckOptions,
   type LeaderboardCheckOptions,
   type ModelAccessCheckOptions,
+  type RegistryCheck,
 } from '../../ecosystem'
 import { hasDownloadedModel } from '../../model/local/ModelStore'
 import { getDefaultPreset } from '../../model/local/presets'
@@ -60,6 +63,11 @@ export interface DoctorOptions {
   leaderboard?: LeaderboardCheckOptions
   /** Overrides for model-access checks (e.g. a custom provider/preset). */
   model?: ModelAccessCheckOptions
+  /**
+   * Injectable npm-registry status provider for the catalog-health checks.
+   * Defaults to the cache-backed registry fetch, skipped under NODE_ENV=test.
+   */
+  catalogRegistryProvider?: () => Promise<Record<string, RegistryCheck> | undefined>
 }
 
 /**
@@ -226,7 +234,7 @@ function recommendedNotEnabled(root: string): DoctorCheckResult[] {
     }))
 }
 
-export function doctorCommand(directory: string, options: DoctorOptions): void {
+export async function doctorCommand(directory: string, options: DoctorOptions): Promise<void> {
   const root = resolve(directory || process.cwd())
   const hasEcosystem = existsSync(resolve(root, '.vectalon', 'ecosystem.json'))
   const continueExit = (code: number): never => process.exit(code)
@@ -283,7 +291,38 @@ export function doctorCommand(directory: string, options: DoctorOptions): void {
     ...(projectModelConfig?.apiKeyEnv ? { apiKeyEnv: projectModelConfig.apiKeyEnv } : {}),
     ...(options.model || {}),
   }
-  const doctorOptions = { ...(options.toolchain || {}), ...leaderboardOptions, ...modelOptions }
+  const doctorOptions: ToolchainCheckOptions & LeaderboardCheckOptions & ModelAccessCheckOptions & { catalogRegistry?: Record<string, RegistryCheck> } = {
+    ...(options.toolchain || {}),
+    ...leaderboardOptions,
+    ...modelOptions,
+  }
+
+  // Catalog health: precompute npm-registry status for every ENABLED MCP item
+  // (cache-backed, best-effort — offline just skips the checks). Caught before
+  // serve would otherwise surface a stale entry as an npx 404 wall. Never runs
+  // under NODE_ENV=test (or with no enabled MCPs) unless a provider is
+  // injected — the await is skipped entirely then, keeping the command
+  // synchronous for tests.
+  let catalogRegistry: Record<string, RegistryCheck> | undefined
+  if (options.catalogRegistryProvider) {
+    catalogRegistry = await options.catalogRegistryProvider()
+  } else if (process.env.NODE_ENV !== 'test') {
+    const enabledMcpPackages = listEcosystemItems()
+      .filter(i => i.category === 'mcp' && readEcosystemConfig(root).enabled.includes(i.id))
+      .map(i => i.packageName)
+      .filter((p): p is string => !!p)
+    if (enabledMcpPackages.length > 0) {
+      try {
+        catalogRegistry = await checkCatalogPackagesOnRegistry(enabledMcpPackages, { root })
+      } catch (err) {
+        reportError(err, 'doctor: checking catalog packages on the registry')
+      }
+    }
+  }
+  if (catalogRegistry) {
+    doctorOptions.catalogRegistry = catalogRegistry
+  }
+
   let report = runDoctor(root, checkers, doctorOptions)
 
   if (options.fix && report.missingCount > 0) {

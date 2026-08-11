@@ -167,7 +167,7 @@ export async function featureCommand(
         devDependencies,
       })
       if (refreshResult.suggestions.length > 0) {
-        log.info(`${refreshResult.suggestions.length} improvement suggestion(s) available`)
+        log.info(`${refreshResult.suggestions.length} improvement suggestion(s) available — run \`vectalon suggestions\` to review`)
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)

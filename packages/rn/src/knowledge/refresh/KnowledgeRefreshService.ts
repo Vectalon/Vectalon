@@ -56,7 +56,10 @@ export class KnowledgeRefreshService {
     this.intelPath = join(this.refreshDir, INTEL_FILE)
     this.fetcher = options.fetcher || createDefaultFetcher()
     this.sources = options.sources || defaultSources
-    this.ensureDir()
+    // No filesystem writes in the constructor: constructing the service is a
+    // read-only operation (menu hints, status, suggestions listings create it
+    // without ever refreshing), so the refresh dir is created lazily by the
+    // save methods instead.
   }
 
   private activeRefresh: Promise<RefreshResult> | null = null
@@ -221,10 +224,9 @@ export class KnowledgeRefreshService {
     return suggestions
   }
 
-  private ensureDir(): void {
-    if (!existsSync(this.refreshDir)) {
-      mkdirSync(this.refreshDir, { recursive: true })
-    }
+  private saveCache(cache: RefreshCache): void {
+    mkdirSync(this.refreshDir, { recursive: true })
+    writeFileSync(this.cachePath, JSON.stringify(cache, null, 2), 'utf-8')
   }
 
   private loadCache(): RefreshCache {
@@ -239,8 +241,9 @@ export class KnowledgeRefreshService {
     }
   }
 
-  private saveCache(cache: RefreshCache): void {
-    writeFileSync(this.cachePath, JSON.stringify(cache, null, 2), 'utf-8')
+  private saveSuggestions(store: SuggestionStore): void {
+    mkdirSync(this.refreshDir, { recursive: true })
+    writeFileSync(this.suggestionsPath, JSON.stringify(store, null, 2), 'utf-8')
   }
 
   private loadSuggestions(): SuggestionStore {
@@ -255,8 +258,9 @@ export class KnowledgeRefreshService {
     }
   }
 
-  private saveSuggestions(store: SuggestionStore): void {
-    writeFileSync(this.suggestionsPath, JSON.stringify(store, null, 2), 'utf-8')
+  private saveIntel(store: IntelStore): void {
+    mkdirSync(this.refreshDir, { recursive: true })
+    writeFileSync(this.intelPath, JSON.stringify(store, null, 2), 'utf-8')
   }
 
   private loadIntel(): IntelStore {
@@ -271,9 +275,6 @@ export class KnowledgeRefreshService {
     }
   }
 
-  private saveIntel(store: IntelStore): void {
-    writeFileSync(this.intelPath, JSON.stringify(store, null, 2), 'utf-8')
-  }
 }
 
 function parseVersion(version: string): number[] {

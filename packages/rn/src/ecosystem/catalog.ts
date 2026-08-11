@@ -43,7 +43,9 @@ const MCP_ITEMS: EcosystemItem[] = [
     description: 'React Fiber tree + hook state inspection (useState/Zustand), re-render profiler, network mocking, and 49 automation tools via adb/idb.',
     flavor: 'both',
     url: 'https://github.com/ohah/react-native-mcp',
-    install: 'npx @ohah/react-native-mcp-server@rc',
+    // No dist-tag: the `rc` tag equals `latest` today and could vanish; npx
+    // defaults to `latest` when none is given.
+    install: 'npx @ohah/react-native-mcp-server',
     capabilities: ['inspect_fiber_tree', 'read_hook_state', 'track_rerenders', 'mock_network', 'tap', 'swipe', 'screenshot', 'assert', 'evaluate_script', 'ci_yaml'],
     packageName: '@ohah/react-native-mcp-server',
   },
