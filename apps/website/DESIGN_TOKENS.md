@@ -17,8 +17,9 @@
 
 The site is **light/dark by system preference** — `prefers-color-scheme`, read by an
 inline bootstrap script in `app/layout.tsx` that sets `data-theme="light|dark"` on
-`<html>` before paint (no flash). A manual toggle is a future option via
-`localStorage['vectalon-theme']`; the script already honors it.
+`<html>` before paint (no flash). The header **theme toggle** (`components/ThemeToggle.tsx`)
+overrides the system preference by writing `localStorage['vectalon-theme']` and flipping
+`data-theme` live — the bootstrap script already honors that key on next load.
 
 - **Light**: white page (`--ink: 255 255 255`), warm-dark text, vermilion accents
   (darkened variants so links/buttons pass WCAG AA on white).

@@ -3,6 +3,7 @@ import { Space_Grotesk, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import Link from 'next/link'
 import { ProductsMenu } from '../components/ProductsMenu'
+import { ThemeToggle } from '../components/ThemeToggle'
 
 const display = Space_Grotesk({ subsets: ['latin'], variable: '--font-display', display: 'swap' })
 const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' })
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               ))}
             </nav>
             <div className="flex items-center gap-3">
+              <ThemeToggle />
               <Link href="/trial" className="btn-primary !px-4 !py-2 text-xs">
                 Get started
               </Link>
