@@ -5,6 +5,34 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.31] - 2026-08-11
+
+### Added
+
+- **Telemetry ingestion is no longer a dead-end.** `vectalon telemetry` no
+  longer prints "Telemetry ingested" when nothing was ingested: the command
+  returns a real outcome, scripts/CI exit 1 on an empty run, and the
+  interactive menu guides you with **Specify a path / Generate sample
+  exports / Supported formats** instead of a dead end.
+- **`vectalon telemetry --fixtures`** — writes realistic Sentry crash, Sentry
+  transaction, Crashlytics report, and Firebase analytics JSONL exports into
+  `.vectalon/telemetry` and ingests them on the spot, running the full crash
+  → incident → KPI analysis so the pipeline demos end-to-end in seconds.
+- **`--formats` and `--format`** — a printable accepted-formats guide and a
+  per-run format force for unusual exports; the `ingest_telemetry` MCP tool
+  gained the same optional `format` argument.
+- **Telemetry documentation** — a new `TELEMETRY.md` with per-format schemas
+  and real export examples, linked from the website docs and the CLI
+  reference.
+
+### Fixed
+
+- **Whole-document JSON exports are parsed correctly.** A pretty-printed
+  Sentry `events[]` array or multi-line object export was misdetected as
+  JSONL and silently ingested **0 events**; `parseTelemetryContent` now
+  attempts whole-document JSON first (arrays and objects) with a tolerant
+  JSONL fallback.
+
 ## [0.1.30] - 2026-08-11
 
 ### Added

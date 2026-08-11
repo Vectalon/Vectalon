@@ -2,9 +2,19 @@ import Link from 'next/link'
 
 const RELEASES = [
   {
-    version: 'v0.1.30',
+    version: 'v0.1.31',
     date: '2026-08-11',
     tag: 'latest',
+    highlights: [
+      'Telemetry ingestion completed — vectalon telemetry no longer claims "Telemetry ingested" when nothing was ingested: honest outcomes, exit 1 for scripts/CI on an empty run, and the interactive menu guides you with Specify a path / Generate sample exports / Supported formats',
+      'vectalon telemetry --fixtures — writes realistic Sentry crash, Sentry transaction, Crashlytics report, and Firebase analytics exports and ingests them on the spot, running the full crash → incident → KPI analysis end-to-end',
+      '--formats and --format — a printable accepted-formats guide and per-run format forcing for unusual exports; the ingest_telemetry MCP tool supports it too',
+      'Fixed: whole-document JSON exports (pretty-printed Sentry events[] arrays) were misdetected as JSONL and silently parsed to 0 events — now parsed correctly before the JSONL fallback',
+    ],
+  },
+  {
+    version: 'v0.1.30',
+    date: '2026-08-11',
     highlights: [
       'Live model streaming — vectalon bench --model local shows the model generating in real time: a TTY-only token preview (character count + truncated text preview) ticks as each chunk decodes, auto-off for --json/pipes; onTextChunk is plumbed through ModelRequest → LocalProvider → runInference, and MCP/agent paths are unchanged',
       'Incremental benchmark reports — vectalon bench streams each scenario section to stdout the moment it finishes (composite, axes, correctness, relative-to-human) with suite headers switching live, then closes with the Overall block; --json stays pure and --output keeps the full grouped report',
