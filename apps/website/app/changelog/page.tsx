@@ -2,9 +2,20 @@ import Link from 'next/link'
 
 const RELEASES = [
   {
+    version: 'v0.1.29',
+    date: '2026-08-11',
+    tag: 'latest',
+    highlights: [
+      'Bundle size visualizer — vectalon bundle prints ASCII bars for the top packages and --open renders a self-contained HTML dashboard: interactive treemap, per-package drill-down, budget violations, and replacement-suggestion cards (last publish, weekly downloads, GitHub stars)',
+      'Actionable improvement suggestions — new vectalon suggestions command: severity-grouped list (title, current → latest), --json for CI, --limit, --apply <ref> (prints the exact npm install and runs it behind a confirmation gate), and --open dashboard; the interactive menu gains a View suggestions (N) entry',
+      'MCP catalog health — catalog package names are validated against the npm registry (cache-backed, offline-safe): ecosystem enable fail-fasts with the corrected command, doctor gains a catalog-<id> check per enabled MCP, and sub-MCP failures collapse to one warning line instead of a wall of npm error E404 noise',
+      'Staleness-aware refresh — the menu\'s Force refresh knowledge entry now shows how stale the knowledge base is',
+      'Fixed: vectalon bench default results directory now resolves to the project cwd instead of the CLI\'s install location',
+    ],
+  },
+  {
     version: 'v0.1.28',
     date: '2026-08-10',
-    tag: 'latest',
     highlights: [
       'Structured workflow output — the terminal explains itself: [9/13] phase progress, a live command feed with ✓/✖ + exit code + duration, and parsed failure cards that point at the full report, the rotating log, and the resume command',
       'Doctor failure card — missing checks render as a numbered fix list with [auto]/[manual] tags and an auto-fix count (vectalon doctor --fix)',
