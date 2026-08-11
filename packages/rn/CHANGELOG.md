@@ -5,6 +5,40 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.29] - 2026-08-11
+
+### Added
+
+- **Bundle size visualizer.** `vectalon bundle` now prints ASCII bars for the
+  top packages in the terminal and `--open` renders a self-contained HTML
+  dashboard: an interactive treemap of the whole bundle, per-package
+  drill-down, budget violations highlighted, and replacement-suggestion
+  cards (maintainedness: last publish, weekly downloads, GitHub stars) — the
+  same report pattern as `selftest`.
+- **Actionable improvement suggestions — `vectalon suggestions`.** The
+  knowledge-refresh suggestions that only existed as a count are now a
+  first-class command: severity-grouped list (title, current → latest),
+  `--json` for CI/agents, `--limit`, `--apply <ref>` (prints the exact
+  `npm install` command and runs it behind a confirmation gate, `--yes` to
+  skip the prompt), and `--open` for an HTML dashboard. The interactive menu
+  gains a "View suggestions (N)" entry, and serve/feature/status now point
+  at the command instead of a dead count.
+- **MCP catalog health.** The ecosystem catalog's npm package names are now
+  validated against the registry (cache-backed, offline-safe, 24h TTL):
+  `vectalon ecosystem enable <mcp>` fail-fasts with the corrected install
+  command when the package doesn't resolve, `vectalon doctor` gains a
+  `catalog-<id>` health check per enabled MCP, and sub-MCP spawn failures
+  collapse to one compact warning line (full npm stderr only under
+  `VECTALON_DEBUG=1`) instead of a wall of `npm error E404` noise.
+- **Staleness-aware refresh hint.** The interactive menu's "Force refresh
+  knowledge" entry shows how stale the knowledge base is, so refresh only
+  runs when it's worth it.
+
+### Fixed
+
+- `vectalon bench` default results directory now resolves to the project
+  cwd instead of the CLI's install location.
+
 ## [0.1.28] - 2026-08-10
 
 ### Added
