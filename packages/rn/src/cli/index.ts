@@ -38,6 +38,7 @@ import { installStderrNoiseFilter } from '../model/local/inference'
 import pkg from '../../package.json'
 import { dynamicImport } from '../utils/dynamicImport'
 import { captureError, flushErrorQueue, writeDiagnosticsBundle } from '../diagnostics'
+import { buildRefreshHint } from './refreshHint'
 
 export function createProgram(): Command {
   const program = new Command()
@@ -450,12 +451,14 @@ async function runInteractive(): Promise<void> {
 
   p.intro(pc.bold(pc.cyan('vectalon')))
 
+  const refreshHint = buildRefreshHint(process.cwd())
+
   const action = await p.select({
     message: 'What would you like to do?',
     options: [
       { value: 'init', label: 'Initialize a project', hint: 'Scan React Native project and create .vectalon/' },
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
-      { value: 'refresh', label: 'Refresh knowledge', hint: 'Update best practices and dependency suggestions from the web' },
+      { value: 'refresh', label: 'Force refresh knowledge', hint: refreshHint },
       { value: 'bundle', label: 'Analyze bundle', hint: 'Metro bundle snapshot + performance budgets' },
       { value: 'status', label: 'Show status', hint: 'Daemon, MCP, model, refresh, license, disk — one screen' },
       { value: 'daemon', label: 'Live Metro daemon', hint: 'Watch bundle size and JS thread health continuously' },

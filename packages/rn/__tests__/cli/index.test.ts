@@ -1,7 +1,8 @@
-import { existsSync, readFileSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { initCommand } from '../../src/cli/commands/init'
 import { serveCommand } from '../../src/cli/commands/serve'
+import { buildRefreshHint, timeAgoLabel } from '../../src/cli/refreshHint'
 import { createTempProject, cleanup, useTempConfig } from '../helpers/tmp'
 
 describe('initCommand', () => {
@@ -167,6 +168,58 @@ describe('initCommand', () => {
 
   it('throws on an unknown --model provider (never process.exit — initCommand is in-process callable)', async () => {
     await expect(initCommand(dir, { model: 'gemini' })).rejects.toThrow('Unknown model provider: gemini')
+  })
+})
+
+describe('refresh menu hint', () => {
+  let dir: string
+
+  beforeEach(() => {
+    dir = createTempProject({})
+  })
+
+  afterEach(() => {
+    cleanup(dir)
+  })
+
+  it('returns the on-demand hint on a virgin project and never creates .vectalon/', () => {
+    const hint = buildRefreshHint(dir)
+    expect(hint).toContain('serve auto-refreshes hourly')
+    expect(existsSync(join(dir, '.vectalon'))).toBe(false)
+  })
+
+  it('says the cache is up to date when a fresh refresh exists', () => {
+    mkdirSync(join(dir, '.vectalon', 'knowledge', 'refresh'), { recursive: true })
+    writeFileSync(
+      join(dir, '.vectalon', 'knowledge', 'refresh', 'cache.json'),
+      JSON.stringify({ version: 1, lastRefreshAt: Date.now(), documents: [] })
+    )
+    expect(buildRefreshHint(dir)).toBe('up to date, forces a pull anyway')
+  })
+
+  it('names the last refresh time when the cache is stale', () => {
+    mkdirSync(join(dir, '.vectalon', 'knowledge', 'refresh'), { recursive: true })
+    // The web sources' min refresh interval is 6h — 7h old is unambiguously stale.
+    writeFileSync(
+      join(dir, '.vectalon', 'knowledge', 'refresh', 'cache.json'),
+      JSON.stringify({ version: 1, lastRefreshAt: Date.now() - 7 * 60 * 60 * 1000, documents: [] })
+    )
+    const hint = buildRefreshHint(dir)
+    expect(hint).toContain('stale (last refresh')
+    expect(hint).toContain('7h ago')
+  })
+
+  it('says never refreshed when .vectalon exists but no cache was ever written', () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    expect(buildRefreshHint(dir)).toBe('stale (never refreshed)')
+  })
+
+  it('formats relative timestamps compactly', () => {
+    const now = Date.now()
+    expect(timeAgoLabel(now - 30 * 1000)).toContain('s ago')
+    expect(timeAgoLabel(now - 5 * 60 * 1000)).toContain('m ago')
+    expect(timeAgoLabel(now - 6 * 60 * 60 * 1000)).toBe('6h ago')
+    expect(timeAgoLabel(now - 3 * 24 * 60 * 60 * 1000)).toBe('3d ago')
   })
 })
 

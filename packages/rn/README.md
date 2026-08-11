@@ -94,7 +94,7 @@ Run `npx vectalon` with no arguments (Node `>=20.12`, TTY required) to launch an
 ? What would you like to do?
   ○ Initialize a project
   ○ Run feature workflow
-  ○ Refresh knowledge
+  ○ Force refresh knowledge
   ○ Analyze bundle
   ○ Show status
   ○ Live Metro daemon
