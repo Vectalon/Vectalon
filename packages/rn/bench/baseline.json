@@ -14,23 +14,23 @@
       "guardrail": [
         {
           "path": "src/services/CreateLoginScreenEmailPasswordApi.ts",
-          "passed": 15,
+          "passed": 18,
           "failed": 0,
-          "skipped": 10,
+          "skipped": 18,
           "ok": true
         },
         {
           "path": "src/hooks/useCreateLoginScreenEmailPassword.ts",
-          "passed": 15,
+          "passed": 18,
           "failed": 0,
-          "skipped": 10,
+          "skipped": 18,
           "ok": true
         },
         {
           "path": "src/screens/CreateLoginScreenEmailPasswordScreen.tsx",
-          "passed": 22,
+          "passed": 27,
           "failed": 0,
-          "skipped": 3,
+          "skipped": 9,
           "ok": true
         }
       ],
@@ -48,14 +48,14 @@
         "axes": {
           "correctness": null,
           "adherence": 0.7272727272727273,
-          "guardrails": 0.9736842105263158
+          "guardrails": 0.9565217391304348
         },
-        "composite": 0.8504784688995215,
+        "composite": 0.841897233201581,
         "relative": {
           "correctness": null,
           "adherence": 0.9166666666666666,
-          "guardrails": 1.027027027027027,
-          "composite": 0.9798406000937647
+          "guardrails": 1.0454545454545454,
+          "composite": 0.9898278560250391
         }
       }
     },
@@ -72,23 +72,23 @@
       "guardrail": [
         {
           "path": "src/services/CreateScreenThatFetchesPaginatApi.ts",
-          "passed": 15,
+          "passed": 18,
           "failed": 0,
-          "skipped": 10,
+          "skipped": 18,
           "ok": true
         },
         {
           "path": "src/hooks/useCreateScreenThatFetchesPaginat.ts",
-          "passed": 15,
+          "passed": 18,
           "failed": 0,
-          "skipped": 10,
+          "skipped": 18,
           "ok": true
         },
         {
           "path": "src/screens/CreateScreenThatFetchesPaginatScreen.tsx",
-          "passed": 22,
+          "passed": 27,
           "failed": 0,
-          "skipped": 3,
+          "skipped": 9,
           "ok": true
         }
       ],
@@ -105,14 +105,14 @@
         "axes": {
           "correctness": null,
           "adherence": 0.8571428571428571,
-          "guardrails": 0.9523809523809523
+          "guardrails": 0.9615384615384616
         },
-        "composite": 0.9047619047619048,
+        "composite": 0.9093406593406593,
         "relative": {
           "correctness": null,
           "adherence": 0.7777777777777778,
-          "guardrails": 1.05,
-          "composite": 0.9210526315789475
+          "guardrails": 1.04,
+          "composite": 0.9164149043303123
         }
       }
     },
@@ -129,23 +129,23 @@
       "guardrail": [
         {
           "path": "src/services/CreateMultiFieldFormClientApi.ts",
-          "passed": 15,
+          "passed": 18,
           "failed": 0,
-          "skipped": 10,
+          "skipped": 18,
           "ok": true
         },
         {
           "path": "src/hooks/useCreateMultiFieldFormClient.ts",
-          "passed": 15,
+          "passed": 18,
           "failed": 0,
-          "skipped": 10,
+          "skipped": 18,
           "ok": true
         },
         {
           "path": "src/screens/CreateMultiFieldFormClientScreen.tsx",
-          "passed": 22,
+          "passed": 27,
           "failed": 0,
-          "skipped": 3,
+          "skipped": 9,
           "ok": true
         }
       ],
@@ -163,14 +163,14 @@
         "axes": {
           "correctness": null,
           "adherence": 0.8,
-          "guardrails": 0.9473684210526315
+          "guardrails": 0.9130434782608695
         },
-        "composite": 0.8736842105263158,
+        "composite": 0.8565217391304347,
         "relative": {
           "correctness": null,
           "adherence": 0.8333333333333333,
-          "guardrails": 1.0555555555555556,
-          "composite": 0.9538152610441767
+          "guardrails": 1.0952380952380953,
+          "composite": 0.972927241962775
         }
       }
     },
@@ -187,23 +187,23 @@
       "guardrail": [
         {
           "path": "src/services/CreateOfflineFirstActionQueueApi.ts",
-          "passed": 15,
+          "passed": 18,
           "failed": 0,
-          "skipped": 10,
+          "skipped": 18,
           "ok": true
         },
         {
           "path": "src/hooks/useCreateOfflineFirstActionQueue.ts",
-          "passed": 15,
+          "passed": 18,
           "failed": 0,
-          "skipped": 10,
+          "skipped": 18,
           "ok": true
         },
         {
           "path": "src/screens/CreateOfflineFirstActionQueueScreen.tsx",
-          "passed": 22,
+          "passed": 27,
           "failed": 0,
-          "skipped": 3,
+          "skipped": 9,
           "ok": true
         }
       ],
@@ -221,14 +221,14 @@
         "axes": {
           "correctness": null,
           "adherence": 0.4,
-          "guardrails": 0.9722222222222222
+          "guardrails": 0.9545454545454546
         },
-        "composite": 0.6861111111111111,
+        "composite": 0.6772727272727274,
         "relative": {
           "correctness": null,
           "adherence": 1.6666666666666665,
-          "guardrails": 1.0285714285714287,
-          "composite": 1.2145748987854252
+          "guardrails": 1.0476190476190477,
+          "composite": 1.2304250559284116
         }
       }
     }
@@ -255,6 +255,6 @@
   ],
   "overallComposite": 0.8333333333333334,
   "overallGuardrails": 1,
-  "overallReferenceComposite": 0.8287589238247133,
-  "overallRelativeComposite": 1.0173208478755784
+  "overallReferenceComposite": 0.8212580897363505,
+  "overallRelativeComposite": 1.0273987645616345
 }
