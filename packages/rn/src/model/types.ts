@@ -46,6 +46,13 @@ export interface ModelRequest {
    * drives the loop and feeds results back (see src/model/toolCalling.ts).
    */
   tools?: ToolDefinition[]
+  /**
+   * Called with each decoded text chunk as the model streams. Currently
+   * honored by the local (node-llama-cpp) provider only — remote providers
+   * ignore it (remote streaming is a separate, larger change). MCP/agent
+   * paths never set it, so their behavior is byte-for-byte unchanged.
+   */
+  onTextChunk?: (text: string) => void
 }
 
 export interface ModelResponse {

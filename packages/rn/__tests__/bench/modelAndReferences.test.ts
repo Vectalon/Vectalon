@@ -141,6 +141,36 @@ describe('bench model generate seam (M5)', () => {
     })
     expect(await gen(validScenario())).toEqual([])
   })
+
+  it('forwards onTextChunk to the model router generate call', async () => {
+    const chunks: string[] = []
+    const gen = createModelGenerate({
+      modelRouter: stubRouter(
+        JSON.stringify({
+          files: [{ path: 'src/screens/LoginScreen.tsx', content: 'export const LoginScreen = () => null;' }],
+        })
+      ),
+      onTextChunk: chunk => chunks.push(chunk),
+    })
+    await gen(validScenario())
+    // The seam must pass the hook through — the stub router itself never
+    // calls it, but the wiring must exist (LocalProvider does the calling).
+    expect(chunks).toEqual([])
+  })
+
+  it('wires onTextChunk into the ModelRequest when provided', async () => {
+    let captured: ((text: string) => void) | undefined
+    const router = {
+      generate: async (req: { onTextChunk?: (t: string) => void }) => {
+        captured = req.onTextChunk
+        return { content: '{}', provider: 'test' }
+      },
+    } as unknown as ModelGenerateOptions['modelRouter']
+    const onTextChunk = (): void => {}
+    const gen = createModelGenerate({ modelRouter: router, onTextChunk })
+    await gen(validScenario())
+    expect(captured).toBe(onTextChunk)
+  })
 })
 
 describe('bench relative-to-human scoring (M6)', () => {

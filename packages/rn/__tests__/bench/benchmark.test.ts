@@ -10,6 +10,9 @@ import {
   runBenchmark,
   runBenchmarkFromDir,
   formatBenchmarkReport,
+  formatScenarioSection,
+  formatBenchmarkOverall,
+  formatBenchmarkHeader,
   AXIS_WEIGHTS,
 } from '../../src/bench'
 import type { BenchScenario } from '../../src/bench'
@@ -320,6 +323,40 @@ describe('bench deterministic baseline runner', () => {
     const report = formatBenchmarkReport(summary)
     expect(report).toContain('# RN Coding Tests')
     expect(report).toContain('rn-01-login-screen')
+  })
+
+  it('formatBenchmarkReport composes header + per-suite sections + overall block', async () => {
+    const { summary } = await runBenchmarkFromDir({})
+    const report = formatBenchmarkReport(summary)
+    // The full report is exactly: header, then a blank-separated list of
+    // streamable section blocks, then the overall block.
+    expect(report.startsWith(formatBenchmarkHeader(summary))).toBe(true)
+    // The overall block closes the report (a trailing blank line follows).
+    expect(report.endsWith(formatBenchmarkOverall(summary) + '\n')).toBe(true)
+    expect(report).toContain('## ')
+    // Every run's streamable section appears verbatim inside the full report.
+    for (const run of summary.runs) {
+      expect(report).toContain(formatScenarioSection(run))
+    }
+  })
+
+  it('formatScenarioSection is a self-contained, streamable block', async () => {
+    const { summary } = await runBenchmarkFromDir({})
+    const run = summary.runs[0]
+    const section = formatScenarioSection(run)
+    expect(section.startsWith(`### ${run.id} — ${run.title}`)).toBe(true)
+    expect(section).toContain('Composite:')
+    expect(section).toContain(`\`${run.generatedFiles[0]}\``)
+    // No trailing blank: the streamer adds the separator itself.
+    expect(section.endsWith('\n')).toBe(false)
+  })
+
+  it('formatBenchmarkOverall closes with the composite summary line', async () => {
+    const { summary } = await runBenchmarkFromDir({})
+    const overall = formatBenchmarkOverall(summary)
+    expect(overall.startsWith('---')).toBe(true)
+    expect(overall).toContain('Overall composite:')
+    expect(overall).toContain('Overall guardrails:')
   })
 
   it('runBenchmarkFromDir runs every scenario when a generate seam is provided', async () => {

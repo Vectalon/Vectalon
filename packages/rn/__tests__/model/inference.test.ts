@@ -1,6 +1,5 @@
+import { shouldSuppressStderrLine, couldBecomeNoiseLine } from '../../src/model/local/llamaLog'
 import {
-  shouldSuppressStderrLine,
-  couldBecomeNoiseLine,
   withSuppressedTokenizerWarnings,
   installStderrNoiseFilter,
   _resetStderrNoiseFilterForTests,
@@ -84,6 +83,33 @@ describe('tokenizer warning suppression', () => {
       process.stderr.write('inside\n')
     })
     expect(process.stderr.write).toBe(original)
+  })
+})
+
+describe('process listener cap (MaxListenersExceededWarning)', () => {
+  const originalMax = process.getMaxListeners()
+  afterEach(() => {
+    _resetStderrNoiseFilterForTests()
+  })
+  afterAll(() => {
+    process.setMaxListeners(originalMax)
+  })
+
+  it('raises the listener cap once so node-llama-cpp engine listeners never trip the warning', () => {
+    installStderrNoiseFilter()
+    // node-llama-cpp registers ~a dozen beforeExit listeners per engine plus
+    // our drain; the default cap of 10 tripped MaxListenersExceededWarning on
+    // every model-backed run. The filter raises it to 64 with headroom.
+    expect(process.getMaxListeners()).toBeGreaterThanOrEqual(64)
+  })
+
+  it('still suppresses a held noise partial at process exit (beforeExit drain)', () => {
+    const writes = captureThroughCurrentWriter(() => {
+      installStderrNoiseFilter()
+      process.stderr.write("load: control-looking token: 128247 '</s>' was not")
+      process.emit('beforeExit')
+    })
+    expect(writes).toEqual([])
   })
 })
 

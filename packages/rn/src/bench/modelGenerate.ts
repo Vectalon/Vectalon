@@ -24,11 +24,18 @@ export interface ModelGenerateOptions {
    * truncate mid-JSON and the run scores zero files.
    */
   maxTokens?: number
+  /**
+   * Live streaming hook forwarded to ModelRouter.generate → the local
+   * provider's onTextChunk. The CLI wires a TTY-only token preview here so a
+   * long leaderboard pass shows the model generating instead of a frozen
+   * "generating…" line.
+   */
+  onTextChunk?: (text: string) => void
 }
 
 /** Build a generate seam that drives the real model for a scenario. */
 export function createModelGenerate(options: ModelGenerateOptions): (scenario: BenchScenario) => Promise<BenchGeneratedFile[]> {
-  const { modelRouter, temperature = 0.2, maxTokens = 8192 } = options
+  const { modelRouter, temperature = 0.2, maxTokens = 8192, onTextChunk } = options
 
   return async (scenario: BenchScenario): Promise<BenchGeneratedFile[]> => {
     const snapshot = benchmarkSnapshot()
@@ -44,6 +51,7 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       context: `Project: rn-bench-app, React Native 0.74.0`,
       maxTokens,
       temperature,
+      ...(onTextChunk ? { onTextChunk } : {}),
     })
 
     const content = response?.content || ''

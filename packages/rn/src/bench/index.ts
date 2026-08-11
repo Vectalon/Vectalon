@@ -24,7 +24,7 @@ export { deterministicGenerate, runScenario, runBenchmark, runBenchmarkFromDir, 
 export { benchmarkSnapshot } from './snapshot'
 export { rubricChecks, runRubric, rubricAdherence, formatRubricResult } from './rubric'
 export type { RubricCheck, RubricCheckResult, RubricFileResult, RubricResult } from './rubric'
-export { formatBenchmarkReport } from './report'
+export { formatBenchmarkReport, formatScenarioSection, formatBenchmarkHeader, formatBenchmarkOverall } from './report'
 export {
   defaultLeaderboardResultsDir,
   loadLeaderboardRuns,

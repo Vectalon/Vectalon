@@ -19,7 +19,9 @@ const mockDynamicImport = dynamicImport as jest.Mock
 interface FakeNlc {
   getLlama: jest.Mock
   LlamaLogLevel: Record<string, number>
-  LlamaChatSession: new (opts: unknown) => { prompt: () => Promise<string> }
+  LlamaChatSession: new (opts: unknown) => {
+    prompt: (prompt: string, opts?: Record<string, unknown>) => Promise<string>
+  }
 }
 
 function buildFakeNlc(): FakeNlc {
@@ -33,7 +35,13 @@ function buildFakeNlc(): FakeNlc {
     return { loadModel }
   })
   const FakeSession = class {
-    prompt = async () => 'engine reused'
+    prompt = async (prompt: string, opts?: Record<string, unknown>) => {
+      // Mirror node-llama-cpp: invoke onTextChunk per decoded chunk.
+      const onTextChunk = opts?.onTextChunk as ((t: string) => void) | undefined
+      onTextChunk?.('streamed part ')
+      onTextChunk?.('two')
+      return 'engine reused'
+    }
   }
   return {
     getLlama,
@@ -84,6 +92,26 @@ describe('shared inference engine', () => {
     expect(fakeNlc.getLlama).toHaveBeenCalledTimes(1)
     const llama = await llamaOf(fakeNlc)
     expect(llama.loadModel).toHaveBeenCalledTimes(1)
+  })
+
+  it('forwards onTextChunk into the session prompt options', async () => {
+    const fakeNlc = buildFakeNlc()
+    mockDynamicImport.mockResolvedValue(fakeNlc)
+
+    const chunks: string[] = []
+    await runInference('qwen-test', {
+      prompt: 'write code',
+      onTextChunk: chunk => chunks.push(chunk),
+    })
+
+    expect(chunks).toEqual(['streamed part ', 'two'])
+  })
+
+  it('omits onTextChunk when not provided (no crash, single response)', async () => {
+    const fakeNlc = buildFakeNlc()
+    mockDynamicImport.mockResolvedValue(fakeNlc)
+    const result = await runInference('qwen-test', { prompt: 'plain call' })
+    expect(result.content).toBe('engine reused')
   })
 
   it('resets the cache when the engine fails to load, so a later call can retry', async () => {

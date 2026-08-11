@@ -4,10 +4,13 @@ import { ModelRouter } from '../../model/ModelRouter'
 import type { ModelProviderType } from '../../model/types'
 import { isModelSetupProvider, MODEL_PROVIDERS } from '../../model/setup'
 import { runBenchmarkFromDir } from '../../bench/runner'
-import { formatBenchmarkReport } from '../../bench/report'
+import { createModelGenerate } from '../../bench/modelGenerate'
+import { formatBenchmarkReport, formatScenarioSection, formatBenchmarkOverall } from '../../bench/report'
 import { defaultScenariosDir } from '../../bench/loader'
 import { DEFAULT_BASELINE_TOLERANCE, loadBaselineFile, compareToBaseline, formatBaselineComparison, gateBenchRelease } from '../../bench/baseline'
-import type { BenchSummary } from '../../bench/types'
+import { SCENARIO_SPEC_VERSION } from '../../bench/types'
+import type { BenchGeneratedFile, BenchScenario, BenchSummary } from '../../bench/types'
+import { createTokenPreviewSink } from '../tokenPreview'
 
 export interface BenchCommandOptions {
   /** Model provider (local/openai/anthropic); runs the real-model leaderboard pass. */
@@ -61,7 +64,14 @@ export async function benchCommand(options: BenchCommandOptions): Promise<void> 
     process.exit(1)
   }
 
+  // Live streaming: only when the report itself goes to stdout (not --json,
+  // not --output), so a leaderboard pass rolls in as it runs. The preview
+  // sink is TTY-only and off for --json so structured/CI output stays clean.
+  const streamReport = !options.json && !options.output
+  const preview = createTokenPreviewSink(!options.json && Boolean(process.stderr.isTTY))
+
   let modelRouter: ModelRouter | undefined
+  let generate: ((scenario: BenchScenario) => Promise<BenchGeneratedFile[]>) | undefined
   if (options.model) {
     logger.info(`Running leaderboard pass with model provider: ${options.model}`)
     // An explicit --model disables the zero-config WASM auto-tier so a `--model
@@ -69,16 +79,27 @@ export async function benchCommand(options: BenchCommandOptions): Promise<void> 
     // is downloaded) instead of silently swapping in the WASM model.
     modelRouter = new ModelRouter({ zeroConfigEnabled: options.model ? false : undefined })
     modelRouter.initialize({ provider: options.model as ModelProviderType })
+    // Build the model seam here (not in the runner) so the live token preview
+    // can be wired straight into the generate call.
+    generate = createModelGenerate({ modelRouter, onTextChunk: preview.push })
   }
 
+  let lastSuite: string | null = null
+  let headerPrinted = false
   const { summary, problems, referenceProblems } = await runBenchmarkFromDir({
-    modelRouter,
+    generate,
     live: options.live,
     install: options.install,
     filter: options.suite ? { suite: options.suite } : undefined,
     scenariosDir: options.scenarios,
     referencesDir: options.references,
     onScenarioStart: ({ index, total, scenario }) => {
+      // Print the report header up front so the streamed sections read as a
+      // real report rather than floating fragments.
+      if (streamReport && !headerPrinted) {
+        headerPrinted = true
+        logger.out(`# RN Coding Tests — Benchmark report\n\nSpec version: ${SCENARIO_SPEC_VERSION} · ${total} scenario(s) run\n\n`)
+      }
       // The first generation loads the GGUF and initializes the engine — say
       // so right where the pause actually is, instead of a blank terminal.
       if (index === 1 && options.model) {
@@ -87,6 +108,19 @@ export async function benchCommand(options: BenchCommandOptions): Promise<void> 
       logger.step(index, `${scenario.title} (${scenario.id}) — generating… [${index}/${total}]`)
     },
     onScenarioComplete: ({ index, total, scenario, run }) => {
+      preview.clear()
+      if (streamReport) {
+        // Stream each section to stdout the moment it finishes; a `## suite`
+        // header is emitted when the suite changes so the live report keeps
+        // its grouping without buffering.
+        if (run.suite !== lastSuite) {
+          lastSuite = run.suite
+          // No leading blank here: the header (first suite) and the previous
+          // section's trailing blank (later suites) already provide the gap.
+          logger.out(`## ${run.suite}\n\n`)
+        }
+        logger.out(formatScenarioSection(run) + '\n\n')
+      }
       const composite =
         run.composite !== null ? `${(run.composite * 100).toFixed(0)}%` : 'n/a'
       const guardrails =
@@ -94,6 +128,7 @@ export async function benchCommand(options: BenchCommandOptions): Promise<void> 
       logger.dim(`  [${index}/${total}] ${scenario.id} → composite ${composite} · guardrails ${guardrails}`)
     },
   })
+  preview.clear()
 
   for (const problem of problems) {
     logger.warn(`Scenario problem: ${problem.file} — ${problem.problems.join('; ')}`)
@@ -121,14 +156,14 @@ export async function benchCommand(options: BenchCommandOptions): Promise<void> 
     } else {
       logger.out(json + '\n')
     }
+  } else if (options.output) {
+    // --output keeps the full grouped report in the file, unchanged.
+    writeFileSync(options.output, formatBenchmarkReport(summary))
+    logger.info(`Report written to ${options.output}`)
   } else {
-    const report = formatBenchmarkReport(summary)
-    if (options.output) {
-      writeFileSync(options.output, report)
-      logger.info(`Report written to ${options.output}`)
-    } else {
-      logger.out(report + '\n')
-    }
+    // streamReport is true here (no --json, no --output): sections already
+    // streamed live, so close the report with the Overall block.
+    logger.out(formatBenchmarkOverall(summary) + '\n\n')
   }
 
   if (baseline) {

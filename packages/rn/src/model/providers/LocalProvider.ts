@@ -130,6 +130,7 @@ export class LocalProvider {
           // Tool-enabled requests run in JSON mode so the model can only emit
           // the { tool, arguments } / { answer } envelope the loop parses.
           ...(request.tools && request.tools.length > 0 ? { grammarSchema: TOOL_CALL_SCHEMA } : {}),
+          ...(request.onTextChunk ? { onTextChunk: request.onTextChunk } : {}),
         })
         return {
           content: result.content,

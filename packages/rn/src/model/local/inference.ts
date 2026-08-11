@@ -2,6 +2,7 @@ import type { ModelPreset } from './presets'
 import { dynamicImport } from '../../utils/dynamicImport'
 import { reportError } from '../../utils/safe'
 import { getDownloadedModel } from './ModelStore'
+import { createLlamaLogFilter, NOISE_LINE_MAX_LENGTH, shouldSuppressStderrLine, couldBecomeNoiseLine } from './llamaLog'
 
 export interface InferenceOptions {
   systemPrompt?: string
@@ -14,6 +15,12 @@ export interface InferenceOptions {
    * matching the schema (used for tool-calling envelopes).
    */
   grammarSchema?: Record<string, unknown>
+  /**
+   * Called with each decoded text chunk as the model streams (node-llama-cpp
+   * `onTextChunk`). Optional — MCP/agent paths omit it, so their behavior is
+   * byte-for-byte unchanged.
+   */
+  onTextChunk?: (text: string) => void
 }
 
 export interface InferenceResult {
@@ -92,42 +99,6 @@ export function createChatSessionOptions<T>(
 }
 
 /**
- * Known-harmless tokenizer noise that must never reach the CLI output. Qwen
- * GGUF files emit a "control-looking token" notice on load (the tokenizer
- * marks 128247 '</s>' as non-control; node-llama-cpp overrides the type).
- * The model works fine — the line just corrupts the spinner output.
- */
-export function shouldSuppressStderrLine(line: string): boolean {
-  return line.includes('control-looking token')
-}
-
-/** The noise pattern the filter hunts for, split across any number of writes. */
-const NOISE_PATTERN = 'control-looking token'
-
-/**
- * A held partial longer than this cannot be a split noise line — llama.cpp
- * emits the tokenizer warning as one short line — so it is flushed instead of
- * held. Guards against a newline-less progress write that merely ends in a
- * single-char pattern prefix (e.g. `c`) batching up forever.
- */
-const NOISE_LINE_MAX_LENGTH = NOISE_PATTERN.length + 96
-
-/**
- * True when `partial` — the tail of a line that has not yet seen a newline —
- * could still grow into the noise pattern (i.e. some suffix of it is a prefix
- * of the pattern). Used to decide whether a newline-less chunk must be held
- * back for the next write or can pass straight through.
- */
-export function couldBecomeNoiseLine(partial: string): boolean {
-  if (partial.length === 0) return false
-  const start = Math.max(0, partial.length - NOISE_PATTERN.length)
-  for (let i = start; i < partial.length; i++) {
-    if (NOISE_PATTERN.startsWith(partial.slice(i))) return true
-  }
-  return false
-}
-
-/**
  * Install a permanent, process-wide stderr line filter that swallows the
  * known-harmless llama.cpp tokenizer noise for the lifetime of the process.
  *
@@ -150,6 +121,11 @@ export function couldBecomeNoiseLine(partial: string): boolean {
  */
 let noiseFilterInstalled = false
 let exitFlushRegistered = false
+// The held-partial buffer lives at module scope so the one-time `beforeExit`
+// drain always clears the CURRENT filter's buffer, even if a test (or an
+// embedded embedder) reinstalls the filter after a reset — the drain is never
+// detached from the active buffer.
+let filterBuffer = ''
 
 export function installStderrNoiseFilter(): void {
   if (noiseFilterInstalled) return
@@ -157,7 +133,6 @@ export function installStderrNoiseFilter(): void {
 
   // stderr is a synchronous fd write; the default utf8 encoding is preserved.
   const realWrite = process.stderr.write.bind(process.stderr)
-  let buffer = ''
 
   const write = (
     chunk: string | Uint8Array,
@@ -165,13 +140,13 @@ export function installStderrNoiseFilter(): void {
     cb?: (err?: Error | null | undefined) => void
   ): boolean => {
     const text = typeof chunk === 'string' ? chunk : Buffer.from(chunk).toString('utf-8')
-    buffer += text
+    filterBuffer += text
 
     // Flush every complete line (newline-terminated).
     let newlineIndex: number
-    while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
-      const line = buffer.slice(0, newlineIndex + 1)
-      buffer = buffer.slice(newlineIndex + 1)
+    while ((newlineIndex = filterBuffer.indexOf('\n')) >= 0) {
+      const line = filterBuffer.slice(0, newlineIndex + 1)
+      filterBuffer = filterBuffer.slice(newlineIndex + 1)
       if (!shouldSuppressStderrLine(line)) realWrite(line)
     }
 
@@ -179,12 +154,12 @@ export function installStderrNoiseFilter(): void {
     // 1. Full pattern present → the noise line arrived without its newline.
     // 2. Short noise-candidate → hold for the next write (split line).
     // 3. Everything else (progress bars etc.) → forward immediately.
-    if (buffer.length > 0) {
-      if (shouldSuppressStderrLine(buffer)) {
-        buffer = ''
-      } else if (!couldBecomeNoiseLine(buffer) || buffer.length > NOISE_LINE_MAX_LENGTH) {
-        realWrite(buffer)
-        buffer = ''
+    if (filterBuffer.length > 0) {
+      if (shouldSuppressStderrLine(filterBuffer)) {
+        filterBuffer = ''
+      } else if (!couldBecomeNoiseLine(filterBuffer) || filterBuffer.length > NOISE_LINE_MAX_LENGTH) {
+        realWrite(filterBuffer)
+        filterBuffer = ''
       }
     }
 
@@ -198,18 +173,29 @@ export function installStderrNoiseFilter(): void {
 
   process.stderr.write = write as typeof process.stderr.write
 
-  // A partial still held at exit is by definition a split noise line whose tail
-  // never arrived (or noise without a newline) — suppress it rather than print
-  // it, so the filter can never leak the very noise it exists to hide.
+  // node-llama-cpp registers its own process-lifetime listeners per engine
+  // (Llama instance, temp-dir cleanup, disposables — roughly a dozen
+  // beforeExit handlers with the shared engine). Together with our drain
+  // listener that crosses Node's default cap of 10, tripping
+  // MaxListenersExceededWarning. These are intentional, non-leaking
+  // listeners, so raise the cap once — just high enough for the known engine
+  // internals plus headroom, not an unbounded 0.
+  if (process.getMaxListeners() < 64) {
+    process.setMaxListeners(64)
+  }
+
+  // A partial still held at exit is by definition a split noise line whose
+  // tail never arrived (or noise without a newline) — suppress it rather than
+  // print it, so the filter can never leak the very noise it exists to hide.
   // Registered once per process regardless of how many times the filter is
-  // installed; `beforeExit` drains the buffer, `exit` is then a no-op.
+  // installed. `beforeExit` alone suffices: it fires when the event loop
+  // drains (the graceful-exit point); on a hard `process.exit()` the buffer is
+  // simply never written.
   if (!exitFlushRegistered) {
     exitFlushRegistered = true
-    const flushOnExit = (): void => {
-      buffer = ''
-    }
-    process.on('exit', flushOnExit)
-    process.on('beforeExit', flushOnExit)
+    process.on('beforeExit', () => {
+      filterBuffer = ''
+    })
   }
 }
 
@@ -308,15 +294,21 @@ async function getSharedLlama(): Promise<SharedLlama> {
     installStderrNoiseFilter()
     sharedLlamaPromise = (async () => {
       const nlc = await dynamicImport<LlamaModule>('node-llama-cpp')
+      const logFilter = createLlamaLogFilter()
       const llama = await nlc.getLlama({
-        logger: (level, message) => {
-          if (shouldSuppressStderrLine(message)) return
-          if (level <= nlc.LlamaLogLevel.warn) {
-            const sink = level <= nlc.LlamaLogLevel.error ? console.error : console.warn
-            sink(`[node-llama-cpp] ${message}`)
-          }
-        },
+        // Gate at the C level first (logLevel) so sub-warn llama.cpp chatter
+        // never reaches JS, then route everything that does through the
+        // filtered logger. The old `level <= LlamaLogLevel.warn` comparison
+        // was a string-enum bug (LlamaLogLevel is a string enum in v3) that
+        // re-emitted info/debug lines as warnings — the filter's severity map
+        // fixes that too.
+        logLevel: nlc.LlamaLogLevel.warn,
+        logger: logFilter,
       })
+      // loadModel/createContext have no per-call logger option; components
+      // inherit the Llama instance's logger property, so assign the filter
+      // here to cover every derived engine component (the actual gap).
+      llama.logger = logFilter
       return llama
     })()
     // A rejected engine promise must not poison the cache forever: reset so the
@@ -376,6 +368,7 @@ export async function runInference(modelId: string, options: InferenceOptions): 
         temperature: options.temperature ?? 0.2,
         maxTokens: options.maxTokens ?? 2048,
         ...(grammar ? { grammar } : {}),
+        ...(options.onTextChunk ? { onTextChunk: options.onTextChunk } : {}),
       })
 
       return {
