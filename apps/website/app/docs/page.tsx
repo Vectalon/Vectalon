@@ -4,8 +4,11 @@ const FREE = [
   ['init', 'Scan your project and build the knowledge base'],
   ['serve', 'Run the MCP server — agents connect from your editor'],
   ['feature "…"', 'Generate components, write tests, run workflows'],
-  ['doctor', 'Ecosystem + native toolchain + leaderboard readiness'],
+  ['doctor', 'Ecosystem + native toolchain + leaderboard readiness, with numbered fix steps'],
   ['refresh', 'Re-fetch web intel + re-seed knowledge from the repo'],
+  ['status', 'One read-only health screen — daemon, MCP server, model, license'],
+  ['ecosystem', 'Browse the tooling catalog — MCP servers, skills, hooks; grouped, with --info cards'],
+  ['selftest', 'Test every harness feature in isolated sandboxes — live pass/fail stream'],
   ['bench / leaderboard', 'Run the RN benchmark suite against any model'],
 ]
 
@@ -13,6 +16,9 @@ const PRO = [
   ['upgrade', 'React Native / Expo upgrade copilot — rn-diff-purge diffs, AST impact analysis, codemods'],
   ['ci', 'Self-healing CI generation'],
   ['bundle', 'Bundle budget guardrails in code review'],
+  ['profile', 'Hermes runtime analysis — JS-thread blocks, retained objects, leak candidates'],
+  ['sandbox', 'Run commands with deny-by-default env, no network, hard time/memory limits'],
+  ['render', 'Compile + headless-render generated code before the diff — Metro transform, sandboxed'],
   ['sync', 'Team brain — cross-project knowledge + cloud sync (Team)'],
 ]
 
@@ -33,7 +39,7 @@ const STEPS = [
     n: '03',
     title: 'Use it',
     code: 'npx vectalon feature "login screen with auth API"',
-    body: 'PRD → stories → acceptance criteria → implementation → tests → review. Every fix is compile-checked before it lands.',
+    body: 'PRD → stories → acceptance criteria → implementation → tests → review. Every fix is compile-checked before it lands, and the terminal explains itself — live phase progress, a command feed, and parsed failure cards on failure.',
   },
 ]
 
