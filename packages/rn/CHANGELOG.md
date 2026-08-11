@@ -5,6 +5,34 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.30] - 2026-08-11
+
+### Added
+
+- **Live model streaming.** `vectalon bench --model local` now shows the
+  model generating instead of a frozen "generating…" line: a TTY-only token
+  preview on stderr ticks a character count with a truncated text preview as
+  each chunk decodes (auto-disabled for `--json`/pipes so structured/CI
+  output stays clean). `onTextChunk` is plumbed through `ModelRequest` →
+  `LocalProvider` → `runInference` → `session.prompt`, and MCP/agent paths
+  never set it, so their behavior is unchanged.
+- **Incremental benchmark reports.** `vectalon bench` streams each scenario
+  section to stdout the moment it finishes (title, composite, axes,
+  correctness details, relative-to-human) with `## suite` headers switching
+  live, then closes with the Overall block. `--json` stays a pure JSON doc;
+  `--output` keeps the full grouped report in the file.
+
+### Fixed
+
+- **llama.cpp noise is gone.** The `load: control-looking token` spam and the
+  `MaxListenersExceededWarning` no longer appear on local-model runs. A
+  shared log filter (`createLlamaLogFilter`) is now plumbed into every
+  node-llama-cpp entry point (`getLlama` plus the Llama instance's logger,
+  which derived components inherit) with a C-level `logLevel: warn` gate;
+  the stderr write-filter stays as a safety net. Exit listeners merge into
+  one `beforeExit` drain and the process listener cap is raised (64, with
+  justification) so the warning can never fire for a healthy engine.
+
 ## [0.1.29] - 2026-08-11
 
 ### Added

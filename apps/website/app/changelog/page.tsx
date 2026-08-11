@@ -2,9 +2,18 @@ import Link from 'next/link'
 
 const RELEASES = [
   {
-    version: 'v0.1.29',
+    version: 'v0.1.30',
     date: '2026-08-11',
     tag: 'latest',
+    highlights: [
+      'Live model streaming — vectalon bench --model local shows the model generating in real time: a TTY-only token preview (character count + truncated text preview) ticks as each chunk decodes, auto-off for --json/pipes; onTextChunk is plumbed through ModelRequest → LocalProvider → runInference, and MCP/agent paths are unchanged',
+      'Incremental benchmark reports — vectalon bench streams each scenario section to stdout the moment it finishes (composite, axes, correctness, relative-to-human) with suite headers switching live, then closes with the Overall block; --json stays pure and --output keeps the full grouped report',
+      'llama.cpp noise eliminated — the load: control-looking token spam and the MaxListenersExceededWarning are gone: a shared log filter is plumbed into every node-llama-cpp entry point with a C-level logLevel: warn gate, exit listeners merged into one beforeExit drain, and the process listener cap raised to 64',
+    ],
+  },
+  {
+    version: 'v0.1.29',
+    date: '2026-08-11',
     highlights: [
       'Bundle size visualizer — vectalon bundle prints ASCII bars for the top packages and --open renders a self-contained HTML dashboard: interactive treemap, per-package drill-down, budget violations, and replacement-suggestion cards (last publish, weekly downloads, GitHub stars)',
       'Actionable improvement suggestions — new vectalon suggestions command: severity-grouped list (title, current → latest), --json for CI, --limit, --apply <ref> (prints the exact npm install and runs it behind a confirmation gate), and --open dashboard; the interactive menu gains a View suggestions (N) entry',
