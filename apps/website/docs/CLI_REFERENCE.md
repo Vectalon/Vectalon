@@ -528,11 +528,22 @@ base and warns when it grows vs the previous snapshot.
 ```bash
 npx vectalon bundle                         # build iOS bundle + run all budgets
 npx vectalon bundle --platform android      # build the Android bundle instead
+npx vectalon bundle --open                  # …and open the HTML treemap dashboard
 npx vectalon bundle --static                # on-disk static checks only (no build)
 ```
 
 **What it checks**
 
+- **Bundle composition** — the top packages render as ASCII bars in the
+  terminal; `--open` writes a self-contained HTML dashboard
+  (`.vectalon/bundle/report.html`, no network needed) with a squarified
+  treemap of the whole bundle, per-package drill-down (sizes, modules),
+  and budget violations highlighted in red
+- **Replacement suggestions** — the dashboard proposes lighter alternatives
+  for heavy packages (e.g. moment → dayjs, lodash → lodash-es) backed by npm
+  maintenance signals — last publish, weekly downloads, GitHub stars — cached
+  in `.vectalon/bundle/signals.json` for 24h (fetches never block or fail the
+  run; offline runs show sizes without signals)
 - **Large libraries** — direct dependencies adding >100 KB to the bundle
   (per-package size from the Metro module map)
 - **Missing `sideEffects: false`** — installed deps without it can keep dead
@@ -553,6 +564,9 @@ npx vectalon bundle --static                # on-disk static checks only (no bui
 | `[directory]` | Project root (default: cwd) |
 | `--platform <type>` | `ios` \| `android` (default `ios`) |
 | `--static` | Skip the Metro build; static on-disk checks only |
+| `--open` | Open the HTML treemap dashboard in the browser after the run |
+| `--no-html` | Skip writing the dashboard (and the npm signal fetches) |
+| `--report <dir>` | Dashboard output directory (default `.vectalon/bundle`) |
 
 **Exit codes**
 

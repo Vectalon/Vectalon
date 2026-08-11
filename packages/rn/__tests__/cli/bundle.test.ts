@@ -1,10 +1,38 @@
-import { mkdirSync } from 'fs'
+import { existsSync, readFileSync, mkdirSync } from 'fs'
 import { join } from 'path'
 import { bundleCommand } from '../../src/cli/commands/bundle'
+import { collectBundleSignals } from '../../src/utils/npmSignals'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
 jest.mock('@vectalon-dev/core', () => ({
   requireTier: () => ({ allowed: true, currentTier: 'pro', requiredTier: 'pro', canTrial: false }),
+}))
+
+jest.mock('../../src/utils/bundleAnalyzer', () => {
+  const actual = jest.requireActual('../../src/utils/bundleAnalyzer')
+  return {
+    ...actual,
+    runMetroBundleCommand: jest.fn(async () => ({
+      modules: [
+        { name: 'node_modules/moment/moment.js', size: 400000, sourcePath: '/app/node_modules/moment/moment.js' },
+        { name: 'node_modules/react-native/index.js', size: 350000, sourcePath: '/app/node_modules/react-native/index.js' },
+        { name: 'node_modules/lodash/lodash.js', size: 250000, sourcePath: '/app/node_modules/lodash/lodash.js' },
+      ],
+      assets: [{ name: 'assets/hero.png', size: 300000 }],
+    })),
+  }
+})
+
+jest.mock('../../src/utils/npmSignals', () => {
+  const actual = jest.requireActual('../../src/utils/npmSignals')
+  return {
+    ...actual,
+    collectBundleSignals: jest.fn(async () => ({})),
+  }
+})
+
+jest.mock('../../src/utils/openBrowser', () => ({
+  openInBrowser: jest.fn(),
 }))
 
 describe('bundleCommand', () => {
@@ -22,6 +50,7 @@ describe('bundleCommand', () => {
     mkdirSync(join(dir, '.vectalon'), { recursive: true })
     jest.spyOn(process.stderr, 'write').mockImplementation(() => true)
     jest.spyOn(process.stdout, 'write').mockImplementation(() => true)
+    ;(collectBundleSignals as jest.Mock).mockClear()
   })
 
   afterEach(() => {
@@ -43,26 +72,38 @@ describe('bundleCommand', () => {
   })
 
   it('runs static checks without a Metro build with --static', async () => {
-    const info = jest.spyOn(console, 'info').mockImplementation(() => true)
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => true)
-    const success = jest.spyOn(console, 'debug').mockImplementation(() => true)
-
     await expect(bundleCommand(dir, { static: true })).resolves.toBeUndefined()
-
-    info.mockRestore()
-    warn.mockRestore()
-    success.mockRestore()
+    expect(existsSync(join(dir, '.vectalon', 'bundle', 'report.html'))).toBe(false)
   })
 
   it('falls back to static checks when the Metro build is unavailable', async () => {
-    const info = jest.spyOn(console, 'info').mockImplementation(() => true)
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => true)
+    const { runMetroBundleCommand } = jest.requireMock('../../src/utils/bundleAnalyzer') as {
+      runMetroBundleCommand: jest.Mock
+    }
+    runMetroBundleCommand.mockResolvedValueOnce(null)
+    await expect(bundleCommand(dir, {})).resolves.toBeUndefined()
+    expect(existsSync(join(dir, '.vectalon', 'bundle', 'report.html'))).toBe(false)
+  })
 
-    // No entry file / react-native in this temp project → runMetroBundleCommand
-    // returns null and the command reports static-only.
+  it('writes the HTML dashboard + report.json when the build succeeds', async () => {
     await expect(bundleCommand(dir, {})).resolves.toBeUndefined()
 
-    info.mockRestore()
-    warn.mockRestore()
+    const htmlPath = join(dir, '.vectalon', 'bundle', 'report.html')
+    expect(existsSync(htmlPath)).toBe(true)
+    const html = readFileSync(htmlPath, 'utf-8')
+    expect(html).toContain('vectalon bundle — ios')
+    expect(html).toContain('moment')
+    expect(html).toContain('dayjs') // curated swap suggestion rendered
+    expect(html).toContain('const DATA =')
+
+    const json = JSON.parse(readFileSync(join(dir, '.vectalon', 'bundle', 'report.json'), 'utf-8'))
+    expect(json.totalSize).toBe(1000000)
+    expect(json.platform).toBe('ios')
+  })
+
+  it('--no-html skips the dashboard and the npm signal fetches', async () => {
+    await expect(bundleCommand(dir, { html: false })).resolves.toBeUndefined()
+    expect(existsSync(join(dir, '.vectalon', 'bundle', 'report.html'))).toBe(false)
+    expect(collectBundleSignals).not.toHaveBeenCalled()
   })
 })

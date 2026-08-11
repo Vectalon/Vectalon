@@ -131,9 +131,12 @@ export function createProgram(): Command {
 
   program
     .command('bundle [directory]')
-    .description('Analyze the Metro bundle and enforce performance budgets')
+    .description('Analyze the Metro bundle and enforce performance budgets — ASCII top-package bars plus an interactive HTML treemap dashboard (--open)')
     .option('--platform <type>', 'Bundle platform (ios|android)', 'ios')
     .option('--static', 'Static on-disk checks only (skip the Metro build)')
+    .option('--open', 'Open the HTML treemap dashboard in the browser after the run')
+    .option('--no-html', 'Skip writing the HTML dashboard (and the npm signal fetches)')
+    .option('--report <dir>', 'Dashboard output directory (default .vectalon/bundle)')
     .action(bundleCommand)
 
   program
@@ -459,7 +462,7 @@ async function runInteractive(): Promise<void> {
       { value: 'init', label: 'Initialize a project', hint: 'Scan React Native project and create .vectalon/' },
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Force refresh knowledge', hint: refreshHint },
-      { value: 'bundle', label: 'Analyze bundle', hint: 'Metro bundle snapshot + performance budgets' },
+      { value: 'bundle', label: 'Analyze bundle', hint: 'Metro snapshot + budgets, ASCII bars + HTML treemap dashboard' },
       { value: 'status', label: 'Show status', hint: 'Daemon, MCP, model, refresh, license, disk — one screen' },
       { value: 'daemon', label: 'Live Metro daemon', hint: 'Watch bundle size and JS thread health continuously' },
       { value: 'telemetry', label: 'Ingest telemetry', hint: 'Sentry/Crashlytics/traces/analytics into the knowledge base' },

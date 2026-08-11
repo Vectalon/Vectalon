@@ -12,8 +12,8 @@
 
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { resolve, join } from 'path'
-import { spawn } from 'child_process'
 import pc from 'picocolors'
+import { openInBrowser } from '../../utils/openBrowser'
 import { logger } from '../logger'
 import {
   runSelfTest,
@@ -60,16 +60,6 @@ function printCheckList(): void {
     lines.push('')
   }
   process.stdout.write(lines.join('\n') + '\n')
-}
-
-function openInBrowser(path: string): void {
-  const opener = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'cmd' : 'xdg-open'
-  const args = process.platform === 'win32' ? ['/c', 'start', '', path] : [path]
-  try {
-    spawn(opener, args, { stdio: 'ignore', detached: true }).unref()
-  } catch {
-    // opening the browser is best-effort
-  }
 }
 
 export async function selftestCommand(directory: string, options: SelftestOptions): Promise<void> {
