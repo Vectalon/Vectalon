@@ -162,4 +162,4 @@ See [CONTRIBUTING.md](packages/rn/CONTRIBUTING.md) for guidelines.
 
 ---
 
-© 2026 Bhishak Sanyal. All rights reserved.
+© 2026 Vectalon. All rights reserved.

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Vectalon core — auth, licensing, billing, telemetry, and platform interfaces",
   "license": "BSL-1.1",
-  "author": "Bhishak Sanyal",
+  "author": "Vectalon",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Vectalon/Vectalon.git",

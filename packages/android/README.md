@@ -1,7 +1,7 @@
 /**
  * @vectalon/android — Android / Kotlin adaptive AI harness
  * Business Source License 1.1 (BSL-1.1)
- * © 2026 Bhishak Sanyal. Commercial use requires a paid license.
+ * © 2026 Vectalon. Commercial use requires a paid license.
  * 
  * Gradle plugin for Android development.
  * 
@@ -27,4 +27,4 @@
 
 Business Source License 1.1 (BSL-1.1) — see [LICENSE](../LICENSE) for details.
 
-© 2026 Bhishak Sanyal
+© 2026 Vectalon

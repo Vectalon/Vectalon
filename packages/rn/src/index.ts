@@ -1,7 +1,7 @@
 /**
  * @vectalon/rn — React Native adaptive AI harness
  * Business Source License 1.1 (BSL-1.1)
- * © 2026 Bhishak Sanyal. Commercial use requires a paid license.
+ * © 2026 Vectalon. Commercial use requires a paid license.
  * See LICENSE for details.
  */
 

@@ -2,7 +2,7 @@
  * Vectalon Monorepo
  * 
  * Business Source License 1.1 (BSL-1.1)
- * © 2026 Bhishak Sanyal. Commercial use requires a paid license.
+ * © 2026 Vectalon. Commercial use requires a paid license.
  * See LICENSE for details.
  * 
  * This is the root of the Vectalon monorepo, managed by Turborepo + pnpm.
@@ -61,4 +61,4 @@ pnpm publish:rn      # Publish @vectalon-dev/rn
 
 Business Source License 1.1 (BSL-1.1) — see [LICENSE](LICENSE) for details.
 
-© 2026 Bhishak Sanyal
+© 2026 Vectalon

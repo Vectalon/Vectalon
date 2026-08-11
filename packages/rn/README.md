@@ -600,7 +600,7 @@ In dev mode:
 
 Business Source License 1.1 (BSL-1.1)
 
-© 2026 Bhishak Sanyal. Commercial use requires a paid license.
+© 2026 Vectalon. Commercial use requires a paid license.
 
 - **Free**: Personal use, education, open source, teams ≤3 developers
 - **Paid**: Teams >3 developers — starting at $19/month
