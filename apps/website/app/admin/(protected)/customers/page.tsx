@@ -9,7 +9,7 @@ export default async function AdminCustomersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Customers</h1>
+        <h1 className="text-2xl font-bold text-slate-50">Customers</h1>
         <p className="mt-1 text-sm text-slate-500">
           GitHub usernames, tiers, seats, and revenue contribution.
         </p>
@@ -35,7 +35,7 @@ export default async function AdminCustomersPage() {
                 <td>
                   <StatusBadge status={c.status} />
                 </td>
-                <td className="font-medium text-white">{c.name ?? c.email}</td>
+                <td className="font-medium text-slate-50">{c.name ?? c.email}</td>
                 <td>{c.email}</td>
                 <td>
                   <TierBadge tier={c.tier} />

@@ -44,7 +44,7 @@ export default function TrialPage() {
   return (
     <div className="mx-auto max-w-xl px-4 py-20">
       <div className="mb-8 text-center">
-        <h1 className="text-4xl font-bold text-white">Start your 14-day Pro trial</h1>
+        <h1 className="text-4xl font-bold text-slate-50">Start your 14-day Pro trial</h1>
         <p className="mt-3 text-slate-400">
           No credit card. One GitHub login. Every premium command unlocked — upgrade copilot,
           self-healing CI, bundle budgets.
@@ -57,12 +57,12 @@ export default function TrialPage() {
             <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-brand/15 text-2xl text-brand">
               ✓
             </div>
-            <h2 className="text-lg font-semibold text-white">Trial started, {result.username}!</h2>
+            <h2 className="text-lg font-semibold text-slate-50">Trial started, {result.username}!</h2>
             <p className="mt-2 text-sm text-slate-400">
               Pro is unlocked until <span className="font-mono text-brand">{expires}</span>. In
               your project:
             </p>
-            <code className="mt-4 block rounded-lg bg-ink-900 px-4 py-3 font-mono text-xs text-emerald-300">
+            <code className="mt-4 block rounded-lg bg-ink-900 px-4 py-3 font-mono text-xs text-emerald-700 dark:text-emerald-300">
               npx vectalon upgrade --diff
             </code>
             <p className="mt-4 text-xs text-slate-500">
@@ -80,14 +80,14 @@ export default function TrialPage() {
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 placeholder="octocat"
-                className="w-full rounded-lg border border-ink-700 bg-ink-900 px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:border-brand focus:outline-none"
+                className="input"
               />
               <p className="mt-2 text-xs text-slate-500">
                 Demo mode: one trial per GitHub account, enforced by the API.
               </p>
             </div>
             {result && !result.ok && (
-              <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-300">
+              <p className="rounded-lg border border-red-600/30 bg-red-600/10 px-4 py-2.5 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
                 {result.reason}
               </p>
             )}
@@ -103,7 +103,7 @@ export default function TrialPage() {
         <Link href="/pricing" className="text-brand hover:underline">
           See pricing
         </Link>{' '}
-        ·{' '}
+        —{' '}
         <Link href="/docs" className="text-brand hover:underline">
           Read the docs
         </Link>

@@ -14,19 +14,35 @@ export const metadata: Metadata = {
 }
 
 const NAV = [
+  { href: '/benchmarks', label: 'Benchmarks' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/docs', label: 'Docs' },
   { href: '/changelog', label: 'Changelog' },
 ]
 
+const themeScript = `
+  (function () {
+    try {
+      var t = localStorage.getItem('vectalon-theme');
+      if (t !== 'light' && t !== 'dark') {
+        t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  })();
+`
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${mono.variable}`}>
+    <html lang="en" className={`${display.variable} ${mono.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="flex min-h-screen flex-col">
         <header className="sticky top-0 z-40 border-b border-ink-700/60 bg-ink/85 backdrop-blur">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-            <Link href="/" className="flex items-center gap-2.5 font-mono font-bold tracking-tight text-white">
-              <span className="grid h-7 w-7 place-items-center rounded-md bg-brand text-sm font-black text-ink">
+            <Link href="/" className="flex items-center gap-2.5 font-mono font-bold tracking-tight text-slate-50">
+              <span className="grid h-7 w-7 place-items-center rounded-md bg-brand text-sm font-black text-on-brand">
                 ▣
               </span>
               vectalon<span className="text-brand">.in</span>
@@ -50,7 +66,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="border-t border-ink-700/60 py-10">
           <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 text-sm text-slate-400 sm:flex-row">
             <div className="font-mono">
-              vectalon<span className="text-brand">.in</span> · Business Source License
+              vectalon<span className="text-brand">.in</span> — Business Source License
             </div>
             <div className="flex flex-wrap justify-center gap-6">
               <Link href="/sdk/react-native" className="transition hover:text-brand">

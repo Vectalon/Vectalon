@@ -88,7 +88,7 @@ export default function ChangelogPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-16">
       <div className="mb-10">
-        <h1 className="text-4xl font-bold text-white">Changelog</h1>
+        <h1 className="text-4xl font-bold text-slate-50">Changelog</h1>
         <p className="mt-3 text-slate-400">
           Every release of <span className="font-mono text-brand">@vectalon-dev/rn</span>.
           The model stays current with the ecosystem; these notes keep you current with the model.
@@ -99,7 +99,7 @@ export default function ChangelogPage() {
         {RELEASES.map(r => (
           <div key={r.version} className="card">
             <div className="flex items-center gap-3">
-              <h2 className="font-mono text-lg font-bold text-white">{r.version}</h2>
+              <h2 className="font-mono text-lg font-bold text-slate-50">{r.version}</h2>
               {r.tag && (
                 <span className="rounded-full bg-brand/15 px-2.5 py-0.5 text-xs font-semibold text-brand">
                   {r.tag}

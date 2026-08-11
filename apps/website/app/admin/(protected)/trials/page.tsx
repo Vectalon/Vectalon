@@ -10,7 +10,7 @@ export default async function AdminTrialsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Trials</h1>
+        <h1 className="text-2xl font-bold text-slate-50">Trials</h1>
         <p className="mt-1 text-sm text-slate-500">
           GitHub-based 14-day trials — {trials.length} total, {converted} converted (
           {trials.length ? Math.round((converted / trials.length) * 100) : 0}%).
@@ -31,7 +31,7 @@ export default async function AdminTrialsPage() {
           <tbody>
             {trials.map((t, i) => (
               <tr key={`${t.githubUserId}-${i}`}>
-                <td className="font-mono text-white">@{t.githubUsername}</td>
+                <td className="font-mono text-slate-50">@{t.githubUsername}</td>
                 <td>
                   <TierBadge tier={t.tier} />
                 </td>

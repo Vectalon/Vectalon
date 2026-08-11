@@ -95,11 +95,11 @@ export function ErrorStream({ errors }: { errors: TelemetryError[] }) {
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="truncate font-mono text-xs text-white">{g.clientId}</span>
+                  <span className="truncate font-mono text-xs text-slate-50">{g.clientId}</span>
                   <span className="badge badge-danger !px-1.5 !py-0 text-[10px]">{g.count}</span>
                 </div>
                 <div className="mt-0.5 text-[11px] text-slate-500">
-                  {g.project || 'no project'} · {fmtTime(g.lastSeen).slice(5, 16)}
+                  {g.project || 'no project'} — {fmtTime(g.lastSeen).slice(5, 16)}
                 </div>
               </button>
             </li>
@@ -124,7 +124,7 @@ export function ErrorStream({ errors }: { errors: TelemetryError[] }) {
         {selectedGroup && (
           <>
             <div className="flex items-center justify-between border-b border-ink-700 px-5 py-3">
-              <div className="font-mono text-sm text-white">{selectedGroup.clientId}</div>
+              <div className="font-mono text-sm text-slate-50">{selectedGroup.clientId}</div>
               <button
                 type="button"
                 onClick={() => dismiss(selectedGroup.errors.map(errorId))}
@@ -141,7 +141,7 @@ export function ErrorStream({ errors }: { errors: TelemetryError[] }) {
                   <li key={id} className={`px-5 py-3 ${hidden ? 'opacity-40' : ''}`}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="font-mono text-[13px] leading-snug text-red-300">{e.message}</div>
+                        <div className="font-mono text-[13px] leading-snug text-red-700 dark:text-red-300">{e.message}</div>
                         {e.context && (
                           <div className="mt-1 text-xs text-slate-500">context: {e.context}</div>
                         )}

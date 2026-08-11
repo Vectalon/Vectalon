@@ -18,7 +18,7 @@ const SDK_DATA: Record<string, SdkData> = {
   'react-native': {
     name: 'React Native',
     status: 'live',
-    statusLabel: 'Live · v0.1.30',
+    statusLabel: 'Live — v0.1.30',
     tagline: 'The full harness — context, codegen, upgrade copilot, device control.',
     description:
       'The original Vectalon harness. Scans your RN project, builds a living knowledge graph, runs a local MCP-aware agent over 58 project-aware tools, and keeps the model current with ecosystem releases — every hour.',
@@ -31,7 +31,7 @@ const SDK_DATA: Record<string, SdkData> = {
       { title: 'Compile-checked healing', body: 'Every fix is typechecked before it lands; fixes that don’t reduce errors are reverted.' },
     ],
     install: 'npx vectalon init',
-    note: 'Free tier: init · serve · feature · doctor. Pro adds upgrade copilot, self-healing CI, and bundle budgets.',
+    note: 'Free tier: init, serve, feature, doctor. Pro adds upgrade copilot, self-healing CI, and bundle budgets.',
   },
   ios: {
     name: 'iOS',
@@ -113,7 +113,7 @@ export default function SdkPage({ params }: { params: { slug: string } }) {
             {sdk.statusLabel}
           </span>
         </div>
-        <h1 className="text-4xl font-bold text-white sm:text-5xl">{sdk.name}</h1>
+        <h1 className="text-4xl font-bold text-slate-50 sm:text-5xl">{sdk.name}</h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-slate-300">{sdk.tagline}</p>
         <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-400">{sdk.description}</p>
       </section>
@@ -122,12 +122,12 @@ export default function SdkPage({ params }: { params: { slug: string } }) {
       <section className="mt-10 flex flex-col items-center gap-5">
         {sdk.status === 'live' ? (
           <>
-            <div className="card terminal-glow !p-0 w-full max-w-xl overflow-hidden font-mono text-sm">
-              <div className="border-b border-ink-700 bg-ink-900 px-4 py-2.5 text-xs text-slate-500">
-                terminal
+            <div className="term w-full max-w-xl">
+              <div className="term-head">
+                <span className="text-xs text-[#9c8f74]">terminal</span>
               </div>
-              <pre className="overflow-x-auto p-4 text-[13px] text-slate-300">
-                <span className="text-accent">$</span> {sdk.install}
+              <pre className="term-body text-sm">
+                <span className="text-[#E35336]">$</span> {sdk.install}
                 <span className="caret ml-1.5" />
               </pre>
             </div>
@@ -143,11 +143,11 @@ export default function SdkPage({ params }: { params: { slug: string } }) {
 
       {/* Features */}
       <section className="mt-20">
-        <h2 className="text-center text-2xl font-bold text-white">What it does</h2>
+        <h2 className="text-center text-2xl font-bold text-slate-50">What it does</h2>
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {sdk.features.map(f => (
             <div key={f.title} className="card transition hover:-translate-y-0.5 hover:border-brand/50">
-              <h3 className="font-semibold text-white">{f.title}</h3>
+              <h3 className="font-semibold text-slate-50">{f.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-400">{f.body}</p>
             </div>
           ))}
@@ -156,14 +156,14 @@ export default function SdkPage({ params }: { params: { slug: string } }) {
 
       {/* Pricing mini */}
       <section className="mt-20">
-        <h2 className="text-center text-2xl font-bold text-white">Pricing</h2>
+        <h2 className="text-center text-2xl font-bold text-slate-50">Pricing</h2>
         <p className="mx-auto mt-2 max-w-xl text-center text-sm text-slate-400">
           Per-platform Pro license, or one All-Access key for every Vectalon SDK.
         </p>
         <div className="mx-auto mt-8 grid max-w-4xl gap-5 md:grid-cols-3">
           <div className="card flex flex-col">
-            <div className="micro">Pro · {sdk.name}</div>
-            <div className="mt-1 font-display text-3xl font-bold text-white">
+            <div className="font-mono text-xs font-semibold text-slate-400">Pro — {sdk.name}</div>
+            <div className="mt-1 font-display text-3xl font-bold text-slate-50">
               $19<span className="text-sm font-normal text-slate-500">/mo</span>
             </div>
             <p className="mt-2 flex-1 text-sm text-slate-400">
@@ -180,8 +180,8 @@ export default function SdkPage({ params }: { params: { slug: string } }) {
             )}
           </div>
           <div className="card terminal-glow flex flex-col border-brand/50 ring-1 ring-brand/30">
-            <div className="micro text-brand">All-Access</div>
-            <div className="mt-1 font-display text-3xl font-bold text-white">
+            <div className="font-mono text-xs font-semibold text-brand">All-Access</div>
+            <div className="mt-1 font-display text-3xl font-bold text-slate-50">
               $49<span className="text-sm font-normal text-slate-500">/mo</span>
             </div>
             <p className="mt-2 flex-1 text-sm text-slate-400">
@@ -198,8 +198,8 @@ export default function SdkPage({ params }: { params: { slug: string } }) {
             )}
           </div>
           <div className="card flex flex-col">
-            <div className="micro">Team</div>
-            <div className="mt-1 font-display text-3xl font-bold text-white">
+            <div className="font-mono text-xs font-semibold text-slate-400">Team</div>
+            <div className="mt-1 font-display text-3xl font-bold text-slate-50">
               $99<span className="text-sm font-normal text-slate-500">/seat/mo</span>
             </div>
             <p className="mt-2 flex-1 text-sm text-slate-400">

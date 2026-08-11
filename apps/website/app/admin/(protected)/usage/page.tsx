@@ -10,18 +10,18 @@ export default async function AdminUsagePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Feature usage</h1>
+        <h1 className="text-2xl font-bold text-slate-50">Feature usage</h1>
         <p className="mt-1 text-sm text-slate-500">
           Which capabilities the fleet actually uses — drives roadmap and gate tuning.
         </p>
       </div>
 
       <div className="card">
-        <h2 className="mb-5 font-semibold text-white">Command volume</h2>
+        <h2 className="mb-5 font-semibold text-slate-50">Command volume</h2>
         <div className="space-y-4">
           {featureUsage.map(f => (
             <div key={f.feature} className="flex items-center gap-4">
-              <span className="w-28 font-mono text-sm text-white">{f.feature}</span>
+              <span className="w-28 font-mono text-sm text-slate-50">{f.feature}</span>
               <div className="h-3 flex-1 overflow-hidden rounded-full bg-ink-900">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-brand/80 to-brand"
@@ -37,7 +37,7 @@ export default async function AdminUsagePage() {
       </div>
 
       <div className="card">
-        <h2 className="mb-5 font-semibold text-white">Revenue by month</h2>
+        <h2 className="mb-5 font-semibold text-slate-50">Revenue by month</h2>
         <div className="flex h-48 items-end gap-4">
           {revenueByMonth.map(m => (
             <div key={m.month} className="group flex flex-1 flex-col items-center gap-1.5">

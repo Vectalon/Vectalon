@@ -11,6 +11,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.1.7",
     "@vectalon-dev/core": "workspace:*",
     "next": "^14.2.15",
     "pg": "^8.13.1",

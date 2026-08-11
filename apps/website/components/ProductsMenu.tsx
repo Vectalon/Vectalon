@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
 const PRODUCTS = [
-  { slug: 'react-native', name: 'React Native', status: 'live', statusLabel: 'Live', hint: 'v0.1.30 · MCP + harness' },
-  { slug: 'ios', name: 'iOS', status: 'soon', statusLabel: 'In development', hint: 'Swift · SwiftUI · codegen' },
-  { slug: 'android', name: 'Android', status: 'soon', statusLabel: 'In development', hint: 'Kotlin · Gradle · new arch' },
-  { slug: 'flutter', name: 'Flutter', status: 'soon', statusLabel: 'In development', hint: 'Dart · pub.dev · widgets' },
+  { slug: 'react-native', name: 'React Native', status: 'live', statusLabel: 'Live', hint: 'v0.1.30 — MCP + harness' },
+  { slug: 'ios', name: 'iOS', status: 'soon', statusLabel: 'In development', hint: 'Swift — SwiftUI — codegen' },
+  { slug: 'android', name: 'Android', status: 'soon', statusLabel: 'In development', hint: 'Kotlin — Gradle — new arch' },
+  { slug: 'flutter', name: 'Flutter', status: 'soon', statusLabel: 'In development', hint: 'Dart — pub.dev — widgets' },
 ]
 
 export function ProductsMenu() {
@@ -48,7 +48,7 @@ export function ProductsMenu() {
               className="flex items-center justify-between gap-3 rounded-md px-3 py-2.5 transition hover:bg-ink-700/60"
             >
               <span>
-                <span className="block text-sm font-medium text-white">{p.name}</span>
+                <span className="block text-sm font-medium text-slate-50">{p.name}</span>
                 <span className="block text-xs text-slate-500">{p.hint}</span>
               </span>
               <span className={`badge ${p.status === 'live' ? 'badge-ok' : 'badge-muted'}`}>{p.statusLabel}</span>

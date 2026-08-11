@@ -37,8 +37,8 @@ export default function AdminLoginPage() {
     <div className="mx-auto max-w-sm px-4 py-24">
       <div className="card">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-xl bg-brand text-xl text-ink">▣</div>
-          <h1 className="text-xl font-bold text-white">Admin dashboard</h1>
+          <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-xl bg-brand text-xl text-on-brand">▣</div>
+          <h1 className="text-xl font-bold text-slate-50">Admin dashboard</h1>
           <p className="mt-1 text-sm text-slate-500">vectalon.in — license operations</p>
         </div>
         <form onSubmit={submit} className="space-y-4">
@@ -61,7 +61,7 @@ export default function AdminLoginPage() {
             </p>
           </div>
           {error && (
-            <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-sm text-red-300">
+            <p className="rounded-lg border border-red-600/30 bg-red-600/10 px-4 py-2.5 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
               {error}
             </p>
           )}

@@ -212,15 +212,15 @@ export async function sendLicenseEmail(input: {
   const from = process.env.RESEND_FROM || 'Vectalon <licenses@vectalon.in>'
   const activate = `npx vectalon auth --license ${input.license.key}`
   const html = `
-    <div style="font-family: ui-monospace, Menlo, monospace; color: #0b0e14; line-height: 1.6">
+    <div style="font-family: ui-monospace, Menlo, monospace; color: #FAF6E9; line-height: 1.6">
       <p>Thanks for upgrading to Vectalon!</p>
       <p>Your license key (${input.tier} · ${input.product}):</p>
-      <pre style="background:#11161f;color:#6ee7b7;padding:14px 16px;border-radius:8px;overflow-x:auto">${input.license.key}</pre>
+      <pre style="background:#A0522D;color:#F5F5DC;padding:14px 16px;border-radius:8px;overflow-x:auto">${input.license.key}</pre>
       <p>Activate it from anywhere inside your project:</p>
-      <pre style="background:#11161f;color:#f5b942;padding:14px 16px;border-radius:8px;overflow-x:auto">${activate}</pre>
+      <pre style="background:#A0522D;color:#F4A460;padding:14px 16px;border-radius:8px;overflow-x:auto">${activate}</pre>
       <p>Valid until ${new Date(input.license.expiresAt).toISOString().slice(0, 10)}.</p>
-      <p style="color:#64748b">Questions? Reply to this email or visit vectalon.in/docs.</p>
-      <p style="color:#64748b">— The Vectalon Team</p>
+      <p style="color:#CFB98F">Questions? Reply to this email or visit vectalon.in/docs.</p>
+      <p style="color:#CFB98F">— The Vectalon Team</p>
     </div>`
   try {
     const res = await fetch('https://api.resend.com/emails', {

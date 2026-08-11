@@ -1,23 +1,50 @@
+/**
+ * Vectalon brand palette — dual-mode tokens (source of truth: DESIGN_TOKENS.md).
+ *
+ * Every color is a CSS variable triplet resolved per theme (see globals.css):
+ *   light (data-theme="light") — white page, warm-dark text, vermilion accents
+ *   dark  (data-theme="dark")  — near-black page, cream text, cream/sand accents
+ *
+ * Brand family:  #E35336 vermilion · #F5F5DC cream · #F4A460 sand · #A0522D sienna
+ * Semantic status colors (emerald/amber/red) are exempt — they signal state and
+ * are paired with `dark:` variants so they hold contrast in both modes.
+ */
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: ['selector', '[data-theme="dark"]'],
   content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}', './lib/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
         ink: {
-          DEFAULT: '#0a0d13',
-          900: '#0a0d13',
-          800: '#10141d',
-          700: '#1b2230',
+          DEFAULT: 'rgb(var(--ink) / <alpha-value>)',
+          700: 'rgb(var(--ink-700) / <alpha-value>)',
+          800: 'rgb(var(--ink-800) / <alpha-value>)',
+          900: 'rgb(var(--ink-900) / <alpha-value>)',
         },
         brand: {
-          DEFAULT: '#6ee7b7',
-          dim: '#34d399',
-          strong: '#a7f3d0',
+          DEFAULT: 'rgb(var(--brand) / <alpha-value>)',
+          dim: 'rgb(var(--brand-dim) / <alpha-value>)',
+          strong: 'rgb(var(--brand-strong) / <alpha-value>)',
         },
         accent: {
-          DEFAULT: '#f5b942',
-          dim: '#e2a436',
+          DEFAULT: 'rgb(var(--accent) / <alpha-value>)',
+          dim: 'rgb(var(--accent-dim) / <alpha-value>)',
+        },
+        'on-brand': 'rgb(var(--on-brand) / <alpha-value>)',
+        'on-accent': 'rgb(var(--on-accent) / <alpha-value>)',
+        slate: {
+          50: 'rgb(var(--slate-50) / <alpha-value>)',
+          100: 'rgb(var(--slate-100) / <alpha-value>)',
+          200: 'rgb(var(--slate-200) / <alpha-value>)',
+          300: 'rgb(var(--slate-300) / <alpha-value>)',
+          400: 'rgb(var(--slate-400) / <alpha-value>)',
+          500: 'rgb(var(--slate-500) / <alpha-value>)',
+          600: 'rgb(var(--slate-600) / <alpha-value>)',
+          700: 'rgb(var(--slate-700) / <alpha-value>)',
+          800: 'rgb(var(--slate-800) / <alpha-value>)',
+          900: 'rgb(var(--slate-900) / <alpha-value>)',
+          950: 'rgb(var(--slate-950) / <alpha-value>)',
         },
       },
       fontFamily: {

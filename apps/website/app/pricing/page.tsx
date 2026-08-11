@@ -82,23 +82,6 @@ const PLANS: Array<{
     cta: 'Buy Team',
     fallback: 'Contact us',
   },
-  {
-    name: 'Enterprise',
-    price: 'Custom',
-    cadence: 'annual',
-    blurb: '50+ devs, SOC-2, SSO, proprietary licensing, dedicated support.',
-    features: [
-      'Everything in Team',
-      'SSO / SAML',
-      'SOC-2 reports',
-      'On-prem model endpoints',
-      'Custom licensing terms',
-      'Dedicated support',
-    ],
-    cta: 'Talk to us',
-    fallback: 'Talk to us',
-    href: 'mailto:sales@vectalon.in',
-  },
 ]
 
 const FAQ = [
@@ -157,18 +140,18 @@ export default function PricingPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-16">
       <div className="text-center">
-        <h1 className="text-4xl font-bold text-white">Pricing</h1>
+        <h1 className="text-4xl font-bold text-slate-50">Pricing</h1>
         <p className="mx-auto mt-4 max-w-2xl text-slate-400">
           Global-first USD pricing. The free tier is genuinely useful; the paid tier is for teams
           and hard problems. Trials are one GitHub login, no card.
         </p>
         <p className="mx-auto mt-2 max-w-2xl font-mono text-xs text-slate-500">
-          per-platform licenses · <span className="text-brand">All-Access covers every SDK</span> ·
-          one key via <span className="text-accent">$</span> vectalon auth
+          per-platform licenses — <span className="text-brand">All-Access covers every SDK</span> —
+          one key via <span className="text-brand">$</span> vectalon auth
         </p>
       </div>
 
-      <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-5">
+      <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {PLANS.map(p => (
           <div
             key={p.name}
@@ -178,8 +161,8 @@ export default function PricingPage() {
                 : ''
             }`}
           >
-            <div className="micro mb-1">{p.name}</div>
-            <div className="font-display text-4xl font-bold text-white">
+            <div className="mb-1 font-mono text-xs font-semibold text-slate-400">{p.name}</div>
+            <div className="font-display text-4xl font-bold text-slate-50">
               {p.price}
               <span className="ml-1 text-sm font-normal text-slate-500">{p.cadence}</span>
             </div>
@@ -197,12 +180,27 @@ export default function PricingPage() {
         ))}
       </div>
 
+      {/* Enterprise banner — kept out of the 4-up so the tier grid stays readable */}
+      <div className="mt-5 flex flex-col items-start justify-between gap-4 rounded-xl border border-ink-700 bg-ink-800 p-6 sm:flex-row sm:items-center">
+        <div>
+          <div className="font-mono text-xs font-semibold text-slate-400">Enterprise</div>
+          <div className="mt-1 font-display text-2xl font-bold text-slate-50">50+ developers</div>
+          <p className="mt-1.5 max-w-xl text-sm text-slate-400">
+            SOC-2, SSO / SAML, on-prem model endpoints, custom licensing terms, and dedicated
+            support. Annual pricing.
+          </p>
+        </div>
+        <a href="mailto:sales@vectalon.in" className="btn-ghost shrink-0">
+          Talk to us
+        </a>
+      </div>
+
       <div className="mt-20">
-        <h2 className="text-2xl font-bold text-white">FAQ</h2>
+        <h2 className="text-2xl font-bold text-slate-50">FAQ</h2>
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {FAQ.map(item => (
             <div key={item.q} className="card">
-              <h3 className="font-semibold text-white">{item.q}</h3>
+              <h3 className="font-semibold text-slate-50">{item.q}</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-400">{item.a}</p>
             </div>
           ))}
