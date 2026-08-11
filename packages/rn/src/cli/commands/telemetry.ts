@@ -4,13 +4,14 @@
  */
 
 import { existsSync, statSync } from 'fs'
-import { join, resolve } from 'path'
+import { join, relative, resolve } from 'path'
 import { UsageReporter } from '@vectalon-dev/core'
 import { logger } from '../logger'
 import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { TelemetryIngestionService, DEFAULT_TELEMETRY_DIRS } from '../../knowledge/telemetry'
 import { writeTelemetryFixtures } from '../../knowledge/telemetry/fixtures'
 import { telemetryFormatsGuide, isTelemetryFormat } from '../../knowledge/telemetry/formats'
+import { createTelemetryWatcher, TELEMETRY_WATCH_DEFAULT_INTERVAL_MS } from '../../knowledge/telemetry/watch'
 import { RootCauseAnalyzer } from '../../sdlc/RootCauseAnalyzer'
 import { IncidentAnalyzer } from '../../sdlc/IncidentAnalyzer'
 import { KpiReportAnalyzer } from '../../sdlc/KpiReportAnalyzer'
@@ -25,6 +26,10 @@ interface TelemetryOptions {
   format?: string
   /** Print the accepted formats guide and exit. */
   formats?: boolean
+  /** Keep watching the telemetry directory and ingest new exports as they land. */
+  watch?: boolean
+  /** Watch poll interval in ms (default 10000). */
+  interval?: number
 }
 
 /**
@@ -35,6 +40,7 @@ export type TelemetryCommandOutcome =
   | { status: 'ingested'; result: TelemetryIngestResult }
   | { status: 'empty'; reason: 'no-dir-found' | 'no-parseable-events' }
   | { status: 'formats' }
+  | { status: 'watch' }
 
 /**
  * `vectalon telemetry [directory]` — ingest runtime telemetry exports
@@ -54,6 +60,11 @@ export async function telemetryCommand(directory: string, options: TelemetryOpti
 
   if (options.fixtures && options.path) {
     logger.error('--fixtures writes and ingests sample exports; it cannot be combined with --path (run one or the other)')
+    process.exit(1)
+  }
+
+  if (options.watch && options.fixtures) {
+    logger.error('--fixtures writes samples and exits; it cannot be combined with --watch (run one or the other)')
     process.exit(1)
   }
 
@@ -93,6 +104,13 @@ export async function telemetryCommand(directory: string, options: TelemetryOpti
     return { status: 'empty', reason: 'no-dir-found' }
   }
 
+  // --watch starts the loop even when the directory is currently empty — the
+  // point is to ingest exports as they land, not to fail on an empty start.
+  if (options.watch) {
+    await runWatchLoop(root, dir, options)
+    return { status: 'watch' }
+  }
+
   const isFile = statSync(dir).isFile()
   const result: TelemetryIngestResult = isFile
     ? service.ingestFile(dir, { format })
@@ -110,6 +128,59 @@ export async function telemetryCommand(directory: string, options: TelemetryOpti
 
   logger.success(`Telemetry artifacts stored in the knowledge base (${result.artifacts.length} new)`)
   return { status: 'ingested', result }
+}
+
+/**
+ * `--watch` branch: ingest whatever is already in the directory, then poll it
+ * and print the delta analysis for every batch of new exports until Ctrl-C.
+ * Never hard-exits on empty — an existing directory is required (consistent
+ * with the non-watch path), but a directory that exists with zero events is
+ * fine: the loop just keeps watching.
+ */
+async function runWatchLoop(root: string, dir: string, options: TelemetryOptions): Promise<void> {
+  const format = options.format as TelemetryFormat | undefined
+  // Guard commander's Number coercion: `--interval abc` arrives as NaN, which
+  // setInterval would treat as a 1 ms busy-loop (same fix as --timeout in
+  // sandbox/render). Fall back to the default when not a positive number.
+  const intervalMs =
+    typeof options.interval === 'number' && Number.isFinite(options.interval) && options.interval > 0
+      ? options.interval
+      : TELEMETRY_WATCH_DEFAULT_INTERVAL_MS
+  const watcher = createTelemetryWatcher({
+    root,
+    dir,
+    format,
+    intervalMs,
+    log: logger,
+    onDelta: delta => {
+      reportIngest(delta)
+      if (options.analyze !== false) {
+        runAnalysis(delta)
+      }
+      logger.dim(`Waiting for new exports… (Ctrl-C to stop)`)
+    },
+  })
+
+  logger.info(`Watching ${relative(root, dir) || dir} for telemetry exports — Ctrl-C to stop`)
+  watcher.start()
+  await waitForStopSignal()
+  watcher.stop()
+  logger.success('Telemetry watch stopped')
+}
+
+/** Resolve on SIGINT/SIGTERM so the watch loop can exit gracefully. */
+function waitForStopSignal(): Promise<'SIGINT' | 'SIGTERM'> {
+  return new Promise(resolve => {
+    const onSignal = (signal: 'SIGINT' | 'SIGTERM'): void => {
+      process.removeListener('SIGINT', onInt)
+      process.removeListener('SIGTERM', onTerm)
+      resolve(signal)
+    }
+    const onInt = (): void => onSignal('SIGINT')
+    const onTerm = (): void => onSignal('SIGTERM')
+    process.once('SIGINT', onInt)
+    process.once('SIGTERM', onTerm)
+  })
 }
 
 /** Shared post-ingest reporting (used by the normal and fixture paths). */

@@ -22,12 +22,52 @@ npx vectalon telemetry --fixtures
 
 # See the accepted formats
 npx vectalon telemetry --formats
+
+# Watch for new exports — ingest them as they land (Ctrl-C to stop)
+npx vectalon telemetry --watch
 ```
 
 Accepted file extensions: `.json`, `.jsonl`, `.ndjson`. Exports may be a single
 JSON object, a JSON array, or JSONL (one object per line) — including
 pretty-printed files. Duplicates are skipped by event id (within a batch) and
 content checksum (across the store).
+
+## Watching for new exports
+
+`vectalon telemetry --watch` polls the telemetry directory (default
+`.vectalon/telemetry/`) and ingests new or changed files as they land,
+printing the delta crash/incident/KPI analysis for every batch:
+
+```bash
+npx vectalon telemetry --watch                # poll every 10 s
+npx vectalon telemetry --watch --interval 5000  # poll every 5 s
+npx vectalon telemetry --watch --path ./exports
+```
+
+How it works:
+
+- Files are deduped by **mtime + size** against a per-file scan state
+  (`.vectalon/telemetry-watch-state.json`, kept *outside* the watched
+directory so it is never ingested), so unchanged files are not re-parsed.
+- The knowledge base's content-checksum dedupe is a second layer — even a lost
+  state file can never double-store an event.
+- The watcher re-resolves the directory each pass: start it before any
+  exports exist and it will pick them up when they appear.
+- Deleted files are forgotten, so a re-created export re-ingests.
+
+### The daemon can watch for you
+
+`vectalon daemon --telemetry-watch` enables the same loop inside the live
+daemon — new crash/analytics exports surface in the daemon log the moment they
+land, with a compact one-line-per-batch summary (top exception, slowest trace,
+analytics counts):
+
+```bash
+npx vectalon daemon --telemetry-watch
+```
+
+The daemon polls every 30 s (it is not latency-critical) and stores every
+ingested event in the knowledge base exactly like a manual run.
 
 ## Forcing a format
 

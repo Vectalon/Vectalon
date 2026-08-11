@@ -202,6 +202,7 @@ npx vectalon daemon --no-device-probe  # disable the Hermes JS-thread probe loop
 | `--once` | Run a single probe pass (Metro status + Hermes latency) and exit |
 | `--no-device-probe` | Disable the 30s Hermes JS-thread probe loop |
 | `--wire-metro` | Patch `metro.config.js` to use the generated reporter |
+| `--telemetry-watch` | Also watch telemetry exports (`.vectalon/telemetry`) — new crashes/analytics ingest as they land, surfaced in the daemon log |
 
 **What it does**
 
@@ -698,6 +699,8 @@ npx vectalon telemetry --no-analyze              # ingest only, skip analysis
 npx vectalon telemetry --fixtures                # write sample exports + ingest them (see the pipeline end-to-end)
 npx vectalon telemetry --format crashlytics      # force a format instead of auto-detecting
 npx vectalon telemetry --formats                 # print the accepted formats guide
+npx vectalon telemetry --watch                   # keep watching the directory; ingest new exports as they land
+npx vectalon telemetry --watch --interval 5000   # poll every 5 s (default 10000 ms)
 ```
 
 **Options**
@@ -710,6 +713,8 @@ npx vectalon telemetry --formats                 # print the accepted formats gu
 | `--fixtures` | Write one realistic sample export per format into `.vectalon/telemetry/`, then ingest them |
 | `--format <fmt>` | Force a telemetry format: `sentry` \| `crashlytics` \| `performance` \| `analytics` |
 | `--formats` | Print the accepted formats guide and exit |
+| `--watch` | Keep watching the telemetry directory and ingest new exports as they land (Ctrl-C to stop) |
+| `--interval <ms>` | Watch poll interval in ms (default `10000`) |
 
 **What it does**
 
@@ -718,6 +723,11 @@ npx vectalon telemetry --formats                 # print the accepted formats gu
   (`telemetry` type) in the knowledge base
 - Runs the `analyze_crash`, `analyze_incident`, and `analyze_kpis` analyzers
   over the ingested events and persists the analyses
+- `--watch` polls the directory and ingests **only changed files** (deduped by
+  mtime/size against `.vectalon/telemetry-watch-state.json`, plus the store's
+  content-checksum dedupe), printing the delta analysis per batch; the
+  interactive menu and `vectalon daemon --telemetry-watch` use the same
+  watcher
 
 **Exit codes**
 

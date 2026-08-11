@@ -110,4 +110,18 @@ describe('telemetryCommand', () => {
     await expect(telemetryCommand(dir, { format: 'nope' })).rejects.toThrow('exit')
     expect(exit).toHaveBeenCalledWith(1)
   })
+
+  it('--watch combined with --fixtures exits 1 (they are mutually exclusive)', async () => {
+    const exit = jest.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('exit')
+    })
+    await expect(telemetryCommand(dir, { watch: true, fixtures: true })).rejects.toThrow('exit')
+    expect(exit).toHaveBeenCalledWith(1)
+  })
+
+  it('--watch reports empty (no-dir-found) when the telemetry directory does not exist', async () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    const outcome = await telemetryCommand(dir, { watch: true })
+    expect(outcome).toEqual({ status: 'empty', reason: 'no-dir-found' })
+  })
 })

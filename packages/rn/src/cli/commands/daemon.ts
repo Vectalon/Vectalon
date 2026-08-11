@@ -15,6 +15,7 @@ export interface DaemonCommandOptions {
   once?: boolean
   deviceProbe?: boolean
   wireMetro?: boolean
+  telemetryWatch?: boolean
 }
 
 export async function daemonCommand(options: DaemonCommandOptions): Promise<void> {
@@ -79,12 +80,15 @@ export async function daemonCommand(options: DaemonCommandOptions): Promise<void
       metroPort: options.metroPort,
       deviceProbe: options.deviceProbe,
       wireMetro: options.wireMetro,
+      telemetryWatch: options.telemetryWatch,
       log: logger,
     })
     logger.success(`vectalon daemon running on port ${port}`)
     logger.info('Metro reporter: .vectalon/metro/vectalon-reporter.js')
     logger.info("Wire it into metro.config.js: reporter: require('./.vectalon/metro/vectalon-reporter.js') (or rerun with --wire-metro)")
-    logger.info('Watching: Metro build events (bundle size + build errors) and Hermes JS-thread health')
+    const watching = ['Metro build events (bundle size + build errors)', 'Hermes JS-thread health']
+    if (options.telemetryWatch) watching.push('telemetry exports (.vectalon/telemetry)')
+    logger.info(`Watching: ${watching.join(', ')}`)
     logger.info('Stop with: vectalon daemon --stop')
     // Liveness heartbeat (every 5 min, opt-out). The daemon process lives
     // until --stop/SIGTERM, so the unref'd interval dies with the process.

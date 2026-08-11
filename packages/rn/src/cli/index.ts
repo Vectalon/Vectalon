@@ -206,6 +206,7 @@ export function createProgram(): Command {
     .option('--once', 'Run a single device-probe pass and exit')
     .option('--no-device-probe', 'Disable the Hermes JS-thread probe')
     .option('--wire-metro', 'Patch metro.config.js to use the generated reporter')
+    .option('--telemetry-watch', 'Also watch telemetry exports (.vectalon/telemetry) — new crashes/analytics ingest as they land')
     .action(daemonCommand)
 
   program
@@ -225,6 +226,8 @@ export function createProgram(): Command {
     .option('--fixtures', 'Write sample Sentry/Crashlytics/analytics exports into .vectalon/telemetry and ingest them — see the pipeline end-to-end')
     .option('--format <fmt>', 'Force a telemetry format instead of auto-detecting: sentry | crashlytics | performance | analytics')
     .option('--formats', 'Print the accepted formats guide and exit')
+    .option('--watch', 'Keep watching the telemetry directory and ingest new exports as they land (Ctrl-C to stop)')
+    .option('--interval <ms>', 'Watch poll interval in ms (default 10000)', Number)
     .action(async (directory, opts) => {
       const outcome = await telemetryCommand(directory, opts)
       // Nothing ingested is a failure for scripts/CI; the interactive menu

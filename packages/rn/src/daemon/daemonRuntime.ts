@@ -3,6 +3,8 @@ import { join } from 'path'
 import { ArtifactStore } from '../knowledge/ArtifactStore'
 import { logger } from '../cli/logger'
 import { reportError } from '../utils/safe'
+import { createTelemetryWatcher, renderDeltaSummary } from '../knowledge/telemetry/watch'
+import type { TelemetryWatcher } from '../knowledge/telemetry/watch'
 import { DaemonServer } from './daemonServer'
 import { MetroEventHandler } from './metroEvents'
 import { runProbeCycle, defaultWsFactory } from './hermesProbe'
@@ -27,6 +29,10 @@ export interface StartDaemonOptions {
   deviceProbe?: boolean
   /** Patch metro.config.js to use the generated reporter (default false). */
   wireMetro?: boolean
+  /** Watch telemetry exports (.vectalon/telemetry) and ingest new crashes as they land (default false). */
+  telemetryWatch?: boolean
+  /** Telemetry watch poll cadence (default 30 s — the daemon is not latency-critical). */
+  telemetryWatchIntervalMs?: number
   log?: typeof logger
   /** Injectable WebSocket constructor factory (default: the `ws` package). */
   wsFactory?: () => Promise<WsCtor>
@@ -175,16 +181,41 @@ export async function startDaemon(
     if (process.env.NODE_ENV !== 'test') interval.unref()
   }
 
+  // 4b. Telemetry watch loop (opt-in): ingest new crash/analytics exports as
+  //     they land in .vectalon/telemetry, so crashes surface in the daemon log
+  //     the moment an export appears. The watcher re-resolves the directory
+  //     each pass, so a telemetry dir created after startup is picked up.
+  let telemetryWatcher: TelemetryWatcher | null = null
+  if (options.telemetryWatch) {
+    telemetryWatcher = createTelemetryWatcher({
+      root,
+      intervalMs: options.telemetryWatchIntervalMs ?? 30_000,
+      unref: true, // the HTTP server keeps the daemon process alive
+      log,
+      onDelta: delta => {
+        for (const line of renderDeltaSummary(delta)) {
+          log.info(line)
+        }
+      },
+    })
+    telemetryWatcher.start()
+    log.info('Watching telemetry: .vectalon/telemetry — new crash/analytics exports ingest automatically')
+  }
+
   // 5. State file (--stop/--status and the reporter read this).
   writeDaemonState(root, { port, pid: process.pid, startedAt: Date.now() })
 
-  // 6. Shutdown: close the server, clear the loop, remove the state file, and
+  // 6. Shutdown: close the server, clear the loops, remove the state file, and
   //    detach the process listeners so tests can start/stop repeatedly.
   let closed = false
   const close = (): void => {
     if (closed) return
     closed = true
     if (interval) clearInterval(interval)
+    if (telemetryWatcher) {
+      telemetryWatcher.stop()
+      telemetryWatcher = null
+    }
     server.close()
     try {
       rmSync(daemonStatePath(root), { force: true })
