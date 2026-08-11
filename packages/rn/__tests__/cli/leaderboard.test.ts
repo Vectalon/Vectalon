@@ -98,4 +98,18 @@ describe('leaderboardCommand', () => {
     expect(() => leaderboardCommand({ dir: '/nonexistent/bench-results' })).toThrow('exit')
     expect(exit).toHaveBeenCalledWith(1)
   })
+
+  it('defaults to <cwd>/bench/results — the dir bench writes to (not the package folder)', () => {
+    const dir = createTempProject({ 'bench/results/openai.json': JSON.stringify(summary(0.88)) })
+    try {
+      const cwd = jest.spyOn(process, 'cwd').mockReturnValue(dir)
+      leaderboardCommand({ out: `${dir}/BENCHMARK_RESULTS.md`, timestamp: 't' })
+      cwd.mockRestore()
+      const content = readFileSync(`${dir}/BENCHMARK_RESULTS.md`, 'utf-8')
+      expect(content).toContain('# RN Coding Tests — Model Leaderboard')
+      expect(content).toContain('| Scenario | openai |')
+    } finally {
+      cleanup(dir)
+    }
+  })
 })

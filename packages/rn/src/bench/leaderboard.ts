@@ -21,9 +21,15 @@ export interface LeaderboardRun {
   summary: BenchSummary
 }
 
-/** Default results directory: <packageRoot>/bench/results (source or dist). */
+/**
+ * Default results directory: <projectRoot>/bench/results, resolved against
+ * the current working directory — the same place `vectalon bench --json -o
+ * bench/results/<model>.json` writes per-model results. Never resolved
+ * against the module location: when installed, that would point into
+ * node_modules/@vectalon-dev/rn-vectalon and find nothing.
+ */
 export function defaultLeaderboardResultsDir(): string {
-  return resolve(__dirname, '..', '..', 'bench', 'results')
+  return resolve(process.cwd(), 'bench', 'results')
 }
 
 /**

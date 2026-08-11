@@ -1,4 +1,5 @@
 import { readFileSync } from 'fs'
+import { join } from 'path'
 import {
   loadLeaderboardRuns,
   renderLeaderboard,
@@ -68,8 +69,15 @@ describe('leaderboard loading', () => {
     expect(loadLeaderboardRuns('/nonexistent/bench-results')).toEqual([])
   })
 
-  it('has a default results directory under the package bench folder', () => {
-    expect(defaultLeaderboardResultsDir()).toMatch(/bench[\\/]results$/)
+  it('defaults the results directory to <cwd>/bench/results, never the package folder', () => {
+    const dir = createTempProject({})
+    try {
+      const cwd = jest.spyOn(process, 'cwd').mockReturnValue(dir)
+      expect(defaultLeaderboardResultsDir()).toBe(join(dir, 'bench', 'results'))
+      cwd.mockRestore()
+    } finally {
+      cleanup(dir)
+    }
   })
 })
 
