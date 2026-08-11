@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Check for core PAT
         id: pat
@@ -28,17 +28,17 @@ jobs:
 
       - name: Checkout core source (private)
         if: steps.pat.outputs.has_pat == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: Vectalon/core
           path: packages/core/src
           token: ${{ secrets.CORE_REPO_PAT }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: 'pnpm'
