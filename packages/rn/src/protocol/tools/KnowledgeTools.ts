@@ -8,6 +8,8 @@ import type { ArtifactRole, ArtifactType } from '../../knowledge/artifactTypes'
 import type { ArtifactStore } from '../../knowledge/ArtifactStore'
 import type { TeamStore } from '../../knowledge/TeamStore'
 import { TelemetryIngestionService } from '../../knowledge/telemetry'
+import { isTelemetryFormat } from '../../knowledge/telemetry/formats'
+import type { TelemetryFormat } from '../../knowledge/telemetry'
 import { RootCauseAnalyzer } from '../../sdlc/RootCauseAnalyzer'
 
 /**
@@ -77,17 +79,22 @@ export class KnowledgeTools extends ToolRegistry {
     return `Linked ${parentId} -> ${childId}`
   }
 
-  @mcpTool('ingest_telemetry', 'Ingest runtime telemetry exports (Sentry / Firebase Crashlytics / performance traces / analytics JSON or JSONL) from a directory or file into the knowledge base as telemetry artifacts; runs data-driven crash analysis on each new crash', {
+  @mcpTool('ingest_telemetry', 'Ingest runtime telemetry exports (Sentry / Firebase Crashlytics / performance traces / analytics JSON or JSONL) from a directory or file into the knowledge base as telemetry artifacts; runs data-driven crash analysis on each new crash. Pass `format` to force a format (sentry|crashlytics|performance|analytics) instead of auto-detecting', {
     type: 'object',
     properties: {
       path: { type: 'string' },
       analyze: { type: 'boolean' },
+      format: { type: 'string', enum: ['sentry', 'crashlytics', 'performance', 'analytics'] },
     },
   }, 'artifactStore')
   async ingestTelemetry(args: Record<string, unknown>): Promise<string> {
     const store = this.store()
     const root = this.ctx.engine.getSnapshot()?.project.root || process.cwd()
     const requested = (args.path as string | undefined) || ''
+    if (args.format !== undefined && typeof args.format === 'string' && !isTelemetryFormat(args.format)) {
+      return `Unknown telemetry format: ${args.format}. Valid formats: sentry, crashlytics, performance, analytics`
+    }
+    const format = typeof args.format === 'string' ? (args.format as TelemetryFormat) : undefined
     const target = requested
       ? join(root, requested)
       : TelemetryIngestionService.findDefaultDir(root)
@@ -97,8 +104,8 @@ export class KnowledgeTools extends ToolRegistry {
 
     const service = new TelemetryIngestionService(store)
     const result = statSync(target).isFile()
-      ? service.ingestFile(target)
-      : service.ingestDirectory(target)
+      ? service.ingestFile(target, { format })
+      : service.ingestDirectory(target, { format })
 
     // Data-driven analysis pass: link a crash root-cause analysis to each
     // newly ingested crash artifact.

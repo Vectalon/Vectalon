@@ -127,6 +127,13 @@ export default function DocsPage() {
         >
           CLI Reference →
         </Link>
+        <Link
+          href="https://github.com/Vectalon/Vectalon/blob/main/apps/website/docs/TELEMETRY.md"
+          target="_blank"
+          className="ml-3 text-brand hover:underline"
+        >
+          Telemetry formats →
+        </Link>
       </div>
     </div>
   )

@@ -4,12 +4,20 @@ import { ArtifactStore } from '../ArtifactStore'
 import { checksum } from '../artifactTypes'
 import { reportError } from '../../utils/safe'
 import { parseTelemetryContent } from './parsers'
-import type { ParsedAnalyticsEvent, ParsedCrash, ParsedTrace, TelemetryEvent, TelemetryIngestResult } from './types'
+import type { ParsedAnalyticsEvent, ParsedCrash, ParsedTrace, TelemetryEvent, TelemetryFormat, TelemetryIngestResult } from './types'
 
 const TELEMETRY_EXTENSIONS = new Set(['.json', '.jsonl', '.ndjson'])
 
 /** Default directory searched when no explicit path is passed. */
 export const DEFAULT_TELEMETRY_DIRS = ['.vectalon/telemetry', 'telemetry']
+
+export interface TelemetryIngestOptions {
+  /**
+   * Force a telemetry format instead of auto-detecting per record — useful
+   * when an export's shape is unusual enough that detection misses it.
+   */
+  format?: TelemetryFormat
+}
 
 /**
  * Ingests runtime telemetry exports (Sentry events, Firebase Crashlytics
@@ -20,18 +28,18 @@ export const DEFAULT_TELEMETRY_DIRS = ['.vectalon/telemetry', 'telemetry']
 export class TelemetryIngestionService {
   constructor(private readonly store: ArtifactStore) {}
 
-  ingestDirectory(dir: string): TelemetryIngestResult {
+  ingestDirectory(dir: string, options: TelemetryIngestOptions = {}): TelemetryIngestResult {
     const result = this.emptyResult()
     if (!existsSync(dir)) return result
-    this.walk(dir, result)
+    this.walk(dir, result, options.format)
     return result
   }
 
-  ingestFile(file: string): TelemetryIngestResult {
+  ingestFile(file: string, options: TelemetryIngestOptions = {}): TelemetryIngestResult {
     const result = this.emptyResult()
     if (!existsSync(file) || !TELEMETRY_EXTENSIONS.has(extname(file).toLowerCase())) return result
     result.filesScanned = 1
-    this.ingestFileInto(file, result)
+    this.ingestFileInto(file, result, options.format)
     return result
   }
 
@@ -58,7 +66,7 @@ export class TelemetryIngestionService {
     }
   }
 
-  private walk(dir: string, result: TelemetryIngestResult): void {
+  private walk(dir: string, result: TelemetryIngestResult, format?: TelemetryFormat): void {
     let entries: string[]
     try {
       entries = readdirSync(dir)
@@ -76,15 +84,15 @@ export class TelemetryIngestionService {
         continue
       }
       if (stat.isDirectory()) {
-        this.walk(fullPath, result)
+        this.walk(fullPath, result, format)
       } else if (TELEMETRY_EXTENSIONS.has(extname(entry).toLowerCase())) {
         result.filesScanned++
-        this.ingestFileInto(fullPath, result)
+        this.ingestFileInto(fullPath, result, format)
       }
     }
   }
 
-  private ingestFileInto(file: string, result: TelemetryIngestResult): void {
+  private ingestFileInto(file: string, result: TelemetryIngestResult, format?: TelemetryFormat): void {
     let content: string
     try {
       content = readFileSync(file, 'utf-8')
@@ -95,7 +103,7 @@ export class TelemetryIngestionService {
 
     let events: TelemetryEvent[]
     try {
-      events = parseTelemetryContent(content)
+      events = parseTelemetryContent(content, format)
     } catch (err) {
       result.errors.push({ file, error: err instanceof Error ? err.message : String(err) })
       return

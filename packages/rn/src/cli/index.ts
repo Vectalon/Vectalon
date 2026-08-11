@@ -222,7 +222,15 @@ export function createProgram(): Command {
     .description('Ingest runtime telemetry (Sentry / Crashlytics / traces / analytics) into the knowledge base and analyze it')
     .option('--path <dir>', 'Telemetry exports directory or file (default .vectalon/telemetry or telemetry/)')
     .option('--no-analyze', 'Ingest only; skip crash/incident/KPI analysis')
-    .action(telemetryCommand)
+    .option('--fixtures', 'Write sample Sentry/Crashlytics/analytics exports into .vectalon/telemetry and ingest them — see the pipeline end-to-end')
+    .option('--format <fmt>', 'Force a telemetry format instead of auto-detecting: sentry | crashlytics | performance | analytics')
+    .option('--formats', 'Print the accepted formats guide and exit')
+    .action(async (directory, opts) => {
+      const outcome = await telemetryCommand(directory, opts)
+      // Nothing ingested is a failure for scripts/CI; the interactive menu
+      // handles the empty case itself (path / fixtures / formats guidance).
+      if (outcome.status === 'empty') process.exit(1)
+    })
 
   program
     .command('ci [directory]')
@@ -605,8 +613,52 @@ async function runInteractive(): Promise<void> {
   }
 
   if (action === 'telemetry') {
-    await telemetryCommand('', {})
-    p.outro('Telemetry ingested')
+    const outcome = await telemetryCommand('', {})
+    if (outcome.status === 'ingested') {
+      p.outro('Telemetry ingested')
+      return
+    }
+    if (outcome.status === 'formats') {
+      p.outro('Formats listed')
+      return
+    }
+    const next = await p.select({
+      message: 'No telemetry exports found — what now?',
+      options: [
+        { value: 'path', label: 'Specify a path', hint: 'A file or directory of Sentry / Crashlytics / analytics exports' },
+        { value: 'fixtures', label: 'Generate sample exports', hint: 'Write demo exports and ingest them — see the pipeline end-to-end' },
+        { value: 'formats', label: 'Supported formats', hint: 'What shapes are accepted and how to export them' },
+        { value: 'cancel', label: 'Cancel' },
+      ],
+    })
+    if (p.isCancel(next)) {
+      p.outro('Cancelled')
+      return
+    }
+    if (next === 'path') {
+      const path = await p.text({
+        message: 'Path to telemetry exports (file or directory)',
+        placeholder: '.vectalon/telemetry',
+      })
+      if (p.isCancel(path)) {
+        p.outro('Cancelled')
+        return
+      }
+      const out = await telemetryCommand('', { path: path as string })
+      p.outro(out.status === 'ingested' ? 'Telemetry ingested' : 'Nothing to ingest')
+      return
+    }
+    if (next === 'fixtures') {
+      const out = await telemetryCommand('', { fixtures: true })
+      p.outro(out.status === 'ingested' ? 'Sample exports ingested — telemetry pipeline demonstrated' : 'Fixture ingestion failed')
+      return
+    }
+    if (next === 'formats') {
+      await telemetryCommand('', { formats: true })
+      p.outro('Formats listed')
+      return
+    }
+    p.outro('Cancelled')
     return
   }
 

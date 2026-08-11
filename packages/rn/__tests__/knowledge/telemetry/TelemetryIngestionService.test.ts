@@ -116,6 +116,19 @@ describe('TelemetryIngestionService', () => {
     expect(bad.errors).toHaveLength(1)
   })
 
+  it('forces a format via options when detection misses an unusual shape', () => {
+    const store = new ArtifactStore(dir)
+    const service = new TelemetryIngestionService(store)
+    writeFileSync(join(dir, 'odd.json'), JSON.stringify({ type: 'crash', reason: 'boom' }))
+
+    const auto = service.ingestFile(join(dir, 'odd.json'))
+    expect(auto.events).toHaveLength(0)
+
+    const forced = service.ingestFile(join(dir, 'odd.json'), { format: 'crashlytics' })
+    expect(forced.events).toHaveLength(1)
+    expect(forced.crashes).toHaveLength(1)
+  })
+
   it('renderEventMarkdown renders each event kind', () => {
     expect(renderEventMarkdown({ kind: 'crash', id: 'x', source: 'sentry', exceptionType: 'TypeError', message: 'boom', frames: [] }))
       .toContain('# Crash: TypeError')

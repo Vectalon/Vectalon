@@ -695,6 +695,9 @@ artifacts, then run data-driven crash / incident / KPI analysis.
 npx vectalon telemetry                          # ingest .vectalon/telemetry or telemetry/
 npx vectalon telemetry --path ./exports          # ingest a specific dir or file
 npx vectalon telemetry --no-analyze              # ingest only, skip analysis
+npx vectalon telemetry --fixtures                # write sample exports + ingest them (see the pipeline end-to-end)
+npx vectalon telemetry --format crashlytics      # force a format instead of auto-detecting
+npx vectalon telemetry --formats                 # print the accepted formats guide
 ```
 
 **Options**
@@ -704,11 +707,15 @@ npx vectalon telemetry --no-analyze              # ingest only, skip analysis
 | `[directory]` | Project root (default: cwd) |
 | `--path <dir>` | Telemetry exports directory or file (default `.vectalon/telemetry` or `telemetry/`) |
 | `--no-analyze` | Ingest only; skip crash/incident/KPI analysis |
+| `--fixtures` | Write one realistic sample export per format into `.vectalon/telemetry/`, then ingest them |
+| `--format <fmt>` | Force a telemetry format: `sentry` \| `crashlytics` \| `performance` \| `analytics` |
+| `--formats` | Print the accepted formats guide and exit |
 
 **What it does**
 
-- Parses Sentry / Crashlytics / trace / analytics JSON or JSONL exports into
-  typed telemetry artifacts (`telemetry` type) in the knowledge base
+- Parses Sentry / Crashlytics / trace / analytics JSON, JSON arrays, or JSONL
+  exports (including pretty-printed files) into typed telemetry artifacts
+  (`telemetry` type) in the knowledge base
 - Runs the `analyze_crash`, `analyze_incident`, and `analyze_kpis` analyzers
   over the ingested events and persists the analyses
 
@@ -716,8 +723,12 @@ npx vectalon telemetry --no-analyze              # ingest only, skip analysis
 
 | Code | When |
 |---|---|
-| 0 | Telemetry ingested (analysis failures are reported, not fatal) |
-| 1 | No `.vectalon/` directory found |
+| 0 | Telemetry ingested (analysis failures are reported, not fatal), or `--formats` printed |
+| 1 | No `.vectalon/` directory found, invalid `--format`, or **nothing ingested** (no exports found / nothing parseable — scripts and CI can rely on this) |
+
+The interactive menu (`vectalon` → Ingest telemetry) never hard-exits: when no
+exports are found it offers **Specify a path**, **Generate sample exports**, or
+**Supported formats** instead of claiming success.
 
 ---
 

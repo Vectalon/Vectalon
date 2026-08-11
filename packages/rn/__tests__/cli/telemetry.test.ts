@@ -46,7 +46,11 @@ describe('telemetryCommand', () => {
     mkdirSync(telemetryDir, { recursive: true })
     writeFileSync(join(telemetryDir, 'crash.json'), SENTRY_CRASH)
 
-    await expect(telemetryCommand(dir, {})).resolves.toBeUndefined()
+    const outcome = await telemetryCommand(dir, {})
+    expect(outcome.status).toBe('ingested')
+    if (outcome.status === 'ingested') {
+      expect(outcome.result.crashes).toHaveLength(1)
+    }
 
     const store = new ArtifactStore(dir)
     expect(store.findByType('telemetry').length).toBeGreaterThan(0)
@@ -58,13 +62,52 @@ describe('telemetryCommand', () => {
     mkdirSync(exportsDir, { recursive: true })
     writeFileSync(join(exportsDir, 'crash.json'), SENTRY_CRASH)
 
-    await expect(telemetryCommand(dir, { path: 'exports' })).resolves.toBeUndefined()
+    const outcome = await telemetryCommand(dir, { path: 'exports' })
+    expect(outcome.status).toBe('ingested')
     expect(new ArtifactStore(dir).findByType('telemetry')).toHaveLength(1)
   })
 
-  it('warns (without failing) when no exports are found', async () => {
+  it('reports empty (no-dir-found) when no exports are found', async () => {
     mkdirSync(join(dir, '.vectalon'), { recursive: true })
-    await expect(telemetryCommand(dir, {})).resolves.toBeUndefined()
+    const outcome = await telemetryCommand(dir, {})
+    expect(outcome).toEqual({ status: 'empty', reason: 'no-dir-found' })
     expect(new ArtifactStore(dir).findByType('telemetry')).toHaveLength(0)
+  })
+
+  it('reports empty (no-parseable-events) when files exist but nothing parses', async () => {
+    mkdirSync(join(dir, '.vectalon', 'telemetry'), { recursive: true })
+    writeFileSync(join(dir, '.vectalon', 'telemetry', 'odd.json'), JSON.stringify({ foo: 1 }))
+
+    const outcome = await telemetryCommand(dir, {})
+    expect(outcome).toEqual({ status: 'empty', reason: 'no-parseable-events' })
+  })
+
+  it('--fixtures writes sample exports and ingests them end-to-end', async () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    const outcome = await telemetryCommand(dir, { fixtures: true })
+
+    expect(outcome.status).toBe('ingested')
+    if (outcome.status === 'ingested') {
+      expect(outcome.result.filesScanned).toBe(4)
+      expect(outcome.result.events).toHaveLength(6)
+      expect(outcome.result.crashes).toHaveLength(2)
+      expect(outcome.result.traces).toHaveLength(1)
+      expect(outcome.result.analytics).toHaveLength(3)
+    }
+  })
+
+  it('--formats prints the guide without touching the store', async () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    const outcome = await telemetryCommand(dir, { formats: true })
+    expect(outcome).toEqual({ status: 'formats' })
+    expect(new ArtifactStore(dir).findByType('telemetry')).toHaveLength(0)
+  })
+
+  it('exits on an invalid --format value', async () => {
+    const exit = jest.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('exit')
+    })
+    await expect(telemetryCommand(dir, { format: 'nope' })).rejects.toThrow('exit')
+    expect(exit).toHaveBeenCalledWith(1)
   })
 })

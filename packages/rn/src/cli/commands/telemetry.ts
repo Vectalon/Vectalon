@@ -9,23 +9,59 @@ import { UsageReporter } from '@vectalon-dev/core'
 import { logger } from '../logger'
 import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { TelemetryIngestionService, DEFAULT_TELEMETRY_DIRS } from '../../knowledge/telemetry'
+import { writeTelemetryFixtures } from '../../knowledge/telemetry/fixtures'
+import { telemetryFormatsGuide, isTelemetryFormat } from '../../knowledge/telemetry/formats'
 import { RootCauseAnalyzer } from '../../sdlc/RootCauseAnalyzer'
 import { IncidentAnalyzer } from '../../sdlc/IncidentAnalyzer'
 import { KpiReportAnalyzer } from '../../sdlc/KpiReportAnalyzer'
-import type { ParsedCrash, ParsedTrace, TelemetryIngestResult } from '../../knowledge/telemetry'
+import type { ParsedCrash, ParsedTrace, TelemetryFormat, TelemetryIngestResult } from '../../knowledge/telemetry'
 
 interface TelemetryOptions {
   path?: string
   analyze?: boolean
+  /** Write sample Sentry/Crashlytics/analytics exports, then ingest them. */
+  fixtures?: boolean
+  /** Force a telemetry format instead of auto-detecting per record. */
+  format?: string
+  /** Print the accepted formats guide and exit. */
+  formats?: boolean
 }
+
+/**
+ * What the command actually did — so callers (the interactive menu, the CLI
+ * wrapper) can stop claiming success when nothing was ingested.
+ */
+export type TelemetryCommandOutcome =
+  | { status: 'ingested'; result: TelemetryIngestResult }
+  | { status: 'empty'; reason: 'no-dir-found' | 'no-parseable-events' }
+  | { status: 'formats' }
 
 /**
  * `vectalon telemetry [directory]` — ingest runtime telemetry exports
  * (Sentry events, Firebase Crashlytics reports, performance traces, analytics
  * events) into the knowledge base, then run data-driven crash / incident /
  * KPI analysis over the ingested window.
+ *
+ * Never calls process.exit for the empty case: it returns an outcome so the
+ * interactive menu can guide the user and the CLI wrapper can set the exit
+ * code. The only hard exit is the pre-flight ".vectalon missing" error.
  */
-export async function telemetryCommand(directory: string, options: TelemetryOptions): Promise<void> {
+export async function telemetryCommand(directory: string, options: TelemetryOptions): Promise<TelemetryCommandOutcome> {
+  if (options.formats) {
+    logger.out(telemetryFormatsGuide())
+    return { status: 'formats' }
+  }
+
+  if (options.fixtures && options.path) {
+    logger.error('--fixtures writes and ingests sample exports; it cannot be combined with --path (run one or the other)')
+    process.exit(1)
+  }
+
+  if (options.format !== undefined && !isTelemetryFormat(options.format)) {
+    logger.error(`Unknown telemetry format: ${options.format}. Valid formats: sentry, crashlytics, performance, analytics`)
+    process.exit(1)
+  }
+
   const root = resolve(directory || process.cwd())
 
   if (!existsSync(join(root, '.vectalon'))) {
@@ -35,33 +71,55 @@ export async function telemetryCommand(directory: string, options: TelemetryOpti
 
   const store = new ArtifactStore(root)
   const service = new TelemetryIngestionService(store)
+  const format = options.format as TelemetryFormat | undefined
+
+  if (options.fixtures) {
+    const written = writeTelemetryFixtures(root)
+    logger.info(`Sample exports written (${written.length} files): ${written.map(p => p.split('/').pop()).join(', ')}`)
+    const result = service.ingestDirectory(join(root, '.vectalon', 'telemetry'), { format })
+    reportIngest(result)
+    if (result.events.length === 0) return { status: 'empty', reason: 'no-parseable-events' }
+    if (options.analyze !== false) runAnalysis(result)
+    logger.success(`Sample telemetry ingested — the pipeline works end-to-end. Try it on your own exports.`)
+    return { status: 'ingested', result }
+  }
 
   const dir = options.path
     ? resolve(root, options.path)
     : TelemetryIngestionService.findDefaultDir(root)
 
   if (!dir || !existsSync(dir)) {
-    logger.warn(`No telemetry exports found. Drop Sentry / Crashlytics / trace / analytics exports into ${DEFAULT_TELEMETRY_DIRS.join(' or ')} (relative to the project root), or pass --path.`)
-    return
+    logger.warn(`No telemetry exports found. Drop Sentry / Crashlytics / trace / analytics exports into ${DEFAULT_TELEMETRY_DIRS.join(' or ')} (relative to the project root), pass --path, or run --fixtures to write sample exports and see the pipeline end-to-end.`)
+    return { status: 'empty', reason: 'no-dir-found' }
   }
 
   const isFile = statSync(dir).isFile()
-  const result: TelemetryIngestResult = isFile ? service.ingestFile(dir) : service.ingestDirectory(dir)
+  const result: TelemetryIngestResult = isFile
+    ? service.ingestFile(dir, { format })
+    : service.ingestDirectory(dir, { format })
+  reportIngest(result)
 
-  logger.info(`Scanned ${result.filesScanned} telemetry file(s)`)
-  logger.success(`Ingested ${result.events.length} event(s): ${result.crashes.length} crash, ${result.traces.length} trace, ${result.analytics.length} analytics`)
-  if (result.skipped > 0) logger.dim(`  ${result.skipped} duplicate(s) skipped`)
-  for (const error of result.errors) {
-    logger.warn(`  ${error.file}: ${error.error}`)
+  if (result.events.length === 0) {
+    logger.warn(`Scanned ${result.filesScanned} file(s) but parsed no events. If the exports look right, the format may be unusual — retry with --format <sentry|crashlytics|performance|analytics>.`)
+    return { status: 'empty', reason: 'no-parseable-events' }
   }
-
-  if (result.events.length === 0) return
 
   if (options.analyze !== false) {
     runAnalysis(result)
   }
 
   logger.success(`Telemetry artifacts stored in the knowledge base (${result.artifacts.length} new)`)
+  return { status: 'ingested', result }
+}
+
+/** Shared post-ingest reporting (used by the normal and fixture paths). */
+function reportIngest(result: TelemetryIngestResult): void {
+  logger.info(`Scanned ${result.filesScanned} telemetry file(s)`)
+  logger.success(`Ingested ${result.events.length} event(s): ${result.crashes.length} crash, ${result.traces.length} trace, ${result.analytics.length} analytics`)
+  if (result.skipped > 0) logger.dim(`  ${result.skipped} duplicate(s) skipped`)
+  for (const error of result.errors) {
+    logger.warn(`  ${error.file}: ${error.error}`)
+  }
 }
 
 function runAnalysis(result: TelemetryIngestResult): void {

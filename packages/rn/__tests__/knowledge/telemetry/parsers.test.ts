@@ -220,6 +220,41 @@ describe('telemetry parsers', () => {
       expect(events).toHaveLength(2)
     })
 
+    it('parses pretty-printed arrays (real-world Sentry events[] exports)', () => {
+      const pretty = JSON.stringify(
+        [
+          { event_id: 'p1', exception: { values: [{ type: 'TypeError', value: 'boom' }] } },
+          { event_id: 'p2', exception: { values: [{ type: 'RangeError', value: 'bad' }] } },
+        ],
+        null,
+        2
+      )
+      const events = parseTelemetryContent(pretty)
+      expect(events).toHaveLength(2)
+      expect(events[0].kind).toBe('crash')
+      expect(events[1].kind).toBe('crash')
+    })
+
+    it('parses pretty-printed single objects', () => {
+      const pretty = JSON.stringify(
+        { event_id: 'single', exception: { values: [{ type: 'Error', value: 'x' }] } },
+        null,
+        2
+      )
+      const events = parseTelemetryContent(pretty)
+      expect(events).toHaveLength(1)
+      expect(events[0].kind).toBe('crash')
+    })
+
+    it('forces a format when detection misses an unusual shape', () => {
+      // Auto-detection returns unknown for this bare shape → 0 events.
+      expect(parseTelemetryContent(JSON.stringify({ type: 'crash', reason: 'boom' }))).toHaveLength(0)
+      // Forced crashlytics parses it as a crash report.
+      const forced = parseTelemetryContent(JSON.stringify({ type: 'crash', reason: 'boom' }), 'crashlytics')
+      expect(forced).toHaveLength(1)
+      expect(forced[0].kind).toBe('crash')
+    })
+
     it('returns nothing for invalid JSON', () => {
       expect(parseTelemetryContent('this is not json')).toHaveLength(0)
     })

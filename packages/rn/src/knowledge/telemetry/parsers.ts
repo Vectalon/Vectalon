@@ -298,19 +298,13 @@ export function detectTelemetryFormat(obj: Record<string, unknown>): TelemetryFo
 }
 
 /**
- * Parse telemetry content (single JSON object or JSONL) into typed events.
- * Format auto-detects unless overridden.
+ * Parse telemetry content (single JSON object, JSON array, or JSONL) into
+ * typed events. Format auto-detects unless overridden.
  */
 export function parseTelemetryContent(content: string, forcedFormat?: TelemetryFormat): TelemetryEvent[] {
   const events: TelemetryEvent[] = []
-  const lines = content
-    .split(/\r?\n/)
-    .map(l => l.trim())
-    .filter(Boolean)
-
-  if (lines.length === 0) return events
-
-  const isJsonLines = lines.length > 1 || (lines.length === 1 && (lines[0].startsWith('{') && lines[0].endsWith('}') === false))
+  const trimmed = content.trim()
+  if (trimmed.length === 0) return events
 
   const pushObject = (obj: unknown): void => {
     if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return
@@ -342,26 +336,35 @@ export function parseTelemetryContent(content: string, forcedFormat?: TelemetryF
     }
   }
 
-  if (isJsonLines) {
-    for (const line of lines) {
-      try {
-        pushObject(JSON.parse(line))
-      } catch (err) {
-        reportError(err, 'telemetry: skipping malformed JSONL line')
+  // Whole-document JSON first: covers single objects AND arrays, including
+  // pretty-printed (multi-line) exports that a line-count heuristic would
+  // misread as JSONL — silently dropping every event (a real-world Sentry
+  // `events[]` export is a pretty-printed array). If the whole document
+  // parses, we're done.
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(content)
+      if (Array.isArray(parsed)) {
+        for (const item of parsed) pushObject(item)
+      } else {
+        pushObject(parsed)
       }
+      return events
+    } catch {
+      // Not a single JSON document — fall through to line-by-line (JSONL).
+      // Deliberately silent: every JSONL export fails the whole-document
+      // parse, so this is an expected path, not an error to record.
     }
-    return events
   }
 
-  try {
-    const parsed = JSON.parse(content)
-    if (Array.isArray(parsed)) {
-      for (const item of parsed) pushObject(item)
-    } else {
-      pushObject(parsed)
+  // JSONL: one object per line, tolerant of malformed lines.
+  const lines = trimmed.split(/\r?\n/)
+  for (const line of lines) {
+    try {
+      pushObject(JSON.parse(line))
+    } catch (err) {
+      reportError(err, 'telemetry: skipping malformed JSONL line')
     }
-  } catch (err) {
-    reportError(err, 'telemetry: content is not valid JSON')
   }
   return events
 }
