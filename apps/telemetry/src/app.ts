@@ -32,6 +32,8 @@ export interface TelemetryRequest {
   method: string
   url: string
   body: Buffer
+  /** Node-style headers (lowercased keys) — optional, used by admin routes. */
+  headers?: Record<string, string | string[] | undefined>
 }
 
 export interface TelemetryResponse {
@@ -176,6 +178,35 @@ export function createApp(options: AppOptions = {}) {
     return text(200, html, { 'Content-Type': 'text/html; charset=utf-8' })
   }
 
+  /**
+   * Admin-only error listing — GET /v1/admin/errors?limit=500.
+   * Authenticated with `Authorization: Bearer <TELEMETRY_ADMIN_TOKEN>` (or
+   * `?token=…` for tooling that can't set headers). Powers the admin error
+   * dashboard in the website app.
+   */
+  async function handleAdminErrors(
+    method: string,
+    url: string,
+    headers?: TelemetryRequest['headers']
+  ): Promise<TelemetryResponse> {
+    if (method !== 'GET') return json(405, { error: `method ${method} not allowed` })
+    const token = process.env.TELEMETRY_ADMIN_TOKEN
+    if (!token) return json(503, { error: 'TELEMETRY_ADMIN_TOKEN not configured' })
+    let provided = ''
+    const auth = headers?.authorization
+    if (typeof auth === 'string') provided = auth.replace(/^Bearer\s+/i, '').trim()
+    if (!provided) {
+      try {
+        provided = new URL(url, 'http://localhost').searchParams.get('token') ?? ''
+      } catch {
+        // fall through
+      }
+    }
+    if (!provided || provided !== token) return json(401, { error: 'unauthorized' })
+    const errors = await store.listErrors(500)
+    return json(200, { errors })
+  }
+
   async function handle(request: TelemetryRequest): Promise<TelemetryResponse> {
     const path = pathOf(request.url)
     try {
@@ -184,6 +215,8 @@ export function createApp(options: AppOptions = {}) {
           return await handleDashboard()
         case '/v1/errors':
           return await handleErrors(request.method, request.url, request.body)
+        case '/v1/admin/errors':
+          return await handleAdminErrors(request.method, request.url, request.headers)
         case '/v1/heartbeat':
           return await handleHeartbeat(request.method, request.url, request.body)
         case '/v1/support':

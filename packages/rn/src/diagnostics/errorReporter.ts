@@ -67,6 +67,40 @@ function osLabel(): string {
   return `${platform()} ${release()} ${arch()}`
 }
 
+/**
+ * Persistent install identity: a stable random clientId stored in the user
+ * config dir, plus a best-effort project slug from the cwd package.json name.
+ * Lets the admin error dashboard group errors by customer. Never throws.
+ */
+function clientIdentity(): { clientId: string; project?: string } {
+  let clientId = ''
+  try {
+    const file = join(configDirPath(), 'client.json')
+    if (existsSync(file)) {
+      const parsed = JSON.parse(readFileSync(file, 'utf-8')) as { clientId?: unknown }
+      if (typeof parsed?.clientId === 'string' && parsed.clientId) clientId = parsed.clientId
+    }
+    if (!clientId) {
+      clientId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`
+      mkdirSync(configDirPath(), { recursive: true })
+      writeFileSync(file, JSON.stringify({ clientId }))
+    }
+  } catch (err) {
+    reportError(err, 'errorReporter: client identity')
+  }
+
+  let project: string | undefined
+  try {
+    const pkg = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf-8')) as {
+      name?: unknown
+    }
+    if (typeof pkg?.name === 'string' && pkg.name.trim()) project = pkg.name.trim()
+  } catch {
+    // not running inside a package — no project slug
+  }
+  return { clientId, project }
+}
+
 /** Absolute queue path: project-local when a root is given, else user config. */
 export function queuePathFor(root?: string): string {
   if (root) return join(root, '.vectalon', 'telemetry-queue.json')
@@ -115,6 +149,7 @@ export function captureError(error: unknown, command: string, context?: string, 
     nodeVersion: process.version,
     os: osLabel(),
     ...(process.env.NODE_ENV !== 'test' ? { production: true } : {}),
+    ...clientIdentity(),
   }
 
   const queuePath = options.queuePath || queuePathFor()

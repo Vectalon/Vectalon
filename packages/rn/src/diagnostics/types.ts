@@ -28,6 +28,10 @@ export interface ErrorReport {
   os: string
   /** True when this event came from the user's machine (never a test). */
   production?: boolean
+  /** Persistent install id — groups errors by client across commands. */
+  clientId?: string
+  /** Best-effort project slug from the cwd package.json name. */
+  project?: string
 }
 
 /** Liveness heartbeat payload from serve / daemon (not usage tracking). */

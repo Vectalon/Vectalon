@@ -49,6 +49,8 @@ export async function POST(request: Request) {
   if (!result.valid) {
     return NextResponse.json({ valid: false, error: result.reason }, { status: 200 })
   }
+  // Live usage signal: every successful online check feeds the admin dashboard.
+  await store.recordUsage('validate', 1)
   return NextResponse.json({
     valid: true,
     license: {

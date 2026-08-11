@@ -7,6 +7,7 @@ const LINKS = [
   { href: '/admin/trials', label: 'Trials', icon: '🧪' },
   { href: '/admin/customers', label: 'Customers', icon: '👤' },
   { href: '/admin/usage', label: 'Feature usage', icon: '📊' },
+  { href: '/admin/errors', label: 'Client errors', icon: '⚠' },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

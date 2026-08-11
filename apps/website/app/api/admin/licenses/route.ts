@@ -4,7 +4,7 @@ import { defaultAdminStore, type Tier } from '../../../../lib/admin-store'
 
 export const runtime = 'nodejs'
 
-const VALID_TIERS: Tier[] = ['free', 'pro', 'team', 'enterprise']
+const VALID_TIERS: Tier[] = ['free', 'pro', 'all-access', 'team', 'enterprise']
 
 export async function GET() {
   if (!(await isAdmin())) {

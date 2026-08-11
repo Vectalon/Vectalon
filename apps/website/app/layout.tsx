@@ -1,15 +1,19 @@
 import type { Metadata } from 'next'
+import { Space_Grotesk, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import Link from 'next/link'
+import { ProductsMenu } from '../components/ProductsMenu'
+
+const display = Space_Grotesk({ subsets: ['latin'], variable: '--font-display', display: 'swap' })
+const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' })
 
 export const metadata: Metadata = {
-  title: 'Vectalon — the adaptive AI harness for React Native',
+  title: 'Vectalon — the AI harness that lives in your terminal',
   description:
-    'Vectalon scans your React Native project, builds a living knowledge base, and powers an MCP-aware agent that generates, reviews, upgrades, and heals your code.',
+    'Vectalon scans your React Native, iOS, Android, and Flutter projects, builds a living knowledge base, and powers an MCP-aware agent that generates, reviews, upgrades, and heals your code.',
 }
 
 const NAV = [
-  { href: '/', label: 'Home' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/docs', label: 'Docs' },
   { href: '/changelog', label: 'Changelog' },
@@ -17,15 +21,18 @@ const NAV = [
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen flex flex-col">
-        <header className="sticky top-0 z-40 border-b border-ink-700/60 bg-ink/80 backdrop-blur">
+    <html lang="en" className={`${display.variable} ${mono.variable}`}>
+      <body className="flex min-h-screen flex-col">
+        <header className="sticky top-0 z-40 border-b border-ink-700/60 bg-ink/85 backdrop-blur">
           <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-            <Link href="/" className="flex items-center gap-2 font-mono font-bold text-white">
-              <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand text-sm text-ink">▣</span>
+            <Link href="/" className="flex items-center gap-2.5 font-mono font-bold tracking-tight text-white">
+              <span className="grid h-7 w-7 place-items-center rounded-md bg-brand text-sm font-black text-ink">
+                ▣
+              </span>
               vectalon<span className="text-brand">.in</span>
             </Link>
-            <nav className="hidden items-center gap-6 text-sm text-slate-300 sm:flex">
+            <nav className="hidden items-center gap-7 text-sm text-slate-300 lg:flex">
+              <ProductsMenu />
               {NAV.map(item => (
                 <Link key={item.href} href={item.href} className="transition hover:text-brand">
                   {item.label}
@@ -33,12 +40,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               ))}
             </nav>
             <div className="flex items-center gap-3">
-              <Link href="/admin" className="text-sm text-slate-400 transition hover:text-brand">
-                Admin
+              <Link href="/trial" className="btn-primary !px-4 !py-2 text-xs">
+                Get started
               </Link>
-              <a href="https://github.com/Vectalon/Vectalon" target="_blank" rel="noreferrer" className="btn-ghost !py-1.5">
-                GitHub
-              </a>
             </div>
           </div>
         </header>
@@ -48,16 +52,30 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="font-mono">
               vectalon<span className="text-brand">.in</span> · Business Source License
             </div>
+            <div className="flex flex-wrap justify-center gap-6">
+              <Link href="/sdk/react-native" className="transition hover:text-brand">
+                React Native
+              </Link>
+              <Link href="/sdk/ios" className="transition hover:text-brand">
+                iOS
+              </Link>
+              <Link href="/sdk/android" className="transition hover:text-brand">
+                Android
+              </Link>
+              <Link href="/sdk/flutter" className="transition hover:text-brand">
+                Flutter
+              </Link>
+            </div>
             <div className="flex gap-6">
-              <a href="mailto:support@vectalon.in" className="hover:text-brand">
+              <a href="mailto:support@vectalon.in" className="transition hover:text-brand">
                 support@vectalon.in
               </a>
-              <a href="/pricing" className="hover:text-brand">
+              <Link href="/pricing" className="transition hover:text-brand">
                 Pricing
-              </a>
-              <a href="/docs" className="hover:text-brand">
+              </Link>
+              <Link href="/docs" className="transition hover:text-brand">
                 Docs
-              </a>
+              </Link>
             </div>
           </div>
         </footer>

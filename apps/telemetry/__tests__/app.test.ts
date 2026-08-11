@@ -176,6 +176,40 @@ describe('telemetry app', () => {
   })
 })
 
+describe('telemetry admin errors route', () => {
+  const store = new MemoryStore()
+  const app = createApp({ store, sendEmail: fakeEmail })
+
+  function adminGet(path: string, headers: Record<string, string> = {}): Promise<TelemetryResponse> {
+    return app.handle({ method: 'GET', url: path, body: Buffer.alloc(0), headers })
+  }
+
+  test('503 when TELEMETRY_ADMIN_TOKEN is not configured', async () => {
+    delete process.env.TELEMETRY_ADMIN_TOKEN
+    const res = await adminGet('/v1/admin/errors', { authorization: 'Bearer whatever' })
+    assert.equal(res.status, 503)
+  })
+
+  test('401 without a valid token', async () => {
+    process.env.TELEMETRY_ADMIN_TOKEN = 'secret-token'
+    const noAuth = await adminGet('/v1/admin/errors')
+    assert.equal(noAuth.status, 401)
+    const badAuth = await adminGet('/v1/admin/errors', { authorization: 'Bearer nope' })
+    assert.equal(badAuth.status, 401)
+  })
+
+  test('200 with a valid bearer token returns the error list', async () => {
+    process.env.TELEMETRY_ADMIN_TOKEN = 'secret-token'
+    await post(app, '/v1/errors', { events: [{ message: 'admin visible', command: 'serve', clientId: 'abc' }] })
+    const res = await adminGet('/v1/admin/errors', { authorization: 'Bearer secret-token' })
+    assert.equal(res.status, 200)
+    const body = JSON.parse(res.body) as { errors: Array<{ message: string; clientId?: string }> }
+    const found = body.errors.find(e => e.message === 'admin visible')
+    assert.ok(found)
+    assert.equal(found.clientId, 'abc')
+  })
+})
+
 describe('store backends', () => {
   test('FileStore persists across instances', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'vectalon-tel-'))

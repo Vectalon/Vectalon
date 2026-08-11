@@ -16,6 +16,10 @@ export interface ErrorReport {
   nodeVersion?: string
   os?: string
   production?: boolean
+  /** Persistent install id — groups errors by client across commands. */
+  clientId?: string
+  /** Best-effort project slug from the client's package.json name. */
+  project?: string
 }
 
 /** Errors POST body: { schemaVersion, events: ErrorReport[] }. */
