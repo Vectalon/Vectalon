@@ -2,9 +2,27 @@ import Link from 'next/link'
 
 const RELEASES = [
   {
-    version: 'v0.1.26',
+    version: 'v0.1.28',
     date: '2026-08-10',
     tag: 'latest',
+    highlights: [
+      'Structured workflow output — the terminal explains itself: [9/13] phase progress, a live command feed with ✓/✖ + exit code + duration, and parsed failure cards that point at the full report, the rotating log, and the resume command',
+      'Doctor failure card — missing checks render as a numbered fix list with [auto]/[manual] tags and an auto-fix count (vectalon doctor --fix)',
+      'run_agent results render as a structured markdown report with a tool-call table (✅ executed / ⚠️ skipped) and iteration counts',
+      'Failed verification checks become project memory — distilled into L0→L3 error facts so future runs know the project\'s recurring failures',
+    ],
+  },
+  {
+    version: 'v0.1.27',
+    date: '2026-08-10',
+    highlights: [
+      'L0→L3 agent memory distiller — agent sessions become raw memory, atomic facts, occurrence-weighted scenario lessons, and a stable project persona (stack, conventions, known issues), inlined into every model prompt',
+      'Professional ecosystem UX — grouped catalog (MCP servers / Agent skills / Tools / Hooks) with ✓/— status marks, never-truncated IDs, and a single-item --info view',
+    ],
+  },
+  {
+    version: 'v0.1.26',
+    date: '2026-08-10',
     highlights: [
       'run_agent loop hardened for small local models — forced final answer, per-run tool cap, read-only tool dedupe',
       'Fine-tune dataset feature removed — model/knowledge quality is Vectalon\'s job, not the customer\'s',

@@ -8,7 +8,7 @@ const FEATURES = [
   },
   {
     title: 'Self-maintaining knowledge',
-    body: 'Init scans your repo and builds a living knowledge graph. Serve re-seeds it hourly. The model always works from what your project actually is — never a generic guess.',
+    body: 'Init scans your repo and builds a living knowledge graph; serve re-seeds it hourly. Every run is distilled into L0→L3 project memory — the project teaches the model, and the model never works from a generic guess.',
     icon: '🧠',
   },
   {
@@ -86,7 +86,43 @@ export default function Home() {
 
       {/* Terminal demo */}
       <section id="terminal" className="mx-auto max-w-4xl px-4 pb-20">
-        <div className="card !p-0 overflow-hidden font-mono text-sm">
+        <div className="mb-3 text-center">
+          <h2 className="text-2xl font-bold text-white">Watch it run — 90 seconds, no cuts</h2>
+          <p className="mt-2 text-sm text-slate-400">
+            The real CLI, recorded live on a fresh project. Every command below, played back.
+          </p>
+        </div>
+        <div className="card !p-0 overflow-hidden">
+          <div className="flex items-center justify-between border-b border-ink-700 bg-ink-900 px-4 py-2.5">
+            <div className="flex gap-1.5">
+              <span className="h-3 w-3 rounded-full bg-red-400/70" />
+              <span className="h-3 w-3 rounded-full bg-yellow-400/70" />
+              <span className="h-3 w-3 rounded-full bg-green-400/70" />
+            </div>
+            <span className="text-xs text-slate-500">demo/full-demo.mp4 — v0.1.28</span>
+          </div>
+          <video
+            className="aspect-[8/5] w-full bg-ink-900 object-contain"
+            controls
+            muted
+            playsInline
+            autoPlay
+            loop
+            poster="/demo/full-demo-poster.jpg"
+          >
+            <source src="/demo/full-demo.mp4" type="video/mp4" />
+            Your browser doesn't support the video tag — watch the walkthrough on{' '}
+            <a
+              href="https://github.com/Vectalon/Vectalon/blob/main/apps/website/demo/recording/README.md"
+              target="_blank"
+              rel="noreferrer"
+            >
+              GitHub
+            </a>
+            .
+          </video>
+        </div>
+        <div className="card !p-0 mt-6 overflow-hidden font-mono text-sm">
           <div className="flex items-center justify-between border-b border-ink-700 bg-ink-900 px-4 py-2.5">
             <div className="flex gap-1.5">
               <span className="h-3 w-3 rounded-full bg-red-400/70" />
@@ -101,10 +137,10 @@ export default function Home() {
 ℹ Detected React Native CLI (bare) · 26 ecosystem items enabled
 
 $ npx vectalon feature "login screen with auth API"
-◆ PRD → stories → acceptance criteria → implementation → tests → review
-✔ src/components/CreateLoginScreenEmailPassword.tsx  (composite 92%)
+◆ [5/13] Implementation ▸ yarn test     ✓ (2.1s)
+◆ [9/13] Verification ▸ yarn test       ✓ (1.8s)
 ✔ Compile-checked: 0 errors after 2 healing passes
-✔ Rendered headlessly in sandbox — tree OK
+✦ 13/13 phases completed — index.md · 3 lessons distilled to project memory
 
 $ npx vectalon upgrade --diff
 ◆ rn-diff-purge diff fetched: 0.85.3 → 0.86.2
@@ -147,7 +183,7 @@ $ npx vectalon upgrade --diff
                 knows it.
               </p>
               <Link href="/changelog" className="mt-6 inline-block text-sm text-brand hover:underline">
-                See what shipped in v0.1.26 →
+                See what shipped in v0.1.28 →
               </Link>
             </div>
             <div className="card !p-0">

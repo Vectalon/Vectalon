@@ -5,7 +5,7 @@ with [VHS](https://github.com/charmbracelet/vhs) (charmbracelet).
 
 ## Watch it
 
-- **`clips/full-demo.mp4`** — the complete ~1.5 min walkthrough (all 8 clips concatenated).
+- **`clips/full-demo.mp4`** — the complete ~1.5 min walkthrough (all 8 clips concatenated). A copy ships with the website (`apps/website/public/demo/full-demo.mp4`, embedded on the homepage under “Watch it run”) — keep the two in sync when re-rendering.
 - **`clips/NN-*.mp4`** — individual clips per feature section.
 - **Play a tape live** (no video file needed):
 
