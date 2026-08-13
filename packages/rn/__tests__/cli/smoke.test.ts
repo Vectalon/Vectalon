@@ -91,7 +91,9 @@ describe('vectalon smoke command', () => {
   it('runs the full fast check set without throwing (project sanity sweep)', async () => {
     // Every deterministic fast check through the real binary — servers are
     // boot-probed, tier-gated and input-dependent commands are skips, and
-    // nothing should fail in a well-formed project.
+    // nothing should fail in a well-formed project. The sweep boots the MCP
+    // server and daemon for real, so it needs a jest timeout well above the
+    // 5s default (CI is slower than a dev machine).
     await smokeCommand(tempProject(), { html: false, out: '.vectalon/smoke', timeoutMs: 60000 })
-  })
+  }, 120000)
 })
