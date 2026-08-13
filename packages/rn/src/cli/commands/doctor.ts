@@ -194,6 +194,44 @@ function renderSectionTable(head: string[], rows: DoctorCheckResult[]): void {
 }
 
 /**
+ * Missing ecosystem tool/hook items are OPTIONAL extras: the agent loop never
+ * blocks on them (a missing zustand/flashlist only matters if the project
+ * adopts the library; husky/lefthook are git hygiene). Missing mcp/skill items
+ * are agent infrastructure the enabled config actually relies on. Renders the
+ * two kinds differently so a wall of 23 identical "install with: npx …" rows
+ * collapses into the handful of real gaps.
+ */
+function isOptionalExtra(check: DoctorCheckResult): boolean {
+  return (check.category === 'tool' || check.category === 'hook') && check.status === 'missing'
+}
+
+/**
+ * One-line verdict right under the header — what actually needs attention vs
+ * what is nice-to-have — instead of burying the summary under four tables.
+ */
+function renderVerdict(missing: number, coreMissing: number, optionalMissing: number, warnings: number, ok: number): void {
+  if (missing === 0 && warnings === 0) {
+    logger.success(`All ${ok} check(s) passed — toolchain and ecosystem are ready.`)
+    return
+  }
+  const parts: string[] = []
+  if (missing > 0) {
+    const label = optionalMissing > 0 ? ` (${coreMissing} the agent needs · ${optionalMissing} optional)` : ''
+    parts.push(pc.red(`✖ ${missing} check(s) missing${label}`))
+  }
+  if (warnings > 0) parts.push(pc.yellow(`${warnings} warning(s)`))
+  if (ok > 0) parts.push(pc.dim(`${ok} ok`))
+  logger.info(parts.join(' · '))
+}
+
+/** Collapsed one-line summary of the passing ecosystem items. */
+function renderOkSummary(ok: DoctorCheckResult[]): void {
+  if (ok.length === 0) return
+  logger.info(pc.dim(`✓ ${ok.length} ok: ${ok.map(c => c.id).join(', ')}`))
+  logger.info('')
+}
+
+/**
  * Numbered fix steps for every missing check — the "clear steps to fix" ask,
  * rendered as a structured failure card (✖ header, auto/manual tags, log
  * pointer) that mirrors the workflow failure card.
@@ -352,10 +390,43 @@ export async function doctorCommand(directory: string, options: DoctorOptions): 
   logger.info(pc.bold(`vectalon doctor — ${flavorLabel} · ${report.enabledCount} enabled ecosystem item(s) + native toolchain + nightly leaderboard + model access`))
   logger.info('')
 
+  // Verdict first: what needs attention (split core vs optional), so the four
+  // tables below never bury the answer.
+  const allMissing = [...report.checks, ...report.toolchain, ...report.leaderboard, ...report.model].filter(c => c.status === 'missing')
+  const optionalMissing = report.checks.filter(isOptionalExtra).length
+  renderVerdict(
+    report.missingCount,
+    allMissing.length - optionalMissing,
+    optionalMissing,
+    report.warningCount,
+    report.okCount
+  )
+  logger.info('')
+
   if (report.checks.length > 0) {
-    const table = report.checks.map(c => [statusCell(c), c.id, c.category, c.detail, c.hint || ''])
-    process.stdout.write(renderTable(table as Array<Array<string | number>>, { head: ['Status', 'ID', 'Category', 'Detail', 'Hint'] }) + '\n')
-    logger.info('')
+    const coreGaps = report.checks.filter(c => c.status !== 'ok' && !isOptionalExtra(c))
+    const optionalExtras = report.checks.filter(isOptionalExtra)
+    const okChecks = report.checks.filter(c => c.status === 'ok')
+
+    // Agent infrastructure (MCP servers + skills) — full detail; a missing
+    // one means the enabled config can't do its job.
+    if (coreGaps.length > 0) {
+      logger.info(pc.bold('The agent needs these'))
+      const table = coreGaps.map(c => [statusCell(c), c.id, c.category, c.detail, c.hint || ''])
+      process.stdout.write(renderTable(table as Array<Array<string | number>>, { head: ['Status', 'ID', 'Category', 'Detail', 'Hint'] }) + '\n')
+      logger.info('')
+    }
+
+    // Optional tooling (dev tools + repo hooks) — one compact line each; a
+    // missing one only matters if the project adopts it.
+    if (optionalExtras.length > 0) {
+      logger.info(pc.bold(`Optional tooling (${optionalExtras.length}) — used only when your project needs it`))
+      const table = optionalExtras.map(c => [pc.dim('⚠'), c.id, c.hint || c.detail])
+      process.stdout.write(renderTable(table as Array<Array<string | number>>, { head: ['', 'Item', 'Install'], colWidths: [1, 24, 80] }) + '\n')
+      logger.info('')
+    }
+
+    renderOkSummary(okChecks)
   }
 
   // Recommended-but-not-enabled section — the "future vision / easy enable" ask.
@@ -380,8 +451,8 @@ export async function doctorCommand(directory: string, options: DoctorOptions): 
   logger.info('')
 
   // Clear numbered fix steps for everything that's missing — a structured
-  // failure card with auto/manual tags and a log pointer.
-  const allMissing = [...report.checks, ...report.toolchain, ...report.leaderboard, ...report.model].filter(c => c.status === 'missing')
+  // failure card with auto/manual tags and a log pointer. (The card is the
+  // canonical fix list; the Optional tooling section above is the compact view.)
   renderFixCard(root, allMissing, report.warningCount, report.okCount)
 
   // Upgrade readiness check

@@ -250,6 +250,111 @@ describe('doctorCommand', () => {
     expect(exit).toHaveBeenCalledWith(1)
   })
 
+  it('splits agent-core gaps from optional tooling in the report', () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    writeFileSync(
+      join(dir, '.vectalon', 'ecosystem.json'),
+      JSON.stringify({ version: '1.0.0', enabled: ['metro-mcp', 'zustand', 'husky'] })
+    )
+
+    let out = ''
+    jest.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+    jest.spyOn(process.stderr, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+    const exit = jest.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('exit')
+    }) as unknown as (code?: string | number | null) => never)
+
+    void doctorCommand(dir, {
+      checkers: {
+        ...okCheckers(),
+        packageInstalled: () => false,
+        // Fail only the metro-mcp binary probe so the MCP is genuinely missing.
+        run: (command: string) =>
+          command === 'metro-mcp' ? { success: false, output: '' } : { success: true, output: 'v20.11.0' },
+      },
+    }).catch(() => {
+      // exit mocked to throw
+    })
+
+    // MCP servers are agent infrastructure — full detail table.
+    expect(out).toContain('The agent needs these')
+    expect(out).toContain('metro-mcp')
+    // Optional npm tools + hooks collapse into a compact install list.
+    expect(out).toContain('Optional tooling (2)')
+    expect(out).toContain('zustand')
+    expect(out).toContain('husky')
+    expect(out).toContain('npm install zustand')
+    expect(exit).toHaveBeenCalledWith(1)
+  })
+
+  it('shows a verdict line that separates core from optional missing checks', () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    writeFileSync(
+      join(dir, '.vectalon', 'ecosystem.json'),
+      JSON.stringify({ version: '1.0.0', enabled: ['metro-mcp', 'zustand', 'husky'] })
+    )
+
+    let out = ''
+    jest.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+    jest.spyOn(process.stderr, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+    jest.spyOn(process, 'exit').mockImplementation((() => {
+      throw new Error('exit')
+    }) as unknown as (code?: string | number | null) => never)
+
+    void doctorCommand(dir, {
+      checkers: {
+        ...okCheckers(),
+        packageInstalled: () => false,
+        run: (command: string) =>
+          command === 'metro-mcp' ? { success: false, output: '' } : { success: true, output: 'v20.11.0' },
+      },
+    }).catch(() => {
+      // exit mocked to throw
+    })
+
+    // 1 core (metro-mcp) + 2 optional (zustand, husky).
+    expect(out).toContain('3 check(s) missing (1 the agent needs · 2 optional)')
+  })
+
+  it('renders a one-line summary of the passing ecosystem items', () => {
+    mkdirSync(join(dir, '.vectalon'), { recursive: true })
+    writeFileSync(
+      join(dir, '.vectalon', 'ecosystem.json'),
+      JSON.stringify({ version: '1.0.0', enabled: ['reanimated', 'gesture-handler'] })
+    )
+
+    let out = ''
+    jest.spyOn(process.stdout, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+    jest.spyOn(process.stderr, 'write').mockImplementation((chunk: string | Uint8Array) => {
+      if (typeof chunk === 'string') out += chunk
+      return true
+    })
+
+    try {
+      doctorCommand(dir, { checkers: okCheckers() })
+    } catch {
+      // exit mocked to throw
+    }
+
+    // Passing items collapse to one line instead of table rows.
+    expect(out).toContain('2 ok: reanimated, gesture-handler')
+  })
+
   it('renders a structured failure card with fix commands and a log pointer', () => {
     mkdirSync(join(dir, '.vectalon'), { recursive: true })
     writeFileSync(
