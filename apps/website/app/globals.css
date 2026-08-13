@@ -205,3 +205,14 @@
     animation: none;
   }
 }
+
+/* Safety net: if the compositor never advances entrance animations
+   (throttled or non-composited webviews, energy saver, screenshot
+   capture), the fade-up animation parks elements at their opacity-0
+   start frame and the terminal text is invisible against the dark
+   page. The animWatchdog script in layout.tsx detects this and adds
+   html.anim-frozen, which strips the animations so content shows. */
+html.anim-frozen .animate-fade-up,
+html.anim-frozen .caret {
+  animation: none;
+}

@@ -33,11 +33,53 @@ const themeScript = `
   })();
 `
 
+// Watchdog for entrance animations (animate-fade-up): those start at
+// opacity 0 with fill-mode both, so if the compositor never advances
+// the animation (throttled/non-composited webviews, energy saver,
+// screenshots), the hero content — including the terminal text — stays
+// invisible against the dark page. Detect that and add html.anim-frozen
+// so globals.css strips the animations and content is always visible.
+const animWatchdog = `
+  (function () {
+    function init() {
+      try {
+        var els = document.querySelectorAll('.animate-fade-up');
+        if (!els.length) return;
+        var target = els[0];
+        var done = false;
+        function freeze() {
+          if (!done) {
+            done = true;
+            document.documentElement.classList.add('anim-frozen');
+          }
+        }
+        function sample() {
+          if (done) return;
+          if (parseFloat(window.getComputedStyle(target).opacity) > 0.05) {
+            done = true; // animations are advancing normally
+            return;
+          }
+          window.requestAnimationFrame(sample);
+        }
+        window.setTimeout(function () {
+          if (parseFloat(window.getComputedStyle(target).opacity) <= 0.05) freeze();
+        }, 600);
+        if (typeof window.requestAnimationFrame === 'function') {
+          window.requestAnimationFrame(sample);
+        }
+      } catch (e) {}
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  })();
+`
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${display.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: animWatchdog }} />
       </head>
       <body className="flex min-h-screen flex-col">
         <header className="sticky top-0 z-40 border-b border-ink-700/60 bg-ink/85 backdrop-blur">
