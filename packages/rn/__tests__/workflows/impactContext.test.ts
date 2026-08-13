@@ -1,4 +1,4 @@
-import { mkdtempSync, existsSync, readFileSync, rmSync } from 'fs'
+import { mkdtempSync, existsSync, readFileSync, writeFileSync, rmSync, mkdirSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { designPhase } from '../../src/workflows/phases/designPhase'
@@ -6,6 +6,7 @@ import { architecturePhase } from '../../src/workflows/phases/architecturePhase'
 import { testPhase } from '../../src/workflows/phases/testPhase'
 import { taskPhase } from '../../src/workflows/phases/taskPhase'
 import { implementationPhase, buildImplementationPrompt } from '../../src/workflows/phases/implementationPhase'
+import { trackScreenshotForPr, collectImpactScreenshots } from '../../src/workflows/phases/verificationPhase'
 import { summarizeImpactReport, renderBlastRadiusContext } from '../../src/harness/impact'
 import { MaestroFlowWriter } from '../../src/sdlc/MaestroFlowWriter'
 import type { WorkflowContext, TaskInput } from '../../src/adapters/types'
@@ -236,6 +237,41 @@ describe('impact context → downstream stages', () => {
     const task = created.find(t => t.title.includes('consumers of user-service keep working'))
     expect(task).toBeDefined()
     expect(task?.description).toContain('`packages/ui/src/Button.tsx`')
+  })
+
+  it('verification tracks screenshots into the docs home for the PR', async () => {
+    const projectRoot = mkdtempSync(join(tmpdir(), 'vectalon-shot-'))
+    try {
+      // A visual-diff screenshot captured into gitignored .vectalon/.
+      mkdirSync(join(projectRoot, '.vectalon', 'artifacts', 'screenshots'), { recursive: true })
+      const visualRel = '.vectalon/artifacts/screenshots/visual-1.png'
+      writeFileSync(join(projectRoot, visualRel), 'png')
+      // Maestro impact-flow screenshots (nested per flow) + one non-impact shot.
+      const reportDir = join(projectRoot, 'maestro-report', 'flow-1')
+      mkdirSync(reportDir, { recursive: true })
+      writeFileSync(join(reportDir, 'impact-profile-screen.png'), 'png')
+      writeFileSync(join(reportDir, 'impact-home.png'), 'png')
+      writeFileSync(join(reportDir, 'other.png'), 'png')
+
+      const ctx = {
+        projectRoot,
+        state: { workflowId: 'feature-development', id: 'run-1' },
+      } as unknown as WorkflowContext
+
+      // The visual shot moves from gitignored .vectalon/ into tracked docs/.
+      const tracked = trackScreenshotForPr(ctx, visualRel)
+      expect(tracked).toBe('docs/vectalon/feature-development/run-1/screenshots/visual-1.png')
+      expect(existsSync(join(projectRoot, tracked))).toBe(true)
+
+      // Only impact-* screenshots are collected; each lands in the docs home.
+      const shots = collectImpactScreenshots(ctx)
+      expect(shots).toHaveLength(2)
+      expect(shots.every(s => s.startsWith('docs/vectalon/feature-development/run-1/screenshots/'))).toBe(true)
+      expect(shots.every(s => s.includes('impact-'))).toBe(true)
+      expect(existsSync(join(projectRoot, shots[0]))).toBe(true)
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
   })
 
   it('writeScreenFlow emits a deterministic regression flow with optional deep link', () => {

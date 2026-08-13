@@ -1,4 +1,5 @@
 import { logger } from '../../cli/logger'
+import { basename } from 'path'
 import type { WorkflowPhase, WorkflowContext } from '../../adapters/types'
 import { ensureCiConfigs } from '../../adapters/ciTemplates'
 import { phaseResult, failedPhase, sanitizeFileName } from './helpers'
@@ -40,10 +41,24 @@ function changedFiles(ctx: WorkflowContext): string[] {
   const paths = [
     ...(ctx.state.phases.find(p => p.id === 'implementation')?.artifacts || []),
     ...(ctx.state.phases.find(p => p.id === 'tests')?.artifacts || []),
+    // Verification screenshots (visual diff + impact regression flows) are
+    // tracked into docs/vectalon/.../screenshots/ — commit them so they render
+    // on the PR. Paths still under .vectalon/ (gitignored) are excluded: an
+    // explicit `git add` of an ignored file would fail the commit.
+    ...(ctx.state.phases.find(p => p.id === 'verification')?.artifacts || []).filter(
+      a => a.type === 'design' && a.path && !a.path.startsWith('.vectalon')
+    ),
   ]
     .map(a => a.path)
     .filter((p): p is string => !!p)
   return paths.length > 0 ? paths : ['(see diff)']
+}
+
+/** Screenshot artifacts the verification phase tracked for the PR. */
+function prScreenshots(ctx: WorkflowContext): string[] {
+  return (ctx.state.phases.find(p => p.id === 'verification')?.artifacts || [])
+    .filter(a => a.type === 'design' && a.path && /\.png$/i.test(a.path) && !a.path.startsWith('.vectalon'))
+    .map(a => a.path as string)
 }
 
 /** Build the PR body: what changed, why (from the heal loop + verification), checklist. */
@@ -85,6 +100,12 @@ function buildPrBody(ctx: WorkflowContext, intent: WorkflowIntent, ciFiles: stri
     '## Why',
     ...why,
     '',
+    ...(() => {
+      const shots = prScreenshots(ctx)
+      return shots.length > 0
+        ? ['## Screenshots', '', ...shots.map(s => `![${basename(s)}](${s})`), '', 'Visual diff + impact regression screenshots from verification.']
+        : []
+    })(),
     '## Checklist',
     ...CHECKLIST,
     '',

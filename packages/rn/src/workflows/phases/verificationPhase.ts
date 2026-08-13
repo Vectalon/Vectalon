@@ -1,5 +1,5 @@
-import { existsSync, readFileSync, readdirSync, mkdirSync } from 'fs'
-import { join, relative } from 'path'
+import { existsSync, readFileSync, readdirSync, mkdirSync, copyFileSync, statSync } from 'fs'
+import { join, relative, basename } from 'path'
 import type { WorkflowPhase, WorkflowArtifact, WorkflowContext } from '../../adapters/types'
 import { runCommand } from '../../adapters/runCommand'
 import { DeviceController } from '../../adapters/deviceControl'
@@ -29,6 +29,68 @@ interface VisualCheckInput {
   captureReference?: boolean
   /** Pixel-diff drift threshold (0-1); default 0.03. */
   diffThreshold?: number
+}
+
+/**
+ * Copy a screenshot into the tracked docs home
+ * (`docs/vectalon/<workflow>/<run>/screenshots/`) so it can be committed to
+ * the branch and attached to the PR — `.vectalon/` is gitignored, so a
+ * screenshot left there can never reach a reviewer. Returns the new relative
+ * path, or the original rel when the copy fails (best-effort, never throws).
+ */
+export function trackScreenshotForPr(ctx: WorkflowContext, sourceRel: string): string {
+  const root = ctx.projectRoot
+  if (!root) return sourceRel
+  try {
+    const docsDir = join(root, 'docs', 'vectalon', ctx.state.workflowId || 'workflow', ctx.state.id || 'run', 'screenshots')
+    mkdirSync(docsDir, { recursive: true })
+    const dest = join(docsDir, basename(sourceRel))
+    copyFileSync(join(root, sourceRel), dest)
+    return relative(root, dest)
+  } catch (err) {
+    reportError(err, 'verification: tracking screenshot for PR', 'warn')
+    return sourceRel
+  }
+}
+
+/**
+ * Collect the impact-regression screenshots Maestro wrote into
+ * `./maestro-report/` (the flows' `takeScreenshot: impact-<slug>` steps) and
+ * track each into the docs home so they attach to the PR. Returns the tracked
+ * relative paths.
+ */
+export function collectImpactScreenshots(ctx: WorkflowContext): string[] {
+  const root = ctx.projectRoot
+  if (!root) return []
+  const reportDir = join(root, 'maestro-report')
+  if (!existsSync(reportDir)) return []
+
+  const pngs: string[] = []
+  const walk = (dir: string): void => {
+    let entries: string[]
+    try {
+      entries = readdirSync(dir)
+    } catch {
+      return
+    }
+    for (const entry of entries) {
+      const full = join(dir, entry)
+      let st: ReturnType<typeof statSync> | null = null
+      try {
+        st = statSync(full)
+      } catch {
+        continue
+      }
+      if (!st) continue
+      if (st.isDirectory()) {
+        walk(full)
+      } else if (/^impact-.*\.png$/i.test(entry)) {
+        pngs.push(relative(root, full))
+      }
+    }
+  }
+  walk(reportDir)
+  return pngs.map(rel => trackScreenshotForPr(ctx, rel))
 }
 
 function formatOutput(stdout: string, stderr: string, limit = 4000): string {
@@ -365,6 +427,10 @@ export const verificationPhase: WorkflowPhase = {
       }
     }
 
+    // Impact-regression screenshots tracked into docs/vectalon/.../screenshots/
+    // for the PR — collected from the Maestro run below.
+    const impactScreenshots: string[] = []
+
     // Maestro E2E — run any flows the test phase generated (advisory: E2E is
     // slow and flaky, so it reports but never gates the workflow). Requires the
     // maestro CLI on PATH and a booted device; otherwise it explains how to run
@@ -411,6 +477,16 @@ export const verificationPhase: WorkflowPhase = {
                 ? ' — screenshots/report in ./maestro-report/ (attach to the PR)'
                 : ''
               results.push(`- Maestro E2E: ${e2e.success ? 'pass' : 'failed'} — ${flows.length} flow(s) executed${reportNote}${formatOutput(e2e.stdout, e2e.stderr, 2000)}`)
+
+              // Impact-regression screenshots: the flows the test stage
+              // generated for impact-flagged screens end with
+              // `takeScreenshot: impact-<slug>`, which Maestro writes into
+              // ./maestro-report/. Track them into docs/vectalon so they
+              // commit to the branch and render on the PR next to the visual
+              // diff.
+              for (const rel of collectImpactScreenshots(ctx)) {
+                impactScreenshots.push(rel)
+              }
             } catch (err) {
               const message = err instanceof Error ? err.message : String(err)
               results.push(`- Maestro E2E: error — ${message}`)
@@ -441,6 +517,11 @@ export const verificationPhase: WorkflowPhase = {
       visualFindings = outcome.findings
     } else {
       results.push('- Visual check: skipped (simulated/test run) — boot a simulator/emulator and run `vectalon serve` device tools to capture screenshots')
+    }
+    // Keep the visual screenshot attachable to the PR: the raw shot lives in
+    // gitignored .vectalon/, so copy it into the tracked docs home.
+    if (visualScreenshot) {
+      visualScreenshot = { rel: trackScreenshotForPr(ctx, visualScreenshot.rel) }
     }
 
     // Validate that tests exist for the new implementation. The engine appends a
@@ -502,6 +583,14 @@ export const verificationPhase: WorkflowPhase = {
           title: 'Visual verification screenshot',
           content: `Screenshot captured during verification:\n\n- \`${visualScreenshot.rel}\` (attach to the PR)`,
           path: visualScreenshot.rel,
+        })
+      }
+      for (const rel of impactScreenshots) {
+        artifacts.push({
+          type: 'design',
+          title: `Impact regression screenshot: ${basename(rel)}`,
+          content: `Screenshot captured by the impact regression flow:\n\n- \`${rel}\` (attach to the PR)`,
+          path: rel,
         })
       }
       if (visualFindings.length > 0) {

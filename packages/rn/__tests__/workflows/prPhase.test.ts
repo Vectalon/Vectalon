@@ -166,6 +166,43 @@ describe('prPhase', () => {
     expect(result.output).toContain('https://github.com/acme/app/pull/12')
   })
 
+  it('commits verification screenshots and renders them in the PR body', async () => {
+    const ctx = createContext(projectRoot)
+    const verification = ctx.state.phases.find(p => p.id === 'verification')!
+    verification.artifacts = [
+      {
+        type: 'design',
+        title: 'Visual verification screenshot',
+        content: 'x',
+        path: 'docs/vectalon/feature-development/test/screenshots/visual-x.png',
+      },
+      {
+        type: 'design',
+        title: 'Impact regression screenshot: impact-profile-screen.png',
+        content: 'x',
+        path: 'docs/vectalon/feature-development/test/screenshots/impact-profile-screen.png',
+      },
+      // A screenshot still under gitignored .vectalon/ must never be committed
+      // (an explicit `git add` of an ignored path would fail the commit).
+      { type: 'design', title: 'Ignored shot', content: 'x', path: '.vectalon/artifacts/screenshots/visual-y.png' },
+    ]
+
+    const result = await prPhase.run(ctx)
+    expect(result.status).toBe('completed')
+
+    const commitFiles = (ctx.adapters.git.commit as jest.Mock).mock.calls[0][0].files as string[]
+    expect(commitFiles).toContain('docs/vectalon/feature-development/test/screenshots/impact-profile-screen.png')
+    expect(commitFiles).toContain('docs/vectalon/feature-development/test/screenshots/visual-x.png')
+    expect(commitFiles).not.toContain('.vectalon/artifacts/screenshots/visual-y.png')
+
+    const prInput = (ctx.adapters.git.createPullRequest as jest.Mock).mock.calls[0][0]
+    expect(prInput.body).toContain('## Screenshots')
+    expect(prInput.body).toContain(
+      '![impact-profile-screen.png](docs/vectalon/feature-development/test/screenshots/impact-profile-screen.png)'
+    )
+    expect(prInput.body).not.toContain('visual-y.png')
+  })
+
   it('generates the EAS workflow for Expo projects and includes it in the commit', async () => {
     const ctx = createContext(projectRoot)
     ctx.snapshot = {
