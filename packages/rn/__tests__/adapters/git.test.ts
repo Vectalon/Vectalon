@@ -399,7 +399,13 @@ describe('LocalGitAdapter.upsertPullRequestComment — env-derived remote (remot
   let dir: string
   let originalFetch: typeof fetch
   const saved: Record<string, string | undefined> = {}
-  const keys = ['SYSTEM_TEAMPROJECT', 'BUILD_REPOSITORY_URI', 'AZURE_DEVOPS_TOKEN', 'GITLAB_CI', 'CI_PROJECT_PATH', 'GITLAB_TOKEN']
+  // Scrub every provider's env, including GitHub Actions' own ambient vars
+  // (GITHUB_ACTIONS / GITHUB_REPOSITORY / GITHUB_TOKEN / GH_TOKEN) and the
+  // generic CI flag — these tests simulate a remote-less Azure/GitLab checkout
+  // and the adapter's remoteUrlFromEnv() checks GitHub first, so a leaked
+  // GitHub env would route the adapter to GitHub (or the gh CLI) and never
+  // reach the fetch mock. GH_TOKEN also disables gh's ambient auth lookup.
+  const keys = ['SYSTEM_TEAMPROJECT', 'BUILD_REPOSITORY_URI', 'AZURE_DEVOPS_TOKEN', 'GITLAB_CI', 'CI_PROJECT_PATH', 'GITLAB_TOKEN', 'GITHUB_ACTIONS', 'GITHUB_REPOSITORY', 'GITHUB_TOKEN', 'GH_TOKEN', 'CI', 'BITBUCKET_PIPELINES', 'BITBUCKET_REPO_FULL_NAME', 'BITBUCKET_USERNAME', 'BITBUCKET_APP_PASSWORD']
 
   beforeEach(() => {
     for (const key of keys) {

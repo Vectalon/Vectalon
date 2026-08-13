@@ -138,6 +138,9 @@ describe('MCPServer', () => {
     )
   })
 
+  // 60+ tool handlers are invoked here, several of them spawning sandboxed
+  // processes (sandbox_run, render_component, apply_upgrade) — 5s is too tight
+  // under CI load, where the suite runs on shared runners.
   it('every advertised tool has a callable handler', async () => {
     const server = createServer()
     for (const tool of server.getToolList()) {
@@ -263,7 +266,7 @@ describe('MCPServer', () => {
       }
       expect(result.content.length).toBeGreaterThan(0)
     }
-  })
+  }, 30000)
 
   it('run_agent runs the local agent loop over the SDK tools', async () => {
     const server = createServer()
