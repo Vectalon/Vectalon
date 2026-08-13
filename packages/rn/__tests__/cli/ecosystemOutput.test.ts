@@ -81,6 +81,18 @@ describe('vectalon ecosystem output', () => {
     expect(out).toContain('vectalon ecosystem --info <id>')
   })
 
+  it('shows per-item descriptions and an enabled verdict in the list', () => {
+    const dir = makeProject()
+    const out = capture(() => ecosystemCommand(dir, {}))
+
+    // Verdict: how much of the catalog is live.
+    expect(out).toMatch(/\d+ enabled/)
+    expect(out).toMatch(/available/)
+    // Descriptions render in place (dimmed continuation lines), never truncated.
+    expect(out).toContain('CDP-based runtime inspection for Metro/Hermes')
+    expect(out).not.toMatch(/…/)
+  })
+
   it('renders --info as a single-item card', () => {
     const dir = makeProject()
     const out = capture(() => ecosystemCommand(dir, { info: 'metro-mcp' }))
