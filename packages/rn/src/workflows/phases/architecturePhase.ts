@@ -2,6 +2,38 @@ import type { WorkflowPhase } from '../../adapters/types'
 import { ADRWriter } from '../../sdlc/ADRWriter'
 import { phaseResult } from './helpers'
 import { getIntent, isRemoveDependency, isRefactor } from './intent'
+import { summarizeImpactReport, impactReportFromContext } from '../../harness/impact'
+
+/**
+ * Blast-radius section for an ADR, from the impact stage's report — the known
+ * consumers the architecture must keep working.
+ */
+function blastRadiusSection(report: string): string {
+  const impact = summarizeImpactReport(report)
+  const parts: string[] = []
+  if (impact.changed.length > 0) {
+    parts.push('', '### Blast radius (from impact stage)', '', `- Changed: ${impact.changed.map(f => '`' + f + '`').join(', ')}`)
+  }
+  if (impact.changedPackages.length > 0) {
+    parts.push(`- Changed packages: ${impact.changedPackages.map(p => '`' + p + '`').join(', ')}`)
+  }
+  if (impact.packages.length > 0) {
+    parts.push(`- Affected packages: ${impact.packages.map(p => '`' + p + '`').join(', ')}`)
+  }
+  if (impact.files.length > 0) {
+    parts.push('', 'Affected files (consumers to keep working):', ...impact.files.map(f => `- \`${f}\``))
+  }
+  if (impact.screens.length > 0) {
+    parts.push('', 'Affected screens:', ...impact.screens.map(s => `- ${s}`))
+  }
+  if (impact.flows.length > 0) {
+    parts.push('', 'E2E flows to keep green:', ...impact.flows.map(f => `- \`${f}\``))
+  }
+  if (impact.isolated && impact.changed.length > 0) {
+    parts.push('', '- No existing consumers — the change is isolated; architecture is free of coupling constraints.')
+  }
+  return parts.join('\n')
+}
 
 export const architecturePhase: WorkflowPhase = {
   id: 'architecture',
@@ -9,6 +41,7 @@ export const architecturePhase: WorkflowPhase = {
   description: 'Document the architecture decision and integration approach.',
   run: async (ctx) => {
     const intent = (await getIntent(ctx)).intent
+    const blast = blastRadiusSection(impactReportFromContext(ctx))
 
     if (isRemoveDependency(intent)) {
       const output = [
@@ -29,7 +62,8 @@ export const architecturePhase: WorkflowPhase = {
         '',
         '### Alternatives considered',
         '- Keep the dependency: rejected because it is no longer needed.',
-        `- Replace with another service: only if project requirements explicitly require the capability.`
+        `- Replace with another service: only if project requirements explicitly require the capability.`,
+        blast,
       ].join('\n')
 
       return phaseResult(
@@ -56,6 +90,7 @@ export const architecturePhase: WorkflowPhase = {
         '2. Extract pure helpers and hooks.',
         '3. Add unit tests around existing behavior.',
         '4. Apply the refactor and verify tests still pass.',
+        blast,
       ].join('\n')
 
       return phaseResult(
@@ -94,7 +129,7 @@ export const architecturePhase: WorkflowPhase = {
       '- Auth errors: clear session and redirect to login',
     ].join('\n')
 
-    const output = `${adr}\n\n${apiDesign}`
+    const output = [adr, '', apiDesign, blast].join('\n')
 
     return phaseResult(
       'architecture',

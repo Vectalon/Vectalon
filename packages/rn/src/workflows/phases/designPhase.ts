@@ -1,6 +1,7 @@
 import type { WorkflowPhase } from '../../adapters/types'
 import { phaseResult, detectConventions } from './helpers'
 import { getIntent, intentTitle, isRemoveDependency, isRefactor } from './intent'
+import { summarizeImpactReport, impactReportFromContext } from '../../harness/impact'
 
 export const designPhase: WorkflowPhase = {
   id: 'design',
@@ -9,8 +10,23 @@ export const designPhase: WorkflowPhase = {
   run: async (ctx) => {
     const conventions = detectConventions(ctx.snapshot)
     const intent = (await getIntent(ctx)).intent
+    // The impact stage ran before this one — design starts from the known
+    // blast radius: which existing screens, stacks, and flows must stay
+    // visually consistent with the new feature.
+    const impact = summarizeImpactReport(impactReportFromContext(ctx))
 
     if (isRemoveDependency(intent) || isRefactor(intent)) {
+      const impactNotes =
+        impact.files.length > 0
+          ? [
+              '',
+              '### Impact-informed UX notes',
+              '',
+              'The impact stage identified these files as consumers of this change — their UX must be preserved exactly:',
+              '',
+              ...impact.files.map(f => `- \`${f}\``),
+            ]
+          : []
       const output = [
         `## Design / UX for: ${intentTitle(intent)}`,
         '',
@@ -24,6 +40,7 @@ export const designPhase: WorkflowPhase = {
         conventions.usesStyleSheet
           ? 'Use StyleSheet.create for any retained styles to match project convention.'
           : 'Use the project’s existing styling approach for any retained styles.',
+        ...impactNotes,
       ].join('\n')
 
       return phaseResult(
@@ -70,10 +87,34 @@ export const designPhase: WorkflowPhase = {
       ...motion.map(m => `| ${m.element} | ${m.intent} | ${m.primaryProperty} | ${m.duration}ms | ${m.easing} | ${m.notes} |`),
     ].join('\n')
 
+    const impactSection = (() => {
+      if (impact.isolated) {
+        return [
+          '',
+          '## Impact-informed design',
+          '',
+          '- Impact analysis found no existing consumers — this screen is greenfield. Match project conventions (StyleSheet, spacing, typography) so future screens stay consistent.',
+        ].join('\n')
+      }
+      if (impact.screens.length + impact.navigators.length + impact.flows.length === 0) {
+        return ''
+      }
+      return [
+        '',
+        '## Impact-informed design',
+        '',
+        'This feature touches existing UI — design the new screen to stay visually consistent with what it affects:',
+        ...(impact.screens.length > 0 ? ['', 'Affected screens:', ...impact.screens.map(s => `- ${s}`)] : []),
+        ...(impact.navigators.length > 0 ? ['', 'Navigation stacks:', ...impact.navigators.map(n => `- ${n}`)] : []),
+        ...(impact.flows.length > 0 ? ['', 'E2E flows that must stay green:', ...impact.flows.map(f => `- \`${f}\``)] : []),
+      ].join('\n')
+    })()
+
     const output = [designSpec, '', motionTable, '', wireframe, '',
       conventions.usesStyleSheet
         ? 'Use StyleSheet.create for all styles to match project convention.'
-        : 'Use inline styles or the project’s existing styling approach.'
+        : 'Use inline styles or the project’s existing styling approach.',
+      impactSection
     ].join('\n')
 
     return phaseResult(

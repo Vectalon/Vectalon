@@ -629,3 +629,95 @@ export function renderImpactReport(impact: CrossPackageImpact): string {
   lines.push('_Generated deterministically from AST analysis — no model calls._')
   return lines.join('\n')
 }
+
+/** Structured view of a rendered impact report, for downstream stages. */
+export interface ImpactSummary {
+  changed: string[]
+  changedPackages: string[]
+  packages: string[]
+  files: string[]
+  screens: string[]
+  navigators: string[]
+  flows: string[]
+  blastRadius: string | null
+  /** True when the report says the change has no consumers (isolated). */
+  isolated: boolean
+}
+
+/**
+ * Parse a `renderImpactReport` markdown report back into structured signals so
+ * downstream SDLC stages (design, architecture) can start from the known blast
+ * radius. Deterministic — the report format is ours.
+ */
+export function summarizeImpactReport(report: string): ImpactSummary {
+  const summary: ImpactSummary = {
+    changed: [],
+    changedPackages: [],
+    packages: [],
+    files: [],
+    screens: [],
+    navigators: [],
+    flows: [],
+    blastRadius: null,
+    isolated: false,
+  }
+  if (!report) return summary
+
+  let section: 'files' | 'screens' | 'navigators' | 'flows' | null = null
+  for (const raw of report.split('\n')) {
+    const line = raw.trim()
+    if (line.startsWith('**Changed:**')) {
+      summary.changed = [...line.matchAll(/`([^`]+)`/g)].map(m => m[1])
+      continue
+    }
+    if (line.startsWith('**Changed packages:**')) {
+      summary.changedPackages = [...line.matchAll(/`([^`]+)`/g)].map(m => m[1])
+      continue
+    }
+    if (line.startsWith('**Blast radius:**')) {
+      summary.blastRadius = line.slice('**Blast radius:**'.length).trim()
+      continue
+    }
+    if (line.includes('No cross-package consumers found')) {
+      summary.isolated = true
+      continue
+    }
+    if (line.startsWith('### ')) {
+      section = line.includes('Affected files')
+        ? 'files'
+        : line.includes('Screens & routes')
+          ? 'screens'
+          : line.includes('Navigation stacks')
+            ? 'navigators'
+            : line.includes('E2E flows')
+              ? 'flows'
+              : null
+      continue
+    }
+    if (section && line.startsWith('- ')) {
+      const content = line.slice(2)
+      if (section === 'files') {
+        const path = content.match(/^`([^`]+)`/)
+        const pkg = content.match(/\(_([^_]+)_\)/)
+        if (path) summary.files.push(path[1])
+        if (pkg && !summary.packages.includes(pkg[1])) summary.packages.push(pkg[1])
+      } else if (section === 'screens') {
+        summary.screens.push(content)
+      } else if (section === 'navigators') {
+        summary.navigators.push(content)
+      } else if (section === 'flows') {
+        const path = content.match(/^`([^`]+)`/)
+        if (path) summary.flows.push(path[1])
+      }
+    }
+  }
+  return summary
+}
+
+/**
+ * Read the impact stage's report from a workflow context: the persisted phase
+ * output (resume-safe) or the engine's outputs map.
+ */
+export function impactReportFromContext(ctx: { state: { phases: Array<{ id: string; output?: string }> }; outputs: Record<string, string> }): string {
+  return ctx.state.phases.find(p => p.id === 'impact')?.output || ctx.outputs['impact'] || ''
+}
