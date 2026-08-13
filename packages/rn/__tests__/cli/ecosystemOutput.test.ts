@@ -94,6 +94,30 @@ describe('vectalon ecosystem output', () => {
     expect(out).not.toMatch(/…/)
   })
 
+  it('lists enabled items first within each category (live config before extras)', () => {
+    // Enable an item that catalog order lists late in its category (tools).
+    const dir = makeProject(['metro-mcp', 'fastlane'])
+    const out = capture(() => ecosystemCommand(dir, { expanded: true }))
+
+    // Tools group: fastlane is enabled, so it precedes every disabled tool
+    // even though catalog order lists it near the end of the group.
+    const tools = out.slice(out.indexOf('Tools'))
+    const toolsHead = tools.slice(0, tools.indexOf('Hooks'))
+    const fastlaneIdx = toolsHead.indexOf('fastlane')
+    const zustandIdx = toolsHead.indexOf('zustand')
+    const detoxIdx = toolsHead.indexOf('detox')
+    expect(fastlaneIdx).toBeGreaterThan(-1)
+    expect(zustandIdx).toBeGreaterThan(-1)
+    expect(detoxIdx).toBeGreaterThan(-1)
+    expect(fastlaneIdx).toBeLessThan(zustandIdx)
+    expect(fastlaneIdx).toBeLessThan(detoxIdx)
+
+    // MCP group: the enabled item still leads its group.
+    const mcp = out.slice(out.indexOf('MCP servers'), out.indexOf('Agent skills'))
+    expect(mcp.indexOf('✓ metro-mcp')).toBeGreaterThan(-1)
+    expect(mcp.indexOf('metro-mcp')).toBeLessThan(mcp.indexOf('expo-mcp'))
+  })
+
   it('stays compact when piped (no TTY): one line per item, no descriptions, no commands footer', () => {
     const dir = makeProject()
     // No --expanded and no TTY → compact.

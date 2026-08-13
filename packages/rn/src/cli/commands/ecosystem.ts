@@ -200,8 +200,11 @@ function renderList(root: string, items: EcosystemItem[], expanded: boolean): vo
   for (const category of CATEGORY_ORDER) {
     const group = items.filter(i => i.category === category)
     if (group.length === 0) continue
+    // Enabled items read first — the live config before the available extras.
+    // Stable: catalog order is preserved within each segment.
+    const ordered = [...group].sort((a, b) => Number(enabled.has(b.id)) - Number(enabled.has(a.id)))
     logger.info(pc.bold(CATEGORY_LABELS[category]) + pc.dim(` (${group.length})`))
-    for (const item of group) {
+    for (const item of ordered) {
       const on = enabled.has(item.id)
       const mark = on ? pc.green('✓') : pc.dim('—')
       const id = on ? pc.green(item.id) : item.id
