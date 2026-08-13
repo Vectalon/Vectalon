@@ -58,7 +58,7 @@ Run `npx vectalon <command> --help` for detailed options.
 | `profile [dir]` | Hermes runtime profiling: JS-thread blocking, retained objects, leak candidates, baselines + regressions | `--profile <file>`, `--heap <file>`, `--baseline <label>`, `--save-baseline`, `--threshold-ms <n>`, `--json` |
 | `sandbox` | Run a command in an isolated process with no ambient authority (scrubbed env, writes confined to the root, network denied by default) | `-- <command> [args...]`, `--root <dir>`, `--timeout <ms>`, `--cpu <s>`, `--memory <mb>`, `--network`, `--allow-env <names>`, `--json` |
 | `render [dir]` | Compile + headless-render generated TS/TSX in the sandbox — console logs, render tree, runtime errors before the diff | `--entry <file>`, `--file <file>`, `--timeout <ms>`, `--memory <mb>`, `--json` |
-| `ci [dir]` | Self-healing CI workflow generator (EAS / GitHub Actions) | `--dry-run` |
+| `ci [dir]` | Self-healing CI workflow generator (EAS; GitHub Actions / Azure Pipelines / GitLab CI / Bitbucket Pipelines — detected from the git remote) | `--provider <host>` · `--dry-run` |
 | `release [dir]` | Autonomous release pipeline: bump, changelog, E2E submit, crash-rate monitor (z-score anomaly detection + auto-rollout gate) | `--version`, `--changelog`, `--submit`, `--monitor`, `--baseline`, `--zscore <n>`, `--hours`, `--json` |
 | `sync [dir]` | Sync team brain to a hosted git remote | `--push`, `--pull`, `--init`, `--remote <url>`, `--branch`, `--force` |
 | `team-policy [dir]` | Org-wide guardrail policy: publish/pull the team policy + shared bundle budgets through the sync remote, so one policy change gates every project | `--push`, `--pull`, `--check <file>`, `--show`, `--budget <json>`, `--remove`, `--remote <url>`, `--branch`, `--force` |

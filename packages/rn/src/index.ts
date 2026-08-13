@@ -217,7 +217,16 @@ export {
 export type { EcosystemCategory, EcosystemItem, EcosystemCatalog, ProjectFlavor, EcosystemConfig, EcosystemExport } from './ecosystem'
 
 export { detectProjectTooling } from './adapters'
-export { ensureCiConfigs, generateEasWorkflow, generateGithubActionsWorkflow } from './adapters/ciTemplates'
+export {
+  ensureCiConfigs,
+  generateEasWorkflow,
+  generateGithubActionsWorkflow,
+  generateAzurePipeline,
+  generateGitlabCi,
+  generateBitbucketPipelines,
+  detectCiProvider,
+  PROVIDER_PATHS,
+} from './adapters/ciTemplates'
 export type { CiTemplateOptions, GeneratedCiFile } from './adapters/ciTemplates'
 export { ensureReleaseConfigs, generateEasReleaseWorkflow, generateGithubReleaseWorkflow } from './adapters/releaseTemplates'
 export type { ReleaseTemplateOptions, GeneratedReleaseFile } from './adapters/releaseTemplates'

@@ -4,9 +4,14 @@ import { detectValidationCommands } from '../utils/validationCommands'
 import { logger } from '../cli/logger'
 import { reportError } from '../utils/safe'
 
+/** CI hosts we can generate a native workflow for. */
+export type CiProvider = 'github' | 'azure' | 'gitlab' | 'bitbucket'
+
 export interface CiTemplateOptions {
-  /** Expo projects get `.eas/workflows/`; bare RN CLI gets `.github/workflows/`. */
+  /** Expo projects get `.eas/workflows/`; bare RN CLI gets a provider-native workflow. */
   isExpo: boolean
+  /** CI host to target. Defaults to detection from the git remote (github fallback). */
+  provider?: CiProvider
 }
 
 export interface GeneratedCiFile {
@@ -18,18 +23,60 @@ export interface GeneratedCiFile {
 
 const EAS_WORKFLOW_PATH = join('.eas', 'workflows', 'vectalon.yml')
 const GH_ACTIONS_PATH = join('.github', 'workflows', 'vectalon-ci.yml')
+const AZURE_PIPELINES_PATH = join('azure-pipelines.yml')
+const GITLAB_CI_PATH = join('.gitlab-ci.yml')
+const BITBUCKET_PIPELINES_PATH = join('bitbucket-pipelines.yml')
+
+export const PROVIDER_PATHS: Record<CiProvider, string> = {
+  github: GH_ACTIONS_PATH,
+  azure: AZURE_PIPELINES_PATH,
+  gitlab: GITLAB_CI_PATH,
+  bitbucket: BITBUCKET_PIPELINES_PATH,
+}
+
+/**
+ * Detect the CI host from the git remote (`.git/config`). Everything that is
+ * not one of the named hosts falls back to GitHub Actions — the most common
+ * default for public repos and the safest template.
+ */
+export function detectCiProvider(root: string): CiProvider {
+  try {
+    const config = readFileSync(join(root, '.git', 'config'), 'utf-8')
+    const urls = (config.match(/url\s*=\s*(.+)/g) || []).map(m => m.toLowerCase())
+    const all = urls.join(' ')
+    if (/dev\.azure\.com|visualstudio\.com|ssh\.dev\.azure/.test(all)) return 'azure'
+    if (/gitlab\.(com|org)/.test(all)) return 'gitlab'
+    if (/bitbucket\.org/.test(all)) return 'bitbucket'
+    if (/github\.com/.test(all)) return 'github'
+  } catch (err) {
+    reportError(err, 'ciTemplates: reading .git/config')
+  }
+  return 'github'
+}
 
 /**
  * Ensure the project has a CI workflow for the vectalon-generated branch:
- * EAS Workflows for Expo projects, GitHub Actions for bare RN CLI projects.
- * Idempotent — an existing workflow is never overwritten. Returns the files
- * that were actually written so callers can include them in a commit.
+ * EAS Workflows for Expo projects; GitHub Actions / Azure Pipelines / GitLab
+ * CI / Bitbucket Pipelines for bare RN CLI projects (detected from the git
+ * remote unless a provider is given). Idempotent — an existing workflow is
+ * never overwritten. Returns the files that were actually written so callers
+ * can include them in a commit.
  */
 export function ensureCiConfigs(root: string, options: CiTemplateOptions): GeneratedCiFile[] {
   if (options.isExpo) {
     return [writeIfMissing(root, EAS_WORKFLOW_PATH, generateEasWorkflow(root))]
   }
-  return [writeIfMissing(root, GH_ACTIONS_PATH, generateGithubActionsWorkflow(root))]
+  const provider = options.provider ?? detectCiProvider(root)
+  switch (provider) {
+    case 'azure':
+      return [writeIfMissing(root, AZURE_PIPELINES_PATH, generateAzurePipeline(root))]
+    case 'gitlab':
+      return [writeIfMissing(root, GITLAB_CI_PATH, generateGitlabCi(root))]
+    case 'bitbucket':
+      return [writeIfMissing(root, BITBUCKET_PIPELINES_PATH, generateBitbucketPipelines(root))]
+    case 'github':
+      return [writeIfMissing(root, GH_ACTIONS_PATH, generateGithubActionsWorkflow(root))]
+  }
 }
 
 function writeIfMissing(root: string, relPath: string, content: string): GeneratedCiFile {
@@ -226,6 +273,246 @@ export function generateGithubActionsWorkflow(root: string): string {
     '',
     ...visualJobLines(pm),
   ].join('\n')
+}
+
+/**
+ * Azure Pipelines workflow for a bare RN CLI project (`azure-pipelines.yml`).
+ * The mirror of the GitHub Actions workflow: same quality/native/visual jobs
+ * and the same ci-incident hook (`condition: failed()`), using Azure's
+ * `$(System.PullRequest.*)` / `$(Build.SourceVersion)` variables and
+ * `NodeTool@0` instead of `setup-node`. Visual regression runs but does not
+ * post a PR comment (comment posting is GitHub-native); its report is
+ * published as a pipeline artifact.
+ */
+export function generateAzurePipeline(root: string): string {
+  const pm = detectPackageManager(root)
+  const scripts = readScripts(root)
+  const detected = detectValidationCommands(root)
+
+  const qualityScripts: Array<[string, string]> = []
+  if (scripts.lint) qualityScripts.push(['lint', scriptRun(pm, 'lint')])
+  if (scripts.typecheck || scripts['type-check']) qualityScripts.push(['typecheck', scriptRun(pm, scripts.typecheck ? 'typecheck' : 'type-check')])
+  if (scripts['prettier:check'] || scripts['format:check']) qualityScripts.push(['format', scriptRun(pm, scripts['prettier:check'] ? 'prettier:check' : 'format:check')])
+  if (scripts.test || scripts.jest) qualityScripts.push(['test', scriptRun(pm, scripts.test ? 'test' : 'jest')])
+
+  const nodeSetup = ['- task: NodeTool@0', '  inputs:', "    versionSpec: '20'"]
+  const install = `- script: ${installCommand(pm)}`
+
+  const qualitySteps: string[] = [
+    '- checkout: self',
+    '  fetchDepth: 0',
+    ...nodeSetup,
+    install,
+    ...qualityScripts.map(([, command]) => `- script: ${command}`),
+    `- script: npx vectalon@latest ci-incident --gate quality --commit $(Build.SourceVersion) --branch $(System.PullRequest.SourceBranch)`,
+    '  condition: failed()',
+  ]
+
+  const native = detected.commands.filter(c => c.name !== 'iOS build' && c.name !== 'Android build')
+  const jobs: string[] = [
+    'trigger: none',
+    '',
+    'pr:',
+    '  branches:',
+    '    include:',
+    "      - '*'",
+    '',
+    'jobs:',
+    '  - job: quality',
+    '    displayName: Lint, typecheck, and test',
+    '    pool:',
+    '      vmImage: ubuntu-latest',
+    '    steps:',
+    ...qualitySteps.map(s => `      ${s}`),
+    '',
+  ]
+
+  if (native.length > 0) {
+    const nativeSteps: string[] = [
+      '- checkout: self',
+      '  fetchDepth: 0',
+      ...nodeSetup,
+      install,
+      ...native.map(c => `- script: ${c.cmd} ${c.args.join(' ')}`),
+      `- script: npx vectalon@latest ci-incident --gate native --commit $(Build.SourceVersion) --branch $(System.PullRequest.SourceBranch)`,
+      '  condition: failed()',
+    ]
+    jobs.push(
+      '  - job: native',
+      '    displayName: Native checks (pod install, gradle)',
+      '    pool:',
+      '      vmImage: macos-latest',
+      '    steps:',
+      ...nativeSteps.map(s => `      ${s}`),
+      ''
+    )
+  }
+
+  jobs.push(
+    '  - job: visual',
+    '    displayName: Visual regression (iOS)',
+    '    dependsOn: quality',
+    '    continueOnError: true',
+    '    pool:',
+    '      vmImage: macos-latest',
+    '    steps:',
+    '      - checkout: self',
+    '        fetchDepth: 0',
+    ...nodeSetup.map(s => `      ${s}`),
+    `      - script: ${installCommand(pm)}`,
+    '      - script: npx vectalon@latest visual-ci --base $(System.PullRequest.TargetBranch) --platform ios',
+    '      - publish: .vectalon/visual-ci',
+    '        artifact: visual-ci',
+    '        condition: always()',
+    ''
+  )
+
+  return jobs.join('\n')
+}
+
+/**
+ * GitLab CI workflow for a bare RN CLI project (`.gitlab-ci.yml`). GitLab has
+ * no per-step failure hook, so the ci-incident step is a dedicated `report`
+ * job with `when: on_failure` scoped to the quality job via `needs`. The
+ * visual job requires a tagged macOS runner (GitLab.com shared runners are
+ * Linux-only) and is advisory (`allow_failure`).
+ */
+export function generateGitlabCi(root: string): string {
+  const pm = detectPackageManager(root)
+  const scripts = readScripts(root)
+  const detected = detectValidationCommands(root)
+
+  const qualityScripts: Array<[string, string]> = []
+  if (scripts.lint) qualityScripts.push(['lint', scriptRun(pm, 'lint')])
+  if (scripts.typecheck || scripts['type-check']) qualityScripts.push(['typecheck', scriptRun(pm, scripts.typecheck ? 'typecheck' : 'type-check')])
+  if (scripts['prettier:check'] || scripts['format:check']) qualityScripts.push(['format', scriptRun(pm, scripts['prettier:check'] ? 'prettier:check' : 'format:check')])
+  if (scripts.test || scripts.jest) qualityScripts.push(['test', scriptRun(pm, scripts.test ? 'test' : 'jest')])
+
+  const native = detected.commands.filter(c => c.name !== 'iOS build' && c.name !== 'Android build')
+  const install = installCommand(pm)
+
+  const lines: string[] = [
+    'stages:',
+    '  - quality',
+    '  - native',
+    '  - report',
+    '  - visual',
+    '',
+    'workflow:',
+    '  rules:',
+    "    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'",
+    '',
+    'quality:',
+    '  stage: quality',
+    '  image: node:20',
+    '  script:',
+    `    - ${install}`,
+    ...qualityScripts.map(([, command]) => `    - ${command}`),
+    '',
+  ]
+
+  if (native.length > 0) {
+    lines.push(
+      'native:',
+      '  stage: native',
+      '  image: node:20',
+      '  script:',
+      `    - ${install}`,
+      ...native.map(c => `    - ${c.cmd} ${c.args.join(' ')}`),
+      '',
+      'ci-incident:',
+      '  stage: report',
+      '  image: node:20',
+      '  when: on_failure',
+      '  needs:',
+      '    - quality',
+      '    - native',
+      '  script:',
+      '    - npx vectalon@latest ci-incident --gate ci --commit $CI_COMMIT_SHA --branch $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME',
+      ''
+    )
+  } else {
+    lines.push(
+      'ci-incident:',
+      '  stage: report',
+      '  image: node:20',
+      '  when: on_failure',
+      '  needs:',
+      '    - quality',
+      '  script:',
+      '    - npx vectalon@latest ci-incident --gate quality --commit $CI_COMMIT_SHA --branch $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME',
+      ''
+    )
+  }
+
+  lines.push(
+    'visual:',
+    '  stage: visual',
+    '  image: node:20',
+    '  tags:',
+    '    - macos',
+    '  allow_failure: true',
+    '  script:',
+    `    - ${install}`,
+    '    - npx vectalon@latest visual-ci --base $CI_MERGE_REQUEST_TARGET_BRANCH_NAME --platform ios',
+    '  artifacts:',
+    '    when: always',
+    '    paths:',
+    '      - .vectalon/visual-ci/',
+    ''
+  )
+
+  return lines.join('\n')
+}
+
+/**
+ * Bitbucket Pipelines workflow for a bare RN CLI project
+ * (`bitbucket-pipelines.yml`). Bitbucket has no post-failure step hook and no
+ * macOS runners, so the ci-incident and visual jobs are omitted — the pipeline
+ * runs the quality and native checks on every pull request.
+ */
+export function generateBitbucketPipelines(root: string): string {
+  const pm = detectPackageManager(root)
+  const scripts = readScripts(root)
+  const detected = detectValidationCommands(root)
+
+  const qualityScripts: Array<[string, string]> = []
+  if (scripts.lint) qualityScripts.push(['lint', scriptRun(pm, 'lint')])
+  if (scripts.typecheck || scripts['type-check']) qualityScripts.push(['typecheck', scriptRun(pm, scripts.typecheck ? 'typecheck' : 'type-check')])
+  if (scripts['prettier:check'] || scripts['format:check']) qualityScripts.push(['format', scriptRun(pm, scripts['prettier:check'] ? 'prettier:check' : 'format:check')])
+  if (scripts.test || scripts.jest) qualityScripts.push(['test', scriptRun(pm, scripts.test ? 'test' : 'jest')])
+
+  const native = detected.commands.filter(c => c.name !== 'iOS build' && c.name !== 'Android build')
+  const install = installCommand(pm)
+
+  const lines: string[] = [
+    'image: node:20',
+    '',
+    'pipelines:',
+    '  pull-requests:',
+    "    '**':",
+    '      - step:',
+    '          name: Lint, typecheck, and test',
+    '          caches:',
+    '            - node',
+    '          script:',
+    `            - ${install}`,
+    ...qualityScripts.map(([, command]) => `            - ${command}`),
+  ]
+
+  if (native.length > 0) {
+    lines.push(
+      '      - step:',
+      '          name: Native checks (pod install, gradle)',
+      '          caches:',
+      '            - node',
+      '          script:',
+      `            - ${install}`,
+      ...native.map(c => `            - ${c.cmd} ${c.args.join(' ')}`)
+    )
+  }
+
+  return lines.join('\n')
 }
 
 /**

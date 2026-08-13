@@ -37,7 +37,15 @@ interface VisualCiCliOptions {
 }
 
 function defaultBase(): string {
-  return process.env.GITHUB_BASE_REF || 'origin/main'
+  // Provider-native base ref env vars: GitHub PR, Azure DevOps, GitLab MR,
+  // Bitbucket PR. Falls back to origin/main.
+  return (
+    process.env.GITHUB_BASE_REF ||
+    process.env.SYSTEM_PULLREQUEST_TARGETBRANCH?.replace(/^refs\/heads\//, '') ||
+    process.env.CI_MERGE_REQUEST_TARGET_BRANCH_NAME ||
+    process.env.BITBUCKET_PR_DESTINATION_BRANCH ||
+    'origin/main'
+  )
 }
 
 /** Changed files: --changed, else git diff base...HEAD, else the working tree. */

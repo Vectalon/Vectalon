@@ -1,6 +1,14 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
-import { ensureCiConfigs, generateEasWorkflow, generateGithubActionsWorkflow } from '../../src/adapters/ciTemplates'
+import {
+  ensureCiConfigs,
+  generateEasWorkflow,
+  generateGithubActionsWorkflow,
+  generateAzurePipeline,
+  generateGitlabCi,
+  generateBitbucketPipelines,
+  detectCiProvider,
+} from '../../src/adapters/ciTemplates'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
 const RN_PKG = {
@@ -111,6 +119,84 @@ describe('ciTemplates', () => {
     })
   })
 
+  describe('detectCiProvider', () => {
+    it('detects the CI host from the git remote URL', () => {
+      const writeGitConfig = (url: string) => {
+        mkdirSync(join(dir, '.git'), { recursive: true })
+        writeFileSync(join(dir, '.git', 'config'), `[remote "origin"]\n\turl = ${url}\n`)
+      }
+
+      writeGitConfig('ssh.dev.azure.com:v3/getgenea/OTHVAC-Mobile/OTHVAC-Mobile')
+      expect(detectCiProvider(dir)).toBe('azure')
+      writeGitConfig('https://dev.azure.com/org/project/_git/repo')
+      expect(detectCiProvider(dir)).toBe('azure')
+      writeGitConfig('git@gitlab.com:org/repo.git')
+      expect(detectCiProvider(dir)).toBe('gitlab')
+      writeGitConfig('git@bitbucket.org:org/repo.git')
+      expect(detectCiProvider(dir)).toBe('bitbucket')
+      writeGitConfig('git@github.com:org/repo.git')
+      expect(detectCiProvider(dir)).toBe('github')
+    })
+
+    it('falls back to github when there is no git remote', () => {
+      expect(detectCiProvider(dir)).toBe('github')
+    })
+  })
+
+  describe('generateAzurePipeline', () => {
+    it('emits an Azure Pipelines workflow with PR triggers and incident hook', () => {
+      for (const [name, content] of Object.entries(RN_PKG)) {
+        writeFileSync(join(dir, name), content)
+      }
+      const workflow = generateAzurePipeline(dir)
+      expect(workflow).toContain('trigger: none')
+      expect(workflow).toContain('pr:')
+      expect(workflow).toContain('vmImage: ubuntu-latest')
+      expect(workflow).toContain('NodeTool@0')
+      expect(workflow).toContain('npm run lint')
+      expect(workflow).toContain('ci-incident --gate quality')
+      expect(workflow).toContain('condition: failed()')
+      expect(workflow).toContain('$(Build.SourceVersion)')
+      expect(workflow).toContain('$(System.PullRequest.SourceBranch)')
+      expect(workflow).toContain('- job: visual')
+      expect(workflow).toContain('$(System.PullRequest.TargetBranch)')
+    })
+  })
+
+  describe('generateGitlabCi', () => {
+    it('emits a GitLab CI with merge-request workflow and on_failure incident job', () => {
+      for (const [name, content] of Object.entries(RN_PKG)) {
+        writeFileSync(join(dir, name), content)
+      }
+      const workflow = generateGitlabCi(dir)
+      expect(workflow).toContain('stages:')
+      expect(workflow).toContain('merge_request_event')
+      expect(workflow).toContain('image: node:20')
+      expect(workflow).toContain('npm run lint')
+      expect(workflow).toContain('when: on_failure')
+      expect(workflow).toContain('ci-incident --gate quality')
+      expect(workflow).toContain('$CI_COMMIT_SHA')
+      expect(workflow).toContain('$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME')
+      expect(workflow).toContain('tags:')
+      expect(workflow).toContain('allow_failure: true')
+      expect(workflow).toContain('$CI_MERGE_REQUEST_TARGET_BRANCH_NAME')
+    })
+  })
+
+  describe('generateBitbucketPipelines', () => {
+    it('emits a Bitbucket Pipelines pull-request pipeline', () => {
+      for (const [name, content] of Object.entries(RN_PKG)) {
+        writeFileSync(join(dir, name), content)
+      }
+      const workflow = generateBitbucketPipelines(dir)
+      expect(workflow).toContain('pipelines:')
+      expect(workflow).toContain('pull-requests:')
+      expect(workflow).toContain('image: node:20')
+      expect(workflow).toContain('npm run lint')
+      expect(workflow).toContain('caches:')
+    })
+  })
+
   describe('ensureCiConfigs', () => {
     it('writes the GitHub Actions workflow for bare RN CLI projects', () => {
       for (const [name, content] of Object.entries(RN_PKG)) {
@@ -145,6 +231,31 @@ describe('ciTemplates', () => {
       const result = ensureCiConfigs(dir, { isExpo: false })
       expect(result[0].written).toBe(false)
       expect(readFileSync(workflowPath, 'utf-8')).toBe('# user authored workflow')
+    })
+
+    it('writes the Azure Pipelines workflow when an azure remote is detected', () => {
+      for (const [name, content] of Object.entries(RN_PKG)) {
+        writeFileSync(join(dir, name), content)
+      }
+      mkdirSync(join(dir, '.git'), { recursive: true })
+      writeFileSync(join(dir, '.git', 'config'), '[remote "origin"]\n\turl = ssh.dev.azure.com:v3/org/proj/repo\n')
+
+      const result = ensureCiConfigs(dir, { isExpo: false })
+      expect(result[0].path).toBe('azure-pipelines.yml')
+      expect(existsSync(join(dir, 'azure-pipelines.yml'))).toBe(true)
+      expect(readFileSync(join(dir, 'azure-pipelines.yml'), 'utf-8')).toContain('trigger: none')
+    })
+
+    it('honors an explicit provider override over remote detection', () => {
+      for (const [name, content] of Object.entries(RN_PKG)) {
+        writeFileSync(join(dir, name), content)
+      }
+      mkdirSync(join(dir, '.git'), { recursive: true })
+      writeFileSync(join(dir, '.git', 'config'), '[remote "origin"]\n\turl = git@github.com:org/repo.git\n')
+
+      const result = ensureCiConfigs(dir, { isExpo: false, provider: 'gitlab' })
+      expect(result[0].path).toBe('.gitlab-ci.yml')
+      expect(existsSync(join(dir, '.gitlab-ci.yml'))).toBe(true)
     })
   })
 })

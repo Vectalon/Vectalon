@@ -241,7 +241,9 @@ export function createProgram(): Command {
 
   program
     .command('ci [directory]')
-    .description('Generate the project CI workflow (EAS Workflows for Expo, GitHub Actions for bare RN CLI)')
+    .description('Generate the project CI workflow (EAS Workflows for Expo; GitHub Actions / Azure Pipelines / GitLab CI / Bitbucket Pipelines for bare RN CLI, detected from the git remote)')
+    .option('--provider <host>', 'Force a CI host instead of detecting from the git remote (github|azure|gitlab|bitbucket)')
+    .option('--dry-run', 'Show what would be generated without writing files')
     .action(ciCommand)
 
   program
