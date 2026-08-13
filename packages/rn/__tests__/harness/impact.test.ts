@@ -189,6 +189,11 @@ describe('analyzeCrossPackageImpact', () => {
       expect(impact.affectedScreens).toContain('HomeScreen')
       // Only the affected app's flow is flagged; the unrelated Settings flow is not.
       expect(impact.e2eFlows.map(f => f.path)).toEqual(['apps/mobile/.maestro/home.yaml'])
+      // Reachability: the Expo Router route file is deep-linkable, and
+      // app/index.tsx is the initial route; the default-export component
+      // (HomeScreen) has no deterministic route of its own.
+      expect(impact.screenReachability['Home']).toEqual({ deepLinkable: true, isInitial: true })
+      expect(impact.screenReachability['HomeScreen']).toEqual({ deepLinkable: false, isInitial: false })
     } finally {
       cleanup(dir)
     }
@@ -296,6 +301,8 @@ describe('renderImpactReport', () => {
       expect(report).toContain('### Affected files')
       expect(report).toContain('apps/mobile/src/screens/HomeScreen.tsx')
       expect(report).toContain('### Screens & routes touched')
+      // Screens carry their reachability annotation for the test stage.
+      expect(report).toContain('- HomeScreen (no deterministic route)')
       expect(report).toContain('### Navigation stacks')
       expect(report).toContain('### Re-render impact')
       expect(report).toContain('renders `Button`')

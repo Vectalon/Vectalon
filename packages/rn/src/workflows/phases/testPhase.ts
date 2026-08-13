@@ -208,18 +208,50 @@ export const testPhase: WorkflowPhase = {
     const impact = summarizeImpactReport(impactReportFromContext(ctx))
     const scheme = projectRoot ? detectUrlScheme(projectRoot) : null
     const impactFlowLabels: string[] = []
+    const skippedImpactScreens: string[] = []
     for (const screen of impact.screens) {
       if (screen.toLowerCase() === featureName.toLowerCase()) continue // the feature flow already covers it
       const slug = kebabCase(screen) || 'screen'
       const path = `.maestro/${slug}-impact.yaml`
+      const deepLink = scheme ? buildDeepLink(scheme, screen) : null
+      const reach = impact.screenReachability[screen]
+
+      // Deterministic reachability from the impact stage: a screen with no
+      // deep-link route AND no initial-route path cannot be driven by a
+      // launch → assert flow, so skip it and note the gap instead of shipping
+      // a flow that would fail on the first run. Unannotated screens (legacy
+      // or hand-written reports) keep the pragmatic default — deep link when a
+      // scheme exists.
+      if (reach && !reach.deepLinkable && !reach.isInitial) {
+        skippedImpactScreens.push(screen)
+        continue
+      }
+      if (reach && reach.deepLinkable && !deepLink && !reach.isInitial) {
+        // The route exists but the app exposes no URL scheme and the screen is
+        // not the initial route — no deterministic path either.
+        skippedImpactScreens.push(screen)
+        continue
+      }
+
+      // Only deep-link when the harness confirmed the screen is a deep-link
+      // route — an initial-route screen (or an unannotated legacy report) gets
+      // a launch flow, never a scheme built from a fallback package name.
+      const useDeepLink = deepLink !== null && (reach ? reach.deepLinkable : true)
       flowFiles.push({
         path,
         content: new MaestroFlowWriter().writeScreenFlow(screen, {
           appId,
-          deepLink: scheme ? buildDeepLink(scheme, screen) : undefined,
+          deepLink: useDeepLink && deepLink ? deepLink : undefined,
         }),
       })
-      impactFlowLabels.push(`- \`${path}\` — regression flow for the affected screen \`${screen}\`${scheme ? ` (deep-link \`${buildDeepLink(scheme, screen)}\`)` : ''}`)
+      impactFlowLabels.push(
+        `- \`${path}\` — regression flow for the affected screen \`${screen}\`` +
+          (useDeepLink && deepLink
+            ? ` (deep-link \`${deepLink}\`)`
+            : reach?.isInitial
+              ? ' (initial route — verified at launch)'
+              : '')
+      )
     }
     testFiles.push(...flowFiles)
 
@@ -276,6 +308,15 @@ export const testPhase: WorkflowPhase = {
             ...impactFlowLabels,
             '',
             'These flows cover the screens the impact stage flagged as affected — run them to verify the change did not regress existing UI.',
+            '',
+          ]
+        : []),
+      ...(skippedImpactScreens.length > 0
+        ? [
+            '## Impact regression flows — gaps',
+            '',
+            `No flow generated for: ${skippedImpactScreens.join(', ')} — these affected screens have no deep-link route and no deterministic navigation path from launch, so a launch → assert flow would not reach them.`,
+            'Add a deep-link registration or a manual navigation step to cover them, or write the flow by hand in .maestro/.',
             '',
           ]
         : []),

@@ -67,6 +67,16 @@ export interface ReRenderScreen {
   component: string
 }
 
+/**
+ * Deterministic reachability of an affected screen for test generation: is it
+ * a deep-link route (Expo Router `app/` file → `scheme://route` works) and/or
+ * the app's initial route (`app/index.tsx`) that renders at launch?
+ */
+export interface ScreenReachability {
+  deepLinkable: boolean
+  isInitial: boolean
+}
+
 export interface CrossPackageImpact {
   root: string
   isMonorepo: boolean
@@ -81,6 +91,11 @@ export interface CrossPackageImpact {
   affectedFiles: ImpactedFile[]
   /** Screen / route component names touched by the change. */
   affectedScreens: string[]
+  /**
+   * Per-screen reachability (deep-link route / initial route) so the test
+   * stage knows which affected screens can be driven deterministically.
+   */
+  screenReachability: Record<string, ScreenReachability>
   /** Navigator definitions (file + navigator name) containing affected screens. */
   affectedNavigators: string[]
   /** Maestro flows that reference an affected screen. */
@@ -263,6 +278,14 @@ export function analyzeCrossPackageImpact(root: string, changedFiles: string[]):
   const affectedFiles = new Map<string, ImpactedFile>()
   const affectedScreens = new Set<string>()
   const affectedNavigators = new Set<string>()
+  const screenReachability = new Map<string, ScreenReachability>()
+  const markScreen = (name: string, reach: ScreenReachability): void => {
+    const current = screenReachability.get(name)
+    screenReachability.set(name, {
+      deepLinkable: current?.deepLinkable === true || reach.deepLinkable,
+      isInitial: current?.isInitial === true || reach.isInitial,
+    })
+  }
   const changedPackageSet = new Set<string>(changedPackages)
 
   const changedPackageNames = [...changedPackageSet]
@@ -298,18 +321,28 @@ export function analyzeCrossPackageImpact(root: string, changedFiles: string[]):
       }
 
       // Screens: default-export components (screen files), navigator-declared
-      // components, and route files in this consumer.
+      // components, and route files in this consumer. Route files in `app/` are
+      // deep-linkable (Expo Router exposes every route); `app/index.tsx` is the
+      // initial route. Navigator-bound screens without a route file have no
+      // deterministic deep link or launch path — the test stage notes the gap.
       for (const comp of info.components) {
-        if (comp.isDefaultExport) affectedScreens.add(comp.name)
+        if (comp.isDefaultExport) {
+          affectedScreens.add(comp.name)
+          markScreen(comp.name, { deepLinkable: false, isInitial: false })
+        }
       }
       for (const nav of info.navigators) {
         for (const screen of nav.screens) {
           affectedScreens.add(screen.component)
+          markScreen(screen.component, { deepLinkable: false, isInitial: false })
         }
       }
       if (info.isRoute) {
         const routeName = routeNameFromPath(info.rel)
-        if (routeName) affectedScreens.add(routeName)
+        if (routeName) {
+          affectedScreens.add(routeName)
+          markScreen(routeName, { deepLinkable: true, isInitial: routeName === 'Home' })
+        }
       }
     }
   }
@@ -386,6 +419,7 @@ export function analyzeCrossPackageImpact(root: string, changedFiles: string[]):
     affectedPackages,
     affectedFiles: affectedFilesList,
     affectedScreens: screensList,
+    screenReachability: Object.fromEntries(screenReachability),
     affectedNavigators: [...affectedNavigators].sort(),
     e2eFlows,
     reRenderScreens,
@@ -592,7 +626,19 @@ export function renderImpactReport(impact: CrossPackageImpact): string {
   if (impact.affectedScreens.length > 0) {
     lines.push('### Screens & routes touched')
     lines.push('')
-    lines.push(impact.affectedScreens.map(s => `- ${s}`).join('\n'))
+    lines.push(
+      impact.affectedScreens.map(s => {
+        const reach = impact.screenReachability[s]
+        const tag = reach?.deepLinkable
+          ? 'deep-linkable'
+          : reach?.isInitial
+            ? 'initial route'
+            : reach
+              ? 'no deterministic route'
+              : undefined
+        return tag ? `- ${s} (${tag})` : `- ${s}`
+      }).join('\n')
+    )
     lines.push('')
   }
 
@@ -642,6 +688,12 @@ export interface ImpactSummary {
   blastRadius: string | null
   /** True when the report says the change has no consumers (isolated). */
   isolated: boolean
+  /**
+   * Per-screen reachability parsed from the report's screen annotations
+   * (deep-linkable / initial route / no deterministic route). Screens without
+   * an entry were unannotated (legacy or hand-written reports).
+   */
+  screenReachability: Record<string, ScreenReachability>
 }
 
 /**
@@ -660,6 +712,7 @@ export function summarizeImpactReport(report: string): ImpactSummary {
     flows: [],
     blastRadius: null,
     isolated: false,
+    screenReachability: {},
   }
   if (!report) return summary
 
@@ -702,7 +755,19 @@ export function summarizeImpactReport(report: string): ImpactSummary {
         if (path) summary.files.push(path[1])
         if (pkg && !summary.packages.includes(pkg[1])) summary.packages.push(pkg[1])
       } else if (section === 'screens') {
-        summary.screens.push(content)
+        const m = content.match(/^([A-Za-z0-9_]+)(?: \(([^)]+)\))?$/)
+        if (m) {
+          summary.screens.push(m[1])
+          if (m[2] === 'deep-linkable') {
+            summary.screenReachability[m[1]] = { deepLinkable: true, isInitial: false }
+          } else if (m[2] === 'initial route') {
+            summary.screenReachability[m[1]] = { deepLinkable: false, isInitial: true }
+          } else if (m[2] === 'no deterministic route') {
+            summary.screenReachability[m[1]] = { deepLinkable: false, isInitial: false }
+          }
+        } else {
+          summary.screens.push(content)
+        }
       } else if (section === 'navigators') {
         summary.navigators.push(content)
       } else if (section === 'flows') {

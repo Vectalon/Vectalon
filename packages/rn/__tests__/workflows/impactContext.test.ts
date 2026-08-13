@@ -239,6 +239,80 @@ describe('impact context → downstream stages', () => {
     expect(task?.description).toContain('`packages/ui/src/Button.tsx`')
   })
 
+  it('summarizeImpactReport parses per-screen reachability annotations', () => {
+    const annotated = [
+      '### Screens & routes touched',
+      '- ProfileScreen (deep-linkable)',
+      '- Home (initial route)',
+      '- SettingsScreen (no deterministic route)',
+      '',
+    ].join('\n')
+    const s = summarizeImpactReport(annotated)
+
+    expect(s.screens).toEqual(['ProfileScreen', 'Home', 'SettingsScreen'])
+    expect(s.screenReachability['ProfileScreen']).toEqual({ deepLinkable: true, isInitial: false })
+    expect(s.screenReachability['Home']).toEqual({ deepLinkable: false, isInitial: true })
+    expect(s.screenReachability['SettingsScreen']).toEqual({ deepLinkable: false, isInitial: false })
+    // Unannotated screens get no entry (legacy reports keep the old default).
+    expect(s.screenReachability['Other']).toBeUndefined()
+  })
+
+  it('test phase skips flows for screens with no deep-link route and notes the gap', async () => {
+    const projectRoot = mkdtempSync(join(tmpdir(), 'vectalon-gap-'))
+    try {
+      const report = [
+        '### Screens & routes touched',
+        '- SettingsScreen (no deterministic route)',
+        '',
+      ].join('\n')
+      const result = await testPhase.run({
+        ...makeCtx('Add a profile feature', report),
+        projectRoot,
+      })
+
+      expect(result.status).toBe('completed')
+      // No flow file is written for the unreachable screen.
+      expect(existsSync(join(projectRoot, '.maestro', 'settings-screen-impact.yaml'))).toBe(false)
+      // The gap is called out in the phase output.
+      expect(result.output).toContain('## Impact regression flows — gaps')
+      expect(result.output).toContain('SettingsScreen')
+      expect(result.output).toContain('no deep-link route and no deterministic navigation path')
+      // And the acceptance-flows section is absent (nothing was generated).
+      expect(result.output).not.toContain('## Impact regression flows\n')
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('test phase deep-links deep-linkable screens and launch-verifies the initial route', async () => {
+    const projectRoot = mkdtempSync(join(tmpdir(), 'vectalon-reach-'))
+    try {
+      const report = [
+        '### Screens & routes touched',
+        '- ProfileScreen (deep-linkable)',
+        '- Home (initial route)',
+        '',
+      ].join('\n')
+      const result = await testPhase.run({
+        ...makeCtx('Add a profile feature', report),
+        projectRoot,
+      })
+
+      expect(result.status).toBe('completed')
+      const linkFlow = join(projectRoot, '.maestro', 'profile-screen-impact.yaml')
+      expect(existsSync(linkFlow)).toBe(true)
+      expect(readFileSync(linkFlow, 'utf-8')).toContain('- openLink:')
+
+      const launchFlow = join(projectRoot, '.maestro', 'home-impact.yaml')
+      expect(existsSync(launchFlow)).toBe(true)
+      expect(readFileSync(launchFlow, 'utf-8')).not.toContain('openLink')
+      expect(readFileSync(launchFlow, 'utf-8')).toContain('- assertVisible: "Home"')
+      expect(result.output).toContain('initial route — verified at launch')
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
   it('verification tracks screenshots into the docs home for the PR', async () => {
     const projectRoot = mkdtempSync(join(tmpdir(), 'vectalon-shot-'))
     try {
