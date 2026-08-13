@@ -66,6 +66,7 @@ Run `npx vectalon <command> --help` for detailed options.
 | `daemon` | Live Metro/Hermes companion daemon | `-p <port>`, `--metro-port`, `--stop`, `--status`, `--once`, `--wire-metro`, `--no-device-probe` |
 | `impact [dir]` | Cross-package blast radius of changed files (monorepo) — affected screens, navigation stacks, and the Maestro E2E flows that must run, including **accessibility variants** for screens covered by a11y criteria and flags for screens with **no deterministic route** | `--changed <files>`, `--pr <number>`, `--push`, `--json`, `--dry-run` |
 | `coverage [dir]` | Render the **coverage dashboard** (`docs/vectalon/coverage/coverage-gaps.md`) — a per-screen E2E + a11y gap summary with links to the open follow-up tasks | `--json`, `--limit <n>` |
+| `smoke [dir]` | **Post-release verification** — run every CLI command against the project (dev mode by default so all features run), capture the full output of each, and report pass/warn/skip/fail; exits non-zero on any failure. Wired into the generated release workflows as a `verify` job | `--list`, `--only <ids>`, `--skip <ids>`, `--full`, `--json`, `--no-dev`, `--out <dir>`, `--timeout <ms>` |
 | `bench` | RN coding-test benchmark (deterministic baseline or real-model) | `--model <provider>`, `--suite <id>`, `--live`, `--install`, `--json`, `-o <path>`, `--baseline <file>`, `--tolerance <n>` |
 | `leaderboard [dir]` | Merge benchmark results into `BENCHMARK_RESULTS.md` | `--out <path>`, `--json`, `--timestamp`, `--pr-comment` |
 | `train [dir]` | Curate fine-tuning dataset from benchmark references + LoRA plan | `--build`, `--plan`, `--out <dir>`, `--base <model>`, `--scenarios <dir>`, `--references <dir>`, `--json` |
@@ -105,6 +106,7 @@ Run `npx vectalon` with no arguments (Node `>=20.12`, TTY required) to launch an
   ○ Ingest telemetry
   ○ Analyze impact
   ○ Show coverage dashboard
+  ○ Run post-release smoke
   ○ Generate CI workflow
   ○ Release pipeline
   ○ Manage ecosystem
@@ -208,6 +210,43 @@ against the actual code before it counts.
 | `WireframeGenerator` | Low-fidelity wireframe section generation |
 
 ---
+
+## Post-Release Verification (`vectalon smoke`)
+
+Run **every CLI command** against the project and capture the full output of
+each one, so a release can be verified end-to-end before it ships:
+
+```bash
+npx vectalon smoke                # every fast check, dev mode → .vectalon/smoke/report.{json,log,html}
+npx vectalon smoke --full         # + feature workflow, bench, full selftest, model pull
+npx vectalon smoke --json         # machine-readable report (CI gates)
+npx vectalon smoke --only impact,coverage
+npx vectalon smoke --no-dev       # respect the real tier — Pro/Team commands become skips
+```
+
+- **33 checks** cover the whole surface — version/help, init, status, models,
+  auth, policy, refresh, suggestions, ecosystem, doctor, impact, coverage,
+  telemetry, bundle, profile, sandbox, render, ci, release, leaderboard,
+  visual-ci, visual-baseline, ci-incident, serve (boot-probed then killed),
+  daemon, sync, team-policy, support; `--full` adds feature, bench, selftest,
+  pull
+- **Full captured output** per command lands in `report.log` (readable),
+  `report.json` (CI), and an HTML dashboard; the terminal streams each check
+  live and prints a summary table
+- **Always runs in dev mode** — every check runs with `VECTALON_DEV_MODE=1`, so
+  Pro/Team features (bundle, sandbox, ci, visual-ci, ci-incident, team-policy)
+  execute for real instead of hitting the license gate; pass `--no-dev` to
+  respect the actual tier. Commands that need inputs a project lacks (Hermes
+  profile files, a sync remote) stay `skip` with reasons
+- **Clean output** — captured stdout/stderr is ANSI-stripped and children run
+  with `FORCE_COLOR=0`, so `report.log` / the HTML dashboard contain plain
+  text with no escape codes or gate-promo noise
+- **Honest classification** — exit 0 or an ok-exit (doctor) is `pass`;
+  non-zero exits and timeouts are `fail`; exit code is 1 on any failure
+- **Runs after every release** — the generated release workflows
+  (`.github/workflows/vectalon-release.yml`, `.eas/workflows/vectalon-release.yml`)
+  include a `verify` job that runs `vectalon smoke --full --json` after
+  quality, so a broken command surface blocks submission
 
 ## Hermes Runtime Profiling (`vectalon profile`)
 
@@ -504,7 +543,7 @@ packages/rn/
 │   ├── adapters/               # External tool adapters (git, PM, test runner, simulator, design)
 │   ├── bench/                  # Benchmark harness (scoring, runner, leaderboard, baseline)
 │   ├── cli/
-│   │   ├── commands/           # 29 CLI command files
+│   │   ├── commands/           # 30 CLI command files
 │   │   ├── index.ts            # CLI entry + interactive mode
 │   │   └── logger.ts           # Output abstraction
 │   ├── config/                 # Global configuration

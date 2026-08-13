@@ -5,6 +5,43 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **`vectalon smoke` — post-release verification.** Runs **every CLI command**
+  against the project (Expo or bare RN CLI), captures the full output of each,
+  and reports pass / warn / skip / fail — exit non-zero on any failure, so a
+  release can be verified end-to-end before it ships. 33 checks cover the
+  whole surface (version/help, init, status, models, auth, policy, refresh,
+  suggestions, ecosystem, doctor, impact, coverage, telemetry, bundle,
+  profile, sandbox, render, ci, release, leaderboard, visual-ci,
+  visual-baseline, ci-incident, serve, daemon, sync, team-policy, support),
+  and `--full` adds the feature workflow, benchmark, full self-test, and model
+  pull. Each command's full stdout/stderr lands in `report.json` (CI),
+  `report.log` (readable), and an HTML dashboard; the terminal streams every
+  check live and prints a summary table. License-gated commands and commands
+  that need inputs a project lacks are reported as **skips with reasons**
+  (never failures); doctor's exit-1-with-report is a pass; non-zero exits and
+  timeouts are fails. `--list`, `--only`, `--skip`, `--json`, `--out`,
+  `--timeout`.
+- **Smoke runs after every release.** The generated release workflows
+  (`.github/workflows/vectalon-release.yml` and
+  `.eas/workflows/vectalon-release.yml`) now include a **`verify` job** that
+  runs `vectalon smoke --full --json` after quality checks — a broken command
+  surface blocks store submission.
+- **Interactive menu entry** — `vectalon` (no args) gains "Run post-release
+  smoke" right after "Show coverage dashboard".
+
+### Fixed
+
+- **Selftest `diagnostics-support` was environment-dependent.**
+  `buildSupportBundle` merges the project queue with the user-config queue
+  (where `reportError` captures land when no project root is known), so the
+  check's exact-count assertion ("expected 1 queued error") failed whenever
+  the ambient queue held an older error. It now asserts the sandbox-captured
+  error is present in the bundle instead of demanding a specific total.
+
 ## [0.2.0] - 2026-08-13
 
 ### Added

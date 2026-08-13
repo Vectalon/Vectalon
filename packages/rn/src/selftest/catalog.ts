@@ -1864,7 +1864,13 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
       if (pkg.apiKey !== '[REDACTED]') return fail('top-level apiKey was not redacted')
       const nested = pkg.nested as Record<string, unknown>
       if (nested.clientSecret !== '[REDACTED]') return fail('nested secret was not redacted')
-      if (bundle.errorQueue.length !== 1) return fail(`expected 1 queued error, got ${bundle.errorQueue.length}`)
+      // buildSupportBundle merges the project queue AND the user-config queue
+      // (reportError's capture target when no root is known), so the total is
+      // ambient-dependent — assert the sandbox-captured error made it into the
+      // bundle instead of demanding an exact count.
+      if (!bundle.errorQueue.some(e => e.message === 'support queue boom')) {
+        return fail('the captured error is missing from the bundle error queue')
+      }
       if (!bundle.token.startsWith('RN-')) return fail(`unexpected token ${bundle.token}`)
       if (bundle.recipient !== 'neofaceless22@gmail.com') return fail('recipient mismatch')
 

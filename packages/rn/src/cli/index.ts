@@ -35,6 +35,7 @@ import { benchCommand } from './commands/bench'
 import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
 import { impactCommand } from './commands/impact'
 import { coverageCommand } from './commands/coverage'
+import { smokeCommand } from './commands/smoke'
 import { doctorCommand } from './commands/doctor'
 import { selftestCommand } from './commands/selftest'
 import { supportCommand } from './commands/support'
@@ -406,6 +407,22 @@ export function createProgram(): Command {
     .action(coverageCommand)
 
   program
+    .command('smoke [directory]')
+    .description('Post-release verification: run every CLI command against the project, capture the full output of each, and report pass/warn/skip/fail — exit non-zero on any failure (runs after a release to verify everything is in order)')
+    .option('--list', 'List all checks and exit')
+    .option('--only <ids>', 'Run only these check ids (comma-separated)')
+    .option('--skip <ids>', 'Skip these check ids (comma-separated)')
+    .option('--full', 'Include slow / model-heavy checks (feature, bench, selftest, pull)')
+    .option('--no-dev', 'Disable dev mode — tier-gated checks (bundle, sandbox, ci, visual-ci, …) report as skips instead of running for real (dev mode is the default)')
+    .option('--json', 'Print the JSON report to stdout instead of files')
+    .option('--no-html', 'Skip writing the HTML dashboard')
+    .option('--open', 'Open the HTML dashboard in the browser after the run')
+    .option('--no-open', 'Do not auto-open the dashboard (default when not a TTY)')
+    .option('--out <dir>', 'Report output directory (default .vectalon/smoke)')
+    .option('--timeout <ms>', 'Per-check timeout in ms (default 60000)', Number)
+    .action(smokeCommand)
+
+  program
     .command('selftest [directory]')
     .description('Test every feature of the harness in a sandbox — visible report + full activity trace of every step, command, and file modification')
     .option('--category <cat>', 'Run only one category (cli, sdlc, guardrails, knowledge, harness, model, mcp, workflows, ecosystem, bench, adapters, memory, upgrade, perf, sandbox, render, diagnostics)')
@@ -593,6 +610,7 @@ async function runInteractive(): Promise<void> {
       { value: 'telemetry', label: 'Ingest telemetry', hint: 'Sentry/Crashlytics/traces/analytics into the knowledge base' },
       { value: 'impact', label: 'Analyze impact', hint: 'Cross-package blast radius of changed files (monorepo)' },
       { value: 'coverage', label: 'Show coverage dashboard', hint: 'Per-screen E2E and a11y gap summary with open follow-up links' },
+      { value: 'smoke', label: 'Run post-release smoke', hint: 'Every command, full output, pass/skip/fail report' },
       { value: 'ci', label: 'Generate CI workflow', hint: 'EAS Workflows (Expo) or GitHub Actions (bare RN CLI)' },
       { value: 'release', label: 'Release pipeline', hint: 'Detect version bump, changelog, submit workflow, crash monitor' },
       { value: 'ecosystem', label: 'Manage ecosystem', hint: 'Enable MCP servers, skills, tools, and hooks (Expo & RN-CLI)' },
@@ -816,6 +834,23 @@ async function runInteractive(): Promise<void> {
   if (action === 'coverage') {
     await coverageCommand('', {})
     p.outro('Coverage dashboard shown')
+    return
+  }
+
+  if (action === 'smoke') {
+    const scope = await p.select({
+      message: 'Smoke scope',
+      options: [
+        { value: 'default', label: 'Standard checks', hint: 'All fast checks — servers, analysis, CI, doctor, …' },
+        { value: 'full', label: 'Include slow checks', hint: '+ feature workflow, bench, full selftest, model pull' },
+      ],
+    })
+    if (p.isCancel(scope)) {
+      p.outro('Cancelled')
+      return
+    }
+    await smokeCommand('', { full: scope === 'full' })
+    p.outro('Smoke complete')
     return
   }
 

@@ -6,8 +6,8 @@ globally or linked).
 
 Running `npx vectalon` with no arguments opens an **interactive menu** covering
 the most common actions (init, feature, refresh, suggestions, bundle, status,
-daemon, telemetry, impact, coverage, ci, release, ecosystem, doctor, selftest,
-bench, leaderboard, sync, policy, serve, pull, models, help).
+daemon, telemetry, impact, coverage, smoke, ci, release, ecosystem, doctor,
+selftest, bench, leaderboard, sync, policy, serve, pull, models, help).
 
 ---
 
@@ -958,6 +958,70 @@ npx vectalon coverage --limit 10             # cap the number of screens listed
 | Code | When |
 |---|---|
 | 0 | Summary printed (missing dashboard prints an info note) |
+
+---
+
+## `smoke`
+
+**Post-release verification**: run **every CLI command** against the project
+(Expo or bare RN CLI), capture the full output of each one, and report
+pass / warn / skip / fail. Exit non-zero when anything fails — the thing to
+run after a release to verify everything is in order.
+
+```bash
+npx vectalon smoke                       # every fast check, dev mode, report to .vectalon/smoke/
+npx vectalon smoke --full                # + slow/model-heavy checks (feature, bench, selftest, pull)
+npx vectalon smoke --json                # machine-readable report on stdout (CI)
+npx vectalon smoke --only impact,coverage # targeted subset
+npx vectalon smoke --list                # show all 33 checks
+npx vectalon smoke --no-dev              # respect the real tier — Pro/Team commands report as skips
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--list` | List all checks and exit |
+| `--only <ids>` | Run only these check ids (comma-separated) |
+| `--skip <ids>` | Skip these check ids (comma-separated) |
+| `--full` | Include slow / model-heavy checks (feature, bench, selftest, pull) |
+| `--no-dev` | Disable dev mode — tier-gated commands report as skips instead of running (dev mode is **on by default**) |
+| `--json` | Print the JSON report to stdout instead of writing files |
+| `--no-html` | Skip writing the HTML dashboard |
+| `--open` / `--no-open` | Open the HTML dashboard in the browser (default: TTY only) |
+| `--out <dir>` | Report output directory (default `.vectalon/smoke`) |
+| `--timeout <ms>` | Per-check timeout (default 60000) |
+
+**What it does**
+
+- Runs 33 checks covering the whole command surface — version/help, init,
+  status, models, auth, policy, refresh, suggestions, ecosystem, doctor,
+  impact, coverage, telemetry, bundle, profile, sandbox, render, ci, release,
+  leaderboard, visual-ci, visual-baseline, ci-incident, serve (boot-probed
+  then killed), daemon, sync, team-policy, support, plus `--full` adds the
+  feature workflow, benchmark, full self-test, and model pull
+- Captures each command's **full stdout/stderr** into `report.json`, a
+  readable `report.log`, and an HTML dashboard; the terminal prints a live
+  per-check stream followed by a summary table
+- **Always runs in dev mode** — every check runs with `VECTALON_DEV_MODE=1` so
+  Pro/Team features (bundle, sandbox, ci, visual-ci, ci-incident, team-policy)
+  execute for real instead of hitting the license gate; a post-release
+  verification should exercise every feature. Pass `--no-dev` to respect the
+  actual tier (gated commands then report as skips)
+- **Clean output** — captured stdout/stderr is ANSI-stripped and children run
+  with `FORCE_COLOR=0`, so reports contain plain text with no escape codes
+- **Classification** — exit 0 (or an ok exit, e.g. doctor's exit 1 on a
+  healthy-but-incomplete project) is a pass; commands that need inputs a
+  project doesn't have (Hermes profile files, a sync remote) are skips with
+  reasons; a non-zero exit is a fail; exceeding the timeout is a fail
+- **Exit codes** — `0` when every check passed (warns/skips don't fail),
+  `1` when any check failed or timed out
+
+Generated release workflows (`.github/workflows/vectalon-release.yml` and
+`.eas/workflows/vectalon-release.yml`) include a **`verify` job** that runs
+`vectalon smoke --full --json` after quality checks, so every release is
+automatically verified against the full command surface before it can submit.
 
 ---
 

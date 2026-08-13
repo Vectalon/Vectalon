@@ -24,6 +24,9 @@ describe('generateGithubReleaseWorkflow', () => {
       expect(workflow).toContain('  quality:')
       expect(workflow).toContain('  e2e:')
       expect(workflow).toContain('maestro test .maestro')
+      expect(workflow).toContain('  verify:')
+      expect(workflow).toContain('vectalon@latest smoke --full --json')
+      expect(workflow).toContain('needs: [verify]')
       expect(workflow).toContain('  submit:')
       expect(workflow).toContain('fastlane supply')
       expect(workflow).toContain('  monitor:')
@@ -41,6 +44,7 @@ describe('generateGithubReleaseWorkflow', () => {
       const workflow = generateGithubReleaseWorkflow(dir, { isExpo: false })
       expect(workflow).not.toContain('  e2e:')
       expect(workflow).toContain('  quality:')
+      expect(workflow).toContain('  verify:')
       expect(workflow).toContain('  monitor:')
     } finally {
       cleanup(dir)
@@ -56,6 +60,8 @@ describe('generateEasReleaseWorkflow', () => {
     try {
       const workflow = generateEasReleaseWorkflow(dir, { isExpo: true })
       expect(workflow).toContain('name: vectalon-release')
+      expect(workflow).toContain('  verify:')
+      expect(workflow).toContain('vectalon@latest smoke --full --json')
       expect(workflow).toContain('eas build --platform all')
       expect(workflow).toContain('eas submit --platform all')
       expect(workflow).toContain('vectalon release --monitor')
