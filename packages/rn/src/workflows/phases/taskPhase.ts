@@ -1,6 +1,31 @@
 import type { WorkflowPhase, TaskInput } from '../../adapters/types'
 import { phaseResult, failedPhase } from './helpers'
 import { getIntent, isRemoveDependency, isRefactor, isFix } from './intent'
+import { summarizeImpactReport, impactReportFromContext } from '../../harness/impact'
+import { kebabCase } from '../../utils/deepLink'
+
+/**
+ * Acceptance-criteria tasks from the impact stage: every screen the change
+ * affects gets an explicit "verify it still renders" task (referencing the
+ * impact regression flow the test stage generates), and existing E2E flows
+ * that reference an affected screen get a keep-green task — so the blast
+ * radius is tracked as checkable work before implementation.
+ */
+function impactAcceptanceTasks(impact: { screens: string[]; flows: string[] }): TaskInput[] {
+  const tasks: TaskInput[] = impact.screens.map(screen => ({
+    title: `Acceptance: ${screen} not regressed`,
+    description: `Acceptance criteria: ${screen} is affected by this change. Verify it still renders and behaves after implementation — run the generated Maestro impact flow (\`maestro test .maestro/${kebabCase(screen) || 'screen'}-impact.yaml\` on a booted simulator/emulator).`,
+    type: 'qa',
+  }))
+  if (impact.flows.length > 0) {
+    tasks.push({
+      title: 'Acceptance: existing E2E flows still pass',
+      description: `Acceptance criteria: these existing E2E flows reference an affected screen — run them and confirm they stay green: ${impact.flows.map(f => `\`${f}\``).join(', ')}`,
+      type: 'qa',
+    })
+  }
+  return tasks
+}
 
 export const taskPhase: WorkflowPhase = {
   id: 'tasks',
@@ -8,6 +33,11 @@ export const taskPhase: WorkflowPhase = {
   description: 'Create implementation tasks in the configured project management tool.',
   run: async (ctx) => {
     const intent = (await getIntent(ctx)).intent
+    // The impact stage ran before this one — its blast radius becomes explicit
+    // acceptance tasks, so "the change must not break what it touches" is
+    // tracked as work, not just a prompt constraint.
+    const impact = summarizeImpactReport(impactReportFromContext(ctx))
+    const acceptance = impactAcceptanceTasks(impact)
     const tasks: TaskInput[] = [
       { title: `PRD: ${ctx.prompt}`, description: 'Finalize requirements and acceptance criteria', type: 'requirements' },
       { title: `Design: ${ctx.prompt}`, description: 'Approve UX approach', type: 'design' },
@@ -18,7 +48,8 @@ export const taskPhase: WorkflowPhase = {
         { title: `Uninstall ${intent.dependency}`, description: `Remove ${intent.dependency} packages and update lockfiles`, type: 'engineering' },
         { title: `Remove ${intent.dependency} imports`, description: 'Remove all JavaScript/TypeScript imports and API calls', type: 'engineering' },
         { title: `Clean up ${intent.dependency} native config`, description: 'Remove iOS/Android native configuration', type: 'engineering' },
-        { title: `Verify ${intent.dependency} removal`, description: 'Run builds, tests, and app startup checks', type: 'qa' }
+        { title: `Verify ${intent.dependency} removal`, description: 'Run builds, tests, and app startup checks', type: 'qa' },
+        ...acceptance
       )
     } else if (isRefactor(intent)) {
       tasks.push(
@@ -26,6 +57,13 @@ export const taskPhase: WorkflowPhase = {
         { title: `Refactor ${intent.target}`, description: 'Apply the refactor while preserving behavior', type: 'engineering' },
         { title: `Validate tests: ${ctx.prompt}`, description: 'Ensure all tests pass after refactoring', type: 'qa' }
       )
+      if (impact.files.length > 0) {
+        tasks.push({
+          title: `Acceptance: consumers of ${intent.target} keep working`,
+          description: `Acceptance criteria: these files import the refactored module — they must keep compiling and behaving (update them in the same change if the API changes): ${impact.files.map(f => `\`${f}\``).join(', ')}`,
+          type: 'qa',
+        })
+      }
     } else if (isFix(intent)) {
       tasks.push(
         { title: `Fix ${intent.area} issues: ${ctx.prompt}`, description: 'Run the relevant check, fix every reported violation in existing files, and re-run until clean. Do not create new screens, hooks, or services.', type: 'engineering' },
@@ -45,6 +83,10 @@ export const taskPhase: WorkflowPhase = {
         { title: `Validate tests: ${ctx.prompt}`, description: 'Run all tests to verify implementation satisfies requirements', type: 'qa' },
         { title: `Docs: ${ctx.prompt}`, description: 'Update README and project documentation', type: 'documentation' }
       )
+      // Affected screens + existing flows become checkable acceptance work in
+      // the add-feature path (and the removal path below): the feature must not
+      // regress what impact flagged.
+      tasks.push(...acceptance)
     }
 
     try {

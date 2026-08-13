@@ -4,10 +4,11 @@ import { join } from 'path'
 import { designPhase } from '../../src/workflows/phases/designPhase'
 import { architecturePhase } from '../../src/workflows/phases/architecturePhase'
 import { testPhase } from '../../src/workflows/phases/testPhase'
+import { taskPhase } from '../../src/workflows/phases/taskPhase'
 import { implementationPhase, buildImplementationPrompt } from '../../src/workflows/phases/implementationPhase'
 import { summarizeImpactReport, renderBlastRadiusContext } from '../../src/harness/impact'
 import { MaestroFlowWriter } from '../../src/sdlc/MaestroFlowWriter'
-import type { WorkflowContext } from '../../src/adapters/types'
+import type { WorkflowContext, TaskInput } from '../../src/adapters/types'
 
 const SAMPLE_REPORT = [
   '## 🌐 Cross-package impact analysis',
@@ -172,6 +173,69 @@ describe('impact context → downstream stages', () => {
     expect(result.output).toContain('### Known consumers (from impact stage)')
     expect(result.output).toContain('- `packages/ui/src/Button.tsx`')
     expect(result.output).toContain('keep the exports, signatures, and')
+  })
+
+  it('task phase turns affected screens and E2E flows into acceptance tasks', async () => {
+    const created: TaskInput[] = []
+    const pm = {
+      name: 'stub',
+      createTasks: async (ts: TaskInput[]) => {
+        created.push(...ts)
+        return ts.map((t, i) => ({ id: String(i + 1), title: t.title, description: t.description, status: 'todo' }))
+      },
+      updateTasks: async () => {},
+      closeTasks: async () => {},
+      readTicket: async () => null,
+    }
+    const result = await taskPhase.run({
+      ...makeCtx('Add a profile feature', SAMPLE_REPORT),
+      adapters: {
+        projectManagement: pm,
+      } as unknown as WorkflowContext['adapters'],
+    })
+
+    expect(result.status).toBe('completed')
+    // One acceptance task per affected screen, naming the generated impact flow.
+    const screenTask = created.find(t => t.title === 'Acceptance: ProfileScreen not regressed')
+    expect(screenTask).toBeDefined()
+    expect(screenTask?.description).toContain('.maestro/profile-screen-impact.yaml')
+    // Existing E2E flows referencing an affected screen become a keep-green task.
+    const flowsTask = created.find(t => t.title === 'Acceptance: existing E2E flows still pass')
+    expect(flowsTask).toBeDefined()
+    expect(flowsTask?.description).toContain('`.maestro/profile.yaml`')
+  })
+
+  it('task phase adds a consumers-keep-working task for refactors', async () => {
+    const created: TaskInput[] = []
+    const pm = {
+      name: 'stub',
+      createTasks: async (ts: TaskInput[]) => {
+        created.push(...ts)
+        return ts.map((t, i) => ({ id: String(i + 1), title: t.title, description: t.description, status: 'todo' }))
+      },
+      updateTasks: async () => {},
+      closeTasks: async () => {},
+      readTicket: async () => null,
+    }
+    const result = await taskPhase.run({
+      ...makeCtx('Refactor user-service', SAMPLE_REPORT),
+      modelRouter: {
+        generate: async () => ({
+          content: JSON.stringify({
+            intents: [{ type: 'refactor', target: 'user-service', confidence: 1, reasoning: 'test' }],
+          }),
+          provider: 'mock',
+        }),
+      } as unknown as WorkflowContext['modelRouter'],
+      adapters: {
+        projectManagement: pm,
+      } as unknown as WorkflowContext['adapters'],
+    })
+
+    expect(result.status).toBe('completed')
+    const task = created.find(t => t.title.includes('consumers of user-service keep working'))
+    expect(task).toBeDefined()
+    expect(task?.description).toContain('`packages/ui/src/Button.tsx`')
   })
 
   it('writeScreenFlow emits a deterministic regression flow with optional deep link', () => {
