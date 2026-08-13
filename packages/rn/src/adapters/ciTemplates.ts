@@ -82,6 +82,23 @@ function scriptRun(pm: 'npm' | 'yarn' | 'pnpm', script: string): string {
 }
 
 /**
+ * Failure hook for a job: when any step in the job fails, file a triaged CI
+ * incident (severity, cause bucket, rollback suggestion) into the knowledge
+ * base via `vectalon ci-incident` — every CI failure becomes an incident the
+ * team brain learns from. Requires a git checkout (always true here) and a
+ * Pro license; the step is advisory (`if: failure()` only fires on failure).
+ */
+function ciIncidentStepLines(gate: string): string[] {
+  const sha = '${{ github.sha }}'
+  const branch = '${{ github.head_ref || github.ref_name }}'
+  return [
+    '- name: File CI incident',
+    '  if: failure()',
+    `  run: npx vectalon@latest ci-incident --gate ${gate} --commit ${sha} --branch ${branch}`,
+  ]
+}
+
+/**
  * The visual regression job: boot an iOS simulator on macOS, run the vectalon
  * PR-mode runner against the PR base's committed baselines, upload the
  * artifacts, and post the report as a PR comment. Ships advisory-first
@@ -178,12 +195,14 @@ export function generateGithubActionsWorkflow(root: string): string {
       '    runs-on: ubuntu-latest',
       '    steps:',
       ...steps.map(s => `      ${s}`),
+      ...ciIncidentStepLines('quality').map(s => `      ${s}`),
       '',
       '  native:',
       '    name: Native checks (pod install, gradle)',
       '    runs-on: macos-latest',
       '    steps:',
       ...nativeSteps.map(s => `      ${s}`),
+      ...ciIncidentStepLines('native').map(s => `      ${s}`),
       '',
       ...visualJobLines(pm),
     ].join('\n')
@@ -203,6 +222,7 @@ export function generateGithubActionsWorkflow(root: string): string {
     '    runs-on: ubuntu-latest',
     '    steps:',
     ...steps.map(s => `      ${s}`),
+    ...ciIncidentStepLines('quality').map(s => `      ${s}`),
     '',
     ...visualJobLines(pm),
   ].join('\n')

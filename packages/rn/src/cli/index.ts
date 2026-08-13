@@ -25,6 +25,7 @@ import { authCommand } from './commands/auth'
 import { ciCommand } from './commands/ci'
 import { visualCiCommand } from './commands/visualCi'
 import { visualBaselineCommand } from './commands/visualBaseline'
+import { ciIncidentCommand } from './commands/ciIncident'
 import { releaseCommand } from './commands/release'
 import { ecosystemCommand } from './commands/ecosystem'
 import { listEcosystemItems } from '../ecosystem'
@@ -257,7 +258,24 @@ export function createProgram(): Command {
     .option('--out <dir>', 'Run output directory (default .vectalon/visual-ci)')
     .option('--json', 'Print the machine-readable outcome as JSON')
     .option('--dry-run', 'Describe the plan without touching a device')
+    .option('--incident', 'File a triaged incident into the knowledge base when the gate fails (regression only — infra failures are reported, not filed)')
     .action(visualCiCommand)
+
+  program
+    .command('ci-incident [directory]')
+    .description('Self-healing CI gate: file a triaged incident (severity, cause bucket, rollback suggestion) for a failed CI gate into the knowledge base — every CI failure becomes something the team brain learns from')
+    .option('--gate <name>', 'Gate that failed, e.g. visual-regression|quality|bundle-budget|bench-regression (default ci)')
+    .option('--step <name>', 'Workflow step that failed')
+    .option('--command <cmd>', 'The failing command')
+    .option('--exit <code>', 'Exit code of the failing step', Number)
+    .option('--output <text>', 'Failing output (truncated in the report)')
+    .option('--commit <sha>', 'Failing commit sha (default: git HEAD)')
+    .option('--branch <name>', 'Failing branch (default: git / CI env)')
+    .option('--severity <level>', 'Override severity: sev1|sev2|sev3')
+    .option('--telemetry <dir>', 'Ingest crash telemetry exports to make the triage data-driven')
+    .option('--json', 'Print the incident as JSON')
+    .option('--dry-run', 'Analyze + print without persisting')
+    .action(ciIncidentCommand)
 
   program
     .command('visual-baseline [directory]')

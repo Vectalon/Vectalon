@@ -64,6 +64,16 @@ describe('ciTemplates', () => {
       expect(workflow).toContain('yarn test')
     })
 
+    it('files a CI incident when a quality step fails', () => {
+      for (const [name, content] of Object.entries(RN_PKG)) {
+        writeFileSync(join(dir, name), content)
+      }
+      const workflow = generateGithubActionsWorkflow(dir)
+      expect(workflow).toContain('File CI incident')
+      expect(workflow).toContain('if: failure()')
+      expect(workflow).toContain('ci-incident --gate quality')
+    })
+
     it('emits native checks (pod install / gradle) as a second job', () => {
       for (const [name, content] of Object.entries(RN_PKG)) {
         writeFileSync(join(dir, name), content)
@@ -79,6 +89,7 @@ describe('ciTemplates', () => {
       expect(workflow).toContain('  native:')
       expect(workflow).toContain('pod install')
       expect(workflow).toContain('./gradlew clean')
+      expect(workflow).toContain('ci-incident --gate native')
     })
   })
 

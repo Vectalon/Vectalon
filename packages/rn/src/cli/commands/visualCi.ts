@@ -17,6 +17,8 @@ import {
   deriveScreenKeys,
   VISUAL_CI_COMMENT_MARKER,
 } from '../../visualCi/runner'
+import { ArtifactStore } from '../../knowledge/ArtifactStore'
+import { fileCiGateIncident } from '../../sdlc'
 
 interface VisualCiCliOptions {
   base?: string
@@ -31,6 +33,7 @@ interface VisualCiCliOptions {
   out?: string
   json?: boolean
   dryRun?: boolean
+  incident?: boolean
 }
 
 function defaultBase(): string {
@@ -137,6 +140,33 @@ export async function visualCiCommand(directory: string, options: VisualCiCliOpt
       ? (number, body) => adapters.git.upsertPullRequestComment(number, VISUAL_CI_COMMENT_MARKER, body)
       : undefined,
   })
+
+  // Self-healing: a regression gate failure becomes a triaged incident in the
+  // knowledge base. Infra failures (exit 2) are reported, never filed — there
+  // is nothing to roll back when a simulator could not boot.
+  if (options.incident && outcome.exitCode === 1) {
+    let branch: string | undefined
+    try {
+      const b = await runCommand('git', ['branch', '--show-current'], { cwd: root })
+      if (b.success && b.stdout.trim()) branch = b.stdout.trim()
+    } catch (err) {
+      // Best-effort — the incident files without a branch.
+    }
+    const incident = fileCiGateIncident(
+      {
+        gate: 'visual-regression',
+        exitCode: outcome.exitCode,
+        output: outcome.report,
+        branch,
+      },
+      new ArtifactStore(root)
+    )
+    logger.warn('Visual regression gate failed — incident filed into the knowledge base:')
+    logger.warn(`  ${incident.incident.severity} · ${incident.incident.probableCause}`)
+    if (incident.rollback.command) {
+      logger.warn(`  Rollback: ${incident.rollback.command}`)
+    }
+  }
 
   if (options.json) {
     logger.out(JSON.stringify({ passed: outcome.passed, exitCode: outcome.exitCode, runs: outcome.runs }, null, 2) + '\n')
