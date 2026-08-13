@@ -8,6 +8,7 @@ import {
   generateGitlabCi,
   generateBitbucketPipelines,
   detectCiProvider,
+  detectCiProviderFromEnv,
 } from '../../src/adapters/ciTemplates'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
@@ -138,8 +139,53 @@ describe('ciTemplates', () => {
       expect(detectCiProvider(dir)).toBe('github')
     })
 
-    it('falls back to github when there is no git remote', () => {
+    it('falls back to github when there is no git remote and no CI env', () => {
       expect(detectCiProvider(dir)).toBe('github')
+    })
+  })
+
+  describe('detectCiProviderFromEnv', () => {
+    const envKeys = ['SYSTEM_TEAMPROJECT', 'GITLAB_CI', 'BITBUCKET_PIPELINES', 'GITHUB_ACTIONS']
+    const saved: Record<string, string | undefined> = {}
+
+    beforeEach(() => {
+      for (const key of envKeys) {
+        saved[key] = process.env[key]
+        delete process.env[key]
+      }
+    })
+
+    afterEach(() => {
+      for (const key of envKeys) {
+        if (saved[key] === undefined) delete process.env[key]
+        else process.env[key] = saved[key]
+      }
+    })
+
+    it('maps each provider env marker to its CI host', () => {
+      process.env.SYSTEM_TEAMPROJECT = 'OTHVAC-Mobile'
+      expect(detectCiProviderFromEnv()).toBe('azure')
+      delete process.env.SYSTEM_TEAMPROJECT
+
+      process.env.GITLAB_CI = 'true'
+      expect(detectCiProviderFromEnv()).toBe('gitlab')
+      delete process.env.GITLAB_CI
+
+      process.env.BITBUCKET_PIPELINES = 'true'
+      expect(detectCiProviderFromEnv()).toBe('bitbucket')
+      delete process.env.BITBUCKET_PIPELINES
+
+      process.env.GITHUB_ACTIONS = 'true'
+      expect(detectCiProviderFromEnv()).toBe('github')
+    })
+
+    it('returns null with no provider markers', () => {
+      expect(detectCiProviderFromEnv()).toBeNull()
+    })
+
+    it('detects the host from env when the checkout has no git remote', () => {
+      process.env.GITLAB_CI = 'true'
+      expect(detectCiProvider(dir)).toBe('gitlab')
     })
   })
 

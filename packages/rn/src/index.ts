@@ -225,6 +225,7 @@ export {
   generateGitlabCi,
   generateBitbucketPipelines,
   detectCiProvider,
+  detectCiProviderFromEnv,
   PROVIDER_PATHS,
 } from './adapters/ciTemplates'
 export type { CiTemplateOptions, GeneratedCiFile } from './adapters/ciTemplates'

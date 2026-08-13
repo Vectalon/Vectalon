@@ -72,6 +72,30 @@ export function detectRemoteProvider(remoteUrl: string): RemoteProvider | null {
   return null
 }
 
+/**
+ * Reconstruct the origin remote URL from provider environment variables — the
+ * path that works inside CI checkouts with no git remote at all (Azure
+ * Pipelines and Bitbucket checkouts are remote-less by default). Each provider
+ * publishes its own coordinates: GitHub `GITHUB_REPOSITORY`, GitLab
+ * `CI_PROJECT_PATH`, Bitbucket `BITBUCKET_REPO_FULL_NAME`, Azure
+ * `BUILD_REPOSITORY_URI`. Returns null when no provider env is present.
+ */
+export function remoteUrlFromEnv(): string | null {
+  if (process.env.GITHUB_ACTIONS && process.env.GITHUB_REPOSITORY) {
+    return `https://github.com/${process.env.GITHUB_REPOSITORY}.git`
+  }
+  if (process.env.GITLAB_CI && process.env.CI_PROJECT_PATH) {
+    return `https://gitlab.com/${process.env.CI_PROJECT_PATH}.git`
+  }
+  if (process.env.BITBUCKET_PIPELINES && process.env.BITBUCKET_REPO_FULL_NAME) {
+    return `https://bitbucket.org/${process.env.BITBUCKET_REPO_FULL_NAME}.git`
+  }
+  if (process.env.SYSTEM_TEAMPROJECT && process.env.BUILD_REPOSITORY_URI) {
+    return process.env.BUILD_REPOSITORY_URI
+  }
+  return null
+}
+
 function ghHeaders(token: string): Record<string, string> {
   return {
     Authorization: `Bearer ${token}`,
@@ -506,6 +530,9 @@ export class LocalGitAdapter implements GitAdapter {
       reportError(err, 'git: reading origin remote URL')
       this.remoteUrl = null
     }
+    // CI checkouts (Azure Pipelines, Bitbucket) have no origin remote — derive
+    // the provider coordinates from its environment variables instead.
+    if (!this.remoteUrl) this.remoteUrl = remoteUrlFromEnv()
     return this.remoteUrl
   }
 

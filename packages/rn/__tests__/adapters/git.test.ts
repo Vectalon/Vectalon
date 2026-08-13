@@ -9,6 +9,7 @@ import {
   parseGitlabRemote,
   parseBitbucketRemote,
   detectRemoteProvider,
+  remoteUrlFromEnv,
 } from '../../src/adapters/git'
 
 function makeRepo(remote = 'git@github.com:acme/app.git'): string {
@@ -58,6 +59,53 @@ describe('remote parsers', () => {
     expect(detectRemoteProvider('git@bitbucket.org:acme/app.git')).toBe('bitbucket')
     expect(detectRemoteProvider('git@github.com:acme/app.git')).toBe('github')
     expect(detectRemoteProvider('git@example.com:acme/app.git')).toBeNull()
+  })
+})
+
+describe('remoteUrlFromEnv', () => {
+  const keys = ['GITHUB_ACTIONS', 'GITHUB_REPOSITORY', 'GITLAB_CI', 'CI_PROJECT_PATH', 'BITBUCKET_PIPELINES', 'BITBUCKET_REPO_FULL_NAME', 'SYSTEM_TEAMPROJECT', 'BUILD_REPOSITORY_URI']
+  const saved: Record<string, string | undefined> = {}
+
+  beforeEach(() => {
+    for (const key of keys) {
+      saved[key] = process.env[key]
+      delete process.env[key]
+    }
+  })
+
+  afterEach(() => {
+    for (const key of keys) {
+      if (saved[key] === undefined) delete process.env[key]
+      else process.env[key] = saved[key]
+    }
+  })
+
+  it('derives the remote from each provider env pair', () => {
+    process.env.GITHUB_ACTIONS = 'true'
+    process.env.GITHUB_REPOSITORY = 'acme/app'
+    expect(remoteUrlFromEnv()).toBe('https://github.com/acme/app.git')
+    delete process.env.GITHUB_ACTIONS
+    delete process.env.GITHUB_REPOSITORY
+
+    process.env.GITLAB_CI = 'true'
+    process.env.CI_PROJECT_PATH = 'group/sub/app'
+    expect(remoteUrlFromEnv()).toBe('https://gitlab.com/group/sub/app.git')
+    delete process.env.GITLAB_CI
+    delete process.env.CI_PROJECT_PATH
+
+    process.env.BITBUCKET_PIPELINES = 'true'
+    process.env.BITBUCKET_REPO_FULL_NAME = 'acme/app'
+    expect(remoteUrlFromEnv()).toBe('https://bitbucket.org/acme/app.git')
+    delete process.env.BITBUCKET_PIPELINES
+    delete process.env.BITBUCKET_REPO_FULL_NAME
+
+    process.env.SYSTEM_TEAMPROJECT = 'OTHVAC-Mobile'
+    process.env.BUILD_REPOSITORY_URI = 'https://dev.azure.com/getgenea/OTHVAC-Mobile/_git/OTHVAC-Mobile'
+    expect(remoteUrlFromEnv()).toBe('https://dev.azure.com/getgenea/OTHVAC-Mobile/_git/OTHVAC-Mobile')
+  })
+
+  it('returns null with no provider env', () => {
+    expect(remoteUrlFromEnv()).toBeNull()
   })
 })
 
@@ -344,5 +392,64 @@ describe('LocalGitAdapter.upsertPullRequestComment — provider dispatch', () =>
     global.fetch = fetchMock as unknown as typeof fetch
     await adapter.upsertPullRequestComment(3, MARKER, BODY)
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('LocalGitAdapter.upsertPullRequestComment — env-derived remote (remote-less CI checkout)', () => {
+  let dir: string
+  let originalFetch: typeof fetch
+  const saved: Record<string, string | undefined> = {}
+  const keys = ['SYSTEM_TEAMPROJECT', 'BUILD_REPOSITORY_URI', 'AZURE_DEVOPS_TOKEN', 'GITLAB_CI', 'CI_PROJECT_PATH', 'GITLAB_TOKEN']
+
+  beforeEach(() => {
+    for (const key of keys) {
+      saved[key] = process.env[key]
+      delete process.env[key]
+    }
+    originalFetch = global.fetch
+  })
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true })
+    global.fetch = originalFetch
+    for (const key of keys) {
+      if (saved[key] === undefined) delete process.env[key]
+      else process.env[key] = saved[key]
+    }
+  })
+
+  it('posts an Azure thread when the checkout has no origin remote but CI env is present', async () => {
+    // Azure Pipelines checkouts have no origin remote.
+    dir = mkdtempSync(join(tmpdir(), 'vectalon-git-'))
+    execSync('git init -q', { cwd: dir })
+    process.env.SYSTEM_TEAMPROJECT = 'OTHVAC-Mobile'
+    process.env.BUILD_REPOSITORY_URI = 'https://dev.azure.com/getgenea/OTHVAC-Mobile/_git/OTHVAC-Mobile'
+    process.env.AZURE_DEVOPS_TOKEN = 'pat-token'
+    const adapter = new LocalGitAdapter(dir, true)
+    const fetchMock = jest.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ value: [] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    await adapter.upsertPullRequestComment(42, MARKER, BODY)
+
+    expect(String(fetchMock.mock.calls[0][0])).toContain('dev.azure.com/getgenea/OTHVAC-Mobile/_apis')
+    expect(fetchMock.mock.calls[1][1]).toMatchObject({ method: 'POST' })
+  })
+
+  it('posts a GitLab note when the checkout has no origin remote but CI env is present', async () => {
+    dir = mkdtempSync(join(tmpdir(), 'vectalon-git-'))
+    execSync('git init -q', { cwd: dir })
+    process.env.GITLAB_CI = 'true'
+    process.env.CI_PROJECT_PATH = 'getgenea/otvac-mobile'
+    process.env.GITLAB_TOKEN = 'gl-token'
+    const adapter = new LocalGitAdapter(dir, true)
+    const fetchMock = jest.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    await adapter.upsertPullRequestComment(7, MARKER, BODY)
+    expect(String(fetchMock.mock.calls[0][0])).toContain('gitlab.com/api/v4/projects/getgenea%2Fotvac-mobile')
   })
 })

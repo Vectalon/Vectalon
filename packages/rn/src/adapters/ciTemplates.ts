@@ -35,8 +35,23 @@ export const PROVIDER_PATHS: Record<CiProvider, string> = {
 }
 
 /**
- * Detect the CI host from the git remote (`.git/config`). Everything that is
- * not one of the named hosts falls back to GitHub Actions — the most common
+ * Detect the CI host from provider-specific environment variables — the path
+ * that works inside a CI run where the checkout may have no git remote at all
+ * (Azure Pipelines and Bitbucket checkouts are remote-less by default). Only
+ * unambiguous provider markers are used; returns null when nothing matches.
+ */
+export function detectCiProviderFromEnv(): CiProvider | null {
+  if (process.env.SYSTEM_TEAMPROJECT) return 'azure'
+  if (process.env.GITLAB_CI) return 'gitlab'
+  if (process.env.BITBUCKET_PIPELINES) return 'bitbucket'
+  if (process.env.GITHUB_ACTIONS) return 'github'
+  return null
+}
+
+/**
+ * Detect the CI host from the git remote (`.git/config`), falling back to the
+ * provider environment variables when the checkout has no remote (CI clones).
+ * Everything unrecognized falls back to GitHub Actions — the most common
  * default for public repos and the safest template.
  */
 export function detectCiProvider(root: string): CiProvider {
@@ -51,7 +66,7 @@ export function detectCiProvider(root: string): CiProvider {
   } catch (err) {
     reportError(err, 'ciTemplates: reading .git/config')
   }
-  return 'github'
+  return detectCiProviderFromEnv() ?? 'github'
 }
 
 /**
