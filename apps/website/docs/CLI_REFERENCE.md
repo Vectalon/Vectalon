@@ -12,8 +12,8 @@ when the package is installed; `npx` prefers the local binary.)
 
 Running `npx vectalon` with no arguments opens an **interactive menu** covering
 the most common actions (init, feature, refresh, suggestions, bundle, status,
-daemon, telemetry, impact, coverage, smoke, ci, release, ecosystem, doctor,
-selftest, bench, leaderboard, sync, policy, serve, pull, models, help).
+daemon, telemetry, impact, coverage, intel, smoke, ci, release, ecosystem,
+doctor, selftest, bench, leaderboard, sync, policy, serve, pull, models, help).
 
 ---
 
@@ -967,6 +967,43 @@ npx vectalon coverage --limit 10             # cap the number of screens listed
 
 ---
 
+## `intel`
+
+**Project Intelligence Core** (Roadmap Phase 1, items 001-010) — one
+deterministic pass over the project that produces the full intelligence
+picture, from canonical manifest to sub-second knowledge retrieval:
+
+```bash
+npx vectalon intel                  # full report → docs/vectalon/intel/report.{json,md}
+npx vectalon intel --bench          # + sub-second retrieval benchmark
+npx vectalon intel --search "nav screen"  # ranked retrieval over the indexed project
+npx vectalon intel --graph deps     # export one graph as JSON
+npx vectalon intel --json           # full machine-readable report on stdout
+```
+
+**Layers (001-010)**
+
+| # | Layer | What it produces |
+|---|---|---|
+| 001 | Project manifest | Versioned schema (v2): name, RN/Expo versions, tooling, platforms, dependencies + validation issues |
+| 002 | Workspace discovery | Monorepo detection (pnpm/yarn/npm/turbo/lerna/**nx**) + member package map |
+| 003 | Dependency graph | File → file import edges, external package boundaries, **circular-import cycles** (Tarjan SCC) |
+| 004 | AST layer | Parse-rate statistics over every source file (roadmap: 95%+) + import/export counts |
+| 005 | Repository index | Incremental — content fingerprints, re-index only changed files |
+| 006 | Embeddings | Deterministic hash embeddings + 200-line chunking with overlap (offline, no model calls) |
+| 007 | Component graph | Parent → child relationships, shared components, re-render impact |
+| 008 | Navigation graph | React Navigation navigators, Expo Router routes, URL scheme + deep-link map |
+| 009 | Native registry | JS references, Podfile pods, podspecs, Gradle includes, TurboModule specs |
+| 010 | Retrieval API | Ranked semantic + lexical search over the index, **sub-second** benchmark |
+
+In a monorepo the scan is **repository-wide**: when the target is a workspace
+root, every member package's source is indexed too. `--graph` accepts `deps`,
+`components`, `navigation`, `native`, or `manifest`. Writes
+`docs/vectalon/intel/report.json` + `report.md`; the report directory is
+gitignored.
+
+---
+
 ## `smoke`
 
 **Post-release verification**: run **every CLI command** against the project
@@ -979,7 +1016,7 @@ npx vectalon smoke                       # every fast check, dev mode, report to
 npx vectalon smoke --full                # + slow/model-heavy checks (feature, bench, selftest, pull)
 npx vectalon smoke --json                # machine-readable report on stdout (CI)
 npx vectalon smoke --only impact,coverage # targeted subset
-npx vectalon smoke --list                # show all 33 checks
+npx vectalon smoke --list                # show all 34 checks
 npx vectalon smoke --no-dev              # respect the real tier — Pro/Team commands report as skips
 ```
 
@@ -1001,12 +1038,13 @@ npx vectalon smoke --no-dev              # respect the real tier — Pro/Team co
 
 **What it does**
 
-- Runs 33 checks covering the whole command surface — version/help, init,
+- Runs 34 checks covering the whole command surface — version/help, init,
   status, models, auth, policy, refresh, suggestions, ecosystem, doctor,
-  impact, coverage, telemetry, bundle, profile, sandbox, render, ci, release,
-  leaderboard, visual-ci, visual-baseline, ci-incident, serve (boot-probed
-  then killed), daemon, sync, team-policy, support, plus `--full` adds the
-  feature workflow, benchmark, full self-test, and model pull
+  impact, coverage, intel, telemetry, bundle, profile, sandbox, render, ci,
+  release, leaderboard, visual-ci, visual-baseline, ci-incident, serve
+  (boot-probed then killed), daemon, sync, team-policy, support, plus
+  `--full` adds the feature workflow, benchmark, full self-test, and model
+  pull
 - Captures each command's **full stdout/stderr** into `report.json`, a
   readable `report.log`, and an HTML dashboard; the terminal prints a live
   per-check stream followed by a summary table

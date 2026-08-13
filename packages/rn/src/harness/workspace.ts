@@ -17,7 +17,7 @@ import { bestEffort, reportError } from '../utils/safe'
  * - `turbo.json`            → Turborepo (workspaces come from the manifest)
  */
 
-export type WorkspaceManager = 'pnpm' | 'yarn' | 'npm' | 'turborepo' | 'lerna'
+export type WorkspaceManager = 'pnpm' | 'yarn' | 'npm' | 'turborepo' | 'lerna' | 'nx'
 
 export interface WorkspaceInfo {
   /** True when the scanned root is part of a monorepo workspace. */
@@ -101,6 +101,23 @@ function detectMarker(dir: string): WorkspaceMarker | null {
       reportError(err, 'workspace: parsing lerna.json')
       return { manager: 'lerna', patterns: DEFAULT_PATTERNS }
     }
+  }
+
+  // Nx is an orchestrator like Turborepo; the workspace layout comes from
+  // the manifest's `workspaces` field (or pnpm-workspace.yaml).
+  if (existsSync(join(dir, 'nx.json'))) {
+    const pkgPath1 = join(dir, 'package.json')
+    let patterns = DEFAULT_PATTERNS
+    if (existsSync(pkgPath1)) {
+      try {
+        const pkg = JSON.parse(readFileSync(pkgPath1, 'utf-8')) as { workspaces?: unknown }
+        const ws = workspacesFromManifest(pkg)
+        if (ws.length > 0) patterns = ws
+      } catch (err) {
+        reportError(err, 'workspace: parsing nx package.json')
+      }
+    }
+    return { manager: 'nx', patterns }
   }
 
   // Turborepo is an orchestrator; the workspace layout comes from the

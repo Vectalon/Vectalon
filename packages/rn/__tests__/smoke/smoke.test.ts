@@ -74,6 +74,7 @@ describe('smoke catalog', () => {
       'doctor',
       'impact',
       'coverage',
+      'intel',
       'telemetry',
       'bundle',
       'profile',

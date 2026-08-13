@@ -2,9 +2,17 @@ import Link from 'next/link'
 
 const RELEASES = [
   {
-    version: 'v0.3.0',
+    version: 'v0.4.0',
     date: '2026-08-13',
     tag: 'latest',
+    highlights: [
+      'Project Intelligence Core (Roadmap 001-010) — the new vectalon intel command runs one deterministic pass producing the versioned project manifest + validation, workspace/monorepo discovery (pnpm, yarn, npm, turbo, lerna, and now Nx), a file-to-file dependency graph with circular-import cycle detection, AST parse-rate statistics, an incremental repository index (content fingerprints, re-index only changed files), component + navigation graphs (navigators, Expo Router routes, deep-link map), a native module registry (Podfile pods, podspecs, Gradle includes, TurboModule specs), and ranked knowledge retrieval over hash-embedded chunked source with a sub-second benchmark',
+      'Repository-wide scans — when the target is a workspace root, every member package is indexed too; reports land in docs/vectalon/intel/ (gitignored); --json, --graph deps|components|navigation|native|manifest, --search, and --bench',
+    ],
+  },
+  {
+    version: 'v0.3.0',
+    date: '2026-08-13',
     highlights: [
       'Post-release smoke verification — vectalon smoke runs every CLI command against the project (Expo or bare RN CLI) in dev mode by default so all tier-gated features execute for real, captures each command\'s full output (ANSI-stripped for clean reports) into report.json / report.log / an HTML dashboard, and reports pass/warn/skip/fail with an exit code — generated release workflows now include a verify job that blocks submission on any failure',
       'CLI shortcut vc — the package installs vc as a third bin name (vectalon, vc, rn-vectalon), so clients can run vc status or npx vc smoke --full instead of typing npx vectalon every time',

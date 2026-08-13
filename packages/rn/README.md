@@ -82,6 +82,7 @@ Run `npx vectalon <command> --help` for detailed options.
 | `telemetry [dir]` | Ingest Sentry/Crashlytics/traces/analytics and analyze | `--path <dir>`, `--no-analyze` |
 | `daemon` | Live Metro/Hermes companion daemon | `-p <port>`, `--metro-port`, `--stop`, `--status`, `--once`, `--wire-metro`, `--no-device-probe` |
 | `impact [dir]` | Cross-package blast radius of changed files (monorepo) — affected screens, navigation stacks, and the Maestro E2E flows that must run, including **accessibility variants** for screens covered by a11y criteria and flags for screens with **no deterministic route** | `--changed <files>`, `--pr <number>`, `--push`, `--json`, `--dry-run` |
+| `intel [dir]` | **Project Intelligence Core (Roadmap 001-010)** — one deterministic pass: versioned project manifest + validation, workspace/monorepo discovery (pnpm/yarn/npm/turbo/lerna/nx), file→file dependency graph with circular-import cycles, AST parse-rate stats, incremental repository index (content fingerprints), component + navigation graphs, native module registry (pods/podspecs/gradle/TurboModule specs), and ranked knowledge retrieval with a sub-second benchmark — repository-wide in monorepos, writes `docs/vectalon/intel/report.{json,md}` | `--json`, `--graph <deps\|components\|navigation\|native\|manifest>`, `--search <q>`, `--bench` |
 | `coverage [dir]` | Render the **coverage dashboard** (`docs/vectalon/coverage/coverage-gaps.md`) — a per-screen E2E + a11y gap summary with links to the open follow-up tasks | `--json`, `--limit <n>` |
 | `smoke [dir]` | **Post-release verification** — run every CLI command against the project (dev mode by default so all features run), capture the full output of each, and report pass/warn/skip/fail; exits non-zero on any failure. Wired into the generated release workflows as a `verify` job | `--list`, `--only <ids>`, `--skip <ids>`, `--full`, `--json`, `--no-dev`, `--out <dir>`, `--timeout <ms>` |
 | `bench` | RN coding-test benchmark (deterministic baseline or real-model) | `--model <provider>`, `--suite <id>`, `--live`, `--install`, `--json`, `-o <path>`, `--baseline <file>`, `--tolerance <n>` |
@@ -241,12 +242,12 @@ npx vectalon smoke --only impact,coverage
 npx vectalon smoke --no-dev       # respect the real tier — Pro/Team commands become skips
 ```
 
-- **33 checks** cover the whole surface — version/help, init, status, models,
+- **34 checks** cover the whole surface — version/help, init, status, models,
   auth, policy, refresh, suggestions, ecosystem, doctor, impact, coverage,
-  telemetry, bundle, profile, sandbox, render, ci, release, leaderboard,
-  visual-ci, visual-baseline, ci-incident, serve (boot-probed then killed),
-  daemon, sync, team-policy, support; `--full` adds feature, bench, selftest,
-  pull
+  intel, telemetry, bundle, profile, sandbox, render, ci, release,
+  leaderboard, visual-ci, visual-baseline, ci-incident, serve (boot-probed
+  then killed), daemon, sync, team-policy, support; `--full` adds feature,
+  bench, selftest, pull
 - **Full captured output** per command lands in `report.log` (readable),
   `report.json` (CI), and an HTML dashboard; the terminal streams each check
   live and prints a summary table
@@ -264,6 +265,28 @@ npx vectalon smoke --no-dev       # respect the real tier — Pro/Team commands 
   (`.github/workflows/vectalon-release.yml`, `.eas/workflows/vectalon-release.yml`)
   include a `verify` job that runs `vectalon smoke --full --json` after
   quality, so a broken command surface blocks submission
+
+## Project Intelligence Core (`vectalon intel`)
+
+One deterministic pass (Roadmap Phase 1, items 001-010) that maps the whole
+project — canonical manifest (versioned schema + validation), workspace /
+monorepo discovery (pnpm, yarn, npm, turbo, lerna, **nx**), file → file
+dependency graph with **circular-import cycles**, AST parse-rate statistics,
+an **incremental** repository index (content fingerprints — re-index only
+changed files), component + navigation graphs, a native module registry
+(Podfile pods, podspecs, Gradle includes, TurboModule specs), and **ranked
+knowledge retrieval** with a sub-second benchmark:
+
+```bash
+npx vectalon intel --bench                 # full report + retrieval benchmark
+npx vectalon intel --search "login screen" # ranked retrieval with timings
+npx vectalon intel --graph deps            # export the dependency graph as JSON
+```
+
+In a monorepo the scan is repository-wide — every member package's source is
+indexed when the target is a workspace root. Reports land in
+docs/vectalon/intel/report.{json,md} (gitignored). Deterministic — no model
+calls; the hash embeddings run offline.
 
 ## Hermes Runtime Profiling (`vectalon profile`)
 

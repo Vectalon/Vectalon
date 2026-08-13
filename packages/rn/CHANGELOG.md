@@ -5,6 +5,24 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-08-13
+
+### Added
+
+- **Project Intelligence Core — `vectalon intel`** (Roadmap Phase 1,
+  items 001-010): one deterministic pass that produces the versioned project
+  manifest + validation, workspace/monorepo discovery (pnpm, yarn, npm,
+  turbo, lerna, **nx**), a file→file dependency graph with circular-import
+  cycles (Tarjan SCC), AST parse-rate statistics, an incremental repository
+  index (content fingerprints — re-index only changed files), component +
+  navigation graphs (navigators, Expo Router routes, deep-link map), a native
+  module registry (JS refs, Podfile pods, podspecs, Gradle includes,
+  TurboModule specs), and ranked knowledge retrieval over hash-embedded,
+  chunked source with a **sub-second** benchmark. Repository-wide in
+  monorepos; `--json`, `--graph deps|components|navigation|native|manifest`,
+  `--search <q>`, `--bench`; reports to `docs/vectalon/intel/` (gitignored).
+  The interactive menu gains "Run project intelligence".
+
 ## [0.3.0] - 2026-08-13
 
 ### Added

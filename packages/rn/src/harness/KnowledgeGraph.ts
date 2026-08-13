@@ -267,8 +267,8 @@ export function buildKnowledgeGraph(root: string, srcDir = 'src'): RNGraph {
  * `/(tabs)/home`, `app/user/[id].tsx` → `/user/[id]` with dynamic segment
  * `id`. Files named `_layout` are layout files (not navigable routes).
  */
-export function extractExpoRoutes(root: string): GraphExpoRoute[] {
-  const appDir = join(root, 'app')
+export function extractExpoRoutes(root: string, appDirOverride?: string): GraphExpoRoute[] {
+  const appDir = appDirOverride ? join(root, appDirOverride) : join(root, 'app')
   if (!existsSync(appDir)) return []
 
   const routes: GraphExpoRoute[] = []

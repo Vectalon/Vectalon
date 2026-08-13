@@ -1,0 +1,303 @@
+# Vectalon RN – Detailed Agent Roadmap
+
+This roadmap is written so autonomous coding agents can pick up individual tasks with clear scope, deliverables, and acceptance criteria.
+
+## Phase 1 – Project Intelligence Core
+
+> **Status: items 001-010 shipped together in `vectalon intel` (v0.4.0)** —
+> one deterministic pass covering all ten layers, exposed as `vectalon intel`
+> with `--json`, `--graph deps|components|navigation|native|manifest`,
+> `--search <q>`, and `--bench` (sub-second retrieval). Workspace-wide in
+> monorepos; reports to `docs/vectalon/intel/` (gitignored).
+
+### 001. Project Manifest Schema
+**Goal:** Create a canonical representation of any React Native project.
+**Deliverables:**
+- Manifest schema (JSON/TS)
+- RN version, Expo version, platforms, dependencies
+- Validation utilities
+**Acceptance Criteria:**
+- Manifest generated from sample projects
+- Schema versioned
+
+### 002. Workspace Discovery Engine
+**Goal:** Detect monorepo and package layouts.
+**Deliverables:**
+- npm/yarn/pnpm/bun detection
+- Workspace traversal
+- Dependency boundary map
+**Acceptance Criteria:**
+- Supports Nx, TurboRepo and Yarn workspaces
+
+### 003. Dependency Graph Engine
+**Goal:** Build graph of all project dependencies.
+**Deliverables:**
+- Internal package graph
+- External dependency graph
+- Circular dependency detection
+**Acceptance Criteria:**
+- Graph exportable as JSON
+
+### 004. AST Analysis Layer
+**Goal:** Unified AST abstraction for JS/TS.
+**Deliverables:**
+- Babel parser wrappers
+- Symbol extraction
+- Import/export extraction
+**Acceptance Criteria:**
+- Parse 95%+ RN codebases
+
+### 005. Repository Indexing Pipeline
+**Goal:** Index entire repository.
+**Deliverables:**
+- File scanner
+- Metadata extraction
+- Incremental indexing
+**Acceptance Criteria:**
+- Re-index only changed files
+
+### 006. Semantic Embedding Pipeline
+**Goal:** Create vectorized project knowledge.
+**Deliverables:**
+- Embedding generation
+- Chunking strategy
+- Vector storage integration
+**Acceptance Criteria:**
+- Retrieval accuracy benchmark
+
+### 007. Component Relationship Graph
+**Goal:** Understand component hierarchy.
+**Deliverables:**
+- Parent-child relationships
+- Shared components map
+- Screen usage graph
+**Acceptance Criteria:**
+- Visual graph export
+
+### 008. Navigation Graph Indexer
+**Goal:** Detect app navigation structure.
+**Deliverables:**
+- React Navigation support
+- Deep-link mapping
+- Route hierarchy
+**Acceptance Criteria:**
+- Graph generated automatically
+
+### 009. Native Module Registry
+**Goal:** Track native integrations.
+**Deliverables:**
+- Pod detection
+- Gradle detection
+- TurboModule registry
+**Acceptance Criteria:**
+- Native dependencies searchable
+
+### 010. Knowledge Retrieval API
+**Goal:** Project-aware retrieval.
+**Deliverables:**
+- Semantic search
+- Context ranking
+- Metadata filters
+**Acceptance Criteria:**
+- Sub-second retrieval
+
+## Phase 2 – Diagnostics
+
+### 011. Metro Diagnostics
+**Goal:** Detect Metro bundler issues.
+**Deliverables:**
+- Config validation
+- Alias resolution
+- Cache troubleshooting
+**Acceptance Criteria:**
+- Suggest fixes automatically
+
+### 012. Hermes Diagnostics
+**Goal:** Analyze Hermes compatibility.
+**Deliverables:**
+- Config validation
+- Runtime issue detection
+- Recommendations
+**Acceptance Criteria:**
+- Known issue database
+
+### 013. Android Build Analyzer
+**Goal:** Interpret Gradle failures.
+**Deliverables:**
+- Log parser
+- Root cause classifier
+- Suggested fixes
+**Acceptance Criteria:**
+- Handles top 100 RN build errors
+
+### 014. iOS Build Analyzer
+**Goal:** Interpret Xcode failures.
+**Deliverables:**
+- Pod analysis
+- Build log analysis
+- Fix recommendations
+**Acceptance Criteria:**
+- Detects common CocoaPods issues
+
+### 015. Dependency Conflict Detector
+**Goal:** Detect version incompatibilities.
+**Deliverables:**
+- Peer dependency checks
+- RN ecosystem matrix
+- Fix planner
+**Acceptance Criteria:**
+- Conflict report generation
+
+## Phase 3 – Code Generation
+
+### 016. Component Generator
+**Goal:** Generate RN components.
+**Deliverables:**
+- Functional component templates
+- TypeScript support
+- Styling options
+**Acceptance Criteria:**
+- Production-ready output
+
+### 017. Screen Generator
+**Goal:** Generate feature screens.
+**Deliverables:**
+- Navigation integration
+- State management hooks
+- Tests
+**Acceptance Criteria:**
+- Builds successfully
+
+### 018. Native Module Generator
+**Goal:** Scaffold native integrations.
+**Deliverables:**
+- iOS bridge
+- Android bridge
+- TurboModule support
+**Acceptance Criteria:**
+- Example builds on both platforms
+
+### 019. Test Generator
+**Goal:** Generate automated tests.
+**Deliverables:**
+- Jest
+- RTL
+- Coverage reports
+**Acceptance Criteria:**
+- >80% generated coverage
+
+### 020. API Layer Generator
+**Goal:** Generate API clients.
+**Deliverables:**
+- Typed services
+- Error handling
+- Caching support
+**Acceptance Criteria:**
+- OpenAPI integration
+
+## Phase 4 – Performance
+
+### 021. Render Profiler
+### 022. Re-render Detector
+### 023. Startup Performance Analyzer
+### 024. Memory Leak Detector
+### 025. Bundle Size Analyzer
+### 026. JS Thread Bottleneck Analyzer
+### 027. Bridge Traffic Analyzer
+### 028. Benchmarking Suite
+### 029. Optimization Recommendation Engine
+### 030. Performance Regression Tracker
+
+For each:
+- Define metrics
+- Build collection pipeline
+- Generate reports
+- Provide fix recommendations
+
+## Phase 5 – RN Upgrade Intelligence
+
+### 031. RN Upgrade Planner
+### 032. RN Compatibility Matrix
+### 033. Deprecated API Scanner
+### 034. Expo SDK Upgrade Assistant
+### 035. Android SDK Upgrade Assistant
+### 036. iOS Deployment Target Advisor
+### 037. Codemod Generator
+### 038. Post Upgrade Validation
+### 039. Dependency Upgrade Risk Scoring
+### 040. Migration Guide Generator
+
+Acceptance:
+- Upgrade reports generated automatically
+
+## Phase 6 – Team Brain
+
+### 041. Team Memory Store
+### 042. ADR Indexing
+### 043. Coding Standards Engine
+### 044. Project Glossary Generator
+### 045. PR Knowledge Extraction
+### 046. Team Expertise Mapping
+### 047. Release Intelligence
+### 048. Decision Tracking System
+### 049. Onboarding Assistant
+### 050. Enterprise Policy Engine
+
+Acceptance:
+- Team knowledge searchable via semantic queries
+
+## Phase 7 – Agent Platform
+
+### 051. MCP Server
+### 052. VS Code Extension
+### 053. CLI Workflow Engine
+### 054. Agent Task Runner
+### 055. Multi-Agent Coordination
+### 056. Local Model Manager
+### 057. Offline Inference
+### 058. Prompt Registry
+### 059. Benchmark Harness
+### 060. Autonomous Task Planner
+
+Acceptance:
+- End-to-end agent workflow operational
+
+## Phase 8 – Autonomous Engineering
+
+### 061. PR Review Agent
+### 062. Architecture Review Agent
+### 063. Security Review Agent
+### 064. Build Fix Agent
+### 065. Test Repair Agent
+### 066. Refactoring Agent
+### 067. Dependency Upgrade Agent
+### 068. Accessibility Agent
+### 069. Release Readiness Agent
+### 070. Autonomous Bug Fix Agent
+
+Acceptance:
+- Agent can propose and execute changes safely
+
+## Remaining Backlog (071-100)
+
+Focus Areas:
+- Figma-to-code
+- Design token sync
+- Fine tuning pipelines
+- LoRA training
+- CI/CD intelligence
+- GitHub integration
+- Crashlytics intelligence
+- Sentry intelligence
+- Mobile observability
+- Enterprise governance
+- SOC2 readiness
+- Audit trails
+- Agent permissions
+- Multi-repository memory
+- Mobile architecture scoring
+- Team productivity analytics
+- Release prediction models
+- App Store readiness checks
+- Play Store readiness checks
+- Executive engineering dashboards

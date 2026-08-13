@@ -35,6 +35,7 @@ import { benchCommand } from './commands/bench'
 import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
 import { impactCommand } from './commands/impact'
 import { coverageCommand } from './commands/coverage'
+import { intelCommand } from './commands/intel'
 import { smokeCommand } from './commands/smoke'
 import { doctorCommand } from './commands/doctor'
 import { selftestCommand } from './commands/selftest'
@@ -407,6 +408,15 @@ export function createProgram(): Command {
     .action(coverageCommand)
 
   program
+    .command('intel [directory]')
+    .description('Project Intelligence Core — canonical manifest, workspace discovery, dependency graph (with cycles), AST parse stats, incremental index, component + navigation graphs, native module registry, and sub-second knowledge retrieval in one deterministic pass')
+    .option('--json', 'Print the full report as JSON')
+    .option('--graph <name>', 'Export one graph as JSON: deps, components, navigation, native, manifest')
+    .option('--search <query>', 'Run one retrieval query over the indexed project and show ranked results')
+    .option('--bench', 'Run the sub-second retrieval benchmark (010 acceptance)')
+    .action(intelCommand)
+
+  program
     .command('smoke [directory]')
     .description('Post-release verification: run every CLI command against the project, capture the full output of each, and report pass/warn/skip/fail — exit non-zero on any failure (runs after a release to verify everything is in order)')
     .option('--list', 'List all checks and exit')
@@ -610,6 +620,7 @@ async function runInteractive(): Promise<void> {
       { value: 'telemetry', label: 'Ingest telemetry', hint: 'Sentry/Crashlytics/traces/analytics into the knowledge base' },
       { value: 'impact', label: 'Analyze impact', hint: 'Cross-package blast radius of changed files (monorepo)' },
       { value: 'coverage', label: 'Show coverage dashboard', hint: 'Per-screen E2E and a11y gap summary with open follow-up links' },
+      { value: 'intel', label: 'Run project intelligence', hint: 'Manifest, deps, AST, graphs, native registry, retrieval (001-010)' },
       { value: 'smoke', label: 'Run post-release smoke', hint: 'Every command, full output, pass/skip/fail report' },
       { value: 'ci', label: 'Generate CI workflow', hint: 'EAS Workflows (Expo) or GitHub Actions (bare RN CLI)' },
       { value: 'release', label: 'Release pipeline', hint: 'Detect version bump, changelog, submit workflow, crash monitor' },
@@ -834,6 +845,12 @@ async function runInteractive(): Promise<void> {
   if (action === 'coverage') {
     await coverageCommand('', {})
     p.outro('Coverage dashboard shown')
+    return
+  }
+
+  if (action === 'intel') {
+    await intelCommand('', {})
+    p.outro('Project intelligence complete')
     return
   }
 

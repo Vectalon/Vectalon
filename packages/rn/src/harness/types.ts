@@ -2,7 +2,7 @@ export type ProjectTooling = 'expo' | 'rn-cli'
 
 export type PlatformSuffix = 'ios' | 'android' | 'windows' | 'macos' | 'web' | 'native' | 'universal'
 
-export type WorkspaceManager = 'pnpm' | 'yarn' | 'npm' | 'turborepo' | 'lerna'
+export type WorkspaceManager = 'pnpm' | 'yarn' | 'npm' | 'turborepo' | 'lerna' | 'nx'
 
 export interface WorkspaceInfo {
   /** True when the scanned root is part of a monorepo workspace. */

@@ -101,6 +101,12 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['coverage'],
   },
   {
+    id: 'intel',
+    name: 'Project intelligence (manifest, deps, graphs, retrieval)',
+    category: 'analysis',
+    args: () => ['intel'],
+  },
+  {
     id: 'telemetry',
     name: 'Telemetry formats guide',
     category: 'analysis',
