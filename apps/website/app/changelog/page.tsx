@@ -2,9 +2,18 @@ import Link from 'next/link'
 
 const RELEASES = [
   {
-    version: 'v0.2.0',
+    version: 'v0.3.0',
     date: '2026-08-13',
     tag: 'latest',
+    highlights: [
+      'Post-release smoke verification — vectalon smoke runs every CLI command against the project (Expo or bare RN CLI) in dev mode by default so all tier-gated features execute for real, captures each command\'s full output (ANSI-stripped for clean reports) into report.json / report.log / an HTML dashboard, and reports pass/warn/skip/fail with an exit code — generated release workflows now include a verify job that blocks submission on any failure',
+      'CLI shortcut vc — the package installs vc as a third bin name (vectalon, vc, rn-vectalon), so clients can run vc status or npx vc smoke --full instead of typing npx vectalon every time',
+      'Fixed: selftest diagnostics-support was environment-dependent — it now asserts the sandbox-captured error is present in the support bundle instead of demanding an exact queue count',
+    ],
+  },
+  {
+    version: 'v0.2.0',
+    date: '2026-08-13',
     highlights: [
       'Impact regression flows — changed files map to affected screens (AST-driven, no model calls), and the test phase writes .maestro/<slug>-impact.yaml regression flows for every screen with a deterministic route (deep link or initial route), with screenshots attached to the PR',
       'Accessibility variants — screens covered by accessibility criteria get a second regression flow that walks the accessibility tree with explicit text selectors (the labels VoiceOver/TalkBack announce) and a namespaced screenshot',

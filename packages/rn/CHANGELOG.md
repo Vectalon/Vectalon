@@ -5,7 +5,7 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.0] - 2026-08-13
 
 ### Added
 
@@ -32,6 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   surface blocks store submission.
 - **Interactive menu entry** — `vectalon` (no args) gains "Run post-release
   smoke" right after "Show coverage dashboard".
+- **CLI shortcut `vc`** — the package now installs three bin names
+  (`vectalon`, `vc`, `rn-vectalon`), all pointing at the same CLI, so clients
+  can run `vc status` or `npx vc smoke --full` instead of typing
+  `npx vectalon` every time. In an installed project `npx` resolves the local
+  binary first.
 
 ### Fixed
 

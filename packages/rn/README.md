@@ -24,19 +24,36 @@ pnpm add -D @vectalon-dev/rn
 
 Node.js `>=20.12.0` required.
 
+### Shortcut: `vc`
+
+The package installs **three** bin names — `vectalon`, `vc`, and
+`rn-vectalon` — all pointing at the same CLI. Once the package is installed
+in your project, drop the `npx` prefix:
+
+```bash
+vc status
+vc impact --changed App.tsx
+npx vc smoke --full    # npx resolves your local install first
+```
+
+> `vc` is also a registered npm package (an unrelated tool), so only use the
+> bare name (or `npx vc`) in a project where `@vectalon-dev/rn` is installed
+> — `npx` then resolves the local binary first and never fetches the registry
+> package.
+
 ---
 
 ## Quick Start
 
 ```bash
 # 1. Initialize your project
-npx vectalon init
+npx vectalon init      # or: vc init
 
 # 2. Start the MCP server for agents
-npx vectalon serve
+npx vectalon serve     # or: vc serve
 
 # 3. Run the interactive menu (no arguments)
-npx vectalon
+npx vectalon           # or: vc
 ```
 
 ---

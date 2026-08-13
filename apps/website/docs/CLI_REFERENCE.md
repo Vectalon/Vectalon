@@ -4,6 +4,12 @@ Complete reference for the `vectalon` command-line interface. Every command is
 available as `npx vectalon <command>` (or `vectalon <command>` when installed
 globally or linked).
 
+The package also installs the **shortcut `vc`** — same CLI, same commands.
+In a project where `@vectalon-dev/rn` is installed, `npx vc status` and
+`vc status` are equivalent to `npx vectalon status`. (`vc` is also an
+unrelated npm package, so the bare name resolves to your local install only
+when the package is installed; `npx` prefers the local binary.)
+
 Running `npx vectalon` with no arguments opens an **interactive menu** covering
 the most common actions (init, feature, refresh, suggestions, bundle, status,
 daemon, telemetry, impact, coverage, smoke, ci, release, ecosystem, doctor,

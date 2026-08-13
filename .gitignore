@@ -2,6 +2,10 @@ node_modules/
 dist/
 extension/out/
 .vectalon/
+
+# Generated docs — smoke/feature runs write impact, coverage, and
+# feature-development artifacts here; keep them out of git status.
+docs/vectalon/
 *.tsbuildinfo
 .DS_Store
 .env
