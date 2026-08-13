@@ -321,6 +321,7 @@ export function createProgram(): Command {
     .option('--info <id>', 'Show install command + capabilities for one item')
     .option('--export', 'Export enabled items as an MCP client config fragment')
     .option('--json', 'Print the export as JSON')
+    .option('--expanded', 'Force the full catalog view (descriptions + commands) even when piped')
     .action(ecosystemCommand)
 
   program

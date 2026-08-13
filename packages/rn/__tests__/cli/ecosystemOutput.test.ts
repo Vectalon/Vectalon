@@ -58,7 +58,8 @@ function capture(fn: () => void): string {
 describe('vectalon ecosystem output', () => {
   it('groups the list by category with full IDs and status marks', () => {
     const dir = makeProject()
-    const out = capture(() => ecosystemCommand(dir, {}))
+    // --expanded forces the full interactive view (jest stdout is not a TTY).
+    const out = capture(() => ecosystemCommand(dir, { expanded: true }))
 
     // Section headers
     expect(out).toContain('MCP servers')
@@ -83,7 +84,7 @@ describe('vectalon ecosystem output', () => {
 
   it('shows per-item descriptions and an enabled verdict in the list', () => {
     const dir = makeProject()
-    const out = capture(() => ecosystemCommand(dir, {}))
+    const out = capture(() => ecosystemCommand(dir, { expanded: true }))
 
     // Verdict: how much of the catalog is live.
     expect(out).toMatch(/\d+ enabled/)
@@ -91,6 +92,29 @@ describe('vectalon ecosystem output', () => {
     // Descriptions render in place (dimmed continuation lines), never truncated.
     expect(out).toContain('CDP-based runtime inspection for Metro/Hermes')
     expect(out).not.toMatch(/…/)
+  })
+
+  it('stays compact when piped (no TTY): one line per item, no descriptions, no commands footer', () => {
+    const dir = makeProject()
+    // No --expanded and no TTY → compact.
+    const out = capture(() => ecosystemCommand(dir, {}))
+
+    // Verdict survives (scripts can read how much is enabled).
+    expect(out).toMatch(/\d+ enabled/)
+    expect(out).toMatch(/available/)
+    // Items render as single lines: id, name, flavor, install — no description.
+    expect(out).toContain('metro-mcp')
+    expect(out).not.toContain('CDP-based runtime inspection for Metro/Hermes')
+    expect(out).not.toContain('vectalon ecosystem --info <id>')
+    expect(out).not.toContain('Commands')
+  })
+
+  it('--expanded forces the full view even when piped', () => {
+    const dir = makeProject()
+    const out = capture(() => ecosystemCommand(dir, { expanded: true }))
+
+    expect(out).toContain('CDP-based runtime inspection for Metro/Hermes')
+    expect(out).toContain('vectalon ecosystem --info <id>')
   })
 
   it('renders --info as a single-item card', () => {

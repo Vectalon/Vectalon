@@ -24,6 +24,8 @@ interface EcosystemOptions {
   json?: boolean
   /** Skip the npm-registry existence check when enabling an MCP item. */
   force?: boolean
+  /** Force the full catalog view (descriptions + commands) even when piped. */
+  expanded?: boolean
 }
 
 const VALID_CATEGORIES = ['mcp', 'skill', 'tool', 'hook']
@@ -147,7 +149,10 @@ export async function ecosystemCommand(directory: string, options: EcosystemOpti
     return
   }
 
-  renderList(root, items)
+  // Interactive terminals get the full view (descriptions + commands); piped
+  // output stays compact and greppable — one line per item. --expanded forces
+  // the full view when piped.
+  renderList(root, items, options.expanded || Boolean(process.stdout.isTTY))
 }
 
 /** Wrap a long line to `width` visible columns at word boundaries. */
@@ -168,7 +173,7 @@ function wrapText(text: string, width: number): string[] {
   return out
 }
 
-function renderList(root: string, items: EcosystemItem[]): void {
+function renderList(root: string, items: EcosystemItem[], expanded: boolean): void {
   const enabled = new Set(readEcosystemConfig(root).enabled)
   const flavorLabel = detectProjectFlavor(root)
   const enabledCount = items.filter(i => enabled.has(i.id)).length
@@ -178,16 +183,18 @@ function renderList(root: string, items: EcosystemItem[]): void {
     pc.bold(`vectalon ecosystem — ${items.length} item(s)`) + pc.dim(` · project flavor: ${flavorLabel}`)
   )
   logger.info('')
-  // Verdict: how much of the catalog is live, and how to dig into an item.
-  logger.info(
-    `${pc.green(`✓ ${enabledCount} enabled`)} · ${pc.dim(`${availableCount} available`)} — --info <id> for install + capabilities`
-  )
+  // Verdict: how much of the catalog is live. The --info teaching hint only
+  // makes sense in the interactive view.
+  const verdict = expanded
+    ? `${pc.green(`✓ ${enabledCount} enabled`)} · ${pc.dim(`${availableCount} available`)} — --info <id> for install + capabilities`
+    : `${pc.green(`✓ ${enabledCount} enabled`)} · ${pc.dim(`${availableCount} available`)}`
+  logger.info(verdict)
   logger.info('')
 
   const idWidth = Math.min(Math.max(...items.map(i => i.id.length), 10), 32)
   const nameWidth = Math.min(Math.max(...items.map(i => i.name.length), 12), 34)
-  // Description continuation lines wrap at the terminal width (or 100 when
-  // piped) so nothing is ever truncated — the whole catalog reads in place.
+  // Description continuation lines wrap at the terminal width so nothing is
+  // ever truncated — the whole catalog reads in place.
   const wrapWidth = Math.max(60, (process.stdout.columns || 100) - 6)
 
   for (const category of CATEGORY_ORDER) {
@@ -201,17 +208,22 @@ function renderList(root: string, items: EcosystemItem[]): void {
       logger.info(
         `  ${mark} ${pad(id, idWidth)}  ${pad(item.name, nameWidth)}  ${pad(flavorColor(item.flavor), 7)} ${pc.dim(item.install)}`
       )
-      for (const line of wrapText(item.description, wrapWidth)) {
-        logger.info(pc.dim(`      ${line}`))
+      // Compact (piped) output is one line per item — greppable and parseable.
+      if (expanded) {
+        for (const line of wrapText(item.description, wrapWidth)) {
+          logger.info(pc.dim(`      ${line}`))
+        }
       }
     }
     logger.info('')
   }
 
-  logger.info(pc.bold('Commands'))
-  logger.info('  vectalon ecosystem --info <id>    install + capabilities for one item')
-  logger.info('  vectalon ecosystem --enable <id>  enable · --disable <id> disable · --export [--json] export')
-  logger.info('  vectalon ecosystem --category mcp · --flavor expo   filter the list')
+  if (expanded) {
+    logger.info(pc.bold('Commands'))
+    logger.info('  vectalon ecosystem --info <id>    install + capabilities for one item')
+    logger.info('  vectalon ecosystem --enable <id>  enable · --disable <id> disable · --export [--json] export')
+    logger.info('  vectalon ecosystem --category mcp · --flavor expo   filter the list')
+  }
 }
 
 function renderInfo(root: string, id: string): void {
