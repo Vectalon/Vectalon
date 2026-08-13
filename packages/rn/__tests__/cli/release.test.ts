@@ -83,6 +83,31 @@ describe('releaseCommand', () => {
     }
   })
 
+  it('--monitor without telemetry fails loudly (exit 1) instead of passing silently', async () => {
+    const dir = createTempProject({
+      'package.json': JSON.stringify({ name: 'app', version: '1.2.3', dependencies: { 'react-native': '0.76.0' } }),
+      '.vectalon/snapshot.json': '{}',
+    })
+    try {
+      const exitSpy = jest
+        .spyOn(process, 'exit')
+        .mockImplementation((() => { throw new Error('exit called') }) as unknown as (code?: string | number | null) => never)
+      const errChunks: string[] = []
+      jest.spyOn(process.stderr, 'write').mockImplementation((chunk: string | Uint8Array) => {
+        errChunks.push(String(chunk))
+        return true
+      })
+      const out = jest.spyOn(process.stdout, 'write').mockImplementation(() => true)
+      await expect(releaseCommand(dir, { monitor: true })).rejects.toThrow('exit called')
+      expect(exitSpy).toHaveBeenCalledWith(1)
+      expect(errChunks.join('')).toContain('Monitoring skipped')
+      // No plan dump when the requested stage failed — the error leads.
+      expect(out.mock.calls.map(c => String(c[0])).join('')).not.toContain('## 🚀 Release plan')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
   it('exits with code 1 when the project is not initialized', async () => {
     const dir = createTempProject({ 'package.json': '{}' })
     try {

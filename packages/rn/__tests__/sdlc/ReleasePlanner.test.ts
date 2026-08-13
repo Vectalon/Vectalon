@@ -1,4 +1,4 @@
-import { planRelease, renderReleasePlan, parseGitLog, detectBumpType, bumpVersion } from '../../src/sdlc/ReleasePlanner'
+import { planRelease, renderReleasePlan, parseGitLog, detectBumpType, bumpVersion, isMergePlumbing } from '../../src/sdlc/ReleasePlanner'
 
 describe('parseGitLog', () => {
   it('parses hashed lines and un-hashed PR-style lines', () => {
@@ -45,7 +45,39 @@ describe('bumpVersion', () => {
   })
 })
 
+describe('isMergePlumbing', () => {
+  it('flags merge commits and merged-PR records', () => {
+    expect(isMergePlumbing("Merge branch 'feature/sso' of ssh.dev.azure.com:repo into release/v2.8.0")).toBe(true)
+    expect(isMergePlumbing('Merge pull request #4100 from org/feature')).toBe(true)
+    expect(isMergePlumbing('Merged PR 4100: v2.9.0 - (RN Upgrade + SSO Domain Enforcement)')).toBe(true)
+    expect(isMergePlumbing('Merged PR 4132: v2.9.0')).toBe(true)
+    expect(isMergePlumbing('feat: new api integrated')).toBe(false)
+    expect(isMergePlumbing('fix: resolve Android tap issues')).toBe(false)
+  })
+})
+
 describe('planRelease', () => {
+  it('drops merge plumbing from the changelog but keeps it for the bump', () => {
+    const plan = planRelease(
+      '2.9.0',
+      [
+        "Merge branch 'feature/sso' of ssh.dev.azure.com:repo into release/v2.8.0",
+        'Merged PR 4100: v2.9.0 - (RN Upgrade + SSO Domain Enforcement)',
+        'feat(sso): New api integrated for email domain SSO lookup',
+        'fix: logout navigation',
+      ].join('\n'),
+      '2026-08-11'
+    )
+    // Bump sees every commit (feat(sso) drives the minor), even the merges.
+    expect(plan.bump).toBe('minor')
+    // Changelog shows the real work, not the plumbing.
+    expect(plan.changelog).not.toContain('Merge branch')
+    expect(plan.changelog).not.toContain('Merged PR 4100')
+    expect(plan.changelog).toContain('- feat(sso): New api integrated for email domain SSO lookup')
+    expect(plan.changelog).toContain('- fix: logout navigation')
+    expect(plan.changes).toHaveLength(2)
+  })
+
   it('plans a minor bump with a categorized changelog', () => {
     const plan = planRelease(
       '1.2.3',

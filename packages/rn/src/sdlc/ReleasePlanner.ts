@@ -87,15 +87,33 @@ export function bumpVersion(current: string, bump: BumpType): string {
 }
 
 /**
+ * True for git plumbing that carries no changelog signal: merge commits
+ * (`Merge branch ...`, `Merge pull request #N`, `Merged PR NNNN: ...`). These
+ * duplicate the commits they merge and drown out real changes.
+ */
+export function isMergePlumbing(message: string): boolean {
+  const lower = message.trim().toLowerCase()
+  return (
+    lower.startsWith('merge ') ||
+    /^merged? (branch|pull|remote-tracking|tag)/.test(lower) ||
+    /^merged? pr( \d+)?[.: ]?\s*$/.test(lower) ||
+    /^merged? pr( \d+)?[.:]?\s+/.test(lower)
+  )
+}
+
+/**
  * Build a release plan from the current version and git history. The changelog
  * is generated from commit messages via the same deterministic categorizer the
- * `write_release_notes` tool uses.
+ * `write_release_notes` tool uses. Merge plumbing is dropped from the changelog
+ * feed (it duplicates the commits it merges); bump detection still sees every
+ * commit, so a `Merged PR ... (RN Upgrade ...)` line keeps driving the bump it
+ * describes.
  */
 export function planRelease(currentVersion: string, logOutput: string, date = new Date().toISOString().slice(0, 10)): ReleasePlan {
   const commits = parseGitLog(logOutput)
   const bump = detectBumpType(commits)
   const nextVersion = bumpVersion(currentVersion, bump)
-  const changes = commits.map(c => c.message)
+  const changes = commits.filter(c => !isMergePlumbing(c.message)).map(c => c.message)
   const changelog = new ReleaseNoteWriter().writeReleaseNotes({
     version: nextVersion,
     date,

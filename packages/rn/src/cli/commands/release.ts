@@ -68,10 +68,11 @@ export async function releaseCommand(directory: string, options: ReleaseOptions)
   }
 
   // -- 3. Monitor -- //
+  let monitorRan = false
   if (options.monitor) {
     const store = new ArtifactStore(root)
     try {
-      await runMonitor(root, store, options)
+      monitorRan = await runMonitor(root, store, options)
     } finally {
       store.close()
     }
@@ -79,8 +80,15 @@ export async function releaseCommand(directory: string, options: ReleaseOptions)
 
   // -- Output -- //
   if (options.json) {
-    logger.out(JSON.stringify({ plan, submitted }, null, 2) + '\n')
+    logger.out(JSON.stringify({ plan, submitted, monitor: options.monitor ? { ran: monitorRan } : undefined }, null, 2) + '\n')
     return
+  }
+  // The requested stage must actually run: a monitor with no telemetry data is
+  // a failure, not a plan dump with exit 0. Fail loudly and stop — the plan is
+  // available via plain `vectalon release`.
+  if (options.monitor && !monitorRan) {
+    logger.error('Monitoring skipped — no telemetry exports found. Pass --telemetry <dir> or drop exports into .vectalon/telemetry.')
+    process.exit(1)
   }
   logger.out(renderReleasePlan(plan) + '\n')
   if (submitted) {
@@ -125,17 +133,17 @@ async function readGitLog(root: string): Promise<string> {
  * Ingest telemetry for the monitoring window and run the crash-rate gate.
  * Z-score anomaly detection runs when the crashes carry timestamps (a time
  * series can be built); the ratio baseline stays available for explicit
- * `--baseline` or untimestamped exports.
+ * `--baseline` or untimestamped exports. Returns whether the monitor actually
+ * ran — a requested monitor with no telemetry data is a failed stage.
  */
-async function runMonitor(root: string, store: ArtifactStore, options: ReleaseOptions): Promise<void> {
+async function runMonitor(root: string, store: ArtifactStore, options: ReleaseOptions): Promise<boolean> {
   const service = new TelemetryIngestionService(store)
   const dir = options.telemetry
     ? resolve(root, options.telemetry)
     : TelemetryIngestionService.findDefaultDir(root)
 
   if (!dir || !existsSync(dir)) {
-    logger.warn('No telemetry exports found for monitoring. Pass --telemetry <dir> or drop exports into .vectalon/telemetry.')
-    return
+    return false
   }
 
   const result = service.ingestDirectory(dir)
@@ -158,4 +166,5 @@ async function runMonitor(root: string, store: ArtifactStore, options: ReleaseOp
   if (monitor.incident) {
     logger.warn('Crash-rate spike detected — review the incident and consider rollback.')
   }
+  return true
 }
