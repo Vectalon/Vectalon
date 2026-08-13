@@ -122,4 +122,128 @@ describe('WorkflowEngine', () => {
     expect(ids).toEqual(['a', 'b', 'c'])
     expect(result.phases.find(p => p.id === 'a')?.output).toBe('output-a')
   })
+
+  it('self-heals: a failed stage re-runs its fixer, then the stage retries', async () => {
+    // Gate 'b' fails until the fixer 'a' has run again (the engine clears the
+    // fixer's output before re-running it, so the fixer must re-produce it).
+    let fixerRuns = 0
+    const fixer: WorkflowPhase = {
+      id: 'a',
+      name: 'Implementation',
+      description: 'fixes',
+      run: async ctx => {
+        fixerRuns++
+        ctx.outputs['a'] = 'fixed-' + fixerRuns
+        return {
+          id: 'a',
+          name: 'Implementation',
+          description: '',
+          status: 'completed',
+          output: 'fixed output',
+          artifacts: [],
+        }
+      },
+    }
+    const gate: WorkflowPhase = {
+      id: 'b',
+      name: 'Verification',
+      description: 'gates',
+      // The gate only passes once the fixer has re-run (fixerRuns >= 2) — the
+      // "fix, then come back to this stage" contract.
+      run: async () => {
+        const fixed = fixerRuns >= 2
+        return {
+          id: 'b',
+          name: 'Verification',
+          description: '',
+          status: fixed ? 'completed' : 'failed',
+          output: fixed ? 'pass' : 'fail',
+          artifacts: [],
+          error: fixed ? undefined : 'not fixed yet',
+        }
+      },
+    }
+    const workflow: WorkflowDefinition = {
+      id: 'test',
+      name: 'Test workflow',
+      description: '',
+      phases: [fixer, gate],
+      healWith: { b: 'a' },
+    }
+
+    const attempts: string[] = []
+    const retries: string[] = []
+    const engine = new WorkflowEngine()
+    const ctx = makeContext('test prompt')
+    const result = await engine.run(workflow, ctx, {
+      maxAttempts: 3,
+      onPhaseStart: (phase, attempt) => attempts.push(`${phase.id}:${attempt}`),
+      onPhaseRetry: (phase, fixerId) => retries.push(`${phase.id}->${fixerId}`),
+    })
+
+    expect(result.status).toBe('completed')
+    // Fixer ran twice (initial + heal); gate failed once then passed.
+    expect(fixerRuns).toBe(2)
+    expect(attempts).toEqual(['a:1', 'b:1', 'a:2', 'b:2'])
+    expect(retries).toEqual(['b->a'])
+    // State keeps one entry per phase — the final (successful) attempt.
+    expect(result.phases.find(p => p.id === 'b')?.status).toBe('completed')
+  })
+
+  it('caps self-healing at maxAttempts and fails the run', async () => {
+    let fixerRuns = 0
+    const fixer: WorkflowPhase = {
+      id: 'a',
+      name: 'Implementation',
+      description: 'fixes',
+      run: async ctx => {
+        fixerRuns++
+        ctx.outputs['a'] = 'fixed-' + fixerRuns
+        return {
+          id: 'a',
+          name: 'Implementation',
+          description: '',
+          status: 'completed',
+          output: 'fixed output',
+          artifacts: [],
+        }
+      },
+    }
+    const gate: WorkflowPhase = {
+      id: 'b',
+      name: 'Verification',
+      description: 'gates',
+      run: async () => ({
+        id: 'b',
+        name: 'Verification',
+        description: '',
+        status: 'failed',
+        output: 'always fails',
+        artifacts: [],
+        error: 'stubborn',
+      }),
+    }
+    const workflow: WorkflowDefinition = {
+      id: 'test',
+      name: 'Test workflow',
+      description: '',
+      phases: [fixer, gate],
+      healWith: { b: 'a' },
+    }
+
+    const attempts: string[] = []
+    const engine = new WorkflowEngine()
+    const ctx = makeContext('test prompt')
+    const result = await engine.run(workflow, ctx, {
+      maxAttempts: 2,
+      onPhaseStart: (phase, attempt) => attempts.push(`${phase.id}:${attempt}`),
+    })
+
+    expect(result.status).toBe('failed')
+    // 2 attempts of the gate; the fixer ran once initially + once as the heal
+    // re-run, then the gate exhausted its attempts.
+    expect(attempts).toEqual(['a:1', 'b:1', 'a:2', 'b:2'])
+    expect(fixerRuns).toBe(2)
+    expect(result.phases.find(p => p.id === 'b')?.status).toBe('failed')
+  })
 })

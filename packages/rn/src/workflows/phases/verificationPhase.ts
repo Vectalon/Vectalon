@@ -167,15 +167,47 @@ export const verificationPhase: WorkflowPhase = {
     const isSimulated = testRunner.name === 'console'
     const results: string[] = []
     let allPassed = true
+    let advisoryDowngrades = 0
+
+    // Workflow-touched files: the implementation phase's artifacts. A failing
+    // check whose output references none of them is a PRE-EXISTING project
+    // failure — downgraded to advisory (never gates) unless the run is strict.
+    const implPhase = ctx.state.phases.find(p => p.id === 'implementation')
+    const touchedFiles = (implPhase?.artifacts ?? [])
+      .map(a => a.path)
+      .filter((p): p is string => Boolean(p))
+      .map(p => (ctx.projectRoot && p.startsWith(ctx.projectRoot) ? p.slice(ctx.projectRoot.length + 1) : p))
+    const strictVerification =
+      (ctx.inputs as { strictVerification?: boolean } | undefined)?.strictVerification === true
+
+    const outputReferencesTouched = (output: string): boolean => {
+      if (touchedFiles.length === 0) return false
+      return touchedFiles.some(rel => {
+        if (output.includes(rel)) return true
+        const base = rel.split('/').pop() || rel
+        return base.length > 3 && output.includes(base)
+      })
+    }
 
     const validation = detectValidationCommands(ctx.projectRoot, { deviceRun: ctx.deviceRun })
 
     const runCheck = async (name: string, promise: Promise<import('../../adapters/types').TestResult>) => {
       try {
         const result = await promise
+        // Pre-existing project failures (nothing the workflow touched appears
+        // in the output) are advisory unless the run is strict — "ignore
+        // existing failures unless specifically asked."
+        const preExisting =
+          !result.success && !strictVerification && !outputReferencesTouched(result.stderr + '\n' + result.stdout)
         const status = result.success ? 'passed' : 'failed'
-        results.push(`- ${name}: ${status}${isSimulated ? ' (simulated)' : ` (exit ${result.exitCode})`}${formatOutput(result.stdout, result.stderr)}`)
-        if (!result.success) {
+        results.push(
+          `- ${name}: ${status}${isSimulated ? ' (simulated)' : ` (exit ${result.exitCode})`}` +
+            (preExisting ? ' — pre-existing, unrelated to this change (advisory)' : '') +
+            formatOutput(result.stdout, result.stderr)
+        )
+        if (preExisting) {
+          advisoryDowngrades++
+        } else if (!result.success) {
           allPassed = false
         }
       } catch (err) {
@@ -210,9 +242,17 @@ export const verificationPhase: WorkflowPhase = {
       }
       try {
         const result = await runCommand(cmd.cmd, cmd.args, { cwd: cmd.cwd || ctx.projectRoot, timeout: cmd.timeout })
+        const preExisting =
+          !result.success && !strictVerification && !outputReferencesTouched(result.stdout + '\n' + result.stderr)
         const status = result.success ? 'passed' : 'failed'
-        results.push(`- ${cmd.name}: ${status} (${cmd.source}, exit ${result.exitCode})${formatOutput(result.stdout, result.stderr)}`)
-        if (!result.success) {
+        results.push(
+          `- ${cmd.name}: ${status} (${cmd.source}, exit ${result.exitCode})` +
+            (preExisting ? ' — pre-existing, unrelated to this change (advisory)' : '') +
+            formatOutput(result.stdout, result.stderr)
+        )
+        if (preExisting) {
+          advisoryDowngrades++
+        } else if (!result.success) {
           allPassed = false
         }
       } catch (err) {
@@ -431,6 +471,12 @@ export const verificationPhase: WorkflowPhase = {
         results.push('- Code review: FAIL — critical issues must be fixed before PR')
         allPassed = false
       }
+    }
+
+    if (advisoryDowngrades > 0) {
+      results.push(
+        `- Advisory: ${advisoryDowngrades} pre-existing failure(s) unrelated to this change were ignored (they reference no file this workflow touched). Re-run with strictVerification to gate on them.`
+      )
     }
 
     const output = [

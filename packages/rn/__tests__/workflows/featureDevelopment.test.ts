@@ -61,7 +61,7 @@ function makeContext(prompt: string): WorkflowContext {
 }
 
 describe('featureDevelopmentWorkflow', () => {
-  it('runs all 13 phases for a login + API prompt', async () => {
+  it('runs all 14 phases for a login + API prompt', async () => {
     const engine = new WorkflowEngine()
     const ctx = makeContext('Login')
     ctx.modelRouter.initialize({ provider: 'local' })
@@ -76,12 +76,13 @@ describe('featureDevelopmentWorkflow', () => {
     const result = await engine.run(featureDevelopmentWorkflow, ctx)
 
     expect(result.status).toBe('completed')
-    expect(result.phases).toHaveLength(13)
+    expect(result.phases).toHaveLength(14)
 
     const phaseIds = result.phases.map(p => p.id)
     expect(phaseIds).toEqual([
       'prd',
       'scope',
+      'impact',
       'design',
       'architecture',
       'tasks',
@@ -117,6 +118,11 @@ describe('featureDevelopmentWorkflow', () => {
     const review = result.phases.find(p => p.id === 'code-review')
     expect(review?.status).toBe('completed')
 
+    const impact = result.phases.find(p => p.id === 'impact')
+    expect(impact?.status).toBe('completed')
+    expect(impact?.output).toContain('Cross-package impact analysis')
+    expect(impact?.artifacts.some(a => a.type === 'document' && a.path)).toBe(true)
+
     const design = result.phases.find(p => p.id === 'design')
     expect(design?.output).toContain('Motion design recommendations')
 
@@ -124,7 +130,7 @@ describe('featureDevelopmentWorkflow', () => {
     expect(readiness?.output).toContain('Status: GO')
   })
 
-  it('handles the verification phase failure', async () => {
+  it('gates on verification failures that reference workflow-touched files (heals, then fails)', async () => {
     const engine = new WorkflowEngine()
     const ctx = makeContext('Login')
     ctx.modelRouter.initialize({ provider: 'local' })
@@ -132,12 +138,43 @@ describe('featureDevelopmentWorkflow', () => {
       content: JSON.stringify({ intents: [{ type: 'add-feature', feature: 'login', confidence: 0.99, reasoning: 'new feature' }] }),
       provider: 'mock',
     })
+    // The failure names a file the implementation phase generated, so it is a
+    // genuine regression of THIS change — the self-healing loop retries the
+    // implementation, keeps failing (stubborn mock), and the run fails.
     ctx.adapters.testRunner = {
       name: 'failing',
       runTests: async () => ({
         success: false,
         stdout: '',
-        stderr: 'Tests failed',
+        stderr: 'FAIL src/services/LoginApi.ts:1:1 - Test failed',
+        exitCode: 1,
+        summary: '1 failure',
+      }),
+    }
+
+    const result = await engine.run(featureDevelopmentWorkflow, ctx, { maxAttempts: 2 })
+
+    expect(result.status).toBe('failed')
+    expect(result.phases.find(p => p.id === 'verification')?.status).toBe('failed')
+    expect(result.phases.find(p => p.id === 'verification')?.output).toContain('LoginApi.ts')
+  })
+
+  it('ignores pre-existing project failures that reference no workflow-touched file', async () => {
+    const engine = new WorkflowEngine()
+    const ctx = makeContext('Login')
+    ctx.modelRouter.initialize({ provider: 'local' })
+    jest.spyOn(ctx.modelRouter, 'generate').mockResolvedValue({
+      content: JSON.stringify({ intents: [{ type: 'add-feature', feature: 'login', confidence: 0.99, reasoning: 'new feature' }] }),
+      provider: 'mock',
+    })
+    // Failure output references only files the workflow never touched — the
+    // "ignore existing project failures unless specifically asked" contract.
+    ctx.adapters.testRunner = {
+      name: 'failing',
+      runTests: async () => ({
+        success: false,
+        stdout: '',
+        stderr: 'FAIL src/legacy/OldBrokenScreen.tsx - pre-existing failure',
         exitCode: 1,
         summary: '1 failure',
       }),
@@ -145,8 +182,38 @@ describe('featureDevelopmentWorkflow', () => {
 
     const result = await engine.run(featureDevelopmentWorkflow, ctx)
 
+    expect(result.status).toBe('completed')
+    const verification = result.phases.find(p => p.id === 'verification')
+    expect(verification?.status).toBe('completed')
+    expect(verification?.output).toContain('pre-existing, unrelated to this change (advisory)')
+    expect(verification?.output).toContain('Advisory: 1 pre-existing failure')
+  })
+
+  it('strict verification still gates on pre-existing failures', async () => {
+    const engine = new WorkflowEngine()
+    const ctx = makeContext('Login')
+    ctx.modelRouter.initialize({ provider: 'local' })
+    jest.spyOn(ctx.modelRouter, 'generate').mockResolvedValue({
+      content: JSON.stringify({ intents: [{ type: 'add-feature', feature: 'login', confidence: 0.99, reasoning: 'new feature' }] }),
+      provider: 'mock',
+    })
+    ctx.inputs.strictVerification = true
+    ctx.adapters.testRunner = {
+      name: 'failing',
+      runTests: async () => ({
+        success: false,
+        stdout: '',
+        stderr: 'FAIL src/legacy/OldBrokenScreen.tsx - pre-existing failure',
+        exitCode: 1,
+        summary: '1 failure',
+      }),
+    }
+
+    const result = await engine.run(featureDevelopmentWorkflow, ctx, { maxAttempts: 1 })
+
     expect(result.status).toBe('failed')
     expect(result.phases.find(p => p.id === 'verification')?.status).toBe('failed')
+    expect(result.phases.find(p => p.id === 'verification')?.output).not.toContain('advisory')
   })
 
   it('detects dependency removal intent and produces a removal plan', async () => {

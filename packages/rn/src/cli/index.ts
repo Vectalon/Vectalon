@@ -97,6 +97,7 @@ export function createProgram(): Command {
     .option('--heal-interactive', 'Prompt before applying each self-healing code-review fix (accept/reject/retry)')
     .option('--heal-attempts <n>', 'Max self-healing review attempts (default 3, or per .vectalon/policy.json)', Number)
     .option('--heal-severity <level>', 'Lowest severity that triggers healing: error|warning|info (default error)', 'error')
+    .option('--strict-verification', 'Gate on pre-existing project failures too (default: ignore failures that reference no workflow-touched file)')
     .option('--ticket <key>', 'Read a ticket from the PM adapter (Jira/GitHub/Monday) and run the workflow headlessly from its title + description')
     .action(featureCommand)
 

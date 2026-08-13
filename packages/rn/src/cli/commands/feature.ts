@@ -41,6 +41,8 @@ export interface FeatureCommandOptions {
   healInteractive?: boolean
   healAttempts?: number
   healSeverity?: string
+  /** Gate on pre-existing project failures too (default: advisory). */
+  strictVerification?: boolean
   /** Read a ticket from the PM adapter and run the workflow headlessly from it. */
   ticket?: string
 }
@@ -269,6 +271,7 @@ export async function featureCommand(
   const inputs: Record<string, unknown> = {}
   if (options.healAttempts !== undefined) inputs.maxAttempts = options.healAttempts
   if (options.healSeverity !== undefined) inputs.healSeverity = options.healSeverity
+  if (options.strictVerification === true) inputs.strictVerification = true
 
   const workflowEngine = new WorkflowEngine()
   // Resume must flow through to the engine: without resume: true the loaded
@@ -347,21 +350,38 @@ export async function featureCommand(
         : undefined,
     }, {
       ...engineOptions,
-      onPhaseStart: (phase) => {
+      // Every stage shows where we are in the SDLC (e.g. `[5/14] Impact
+      // analysis`) and, on a self-healing retry, which attempt is running
+      // (e.g. `[9/14] Verification (attempt 2/3)`), so the client always
+      // knows which SDLC stage the run is in.
+      onPhaseStart: (phase, attempt) => {
         const idx = workflow.phases.findIndex(p => p.id === phase.id)
-        currentPhaseLabel = `[${idx + 1}/${totalPhases}] ${phase.name}`
+        const attemptLabel = attempt && attempt > 1 ? ` (attempt ${attempt}/${(engineOptions as { maxAttempts?: number })?.maxAttempts ?? 3})` : ''
+        currentPhaseLabel = `[${idx + 1}/${totalPhases}] ${phase.name}${attemptLabel}`
         s.message(`${currentPhaseLabel}...`)
       },
-      onPhaseComplete: (phase, phaseResult) => {
+      onPhaseComplete: (phase, phaseResult, attempt) => {
         const idx = workflow.phases.findIndex(p => p.id === phase.id)
         if (phaseResult.status === 'failed') {
           s.stop(`${phase.name} failed`)
         } else {
           s.message(`${phase.name} completed`)
           if (!options.json) {
-            process.stderr.write(renderStageLine(phaseResult, idx, totalPhases) + '\n')
+            process.stderr.write(renderStageLine(phaseResult, idx, totalPhases, attempt) + '\n')
           }
         }
+      },
+      // Self-healing loop: the failed stage goes back to its fixer (e.g.
+      // implementation), which regenerates with the failure context, then the
+      // stage retries — exactly the "fix, then come back to this SDLC stage"
+      // contract.
+      onPhaseRetry: (phase, fixerId, attempt, maxAttempts) => {
+        if (options.json) return
+        const idx = workflow.phases.findIndex(p => p.id === phase.id)
+        const fixer = workflow.phases.find(p => p.id === fixerId)
+        process.stderr.write(
+          `  ${pc.red('✖')} [${idx + 1}/${totalPhases}] ${phase.name} failed — going back to ${fixer?.name || fixerId} to fix, then retrying (${attempt}/${maxAttempts})\n`
+        )
       },
     })
   } finally {

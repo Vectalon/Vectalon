@@ -243,6 +243,8 @@ export function buildImplementationPrompt(ctx: {
   prompt: string
   intent: WorkflowIntent
   tests?: string
+  /** Output of the failing stage (e.g. the verification report) on a heal retry. */
+  lastFailure?: string
 }): { systemPrompt: string; prompt: string } {
   const conventions = detectConventions(ctx.snapshot)
   const featureName = sanitizeFileName(ctx.prompt) || 'Feature'
@@ -312,10 +314,32 @@ export function buildImplementationPrompt(ctx: {
           '- Never mutate refs during render.',
         ]
       : []),
+    '',
+    'Native integration for package changes:',
+    '- When you ADD or REMOVE a dependency, check whether it has native code.',
+    '- Adding: iOS autolinking picks up pods on `pod install`; Android autolinking needs the package in `android/settings.gradle` + `android/app/build.gradle` if the package predates autolinking. Follow the package\'s own documentation for setup steps (config plugin, permissions, custom build steps) — do not invent them.',
+    '- Removing: delete the package from package.json AND its native traces (Podfile entries, gradle includes/deps, native imports). A removal is only safe when no source file imports or references it anymore.',
+    '- The project has ios/ and android/ directories — changing a dependency without the matching native side breaks the native build.',
   ].join('\n')
 
   const testsSection = ctx.tests
     ? ['', '## Existing tests (TDD contract) — your code MUST make these pass', '', ctx.tests, ''].join('\n')
+    : ''
+
+  const failureSection = ctx.lastFailure
+    ? [
+        '',
+        '## Previous attempt failed — fix these issues',
+        '',
+        'Your previous implementation failed a later stage. Read the failure output',
+        'below and change your implementation so these checks pass. Do NOT repeat',
+        'the same code that produced these failures.',
+        '',
+        '```',
+        ctx.lastFailure.length > 6000 ? ctx.lastFailure.slice(0, 6000) + '\n... (truncated)' : ctx.lastFailure,
+        '```',
+        '',
+      ].join('\n')
     : ''
 
   const projectContext = [
@@ -331,6 +355,7 @@ export function buildImplementationPrompt(ctx: {
     `Intent: ${ctx.intent.type}`,
     '',
     testsSection,
+    failureSection,
     'Generate the files for this request.',
     `Use "${featureName}" as the base name for the generated modules.`,
   ].join('\n')
@@ -351,6 +376,8 @@ async function generateModelImplementation(
     prompt: string
     intent: WorkflowIntent
     tests?: string
+    /** Output of the failing stage (e.g. the verification report) on a heal retry. */
+    lastFailure?: string
   }
 ): Promise<ModelImplementationResult> {
   const promptCtx = buildImplementationPrompt(ctx)
@@ -1425,6 +1452,9 @@ export const implementationPhase: WorkflowPhase = {
         prompt: ctx.prompt,
         intent,
         tests,
+        // Heal context: when a later stage failed, the engine kept its output
+        // (the verification report) so this retry is guided by what broke.
+        lastFailure: ctx.outputs['verification'],
       })
 
       if (modelResult.implementation) {

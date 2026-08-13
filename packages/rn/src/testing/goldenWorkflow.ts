@@ -10,7 +10,7 @@
  *
  *   - it scaffolds a fresh project (a plain TypeScript CLI app — no Expo, no
  *     react-native), so the pipeline runs against a realistic project shape;
- *   - it drives the full 13-phase feature-development workflow with a SCRIPTED
+ *   - it drives the full 14-phase feature-development workflow with a SCRIPTED
  *     model router — every generate() call is answered with rule-clean,
  *     deterministic content, so the workflow either completes green or a product
  *     regression is failing loudly;
@@ -544,7 +544,7 @@ export function publishPaperTrail(root: string, state: WorkflowState, manifest: 
 }
 
 /**
- * Replay the full 13-phase feature-development workflow against `root`.
+ * Replay the full 14-phase feature-development workflow against `root`.
  * Returns the final workflow state (saved under .vectalon/workflows/...).
  */
 export async function runGoldenFeatureWorkflow(

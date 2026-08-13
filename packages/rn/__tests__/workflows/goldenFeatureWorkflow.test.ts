@@ -25,7 +25,7 @@ const FEATURE_HOOK = 'src/hooks/useAddGreetCommand.ts'
 const FEATURE_SERVICE = 'src/services/AddGreetCommandApi.ts'
 
 describe('golden feature workflow (CI regression harness)', () => {
-  it('replays the full 13-phase workflow green with a scripted model', async () => {
+  it('replays the full 14-phase workflow green with a scripted model', async () => {
     const root = createTempProject({})
     try {
       writeCliScaffold(root)
@@ -35,7 +35,7 @@ describe('golden feature workflow (CI regression harness)', () => {
       })
 
       expect(state.status).toBe('completed')
-      expect(state.phases).toHaveLength(13)
+      expect(state.phases).toHaveLength(14)
       expect(state.phases.every(p => p.status === 'completed')).toBe(true)
 
       // Intent detection, implementation generation, and review all ran; a clean
@@ -71,9 +71,9 @@ describe('golden feature workflow (CI regression harness)', () => {
       writeCliScaffold(root)
       const first = await runGoldenFeatureWorkflow(root)
 
-      // Keep the first 7 phases (prd..implementation) as the completed baseline
+      // Keep the first 8 phases (prd..implementation) as the completed baseline
       // and resume from code-review onward.
-      const partial = { ...first, status: 'pending' as const, phases: first.phases.slice(0, 7) }
+      const partial = { ...first, status: 'pending' as const, phases: first.phases.slice(0, 8) }
       const kinds: GoldenGenerateKind[] = []
       const resumed = await runGoldenFeatureWorkflow(root, {
         state: partial,
@@ -89,10 +89,10 @@ describe('golden feature workflow (CI regression harness)', () => {
       expect(kinds).toContain('review')
 
       // Skipped phases kept their original outputs byte-for-byte.
-      const kept = resumed.phases.slice(0, 7).map(p => p.output)
-      expect(kept).toEqual(first.phases.slice(0, 7).map(p => p.output))
+      const kept = resumed.phases.slice(0, 8).map(p => p.output)
+      expect(kept).toEqual(first.phases.slice(0, 8).map(p => p.output))
       // And the resumed phases actually completed.
-      expect(resumed.phases.slice(7).every(p => p.status === 'completed')).toBe(true)
+      expect(resumed.phases.slice(8).every(p => p.status === 'completed')).toBe(true)
     } finally {
       cleanup(root)
     }

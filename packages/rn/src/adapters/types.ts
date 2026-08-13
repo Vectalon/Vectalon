@@ -216,6 +216,13 @@ export interface WorkflowDefinition {
   name: string
   description: string
   phases: WorkflowPhase[]
+  /**
+   * Self-healing map: failing phase id → the phase that fixes it. When a phase
+   * fails, the engine re-runs the fixer phase (e.g. implementation), then
+   * retries the failed stage, up to `maxAttempts`. A phase with no entry fails
+   * the run immediately.
+   */
+  healWith?: Record<string, string>
 }
 
 export interface WorkflowRegistry {

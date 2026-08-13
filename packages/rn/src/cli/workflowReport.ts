@@ -418,13 +418,17 @@ export function renderWorkflowSummary(
   return lines.join('\n')
 }
 
-/** Live breadcrumb line for a completed stage, e.g. `✓ [5/13] Task creation (2.1s)`. */
-export function renderStageLine(phase: PhaseResult, index: number, total: number): string {
+/**
+ * Live breadcrumb line for a completed stage, e.g. `✓ [5/14] Task creation (2.1s)`.
+ * `attempt` (when > 1) marks a self-healed retry: `✓ [9/14] Verification (attempt 2/3)`.
+ */
+export function renderStageLine(phase: PhaseResult, index: number, total: number, attempt?: number): string {
   const mark = stageMark(phase.status)
   const num = pc.dim(`[${index + 1}/${total}]`)
   const duration = formatDuration(phase.startedAt, phase.completedAt)
   const dur = duration ? pc.dim(` (${duration})`) : ''
-  return `  ${mark} ${num} ${phase.name}${dur}`
+  const attemptLabel = attempt && attempt > 1 ? pc.dim(` (attempt ${attempt})`) : ''
+  return `  ${mark} ${num} ${phase.name}${attemptLabel}${dur}`
 }
 
 // ── doctor failure card ────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 import type { WorkflowDefinition } from '../../adapters/types'
 import { prdPhase } from '../phases/prdPhase'
 import { scopePhase } from '../phases/scopePhase'
+import { impactPhase } from '../phases/impactPhase'
 import { designPhase } from '../phases/designPhase'
 import { architecturePhase } from '../phases/architecturePhase'
 import { taskPhase } from '../phases/taskPhase'
@@ -20,6 +21,7 @@ export const featureDevelopmentWorkflow: WorkflowDefinition = {
   phases: [
     prdPhase,
     scopePhase,
+    impactPhase,
     designPhase,
     architecturePhase,
     taskPhase,
@@ -32,4 +34,10 @@ export const featureDevelopmentWorkflow: WorkflowDefinition = {
     documentationPhase,
     closePhase,
   ],
+  // Self-healing: a stage that fails goes back to implementation (the fixer),
+  // which regenerates with the failure context, then the stage is retried.
+  healWith: {
+    verification: 'implementation',
+    readiness: 'implementation',
+  },
 }
