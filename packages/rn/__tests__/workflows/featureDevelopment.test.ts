@@ -248,6 +248,40 @@ describe('featureDevelopmentWorkflow', () => {
     expect(readiness?.output).toContain('simulation mode')
   })
 
+  it('derives changed files from the scope docs before any code exists', async () => {
+    const engine = new WorkflowEngine()
+    const ctx = makeContext('Remove appcenter safely from this project')
+    ctx.modelRouter.initialize({ provider: 'local' })
+    jest.spyOn(ctx.modelRouter, 'generate').mockResolvedValue({
+      content: JSON.stringify({
+        intents: [{ type: 'remove-dependency', dependency: 'appcenter', confidence: 0.99, reasoning: 'explicit removal request' }],
+      }),
+      provider: 'mock',
+    })
+    // A component that imports appcenter → the scope stage lists the file
+    // that imports it as a backticked path. Nothing is on disk yet (the
+    // feature's files don't exist), so the impact stage must take its changed
+    // inputs from the scope doc instead of the git diff.
+    ctx.snapshot = {
+      ...ctx.snapshot!,
+      components: [
+        {
+          ...ctx.snapshot!.components[0],
+          imports: ['react-native', '@react-navigation/native', 'appcenter'],
+        },
+      ],
+    }
+
+    const result = await engine.run(featureDevelopmentWorkflow, ctx)
+
+    const impact = result.phases.find(p => p.id === 'impact')
+    expect(impact?.status).toBe('completed')
+    // The scope-derived path is the analyzed changed input — the blast radius
+    // is computed for the file the docs named, not a phantom.
+    expect(impact?.output).toContain('src/screens/Home.tsx')
+    expect(impact?.output).toContain('Signals from: PRD + scope docs')
+  })
+
   it('completes when intent is unknown — clarification plan, no TDD failure', async () => {
     const engine = new WorkflowEngine()
     const ctx = makeContext('Login')
