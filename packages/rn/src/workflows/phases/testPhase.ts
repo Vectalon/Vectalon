@@ -5,6 +5,8 @@ import { phaseResult, sanitizeFileName, detectConventions } from './helpers'
 import { getIntent, isRemoveDependency, isRefactor, isFix } from './intent'
 import { writeProjectFile, isSelfPackageRepo, GENERATED_OUTPUT_DIR } from './fileOutput'
 import { MaestroFlowWriter } from '../../sdlc/MaestroFlowWriter'
+import { summarizeImpactReport, impactReportFromContext } from '../../harness/impact'
+import { detectUrlScheme, buildDeepLink, kebabCase } from '../../utils/deepLink'
 import { reportError } from '../../utils/safe'
 
 /** Best-effort Android applicationId / bundle id for the Maestro header. */
@@ -196,6 +198,29 @@ export const testPhase: WorkflowPhase = {
         })
       }
     }
+
+    // Impact regression flows — Maestro walks through the screens the impact
+    // stage flagged as affected, so the change's blast radius is exercised
+    // end-to-end (not just the new feature screen). One deterministic flow per
+    // affected screen: launch → deep-link when the app exposes a URL scheme →
+    // assert the screen renders → screenshot. The verification phase runs these
+    // advisory; failures mean an affected screen regressed.
+    const impact = summarizeImpactReport(impactReportFromContext(ctx))
+    const scheme = projectRoot ? detectUrlScheme(projectRoot) : null
+    const impactFlowLabels: string[] = []
+    for (const screen of impact.screens) {
+      if (screen.toLowerCase() === featureName.toLowerCase()) continue // the feature flow already covers it
+      const slug = kebabCase(screen) || 'screen'
+      const path = `.maestro/${slug}-impact.yaml`
+      flowFiles.push({
+        path,
+        content: new MaestroFlowWriter().writeScreenFlow(screen, {
+          appId,
+          deepLink: scheme ? buildDeepLink(scheme, screen) : undefined,
+        }),
+      })
+      impactFlowLabels.push(`- \`${path}\` — regression flow for the affected screen \`${screen}\`${scheme ? ` (deep-link \`${buildDeepLink(scheme, screen)}\`)` : ''}`)
+    }
     testFiles.push(...flowFiles)
 
     const writtenTests: string[] = []
@@ -241,6 +266,16 @@ export const testPhase: WorkflowPhase = {
             '## E2E flow',
             '',
             ...flowFiles.map(f => `- \`${f.path}\` — Maestro ${f.path.includes('accessibility') ? 'accessibility' : 'E2E'} flow generated from the acceptance criteria (run with \`maestro test\` on a booted simulator/emulator)`),
+            '',
+          ]
+        : []),
+      ...(impactFlowLabels.length > 0
+        ? [
+            '## Impact regression flows',
+            '',
+            ...impactFlowLabels,
+            '',
+            'These flows cover the screens the impact stage flagged as affected — run them to verify the change did not regress existing UI.',
             '',
           ]
         : []),

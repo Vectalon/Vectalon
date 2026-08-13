@@ -201,6 +201,40 @@ export function renderMaestroSteps(steps: MaestroStep[], accessibility = false):
 
 export class MaestroFlowWriter {
   /**
+   * Generate a deterministic Maestro regression flow for an EXISTING screen
+   * the impact stage flagged as affected: launch → deep-link (when a scheme
+   * is available) → assert the screen renders → screenshot. No model calls —
+   * the screen name is the assertion target and the screenshot name.
+   */
+  writeScreenFlow(screenName: string, options: MaestroFlowOptions & { deepLink?: string } = {}): string {
+    const appId = options.appId || 'com.example.app'
+    // `ProfileScreen` → `profile-screen` — split camelCase, then kebab.
+    const slug =
+      screenName
+        .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+        .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') ||
+      'screen'
+    const steps: MaestroStep[] = [{ kind: 'launchApp' }]
+    if (options.deepLink) {
+      steps.push({ kind: 'openLink', url: options.deepLink })
+    }
+    steps.push({ kind: 'assertVisible', text: screenName })
+    steps.push({ kind: 'takeScreenshot', name: `impact-${slug}` })
+
+    return [
+      `appId: ${yamlString(appId)}`,
+      '---',
+      `# Impact regression flow — ${screenName} is affected by this change.`,
+      `# Verifies the screen still renders after the feature lands (run with \`maestro test\`).`,
+      ...renderMaestroSteps(steps),
+      '',
+    ].join('\n')
+  }
+
+  /**
    * Generate a complete Maestro flow YAML from acceptance criteria text.
    * Falls back to a launch + feature-name assertion when nothing maps.
    */

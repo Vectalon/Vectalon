@@ -1,6 +1,11 @@
+import { mkdtempSync, existsSync, readFileSync, rmSync } from 'fs'
+import { tmpdir } from 'os'
+import { join } from 'path'
 import { designPhase } from '../../src/workflows/phases/designPhase'
 import { architecturePhase } from '../../src/workflows/phases/architecturePhase'
+import { testPhase } from '../../src/workflows/phases/testPhase'
 import { summarizeImpactReport } from '../../src/harness/impact'
+import { MaestroFlowWriter } from '../../src/sdlc/MaestroFlowWriter'
 import type { WorkflowContext } from '../../src/adapters/types'
 
 const SAMPLE_REPORT = [
@@ -120,5 +125,41 @@ describe('impact context → downstream stages', () => {
     expect(result.output).toContain('Affected files (consumers to keep working):')
     expect(result.output).toContain('- `packages/ui/src/Button.tsx`')
     expect(result.output).toContain('Affected screens:')
+  })
+
+  it('writeScreenFlow emits a deterministic regression flow with optional deep link', () => {
+    const writer = new MaestroFlowWriter()
+    const plain = writer.writeScreenFlow('ProfileScreen', { appId: 'com.app' })
+    expect(plain).toContain('appId: "com.app"')
+    expect(plain).toContain('- launchApp')
+    expect(plain).toContain('- assertVisible: "ProfileScreen"')
+    expect(plain).toContain('- takeScreenshot: impact-profile-screen')
+    expect(plain).not.toContain('openLink')
+
+    const withLink = writer.writeScreenFlow('ProfileScreen', { appId: 'com.app', deepLink: 'app://profile' })
+    expect(withLink).toContain('- openLink: "app://profile"')
+    expect(withLink).toContain('- assertVisible: "ProfileScreen"')
+  })
+
+  it('test phase writes a Maestro regression flow per affected screen', async () => {
+    const projectRoot = mkdtempSync(join(tmpdir(), 'vectalon-impact-e2e-'))
+    try {
+      const result = await testPhase.run({
+        ...makeCtx('Add a profile feature', SAMPLE_REPORT),
+        projectRoot,
+      })
+
+      expect(result.status).toBe('completed')
+      expect(result.output).toContain('## Impact regression flows')
+      expect(result.output).toContain('.maestro/profile-screen-impact.yaml')
+      expect(result.artifacts.some(a => a.type === 'e2e' && a.path?.includes('profile-screen-impact.yaml'))).toBe(true)
+
+      // The flow file is on disk in .maestro/ and asserts the affected screen.
+      const flowPath = join(projectRoot, '.maestro', 'profile-screen-impact.yaml')
+      expect(existsSync(flowPath)).toBe(true)
+      expect(readFileSync(flowPath, 'utf-8')).toContain('assertVisible: "ProfileScreen"')
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
   })
 })
