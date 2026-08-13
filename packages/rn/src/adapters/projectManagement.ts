@@ -40,24 +40,65 @@ function stubTicket(key: string, provider: string): Ticket {
 export class ConsoleProjectManagementAdapter implements ProjectManagementAdapter {
   name = 'console'
 
+  // Monotonic id counter + in-memory task store: ids never restart per
+  // createTasks call (so store keys stay unique across runs), and findTasks
+  // can dedup against tasks created earlier in this process.
+  private nextId = 1
+  private store = new Map<string, Task>()
+
   async createTasks(tasks: TaskInput[]): Promise<Task[]> {
-    const created: Task[] = tasks.map((t, index) => ({
-      id: `console-task-${index + 1}`,
-      title: t.title,
-      description: t.description,
-      status: 'open',
-    }))
+    const created: Task[] = tasks.map(t => {
+      const task: Task = {
+        id: `console-task-${this.nextId++}`,
+        title: t.title,
+        description: t.description,
+        status: 'open',
+        labels: t.labels,
+      }
+      this.store.set(task.id, task)
+      return task
+    })
 
     logger.dim(`  PM: created ${created.length} task(s)`)
     return created
   }
 
   async updateTasks(ids: string[], status: string): Promise<void> {
+    for (const id of ids) {
+      const task = this.store.get(id)
+      if (task) {
+        task.status = status
+        this.store.set(id, task)
+      }
+    }
     logger.dim(`  PM: updated ${ids.length} task(s) to ${status}`)
   }
 
   async closeTasks(ids: string[]): Promise<void> {
+    for (const id of ids) {
+      const task = this.store.get(id)
+      if (task) {
+        task.status = 'closed'
+        this.store.set(id, task)
+      }
+    }
     logger.dim(`  PM: closed ${ids.length} task(s)`)
+  }
+
+  /**
+   * Open tasks matching the filter — title fragment (case-insensitive) AND any
+   * of the given labels. Closed tasks are never returned, so a follow-up that
+   * was already closed does not block a new one.
+   */
+  async findTasks(filter: { title?: string; labels?: string[] } = {}): Promise<Task[]> {
+    const title = filter.title?.toLowerCase()
+    const labels = filter.labels || []
+    return [...this.store.values()].filter(task => {
+      if (task.status === 'closed') return false
+      if (title && !task.title.toLowerCase().includes(title)) return false
+      if (labels.length > 0 && !labels.some(label => task.labels?.includes(label))) return false
+      return true
+    })
   }
 
   async readTicket(key: string): Promise<Ticket | null> {

@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
-import { analyzeCrossPackageImpact, renderImpactReport, impactDocsDir, writeImpactDoc } from '../../src/harness/impact'
+import { analyzeCrossPackageImpact, renderImpactReport, summarizeImpactReport, impactDocsDir, writeImpactDoc } from '../../src/harness/impact'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
 function workspaceFixture(): string {
@@ -144,6 +144,55 @@ describe('analyzeCrossPackageImpact', () => {
       const impact = analyzeCrossPackageImpact(dir, ['packages/ui/src/Button.tsx'])
       expect(impact.affectedFiles.map(f => f.path)).toContain('packages/ui/src/ButtonGroup.tsx')
       expect(impact.affectedPackages).toEqual(['@acme/ui'])
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('flags existing accessibility E2E flows and surfaces per-screen accessibility coverage', () => {
+    const dir = createTempProject({
+      'package.json': JSON.stringify({ name: 'app', version: '1.0.0' }),
+      'src/HomeScreen.tsx': [
+        "import React from 'react'",
+        "import { View } from 'react-native'",
+        "import { Button } from './Button'",
+        'export default function HomeScreen() {',
+        '  return <View><Button label="Go" /></View>',
+        '}',
+        '',
+      ].join('\n'),
+      'src/Button.tsx': "import React from 'react'\nexport const Button = () => null\n",
+      '.maestro/home.yaml': 'appId: com.acme.app\n---\ntests:\n  - launchApp\n  - assertVisible: "HomeScreen"\n',
+      // An existing accessibility flow already covers the screen.
+      '.maestro/home-accessibility.yaml': [
+        'appId: com.acme.app',
+        '---',
+        '# Accessibility run: selectors resolve through the accessibility tree - the same labels',
+        'tests:',
+        '  - launchApp',
+        '  - assertVisible:',
+        '      text: "HomeScreen"',
+        '',
+      ].join('\n'),
+    })
+    try {
+      const impact = analyzeCrossPackageImpact(dir, ['src/Button.tsx'])
+      const accHit = impact.e2eFlows.find(f => f.path.endsWith('home-accessibility.yaml'))
+      expect(accHit).toBeDefined()
+      expect(accHit?.accessibility).toBe(true)
+      const plainHit = impact.e2eFlows.find(f => f.path.endsWith('home.yaml'))
+      expect(plainHit).toBeDefined()
+      expect(plainHit?.accessibility).toBe(false)
+
+      // The report annotates the accessibility flow and the summary round-trips
+      // it into per-screen coverage for the test stage.
+      const report = renderImpactReport(impact)
+      expect(report).toContain('→ HomeScreen (accessibility)')
+      expect(report).toContain('→ HomeScreen')
+      const summary = summarizeImpactReport(report)
+      expect(summary.flows).toContain('.maestro/home.yaml')
+      expect(summary.flows).toContain('.maestro/home-accessibility.yaml')
+      expect(summary.screenAccessibility['HomeScreen']).toBe(true)
     } finally {
       cleanup(dir)
     }

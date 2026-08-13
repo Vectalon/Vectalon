@@ -126,4 +126,30 @@ describe('MaestroFlowWriter', () => {
     expect(flow).not.toContain('# Accessibility run')
     expect(flow).toContain('- takeScreenshot: feature')
   })
+
+  it('writes an accessibility variant of a screen regression flow', () => {
+    const writer = new MaestroFlowWriter()
+    const flow = writer.writeScreenFlow('ProfileScreen', { appId: 'com.app', accessibility: true })
+    expect(flow).toContain('# Accessibility variant: selectors resolve through the accessibility tree')
+    expect(flow).toContain('# VoiceOver / TalkBack announce')
+    expect(flow).toContain('- assertVisible:\n    text: "ProfileScreen"')
+    // The screenshot is namespaced so accessibility runs are identifiable.
+    expect(flow).toContain('- takeScreenshot: impact-accessibility-profile-screen')
+
+    const withLink = writer.writeScreenFlow('ProfileScreen', {
+      appId: 'com.app',
+      deepLink: 'app://profile',
+      accessibility: true,
+    })
+    expect(withLink).toContain('- openLink: "app://profile"')
+    expect(withLink).toContain('- assertVisible:\n    text: "ProfileScreen"')
+    expect(withLink).toContain('- takeScreenshot: impact-accessibility-profile-screen')
+  })
+
+  it('keeps plain string-shorthand selectors for a non-accessibility screen flow', () => {
+    const flow = new MaestroFlowWriter().writeScreenFlow('ProfileScreen', { appId: 'com.app' })
+    expect(flow).toContain('- assertVisible: "ProfileScreen"')
+    expect(flow).not.toContain('# Accessibility variant')
+    expect(flow).toContain('- takeScreenshot: impact-profile-screen')
+  })
 })

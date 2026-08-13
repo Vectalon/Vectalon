@@ -34,6 +34,7 @@ import { teamPolicyCommand } from './commands/teamPolicy'
 import { benchCommand } from './commands/bench'
 import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
 import { impactCommand } from './commands/impact'
+import { coverageCommand } from './commands/coverage'
 import { doctorCommand } from './commands/doctor'
 import { selftestCommand } from './commands/selftest'
 import { supportCommand } from './commands/support'
@@ -396,6 +397,13 @@ export function createProgram(): Command {
     .option('--dry-run', 'Simulate the PR comment without posting (does not write the doc)')
     .option('--out <dir>', 'Write the impact doc to this directory instead of docs/vectalon/impact')
     .action(impactCommand)
+
+  program
+    .command('coverage [directory]')
+    .description('Render the committed coverage dashboard (docs/vectalon/coverage/coverage-gaps.md) — per-screen E2E and accessibility gap summary with open follow-up task links')
+    .option('--json', 'Print the per-screen summary as JSON (CI/agents)')
+    .option('--limit <n>', 'Cap the number of screens listed', Number)
+    .action(coverageCommand)
 
   program
     .command('selftest [directory]')

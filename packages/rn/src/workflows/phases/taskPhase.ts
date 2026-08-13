@@ -11,12 +11,25 @@ import { kebabCase } from '../../utils/deepLink'
  * that reference an affected screen get a keep-green task — so the blast
  * radius is tracked as checkable work before implementation.
  */
-function impactAcceptanceTasks(impact: { screens: string[]; flows: string[] }): TaskInput[] {
-  const tasks: TaskInput[] = impact.screens.map(screen => ({
-    title: `Acceptance: ${screen} not regressed`,
-    description: `Acceptance criteria: ${screen} is affected by this change. Verify it still renders and behaves after implementation — run the generated Maestro impact flow (\`maestro test .maestro/${kebabCase(screen) || 'screen'}-impact.yaml\` on a booted simulator/emulator).`,
-    type: 'qa',
-  }))
+function impactAcceptanceTasks(impact: {
+  screens: string[]
+  flows: string[]
+  screenAccessibility?: Record<string, boolean>
+}): TaskInput[] {
+  const tasks: TaskInput[] = impact.screens.map(screen => {
+    const slug = kebabCase(screen) || 'screen'
+    const accessibilityCovered = impact.screenAccessibility?.[screen] === true
+    return {
+      title: `Acceptance: ${screen} not regressed`,
+      description:
+        `Acceptance criteria: ${screen} is affected by this change. Verify it still renders and behaves after implementation — run the generated Maestro impact flow (\`maestro test .maestro/${slug}-impact.yaml\` on a booted simulator/emulator)` +
+        (accessibilityCovered
+          ? ` and its accessibility variant (\`.maestro/${slug}-impact-accessibility.yaml\`) to confirm screen-reader behavior — this screen is already covered by accessibility criteria`
+          : '') +
+        '.',
+      type: 'qa',
+    }
+  })
   if (impact.flows.length > 0) {
     tasks.push({
       title: 'Acceptance: existing E2E flows still pass',

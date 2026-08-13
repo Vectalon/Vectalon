@@ -18,6 +18,23 @@ function isCommentLine(line: string): boolean {
   return /^(?:\/\/|\*|\/\*|#)/.test(line)
 }
 
+/**
+ * Parse the test phase's impact-coverage gap report: the affected screens for
+ * which no deterministic regression flow could be generated (no deep-link
+ * route, no initial-route path). The verification E2E block surfaces them so
+ * the report names which affected screens are still uncovered.
+ */
+function skippedImpactScreensFromTestPhase(phases: Array<{ id: string; output?: string }>): string[] {
+  const tests = phases.find(p => p.id === 'tests')
+  const output = tests?.output || ''
+  const m = output.match(/No flow generated for: (.+?) —/)
+  if (!m) return []
+  return m[1]
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
+}
+
 interface VisualCheckInput {
   /** Screen name to deep-link to (e.g. `LoginScreen`); default: derived from the implementation phase. */
   screen?: string
@@ -445,6 +462,16 @@ export const verificationPhase: WorkflowPhase = {
       } catch (err) {
         reportError(err, 'verification: listing maestro flows')
         flows = []
+      }
+      // Impact E2E coverage: screens the impact stage flagged but that have no
+      // deterministic route (no deep link, no initial-route path) never got a
+      // generated flow — name them in the E2E block so the gap is visible
+      // instead of silently ignored. Advisory — never gates the run.
+      const uncoveredImpactScreens = skippedImpactScreensFromTestPhase(ctx.state.phases)
+      if (uncoveredImpactScreens.length > 0) {
+        results.push(
+          `- Impact E2E coverage: ${uncoveredImpactScreens.length} affected screen(s) still uncovered (no deep-link route, no initial-route path, no generated flow): ${uncoveredImpactScreens.join(', ')}. Add a deep-link registration or write a manual flow in .maestro/ to cover them.`
+        )
       }
       if (flows.length > 0) {
         const maestroProbe = await runCommand('maestro', ['--version'], { cwd: ctx.projectRoot, timeout: 10000 })

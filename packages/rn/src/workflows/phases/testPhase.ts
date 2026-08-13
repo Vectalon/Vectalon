@@ -209,6 +209,13 @@ export const testPhase: WorkflowPhase = {
     const scheme = projectRoot ? detectUrlScheme(projectRoot) : null
     const impactFlowLabels: string[] = []
     const skippedImpactScreens: string[] = []
+    // A screen is already covered by accessibility criteria when the feature
+    // request / acceptance criteria call out VoiceOver / TalkBack / screen
+    // readers, or when an existing accessibility E2E flow in the repo already
+    // references the screen (impact tracks this per screen).
+    const accessibilityMentioned =
+      /accessib|voiceover|talkback|screen\s*-?reader/i.test(`${ctx.prompt}\n${acceptanceCriteria}`)
+    let accessibilityVariants = 0
     for (const screen of impact.screens) {
       if (screen.toLowerCase() === featureName.toLowerCase()) continue // the feature flow already covers it
       const slug = kebabCase(screen) || 'screen'
@@ -237,15 +244,32 @@ export const testPhase: WorkflowPhase = {
       // route — an initial-route screen (or an unannotated legacy report) gets
       // a launch flow, never a scheme built from a fallback package name.
       const useDeepLink = deepLink !== null && (reach ? reach.deepLinkable : true)
+      const flowOptions = {
+        appId,
+        deepLink: useDeepLink && deepLink ? deepLink : undefined,
+      }
       flowFiles.push({
         path,
-        content: new MaestroFlowWriter().writeScreenFlow(screen, {
-          appId,
-          deepLink: useDeepLink && deepLink ? deepLink : undefined,
-        }),
+        content: new MaestroFlowWriter().writeScreenFlow(screen, flowOptions),
       })
+
+      // Accessibility variant of the impact regression flow: screens already
+      // covered by accessibility criteria get the same walk through the
+      // accessibility tree (explicit text selectors + screen-reader guidance),
+      // so the blast-radius check also covers what VoiceOver / TalkBack hear.
+      const accessibilityCovered =
+        accessibilityMentioned || impact.screenAccessibility[screen] === true
+      const accessibilityPath = `.maestro/${slug}-impact-accessibility.yaml`
+      if (accessibilityCovered) {
+        flowFiles.push({
+          path: accessibilityPath,
+          content: new MaestroFlowWriter().writeScreenFlow(screen, { ...flowOptions, accessibility: true }),
+        })
+        accessibilityVariants++
+      }
       impactFlowLabels.push(
         `- \`${path}\` — regression flow for the affected screen \`${screen}\`` +
+          (accessibilityCovered ? ` (+ \`${accessibilityPath}\` accessibility variant)` : '') +
           (useDeepLink && deepLink
             ? ` (deep-link \`${deepLink}\`)`
             : reach?.isInitial
@@ -308,6 +332,11 @@ export const testPhase: WorkflowPhase = {
             ...impactFlowLabels,
             '',
             'These flows cover the screens the impact stage flagged as affected — run them to verify the change did not regress existing UI.',
+            ...(accessibilityVariants > 0
+              ? [
+                  `Accessibility variants (${accessibilityVariants}) run the same walk through the accessibility tree — the labels VoiceOver / TalkBack announce — for screens already covered by accessibility criteria.`, '',
+                ]
+              : []),
             '',
           ]
         : []),

@@ -379,8 +379,104 @@ describe('impact context → downstream stages', () => {
       const flowPath = join(projectRoot, '.maestro', 'profile-screen-impact.yaml')
       expect(existsSync(flowPath)).toBe(true)
       expect(readFileSync(flowPath, 'utf-8')).toContain('assertVisible: "ProfileScreen"')
+      // No accessibility variant — the report carries no accessibility
+      // coverage for ProfileScreen and the request does not mention a11y.
+      expect(existsSync(join(projectRoot, '.maestro', 'profile-screen-impact-accessibility.yaml'))).toBe(false)
+      expect(result.output).not.toContain('Accessibility variants')
     } finally {
       rmSync(projectRoot, { recursive: true, force: true })
     }
+  })
+
+  it('test phase writes an accessibility variant for screens already covered by accessibility criteria', async () => {
+    const projectRoot = mkdtempSync(join(tmpdir(), 'vectalon-a11y-'))
+    try {
+      const report = [
+        '### Screens & routes touched',
+        '- ProfileScreen (deep-linkable)',
+        '',
+        '### E2E flows to run',
+        '- `.maestro/profile-accessibility.yaml` (_mobile_) → ProfileScreen (accessibility)',
+        '',
+      ].join('\n')
+      const result = await testPhase.run({
+        ...makeCtx('Add a profile feature', report),
+        projectRoot,
+      })
+
+      expect(result.status).toBe('completed')
+      // The plain impact regression flow is still written...
+      const flowPath = join(projectRoot, '.maestro', 'profile-screen-impact.yaml')
+      expect(existsSync(flowPath)).toBe(true)
+      // ...and so is the accessibility variant with accessibility-tree selectors.
+      const a11yPath = join(projectRoot, '.maestro', 'profile-screen-impact-accessibility.yaml')
+      expect(existsSync(a11yPath)).toBe(true)
+      const content = readFileSync(a11yPath, 'utf-8')
+      expect(content).toContain('# Accessibility variant: selectors resolve through the accessibility tree')
+      expect(content).toContain('- assertVisible:\n    text: "ProfileScreen"')
+      expect(content).toContain('- takeScreenshot: impact-accessibility-profile-screen')
+      // Both flows are surfaced as e2e artifacts and the variant is called out.
+      expect(result.artifacts.some(a => a.type === 'e2e' && a.path?.includes('profile-screen-impact-accessibility.yaml'))).toBe(true)
+      expect(result.output).toContain('accessibility variant')
+      expect(result.output).toContain('Accessibility variants (1)')
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('test phase writes the accessibility variant when the request calls out screen readers', async () => {
+    const projectRoot = mkdtempSync(join(tmpdir(), 'vectalon-a11y-mention-'))
+    try {
+      const report = [
+        '### Screens & routes touched',
+        '- ProfileScreen (deep-linkable)',
+        '',
+      ].join('\n')
+      const result = await testPhase.run({
+        ...makeCtx('Add a VoiceOver-accessible profile feature', report),
+        projectRoot,
+      })
+
+      expect(result.status).toBe('completed')
+      expect(existsSync(join(projectRoot, '.maestro', 'profile-screen-impact-accessibility.yaml'))).toBe(true)
+      expect(result.output).toContain('Accessibility variants (1)')
+    } finally {
+      rmSync(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('task phase acceptance tasks name the accessibility variant for covered screens', async () => {
+    const created: TaskInput[] = []
+    const pm = {
+      name: 'stub',
+      createTasks: async (ts: TaskInput[]) => {
+        created.push(...ts)
+        return ts.map((t, i) => ({ id: String(i + 1), title: t.title, description: t.description, status: 'todo' }))
+      },
+      updateTasks: async () => {},
+      closeTasks: async () => {},
+      readTicket: async () => null,
+    }
+    const report = [
+      '### Screens & routes touched',
+      '- ProfileScreen (deep-linkable)',
+      '',
+      '### E2E flows to run',
+      '- `.maestro/profile-accessibility.yaml` (_mobile_) → ProfileScreen (accessibility)',
+      '',
+    ].join('\n')
+    const result = await taskPhase.run({
+      ...makeCtx('Add a profile feature', report),
+      adapters: {
+        projectManagement: pm,
+      } as unknown as WorkflowContext['adapters'],
+    })
+
+    expect(result.status).toBe('completed')
+    const screenTask = created.find(t => t.title === 'Acceptance: ProfileScreen not regressed')
+    expect(screenTask).toBeDefined()
+    expect(screenTask?.description).toContain('.maestro/profile-screen-impact.yaml')
+    expect(screenTask?.description).toContain('.maestro/profile-screen-impact-accessibility.yaml')
+    expect(screenTask?.description).toContain('covered by accessibility criteria')
   })
 })

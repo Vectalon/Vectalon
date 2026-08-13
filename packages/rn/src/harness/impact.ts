@@ -58,6 +58,12 @@ export interface E2EFlowHit {
   packageName: string
   /** Screen / route name the flow references. */
   screen: string
+  /**
+   * True when the flow is an accessibility run (explicit accessibility-tree
+   * selectors + screen-reader guidance) — the screen it covers is already
+   * covered by accessibility criteria.
+   */
+  accessibility: boolean
 }
 
 export interface ReRenderScreen {
@@ -554,13 +560,26 @@ function findE2EFlows(packageDirs: string[], root: string, affectedScreens: Set<
       }
       for (const screen of affectedScreens) {
         if (content.includes(screen)) {
-          hits.push({ path: rel, packageName, screen })
+          hits.push({ path: rel, packageName, screen, accessibility: isAccessibilityFlow(rel, content) })
           break
         }
       }
     }
   }
   return hits.sort((a, b) => a.path.localeCompare(b.path))
+}
+
+/**
+ * True when a Maestro flow is an accessibility run: the file name carries an
+ * `accessibility` marker (e.g. `profile-accessibility.yaml`) or the content
+ * uses the explicit accessibility-tree selectors / screen-reader guidance our
+ * accessibility variant emits.
+ */
+function isAccessibilityFlow(path: string, content: string): boolean {
+  return (
+    /(?:^|\/)[^/]*-accessibility\.ya?ml$/i.test(path) ||
+    /# Accessibility run|device_set_voiceover|device_announcements|VoiceOver|TalkBack/i.test(content)
+  )
 }
 
 function walkYamlFiles(dir: string, out: string[]): void {
@@ -666,7 +685,7 @@ export function renderImpactReport(impact: CrossPackageImpact): string {
     lines.push('These Maestro flows reference an affected screen — run them in CI:')
     lines.push('')
     for (const f of impact.e2eFlows) {
-      lines.push(`- \`${f.path}\` (_${f.packageName}_) → ${f.screen}`)
+      lines.push(`- \`${f.path}\` (_${f.packageName}_) → ${f.screen}${f.accessibility ? ' (accessibility)' : ''}`)
     }
     lines.push('')
   }
@@ -694,6 +713,12 @@ export interface ImpactSummary {
    * an entry were unannotated (legacy or hand-written reports).
    */
   screenReachability: Record<string, ScreenReachability>
+  /**
+   * Screens already covered by accessibility criteria — an existing
+   * accessibility E2E flow in the repo references them (parsed from the
+   * report's `(accessibility)` flow annotations).
+   */
+  screenAccessibility: Record<string, boolean>
 }
 
 /**
@@ -713,6 +738,7 @@ export function summarizeImpactReport(report: string): ImpactSummary {
     blastRadius: null,
     isolated: false,
     screenReachability: {},
+    screenAccessibility: {},
   }
   if (!report) return summary
 
@@ -771,8 +797,17 @@ export function summarizeImpactReport(report: string): ImpactSummary {
       } else if (section === 'navigators') {
         summary.navigators.push(content)
       } else if (section === 'flows') {
-        const path = content.match(/^`([^`]+)`/)
-        if (path) summary.flows.push(path[1])
+        // `path` (_pkg_) → Screen (accessibility): the (accessibility) tag
+        // marks flows that already cover the screen with accessibility
+        // criteria — surfaces per-screen coverage for the test stage.
+        const flow = content.match(/^`([^`]+)`\s+\(_([^_]+)_\)\s+→\s+([A-Za-z0-9_]+)(?:\s+\(([^)]+)\))?$/)
+        if (flow) {
+          summary.flows.push(flow[1])
+          if (flow[4] === 'accessibility') summary.screenAccessibility[flow[3]] = true
+        } else {
+          const path = content.match(/^`([^`]+)`/)
+          if (path) summary.flows.push(path[1])
+        }
       }
     }
   }

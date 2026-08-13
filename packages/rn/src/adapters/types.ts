@@ -13,6 +13,7 @@ export interface Task {
   description: string
   url?: string
   status: string
+  labels?: string[]
 }
 
 /**
@@ -39,6 +40,14 @@ export interface ProjectManagementAdapter {
    * ticket-to-PR flows stay runnable everywhere.
    */
   readTicket(key: string): Promise<Ticket | null>
+  /**
+   * Find open tasks matching a filter (title fragment and/or labels). Used for
+   * best-effort dedup — e.g. skip opening a follow-up when an open task for the
+   * same screen already exists. Providers without a query API (or without
+   * credentials) omit it; callers use the optional call and treat "nothing
+   * found" as "create the task".
+   */
+  findTasks?(filter: { title?: string; labels?: string[] }): Promise<Task[]>
 }
 
 export interface CommitInput {

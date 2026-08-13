@@ -208,6 +208,7 @@ export class MaestroFlowWriter {
    */
   writeScreenFlow(screenName: string, options: MaestroFlowOptions & { deepLink?: string } = {}): string {
     const appId = options.appId || 'com.example.app'
+    const accessibility = options.accessibility === true
     // `ProfileScreen` → `profile-screen` — split camelCase, then kebab.
     const slug =
       screenName
@@ -222,16 +223,23 @@ export class MaestroFlowWriter {
       steps.push({ kind: 'openLink', url: options.deepLink })
     }
     steps.push({ kind: 'assertVisible', text: screenName })
-    steps.push({ kind: 'takeScreenshot', name: `impact-${slug}` })
+    steps.push({ kind: 'takeScreenshot', name: accessibility ? `impact-accessibility-${slug}` : `impact-${slug}` })
 
-    return [
+    const header = [
       `appId: ${yamlString(appId)}`,
       '---',
       `# Impact regression flow — ${screenName} is affected by this change.`,
-      `# Verifies the screen still renders after the feature lands (run with \`maestro test\`).`,
-      ...renderMaestroSteps(steps),
-      '',
-    ].join('\n')
+    ]
+    if (accessibility) {
+      header.push(
+        '# Accessibility variant: selectors resolve through the accessibility tree - the same labels',
+        '# VoiceOver / TalkBack announce. Verify announcements with `vectalon serve` device_set_voiceover',
+        '# and device_announcements.',
+      )
+    } else {
+      header.push('# Verifies the screen still renders after the feature lands (run with `maestro test`).')
+    }
+    return [...header, ...renderMaestroSteps(steps, accessibility), ''].join('\n')
   }
 
   /**

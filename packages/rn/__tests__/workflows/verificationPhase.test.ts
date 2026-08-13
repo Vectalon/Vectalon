@@ -230,6 +230,47 @@ describe('verificationPhase remove-dependency checks', () => {
     expect(result.status).toBe('completed')
   })
 
+  it('names the affected screens with no generated flow in the E2E block', async () => {
+    const ctx = createContext(projectRoot)
+    // The test phase reported a gap: the screens were affected but have no
+    // deterministic route, so no impact regression flow was generated.
+    ctx.state.phases[0] = {
+      ...ctx.state.phases[0],
+      output: [
+        '## Impact regression flows — gaps',
+        '',
+        'No flow generated for: SettingsScreen, OfflineQueueScreen — these affected screens have no deep-link route and no deterministic navigation path from launch, so a launch → assert flow would not reach them.',
+        '',
+      ].join('\n'),
+    }
+
+    const result = await verificationPhase.run(ctx)
+
+    expect(result.output).toContain('still uncovered')
+    expect(result.output).toContain('SettingsScreen')
+    expect(result.output).toContain('OfflineQueueScreen')
+    expect(result.output).toContain('Add a deep-link registration or write a manual flow')
+    // Advisory only — the run still passes.
+    expect(result.status).toBe('completed')
+  })
+
+  it('reports no uncovered screens when the test phase generated flows for all of them', async () => {
+    const ctx = createContext(projectRoot)
+    ctx.state.phases[0] = {
+      ...ctx.state.phases[0],
+      output: [
+        '## Impact regression flows',
+        '- `.maestro/home-impact.yaml` — regression flow for the affected screen `Home`',
+        '',
+      ].join('\n'),
+    }
+
+    const result = await verificationPhase.run(ctx)
+
+    expect(result.output).not.toContain('still uncovered')
+    expect(result.status).toBe('completed')
+  })
+
   it('skips the visual check for simulated runs and never gates the workflow', async () => {
     const result = await verificationPhase.run(createContext(projectRoot))
 

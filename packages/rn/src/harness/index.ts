@@ -10,6 +10,8 @@ export { buildKnowledgeGraph, extractExpoRoutes, computeReRenderImpact } from '.
 export { detectWorkspace, findWorkspaceRoot, resolveNodeModulesRoot, NO_WORKSPACE } from './workspace'
 export { analyzeCrossPackageImpact, renderImpactReport, impactDocsDir, writeImpactDoc } from './impact'
 export type { CrossPackageImpact, ImpactedFile, E2EFlowHit, ReRenderScreen } from './impact'
+export { coverageDocsDir, coverageGapsDocPath, appendCoverageGapEntry, readCoverageGapsDoc, parseCoverageGapsDoc, summarizeCoverageGaps } from './coverageDashboard'
+export type { CoverageGapEntry, ScreenCoverageSummary } from './coverageDashboard'
 export type { WorkspaceInfo, WorkspaceManager } from './workspace'
 export type { ProjectInfo, FileNode, ComponentInfo, ContextSnapshot } from './types'
 export type {
