@@ -4,7 +4,8 @@ import { join } from 'path'
 import { designPhase } from '../../src/workflows/phases/designPhase'
 import { architecturePhase } from '../../src/workflows/phases/architecturePhase'
 import { testPhase } from '../../src/workflows/phases/testPhase'
-import { summarizeImpactReport } from '../../src/harness/impact'
+import { implementationPhase, buildImplementationPrompt } from '../../src/workflows/phases/implementationPhase'
+import { summarizeImpactReport, renderBlastRadiusContext } from '../../src/harness/impact'
 import { MaestroFlowWriter } from '../../src/sdlc/MaestroFlowWriter'
 import type { WorkflowContext } from '../../src/adapters/types'
 
@@ -125,6 +126,52 @@ describe('impact context → downstream stages', () => {
     expect(result.output).toContain('Affected files (consumers to keep working):')
     expect(result.output).toContain('- `packages/ui/src/Button.tsx`')
     expect(result.output).toContain('Affected screens:')
+  })
+
+  it('renderBlastRadiusContext lists consumers for the implementation stage', () => {
+    const rich = renderBlastRadiusContext(summarizeImpactReport(SAMPLE_REPORT))
+    expect(rich).toContain('Consumer files')
+    expect(rich).toContain('- `packages/ui/src/Button.tsx`')
+    expect(rich).toContain('Affected packages: `@acme/ui`, `mobile`')
+    expect(rich).toContain('Affected screens:')
+    expect(rich).toContain('E2E flows that must stay green:')
+
+    const isolated = renderBlastRadiusContext(summarizeImpactReport(ISOLATED_REPORT))
+    expect(isolated).toContain('no existing consumers — the change is isolated')
+
+    expect(renderBlastRadiusContext(summarizeImpactReport(''))).toBe('')
+  })
+
+  it('implementation prompt carries the blast radius so generated code protects consumers', () => {
+    const blast = renderBlastRadiusContext(summarizeImpactReport(SAMPLE_REPORT))
+    const { prompt } = buildImplementationPrompt({
+      snapshot: null,
+      prompt: 'Add a profile feature',
+      intent: { type: 'add-feature', feature: 'profile', description: '' },
+      blastRadius: blast,
+    })
+
+    expect(prompt).toContain('## Blast radius — keep these consumers working')
+    expect(prompt).toContain('- `packages/ui/src/Button.tsx`')
+  })
+
+  it('refactor implementation plan lists the impact-flagged consumers', async () => {
+    const result = await implementationPhase.run({
+      ...makeCtx('Refactor user-service', SAMPLE_REPORT),
+      modelRouter: {
+        generate: async () => ({
+          content: JSON.stringify({
+            intents: [{ type: 'refactor', target: 'user-service', confidence: 1, reasoning: 'test' }],
+          }),
+          provider: 'mock',
+        }),
+      } as unknown as WorkflowContext['modelRouter'],
+    })
+
+    expect(result.status).toBe('completed')
+    expect(result.output).toContain('### Known consumers (from impact stage)')
+    expect(result.output).toContain('- `packages/ui/src/Button.tsx`')
+    expect(result.output).toContain('keep the exports, signatures, and')
   })
 
   it('writeScreenFlow emits a deterministic regression flow with optional deep link', () => {

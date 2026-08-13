@@ -8,6 +8,7 @@ import type { ModelRouter } from '../../model/ModelRouter'
 import { removeUnusedImportsFromProject, findSourceFiles } from '../../utils/unusedImports'
 import { reportPathChange } from '../../utils/fileDiff'
 import { scanNativeReferences, stripNativeReferences, scanDeadNativeConfig, isRemoveUnusedNativeConfigTarget, type NativeReference, type DeadNativeConfig } from '../../utils/nativeScan'
+import { summarizeImpactReport, impactReportFromContext, renderBlastRadiusContext } from '../../harness/impact'
 import { detectConventions, phaseResult, sanitizeFileName, fileExtension, jsxExtension } from './helpers'
 import { getIntent, intentTitle, isRemoveDependency, isRefactor, isFix, type WorkflowIntent } from './intent'
 import { runGuardrails, formatGuardrailResult, GuardrailResult, PolicyEngine } from '../../guardrails'
@@ -245,6 +246,8 @@ export function buildImplementationPrompt(ctx: {
   tests?: string
   /** Output of the failing stage (e.g. the verification report) on a heal retry. */
   lastFailure?: string
+  /** Blast-radius context from the impact stage (consumers to keep working). */
+  blastRadius?: string
 }): { systemPrompt: string; prompt: string } {
   const conventions = detectConventions(ctx.snapshot)
   const featureName = sanitizeFileName(ctx.prompt) || 'Feature'
@@ -320,6 +323,11 @@ export function buildImplementationPrompt(ctx: {
     '- Adding: iOS autolinking picks up pods on `pod install`; Android autolinking needs the package in `android/settings.gradle` + `android/app/build.gradle` if the package predates autolinking. Follow the package\'s own documentation for setup steps (config plugin, permissions, custom build steps) — do not invent them.',
     '- Removing: delete the package from package.json AND its native traces (Podfile entries, gradle includes/deps, native imports). A removal is only safe when no source file imports or references it anymore.',
     '- The project has ios/ and android/ directories — changing a dependency without the matching native side breaks the native build.',
+    '',
+    'Blast radius: if this change touches a module other files import, preserve its exported',
+    'names, signatures, props, and behavior — the consumers listed in the prompt depend on them.',
+    'A breaking change to a consumer-facing module is only acceptable when the consumers are',
+    'updated in the same change.',
   ].join('\n')
 
   const testsSection = ctx.tests
@@ -342,6 +350,10 @@ export function buildImplementationPrompt(ctx: {
       ].join('\n')
     : ''
 
+  const blastRadiusSection = ctx.blastRadius
+    ? ['', '## Blast radius — keep these consumers working', '', ctx.blastRadius, ''].join('\n')
+    : ''
+
   const projectContext = [
     'Project conventions:',
     `- TypeScript: ${conventions.hasTypeScript ? 'yes' : 'no'}`,
@@ -356,6 +368,7 @@ export function buildImplementationPrompt(ctx: {
     '',
     testsSection,
     failureSection,
+    blastRadiusSection,
     'Generate the files for this request.',
     `Use "${featureName}" as the base name for the generated modules.`,
   ].join('\n')
@@ -378,6 +391,8 @@ async function generateModelImplementation(
     tests?: string
     /** Output of the failing stage (e.g. the verification report) on a heal retry. */
     lastFailure?: string
+    /** Blast-radius context from the impact stage (consumers to keep working). */
+    blastRadius?: string
   }
 ): Promise<ModelImplementationResult> {
   const promptCtx = buildImplementationPrompt(ctx)
@@ -458,6 +473,8 @@ async function generateFixImplementation(
     prompt: string
     area: string
     testRunner: TestRunnerAdapter
+    /** Blast-radius context from the impact stage (consumers to keep working). */
+    blastRadius?: string
   }
 ): Promise<{ output: string; artifacts: WorkflowArtifact[] }> {
   const conventions = detectConventions(ctx.snapshot)
@@ -520,6 +537,10 @@ async function generateFixImplementation(
     'Only include files you actually changed.',
   ].join('\n')
 
+  const blastRadiusSection = ctx.blastRadius
+    ? ['', '### Blast radius — keep these consumers working', '', ctx.blastRadius, ''].join('\n')
+    : ''
+
   const fixPrompt = [
     `Request: ${ctx.prompt}`,
     '',
@@ -527,6 +548,7 @@ async function generateFixImplementation(
     '```',
     diagnostics || '(check produced no stdout/stderr)',
     '```',
+    blastRadiusSection,
     '',
     'Fix every violation above in the existing files. Return each changed file with its complete new content.',
   ].join('\n')
@@ -1280,6 +1302,8 @@ function generateRefactorImplementation(
     snapshot: ContextSnapshot | null
     target: string
     prompt: string
+    /** Consumer files the impact stage flagged — the refactor must keep them working. */
+    consumerFiles?: string[]
   }
 ): { output: string; artifacts: WorkflowArtifact[] } {
   const conventions = detectConventions(ctx.snapshot)
@@ -1373,6 +1397,19 @@ function generateRefactorImplementation(
     }
   }
 
+  const consumerSection =
+    ctx.consumerFiles && ctx.consumerFiles.length > 0
+      ? [
+          '',
+          '### Known consumers (from impact stage)',
+          '',
+          'These files import the module being refactored — keep the exports, signatures, and',
+          'behavior they rely on, or update them in the same change:',
+          '',
+          ...ctx.consumerFiles.map(f => `- \`${f}\``),
+        ].join('\n')
+      : ''
+
   const output = [
     `## Refactor: ${ctx.target}`,
     '',
@@ -1385,6 +1422,7 @@ function generateRefactorImplementation(
     '### Suggested file structure after refactor',
     `- \`src/${ctx.target}.${ext}\` — refactored module`,
     `- \`src/${ctx.target}.test.${ext}\` — unit tests`,
+    consumerSection,
     '',
     '### Next steps',
     '- Review the current implementation for duplication or hidden dependencies.',
@@ -1410,6 +1448,12 @@ export const implementationPhase: WorkflowPhase = {
     const projectRoot = ctx.projectRoot
     const srcDir = projectRoot ? join(projectRoot, 'src') : undefined
 
+    // Blast radius from the impact stage: the consumers this change must not
+    // break. Computed once and threaded into the model prompt (add-feature,
+    // fix) and the deterministic refactor plan.
+    const impact = summarizeImpactReport(impactReportFromContext(ctx))
+    const blastRadius = renderBlastRadiusContext(impact)
+
     let result: { output: string; artifacts: WorkflowArtifact[] }
 
     if (isRemoveDependency(intent)) {
@@ -1423,6 +1467,7 @@ export const implementationPhase: WorkflowPhase = {
         snapshot: ctx.snapshot,
         target: intent.target,
         prompt: ctx.prompt,
+        consumerFiles: impact.files,
       })
     } else if (isFix(intent)) {
       // Repair requests: diagnose -> model fixes existing files -> plan fallback.
@@ -1432,6 +1477,7 @@ export const implementationPhase: WorkflowPhase = {
         prompt: ctx.prompt,
         area: intent.area,
         testRunner: ctx.adapters.testRunner,
+        blastRadius,
       })
     } else if (intent.type === 'unknown') {
       // Unclassified requests get a clarifying plan — never a generic scaffold.
@@ -1455,6 +1501,7 @@ export const implementationPhase: WorkflowPhase = {
         // Heal context: when a later stage failed, the engine kept its output
         // (the verification report) so this retry is guided by what broke.
         lastFailure: ctx.outputs['verification'],
+        blastRadius,
       })
 
       if (modelResult.implementation) {

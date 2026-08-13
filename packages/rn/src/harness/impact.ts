@@ -721,3 +721,33 @@ export function summarizeImpactReport(report: string): ImpactSummary {
 export function impactReportFromContext(ctx: { state: { phases: Array<{ id: string; output?: string }> }; outputs: Record<string, string> }): string {
   return ctx.state.phases.find(p => p.id === 'impact')?.output || ctx.outputs['impact'] || ''
 }
+
+/**
+ * Compact blast-radius context for the implementation stage: the consumers the
+ * impact stage flagged, rendered as a prompt section that tells the generator
+ * (model or deterministic plan) to keep them working. Returns '' when the
+ * report carries no consumer signals at all.
+ */
+export function renderBlastRadiusContext(impact: ImpactSummary): string {
+  if (impact.isolated) {
+    return 'Impact analysis found no existing consumers — the change is isolated.'
+  }
+  const lines: string[] = []
+  if (impact.files.length > 0) {
+    lines.push('Consumer files (they import the changed module — preserve the exports and signatures they rely on):')
+    lines.push(...impact.files.map(f => `- \`${f}\``))
+  }
+  if (impact.packages.length > 0) {
+    lines.push(`Affected packages: ${impact.packages.map(p => '`' + p + '`').join(', ')}`)
+  }
+  if (impact.screens.length > 0) {
+    lines.push('Affected screens:', ...impact.screens.map(s => `- ${s}`))
+  }
+  if (impact.navigators.length > 0) {
+    lines.push('Navigation stacks:', ...impact.navigators.map(n => `- ${n}`))
+  }
+  if (impact.flows.length > 0) {
+    lines.push('E2E flows that must stay green:', ...impact.flows.map(f => `- \`${f}\``))
+  }
+  return lines.length > 0 ? lines.join('\n') : ''
+}
