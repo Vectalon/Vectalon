@@ -20,6 +20,58 @@ export function parseGithubRemote(remoteUrl: string): { owner: string; repo: str
   return { owner: match[1], repo: match[2].replace(/\.git$/, '') }
 }
 
+/**
+ * Extract `{ org, project, repo }` from an Azure DevOps remote — supports the
+ * HTTPS form (`https://dev.azure.com/{org}/{project}/_git/{repo}`) and the
+ * SSH form (`ssh.dev.azure.com:v3/{org}/{project}/{repo}`).
+ */
+export function parseAzureRemote(remoteUrl: string): { org: string; project: string; repo: string } | null {
+  const trimmed = remoteUrl.trim()
+  const https = trimmed.match(/dev\.azure\.com\/([^/\s]+)\/([^/\s]+)\/_git\/([^/\s]+?)(?:\.git)?\/?$/)
+  if (https) return { org: https[1], project: https[2], repo: https[3].replace(/\.git$/, '') }
+  const ssh = trimmed.match(/ssh\.dev\.azure\.com:v3\/([^/\s]+)\/([^/\s]+)\/([^/\s]+?)(?:\.git)?\/?$/)
+  if (ssh) return { org: ssh[1], project: ssh[2], repo: ssh[3].replace(/\.git$/, '') }
+  return null
+}
+
+/**
+ * Extract `{ namespace, repo }` from a GitLab remote — supports SSH
+ * (`git@gitlab.com:group/sub/repo.git`) and HTTPS (`https://gitlab.com/group/sub/repo.git`).
+ */
+export function parseGitlabRemote(remoteUrl: string): { namespace: string; repo: string } | null {
+  const trimmed = remoteUrl.trim()
+  const match = trimmed.match(/gitlab\.com[:/](.+?)\.git\/?$/)
+  if (!match) return null
+  const path = match[1]
+  const slash = path.lastIndexOf('/')
+  if (slash === -1) return null
+  return { namespace: path.slice(0, slash), repo: path.slice(slash + 1) }
+}
+
+/**
+ * Extract `{ workspace, repo }` from a Bitbucket remote — supports SSH
+ * (`git@bitbucket.org:workspace/repo.git`) and HTTPS
+ * (`https://bitbucket.org/workspace/repo.git`).
+ */
+export function parseBitbucketRemote(remoteUrl: string): { workspace: string; repo: string } | null {
+  const trimmed = remoteUrl.trim()
+  const match = trimmed.match(/bitbucket\.org[:/]([^/\s]+)\/([^/\s]+?)(?:\.git)?\/?$/)
+  if (!match) return null
+  return { workspace: match[1], repo: match[2].replace(/\.git$/, '') }
+}
+
+/** The CI/PR host a git remote points at, or null when unrecognized. */
+export type RemoteProvider = 'github' | 'azure' | 'gitlab' | 'bitbucket'
+
+export function detectRemoteProvider(remoteUrl: string): RemoteProvider | null {
+  const trimmed = remoteUrl.trim()
+  if (/github\.com/.test(trimmed)) return 'github'
+  if (/dev\.azure\.com|ssh\.dev\.azure\.com/.test(trimmed)) return 'azure'
+  if (/gitlab\.com/.test(trimmed)) return 'gitlab'
+  if (/bitbucket\.org/.test(trimmed)) return 'bitbucket'
+  return null
+}
+
 function ghHeaders(token: string): Record<string, string> {
   return {
     Authorization: `Bearer ${token}`,
@@ -29,10 +81,35 @@ function ghHeaders(token: string): Record<string, string> {
   }
 }
 
+/** Azure DevOps PR threads API headers (PAT via Basic auth, empty username). */
+function azureHeaders(token: string): Record<string, string> {
+  return {
+    Authorization: `Basic ${Buffer.from(`:${token}`).toString('base64')}`,
+    'Content-Type': 'application/json',
+  }
+}
+
+/** GitLab API headers (PRIVATE-TOKEN / personal access token). */
+function gitlabHeaders(token: string): Record<string, string> {
+  return {
+    'PRIVATE-TOKEN': token,
+    'Content-Type': 'application/json',
+  }
+}
+
+/** Bitbucket API headers (app password via Basic auth). */
+function bitbucketHeaders(username: string, password: string): Record<string, string> {
+  return {
+    Authorization: `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`,
+    'Content-Type': 'application/json',
+  }
+}
+
 export class LocalGitAdapter implements GitAdapter {
   name = 'local'
 
   private ownerRepo: { owner: string; repo: string } | null | undefined
+  private remoteUrl: string | null | undefined
   private ghAvailable: boolean | undefined
 
   constructor(
@@ -105,17 +182,46 @@ export class LocalGitAdapter implements GitAdapter {
   /**
    * Post or update a PR comment by unique marker, so repeated runs (visual
    * CI on every push) upsert one comment instead of spamming the thread.
-   * Token path edits the existing comment (issues/comments PATCH); the gh CLI
-   * fallback posts a fresh comment each run (no edit API without jq piping).
+   * Provider-native: GitHub (issues/comments PATCH or `gh` CLI), Azure DevOps
+   * (PR threads PATCH), GitLab (MR note PUT), Bitbucket (PR comment PUT). Each
+   * provider's token comes from its own env var (`GITHUB_TOKEN`,
+   * `AZURE_DEVOPS_TOKEN`, `GITLAB_TOKEN`, `BITBUCKET_USERNAME` +
+   * `BITBUCKET_APP_PASSWORD`).
    */
   async upsertPullRequestComment(number: number, marker: string, body: string): Promise<void> {
     if (!this.allowPush) {
       logger.warn(`Skipping PR comment (#${number}). Use --push or config.git.push=true to comment.`)
       return
     }
-    const repo = await this.getOwnerRepo()
+    const remote = await this.getRemoteUrl()
+    if (!remote) {
+      logger.warn(`PR comment skipped (#${number}): no origin remote found.`)
+      return
+    }
+    const provider = detectRemoteProvider(remote)
+    switch (provider) {
+      case 'azure':
+        await this.upsertAzureComment(remote, number, marker, body)
+        return
+      case 'gitlab':
+        await this.upsertGitlabComment(remote, number, marker, body)
+        return
+      case 'bitbucket':
+        await this.upsertBitbucketComment(remote, number, marker, body)
+        return
+      case 'github':
+        await this.upsertGithubComment(remote, number, marker, body)
+        return
+      default:
+        logger.warn(`PR comment skipped (#${number}): no supported PR host in the origin remote (${remote}).`)
+    }
+  }
+
+  /** GitHub: edit the existing marker comment (issues/comments PATCH) or post a fresh one. */
+  private async upsertGithubComment(remote: string, number: number, marker: string, body: string): Promise<void> {
+    const repo = parseGithubRemote(remote)
     if (!repo) {
-      logger.warn(`PR comment skipped (#${number}): no GitHub remote found for origin.`)
+      logger.warn(`PR comment skipped (#${number}): could not parse GitHub remote (${remote}).`)
       return
     }
 
@@ -159,6 +265,156 @@ export class LocalGitAdapter implements GitAdapter {
       } finally {
         rmSync(bodyFile, { force: true })
       }
+    }
+  }
+
+  /**
+   * Azure DevOps: PR threads API. Threads carry comments; we find the thread
+   * whose first comment holds the marker, PATCH the comment in place, else
+   * POST a new thread with the marker comment.
+   */
+  private async upsertAzureComment(remote: string, number: number, marker: string, body: string): Promise<void> {
+    const parsed = parseAzureRemote(remote)
+    const token = process.env.AZURE_DEVOPS_TOKEN
+    if (!parsed) {
+      logger.warn(`PR comment skipped (#${number}): could not parse Azure remote (${remote}).`)
+      return
+    }
+    if (!token) {
+      logger.warn(`PR comment skipped (#${number}): set AZURE_DEVOPS_TOKEN (PAT) to comment on Azure DevOps PRs.`)
+      return
+    }
+    const base = `https://dev.azure.com/${parsed.org}/${parsed.project}/_apis/git/repositories/${parsed.repo}/pullRequests/${number}/threads?api-version=7.1`
+    try {
+      const listRes = await fetch(base, { headers: azureHeaders(token) })
+      if (listRes.ok) {
+        const data = (await listRes.json()) as {
+          value?: Array<{ id: number; comments?: Array<{ id: number; content?: string }> }>
+        }
+        const existing = data.value?.find(t => t.comments?.some(c => c.content?.includes(marker)))
+        if (existing && existing.comments && existing.comments.length > 0) {
+          const commentId = existing.comments[0].id
+          const editRes = await fetch(
+            `https://dev.azure.com/${parsed.org}/${parsed.project}/_apis/git/repositories/${parsed.repo}/pullRequests/${number}/threads/${existing.id}/comments/${commentId}?api-version=7.1`,
+            { method: 'PATCH', headers: azureHeaders(token), body: JSON.stringify({ content: body }) }
+          )
+          if (!editRes.ok) {
+            logger.warn(`Azure comment edit failed (#${number}): ${editRes.status}`)
+          }
+          return
+        }
+      }
+    } catch (err) {
+      logger.warn(`Azure comment upsert failed (#${number}): ${err instanceof Error ? err.message : String(err)}`)
+    }
+    // No thread carrying the marker — create one with the comment.
+    try {
+      const createRes = await fetch(base, {
+        method: 'POST',
+        headers: azureHeaders(token),
+        body: JSON.stringify({ comments: [{ content: body, commentType: 1 }] }),
+      })
+      if (!createRes.ok) {
+        logger.warn(`Azure comment create failed (#${number}): ${createRes.status}`)
+      }
+    } catch (err) {
+      logger.warn(`Azure comment create failed (#${number}): ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }
+
+  /** GitLab: merge-request notes API. Find the marker note and PUT, else POST. */
+  private async upsertGitlabComment(remote: string, number: number, marker: string, body: string): Promise<void> {
+    const parsed = parseGitlabRemote(remote)
+    const token = process.env.GITLAB_TOKEN
+    if (!parsed) {
+      logger.warn(`PR comment skipped (#${number}): could not parse GitLab remote (${remote}).`)
+      return
+    }
+    if (!token) {
+      logger.warn(`PR comment skipped (#${number}): set GITLAB_TOKEN to comment on GitLab merge requests.`)
+      return
+    }
+    const project = encodeURIComponent(`${parsed.namespace}/${parsed.repo}`)
+    const base = `https://gitlab.com/api/v4/projects/${project}/merge_requests/${number}/notes`
+    try {
+      const listRes = await fetch(`${base}?per_page=100`, { headers: gitlabHeaders(token) })
+      if (listRes.ok) {
+        const notes = (await listRes.json()) as Array<{ id: number; body?: string }>
+        const existing = notes.find(n => n.body?.includes(marker))
+        if (existing) {
+          const editRes = await fetch(`${base}/${existing.id}`, {
+            method: 'PUT',
+            headers: gitlabHeaders(token),
+            body: JSON.stringify({ body }),
+          })
+          if (!editRes.ok) {
+            logger.warn(`GitLab note edit failed (#${number}): ${editRes.status}`)
+          }
+          return
+        }
+      }
+    } catch (err) {
+      logger.warn(`GitLab note upsert failed (#${number}): ${err instanceof Error ? err.message : String(err)}`)
+    }
+    try {
+      const createRes = await fetch(base, {
+        method: 'POST',
+        headers: gitlabHeaders(token),
+        body: JSON.stringify({ body }),
+      })
+      if (!createRes.ok) {
+        logger.warn(`GitLab note create failed (#${number}): ${createRes.status}`)
+      }
+    } catch (err) {
+      logger.warn(`GitLab note create failed (#${number}): ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }
+
+  /** Bitbucket: pull-request comments API. Find the marker comment and PUT, else POST. */
+  private async upsertBitbucketComment(remote: string, number: number, marker: string, body: string): Promise<void> {
+    const parsed = parseBitbucketRemote(remote)
+    const username = process.env.BITBUCKET_USERNAME
+    const password = process.env.BITBUCKET_APP_PASSWORD
+    if (!parsed) {
+      logger.warn(`PR comment skipped (#${number}): could not parse Bitbucket remote (${remote}).`)
+      return
+    }
+    if (!username || !password) {
+      logger.warn(`PR comment skipped (#${number}): set BITBUCKET_USERNAME + BITBUCKET_APP_PASSWORD to comment on Bitbucket PRs.`)
+      return
+    }
+    const base = `https://api.bitbucket.org/2.0/repositories/${parsed.workspace}/${parsed.repo}/pullrequests/${number}/comments`
+    try {
+      const listRes = await fetch(`${base}?pagelen=100`, { headers: bitbucketHeaders(username, password) })
+      if (listRes.ok) {
+        const data = (await listRes.json()) as { values?: Array<{ id: number; content?: { raw?: string } }> }
+        const existing = data.values?.find(c => c.content?.raw?.includes(marker))
+        if (existing) {
+          const editRes = await fetch(`${base}/${existing.id}`, {
+            method: 'PUT',
+            headers: bitbucketHeaders(username, password),
+            body: JSON.stringify({ content: { raw: body } }),
+          })
+          if (!editRes.ok) {
+            logger.warn(`Bitbucket comment edit failed (#${number}): ${editRes.status}`)
+          }
+          return
+        }
+      }
+    } catch (err) {
+      logger.warn(`Bitbucket comment upsert failed (#${number}): ${err instanceof Error ? err.message : String(err)}`)
+    }
+    try {
+      const createRes = await fetch(base, {
+        method: 'POST',
+        headers: bitbucketHeaders(username, password),
+        body: JSON.stringify({ content: { raw: body } }),
+      })
+      if (!createRes.ok) {
+        logger.warn(`Bitbucket comment create failed (#${number}): ${createRes.status}`)
+      }
+    } catch (err) {
+      logger.warn(`Bitbucket comment create failed (#${number}): ${err instanceof Error ? err.message : String(err)}`)
     }
   }
 
@@ -241,15 +497,22 @@ export class LocalGitAdapter implements GitAdapter {
     return bodyFile
   }
 
-  private async getOwnerRepo(): Promise<{ owner: string; repo: string } | null> {
-    if (this.ownerRepo !== undefined) return this.ownerRepo
+  private async getRemoteUrl(): Promise<string | null> {
+    if (this.remoteUrl !== undefined) return this.remoteUrl
     try {
       const result = await runCommand('git', ['remote', 'get-url', 'origin'], { cwd: this.root })
-      this.ownerRepo = parseGithubRemote(result.stdout) || null
+      this.remoteUrl = result.stdout.trim() || null
     } catch (err) {
       reportError(err, 'git: reading origin remote URL')
-      this.ownerRepo = null
+      this.remoteUrl = null
     }
+    return this.remoteUrl
+  }
+
+  private async getOwnerRepo(): Promise<{ owner: string; repo: string } | null> {
+    if (this.ownerRepo !== undefined) return this.ownerRepo
+    const remote = await this.getRemoteUrl()
+    this.ownerRepo = remote ? parseGithubRemote(remote) : null
     if (!this.ownerRepo) {
       logger.warn('No GitHub remote found for origin. Set one up or configure a GitHub remote to open PRs.')
     }

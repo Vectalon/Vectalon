@@ -2,17 +2,64 @@ import { mkdtempSync, rmSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import { execSync } from 'child_process'
-import { LocalGitAdapter } from '../../src/adapters/git'
+import {
+  LocalGitAdapter,
+  parseGithubRemote,
+  parseAzureRemote,
+  parseGitlabRemote,
+  parseBitbucketRemote,
+  detectRemoteProvider,
+} from '../../src/adapters/git'
 
-function makeRepo(): string {
+function makeRepo(remote = 'git@github.com:acme/app.git'): string {
   const dir = mkdtempSync(join(tmpdir(), 'vectalon-git-'))
   execSync('git init -q', { cwd: dir })
-  execSync('git remote add origin git@github.com:acme/app.git', { cwd: dir })
+  execSync(`git remote add origin ${remote}`, { cwd: dir })
   return dir
 }
 
 const MARKER = 'vectalon-visual-ci'
 const BODY = '### Visual regression\n<!-- ' + MARKER + ' -->\n| login-screen | pass |'
+
+describe('remote parsers', () => {
+  it('parses GitHub remotes (SSH + HTTPS)', () => {
+    expect(parseGithubRemote('git@github.com:acme/app.git')).toEqual({ owner: 'acme', repo: 'app' })
+    expect(parseGithubRemote('https://github.com/acme/app.git')).toEqual({ owner: 'acme', repo: 'app' })
+    expect(parseGithubRemote('ssh.dev.azure.com:v3/org/proj/repo')).toBeNull()
+  })
+
+  it('parses Azure DevOps remotes (HTTPS + SSH)', () => {
+    expect(parseAzureRemote('https://dev.azure.com/getgenea/OTHVAC-Mobile/_git/OTHVAC-Mobile')).toEqual({
+      org: 'getgenea',
+      project: 'OTHVAC-Mobile',
+      repo: 'OTHVAC-Mobile',
+    })
+    expect(parseAzureRemote('ssh.dev.azure.com:v3/getgenea/OTHVAC-Mobile/OTHVAC-Mobile')).toEqual({
+      org: 'getgenea',
+      project: 'OTHVAC-Mobile',
+      repo: 'OTHVAC-Mobile',
+    })
+    expect(parseAzureRemote('git@github.com:acme/app.git')).toBeNull()
+  })
+
+  it('parses GitLab remotes (nested groups)', () => {
+    expect(parseGitlabRemote('git@gitlab.com:group/sub/app.git')).toEqual({ namespace: 'group/sub', repo: 'app' })
+    expect(parseGitlabRemote('https://gitlab.com/group/app.git')).toEqual({ namespace: 'group', repo: 'app' })
+  })
+
+  it('parses Bitbucket remotes', () => {
+    expect(parseBitbucketRemote('git@bitbucket.org:acme/app.git')).toEqual({ workspace: 'acme', repo: 'app' })
+    expect(parseBitbucketRemote('https://bitbucket.org/acme/app.git')).toEqual({ workspace: 'acme', repo: 'app' })
+  })
+
+  it('detects the provider from any remote URL', () => {
+    expect(detectRemoteProvider('ssh.dev.azure.com:v3/org/proj/repo')).toBe('azure')
+    expect(detectRemoteProvider('git@gitlab.com:group/app.git')).toBe('gitlab')
+    expect(detectRemoteProvider('git@bitbucket.org:acme/app.git')).toBe('bitbucket')
+    expect(detectRemoteProvider('git@github.com:acme/app.git')).toBe('github')
+    expect(detectRemoteProvider('git@example.com:acme/app.git')).toBeNull()
+  })
+})
 
 describe('LocalGitAdapter.upsertPullRequestComment', () => {
   let dir: string
@@ -96,5 +143,206 @@ describe('LocalGitAdapter.upsertPullRequestComment', () => {
       .mockResolvedValueOnce({ ok: false, json: async () => ({ message: 'edit failed' }) })
     global.fetch = fetchMock as unknown as typeof fetch
     await expect(adapter.upsertPullRequestComment(7, MARKER, BODY)).resolves.toBeUndefined()
+  })
+})
+
+describe('LocalGitAdapter.upsertPullRequestComment — Azure DevOps', () => {
+  let dir: string
+  let originalFetch: typeof fetch
+  let originalToken: string | undefined
+
+  beforeEach(() => {
+    dir = makeRepo('ssh.dev.azure.com:v3/getgenea/OTHVAC-Mobile/OTHVAC-Mobile')
+    originalFetch = global.fetch
+    originalToken = process.env.AZURE_DEVOPS_TOKEN
+    process.env.AZURE_DEVOPS_TOKEN = 'pat-token'
+  })
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true })
+    global.fetch = originalFetch
+    if (originalToken === undefined) delete process.env.AZURE_DEVOPS_TOKEN
+    else process.env.AZURE_DEVOPS_TOKEN = originalToken
+  })
+
+  it('PATCHes the existing thread comment carrying the marker', async () => {
+    const adapter = new LocalGitAdapter(dir, true)
+    const fetchMock = jest.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ value: [{ id: 99, comments: [{ id: 7, content: 'old <!-- ' + MARKER + ' -->' }] }] }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    await adapter.upsertPullRequestComment(42, MARKER, BODY)
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(String(fetchMock.mock.calls[0][0])).toContain('/pullRequests/42/threads')
+    expect(String(fetchMock.mock.calls[1][0])).toContain('/threads/99/comments/7')
+    expect(fetchMock.mock.calls[1][1]).toMatchObject({ method: 'PATCH' })
+    expect(String(fetchMock.mock.calls[0][1]?.headers?.Authorization)).toMatch(/^Basic /)
+  })
+
+  it('POSTs a new thread when none carries the marker', async () => {
+    const adapter = new LocalGitAdapter(dir, true)
+    const fetchMock = jest.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ value: [] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    await adapter.upsertPullRequestComment(42, MARKER, BODY)
+
+    expect(String(fetchMock.mock.calls[1][0])).toContain('/pullRequests/42/threads')
+    expect(fetchMock.mock.calls[1][1]).toMatchObject({ method: 'POST' })
+    expect(JSON.parse((fetchMock.mock.calls[1][1] as { body: string }).body).comments[0].content).toContain(MARKER)
+  })
+
+  it('skips with a warning when AZURE_DEVOPS_TOKEN is missing', async () => {
+    delete process.env.AZURE_DEVOPS_TOKEN
+    const adapter = new LocalGitAdapter(dir, true)
+    const fetchMock = jest.fn()
+    global.fetch = fetchMock as unknown as typeof fetch
+    await adapter.upsertPullRequestComment(42, MARKER, BODY)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+})
+
+describe('LocalGitAdapter.upsertPullRequestComment — GitLab', () => {
+  let dir: string
+  let originalFetch: typeof fetch
+  let originalToken: string | undefined
+
+  beforeEach(() => {
+    dir = makeRepo('git@gitlab.com:getgenea/otvac-mobile.git')
+    originalFetch = global.fetch
+    originalToken = process.env.GITLAB_TOKEN
+    process.env.GITLAB_TOKEN = 'gl-token'
+  })
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true })
+    global.fetch = originalFetch
+    if (originalToken === undefined) delete process.env.GITLAB_TOKEN
+    else process.env.GITLAB_TOKEN = originalToken
+  })
+
+  it('PUTs the existing note carrying the marker', async () => {
+    const adapter = new LocalGitAdapter(dir, true)
+    const fetchMock = jest.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => [{ id: 11, body: 'old <!-- ' + MARKER + ' -->' }] })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    await adapter.upsertPullRequestComment(7, MARKER, BODY)
+
+    expect(String(fetchMock.mock.calls[0][0])).toContain('/projects/getgenea%2Fotvac-mobile/merge_requests/7/notes')
+    expect(String(fetchMock.mock.calls[1][0])).toContain('/notes/11')
+    expect(fetchMock.mock.calls[1][1]).toMatchObject({ method: 'PUT' })
+    expect(fetchMock.mock.calls[0][1]?.headers?.['PRIVATE-TOKEN']).toBe('gl-token')
+  })
+
+  it('POSTs a new note when none carries the marker', async () => {
+    const adapter = new LocalGitAdapter(dir, true)
+    const fetchMock = jest.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    await adapter.upsertPullRequestComment(7, MARKER, BODY)
+    expect(fetchMock.mock.calls[1][1]).toMatchObject({ method: 'POST' })
+    expect(JSON.parse((fetchMock.mock.calls[1][1] as { body: string }).body).body).toContain(MARKER)
+  })
+})
+
+describe('LocalGitAdapter.upsertPullRequestComment — Bitbucket', () => {
+  let dir: string
+  let originalFetch: typeof fetch
+  let originalUser: string | undefined
+  let originalPass: string | undefined
+
+  beforeEach(() => {
+    dir = makeRepo('git@bitbucket.org:getgenea/otvac-mobile.git')
+    originalFetch = global.fetch
+    originalUser = process.env.BITBUCKET_USERNAME
+    originalPass = process.env.BITBUCKET_APP_PASSWORD
+    process.env.BITBUCKET_USERNAME = 'bot'
+    process.env.BITBUCKET_APP_PASSWORD = 'app-pass'
+  })
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true })
+    global.fetch = originalFetch
+    if (originalUser === undefined) delete process.env.BITBUCKET_USERNAME
+    else process.env.BITBUCKET_USERNAME = originalUser
+    if (originalPass === undefined) delete process.env.BITBUCKET_APP_PASSWORD
+    else process.env.BITBUCKET_APP_PASSWORD = originalPass
+  })
+
+  it('PUTs the existing comment carrying the marker', async () => {
+    const adapter = new LocalGitAdapter(dir, true)
+    const fetchMock = jest.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ values: [{ id: 5, content: { raw: 'old <!-- ' + MARKER + ' -->' } }] }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    await adapter.upsertPullRequestComment(9, MARKER, BODY)
+
+    expect(String(fetchMock.mock.calls[0][0])).toContain('/repositories/getgenea/otvac-mobile/pullrequests/9/comments')
+    expect(String(fetchMock.mock.calls[1][0])).toContain('/comments/5')
+    expect(fetchMock.mock.calls[1][1]).toMatchObject({ method: 'PUT' })
+    expect(String(fetchMock.mock.calls[0][1]?.headers?.Authorization)).toMatch(/^Basic /)
+  })
+
+  it('POSTs a new comment when none carries the marker', async () => {
+    const adapter = new LocalGitAdapter(dir, true)
+    const fetchMock = jest.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ values: [] }) })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    await adapter.upsertPullRequestComment(9, MARKER, BODY)
+    expect(fetchMock.mock.calls[1][1]).toMatchObject({ method: 'POST' })
+    expect(JSON.parse((fetchMock.mock.calls[1][1] as { body: string }).body).content.raw).toContain(MARKER)
+  })
+})
+
+describe('LocalGitAdapter.upsertPullRequestComment — provider dispatch', () => {
+  let dir: string
+  let originalFetch: typeof fetch
+
+  beforeEach(() => {
+    originalFetch = global.fetch
+  })
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true })
+    global.fetch = originalFetch
+  })
+
+  it('routes to the provider detected from the origin remote', async () => {
+    dir = makeRepo('git@gitlab.com:acme/app.git')
+    process.env.GITLAB_TOKEN = 'gl-token'
+    const adapter = new LocalGitAdapter(dir, true)
+    const fetchMock = jest.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+    global.fetch = fetchMock as unknown as typeof fetch
+
+    await adapter.upsertPullRequestComment(3, MARKER, BODY)
+    expect(String(fetchMock.mock.calls[0][0])).toContain('gitlab.com/api/v4')
+    delete process.env.GITLAB_TOKEN
+  })
+
+  it('warns and skips for an unrecognized host', async () => {
+    dir = makeRepo('git@example.com:acme/app.git')
+    const adapter = new LocalGitAdapter(dir, true)
+    const fetchMock = jest.fn()
+    global.fetch = fetchMock as unknown as typeof fetch
+    await adapter.upsertPullRequestComment(3, MARKER, BODY)
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

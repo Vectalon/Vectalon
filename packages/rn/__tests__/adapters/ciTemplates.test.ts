@@ -161,6 +161,16 @@ describe('ciTemplates', () => {
       expect(workflow).toContain('- job: visual')
       expect(workflow).toContain('$(System.PullRequest.TargetBranch)')
     })
+
+    it('passes the PR id and Azure token to the visual job for comment posting', () => {
+      for (const [name, content] of Object.entries(RN_PKG)) {
+        writeFileSync(join(dir, name), content)
+      }
+      const workflow = generateAzurePipeline(dir)
+      expect(workflow).toContain('visual-ci --pr $(System.PullRequest.PullRequestId)')
+      expect(workflow).toContain('--push')
+      expect(workflow).toContain('AZURE_DEVOPS_TOKEN: $(System.AccessToken)')
+    })
   })
 
   describe('generateGitlabCi', () => {
@@ -180,6 +190,16 @@ describe('ciTemplates', () => {
       expect(workflow).toContain('tags:')
       expect(workflow).toContain('allow_failure: true')
       expect(workflow).toContain('$CI_MERGE_REQUEST_TARGET_BRANCH_NAME')
+    })
+
+    it('passes the MR iid and GitLab token to the visual job for comment posting', () => {
+      for (const [name, content] of Object.entries(RN_PKG)) {
+        writeFileSync(join(dir, name), content)
+      }
+      const workflow = generateGitlabCi(dir)
+      expect(workflow).toContain('visual-ci --pr $CI_MERGE_REQUEST_IID')
+      expect(workflow).toContain('--push')
+      expect(workflow).toContain('GITLAB_TOKEN: $GITLAB_TOKEN')
     })
   })
 

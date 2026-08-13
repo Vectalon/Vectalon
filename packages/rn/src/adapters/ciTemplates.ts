@@ -280,9 +280,9 @@ export function generateGithubActionsWorkflow(root: string): string {
  * The mirror of the GitHub Actions workflow: same quality/native/visual jobs
  * and the same ci-incident hook (`condition: failed()`), using Azure's
  * `$(System.PullRequest.*)` / `$(Build.SourceVersion)` variables and
- * `NodeTool@0` instead of `setup-node`. Visual regression runs but does not
- * post a PR comment (comment posting is GitHub-native); its report is
- * published as a pipeline artifact.
+ * `NodeTool@0` instead of `setup-node`. The visual job posts its report as a
+ * PR thread via `visual-ci --pr` using the pipeline's OAuth token, and
+ * publishes the artifacts.
  */
 export function generateAzurePipeline(root: string): string {
   const pm = detectPackageManager(root)
@@ -360,7 +360,9 @@ export function generateAzurePipeline(root: string): string {
     '        fetchDepth: 0',
     ...nodeSetup.map(s => `      ${s}`),
     `      - script: ${installCommand(pm)}`,
-    '      - script: npx vectalon@latest visual-ci --base $(System.PullRequest.TargetBranch) --platform ios',
+    '      - script: npx vectalon@latest visual-ci --pr $(System.PullRequest.PullRequestId) --base $(System.PullRequest.TargetBranch) --platform ios --push',
+    '        env:',
+    '          AZURE_DEVOPS_TOKEN: $(System.AccessToken)',
     '      - publish: .vectalon/visual-ci',
     '        artifact: visual-ci',
     '        condition: always()',
@@ -375,7 +377,8 @@ export function generateAzurePipeline(root: string): string {
  * no per-step failure hook, so the ci-incident step is a dedicated `report`
  * job with `when: on_failure` scoped to the quality job via `needs`. The
  * visual job requires a tagged macOS runner (GitLab.com shared runners are
- * Linux-only) and is advisory (`allow_failure`).
+ * Linux-only), is advisory (`allow_failure`), and posts its report as an MR
+ * note via `visual-ci --pr` with `GITLAB_TOKEN`.
  */
 export function generateGitlabCi(root: string): string {
   const pm = detectPackageManager(root)
@@ -454,7 +457,9 @@ export function generateGitlabCi(root: string): string {
     '  allow_failure: true',
     '  script:',
     `    - ${install}`,
-    '    - npx vectalon@latest visual-ci --base $CI_MERGE_REQUEST_TARGET_BRANCH_NAME --platform ios',
+    '    - npx vectalon@latest visual-ci --pr $CI_MERGE_REQUEST_IID --base $CI_MERGE_REQUEST_TARGET_BRANCH_NAME --platform ios --push',
+    '    env:',
+    '      GITLAB_TOKEN: $GITLAB_TOKEN',
     '  artifacts:',
     '    when: always',
     '    paths:',
