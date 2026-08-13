@@ -2,9 +2,19 @@ import Link from 'next/link'
 
 const RELEASES = [
   {
+    version: 'v0.2.0',
+    date: '2026-08-13',
+    tag: 'latest',
+    highlights: [
+      'Impact regression flows — changed files map to affected screens (AST-driven, no model calls), and the test phase writes .maestro/<slug>-impact.yaml regression flows for every screen with a deterministic route (deep link or initial route), with screenshots attached to the PR',
+      'Accessibility variants — screens covered by accessibility criteria get a second regression flow that walks the accessibility tree with explicit text selectors (the labels VoiceOver/TalkBack announce) and a namespaced screenshot',
+      'Uncovered-screen reporting — screens with no deterministic route are flagged instead of silently dropped: the verification phase names them in the E2E block, and the close phase opens coverage-labeled follow-up tasks (deduplicated against open tasks via PM findTasks)',
+      'Coverage dashboard — docs/vectalon/coverage/coverage-gaps.md records every E2E and accessibility gap per feature run, and the new vectalon coverage command renders a per-screen summary with open follow-up links (--json, --limit)',
+    ],
+  },
+  {
     version: 'v0.1.31',
     date: '2026-08-11',
-    tag: 'latest',
     highlights: [
       'Telemetry ingestion completed — vectalon telemetry no longer claims "Telemetry ingested" when nothing was ingested: honest outcomes, exit 1 for scripts/CI on an empty run, and the interactive menu guides you with Specify a path / Generate sample exports / Supported formats',
       'vectalon telemetry --fixtures — writes realistic Sentry crash, Sentry transaction, Crashlytics report, and Firebase analytics exports and ingests them on the spot, running the full crash → incident → KPI analysis end-to-end',

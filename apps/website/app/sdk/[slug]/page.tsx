@@ -18,12 +18,13 @@ const SDK_DATA: Record<string, SdkData> = {
   'react-native': {
     name: 'React Native',
     status: 'live',
-    statusLabel: 'Live — v0.1.30',
-    tagline: 'The full harness — context, codegen, upgrade copilot, device control.',
+    statusLabel: 'Live — v0.2.0',
+    tagline: 'The full harness — context, codegen, upgrade copilot, device control, regression coverage.',
     description:
       'The original Vectalon harness. Scans your RN project, builds a living knowledge graph, runs a local MCP-aware agent over 58 project-aware tools, and keeps the model current with ecosystem releases — every hour.',
     features: [
       { title: 'MCP-native agent', body: 'Feature workflows, code review, E2E generation, and device control over the MCP protocol your editor already speaks.' },
+      { title: 'Impact regression coverage', body: 'Changed files map to affected screens, each gets a Maestro regression flow with an accessibility variant for covered screens — screens without a deterministic route are flagged, followed up, and tracked in the coverage dashboard.' },
       { title: 'Upgrade Copilot', body: 'rn-diff-purge diffs, AST-grade impact analysis, and codemods mapped across every native and JS/TS change.' },
       { title: 'Guardrails on save', body: 'Pressable, no leaked renders, New Architecture hazards — hallucination-verified findings in editor and review.' },
       { title: 'Bundle budget guardrails', body: 'Metro bundle deltas tracked per package with swap candidates and replacement suggestions.' },

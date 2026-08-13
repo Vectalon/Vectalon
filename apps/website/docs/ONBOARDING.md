@@ -233,6 +233,22 @@ Enable items with `npx vectalon ecosystem --enable <id>`, filter by
 `--category` / `--flavor`, and export an MCP client config fragment with
 `--export`.
 
+### 3.9.5 Impact regression coverage
+
+Every `vectalon feature` run now treats **regression risk on affected screens**
+as a first-class deliverable:
+
+- The impact stage maps changed files → affected screens (AST-driven, no model
+  calls) and writes `.maestro/<slug>-impact.yaml` regression flows for each one
+  that has a deterministic route (deep link or initial route)
+- Screens covered by accessibility criteria get an **accessibility variant**
+  that walks the accessibility tree with explicit text selectors (the labels
+  VoiceOver/TalkBack announce) and a namespaced screenshot for the PR diff
+- Screens with no deterministic route are **reported, not silently dropped**:
+  the verification phase names them in the E2E block, the close phase opens a
+  `coverage`-labeled follow-up task (deduplicated against open tasks in the PM
+  provider), and `vectalon coverage` renders the accumulated dashboard
+
 ### 3.10 Ops & support
 
 - `npx vectalon status` — one command: daemon health, MCP reachability, model
@@ -241,7 +257,10 @@ Enable items with `npx vectalon ecosystem --enable <id>`, filter by
   (works on every command)
 - `npx vectalon support --upload` — sanitized support bundle + token for the
   maintainers
-- `npx vectalon` (no args) — interactive menu of all 20 commands
+- `npx vectalon coverage` — per-screen E2E + accessibility gap dashboard
+  (`docs/vectalon/coverage/coverage-gaps.md`), with links to the open
+  follow-up tasks the close phase opened for uncovered screens
+- `npx vectalon` (no args) — interactive menu of every command
 - `--dev` unlocks every tier locally (contributors only; never in production)
 
 ---

@@ -6,8 +6,8 @@ globally or linked).
 
 Running `npx vectalon` with no arguments opens an **interactive menu** covering
 the most common actions (init, feature, refresh, suggestions, bundle, status,
-daemon, telemetry, impact, ci, release, ecosystem, doctor, selftest, bench,
-leaderboard, sync, policy, serve, pull, models, help).
+daemon, telemetry, impact, coverage, ci, release, ecosystem, doctor, selftest,
+bench, leaderboard, sync, policy, serve, pull, models, help).
 
 ---
 
@@ -916,6 +916,48 @@ npx vectalon impact --changed "packages/ui/src/Button.tsx,packages/core/src/hook
 |---|---|
 | 0 | Report printed (comment post is best-effort) |
 | 1 | Missing `--changed`
+
+---
+
+## `coverage`
+
+Render the **coverage dashboard** — the committed `docs/vectalon/coverage/coverage-gaps.md`
+that the close phase of each feature workflow run appends to — as a
+**per-screen summary of E2E and accessibility gaps** with links to the open
+follow-up tasks.
+
+```bash
+npx vectalon coverage                        # per-screen gap summary table
+npx vectalon coverage --json                 # machine-readable summary (CI/agents)
+npx vectalon coverage --limit 10             # cap the number of screens listed
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root / workspace root (default: cwd) |
+| `--json` | Print the per-screen summary as JSON instead of markdown |
+| `--limit <n>` | Cap the number of screens listed (default: all) |
+
+**What it does**
+
+- Reads `docs/vectalon/coverage/coverage-gaps.md` — one dated entry per feature
+  run, appended by the close phase — and rolls the entries into one row per
+  screen: how many runs recorded an **E2E gap** (impact screen with no
+  deterministic route, so no regression flow was generated) and how many
+  recorded an **a11y gap** (affected screen with no accessibility flow)
+- Shows each screen's **latest follow-up** state: the open task id (linked when
+  the PM provider recorded a URL), `(tracked)` when the latest run deduplicated
+  against an already-open follow-up, or `—` when no follow-up exists
+- Sorts noisiest gaps first; `--json` emits `{ docPath, entries, screens[] }`
+  for scripts and CI
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Summary printed (missing dashboard prints an info note) |
 
 ---
 

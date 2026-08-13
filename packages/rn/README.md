@@ -64,7 +64,8 @@ Run `npx vectalon <command> --help` for detailed options.
 | `team-policy [dir]` | Org-wide guardrail policy: publish/pull the team policy + shared bundle budgets through the sync remote, so one policy change gates every project | `--push`, `--pull`, `--check <file>`, `--show`, `--budget <json>`, `--remove`, `--remote <url>`, `--branch`, `--force` |
 | `telemetry [dir]` | Ingest Sentry/Crashlytics/traces/analytics and analyze | `--path <dir>`, `--no-analyze` |
 | `daemon` | Live Metro/Hermes companion daemon | `-p <port>`, `--metro-port`, `--stop`, `--status`, `--once`, `--wire-metro`, `--no-device-probe` |
-| `impact [dir]` | Cross-package blast radius of changed files (monorepo) | `--changed <files>`, `--pr <number>`, `--push`, `--json`, `--dry-run` |
+| `impact [dir]` | Cross-package blast radius of changed files (monorepo) — affected screens, navigation stacks, and the Maestro E2E flows that must run, including **accessibility variants** for screens covered by a11y criteria and flags for screens with **no deterministic route** | `--changed <files>`, `--pr <number>`, `--push`, `--json`, `--dry-run` |
+| `coverage [dir]` | Render the **coverage dashboard** (`docs/vectalon/coverage/coverage-gaps.md`) — a per-screen E2E + a11y gap summary with links to the open follow-up tasks | `--json`, `--limit <n>` |
 | `bench` | RN coding-test benchmark (deterministic baseline or real-model) | `--model <provider>`, `--suite <id>`, `--live`, `--install`, `--json`, `-o <path>`, `--baseline <file>`, `--tolerance <n>` |
 | `leaderboard [dir]` | Merge benchmark results into `BENCHMARK_RESULTS.md` | `--out <path>`, `--json`, `--timestamp`, `--pr-comment` |
 | `train [dir]` | Curate fine-tuning dataset from benchmark references + LoRA plan | `--build`, `--plan`, `--out <dir>`, `--base <model>`, `--scenarios <dir>`, `--references <dir>`, `--json` |
@@ -103,6 +104,7 @@ Run `npx vectalon` with no arguments (Node `>=20.12`, TTY required) to launch an
   ○ Live Metro daemon
   ○ Ingest telemetry
   ○ Analyze impact
+  ○ Show coverage dashboard
   ○ Generate CI workflow
   ○ Release pipeline
   ○ Manage ecosystem
@@ -502,7 +504,7 @@ packages/rn/
 │   ├── adapters/               # External tool adapters (git, PM, test runner, simulator, design)
 │   ├── bench/                  # Benchmark harness (scoring, runner, leaderboard, baseline)
 │   ├── cli/
-│   │   ├── commands/           # 28 CLI command files
+│   │   ├── commands/           # 29 CLI command files
 │   │   ├── index.ts            # CLI entry + interactive mode
 │   │   └── logger.ts           # Output abstraction
 │   ├── config/                 # Global configuration

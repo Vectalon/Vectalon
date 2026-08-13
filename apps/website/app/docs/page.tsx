@@ -9,6 +9,8 @@ const FREE = [
   ['status', 'One read-only health screen — daemon, MCP server, model, license'],
   ['ecosystem', 'Browse the tooling catalog — MCP servers, skills, hooks; grouped, with --info cards'],
   ['selftest', 'Test every harness feature in isolated sandboxes — live pass/fail stream'],
+  ['impact', 'Cross-package blast radius — affected screens, navigation stacks, and the Maestro E2E flows that must run (with accessibility variants for covered screens)'],
+  ['coverage', 'Per-screen E2E + accessibility gap dashboard with links to the open follow-up tasks'],
   ['bench / leaderboard', 'Run the RN benchmark suite against any model'],
 ]
 

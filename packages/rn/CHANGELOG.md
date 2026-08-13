@@ -5,6 +5,47 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-08-13
+
+### Added
+
+- **Impact regression flows.** The test stage now writes `.maestro/<slug>-impact.yaml`
+  for every screen an impact analysis flags as affected by the changed files —
+  AST-driven (no model calls), one regression flow per affected screen with a
+  deterministic route (deep link or initial route), screenshots collected for
+  the PR visual diff. `impact` reports the affected screens, navigation
+  stacks, and the exact `.maestro/` flows that must run.
+- **Accessibility variants for covered screens.** When an affected screen is
+  already covered by accessibility criteria (an existing `*-accessibility.yaml`
+  flow references it, or the request/acceptance criteria call out
+  VoiceOver / TalkBack / screen readers), the test stage writes
+  `.maestro/<slug>-impact-accessibility.yaml` alongside the plain flow: an
+  "Accessibility variant" header with screen-reader guidance, assertions as
+  explicit accessibility-tree `text:` selector blocks (the labels VoiceOver /
+  TalkBack announce), and a namespaced screenshot still tracked by the
+  `impact-*` screenshot collector.
+- **Uncovered-screen reporting.** Screens with no deterministic route are no
+  longer silently dropped: the verification report's E2E block names them
+  ("Impact E2E coverage: N affected screen(s) still uncovered …"), and the
+  close phase opens a `coverage`-labeled follow-up task per uncovered screen
+  (`Follow-up: E2E coverage for <Screen>`) — deduplicated against already-open
+  tasks via the PM adapter's `findTasks` (closed tasks never block a new one).
+- **Coverage dashboard.** `docs/vectalon/coverage/coverage-gaps.md` records
+  every E2E and accessibility gap per feature run (date, run id, feature
+  prompt, follow-up task ids, a11y gaps) — append-only, best-effort writes.
+  The new **`vectalon coverage`** CLI command renders it as a per-screen
+  summary table (E2E runs / a11y runs / latest follow-up, with open-task
+  links), `--json` for CI, `--limit` to cap rows.
+- **Interactive menu entry.** `vectalon` (no args) gains "Show coverage
+  dashboard" right after "Analyze impact".
+
+### Changed
+
+- `ProjectManagementAdapter` gains an optional `findTasks` for best-effort
+  dedup; the console adapter now keeps an in-memory task store with monotonic
+  ids and implements it. Providers without a query API keep create-always
+  behavior.
+
 ## [0.1.31] - 2026-08-11
 
 ### Added

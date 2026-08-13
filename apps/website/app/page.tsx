@@ -39,6 +39,11 @@ const FEATURES: Array<{ title: string; body: string; icon: FeatureIconName }> = 
     body: 'Every agent fix is typechecked before it lands. A fix that doesn’t reduce errors is reverted. Generated code renders headlessly in a sandbox before you see it.',
     icon: 'check',
   },
+  {
+    title: 'Impact regression coverage',
+    body: 'Changed files map to affected screens (AST-driven, no model calls), each one gets a Maestro regression flow — with accessibility variants for screens covered by a11y criteria. Screens with no deterministic route are flagged, followed up, and tracked in a coverage dashboard (`vectalon coverage`).',
+    icon: 'shield',
+  },
 ]
 
 const STATS = [
@@ -267,11 +272,9 @@ export default function Home() {
               <div
                 key={f.title}
                 className={`card transition hover:-translate-y-0.5 hover:border-brand/50 ${
-                  i === 0
+                  i === 0 || i === FEATURES.length - 1
                     ? 'sm:col-span-2 lg:col-span-2'
-                    : i === FEATURES.length - 1
-                      ? 'sm:col-span-2 lg:col-span-1'
-                      : ''
+                    : ''
                 }`}
               >
                 <FeatureIcon name={f.icon} />
@@ -279,23 +282,23 @@ export default function Home() {
                 <p className="mt-2 text-sm leading-relaxed text-slate-400">{f.body}</p>
               </div>
             ))}
-            {/* Roadmap tile balances the bento */}
-            <Link
-              href="/sdk/react-native"
-              className="card group flex flex-col justify-between transition hover:-translate-y-0.5 hover:border-brand/50 sm:col-span-2 lg:col-span-2"
-            >
-              <div>
-                <h3 className="font-semibold text-slate-50">Your platform next</h3>
-                <p className="mt-2 max-w-lg text-sm leading-relaxed text-slate-400">
-                  iOS, Android, and Flutter harnesses are in development. Join the waitlist and
-                  we’ll email the moment a beta opens.
-                </p>
-              </div>
-              <span className="mt-6 inline-flex items-center gap-1 text-sm text-brand transition group-hover:gap-2">
-                See the platforms <span aria-hidden>→</span>
-              </span>
-            </Link>
           </div>
+          {/* Roadmap strip — full-width CTA below the bento */}
+          <Link
+            href="/sdk/react-native"
+            className="card group mt-5 flex flex-col justify-between transition hover:-translate-y-0.5 hover:border-brand/50 lg:flex-row lg:items-center"
+          >
+            <div>
+              <h3 className="font-semibold text-slate-50">Your platform next</h3>
+              <p className="mt-2 max-w-lg text-sm leading-relaxed text-slate-400">
+                iOS, Android, and Flutter harnesses are in development. Join the waitlist and
+                we’ll email the moment a beta opens.
+              </p>
+            </div>
+            <span className="mt-4 inline-flex items-center gap-1 text-sm text-brand transition group-hover:gap-2 lg:mt-0 lg:shrink-0">
+              See the platforms <span aria-hidden>→</span>
+            </span>
+          </Link>
         </div>
       </section>
 
@@ -311,7 +314,7 @@ export default function Home() {
                 read is the feed the model sees. If the ecosystem ships it, the model knows it.
               </p>
               <Link href="/changelog" className="mt-6 inline-block text-sm text-brand hover:underline">
-                See what shipped in v0.1.30 →
+                See what shipped in v0.2.0 →
               </Link>
             </div>
             <div className="card !p-0">

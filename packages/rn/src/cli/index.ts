@@ -592,6 +592,7 @@ async function runInteractive(): Promise<void> {
       { value: 'daemon', label: 'Live Metro daemon', hint: 'Watch bundle size and JS thread health continuously' },
       { value: 'telemetry', label: 'Ingest telemetry', hint: 'Sentry/Crashlytics/traces/analytics into the knowledge base' },
       { value: 'impact', label: 'Analyze impact', hint: 'Cross-package blast radius of changed files (monorepo)' },
+      { value: 'coverage', label: 'Show coverage dashboard', hint: 'Per-screen E2E and a11y gap summary with open follow-up links' },
       { value: 'ci', label: 'Generate CI workflow', hint: 'EAS Workflows (Expo) or GitHub Actions (bare RN CLI)' },
       { value: 'release', label: 'Release pipeline', hint: 'Detect version bump, changelog, submit workflow, crash monitor' },
       { value: 'ecosystem', label: 'Manage ecosystem', hint: 'Enable MCP servers, skills, tools, and hooks (Expo & RN-CLI)' },
@@ -809,6 +810,12 @@ async function runInteractive(): Promise<void> {
       return
     }
     await impactCommand('', { changed: changed as string })
+    return
+  }
+
+  if (action === 'coverage') {
+    await coverageCommand('', {})
+    p.outro('Coverage dashboard shown')
     return
   }
 
