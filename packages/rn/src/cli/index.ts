@@ -42,6 +42,7 @@ import { attachFileLogging } from './logfile'
 import { installStderrNoiseFilter } from '../model/local/inference'
 import pkg from '../../package.json'
 import { dynamicImport } from '../utils/dynamicImport'
+import { runCommand } from '../adapters/runCommand'
 import { captureError, flushErrorQueue, writeDiagnosticsBundle } from '../diagnostics'
 import { buildRefreshHint, countPersistedSuggestions } from './refreshHint'
 
@@ -386,12 +387,13 @@ export function createProgram(): Command {
 
   program
     .command('impact [directory]')
-    .description('Compute the cross-package blast radius of changed files in a monorepo (screens, navigation, E2E flows) and optionally post it as a PR comment')
-    .option('--changed <files>', 'Comma-separated changed file paths relative to the workspace root')
+    .description('Compute the cross-package blast radius of changed files in a monorepo (screens, navigation, E2E flows), write the report doc to docs/vectalon/impact/, and optionally post it as a PR comment')
+    .option('--changed <files>', 'Comma-separated changed file paths or screen/component names relative to the workspace root')
     .option('--pr <number>', 'Post the impact report as a comment on the given pull request', Number)
     .option('--push', 'Allow git push / PR comments')
     .option('--json', 'Print the impact report as JSON')
-    .option('--dry-run', 'Simulate the PR comment without posting')
+    .option('--dry-run', 'Simulate the PR comment without posting (does not write the doc)')
+    .option('--out <dir>', 'Write the impact doc to this directory instead of docs/vectalon/impact')
     .action(impactCommand)
 
   program
@@ -497,6 +499,21 @@ export async function runCLI(): Promise<void> {
 /** The subcommand name (e.g. "init") for diagnostics context. */
 function commandName(argv: string[]): string {
   return argv[2] || 'vectalon'
+}
+
+/**
+ * Changed files in the working tree (tracked + untracked, staged + unstaged),
+ * for the impact TUI's type-to-filter autofill. Best-effort — returns [] when
+ * the directory is not a git repo.
+ */
+async function gitChangedFiles(root: string): Promise<string[]> {
+  const result = await runCommand('git', ['status', '--porcelain', '--untracked-files=all'], { cwd: root })
+  if (!result.success) return []
+  return result.stdout
+    .split('\n')
+    .map(line => line.replace(/^\S+\s+/, '').trim())
+    .filter(Boolean)
+    .sort()
 }
 
 /**
@@ -739,9 +756,43 @@ async function runInteractive(): Promise<void> {
   }
 
   if (action === 'impact') {
+    // Autofill: pick changed files from git (type-to-filter multiselect), or
+    // type paths / screen names manually. Clack's list prompts filter as you
+    // type, so the whole file set stays browseable.
+    const gitChanged = await gitChangedFiles(process.cwd())
+    if (gitChanged.length > 0) {
+      const picked = await p.multiselect({
+        message: 'Changed files (type to filter, space to select)',
+        options: [
+          ...gitChanged.map(f => ({ value: f, label: f })),
+          { value: '__manual__', label: 'Type paths or screen names manually…' },
+        ],
+        required: true,
+      })
+      if (p.isCancel(picked)) {
+        p.outro('Cancelled')
+        return
+      }
+      const chosen = picked as string[]
+      if (chosen.includes('__manual__')) {
+        const typed = await p.text({
+          message: 'Changed files (comma-separated paths or screen/component names)',
+          placeholder: 'NewRequestSubmitScreen or packages/ui/src/Button.tsx',
+          validate: value => value ? undefined : 'At least one changed file is required',
+        })
+        if (p.isCancel(typed)) {
+          p.outro('Cancelled')
+          return
+        }
+        await impactCommand('', { changed: typed as string })
+        return
+      }
+      await impactCommand('', { changed: chosen.join(',') })
+      return
+    }
     const changed = await p.text({
-      message: 'Changed files (comma-separated, relative to the workspace root)',
-      placeholder: 'packages/ui/src/Button.tsx',
+      message: 'Changed files (comma-separated paths or screen/component names)',
+      placeholder: 'NewRequestSubmitScreen or packages/ui/src/Button.tsx',
       validate: value => value ? undefined : 'At least one changed file is required',
     })
     if (p.isCancel(changed)) {

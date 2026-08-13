@@ -1,4 +1,7 @@
+import { existsSync, readFileSync, readdirSync } from 'fs'
+import { join } from 'path'
 import { impactCommand } from '../../src/cli/commands/impact'
+import { impactDocsDir } from '../../src/harness'
 import { createTempProject, cleanup, useTempConfig } from '../helpers/tmp'
 
 describe('impactCommand', () => {
@@ -65,5 +68,40 @@ describe('impactCommand', () => {
     const stderr = err.mock.calls.map(c => String(c[0])).join('')
     expect(stderr).toContain('Git: would comment on PR #42')
     expect(stderr).toContain('Cross-package impact')
+  })
+
+  it('writes the impact doc to docs/vectalon/impact by default', async () => {
+    const err = jest.spyOn(process.stderr, 'write').mockImplementation(() => true)
+    jest.spyOn(process.stdout, 'write').mockImplementation(() => true)
+    await impactCommand(dir, { changed: 'packages/ui/src/Button.tsx' })
+    // The doc tree exists under the tracked docs dir.
+    expect(existsSync(join(dir, 'docs', 'vectalon', 'impact'))).toBe(true)
+    const written = err.mock.calls.map(c => String(c[0])).join('')
+    expect(written).toContain('Impact doc:')
+    expect(written).toContain('docs/vectalon/impact')
+  })
+
+  it('honors --out for the doc location', async () => {
+    jest.spyOn(process.stdout, 'write').mockImplementation(() => true)
+    await impactCommand(dir, { changed: 'packages/ui/src/Button.tsx', out: 'reports' })
+    const files: string[] = []
+    const walk = (d: string) => {
+      for (const entry of readdirSync(d, { withFileTypes: true })) {
+        const p = join(d, entry.name)
+        if (entry.isDirectory()) walk(p)
+        else files.push(p)
+      }
+    }
+    walk(join(dir, 'reports'))
+    expect(files.length).toBeGreaterThan(0)
+    expect(readFileSync(files[0], 'utf-8')).toContain('Cross-package impact analysis')
+    // The default tree is not created when --out is given.
+    expect(existsSync(impactDocsDir(dir))).toBe(false)
+  })
+
+  it('does not write the doc in --dry-run', async () => {
+    jest.spyOn(process.stdout, 'write').mockImplementation(() => true)
+    await impactCommand(dir, { changed: 'packages/ui/src/Button.tsx', dryRun: true })
+    expect(existsSync(impactDocsDir(dir))).toBe(false)
   })
 })

@@ -1,9 +1,34 @@
-import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'fs'
 import { join, relative, resolve, basename, extname } from 'path'
 import { analyzeSourceFile } from './AstScanner'
 import { detectWorkspace } from './workspace'
 import type { WorkspaceInfo } from './workspace'
 import { reportError } from '../utils/safe'
+
+/**
+ * Tracked home for impact reports — `docs/vectalon/` is already the committed
+ * location for team-visible vectalon outputs (workflow docs, visual
+ * baselines), so a blast-radius report survives clones and shows up in PRs.
+ */
+export function impactDocsDir(root: string): string {
+  return join(root, 'docs', 'vectalon', 'impact')
+}
+
+/**
+ * Persist an impact report as a dated markdown doc under
+ * `docs/vectalon/impact/<date>/<slug>.md` (or an explicit `outDir`). Returns
+ * the absolute path.
+ */
+export function writeImpactDoc(root: string, impact: CrossPackageImpact, content: string, outDir?: string): string {
+  const date = new Date().toISOString().slice(0, 10)
+  const base = (impact.changedFiles[0] || 'change').split('/').pop() || 'change'
+  const slug = base.replace(/\.(ts|tsx|js|jsx)$/, '').replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase() || 'change'
+  const dir = join(outDir || impactDocsDir(root), date)
+  mkdirSync(dir, { recursive: true })
+  const path = join(dir, `${slug}.md`)
+  writeFileSync(path, `# Impact analysis — ${date}\n\n${content}\n`, 'utf-8')
+  return path
+}
 
 /**
  * Monorepo cross-package impact analysis — Phase V-4.
@@ -195,16 +220,42 @@ export function analyzeCrossPackageImpact(root: string, changedFiles: string[]):
     }
   }
 
-  // Normalize changed files to rel paths.
+  // Normalize changed files to rel paths. Inputs that are not file paths are
+  // resolved by name: a screen / component / route name (e.g.
+  // `NewRequestSubmitScreen`) maps to the file that defines it, so the report
+  // works whether you pass a path or the thing it defines.
   const changedRel: string[] = []
   const changedPackages = new Set<string>()
   for (const cf of changedFiles) {
     if (!cf) continue
     const abs = resolve(root, cf)
     const rel = relative(root, abs)
-    changedRel.push(rel)
-    const owner = files.find(f => f.abs === abs) || files.find(f => f.rel === rel || rel.startsWith(f.rel + '/'))
-    if (owner) changedPackages.add(owner.packageName)
+    const direct = files.find(f => f.abs === abs) || files.find(f => f.rel === rel || rel.startsWith(f.rel + '/'))
+    if (direct) {
+      changedRel.push(direct.rel)
+      changedPackages.add(direct.packageName)
+      continue
+    }
+    // Name → defining file: default exports (screens), any component, navigator
+    // screen bindings, route names, or the file basename without extension.
+    const name = cf.replace(/\.(ts|tsx|js|jsx)$/, '').split('/').pop() || cf
+    const matches = files.filter(f =>
+      f.components.some(c => c.name === name) ||
+      f.navigators.some(n => n.screens.some(s => s.component === name || s.name === name)) ||
+      (f.isRoute && routeNameFromPath(f.rel) === name) ||
+      f.rel.replace(/\.(ts|tsx|js|jsx)$/, '').endsWith('/' + name)
+    )
+    if (matches.length === 0) {
+      // Keep the raw input so the report still echoes it (unresolvable).
+      changedRel.push(rel)
+      continue
+    }
+    for (const m of matches) {
+      if (!changedRel.includes(m.rel)) {
+        changedRel.push(m.rel)
+        changedPackages.add(m.packageName)
+      }
+    }
   }
 
   // For each changed file, find the package it belongs to (nearest ancestor

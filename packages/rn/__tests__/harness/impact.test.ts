@@ -1,5 +1,6 @@
+import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
-import { analyzeCrossPackageImpact, renderImpactReport } from '../../src/harness/impact'
+import { analyzeCrossPackageImpact, renderImpactReport, impactDocsDir, writeImpactDoc } from '../../src/harness/impact'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
 function workspaceFixture(): string {
@@ -224,6 +225,58 @@ describe('analyzeCrossPackageImpact', () => {
       const impact = analyzeCrossPackageImpact(dir, [abs])
       expect(impact.changedFiles).toEqual(['packages/ui/src/Button.tsx'])
       expect(impact.summary.files).toBe(2)
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('resolves a screen name to the file that defines it', () => {
+    const dir = workspaceFixture()
+    try {
+      // The user's exact paste: a bare screen name, not a path.
+      const impact = analyzeCrossPackageImpact(dir, ['HomeScreen'])
+      expect(impact.changedFiles).toContain('apps/mobile/src/screens/HomeScreen.tsx')
+      expect(impact.changedPackages).toEqual(['@acme/mobile'])
+      // The navigator references it, so the blast radius is real.
+      expect(impact.affectedNavigators.some(n => n.includes('AppNavigator'))).toBe(true)
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('resolves a component name to its defining file', () => {
+    const dir = workspaceFixture()
+    try {
+      const impact = analyzeCrossPackageImpact(dir, ['Button'])
+      expect(impact.changedFiles).toContain('packages/ui/src/Button.tsx')
+      expect(impact.changedPackages).toEqual(['@acme/ui'])
+      expect(impact.summary.files).toBe(2)
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('keeps an unresolvable input as-is so the report echoes it', () => {
+    const dir = workspaceFixture()
+    try {
+      const impact = analyzeCrossPackageImpact(dir, ['TotallyUnknownScreen'])
+      expect(impact.changedFiles).toContain('TotallyUnknownScreen')
+      expect(impact.summary.files).toBe(0)
+    } finally {
+      cleanup(dir)
+    }
+  })
+})
+
+describe('writeImpactDoc', () => {
+  it('persists the report under docs/vectalon/impact/<date>/ and returns the path', () => {
+    const dir = workspaceFixture()
+    try {
+      const impact = analyzeCrossPackageImpact(dir, ['packages/ui/src/Button.tsx'])
+      const path = writeImpactDoc(dir, impact, renderImpactReport(impact))
+      expect(path.startsWith(join(impactDocsDir(dir)))).toBe(true)
+      expect(existsSync(path)).toBe(true)
+      expect(readFileSync(path, 'utf-8')).toContain('## 🌐 Cross-package impact analysis')
     } finally {
       cleanup(dir)
     }
