@@ -61,6 +61,7 @@ Run `npx vectalon <command> --help` for detailed options.
 | `ci [dir]` | Self-healing CI workflow generator (EAS / GitHub Actions) | `--dry-run` |
 | `release [dir]` | Autonomous release pipeline: bump, changelog, E2E submit, crash-rate monitor (z-score anomaly detection + auto-rollout gate) | `--version`, `--changelog`, `--submit`, `--monitor`, `--baseline`, `--zscore <n>`, `--hours`, `--json` |
 | `sync [dir]` | Sync team brain to a hosted git remote | `--push`, `--pull`, `--init`, `--remote <url>`, `--branch`, `--force` |
+| `team-policy [dir]` | Org-wide guardrail policy: publish/pull the team policy + shared bundle budgets through the sync remote, so one policy change gates every project | `--push`, `--pull`, `--check <file>`, `--show`, `--budget <json>`, `--remove`, `--remote <url>`, `--branch`, `--force` |
 | `telemetry [dir]` | Ingest Sentry/Crashlytics/traces/analytics and analyze | `--path <dir>`, `--no-analyze` |
 | `daemon` | Live Metro/Hermes companion daemon | `-p <port>`, `--metro-port`, `--stop`, `--status`, `--once`, `--wire-metro`, `--no-device-probe` |
 | `impact [dir]` | Cross-package blast radius of changed files (monorepo) | `--changed <files>`, `--pr <number>`, `--push`, `--json`, `--dry-run` |

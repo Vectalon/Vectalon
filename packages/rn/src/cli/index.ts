@@ -30,6 +30,7 @@ import { releaseCommand } from './commands/release'
 import { ecosystemCommand } from './commands/ecosystem'
 import { listEcosystemItems } from '../ecosystem'
 import { syncCommand } from './commands/sync'
+import { teamPolicyCommand } from './commands/teamPolicy'
 import { benchCommand } from './commands/bench'
 import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
 import { impactCommand } from './commands/impact'
@@ -332,6 +333,20 @@ export function createProgram(): Command {
     .option('--branch <name>', 'Remote branch to sync to/from (default: main)')
     .option('--force', 'Override a disabled sync config')
     .action(syncCommand)
+
+  program
+    .command('team-policy [directory]')
+    .description('Org-wide guardrail policy (Team brain v2): publish/pull the team policy + shared bundle budgets through the sync remote, so one policy change gates every project')
+    .option('--push', 'Publish this project\'s policy + budgets as the org policy on the sync remote')
+    .option('--pull', 'Fetch the org policy into .vectalon/team — effective immediately for policy checks, code review, and bundle budgets')
+    .option('--check <file>', 'Run the effective (org + local) policy against a source file')
+    .option('--show', 'Print the effective policy and budget settings')
+    .option('--budget <json>', 'Set local budget overrides, e.g. {"largeLibBytes":65536}')
+    .option('--remove', 'Stop following the org policy (delete the cached copy)')
+    .option('--remote <url>', 'Git remote URL (default: .vectalon/sync.json)')
+    .option('--branch <name>', 'Remote branch (default: .vectalon/sync.json)')
+    .option('--force', 'Override a disabled sync config')
+    .action(teamPolicyCommand)
 
   program
     .command('doctor [directory]')

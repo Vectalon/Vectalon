@@ -15,6 +15,7 @@ import { join } from 'path'
 import { spawnSync } from 'child_process'
 import { runDoctor, type DoctorCheckers } from '../ecosystem/doctor'
 import { analyzeBundleStats, checkBundleBudgets, checkStaticBudgets, runMetroBundleCommand, formatBytes, formatPct } from '../utils/bundleAnalyzer'
+import { budgetCheckOpts } from '../knowledge/orgPolicy'
 import { runCommand } from '../adapters/runCommand'
 import { readBundleSnapshot } from './codemods'
 import { reportError } from '../utils/safe'
@@ -81,10 +82,11 @@ export async function verifyUpgrade(root: string, _report: UpgradeReport): Promi
 
   // 3. Bundle budget gate.
   const before = readBundleSnapshot(root)
+  const budgetOpts = budgetCheckOpts(root)
   const metro = await runMetroBundleCommand(root)
   if (metro) {
     const analysis = analyzeBundleStats(metro)
-    const findings = checkBundleBudgets(analysis)
+    const findings = checkBundleBudgets(analysis, budgetOpts)
     const errors = findings.filter(f => f.severity === 'error')
     const warnings = findings.filter(f => f.severity !== 'error')
     const deltaPct = before ? ((analysis.totalSize - before.totalSize) / before.totalSize) * 100 : null
@@ -101,7 +103,7 @@ export async function verifyUpgrade(root: string, _report: UpgradeReport): Promi
   }
 
   // Fallback: deterministic static budgets (no Metro build available).
-  const staticResult = checkStaticBudgets(root)
+  const staticResult = checkStaticBudgets(root, budgetOpts)
   const warnings = staticResult.findings.filter(f => f.severity !== 'error')
   checks.push({
     id: 'bundle',

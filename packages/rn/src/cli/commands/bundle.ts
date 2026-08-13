@@ -15,6 +15,7 @@ import pc from 'picocolors'
 import { requireTier } from '@vectalon-dev/core'
 import { logger } from '../logger'
 import { analyzeBundleStats, checkBundleBudgets, checkStaticBudgets, runMetroBundleCommand, formatBytes, formatPct, type BudgetFinding } from '../../utils/bundleAnalyzer'
+import { budgetCheckOpts } from '../../knowledge/orgPolicy'
 import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { getLatestBundleSnapshot, recordBundleSnapshot, bundleDeltaPct } from '../../knowledge/bundleHistory'
 import { reportError } from '../../utils/safe'
@@ -64,8 +65,12 @@ export async function bundleCommand(directory: string, options: BundleOptions): 
 
   const platform = options.platform === 'android' ? 'android' : 'ios'
 
+  // Effective budget thresholds: org policy (Team brain) layered under local
+  // overrides — an org budget change gates every project that pulled it.
+  const budgetOpts = budgetCheckOpts(root)
+
   // Static budgets always run — deterministic, no build required.
-  const staticResult = checkStaticBudgets(root)
+  const staticResult = checkStaticBudgets(root, budgetOpts)
   const findings: BudgetFinding[] = [...staticResult.findings]
   logger.info(`Static checks: ${staticResult.checkedPackages} dependency(ies) inspected for sideEffects: false`)
   for (const f of staticResult.findings) {
@@ -89,7 +94,7 @@ export async function bundleCommand(directory: string, options: BundleOptions): 
       logger.warn('Could not build the bundle (no entry file or react-native not installed). Static checks only.')
     } else {
       analysis = analyzeBundleStats(stats)
-      findings.push(...checkBundleBudgets(analysis))
+      findings.push(...checkBundleBudgets(analysis, budgetOpts))
       const store = new ArtifactStore(root)
       const previous = getLatestBundleSnapshot(store, platform)
       recordBundleSnapshot(store, analysis, platform)

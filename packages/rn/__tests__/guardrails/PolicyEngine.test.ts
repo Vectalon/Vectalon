@@ -1,7 +1,8 @@
-import { mkdtempSync, readFileSync, rmSync } from 'fs'
+import { mkdtempSync, readFileSync, rmSync, mkdirSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import { PolicyEngine, initPolicy, defaultPolicy, defaultCodeReviewPolicy } from '../../src/guardrails/PolicyEngine'
+import { writeOrgPolicyCache, type OrgPolicyDoc } from '../../src/knowledge/orgPolicy'
 
 describe('PolicyEngine', () => {
   let tmpDir: string
@@ -152,5 +153,100 @@ describe('PolicyEngine', () => {
     expect(policy.healSeverity).toBe('info')
     expect(policy.maxAttempts).toBe(defaultCodeReviewPolicy.maxAttempts)
     expect(policy.toolChecks).toBe(defaultCodeReviewPolicy.toolChecks)
+  })
+})
+
+describe('PolicyEngine org policy layering (Team brain v2)', () => {
+  let tmpDir: string
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), 'vectalon-orgpolicy-'))
+    mkdirSync(join(tmpDir, '.vectalon', 'team'), { recursive: true })
+  })
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true })
+  })
+
+  it('enforces an org rule the moment the org policy is cached', () => {
+    // The project disables console.log locally; the org policy adds an org
+    // custom rule plus an override for a rule the project left untouched.
+    writeFileSync(join(tmpDir, '.vectalon', 'policy.json'), JSON.stringify({
+      version: 1,
+      rules: { 'no-console-log': { enabled: false } },
+      customRules: [],
+    }))
+    const orgDoc: OrgPolicyDoc = {
+      version: 1,
+      policy: {
+        version: 1,
+        rules: { 'no-hardcoded-urls': { enabled: false } },
+        customRules: [{
+          id: 'no-direct-navigation',
+          name: 'No direct react-navigation imports',
+          description: 'Use the project navigation wrapper instead.',
+          severity: 'error',
+          pattern: "import\\s+.*from\\s+['\"]@react-navigation/native['\"]",
+        }],
+      },
+      budgets: {},
+      updatedAt: '2026-08-13T00:00:00.000Z',
+    }
+    writeOrgPolicyCache(tmpDir, orgDoc)
+
+    // A fresh engine (the production path) layers the org policy automatically.
+    const engine = new PolicyEngine(tmpDir)
+    const policy = engine.getPolicy()
+    // The org override applies to the rule the local policy left alone.
+    expect(policy.rules?.['no-hardcoded-urls']).toEqual({ enabled: false })
+    // The local disable of console.log still wins (per-key, local wins).
+    expect(policy.rules?.['no-console-log']).toEqual({ enabled: false })
+    // And the org custom rule is enforced.
+    const result = engine.runPolicy({
+      filePath: 'src/screens/Home.tsx',
+      content: "import { useNavigation } from '@react-navigation/native';",
+    })
+    expect(result.ok).toBe(false)
+    expect(result.findings.some(f => f.rule === 'No direct react-navigation imports' && !f.passed)).toBe(true)
+  })
+
+  it('lets the local policy override an org rule decision', () => {
+    writeOrgPolicyCache(tmpDir, {
+      version: 1,
+      policy: { version: 1, rules: { 'no-console-log': { severity: 'error' } }, customRules: [], codeReview: {} },
+      budgets: {},
+      updatedAt: '',
+    })
+    writeFileSync(join(tmpDir, '.vectalon', 'policy.json'), JSON.stringify({
+      version: 1,
+      rules: { 'no-console-log': { enabled: false } },
+      customRules: [],
+    }))
+
+    const engine = new PolicyEngine(tmpDir)
+    const result = engine.runPolicy({
+      filePath: 'src/App.tsx',
+      content: 'console.log("hello");',
+    })
+    // Local override wins — the org rule does not fire.
+    expect(result.findings.some(f => f.rule === 'No console.log statements' && !f.passed)).toBe(false)
+  })
+
+  it('propagates org code-review tuning when the project is silent', () => {
+    writeOrgPolicyCache(tmpDir, {
+      version: 1,
+      policy: { version: 1, rules: {}, customRules: [], codeReview: { healSeverity: 'warning' } },
+      budgets: {},
+      updatedAt: '',
+    })
+    const engine = new PolicyEngine(tmpDir)
+    expect(engine.getCodeReviewPolicy().healSeverity).toBe('warning')
+    expect(engine.getCodeReviewPolicy().maxAttempts).toBe(defaultCodeReviewPolicy.maxAttempts)
+  })
+
+  it('ignores a corrupt org cache', () => {
+    writeFileSync(join(tmpDir, '.vectalon', 'team', 'org-policy.json'), 'not json{{')
+    const engine = new PolicyEngine(tmpDir)
+    expect(engine.getPolicy()).toEqual(defaultPolicy)
   })
 })

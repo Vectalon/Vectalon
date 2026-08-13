@@ -35,6 +35,7 @@ import { monitorReleaseAnomaly, renderAnomalyReport } from '../../sdlc/CrashAnom
 import { NativeModuleGenerator, parseNativeModuleSpec } from '../../sdlc/NativeModuleGenerator'
 import { parseTelemetryContent } from '../../knowledge/telemetry'
 import { parseMetroStats, analyzeBundleStats, checkBundleBudgets, checkStaticBudgets, type BudgetFinding } from '../../utils/bundleAnalyzer'
+import { budgetCheckOpts } from '../../knowledge/orgPolicy'
 import { parseFigmaFile, fetchFigmaFile, resolveFigmaToken, renderFigmaDesignSystem } from '../../utils/figma'
 import { generateFigmaComponent, findFigmaComponent } from '../../sdlc/FigmaComponentGenerator'
 import { DesignComplianceChecker } from '../../sdlc/DesignComplianceChecker'
@@ -263,7 +264,7 @@ export class SdlcTools extends ToolRegistry {
       try {
         const stats = parseMetroStats(rawBundle)
         if (stats) {
-          budgetFindings.push(...checkBundleBudgets(analyzeBundleStats(stats)))
+          budgetFindings.push(...checkBundleBudgets(analyzeBundleStats(stats), budgetCheckOpts(this.ctx.engine.getSnapshot()?.project.root || '')))
         }
       } catch (err) {
         reportError(err, 'review_code: parsing bundleJson')
@@ -272,7 +273,8 @@ export class SdlcTools extends ToolRegistry {
     const projectRoot = this.ctx.engine.getSnapshot()?.project.root
     if (projectRoot) {
       try {
-        budgetFindings.push(...checkStaticBudgets(projectRoot).findings)
+        const budgetOpts = budgetCheckOpts(projectRoot)
+        budgetFindings.push(...checkStaticBudgets(projectRoot, budgetOpts).findings)
       } catch (err) {
         reportError(err, 'review_code: static budget checks')
       }

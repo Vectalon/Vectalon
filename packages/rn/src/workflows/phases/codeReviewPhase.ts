@@ -14,6 +14,7 @@ import { reportPathChange } from '../../utils/fileDiff'
 import { PolicyEngine, defaultCodeReviewPolicy } from '../../guardrails/PolicyEngine'
 import { loadFailedHeals, recordFailedHeals, formatFailedHeals, type FailedHealRecord } from './healMemory'
 import { analyzeBundleStats, checkBundleBudgets, checkStaticBudgets, runMetroBundleCommand, formatBytes, type BudgetFinding } from '../../utils/bundleAnalyzer'
+import { budgetCheckOpts } from '../../knowledge/orgPolicy'
 import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { recordBundleSnapshot, getLatestBundleSnapshot, bundleDeltaPct, bundleDeltaSummary } from '../../knowledge/bundleHistory'
 import { reportError } from '../../utils/safe'
@@ -78,7 +79,9 @@ async function runPerformanceBudgets(projectRoot: string): Promise<{ section: st
   const lines: string[] = ['## Performance budgets', '']
   const findings: BudgetFinding[] = []
 
-  const staticResult = checkStaticBudgets(projectRoot)
+  // Effective thresholds: org policy (Team brain) under local overrides.
+  const budgetOpts = budgetCheckOpts(projectRoot)
+  const staticResult = checkStaticBudgets(projectRoot, budgetOpts)
   findings.push(...staticResult.findings)
 
   // A real Metro build is attempted only when the project looks bundleable and
@@ -89,7 +92,7 @@ async function runPerformanceBudgets(projectRoot: string): Promise<{ section: st
       const stats = await runMetroBundleCommand(projectRoot)
       if (stats) {
         const analysis = analyzeBundleStats(stats)
-        findings.push(...checkBundleBudgets(analysis))
+        findings.push(...checkBundleBudgets(analysis, budgetOpts))
         const store = new ArtifactStore(projectRoot)
         const previous = getLatestBundleSnapshot(store, 'ios')
         recordBundleSnapshot(store, analysis, 'ios')

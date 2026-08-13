@@ -4,6 +4,7 @@ import { rules as baseRules } from './rules'
 import { runGuardrails } from './engine'
 import type { GuardrailRule, GuardrailResult, GuardrailSeverity, GuardrailConventions } from './types'
 import { reportError } from '../utils/safe'
+import { readOrgPolicyCache, mergeOrgPolicy } from '../knowledge/orgPolicy'
 
 export interface PolicyRuleOverride {
   enabled?: boolean
@@ -60,6 +61,9 @@ export interface PolicyRunResult {
 }
 
 const POLICY_FILE = 'policy.json'
+
+/** A missing/corrupt local policy contributes no decisions to the org merge. */
+const EMPTY_LOCAL_POLICY: PolicyConfig = { version: 1, rules: {}, customRules: [] }
 
 export const defaultCodeReviewPolicy: Required<CodeReviewPolicy> = {
   maxAttempts: 3,
@@ -176,7 +180,10 @@ export class PolicyEngine {
       mkdirSync(dirname(this.policyPath), { recursive: true })
     }
     if (!existsSync(this.policyPath)) {
-      writeFileSync(this.policyPath, JSON.stringify(defaultPolicy, null, 2), 'utf-8')
+      // Write a lean default WITHOUT codeReview tuning: defaults apply in
+      // memory, so a freshly initialized project never claims an explicit
+      // codeReview decision that would shadow an org policy (Team brain v2).
+      writeFileSync(this.policyPath, JSON.stringify({ version: defaultPolicy.version, rules: {}, customRules: [] }, null, 2), 'utf-8')
     }
     return this.policyPath
   }
@@ -189,21 +196,37 @@ export class PolicyEngine {
     writeFileSync(this.policyPath, JSON.stringify(policy, null, 2), 'utf-8')
   }
 
+  /**
+   * Effective policy = the project's `.vectalon/policy.json` layered under the
+   * org policy cached at `.vectalon/team/org-policy.json` (Team brain v2): the
+   * org policy is the baseline, the project refines it. Every PolicyEngine
+   * consumer — `policy --check`, the code-review phase, the MCP review tool —
+   * therefore enforces the org policy the moment it is pulled.
+   *
+   * The local file is read RAW (no default filling) so defaults never clobber
+   * an org decision the project did not make; defaults are applied only after
+   * the merge, to fields still missing from the effective policy.
+   */
   private load(): PolicyConfig {
+    const org = readOrgPolicyCache(this.projectRoot)?.policy || null
+    const merged = mergeOrgPolicy(org, this.readLocalPolicy())
+    return {
+      ...defaultPolicy,
+      ...merged,
+      customRules: merged.customRules || defaultPolicy.customRules,
+      codeReview: merged.codeReview || defaultPolicy.codeReview,
+    }
+  }
+
+  private readLocalPolicy(): PolicyConfig {
     if (!existsSync(this.policyPath)) {
-      return defaultPolicy
+      return EMPTY_LOCAL_POLICY
     }
     try {
-      const parsed = JSON.parse(readFileSync(this.policyPath, 'utf-8')) as PolicyConfig
-      return {
-        ...defaultPolicy,
-        ...parsed,
-        customRules: parsed.customRules || defaultPolicy.customRules,
-        codeReview: parsed.codeReview || defaultPolicy.codeReview,
-      }
+      return JSON.parse(readFileSync(this.policyPath, 'utf-8')) as PolicyConfig
     } catch (err) {
       reportError(err, 'PolicyEngine: reading policy.json')
-      return defaultPolicy
+      return EMPTY_LOCAL_POLICY
     }
   }
 }
