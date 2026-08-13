@@ -73,7 +73,7 @@ function createContext(modelRouter: ModelRouter, prompt: string, projectRoot: st
     },
     adapters: {
       projectManagement: { name: 'mock', createTasks: jest.fn(), updateTasks: jest.fn(), closeTasks: jest.fn(), readTicket: jest.fn(async () => null) },
-      git: { name: 'mock', createBranch: jest.fn(), commit: jest.fn(), push: jest.fn(), createPullRequest: jest.fn(), commentPullRequest: jest.fn() },
+      git: { name: 'mock', createBranch: jest.fn(), commit: jest.fn(), push: jest.fn(), createPullRequest: jest.fn(), commentPullRequest: jest.fn(), upsertPullRequestComment: jest.fn() },
       testRunner: { name: 'mock', runTests: jest.fn() },
       simulator: { name: 'mock', run: jest.fn() },
       design: { name: 'mock', analyzeMotion: jest.fn() },

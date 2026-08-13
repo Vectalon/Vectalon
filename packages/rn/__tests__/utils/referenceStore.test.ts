@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync, readFileSync, existsSync, rmSync } from 'fs
 import { join } from 'path'
 import { tmpdir } from 'os'
 import { PNG } from 'pngjs'
-import { ReferenceStore, referenceDir, isValidReferenceKey } from '../../src/utils/referenceStore'
+import { ReferenceStore, referenceDir, visualBaselineDir, isValidReferenceKey } from '../../src/utils/referenceStore'
 
 function writePng(dir: string, name: string): string {
   const png = new PNG({ width: 4, height: 4 })
@@ -94,5 +94,53 @@ describe('ReferenceStore', () => {
     const second = store.save('Key', b, { platform: 'ios', source: 'second', capturedAt: 200 })!
     expect(second.source).toBe('second')
     expect(store.get('Key')!.source).toBe('second')
+  })
+
+  it('serves the committed baseline store through the dir seam', () => {
+    const source = writePng(root, 'source.png')
+    const committed = new ReferenceStore(root, { dir: visualBaselineDir(root) })
+    committed.save('LoginScreen', source, { platform: 'ios', source: 'visual baseline capture', capturedAt: 100 })
+
+    // The committed store and the runtime store are isolated.
+    expect(store.get('LoginScreen')).toBeNull()
+    const entry = committed.get('LoginScreen')
+    expect(entry).not.toBeNull()
+    expect(entry!.path.startsWith(visualBaselineDir(root))).toBe(true)
+    expect(committed.latest('ios')!.key).toBe('LoginScreen')
+  })
+
+  it('persists quarantine and tolerance fields opaquely', () => {
+    const source = writePng(root, 'source.png')
+    store.save('Noisy', source, {
+      platform: 'ios',
+      source: 'baseline',
+      capturedAt: 100,
+      quarantine: { reason: 'carousel animation', since: 100 },
+      tolerance: { driftThreshold: 0.05 },
+    })
+    const entry = store.get('Noisy')!
+    expect(entry.quarantine).toEqual({ reason: 'carousel animation', since: 100 })
+    expect(entry.tolerance).toEqual({ driftThreshold: 0.05 })
+
+    // The fields round-trip through the manifest on disk.
+    const fresh = new ReferenceStore(root)
+    expect(fresh.get('Noisy')!.quarantine).toEqual({ reason: 'carousel animation', since: 100 })
+  })
+
+  it('clears quarantine on update and via setQuarantine', () => {
+    const a = writePng(root, 'a.png')
+    const b = writePng(root, 'b.png')
+    store.save('Screen', a, { platform: 'ios', source: 'first', capturedAt: 100, quarantine: { reason: 'flaky', since: 100 } })
+    expect(store.get('Screen')!.quarantine).toBeDefined()
+
+    // An update without quarantine clears the declared flake state.
+    store.save('Screen', b, { platform: 'ios', source: 'second', capturedAt: 200, quarantine: null })
+    expect(store.get('Screen')!.quarantine).toBeUndefined()
+
+    store.setQuarantine('Screen', { reason: 'still flaky', since: 300 })
+    expect(store.get('Screen')!.quarantine?.reason).toBe('still flaky')
+    expect(store.setQuarantine('Screen', null)).toBe(true)
+    expect(store.get('Screen')!.quarantine).toBeUndefined()
+    expect(store.setQuarantine('Missing', null)).toBe(false)
   })
 })

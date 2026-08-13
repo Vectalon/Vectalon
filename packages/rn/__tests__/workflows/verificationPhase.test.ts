@@ -61,7 +61,7 @@ function createContext(projectRoot: string): WorkflowContext {
     },
     adapters: {
       projectManagement: { name: 'mock', createTasks: jest.fn(), updateTasks: jest.fn(), closeTasks: jest.fn(), readTicket: jest.fn(async () => null) },
-      git: { name: 'mock', createBranch: jest.fn(), commit: jest.fn(), push: jest.fn(), createPullRequest: jest.fn(), commentPullRequest: jest.fn() },
+      git: { name: 'mock', createBranch: jest.fn(), commit: jest.fn(), push: jest.fn(), createPullRequest: jest.fn(), commentPullRequest: jest.fn(), upsertPullRequestComment: jest.fn() },
       testRunner: {
         name: 'console',
         runTests: async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 }),

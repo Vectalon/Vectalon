@@ -28,6 +28,7 @@ function createContext(projectRoot: string, intentContent = REMOVE_DEP_INTENT): 
       title: 'chore: remove appcenter',
     })),
     commentPullRequest: jest.fn(async () => undefined),
+    upsertPullRequestComment: jest.fn(async () => undefined),
   }
   return {
     projectRoot,
@@ -225,6 +226,7 @@ describe('prPhase', () => {
       push: jest.fn(async () => undefined),
       createPullRequest: jest.fn(async () => ({ id: 'c1', number: 1, url: 'https://example.com/pr/1', title: 'x' })),
       commentPullRequest: jest.fn(async () => undefined),
+      upsertPullRequestComment: jest.fn(async () => undefined),
     }
 
     const result = await prPhase.run(ctx)

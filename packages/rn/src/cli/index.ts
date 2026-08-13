@@ -23,6 +23,8 @@ import { statusCommand } from './commands/status'
 import { telemetryCommand } from './commands/telemetry'
 import { authCommand } from './commands/auth'
 import { ciCommand } from './commands/ci'
+import { visualCiCommand } from './commands/visualCi'
+import { visualBaselineCommand } from './commands/visualBaseline'
 import { releaseCommand } from './commands/release'
 import { ecosystemCommand } from './commands/ecosystem'
 import { listEcosystemItems } from '../ecosystem'
@@ -239,6 +241,41 @@ export function createProgram(): Command {
     .command('ci [directory]')
     .description('Generate the project CI workflow (EAS Workflows for Expo, GitHub Actions for bare RN CLI)')
     .action(ciCommand)
+
+  program
+    .command('visual-ci [directory]')
+    .description('PR-mode visual regression: capture affected screens, diff against the committed baselines (docs/vectalon/visual-baselines), post the report on the PR, and exit with a gating code')
+    .option('--base <ref>', 'Ref whose baselines are used (default: GITHUB_BASE_REF or origin/main)')
+    .option('--screens <list>', 'Comma-separated screen keys to check (default: derived from changed files)')
+    .option('--changed <files>', 'Comma-separated changed files (default: git diff base...HEAD)')
+    .option('--platform <type>', 'Device platform (ios|android)')
+    .option('--attempts <n>', 'Capture attempts per screen (default 3)', Number)
+    .option('--settle-ms <n>', 'Settle wait before each capture in ms (default 2500)', Number)
+    .option('--verdict <policy>', 'Gating policy: strict|warn|report (default warn)')
+    .option('--pr <number>', 'Post the report as a PR comment (upsert)', Number)
+    .option('--push', 'Allow git push / PR comments')
+    .option('--out <dir>', 'Run output directory (default .vectalon/visual-ci)')
+    .option('--json', 'Print the machine-readable outcome as JSON')
+    .option('--dry-run', 'Describe the plan without touching a device')
+    .action(visualCiCommand)
+
+  program
+    .command('visual-baseline [directory]')
+    .description('Manage the committed visual baselines (docs/vectalon/visual-baselines): list, capture, update, prune, quarantine')
+    .option('--list', 'List committed baselines')
+    .option('--capture <key>', 'Add a baseline for a screen key')
+    .option('--update <key>', 'Replace a baseline (clears quarantine)')
+    .option('--from <path>', 'PNG source for --capture/--update')
+    .option('--platform <type>', 'Platform for --capture (ios|android)')
+    .option('--note <text>', 'Note for the baseline entry')
+    .option('--tolerance <json>', 'Per-key diff tolerance overrides, e.g. {"driftThreshold":0.05}')
+    .option('--quarantine <key>', 'Quarantine a baseline (reports but never gates)')
+    .option('--reason <text>', 'Reason for --quarantine')
+    .option('--unquarantine <key>', 'Clear a quarantine')
+    .option('--prune', 'Remove baselines whose key matches no screen in the project')
+    .option('--dry-run', 'Show what --prune would remove without removing')
+    .option('--json', 'Print the result as JSON')
+    .action(visualBaselineCommand)
 
   program
     .command('release [directory]')

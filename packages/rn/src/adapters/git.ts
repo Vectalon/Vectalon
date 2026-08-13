@@ -99,11 +99,75 @@ export class LocalGitAdapter implements GitAdapter {
       logger.warn(`PR comment skipped (#${number}): no GitHub remote found for origin.`)
       return
     }
+    await this.postComment(repo.owner, repo.repo, number, body)
+  }
+
+  /**
+   * Post or update a PR comment by unique marker, so repeated runs (visual
+   * CI on every push) upsert one comment instead of spamming the thread.
+   * Token path edits the existing comment (issues/comments PATCH); the gh CLI
+   * fallback posts a fresh comment each run (no edit API without jq piping).
+   */
+  async upsertPullRequestComment(number: number, marker: string, body: string): Promise<void> {
+    if (!this.allowPush) {
+      logger.warn(`Skipping PR comment (#${number}). Use --push or config.git.push=true to comment.`)
+      return
+    }
+    const repo = await this.getOwnerRepo()
+    if (!repo) {
+      logger.warn(`PR comment skipped (#${number}): no GitHub remote found for origin.`)
+      return
+    }
 
     const token = process.env.GITHUB_TOKEN
     if (token) {
       try {
-        const response = await fetch(`${GITHUB_API}/repos/${repo.owner}/${repo.repo}/issues/${number}/comments`, {
+        // Find the existing comment carrying the marker, then edit it in place.
+        const listRes = await fetch(
+          `${GITHUB_API}/repos/${repo.owner}/${repo.repo}/issues/${number}/comments?per_page=100`,
+          { headers: ghHeaders(token) }
+        )
+        if (listRes.ok) {
+          const comments = (await listRes.json()) as Array<{ id: number; body?: string }>
+          const existing = comments.find(c => c.body?.includes(marker))
+          if (existing) {
+            const editRes = await fetch(
+              `${GITHUB_API}/repos/${repo.owner}/${repo.repo}/issues/comments/${existing.id}`,
+              { method: 'PATCH', headers: ghHeaders(token), body: JSON.stringify({ body }) }
+            )
+            if (!editRes.ok) {
+              const data = (await editRes.json()) as { message?: string }
+              logger.warn(`GitHub API comment edit failed (#${number}): ${data.message || editRes.status}`)
+            }
+            return
+          }
+        }
+      } catch (err) {
+        logger.warn(`GitHub API comment upsert failed (#${number}): ${err instanceof Error ? err.message : String(err)}`)
+      }
+      // No existing comment (or listing failed) — create one.
+      await this.postComment(repo.owner, repo.repo, number, body)
+      return
+    }
+
+    if (await this.hasGhCli()) {
+      const bodyFile = this.writeTempBody(body)
+      try {
+        await runCommand('gh', ['pr', 'comment', String(number), '--repo', `${repo.owner}/${repo.repo}`, '--body-file', bodyFile], { cwd: this.root })
+      } catch (err) {
+        logger.warn(`gh pr comment failed (#${number}): ${err instanceof Error ? err.message : String(err)}`)
+      } finally {
+        rmSync(bodyFile, { force: true })
+      }
+    }
+  }
+
+  /** POST an issue comment via the GitHub API (token path). */
+  private async postComment(owner: string, repo: string, number: number, body: string): Promise<void> {
+    const token = process.env.GITHUB_TOKEN
+    if (token) {
+      try {
+        const response = await fetch(`${GITHUB_API}/repos/${owner}/${repo}/issues/${number}/comments`, {
           method: 'POST',
           headers: ghHeaders(token),
           body: JSON.stringify({ body }),
@@ -121,7 +185,7 @@ export class LocalGitAdapter implements GitAdapter {
     if (await this.hasGhCli()) {
       const bodyFile = this.writeTempBody(body)
       try {
-        await runCommand('gh', ['pr', 'comment', String(number), '--repo', `${repo.owner}/${repo.repo}`, '--body-file', bodyFile], { cwd: this.root })
+        await runCommand('gh', ['pr', 'comment', String(number), '--repo', `${owner}/${repo}`, '--body-file', bodyFile], { cwd: this.root })
       } catch (err) {
         logger.warn(`gh pr comment failed (#${number}): ${err instanceof Error ? err.message : String(err)}`)
       } finally {
@@ -238,6 +302,11 @@ export class ConsoleGitAdapter implements GitAdapter {
     logger.dim(`  Git: would comment on PR #${number}`)
     logger.dim(`    ${body.split('\n')[0]}`)
   }
+
+  async upsertPullRequestComment(number: number, marker: string, body: string): Promise<void> {
+    logger.dim(`  Git: would upsert comment on PR #${number} (marker: ${marker})`)
+    logger.dim(`    ${body.split('\n')[0]}`)
+  }
 }
 
 export class GitHubAdapter implements GitAdapter {
@@ -275,6 +344,10 @@ export class GitHubAdapter implements GitAdapter {
 
   async commentPullRequest(number: number, body: string): Promise<void> {
     logger.info(`[GitHub] Would comment on PR #${number}: ${body.split('\n')[0]}`)
+  }
+
+  async upsertPullRequestComment(number: number, marker: string, body: string): Promise<void> {
+    logger.info(`[GitHub] Would upsert comment on PR #${number} (marker: ${marker}): ${body.split('\n')[0]}`)
   }
 }
 

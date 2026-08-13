@@ -82,6 +82,43 @@ function scriptRun(pm: 'npm' | 'yarn' | 'pnpm', script: string): string {
 }
 
 /**
+ * The visual regression job: boot an iOS simulator on macOS, run the vectalon
+ * PR-mode runner against the PR base's committed baselines, upload the
+ * artifacts, and post the report as a PR comment. Ships advisory-first
+ * (continue-on-error) so a fresh project with no baselines never blocks a PR;
+ * flip the job to a required check once baselines are adopted.
+ */
+function visualJobLines(pm: 'npm' | 'yarn' | 'pnpm'): string[] {
+  return [
+    '  visual:',
+    '    name: Visual regression (iOS)',
+    '    runs-on: macos-latest',
+    '    needs: quality',
+    '    if: github.event_name == \'pull_request\'',
+    '    continue-on-error: true',
+    '    steps:',
+    '      - uses: actions/checkout@v4',
+    '        with:',
+    '          fetch-depth: 0',
+    '      - uses: actions/setup-node@v4',
+    '        with:',
+    '          node-version: 20',
+    `          cache: ${pm}`,
+    ...managerSetup(pm).map(s => `      ${s}`),
+    `      - run: ${installCommand(pm)}`,
+    '      - run: npx vectalon@latest visual-ci --pr ${{ github.event.pull_request.number }} --base ${{ github.event.pull_request.base.sha }} --platform ios --push',
+    '        env:',
+    '          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}',
+    '      - uses: actions/upload-artifact@v4',
+    '        with:',
+    '          name: visual-ci',
+    '          path: .vectalon/visual-ci/',
+    '        if: always()',
+    '',
+  ]
+}
+
+/**
  * GitHub Actions workflow for a bare RN CLI project. Steps come from the
  * project's actual scripts (test/lint/typecheck/prettier) plus the detected
  * native build commands — so the workflow matches what `vectalon` verifies.
@@ -148,6 +185,7 @@ export function generateGithubActionsWorkflow(root: string): string {
       '    steps:',
       ...nativeSteps.map(s => `      ${s}`),
       '',
+      ...visualJobLines(pm),
     ].join('\n')
   }
 
@@ -166,6 +204,7 @@ export function generateGithubActionsWorkflow(root: string): string {
     '    steps:',
     ...steps.map(s => `      ${s}`),
     '',
+    ...visualJobLines(pm),
   ].join('\n')
 }
 

@@ -74,6 +74,13 @@ export interface GitAdapter {
   createPullRequest(input: PullRequestInput): Promise<PullRequest | null>
   /** Post a review comment on an open pull request (e.g. the code-review summary). */
   commentPullRequest(number: number, body: string): Promise<void>
+  /**
+   * Post or update a PR comment identified by a unique marker (e.g.
+   * `<!-- vectalon-visual-ci -->`) so repeated runs upsert one comment
+   * instead of spamming the thread. Falls back to a fresh comment when the
+   * provider cannot edit (no token, gh CLI only).
+   */
+  upsertPullRequestComment(number: number, marker: string, body: string): Promise<void>
 }
 
 export interface TestOptions {
