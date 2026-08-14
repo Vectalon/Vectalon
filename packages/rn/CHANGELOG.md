@@ -22,13 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   severity-ranked, deduped recommendation engine (029). `--json`; reports
   to `docs/vectalon/perf/` (gitignored). Completes Phase 4 alongside the
   existing profile/bundle/bench commands.
-- **iOS deployment-target advisor — `vectalon upgrade`** (Roadmap Phase 5
-  item 036, completing the upgrade-intelligence phase): the upgrade plan now detects the Podfile
-  platform floor (both `platform :ios, '13.4'` and the
-  `:deployment_target =>` spelling) and raises it to the target release's
-  required minimum — 12.4 for RN 0.73-0.75, 15.1 for RN 0.76+ — with a
-  review-gated codemod (the floor bump drops older-iOS support, so it stays
-  explicit) plus manual guidance when no explicit floor exists.
 
 ## [0.5.0] - 2026-08-13
 

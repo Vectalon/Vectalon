@@ -1,6 +1,6 @@
 import { createTempProject, cleanup } from '../helpers/tmp'
 import { detectVersions } from '../../src/upgrade/detect'
-import { MIGRATION_CATALOG, RN_REACT_PAIRS, EXPO_SDK_RN_PAIRS, KNOWN_RN_MINORS, LATEST_KNOWN_RN, resolveTargetRn, requiredIosDeploymentTarget } from '../../src/upgrade/catalog'
+import { MIGRATION_CATALOG, RN_REACT_PAIRS, EXPO_SDK_RN_PAIRS, KNOWN_RN_MINORS, LATEST_KNOWN_RN, resolveTargetRn } from '../../src/upgrade/catalog'
 import { applyEditsToContent } from '../../src/upgrade/codemods'
 import type { CatalogContext, ImpactFinding } from '../../src/upgrade'
 
@@ -169,85 +169,6 @@ describe('codegen codemod (rn-070-codegen-native-component)', () => {
       expect(entry('rn-070-codegen-native-component').applies(ctx)).toBe(false)
       const edits = entry('rn-070-codegen-native-component').codemod?.(ctx) || []
       expect(edits).toEqual([])
-    } finally {
-      cleanup(dir)
-    }
-  })
-})
-
-describe('iOS deployment target advisor (rn-073, roadmap 036)', () => {
-  it('requires 15.1 for RN 0.76+ and 12.4 for 0.73-0.75', () => {
-    expect(requiredIosDeploymentTarget([0, 76])).toBe(15.1)
-    expect(requiredIosDeploymentTarget([0, 86])).toBe(15.1)
-    expect(requiredIosDeploymentTarget([0, 75])).toBe(12.4)
-    expect(requiredIosDeploymentTarget([0, 73])).toBe(12.4)
-    expect(requiredIosDeploymentTarget([0, 72])).toBeNull()
-    expect(requiredIosDeploymentTarget(null)).toBeNull()
-  })
-
-  it('applies when the Podfile floor is below the target requirement', () => {
-    const { ctx, dir } = ctxFor(
-      {
-        'package.json': JSON.stringify({ dependencies: { 'react-native': '0.72.5' } }),
-        'ios/Podfile': "platform :ios, '13.4'\ntarget 'App' do\nend\n",
-      },
-      '0.76.0'
-    )
-    try {
-      expect(entry('rn-073-ios-deployment-target').applies(ctx)).toBe(true)
-      const edits = entry('rn-073-ios-deployment-target').codemod?.(ctx) || []
-      expect(edits.length).toBe(1)
-      const { content } = applyEditsToContent("platform :ios, '13.4'\ntarget 'App' do\nend\n", edits)
-      expect(content).toContain("platform :ios, '15.1'")
-    } finally {
-      cleanup(dir)
-    }
-  })
-
-  it('bumps the hash-form floor too', () => {
-    const { ctx, dir } = ctxFor(
-      {
-        'package.json': JSON.stringify({ dependencies: { 'react-native': '0.72.5' } }),
-        'ios/Podfile': "platform :ios, :deployment_target => '13.0'\ntarget 'App' do\nend\n",
-      },
-      '0.76.0'
-    )
-    try {
-      expect(entry('rn-073-ios-deployment-target').applies(ctx)).toBe(true)
-      const edits = entry('rn-073-ios-deployment-target').codemod?.(ctx) || []
-      const { content } = applyEditsToContent("platform :ios, :deployment_target => '13.0'\n", edits)
-      expect(content).toContain("platform :ios, :deployment_target => '15.1'")
-    } finally {
-      cleanup(dir)
-    }
-  })
-
-  it('does not apply when the floor already meets the requirement', () => {
-    const { ctx, dir } = ctxFor(
-      {
-        'package.json': JSON.stringify({ dependencies: { 'react-native': '0.72.5' } }),
-        'ios/Podfile': "platform :ios, '16.0'\ntarget 'App' do\nend\n",
-      },
-      '0.76.0'
-    )
-    try {
-      expect(entry('rn-073-ios-deployment-target').applies(ctx)).toBe(false)
-      expect(entry('rn-073-ios-deployment-target').codemod?.(ctx)).toBeNull()
-    } finally {
-      cleanup(dir)
-    }
-  })
-
-  it('does not apply for pre-0.73 targets or Expo (no Podfile floor needed the same way)', () => {
-    const { ctx, dir } = ctxFor(
-      {
-        'package.json': JSON.stringify({ dependencies: { 'react-native': '0.72.5' } }),
-        'ios/Podfile': "platform :ios, '12.4'\ntarget 'App' do\nend\n",
-      },
-      '0.72.0'
-    )
-    try {
-      expect(entry('rn-073-ios-deployment-target').applies(ctx)).toBe(false)
     } finally {
       cleanup(dir)
     }

@@ -1369,12 +1369,7 @@ npx vectalon upgrade --to 53 --apply     # Expo SDK target
 2. **Catalog** — a curated migration catalog of the top breaking changes per
    RN release (Hermes flag relocation, New Architecture opt-in,
    `requireNativeComponent` → `codegenNativeComponent`, ReactTestRenderer
-   import fix, SDK / Kotlin / AGP requirements, iOS deployment-target floor,
-   React pairing). The deployment-target advisor (Roadmap 036) reads the
-   Podfile platform floor in both spellings (`platform :ios, '13.4'` and
-   `:deployment_target =>`) and raises it to the target release's required
-   minimum — 12.4 for RN 0.73-0.75, 15.1 for RN 0.76+ — as a review-gated
-   codemod, with manual guidance when no explicit floor exists.
+   import fix, SDK / Kotlin / AGP requirements, React pairing).
 3. **Impact** — walks the project's own source with the harness scanner to
    find affected files: native modules, bridge usage
    (`NativeModules` / `requireNativeComponent`), and Fabric-hostile patterns.

@@ -40,8 +40,6 @@ export interface IosVersions {
   hermesEnabled: boolean | null
   /** Podfile RCT_NEW_ARCH_ENABLED / ENABLE_NEW_ARCH_ENABLED == 1. */
   newArchFlag: boolean | null
-  /** Podfile `platform :ios, 'X.Y'` floor as a number (e.g. 15.1), null when absent/unparsable. */
-  deploymentTarget: number | null
 }
 
 export interface DetectedVersions {

@@ -502,9 +502,9 @@ The pipeline is **Detect → Catalog → Impact → Plan → Codemods → Verify
 - **Deterministic planning** — a curated migration catalog (Hermes flag
   relocation, New Architecture opt-in, `requireNativeComponent` →
   `codegenNativeComponent`, ReactTestRenderer import fix, SDK / Kotlin /
-  AGP requirements, iOS deployment-target floor, React pairing) drives
-  known migrations with no LLM involved. Every step is scored `auto` /
-  `review` / `manual` with a total risk label.
+  AGP requirements, React pairing) drives known migrations with no LLM
+  involved. Every step is scored `auto` / `review` / `manual` with a total
+  risk label.
 - **rn-diff-purge integration** — every bare RN CLI plan includes an
   `rn-diff-purge` manual step pointing at the official community-maintained
   template diff between your exact from→to versions. It always surfaces

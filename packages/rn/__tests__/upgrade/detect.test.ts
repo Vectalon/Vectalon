@@ -106,55 +106,6 @@ describe('detectVersions', () => {
     }
   })
 
-  it('parses the Podfile deployment target in both spellings', () => {
-    const dir = createTempProject({
-      'package.json': JSON.stringify({
-        name: 'app',
-        version: '1.0.0',
-        dependencies: { 'react-native': '0.72.5' },
-      }),
-      // shorthand: platform :ios, '13.4'
-      'ios/Podfile': "platform :ios, '13.4'\ntarget 'App' do\nend\n",
-    })
-    try {
-      expect(detectVersions(dir).ios.deploymentTarget).toBe(13.4)
-    } finally {
-      cleanup(dir)
-    }
-  })
-
-  it('parses the hash-form Podfile deployment target', () => {
-    const dir = createTempProject({
-      'package.json': JSON.stringify({
-        name: 'app',
-        version: '1.0.0',
-        dependencies: { 'react-native': '0.72.5' },
-      }),
-      'ios/Podfile': "platform :ios, :deployment_target => '13.0'\ntarget 'App' do\nend\n",
-    })
-    try {
-      expect(detectVersions(dir).ios.deploymentTarget).toBe(13)
-    } finally {
-      cleanup(dir)
-    }
-  })
-
-  it('returns null deployment target when the Podfile has no platform line', () => {
-    const dir = createTempProject({
-      'package.json': JSON.stringify({
-        name: 'app',
-        version: '1.0.0',
-        dependencies: { 'react-native': '0.72.5' },
-      }),
-      'ios/Podfile': "target 'App' do\n  use_react_native!(:path => config[:reactNativePath])\nend\n",
-    })
-    try {
-      expect(detectVersions(dir).ios.deploymentTarget).toBeNull()
-    } finally {
-      cleanup(dir)
-    }
-  })
-
   it('handles a project without package.json gracefully', () => {
     const dir = createTempProject({ 'README.md': 'hi' })
     try {

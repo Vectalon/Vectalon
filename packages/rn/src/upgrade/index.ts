@@ -15,7 +15,7 @@ import type { UpgradeReport, UpgradeRunOptions } from './types'
 
 export * from './types'
 export { detectVersions, versionParts, isAtLeast, describeDetection } from './detect'
-export { MIGRATION_CATALOG, RN_REACT_PAIRS, EXPO_SDK_RN_PAIRS, KNOWN_RN_MINORS, LATEST_KNOWN_RN, resolveTargetRn, requiredIosDeploymentTarget } from './catalog'
+export { MIGRATION_CATALOG, RN_REACT_PAIRS, EXPO_SDK_RN_PAIRS, KNOWN_RN_MINORS, LATEST_KNOWN_RN, resolveTargetRn } from './catalog'
 export { analyzeUpgradeImpact, summarizeImpact } from './impact'
 export { planUpgrade, resolveTarget } from './planner'
 export { applyUpgradeCodemods, applyEditsToContent, renderUpgradeMarkdown } from './codemods'
