@@ -38,6 +38,9 @@ import { secCommand } from './commands/sec'
 import { buildFixCommand, forcedKind } from './commands/buildFix'
 import { testRepairCommand, forcedKind as forcedTestKind } from './commands/testRepair'
 import { refactorCommand } from './commands/refactor'
+import { depsCommand } from './commands/deps'
+import { a11yCommand } from './commands/a11y'
+import { releaseReadyCommand } from './commands/releaseReady'
 import { benchCommand } from './commands/bench'
 import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
 import { impactCommand } from './commands/impact'
@@ -432,6 +435,25 @@ export function createProgram(): Command {
     .action(refactorCommand)
 
   program
+    .command('deps [directory]')
+    .description('Dependency Upgrade Agent (Roadmap 067): finds what to upgrade and the safe path — RN ecosystem pairing violations against the curated matrix, duplicate versions across workspace members, and vulnerable dependencies via best-effort npm audit (critical → error, high → warning) with npm audit fix guidance; report to docs/vectalon/deps/')
+    .option('--no-audit', 'Skip the npm audit dependency pass (fast, offline)')
+    .option('--json', 'Print machine-readable output')
+    .action(depsCommand)
+
+  program
+    .command('a11y [directory]')
+    .description('Accessibility Agent (Roadmap 068): one deterministic pass over component files — unlabeled images (error), touchables without roles, unlabeled TextInputs, and undersized touch targets — line-pinned with fixes; report to docs/vectalon/a11y/')
+    .option('--json', 'Print machine-readable output')
+    .action(a11yCommand)
+
+  program
+    .command('release-ready [directory]')
+    .description('Release Readiness Agent (Roadmap 069): answers “can we ship?” — version bumped past the last tag, CHANGELOG section present, clean tree, CI workflows, lockfile, tests configured, secrets hygiene, and TODO/FIXME triage; read-only git; report to docs/vectalon/release-ready/')
+    .option('--json', 'Print machine-readable output')
+    .action(releaseReadyCommand)
+
+  program
     .command('doctor [directory]')
     .description('Diagnose ecosystem items, native toolchain, leaderboard readiness, model access + web intel — with numbered fix steps and quick enable/disable')
     .option('--json', 'Print the report as JSON')
@@ -741,6 +763,9 @@ async function runInteractive(): Promise<void> {
       { value: 'build-fix', label: 'Diagnose a failing build', hint: 'Metro/Gradle/Xcode log → root cause + fix plan (064)' },
       { value: 'test-repair', label: 'Diagnose failing tests', hint: 'Jest/Detox/Maestro log → root cause + fix plan (065)' },
       { value: 'refactor', label: 'Scan for refactor opportunities', hint: 'Dead code, duplication, modernization, type smells (066)' },
+      { value: 'deps', label: 'Plan dependency upgrades', hint: 'Pairing, duplicates, vulnerabilities → safe path (067)' },
+      { value: 'a11y', label: 'Scan accessibility', hint: 'Labels, roles, touch targets across components (068)' },
+      { value: 'release-ready', label: 'Check release readiness', hint: 'Version, changelog, clean tree, CI, secrets (069)' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
       { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
       { value: 'pull', label: 'Download local model', hint: 'Download the default Qwen2.5-Coder model' },
@@ -1234,6 +1259,24 @@ async function runInteractive(): Promise<void> {
   if (action === 'refactor') {
     await refactorCommand('', {})
     p.outro('Refactor scan complete')
+    return
+  }
+
+  if (action === 'deps') {
+    await depsCommand('', {})
+    p.outro('Dependency scan complete')
+    return
+  }
+
+  if (action === 'a11y') {
+    await a11yCommand('', {})
+    p.outro('Accessibility scan complete')
+    return
+  }
+
+  if (action === 'release-ready') {
+    await releaseReadyCommand('', {})
+    p.outro('Release readiness checked')
     return
   }
 

@@ -309,9 +309,10 @@ Acceptance:
 
 ## Phase 8 – Autonomous Engineering
 
-> **Status: items 061-066 shipped as `vectalon review`, `vectalon arch`,
-> `vectalon sec`, `vectalon build-fix`, `vectalon test-repair`, and
-> `vectalon refactor`** — the PR Review Agent reviews the git diff (uncommitted by
+> **Status: items 061-069 shipped — `vectalon review`, `vectalon arch`,
+> `vectalon sec`, `vectalon build-fix`, `vectalon test-repair`,
+> `vectalon refactor`, `vectalon deps`, `vectalon a11y`, and
+> `vectalon release-ready` — the PR Review Agent reviews the git diff (uncommitted by
 > default, or `--base <ref>` for a branch vs its base) in one pass: the
 > deterministic CodeReviewAnalyzer runs on each changed file's added lines
 > (pinned to real new-file line numbers), the team-brain coding standards
@@ -363,6 +364,21 @@ Acceptance:
 > noise, and complexity (long functions, oversized files via the shared
 > RefactorSuggester) — every finding line-pinned with a specific suggestion;
 > `--json`; reports to `docs/vectalon/refactor/` (gitignored).
+> The Dependency Upgrade Agent finds what to upgrade and the safe path — RN
+> ecosystem pairing violations against the curated matrix (013/015),
+> duplicate versions across workspace members, and vulnerable dependencies
+> via best-effort `npm audit` (critical → error, high → warning) with
+> `npm audit fix` guidance — `vectalon deps`; `--json`, `--no-audit`;
+> reports to `docs/vectalon/deps/` (gitignored). The Accessibility Agent
+> scans component files in one pass — unlabeled images (error), touchables
+> without roles, unlabeled TextInputs, and undersized touch targets (the
+> 44×44pt guideline), line-pinned with fixes — `vectalon a11y`; `--json`;
+> reports to `docs/vectalon/a11y/` (gitignored). The Release Readiness Agent
+> answers “can we ship?” with a deterministic checklist — version bumped
+> past the last tag (read-only git), CHANGELOG section present, clean
+> working tree, CI workflows, lockfile, tests configured, secrets hygiene
+> (committed .env), and TODO/FIXME triage — `vectalon release-ready`;
+> `--json`; reports to `docs/vectalon/release-ready/` (gitignored).
 
 ### 061. PR Review Agent
 ### 062. Architecture Review Agent

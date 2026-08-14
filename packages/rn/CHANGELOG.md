@@ -5,9 +5,34 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.6.0] - 2026-08-14
 
 ### Added
+
+- **Dependency Upgrade Agent — `vectalon deps`** (Roadmap Phase 8, item
+  067): finds what to upgrade and the safe path — RN ecosystem pairing
+  violations against the curated matrix (react ↔ react-native ↔ Expo SDK),
+  duplicate versions across workspace members, and vulnerable dependencies
+  via best-effort `npm audit` (critical → error, high → warning) with
+  `npm audit fix` guidance; the audit degrades to a skip when it cannot
+  run. Verdict approved / needs-attention / changes-requested; `--json`;
+  `--no-audit`; reports to `docs/vectalon/deps/` (gitignored).
+
+- **Accessibility Agent — `vectalon a11y`** (Roadmap Phase 8, item 068):
+  one deterministic pass over component files that flags accessibility
+  debt — unlabeled images (error), touchables without accessibilityRole,
+  unlabeled TextInputs, and undersized touch targets below the 44×44pt
+  guideline — every finding line-pinned with a concrete fix. `--json`;
+  reports to `docs/vectalon/a11y/` (gitignored).
+
+- **Release Readiness Agent — `vectalon release-ready`** (Roadmap Phase 8,
+  item 069): answers “can we ship?” with a deterministic checklist —
+  version bumped past the last git tag, a CHANGELOG section for that
+  version, a clean working tree, CI workflows present, a committed
+  lockfile, tests configured, secrets hygiene (no committed .env), and
+  TODO/FIXME triage — using only read-only git commands that degrade
+  gracefully. `--json`; reports to `docs/vectalon/release-ready/`
+  (gitignored).
 
 - **Refactoring Agent — `vectalon refactor`** (Roadmap Phase 8, item 066):
   one deterministic pass over the project's source files that proposes

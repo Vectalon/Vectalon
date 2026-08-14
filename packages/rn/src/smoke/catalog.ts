@@ -264,6 +264,24 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['refactor', '--json'],
   },
   {
+    id: 'deps',
+    name: 'Dependency upgrade scan (pairing, duplicates, vulnerabilities)',
+    category: 'analysis',
+    args: () => ['deps', '--json', '--no-audit'],
+  },
+  {
+    id: 'a11y',
+    name: 'Accessibility scan (labels, roles, touch targets)',
+    category: 'analysis',
+    args: () => ['a11y', '--json'],
+  },
+  {
+    id: 'release-ready',
+    name: 'Release readiness checklist',
+    category: 'analysis',
+    args: () => ['release-ready', '--json'],
+  },
+  {
     id: 'support',
     name: 'Support bundle guide',
     category: 'setup',
