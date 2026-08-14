@@ -32,6 +32,7 @@ import { listEcosystemItems } from '../ecosystem'
 import { syncCommand } from './commands/sync'
 import { teamPolicyCommand } from './commands/teamPolicy'
 import { teamCommand } from './commands/team'
+import { reviewCommand } from './commands/review'
 import { benchCommand } from './commands/bench'
 import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
 import { impactCommand } from './commands/impact'
@@ -373,6 +374,14 @@ export function createProgram(): Command {
     .action(teamCommand)
 
   program
+    .command('review [directory]')
+    .description('PR Review Agent (Roadmap 061): reviews the diff (uncommitted by default, or --base <ref>) with deterministic rules + the team-brain coding standards, plus an optional LLM pass — report to docs/vectalon/review/')
+    .option('--base <ref>', 'Git ref the diff is taken against (default: uncommitted changes)')
+    .option('--model <provider>', 'Model provider override for the LLM pass')
+    .option('--json', 'Print machine-readable output')
+    .action(reviewCommand)
+
+  program
     .command('doctor [directory]')
     .description('Diagnose ecosystem items, native toolchain, leaderboard readiness, model access + web intel — with numbered fix steps and quick enable/disable')
     .option('--json', 'Print the report as JSON')
@@ -676,6 +685,7 @@ async function runInteractive(): Promise<void> {
       { value: 'leaderboard', label: 'Update leaderboard', hint: 'Merge bench/results into BENCHMARK_RESULTS.md' },
       { value: 'sync', label: 'Sync team brain', hint: 'Push/pull .vectalon/knowledge to a hosted git remote' },
       { value: 'team', label: 'Run team brain', hint: 'Glossary, coding standards, expertise, decisions, onboarding (041-049)' },
+      { value: 'review', label: 'Run PR review', hint: 'Review the diff — deterministic rules + team-brain standards (061)' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
       { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
       { value: 'pull', label: 'Download local model', hint: 'Download the default Qwen2.5-Coder model' },
@@ -1119,6 +1129,24 @@ async function runInteractive(): Promise<void> {
     }
     await teamCommand('', { search: query as string })
     p.outro('Search complete')
+    return
+  }
+
+  if (action === 'review') {
+    const reviewScope = await p.select({
+      message: 'What should the review cover?',
+      options: [
+        { value: 'worktree', label: 'Uncommitted changes', hint: 'Review the current diff (default)' },
+        { value: 'branch', label: 'Branch vs a base ref', hint: 'Review everything in this branch, e.g. --base main' },
+      ],
+    })
+    if (p.isCancel(reviewScope)) {
+      p.outro('Cancelled')
+      return
+    }
+    const base = reviewScope === 'branch' ? (await p.text({ message: 'Base ref', placeholder: 'main' })) as string : undefined
+    await reviewCommand('', { base })
+    p.outro('Review complete')
     return
   }
 

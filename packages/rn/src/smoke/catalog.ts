@@ -228,6 +228,12 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['team', '--json'],
   },
   {
+    id: 'review',
+    name: 'PR review (diff vs working tree, deterministic rules + team-brain standards)',
+    category: 'analysis',
+    args: () => ['review', '--json'],
+  },
+  {
     id: 'support',
     name: 'Support bundle guide',
     category: 'setup',

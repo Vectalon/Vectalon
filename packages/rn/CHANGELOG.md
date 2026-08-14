@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **PR Review Agent — `vectalon review`** (Roadmap Phase 8, item 061): one
+  pass over the git diff (uncommitted changes by default, or `--base <ref>`
+  for a branch vs its base) that flags what a PR introduces — the
+  deterministic CodeReviewAnalyzer runs on each changed file's added lines,
+  pinned to their real new-file line numbers, and the team-brain coding
+  standards (043) are cross-checked as line-level probes (strict TypeScript,
+  StyleSheet, ESLint, testing notes) so a diff is checked against the
+  project's own derived conventions, not just generic rules. An optional LLM
+  pass reviews against the standards context when a model is configured;
+  model failures degrade to the deterministic pass. Verdict:
+  approved / needs-attention / changes-requested; `--json`; reports to
+  `docs/vectalon/review/` (gitignored). Starts Phase 8 (Autonomous
+  Engineering).
+
 - **Team Brain — `vectalon team`** (Roadmap Phase 6, items 041-049): one
   deterministic pass that generates the team-brain artifacts and seeds them
   into the knowledge base (idempotent upserts, own marker): the project

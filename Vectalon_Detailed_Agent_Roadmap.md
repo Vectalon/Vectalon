@@ -309,6 +309,16 @@ Acceptance:
 
 ## Phase 8 – Autonomous Engineering
 
+> **Status: item 061 shipped as `vectalon review`** — the PR Review Agent
+> reviews the git diff (uncommitted by default, or `--base <ref>` for a
+> branch vs its base) in one pass: the deterministic CodeReviewAnalyzer runs
+> on each changed file's added lines (pinned to real new-file line numbers),
+> the team-brain coding standards (043) are cross-checked as line-level
+> probes, and an optional LLM pass reviews against the standards context
+> (degrading to the deterministic pass when no model is configured).
+> Verdict approved / needs-attention / changes-requested; `--json`; reports
+> to `docs/vectalon/review/` (gitignored).
+
 ### 061. PR Review Agent
 ### 062. Architecture Review Agent
 ### 063. Security Review Agent
