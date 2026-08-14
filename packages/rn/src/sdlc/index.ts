@@ -110,3 +110,9 @@ export type {
   GeneratedNativeModule,
   GeneratedNativeFile,
 } from './NativeModuleGenerator'
+export { parseOpenApi, buildApiClient, renderApiClient } from './ApiClientGenerator'
+export type {
+  ApiSpec,
+  ApiEndpoint,
+  GeneratedApiClient,
+} from './ApiClientGenerator'

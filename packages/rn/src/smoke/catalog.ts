@@ -107,6 +107,18 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['intel'],
   },
   {
+    id: 'diagnostics',
+    name: 'Project diagnostics (Metro, Hermes, Android/iOS builds, deps)',
+    category: 'analysis',
+    args: () => ['diagnostics'],
+  },
+  {
+    id: 'generate',
+    name: 'Code generation (component, dry-run)',
+    category: 'analysis',
+    args: () => ['generate', 'component', 'SmokeProbe', '--dry-run'],
+  },
+  {
     id: 'telemetry',
     name: 'Telemetry formats guide',
     category: 'analysis',

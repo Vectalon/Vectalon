@@ -103,6 +103,15 @@ This roadmap is written so autonomous coding agents can pick up individual tasks
 
 ## Phase 2 – Diagnostics
 
+> **Status: items 011-020 shipped together in v0.5.0** —
+> `vectalon diagnostics` (011-015: Metro config validation, Hermes
+> compatibility against a known-issue database, Gradle + Xcode build-log
+> root-cause analysis, and dependency conflict detection, with suggested
+> fixes for every finding) and `vectalon generate` (016-020: component,
+> screen, test, native-module, and OpenAPI-driven API client generators,
+> writing files into the project or previewing with --dry-run).
+> Reports to `docs/vectalon/diagnostics/` (gitignored).
+
 ### 011. Metro Diagnostics
 **Goal:** Detect Metro bundler issues.
 **Deliverables:**

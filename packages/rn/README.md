@@ -242,7 +242,7 @@ npx vectalon smoke --only impact,coverage
 npx vectalon smoke --no-dev       # respect the real tier — Pro/Team commands become skips
 ```
 
-- **34 checks** cover the whole surface — version/help, init, status, models,
+- **36 checks** cover the whole surface — version/help, init, status, models,
   auth, policy, refresh, suggestions, ecosystem, doctor, impact, coverage,
   intel, telemetry, bundle, profile, sandbox, render, ci, release,
   leaderboard, visual-ci, visual-baseline, ci-incident, serve (boot-probed
@@ -287,6 +287,53 @@ In a monorepo the scan is repository-wide — every member package's source is
 indexed when the target is a workspace root. Reports land in
 docs/vectalon/intel/report.{json,md} (gitignored). Deterministic — no model
 calls; the hash embeddings run offline.
+
+## Project Diagnostics (`vectalon diagnostics`)
+
+One deterministic pass (Roadmap Phase 2, items 011-015) that validates the
+build/toolchain surface and suggests a **concrete fix for every finding**:
+
+```bash
+npx vectalon diagnostics                          # full report → docs/vectalon/diagnostics/
+npx vectalon diagnostics --gradle-log build.log   # classify a Gradle failure's root cause + fix
+npx vectalon diagnostics --xcode-log build.log    # classify an Xcode failure's root cause + fix
+```
+
+- **Metro (011)** — config shape, alias targets resolve? watchFolders in
+  monorepos, cache advice
+- **Hermes (012)** — `hermesEnabled` / `newArchEnabled` checked against a
+  known-issue database (disabled Hermes, New-Arch without Hermes, legacy RN)
+- **Android / Gradle (013)** — compileSdkVersion, daemon heap, plus a log
+  parser covering the top RN build errors (SDK/AGP/resolution/AAPT/NDK/Java/
+  network/OOM) with the standard fix for each
+- **iOS / Xcode (014)** — Podfile + deployment target, plus a log parser for
+  CocoaPods, signing, linker, plist, and Xcode-version failures
+- **Dependencies (015)** — peer checks against an RN ecosystem matrix and
+  duplicate versions across monorepo members
+
+Each check is `pass` / `warn` / `fail` / `info` with a fix line. Monorepo
+members are scanned (Metro config also read at the workspace root). Reports
+land in docs/vectalon/diagnostics/report.{json,md} (gitignored).
+
+## Code Generation (`vectalon generate`)
+
+Deterministic templates (Roadmap Phase 2, items 016-020) written into the
+project — or previewed with `--dry-run`:
+
+```bash
+npx vectalon generate component UserCard                 # → src/components/UserCard.tsx
+npx vectalon generate screen Profile                     # → src/screens/Profile.tsx (navigation wired)
+npx vectalon generate test UserCard                      # → __tests__/user-card.test.tsx (Jest RTL)
+npx vectalon generate test UserCard --framework detox    # Detox E2E instead
+npx vectalon generate native-module CameraScanner --spec '{"moduleName":"CameraScanner"}'
+npx vectalon generate api OrdersApi --spec openapi.json  # typed client + apiBase.ts
+```
+
+- **Component (016)** — functional TS + StyleSheet (`--no-typescript`, `--no-styles`, `--navigation`)
+- **Screen (017)** — component with React Navigation hooks
+- **Native module (018)** — iOS (ObjC++) + Android (Kotlin) scaffold, `--api rn-cli` (TurboModule) or `expo`, from a JSON spec
+- **Test (019)** — Jest `@testing-library/react-native` or Detox test
+- **API client (020)** — typed service class + `apiBase.ts` (ApiError) from an **OpenAPI spec**: path params, request bodies, response types, error handling
 
 ## Hermes Runtime Profiling (`vectalon profile`)
 

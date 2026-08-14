@@ -5,6 +5,34 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-08-13
+
+### Added
+
+- **Project Diagnostics — `vectalon diagnostics`** (Roadmap Phase 2,
+  items 011-015): one deterministic pass validating the build/toolchain
+  surface with a suggested fix for every finding. Metro config validation
+  (config shape, alias targets, watchFolders in monorepos, cache advice),
+  Hermes compatibility checks against a known-issue database
+  (hermesEnabled/newArchEnabled states, New-Arch-without-Hermes, legacy RN),
+  Android/Gradle project checks plus a build-log parser classifying the top
+  RN build errors (SDK, AGP, dependency resolution, AAPT, NDK, Java, network,
+  OOM) with the standard fix, iOS/Xcode Podfile + deployment-target checks
+  plus a log parser for CocoaPods/signing/linker/plist/Xcode-version
+  failures, and dependency conflict detection against an RN ecosystem matrix
+  with duplicate-version detection across monorepo members. `--json`,
+  `--gradle-log <path>`, `--xcode-log <path>`; reports to
+  `docs/vectalon/diagnostics/` (gitignored).
+- **Code generation — `vectalon generate`** (Roadmap Phase 2, items 016-020):
+  deterministic templates written into the project or previewed with
+  `--dry-run`. Component (functional TS + StyleSheet), screen (component with
+  React Navigation hooks), test (Jest @testing-library/react-native or
+  Detox), native module (iOS ObjC++ + Android Kotlin scaffold via
+  `--api rn-cli|expo` from a JSON spec), and API client (typed service class
+  + `apiBase.ts` with ApiError from an **OpenAPI spec** — path params,
+  request bodies, response types, error handling).
+- The interactive menu gains "Run project diagnostics" and "Generate code".
+
 ## [0.4.0] - 2026-08-13
 
 ### Added

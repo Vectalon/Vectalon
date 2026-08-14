@@ -36,6 +36,8 @@ import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/l
 import { impactCommand } from './commands/impact'
 import { coverageCommand } from './commands/coverage'
 import { intelCommand } from './commands/intel'
+import { diagnosticsCommand } from './commands/diagnostics'
+import { generateCommand } from './commands/generate'
 import { smokeCommand } from './commands/smoke'
 import { doctorCommand } from './commands/doctor'
 import { selftestCommand } from './commands/selftest'
@@ -417,6 +419,26 @@ export function createProgram(): Command {
     .action(intelCommand)
 
   program
+    .command('diagnostics [directory]')
+    .description('Project Diagnostics — Metro config, Hermes compatibility, Android (Gradle) + iOS (Xcode) build analysis, and dependency conflict detection in one deterministic pass, with suggested fixes for every finding')
+    .option('--json', 'Print the full report as JSON')
+    .option('--gradle-log <path>', 'Analyze a Gradle build log: classify the root cause of the failure and suggest the standard fix (013)')
+    .option('--xcode-log <path>', 'Analyze an Xcode build log: classify the root cause of the failure and suggest the standard fix (014)')
+    .action(diagnosticsCommand)
+
+  program
+    .command('generate <type> [name]')
+    .description('Code generation — component, screen, test, native-module, or api (typed services with error handling + caching from an OpenAPI spec)')
+    .option('--dry-run', 'Preview the generated files without writing them')
+    .option('--no-typescript', 'Generate plain JavaScript instead of TypeScript (component/screen)')
+    .option('--no-styles', 'Skip the StyleSheet block (component/screen)')
+    .option('--navigation', 'Include navigation hooks (component)')
+    .option('--framework <jest|detox>', 'Test framework (test)', 'jest')
+    .option('--api <rn-cli|expo>', 'Native module API surface (native-module)', 'rn-cli')
+    .option('--spec <path|json>', 'Native module or OpenAPI spec (native-module/api)')
+    .action(generateCommand)
+
+  program
     .command('smoke [directory]')
     .description('Post-release verification: run every CLI command against the project, capture the full output of each, and report pass/warn/skip/fail — exit non-zero on any failure (runs after a release to verify everything is in order)')
     .option('--list', 'List all checks and exit')
@@ -621,6 +643,8 @@ async function runInteractive(): Promise<void> {
       { value: 'impact', label: 'Analyze impact', hint: 'Cross-package blast radius of changed files (monorepo)' },
       { value: 'coverage', label: 'Show coverage dashboard', hint: 'Per-screen E2E and a11y gap summary with open follow-up links' },
       { value: 'intel', label: 'Run project intelligence', hint: 'Manifest, deps, AST, graphs, native registry, retrieval (001-010)' },
+      { value: 'diagnostics', label: 'Run project diagnostics', hint: 'Metro, Hermes, Android/iOS build analysis, dependency conflicts (011-015)' },
+      { value: 'generate', label: 'Generate code', hint: 'Component, screen, test, native module, API client (016-020)' },
       { value: 'smoke', label: 'Run post-release smoke', hint: 'Every command, full output, pass/skip/fail report' },
       { value: 'ci', label: 'Generate CI workflow', hint: 'EAS Workflows (Expo) or GitHub Actions (bare RN CLI)' },
       { value: 'release', label: 'Release pipeline', hint: 'Detect version bump, changelog, submit workflow, crash monitor' },
@@ -851,6 +875,40 @@ async function runInteractive(): Promise<void> {
   if (action === 'intel') {
     await intelCommand('', {})
     p.outro('Project intelligence complete')
+    return
+  }
+
+  if (action === 'diagnostics') {
+    const gradle = await p.confirm({ message: 'Analyze a Gradle build log too?', initialValue: false })
+    const gradleLog = gradle ? (await p.text({ message: 'Path to the Gradle log' })) as string : undefined
+    const xcode = await p.confirm({ message: 'Analyze an Xcode build log too?', initialValue: false })
+    const xcodeLog = xcode ? (await p.text({ message: 'Path to the Xcode log' })) as string : undefined
+    await diagnosticsCommand('', { gradleLog, xcodeLog })
+    p.outro('Project diagnostics complete')
+    return
+  }
+
+  if (action === 'generate') {
+    const genType = await p.select({
+      message: 'What would you like to generate?',
+      options: [
+        { value: 'component', label: 'Component', hint: 'Functional TS component with styles' },
+        { value: 'screen', label: 'Screen', hint: 'Component with navigation hooks' },
+        { value: 'test', label: 'Test', hint: 'Jest RTL or Detox test for a component' },
+        { value: 'native-module', label: 'Native module', hint: 'iOS + Android bridge scaffold (needs --spec)' },
+        { value: 'api', label: 'API client', hint: 'Typed services from an OpenAPI spec (needs --spec)' },
+      ],
+    })
+    if (p.isCancel(genType)) {
+      p.outro('Cancelled')
+      return
+    }
+    const type = genType as string
+    const needsSpec = type === 'native-module' || type === 'api'
+    const name = needsSpec ? '' : ((await p.text({ message: 'Name', placeholder: 'UserCard' })) as string)
+    const spec = needsSpec ? ((await p.text({ message: 'Spec (JSON or path)' })) as string) : undefined
+    await generateCommand(type, name, { spec })
+    p.outro('Generation complete')
     return
   }
 
