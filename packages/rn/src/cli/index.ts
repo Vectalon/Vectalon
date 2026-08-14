@@ -31,6 +31,7 @@ import { ecosystemCommand } from './commands/ecosystem'
 import { listEcosystemItems } from '../ecosystem'
 import { syncCommand } from './commands/sync'
 import { teamPolicyCommand } from './commands/teamPolicy'
+import { teamCommand } from './commands/team'
 import { benchCommand } from './commands/bench'
 import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
 import { impactCommand } from './commands/impact'
@@ -360,6 +361,18 @@ export function createProgram(): Command {
     .action(teamPolicyCommand)
 
   program
+    .command('team [directory]')
+    .description('Team Brain (Roadmap 041-049): project glossary, coding standards, expertise map, ADR/decision index, PR knowledge, and onboarding brief — seeded into the knowledge base and written to docs/vectalon/team/; --search queries the team knowledge base across projects')
+    .option('--search <query>', 'Search the team knowledge base (semantic when embeddings configured, lexical otherwise) — the Phase 6 acceptance')
+    .option('--project <name>', 'Scope --search to one registered project')
+    .option('--team <name>', 'Scope --search to one team')
+    .option('--type <type>', 'Scope --search to one artifact type')
+    .option('--limit <n>', 'Search result cap (default 5)', Number)
+    .option('--projects', 'List registered team projects')
+    .option('--json', 'Print machine-readable output')
+    .action(teamCommand)
+
+  program
     .command('doctor [directory]')
     .description('Diagnose ecosystem items, native toolchain, leaderboard readiness, model access + web intel — with numbered fix steps and quick enable/disable')
     .option('--json', 'Print the report as JSON')
@@ -662,6 +675,7 @@ async function runInteractive(): Promise<void> {
       { value: 'bench', label: 'Run benchmark', hint: 'Score the harness on the RN coding tests (11 scenarios)' },
       { value: 'leaderboard', label: 'Update leaderboard', hint: 'Merge bench/results into BENCHMARK_RESULTS.md' },
       { value: 'sync', label: 'Sync team brain', hint: 'Push/pull .vectalon/knowledge to a hosted git remote' },
+      { value: 'team', label: 'Run team brain', hint: 'Glossary, coding standards, expertise, decisions, onboarding (041-049)' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
       { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
       { value: 'pull', label: 'Download local model', hint: 'Download the default Qwen2.5-Coder model' },
@@ -1069,6 +1083,42 @@ async function runInteractive(): Promise<void> {
     }
     await syncCommand('', { push: direction === 'push', pull: direction === 'pull' })
     p.outro('Sync complete')
+    return
+  }
+
+  if (action === 'team') {
+    const teamAction = await p.select({
+      message: 'Team brain action',
+      options: [
+        { value: 'generate', label: 'Generate team brain', hint: 'Glossary, standards, expertise, decisions, PR knowledge, onboarding' },
+        { value: 'search', label: 'Search team knowledge', hint: 'Semantic query across registered projects' },
+        { value: 'projects', label: 'List team projects' },
+      ],
+    })
+    if (p.isCancel(teamAction)) {
+      p.outro('Cancelled')
+      return
+    }
+    if (teamAction === 'generate') {
+      await teamCommand('', {})
+      p.outro('Team brain generated')
+      return
+    }
+    if (teamAction === 'projects') {
+      await teamCommand('', { projects: true })
+      return
+    }
+    const query = await p.text({
+      message: 'Search query',
+      placeholder: 'e.g., how do we handle payments?',
+      validate: value => value ? undefined : 'A query is required',
+    })
+    if (p.isCancel(query)) {
+      p.outro('Cancelled')
+      return
+    }
+    await teamCommand('', { search: query as string })
+    p.outro('Search complete')
     return
   }
 

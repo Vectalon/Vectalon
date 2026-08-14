@@ -13,6 +13,7 @@ import {
   CoreTools,
   SdlcTools,
   KnowledgeTools,
+  TeamBrainTools,
   EcosystemTools,
   UpgradeTools,
   PerfTools,
@@ -55,6 +56,8 @@ export const SAFE_MODE_STUB =
 const SAFE_MODE_DISABLED_TOOLS = new Set([
   'execute_workflow',
   'scaffold_native_module',
+  // Writes project docs (docs/vectalon/team/), so it is off in safe mode.
+  'generate_team_brain',
 ])
 
 /** Wrap a router so generate() returns the safe-mode stub, delegating all else. */
@@ -130,6 +133,7 @@ export class MCPServer {
       new CoreTools(ctx),
       new SdlcTools(ctx),
       new KnowledgeTools(ctx),
+      new TeamBrainTools(ctx),
       new EcosystemTools(ctx),
       new UpgradeTools(ctx),
       new PerfTools(ctx),

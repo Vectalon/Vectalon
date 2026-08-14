@@ -222,6 +222,12 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['team-policy', '--show'],
   },
   {
+    id: 'team',
+    name: 'Team brain (glossary, standards, expertise, decisions, onboarding)',
+    category: 'team',
+    args: () => ['team', '--json'],
+  },
+  {
     id: 'support',
     name: 'Support bundle guide',
     category: 'setup',

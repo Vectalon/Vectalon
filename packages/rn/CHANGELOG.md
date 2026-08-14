@@ -9,6 +9,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Team Brain — `vectalon team`** (Roadmap Phase 6, items 041-049): one
+  deterministic pass that generates the team-brain artifacts and seeds them
+  into the knowledge base (idempotent upserts, own marker): the project
+  glossary (044 — frequency-ranked identifiers filtered against code/RN
+  vocabulary, classified as component/type/constant/identifier), coding
+  standards (043 — derived from tsconfig strictness, styling, testing,
+  linting, navigation, state, package manager, and the guardrail policy),
+  a git-derived expertise map (046 — author → commits → files → owned
+  components), an ADR/decision index (042 + 048 — scans docs/adr,
+  docs/decisions, adr/, decisions/, *.adr.md, DECISIONS.md and indexes each
+  as a searchable architecture artifact), PR knowledge (045 — merge and
+  squash-merged `(#N)` PRs from git history), and an onboarding brief
+  (049 — composed from all the above). `--search <query>` queries the team
+  knowledge base across registered projects (`.vectalon/team.json`) — the
+  Phase 6 acceptance — with real embedding APIs when configured and a
+  timeout-bounded fallback to the deterministic lexical/hash path.
+  `--projects`, `--json`; docs to `docs/vectalon/team/` (gitignored).
+  Also wired into `vectalon serve`'s hourly background refresh (Team tier):
+  the team brain regenerates on the same cadence as the web-intel refresh,
+  so glossary/standards/decisions track code changes without manual runs
+  (free tier keeps the manual command; a team-brain failure never blocks the
+  web/repo refresh). Agents can drive the brain through the serve MCP server
+  too: `generate_team_brain` runs the pass on demand (excluded from safe
+  mode — it writes project docs) and `search_team_knowledge` queries it
+  semantically across every registered project, scoped by project, team,
+  and artifact type (search re-reads stores from disk so newly generated
+  artifacts are immediately searchable, with team metadata from
+  `.vectalon/team.json` — fixing `--team` scoping on every search surface).
+  Completes Phase 6 alongside the existing team-policy (050) and sync
+  commands.
+
 - **Static performance scan — `vectalon perf`** (Roadmap Phase 4,
   items 021-023, 027, 029): one deterministic pass over source with no
   build/device/model calls. Render profiler + re-render detector (021-022:

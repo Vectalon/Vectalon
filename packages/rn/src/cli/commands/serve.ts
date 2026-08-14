@@ -1,4 +1,6 @@
+import { requireTier } from '@vectalon-dev/core'
 import { ContextEngine } from '../../harness/ContextEngine'
+import { buildTeamBrain } from '../../teamBrain'
 import { MCPServer } from '../../protocol/MCPServer'
 import { ModelRouter } from '../../model/ModelRouter'
 import { ProjectMemory } from '../../memory/ProjectMemory'
@@ -206,6 +208,18 @@ function printWebIntelStatus(root: string): void {
 function startBackgroundRefresh(root: string): void {
   const refreshService = new KnowledgeRefreshService({ projectRoot: root })
 
+  // Team Brain auto-refresh (Roadmap 041-049) rides the same hourly cadence:
+  // the glossary, coding standards, expertise map, ADR/decision index, PR
+  // knowledge, and onboarding brief regenerate from the repo + git history so
+  // the team brain tracks code changes without manual `vectalon team` runs.
+  // Tier-gated: free-tier serves keep the manual command only.
+  const teamBrainAllowed = requireTier('team', 'rn').allowed
+  if (!teamBrainAllowed) {
+    logger.info('Team brain auto-refresh: disabled (Team tier required) — run `vectalon team` manually.')
+  } else {
+    logger.info('Team brain auto-refresh: enabled — glossary, standards, expertise, decisions, and onboarding regenerate hourly.')
+  }
+
   async function runRefresh(): Promise<void> {
     try {
       const packageJsonPath = join(root, 'package.json')
@@ -233,6 +247,20 @@ function startBackgroundRefresh(root: string): void {
       const scanResult = maintainKnowledgeBase(root)
       if (scanResult.updated > 0) {
         logger.info(`Background refresh: knowledge base updated from repo scan (${scanResult.updated} artifact(s) refreshed, ${scanResult.total} total)`)
+      }
+      // Team brain regenerates on the same tick — a failure here never blocks
+      // the web/repo refresh above (and vice versa). Idempotent: only logs when
+      // something actually changed in the knowledge base.
+      if (teamBrainAllowed) {
+        try {
+          const brain = await buildTeamBrain(root)
+          if (brain.artifacts.created > 0 || brain.artifacts.updated > 0) {
+            logger.info(`Background refresh: team brain updated (${brain.artifacts.created} created, ${brain.artifacts.updated} updated, ${brain.artifacts.total} total)`)
+          }
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err)
+          logger.warn(`Background team-brain refresh failed: ${message}`)
+        }
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)

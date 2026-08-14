@@ -253,6 +253,30 @@ Acceptance:
 
 ## Phase 6 – Team Brain
 
+> **Status: Phase 6 complete as of v0.6.0** — `vectalon team` (041-049)
+> shipped together as one deterministic pass: the project glossary (044,
+> frequency-ranked identifiers filtered against code/RN vocabulary),
+> coding standards (043, derived from tsconfig/styling/testing/lint/
+> navigation/state/package-manager + the guardrail policy), a git-derived
+> expertise map (046, author → commits → files → owned components), an
+> ADR/decision index (042 + 048, scans docs/adr, docs/decisions, adr/,
+> decisions/, *.adr.md, DECISIONS.md into searchable architecture
+> artifacts), PR knowledge (045, merge + squash-merged `(#N)` commits), and
+> an onboarding brief (049, composed from all the above), all seeded
+> idempotently into the knowledge base with `--search <query>` for the
+> phase acceptance (team knowledge searchable via semantic queries, across
+> every project registered in `.vectalon/team.json`, real embedding APIs
+> when configured with a timeout-bounded lexical fallback), `--projects`,
+> `--json`, docs to `docs/vectalon/team/` (gitignored). The same pass rides
+> `vectalon serve`'s hourly background refresh (Team tier), so the team brain
+> regenerates automatically alongside the web-intel refresh. Agents can also
+> drive it through MCP: `generate_team_brain` (seeds the pass on demand,
+> excluded from safe mode since it writes project docs) and
+> `search_team_knowledge` (semantic query across every registered project,
+> scoped by project/team/type) are exposed by the serve MCP server.
+> Item 050 (Enterprise Policy Engine) already shipped as `vectalon team-policy`
+> (org policy + shared bundle budgets through the sync remote).
+
 ### 041. Team Memory Store
 ### 042. ADR Indexing
 ### 043. Coding Standards Engine
