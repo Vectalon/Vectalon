@@ -11,7 +11,7 @@
 import { resolve } from 'path'
 import pc from 'picocolors'
 import { logger } from '../logger'
-import { runRefactorScan, renderRefactorMarkdown, writeRefactorReport } from '../../refactor'
+import { runRefactorScan, writeRefactorReport } from '../../refactor'
 
 export interface RefactorCommandOptions {
   /** Print machine-readable output. */

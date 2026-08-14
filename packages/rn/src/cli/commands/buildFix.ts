@@ -10,7 +10,7 @@
 import { resolve } from 'path'
 import pc from 'picocolors'
 import { logger } from '../logger'
-import { runBuildFix, renderBuildFixMarkdown, writeBuildFixReport } from '../../buildFix'
+import { runBuildFix, writeBuildFixReport } from '../../buildFix'
 import type { BuildFixOptions, BuildKind } from '../../buildFix'
 
 export interface BuildFixCommandOptions extends BuildFixOptions {

@@ -237,7 +237,7 @@ function varUsage(file: string, content: string): RefactorFinding[] {
   }]
 }
 
-/** @ts-ignore / @ts-expect-error suppression comments. */
+/** Suppression-comment detection (ts-ignore and ts-expect-error). */
 function tsIgnores(file: string, content: string): RefactorFinding[] {
   const findings: RefactorFinding[] = []
   const lines = content.split('\n')

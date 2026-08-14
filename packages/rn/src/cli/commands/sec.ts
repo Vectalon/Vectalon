@@ -11,7 +11,7 @@
 import { resolve } from 'path'
 import pc from 'picocolors'
 import { logger } from '../logger'
-import { runSecurityReview, renderSecurityMarkdown, writeSecurityReport } from '../../security'
+import { runSecurityReview, writeSecurityReport } from '../../security'
 import type { SecurityOptions } from '../../security'
 
 export interface SecCommandOptions extends SecurityOptions {

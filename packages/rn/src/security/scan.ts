@@ -10,7 +10,7 @@
  * secret back.
  */
 
-import { readdirSync, readFileSync, statSync } from 'fs'
+import { readdirSync, statSync } from 'fs'
 import { join, relative } from 'path'
 import { reportError } from '../utils/safe'
 import type { SecurityFinding } from './types'

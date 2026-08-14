@@ -90,9 +90,9 @@ describe('sec: secrets scanner', () => {
 describe('sec: unsafe pattern scanner', () => {
   it('flags eval, shell interpolation, and disabled TLS', () => {
     const findings = scanUnsafe('src/app.ts', [
-      "eval(userInput)",
+      'eval(userInput)',
       "exec('ls ' + dir)",
-      "https.request(url, { rejectUnauthorized: false })",
+      'https.request(url, { rejectUnauthorized: false })',
       "const url = 'http://example.com/api'",
     ].join('\n'))
     expect(findings.some(f => f.id === 'dynamic-code-execution' && f.line === 1)).toBe(true)
@@ -102,9 +102,9 @@ describe('sec: unsafe pattern scanner', () => {
   })
 
   it('flags Math.random only when security material is on the line', () => {
-    const bad = scanUnsafe('src/a.ts', "const otp = String(Math.random())\n")
+    const bad = scanUnsafe('src/a.ts', 'const otp = String(Math.random())\n')
     expect(bad.some(f => f.id === 'insecure-random')).toBe(true)
-    const fine = scanUnsafe('src/b.ts', "const index = Math.random() * list.length\n")
+    const fine = scanUnsafe('src/b.ts', 'const index = Math.random() * list.length\n')
     expect(fine.some(f => f.id === 'insecure-random')).toBe(false)
   })
 
@@ -161,7 +161,7 @@ describe('sec: runSecurityReview', () => {
   it('flags unsafe patterns with a needs-attention verdict', async () => {
     dir = createTempProject({
       'package.json': JSON.stringify({ name: 'app', version: '1.0.0' }),
-      'src/app.ts': "eval(input)\n",
+      'src/app.ts': 'eval(input)\n',
     })
     const report = await runSecurityReview(dir, { skipAudit: true })
     expect(report.summary.byCategory.unsafe).toBeGreaterThan(0)

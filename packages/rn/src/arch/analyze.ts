@@ -12,7 +12,7 @@
 
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import { buildCodeGraph, type CodeGraph } from '../harness/CodeGraph'
+import { buildCodeGraph } from '../harness/CodeGraph'
 import type { ArchFinding, ArchModule, ArchOptions } from './types'
 
 /**

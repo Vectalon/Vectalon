@@ -11,13 +11,12 @@
  * reads. Reports to docs/vectalon/deps/ (gitignored).
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
-import { reportError } from '../utils/safe'
 import { ECOSYSTEM_MATRIX } from '../projectDiagnostics/deps'
 import { detectWorkspace } from '../harness'
 import { runNpmAudit } from '../security/audit'
-import type { DepCategory, DepFinding, DepOptions, DepReport, DepSummary, DepVerdict } from './types'
+import type { DepFinding, DepOptions, DepReport, DepSummary, DepVerdict } from './types'
 
 export type { DepFinding, DepOptions, DepReport, DepSummary, DepSeverity, DepCategory, DepVerdict } from './types'
 
@@ -186,7 +185,7 @@ export function summarizeDeps(findings: DepFinding[]): DepSummary {
 /** Run one dependency upgrade scan. */
 export async function runDepsScan(root: string, options: DepOptions = {}): Promise<DepReport> {
   const scannedAt = Date.now()
-  const { findings, depCount, rnVersion } = pairingFindings(root)
+  const { findings, depCount } = pairingFindings(root)
 
   let audit: DepReport['audit'] = { ran: false, skippedReason: 'skipped via --no-audit', total: 0, critical: 0, high: 0 }
   if (!options.skipAudit) {

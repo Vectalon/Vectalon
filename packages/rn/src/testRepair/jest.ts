@@ -54,7 +54,7 @@ export const JEST_PATTERNS: JestPattern[] = [
   {
     id: 'transform-error',
     name: 'Transform / preset error',
-    re: /Transform failed|Unexpected token|ts-jest.*error|babel-jest|The preset ['\"][^'\"]+['\"] is not found|Cannot find module ['\"]babel-jest['\"]/i,
+    re: /Transform failed|Unexpected token|ts-jest.*error|babel-jest|The preset ['"][^'"]+['"] is not found|Cannot find module ['"]babel-jest['"]/i,
     fix: 'Jest cannot transform the file: align tsconfig + jest config (preset react-native / ts-jest / babel-jest), install the missing preset, and check the file\'s syntax/extensions.',
   },
   {

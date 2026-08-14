@@ -10,7 +10,7 @@
 import { resolve } from 'path'
 import pc from 'picocolors'
 import { logger } from '../logger'
-import { runTestRepair, renderTestRepairMarkdown, writeTestRepairReport } from '../../testRepair'
+import { runTestRepair, writeTestRepairReport } from '../../testRepair'
 import type { TestRepairOptions, TestKind } from '../../testRepair'
 
 export interface TestRepairCommandOptions extends TestRepairOptions {

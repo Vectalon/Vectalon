@@ -6,7 +6,7 @@
  * Business Source License 1.1 (BSL-1.1)
  */
 import { parseSource, walk } from '../harness/AstScanner'
-import type { PerfScanFinding, PerfSeverity } from './types'
+import type { PerfScanFinding } from './types'
 
 /** Count source lines (1-based) up to a node's `loc.start.line`. */
 function nodeLine(node: { loc?: { start?: { line?: number } } } | null | undefined): number {

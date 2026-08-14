@@ -11,7 +11,7 @@
 import { resolve } from 'path'
 import pc from 'picocolors'
 import { logger } from '../logger'
-import { runArchReview, renderArchMarkdown, writeArchReport } from '../../arch'
+import { runArchReview, writeArchReport } from '../../arch'
 import type { ArchOptions } from '../../arch'
 
 export interface ArchCommandOptions extends ArchOptions {

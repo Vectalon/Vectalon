@@ -63,7 +63,7 @@ export function summarizeSecurity(findings: SecurityFinding[]): SecuritySummary 
 }
 
 /** Advisory findings from the audit (skipped audits contribute none). */
-function auditFindings(audit: SecurityAudit, root: string): SecurityFinding[] {
+function auditFindings(audit: SecurityAudit): SecurityFinding[] {
   if (!audit.ran) return []
   const findings: SecurityFinding[] = []
   for (const vuln of audit.vulnerabilities) {
@@ -147,7 +147,7 @@ export async function runSecurityReview(root: string, options: SecurityOptions =
     : options.auditRunner
       ? (await options.auditRunner(root)) ?? { ran: false, skippedReason: 'audit runner returned nothing', total: 0, critical: 0, high: 0, moderate: 0, low: 0, vulnerabilities: [] }
       : await runNpmAudit(root, options.auditTimeoutMs ?? 90000)
-  findings.push(...auditFindings(audit, root))
+  findings.push(...auditFindings(audit))
   const unlocked = lockfileFinding(root)
   if (unlocked) findings.push(unlocked)
 
