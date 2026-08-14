@@ -5,6 +5,78 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-08-14
+
+### Added
+
+- **Autonomous Bug Fix Agent — `vectalon bug-fix`** (Roadmap Phase 8,
+  item 070): proposes fixes for deterministic defects and executes the
+  provably-safe ones — whole-line unused-import removal and var→const
+  (assignment-count proven) — with `--apply` refusing a dirty git working
+  tree unless `--force`, so `git checkout` always restores the pre-fix
+  state; dry-run by default with a per-finding diff patch plan; `--json`;
+  reports to `docs/vectalon/bug-fix/` (gitignored). Completes Phase 8
+  (Autonomous Engineering): the agent can propose and execute changes
+  safely.
+- **Crash Intelligence Agent — `vectalon crash`** (Roadmap Phase 9, item
+  071): classifies an iOS, Android, or JavaScript crash log into a
+  root-cause bucket (null-reference, module-resolution, resource, network,
+  state-mutation, concurrency) with the standard fix and investigation
+  steps — platform auto-detected from strong signatures (or forced with
+  `--platform`), reusing the shared RootCauseAnalyzer; `--log <path>`;
+  `--json`; reports to `docs/vectalon/crash/` (gitignored).
+- **Mobile Architecture Scorecard — `vectalon arch-score`** (Roadmap Phase
+  9, item 072): a deterministic 0-100 score across six dimensions computed
+  from the module graph — circular dependencies (hard per-cycle penalty),
+  layer boundaries, module coupling (avg fan-out), module cohesion (files
+  per module dir), testability (test siblings), and nesting depth — with a
+  letter grade and top improvements; `--src <dir>`; `--json`; reports to
+  `docs/vectalon/arch-score/` (gitignored).
+- **CI/CD Intelligence Agent — `vectalon cicd`** (Roadmap Phase 9, item
+  073): scans CI workflow files for anti-patterns — third-party actions
+  pinned to tags instead of commit SHAs, missing concurrency groups and
+  timeouts, secrets in inline env values, deploy steps without a test gate,
+  missing `on:` triggers, and empty workflows — with other CI systems
+  (GitLab, Travis, Jenkins, CircleCI, Azure, Bitrise, Codemagic) detected
+  and named; `--json`; reports to `docs/vectalon/cicd/` (gitignored).
+- **App Store Readiness Agent — `vectalon app-store`** (Roadmap Phase 9,
+  item 074): iOS/Android store-submission checks — version/version-code
+  consistency across Info.plist, build.gradle, and package.json (error),
+  app icons, iOS privacy manifest (PrivacyInfo.xcprivacy), launch screen,
+  ATS/cleartext posture, Android applicationId and permissions; `--json`;
+  reports to `docs/vectalon/app-store/` (gitignored).
+- **SOC2 Readiness Agent — `vectalon soc2`** (Roadmap Phase 9, item 075):
+  a repository-evidence checklist mapped to the five trust-service criteria
+  plus operational hygiene — authentication/authorization libraries,
+  secrets hygiene, lockfiles, CI, test coverage, TLS, privacy policy,
+  structured audit logging, backups, incident-response runbook, and vendor
+  vulnerability scanning — with a score and per-control next steps
+  (self-assessment, not an audit); `--json`; reports to
+  `docs/vectalon/soc2/` (gitignored).
+- **Design Token Sync Agent — `vectalon tokens`** (Roadmap Phase 9, item
+  076): flattens a style-dictionary-style token JSON and checks source for
+  drift — tokens never referenced (orphans), hardcoded colors that should
+  be tokens, and token pairs with identical values; `--json`; reports to
+  `docs/vectalon/tokens/` (gitignored).
+- **Team Productivity Analytics — `vectalon team-stats`** (Roadmap Phase
+  9, item 077): one read-only `git log` (no shell — execFile) derives
+  commit cadence, author distribution, bus factor, category mix, and
+  change velocity, warning on single-owner risk and low cadence; `--json`;
+  reports to `docs/vectalon/team-stats/` (gitignored).
+- **Agent Permissions Audit — `vectalon perms`** (Roadmap Phase 9, item
+  078): scans agent/MCP configuration (Claude Code settings, Cursor MCP,
+  `.mcp.json`, `.agents`) for auto-approved shell/file-mutation tool
+  grants, local-exec MCP servers, and credential-shaped values in config
+  (errors, redacted); `--json`; reports to `docs/vectalon/perms/`
+  (gitignored).
+- **Engineering Dashboard — `vectalon dashboard`** (Roadmap Phase 9, item
+  079): aggregates every agent report under `docs/vectalon/*/report.json`
+  into one executive view — per-agent health cards, an overall verdict,
+  and a self-contained HTML dashboard (no network) — with `--run` to
+  regenerate the fast core reports (release-ready, arch-score, soc2) and
+  `--open` to launch it; `--json`; reports to `docs/vectalon/dashboard/`
+  (gitignored). Starts Phase 9 (Release Engineering).
+
 ## [0.6.0] - 2026-08-14
 
 ### Added

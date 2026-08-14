@@ -309,7 +309,7 @@ Acceptance:
 
 ## Phase 8 – Autonomous Engineering
 
-> **Status: items 061-069 shipped — `vectalon review`, `vectalon arch`,
+> **Status: items 061-070 shipped — `vectalon review`, `vectalon arch`,
 > `vectalon sec`, `vectalon build-fix`, `vectalon test-repair`,
 > `vectalon refactor`, `vectalon deps`, `vectalon a11y`, and
 > `vectalon release-ready` — the PR Review Agent reviews the git diff (uncommitted by
@@ -378,7 +378,14 @@ Acceptance:
 > past the last tag (read-only git), CHANGELOG section present, clean
 > working tree, CI workflows, lockfile, tests configured, secrets hygiene
 > (committed .env), and TODO/FIXME triage — `vectalon release-ready`;
-> `--json`; reports to `docs/vectalon/release-ready/` (gitignored).
+> `--json`; reports to `docs/vectalon/release-ready/` (gitignored). The
+> Autonomous Bug Fix Agent proposes fixes for deterministically-detectable
+> defects and executes the provably-safe ones — whole-line unused-import
+> removal and var→const (assignment-count proven) — with `--apply` refusing a
+> dirty git working tree unless `--force`, so `git checkout` always restores
+> the pre-fix state; dry-run by default (`vectalon bug-fix`); reports to
+> `docs/vectalon/bug-fix/` (gitignored). Acceptance met: the agent can
+> propose and execute changes safely.
 
 ### 061. PR Review Agent
 ### 062. Architecture Review Agent
@@ -394,26 +401,67 @@ Acceptance:
 Acceptance:
 - Agent can propose and execute changes safely
 
-## Remaining Backlog (071-100)
+## Phase 9 – Release Engineering
+
+> **Status: items 071-079 shipped as of v0.7.0** — the Crash Intelligence
+> Agent (`vectalon crash`) parses iOS/Android/JS crash logs (auto-detected
+> platform, or forced with `--platform`) and reuses the shared
+> RootCauseAnalyzer to bucket the root cause (null-reference,
+> module-resolution, resource, network, state-mutation, concurrency) with the
+> standard fix and investigation steps. The Mobile Architecture Scorecard
+> (`vectalon arch-score`) scores the module graph 0-100 across cycles (hard
+> penalty), layer boundaries, coupling, module cohesion, testability, and
+> nesting depth — with a letter grade and top improvements. The CI/CD
+> Intelligence Agent (`vectalon cicd`) scans GitHub Actions workflows
+> (plus other CI files, detected) for unpinned actions, missing
+> concurrency/timeouts, inline secrets, deploys without a test gate, and
+> missing triggers. The App Store Readiness Agent (`vectalon app-store`)
+> checks iOS/Android store submission surfaces — version/version-code
+> consistency across Info.plist, build.gradle, and package.json, icons,
+> iOS privacy manifest, permissions, cleartext posture. The SOC2 Readiness
+> Agent (`vectalon soc2`) probes repository evidence against the five trust
+> service criteria plus operational hygiene (access control, audit logging,
+> encryption, backups, incident response, vendor management, privacy
+> policy) with a score and per-control next steps. The Design Token Sync
+> Agent (`vectalon tokens`) flattens a style-dictionary token file and flags
+> orphaned tokens, hardcoded values that should be tokens, and duplicate
+> token values. Team Productivity Analytics (`vectalon team-stats`) runs one
+> read-only `git log` and derives cadence, author distribution, bus factor,
+> category mix, and change velocity. The Agent Permissions Audit
+> (`vectalon perms`) scans agent/MCP configuration for auto-approved
+> shell/file-mutation grants, local-exec MCP servers, and credentials in
+> config. The Engineering Dashboard (`vectalon dashboard`) aggregates every
+> agent report under docs/vectalon/* into an executive view with a
+> self-contained HTML dashboard (`--run` regenerates the fast core reports).
+> All ten agents (070-079) ship `--json` and reports to their
+> `docs/vectalon/<agent>/` dir (gitignored).
+
+### 071. Crash Intelligence Agent
+### 072. Mobile Architecture Scorecard
+### 073. CI/CD Intelligence Agent
+### 074. App Store Readiness Agent
+### 075. SOC2 Readiness Agent
+### 076. Design Token Sync Agent
+### 077. Team Productivity Analytics
+### 078. Agent Permissions Audit
+### 079. Engineering Dashboard
+
+Acceptance:
+- Release surfaces (stores, CI, SOC2, tokens) have deterministic agents
+- Team and agent-ops analytics are first-class commands
+
+## Remaining Backlog (080-100)
 
 Focus Areas:
 - Figma-to-code
-- Design token sync
 - Fine tuning pipelines
 - LoRA training
-- CI/CD intelligence
-- GitHub integration
-- Crashlytics intelligence
-- Sentry intelligence
+- GitHub integration (deep)
+- Sentry intelligence (event API sync)
 - Mobile observability
 - Enterprise governance
-- SOC2 readiness
-- Audit trails
-- Agent permissions
+- Audit trails (org-wide)
 - Multi-repository memory
-- Mobile architecture scoring
-- Team productivity analytics
 - Release prediction models
-- App Store readiness checks
-- Play Store readiness checks
-- Executive engineering dashboards
+- Play Store readiness checks (deep)
+- Mobile observability dashboards

@@ -41,6 +41,16 @@ import { refactorCommand } from './commands/refactor'
 import { depsCommand } from './commands/deps'
 import { a11yCommand } from './commands/a11y'
 import { releaseReadyCommand } from './commands/releaseReady'
+import { bugFixCommand } from './commands/bugFix'
+import { crashCommand } from './commands/crash'
+import { archScoreCommand } from './commands/archScore'
+import { cicdCommand } from './commands/cicd'
+import { appStoreCommand } from './commands/appStore'
+import { soc2Command } from './commands/soc2'
+import { tokensCommand } from './commands/tokens'
+import { teamStatsCommand } from './commands/teamStats'
+import { permsCommand } from './commands/perms'
+import { dashboardCommand } from './commands/dashboard'
 import { benchCommand } from './commands/bench'
 import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
 import { impactCommand } from './commands/impact'
@@ -454,6 +464,73 @@ export function createProgram(): Command {
     .action(releaseReadyCommand)
 
   program
+    .command('bug-fix [directory]')
+    .description('Autonomous Bug Fix Agent (Roadmap 070): proposes fixes for deterministic defects and applies the provably-safe ones — whole-line unused-import removal and var→const — with --apply (refusing a dirty git tree unless --force); dry-run by default; report to docs/vectalon/bug-fix/')
+    .option('--apply', 'Execute the safe fixes (git working tree must be clean unless --force)')
+    .option('--force', 'Allow --apply on a dirty working tree')
+    .option('--json', 'Print machine-readable output')
+    .action(bugFixCommand)
+
+  program
+    .command('crash [directory]')
+    .description('Crash Intelligence Agent (Roadmap 071): classifies an iOS, Android, or JS crash log into a root-cause bucket with the standard fix and investigation steps (auto-detected platform, or --platform ios|android|javascript); report to docs/vectalon/crash/')
+    .option('--log <path>', 'Path to the crash log to classify')
+    .option('--platform <name>', 'Force the crash platform (ios, android, javascript)')
+    .option('--json', 'Print machine-readable output')
+    .action(crashCommand)
+
+  program
+    .command('arch-score [directory]')
+    .description('Mobile Architecture Scorecard (Roadmap 072): a deterministic 0-100 score across cycles, layer boundaries, coupling, module cohesion, testability, and nesting depth — with a grade and top improvements; report to docs/vectalon/arch-score/')
+    .option('--src <dir>', 'Source directory to score (default: src)')
+    .option('--json', 'Print machine-readable output')
+    .action(archScoreCommand)
+
+  program
+    .command('cicd [directory]')
+    .description('CI/CD Intelligence Agent (Roadmap 073): scans CI workflows for anti-patterns — unpinned third-party actions, missing concurrency/timeouts, secrets in inline env, deploy steps without a test gate, missing workflow_dispatch; report to docs/vectalon/cicd/')
+    .option('--json', 'Print machine-readable output')
+    .action(cicdCommand)
+
+  program
+    .command('app-store [directory]')
+    .description('App Store Readiness Agent (Roadmap 074): iOS/Android store-readiness — version/version-code consistency across Info.plist, build.gradle, and package.json, app icons, iOS privacy manifest, Android permissions, cleartext posture; report to docs/vectalon/app-store/')
+    .option('--json', 'Print machine-readable output')
+    .action(appStoreCommand)
+
+  program
+    .command('soc2 [directory]')
+    .description('SOC2 Readiness Agent (Roadmap 075): a repository-evidence checklist mapped to the five trust-service criteria plus operational hygiene — access control, audit logging, encryption, backups, incident response, vendor management, privacy policy; report to docs/vectalon/soc2/')
+    .option('--json', 'Print machine-readable output')
+    .action(soc2Command)
+
+  program
+    .command('tokens [directory]')
+    .description('Design Token Sync Agent (Roadmap 076): parses the design-token file and checks for drift — tokens never referenced in source (orphans), hardcoded colors that should be tokens, and duplicate token values; report to docs/vectalon/tokens/')
+    .option('--json', 'Print machine-readable output')
+    .action(tokensCommand)
+
+  program
+    .command('team-stats [directory]')
+    .description('Team Productivity Analytics (Roadmap 077): deterministic git-history analytics — commit cadence, author distribution, bus factor, category mix, change velocity; read-only git; report to docs/vectalon/team-stats/')
+    .option('--json', 'Print machine-readable output')
+    .action(teamStatsCommand)
+
+  program
+    .command('perms [directory]')
+    .description('Agent Permissions Audit (Roadmap 078): scans agent/MCP configuration (Claude Code settings, Cursor MCP, .mcp.json) for over-permissioned tool grants and credentials in config; report to docs/vectalon/perms/')
+    .option('--json', 'Print machine-readable output')
+    .action(permsCommand)
+
+  program
+    .command('dashboard [directory]')
+    .description('Engineering Dashboard (Roadmap 079): aggregates every agent report into one executive view — per-agent health, overall verdict, and a self-contained HTML dashboard; --run regenerates the fast core reports first; report to docs/vectalon/dashboard/')
+    .option('--run', 'Regenerate the fast core reports (release-ready, arch-score, soc2) first')
+    .option('--open', 'Open the HTML dashboard in the default browser')
+    .option('--json', 'Print machine-readable output')
+    .action(dashboardCommand)
+
+  program
     .command('doctor [directory]')
     .description('Diagnose ecosystem items, native toolchain, leaderboard readiness, model access + web intel — with numbered fix steps and quick enable/disable')
     .option('--json', 'Print the report as JSON')
@@ -766,6 +843,16 @@ async function runInteractive(): Promise<void> {
       { value: 'deps', label: 'Plan dependency upgrades', hint: 'Pairing, duplicates, vulnerabilities → safe path (067)' },
       { value: 'a11y', label: 'Scan accessibility', hint: 'Labels, roles, touch targets across components (068)' },
       { value: 'release-ready', label: 'Check release readiness', hint: 'Version, changelog, clean tree, CI, secrets (069)' },
+      { value: 'bug-fix', label: 'Propose + apply safe fixes', hint: 'Unused imports, var→const — dry-run by default (070)' },
+      { value: 'crash', label: 'Classify a crash log', hint: 'iOS/Android/JS stack → root cause + fix (071)' },
+      { value: 'arch-score', label: 'Score the architecture', hint: '0-100 across cycles, layering, coupling, tests (072)' },
+      { value: 'cicd', label: 'Scan CI workflows', hint: 'Pins, concurrency, secrets, test gates (073)' },
+      { value: 'app-store', label: 'Check store readiness', hint: 'Versions, icons, privacy manifest, permissions (074)' },
+      { value: 'soc2', label: 'Check SOC2 readiness', hint: 'Trust criteria + operational hygiene (075)' },
+      { value: 'tokens', label: 'Check design-token drift', hint: 'Orphans, hardcoded values, duplicates (076)' },
+      { value: 'team-stats', label: 'Team productivity analytics', hint: 'Cadence, bus factor, author distribution (077)' },
+      { value: 'perms', label: 'Audit agent permissions', hint: 'Agent/MCP config grants + credentials (078)' },
+      { value: 'dashboard', label: 'Engineering dashboard', hint: 'Aggregate all agent reports + HTML (079)' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
       { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
       { value: 'pull', label: 'Download local model', hint: 'Download the default Qwen2.5-Coder model' },
@@ -1277,6 +1364,68 @@ async function runInteractive(): Promise<void> {
   if (action === 'release-ready') {
     await releaseReadyCommand('', {})
     p.outro('Release readiness checked')
+    return
+  }
+
+  if (action === 'bug-fix') {
+    await bugFixCommand('', {})
+    p.outro('Bug-fix scan complete — pass --apply to execute the safe fixes')
+    return
+  }
+
+  if (action === 'crash') {
+    const log = await p.text({ message: 'Path to the crash log', placeholder: 'crash.log' })
+    if (p.isCancel(log)) { p.outro('Cancelled'); return }
+    await crashCommand('', { log: typeof log === 'string' ? log : 'crash.log' })
+    p.outro('Crash classified')
+    return
+  }
+
+  if (action === 'arch-score') {
+    await archScoreCommand('', {})
+    p.outro('Architecture scored')
+    return
+  }
+
+  if (action === 'cicd') {
+    await cicdCommand('', {})
+    p.outro('CI scan complete')
+    return
+  }
+
+  if (action === 'app-store') {
+    await appStoreCommand('', {})
+    p.outro('Store readiness checked')
+    return
+  }
+
+  if (action === 'soc2') {
+    await soc2Command('', {})
+    p.outro('SOC2 readiness checked')
+    return
+  }
+
+  if (action === 'tokens') {
+    await tokensCommand('', {})
+    p.outro('Design-token scan complete')
+    return
+  }
+
+  if (action === 'team-stats') {
+    await teamStatsCommand('', {})
+    p.outro('Team analytics complete')
+    return
+  }
+
+  if (action === 'perms') {
+    await permsCommand('', {})
+    p.outro('Permissions audit complete')
+    return
+  }
+
+  if (action === 'dashboard') {
+    await dashboardCommand('', {})
+    p.outro('Dashboard generated')
     return
   }
 
