@@ -3,94 +3,110 @@
 @tailwind utilities;
 
 /* ─────────────────────────────────────────────────────────────
-   Theme tokens — set on <html data-theme="…"> by the bootstrap
-   script in layout.tsx (defaults to the system preference).
-   Palette family: vermilion #E35336 · cream #F5F5DC · sand
-   #F4A460 · sienna #A0522D. See apps/website/DESIGN_TOKENS.md.
+   THE CONSOLE — visual world for vectalon.in
+   Set on <html data-theme="…"> by the bootstrap script in
+   layout.tsx (defaults to the system preference).
+
+   The site is a terminal: statuslines, framed panes, mono type,
+   prompt-driven actions. Dark = phosphor console; light = paper
+   console (a terminal in daylight). The product's own terminal
+   frames stay dark in both modes — a terminal inside a terminal.
+
+   Brand: vermilion #E35336 (prompt, primary action) · sand
+   #F4A460 (hover) · phosphor green (guardrail pass / go).
    ───────────────────────────────────────────────────────────── */
 
 :root[data-theme='light'] {
   color-scheme: light;
 
-  /* surfaces */
-  --ink: 255 255 255; /* page background — white */
-  --ink-900: 250 248 243; /* deepest surface: inputs, code chips */
-  --ink-800: 247 245 239; /* card surface */
-  --ink-700: 226 220 207; /* borders */
+  /* surfaces — paper console */
+  --ink: 245 243 234; /* page ground */
+  --ink-900: 253 251 244; /* deepest: prompt line, inputs */
+  --ink-800: 250 248 239; /* pane surface */
+  --ink-700: 214 209 192; /* frame borders */
 
-  /* brand family (light variants darkened for WCAG AA contrast) */
-  --brand: 199 64 31; /* vermilion — links, buttons, stat values */
-  --brand-dim: 219 71 34; /* brighter vermilion */
-  --brand-strong: 165 82 29; /* sand-dark — hovers */
-  --on-brand: 255 255 255; /* text on brand surfaces */
-  --accent: 214 53 18;
-  --accent-dim: 185 44 14;
+  /* action family (darkened for WCAG AA on paper) */
+  --brand: 196 62 30; /* vermilion — prompt, CTAs */
+  --brand-dim: 219 94 56; /* brighter vermilion */
+  --brand-strong: 160 78 28; /* sand-dark — hover fills */
+  --on-brand: 255 255 255;
+  --accent: 30 120 68; /* phosphor green — go / guardrail pass */
+  --accent-dim: 24 98 54;
   --on-accent: 255 255 255;
 
-  /* warm-dark neutral text scale (olive-tinted) */
-  --slate-50: 27 23 15;
-  --slate-100: 39 34 24;
-  --slate-200: 58 51 39;
-  --slate-300: 86 77 61;
-  --slate-400: 112 102 82;
-  --slate-500: 140 128 106;
-  --slate-600: 163 152 130;
-  --slate-700: 186 177 157;
-  --slate-800: 210 202 187;
-  --slate-900: 232 228 218;
-  --slate-950: 244 241 235;
+  /* green-tinted neutral text scale (paper ink) — all pass WCAG AA on paper */
+  --slate-50: 27 30 24;
+  --slate-100: 41 44 37;
+  --slate-200: 58 62 53;
+  --slate-300: 86 91 80;
+  --slate-400: 104 109 92;
+  --slate-500: 90 95 79;
+  --slate-600: 118 124 106;
+  --slate-700: 145 150 132;
+  --slate-800: 176 180 164;
+  --slate-900: 208 211 199;
+  --slate-950: 233 235 227;
 
   /* decorative */
-  --grid-line: rgba(86, 77, 61, 0.13);
-  --glow-brand: rgba(199, 64, 31, 0.28);
-  --glow-sand: rgba(165, 82, 29, 0.22);
-  --glow-accent: rgba(214, 53, 18, 0.35);
+  --grid-line: rgba(86, 91, 80, 0.12);
+  --glow-brand: rgba(196, 62, 30, 0.22);
+  --glow-sand: rgba(160, 78, 28, 0.18);
+  --glow-accent: rgba(30, 120, 68, 0.22);
+  --term: 20 23 18; /* the product terminal — stays dark in both modes */
+  --term-border: 58 64 50;
 }
 
-/* No-theme fallback = dark. The bootstrap script in layout.tsx sets
-   data-theme before first paint; this default catches CSP-blocked or
+/* No-theme fallback = dark console. The bootstrap script in layout.tsx
+   sets data-theme before first paint; this default catches CSP-blocked or
    JS-disabled edge cases so the page never renders with undefined tokens. */
 :root {
   color-scheme: dark;
 
-  /* surfaces */
-  --ink: 13 12 10; /* page background — near-black */
-  --ink-900: 24 22 18; /* deepest surface: inputs, code chips */
-  --ink-800: 33 30 25; /* card surface */
-  --ink-700: 57 52 44; /* borders */
+  /* surfaces — phosphor console */
+  --ink: 13 15 12; /* page ground */
+  --ink-900: 19 22 17; /* deepest: prompt line, inputs */
+  --ink-800: 25 29 23; /* pane surface */
+  --ink-700: 45 51 41; /* frame borders */
 
-  /* brand family (original palette) */
-  --brand: 245 245 220; /* cream — links, buttons, stat values */
-  --brand-dim: 234 229 201;
-  --brand-strong: 244 164 96; /* sand — hovers */
-  --on-brand: 160 82 45; /* sienna text on cream surfaces */
-  --accent: 227 83 54; /* vermilion */
-  --accent-dim: 201 68 39;
-  --on-accent: 253 251 242;
+  /* action family */
+  --brand: 227 83 54; /* vermilion — prompt, CTAs */
+  --brand-dim: 240 158 74; /* sand — hovers */
+  --brand-strong: 199 64 31; /* darker vermilion — hover fills */
+  --on-brand: 22 17 12; /* dark ink on vermilion */
+  --accent: 74 222 128; /* phosphor green — go / guardrail pass */
+  --accent-dim: 52 168 96;
+  --on-accent: 8 12 9; /* dark ink on green */
 
-  /* warm-light neutral text scale */
-  --slate-50: 253 251 242;
-  --slate-100: 250 246 233;
-  --slate-200: 246 240 220;
-  --slate-300: 239 230 204;
-  --slate-400: 227 212 178;
-  --slate-500: 207 185 143;
-  --slate-600: 178 141 98;
-  --slate-700: 150 105 63;
-  --slate-800: 122 78 43;
-  --slate-900: 92 56 30;
-  --slate-950: 62 36 19;
+  /* green-tinted neutral text scale — meta passes AA on the console ground */
+  --slate-50: 241 239 229;
+  --slate-100: 236 234 220;
+  --slate-200: 226 224 210; /* body */
+  --slate-300: 198 200 184;
+  --slate-400: 156 163 141; /* secondary */
+  --slate-500: 124 134 113; /* meta */
+  --slate-600: 104 116 92; /* decorative */
+  --slate-700: 68 75 60;
+  --slate-800: 50 56 45;
+  --slate-900: 34 38 30;
+  --slate-950: 22 25 20;
 
   /* decorative */
-  --grid-line: rgba(245, 245, 220, 0.05);
-  --glow-brand: rgba(245, 245, 220, 0.2);
-  --glow-sand: rgba(244, 164, 96, 0.3);
-  --glow-accent: rgba(227, 83, 54, 0.45);
+  --grid-line: rgba(156, 163, 141, 0.07);
+  --glow-brand: rgba(227, 83, 54, 0.2);
+  --glow-sand: rgba(240, 158, 74, 0.16);
+  --glow-accent: rgba(74, 222, 128, 0.16);
+  --term: 20 23 18; /* the product terminal — stays dark in both modes */
+  --term-border: 58 64 50;
+}
+
+/* Display type is the terminal face: JetBrains Mono everywhere. */
+:root {
+  --font-display: var(--font-mono);
 }
 
 @layer base {
   body {
-    @apply bg-ink text-slate-200 antialiased;
+    @apply bg-ink font-mono text-slate-200 antialiased;
     transition: background-color 0.2s ease, color 0.2s ease;
   }
   h1,
@@ -102,33 +118,38 @@
 }
 
 ::selection {
-  @apply bg-brand/30 text-slate-50;
+  @apply bg-brand/40 text-slate-50;
 }
 
 @layer components {
+  /* Buttons read as console actions: flat blocks, sharp corners. */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-on-brand transition hover:bg-brand-strong hover:shadow-[0_0_28px_-8px_var(--glow-brand)] focus:outline-none focus:ring-2 focus:ring-brand/50;
+    @apply inline-flex items-center justify-center gap-2 rounded-[3px] bg-brand px-5 py-2.5 font-mono text-sm font-semibold text-on-brand transition hover:bg-brand-strong hover:shadow-[0_0_26px_-10px_var(--glow-brand)] focus:outline-none focus:ring-2 focus:ring-brand/50;
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-md border border-ink-700 bg-ink-900/40 px-5 py-2.5 text-sm font-medium text-slate-200 transition hover:border-brand/60 hover:text-brand focus:outline-none;
+    @apply inline-flex items-center justify-center gap-2 rounded-[3px] border border-ink-700 bg-ink-900/40 px-5 py-2.5 font-mono text-sm font-medium text-slate-200 transition hover:border-brand/60 hover:text-brand focus:outline-none;
   }
   .btn-accent {
-    @apply inline-flex items-center justify-center gap-2 rounded-md bg-accent px-5 py-2.5 text-sm font-semibold text-on-accent transition hover:bg-accent-dim hover:shadow-[0_0_28px_-8px_var(--glow-accent)] focus:outline-none focus:ring-2 focus:ring-accent/50;
+    @apply inline-flex items-center justify-center gap-2 rounded-[3px] bg-accent px-5 py-2.5 font-mono text-sm font-semibold text-on-accent transition hover:bg-accent-dim hover:shadow-[0_0_26px_-10px_var(--glow-accent)] focus:outline-none focus:ring-2 focus:ring-accent/50;
   }
+
+  /* A framed pane — the site's card. Sharp border, inner surface. */
   .card {
-    @apply rounded-xl border border-ink-700 bg-ink-800 p-6;
+    @apply rounded-[3px] border border-ink-700 bg-ink-800 p-6;
   }
+
+  /* Bracketed console segment */
   .chip {
-    @apply inline-flex items-center rounded-full border border-ink-700 bg-ink-800/80 px-3 py-1 text-xs text-slate-300;
+    @apply inline-flex items-center gap-1.5 rounded-[3px] border border-ink-700 bg-ink-800/80 px-2.5 py-1 font-mono text-xs text-slate-300;
   }
   .kbd {
-    @apply rounded border border-ink-700 bg-ink-900 px-1.5 py-0.5 font-mono text-xs text-slate-300;
+    @apply rounded-[3px] border border-ink-700 bg-ink-900 px-1.5 py-0.5 font-mono text-xs text-slate-300;
   }
   .micro {
-    @apply text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500;
+    @apply font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500;
   }
   .tbl {
-    @apply w-full border-collapse text-left text-sm;
+    @apply w-full border-collapse text-left font-mono text-sm;
   }
   .tbl th {
     @apply border-b border-ink-700 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-slate-500;
@@ -140,68 +161,175 @@
     @apply transition hover:bg-ink-800/60;
   }
   .badge {
-    @apply inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium;
+    @apply inline-flex items-center gap-1 rounded-[3px] border px-2 py-0.5 font-mono text-xs font-medium;
   }
   .badge-ok {
-    @apply border-emerald-600/30 bg-emerald-600/10 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300;
+    @apply border-emerald-600/40 bg-emerald-600/10 text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-400/10 dark:text-emerald-300;
   }
   .badge-warn {
-    @apply border-amber-600/30 bg-amber-600/10 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300;
+    @apply border-amber-600/40 bg-amber-600/10 text-amber-700 dark:border-amber-400/40 dark:bg-amber-400/10 dark:text-amber-300;
   }
   .badge-danger {
-    @apply border-red-600/30 bg-red-600/10 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300;
+    @apply border-red-600/40 bg-red-600/10 text-red-700 dark:border-red-400/40 dark:bg-red-400/10 dark:text-red-300;
   }
   .badge-muted {
-    @apply border-ink-700 bg-ink-800 text-slate-400;
+    @apply border-ink-700 bg-ink-800 text-slate-300;
   }
   .stat {
-    @apply rounded-xl border border-ink-700 bg-ink-800 p-5;
+    @apply rounded-[3px] border border-ink-700 bg-ink-800 p-5;
   }
   .stat-label {
-    @apply text-xs font-semibold uppercase tracking-wider text-slate-500;
+    @apply font-mono text-xs font-semibold uppercase tracking-wider text-slate-500;
   }
   .stat-value {
     @apply mt-1.5 font-display text-2xl font-bold text-slate-50;
   }
   .input {
-    @apply w-full rounded-md border border-ink-700 bg-ink-900 px-3 py-2 text-sm text-slate-50 placeholder-slate-500 focus:border-brand focus:outline-none;
+    @apply w-full rounded-[3px] border border-ink-700 bg-ink-900 px-3 py-2 font-mono text-sm text-slate-50 placeholder-slate-500 focus:border-brand focus:outline-none;
   }
+
   /* Blinking terminal cursor */
   .caret {
-    @apply inline-block h-[1em] w-[0.55em] animate-blink bg-brand align-text-bottom;
+    @apply ml-1 inline-block h-[1em] w-[0.55em] animate-blink bg-brand align-text-bottom;
   }
-  /* Hero backdrop: fine schematic grid, faded toward the bottom */
-  .hairline-grid {
-    background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-    background-size: 44px 44px;
-    -webkit-mask-image: radial-gradient(ellipse 90% 75% at 50% 0%, black 35%, transparent 78%);
-    mask-image: radial-gradient(ellipse 90% 75% at 50% 0%, black 35%, transparent 78%);
+
+  /* Solid caret while the prompt types itself out — hands off to the
+     blinking .caret once the command lands. */
+  .caret-solid {
+    @apply ml-1 inline-block h-[1em] w-[0.55em] bg-brand align-text-bottom;
   }
-  /* Soft glow around terminal windows */
-  .terminal-glow {
-    @apply border-brand/25 shadow-[0_0_70px_-24px_var(--glow-sand)];
+
+  /* The console frame — used for the hero and big product surfaces. */
+  .console {
+    @apply overflow-hidden rounded-[4px] border border-ink-700 bg-ink-900/60 font-mono;
+    box-shadow:
+      0 1px 0 0 rgb(255 255 255 / 0.03) inset,
+      0 24px 70px -30px rgb(0 0 0 / 0.55);
   }
-  /* Terminal frames stay dark in BOTH modes — the terminal is the
-     product, so it keeps a constant sienna-black livery. */
+  .console-head {
+    @apply flex items-center justify-between border-b border-ink-700/70 bg-ink-900/90 px-3 py-2 font-mono text-[11px] text-slate-500;
+  }
+
+  /* Statusline — tmux-style segmented bar. */
+  .statusline {
+    @apply flex items-stretch divide-x divide-ink-700/70 border-b border-ink-700/70 bg-ink-900/70 font-mono;
+  }
+  .statusline .seg {
+    @apply flex items-center gap-2 px-3.5 py-2 text-[12px] text-slate-400 transition hover:text-slate-200;
+  }
+  .statusline .seg-active {
+    @apply bg-brand/15 text-brand;
+  }
+
+  /* Pane header — ─── title ─── rule inside a framed pane */
+  .pane-head {
+    @apply flex items-center justify-between gap-3 border-b border-ink-700/60 pb-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500;
+  }
+  .pane-head::before,
+  .pane-head::after {
+    content: '';
+    @apply h-px flex-1 bg-ink-700/60;
+  }
+  .pane-head > span {
+    @apply shrink-0;
+  }
+
+  /* The product terminal — stays dark in BOTH modes (a terminal inside
+     a terminal). Colours come from the fixed --term triplets. */
   .term {
-    @apply overflow-hidden rounded-xl border border-white/10 bg-[#221409] font-mono;
-    box-shadow: 0 0 70px -24px var(--glow-sand);
+    @apply overflow-hidden rounded-[4px] border font-mono;
+    border-color: rgb(var(--term-border) / 1);
+    background: rgb(var(--term) / 1);
+    box-shadow: 0 24px 70px -32px rgb(0 0 0 / 0.6);
   }
   .term-head {
-    @apply flex items-center justify-between border-b border-white/10 bg-black/30 px-4 py-2.5;
+    @apply flex items-center justify-between border-b px-4 py-2.5;
+    border-color: rgb(var(--term-border) / 0.7);
+    background: rgb(255 255 255 / 0.04);
   }
   .term-body {
     @apply overflow-x-auto p-4 text-[13px] leading-relaxed text-[#E8E0C8];
   }
   .term-dot {
-    @apply h-3 w-3 rounded-full;
+    @apply h-2.5 w-2.5 rounded-full;
+  }
+
+  /* Live ticker: a vertical feed that reranks by cycling. The list is
+     duplicated; the animation translates it up in an endless loop. */
+  .ticker {
+    overflow: hidden;
+  }
+  .ticker-inner {
+    animation: ticker 22s linear infinite;
+  }
+  .ticker:hover .ticker-inner {
+    animation-play-state: paused;
+  }
+
+  /* Highlighted pane — the featured plan / product (soft vermilion bloom) */
+  .terminal-glow {
+    box-shadow: 0 0 46px -14px var(--glow-brand);
+  }
+
+  /* Live indicator — blinking phosphor dot */
+  .live-dot {
+    @apply inline-block h-1.5 w-1.5 rounded-full bg-accent;
+    animation: live-dot 1.6s ease-in-out infinite;
+  }
+
+  /* Phosphor scanlines over the hero console (subtle; decoration only). */
+  .scanlines {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgb(255 255 255 / 0.025) 0px,
+      rgb(255 255 255 / 0.025) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+}
+
+/* Terminal boot log — the demo frame's lines step in while the video loads */
+.boot-line {
+  animation: boot-line 0.35s ease-out both;
+}
+
+@keyframes boot-line {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ticker {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes live-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .caret,
-  .animate-fade-up {
+  .animate-fade-up,
+  .ticker-inner,
+  .live-dot,
+  .boot-line {
     animation: none;
   }
 }
@@ -209,7 +337,7 @@
 /* Safety net: if the compositor never advances entrance animations
    (throttled or non-composited webviews, energy saver, screenshot
    capture), the fade-up animation parks elements at their opacity-0
-   start frame and the terminal text is invisible against the dark
+   start frame and the console text is invisible against the dark
    page. The animWatchdog script in layout.tsx detects this and adds
    html.anim-frozen, which strips the animations so content shows. */
 html.anim-frozen .animate-fade-up,

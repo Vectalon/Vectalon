@@ -10,11 +10,12 @@ function currentTheme(): Theme {
 }
 
 /**
- * Light/dark override for the header. The bootstrap script in layout.tsx
- * already honours localStorage['vectalon-theme'] and sets data-theme before
- * paint — this button just writes that key and flips the attribute live.
- * Initial state stays 'dark' for SSR/hydration parity; the real theme is
- * read in an effect after mount so server and client render identically.
+ * Light/dark override for the statusline header. The bootstrap script in
+ * layout.tsx already honours localStorage['vectalon-theme'] and sets
+ * data-theme before paint — this button just writes that key and flips the
+ * attribute live. Initial state stays 'dark' for SSR/hydration parity; the
+ * real theme is read in an effect after mount so server and client render
+ * identically.
  */
 export function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>('dark')
@@ -42,13 +43,14 @@ export function ThemeToggle() {
       onClick={toggle}
       aria-label={label}
       title={label}
-      className="grid h-9 w-9 place-items-center rounded-md border border-ink-700 bg-ink-900/40 text-slate-300 transition hover:border-brand/60 hover:text-brand focus:outline-none focus:ring-2 focus:ring-brand/50"
+      className="seg hover:!text-brand"
     >
       {theme === 'dark' ? (
-        <Sun size={17} weight="regular" aria-hidden />
+        <Sun size={15} weight="regular" aria-hidden />
       ) : (
-        <Moon size={17} weight="regular" aria-hidden />
+        <Moon size={15} weight="regular" aria-hidden />
       )}
+      <span className="hidden sm:inline">{theme === 'dark' ? 'light' : 'dark'}</span>
     </button>
   )
 }

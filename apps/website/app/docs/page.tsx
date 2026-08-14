@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-const FREE = [
+const FREE: Array<[string, string]> = [
   ['init', 'Scan your project and build the knowledge base'],
   ['serve', 'Run the MCP server — agents connect from your editor'],
   ['feature "…"', 'Generate components, write tests, run workflows'],
@@ -14,14 +14,18 @@ const FREE = [
   ['bench / leaderboard', 'Run the RN benchmark suite against any model'],
 ]
 
-const PRO = [
+const PRO: Array<[string, string]> = [
   ['upgrade', 'React Native / Expo upgrade copilot — rn-diff-purge diffs, AST impact analysis, codemods'],
   ['ci', 'Self-healing CI generation'],
+  ['visual-ci', 'PR-mode visual regression — capture affected screens, diff vs committed baselines, post the report on the PR, exit with a gating code'],
+  ['ci-incident', 'Self-healing CI gate — file a triaged incident (severity, cause, rollback suggestion) for a failed CI gate into the team brain'],
+  ['visual-baseline', 'Manage the committed visual baselines — list, capture, update, prune, quarantine'],
   ['bundle', 'Bundle budget guardrails in code review'],
   ['profile', 'Hermes runtime analysis — JS-thread blocks, retained objects, leak candidates'],
   ['sandbox', 'Run commands with deny-by-default env, no network, hard time/memory limits'],
   ['render', 'Compile + headless-render generated code before the diff — Metro transform, sandboxed'],
   ['sync', 'Team brain — cross-project knowledge + cloud sync (Team)'],
+  ['team-policy', 'Org-wide guardrail policy — publish/pull the team policy + shared bundle budgets through the sync remote (Team)'],
 ]
 
 const STEPS = [
@@ -45,6 +49,30 @@ const STEPS = [
   },
 ]
 
+/** A man(1) section heading: NAME, SYNOPSIS, COMMANDS … */
+function ManH({ children, tone = 'default' }: { children: React.ReactNode; tone?: 'default' | 'accent' }) {
+  return (
+    <h2
+      className={`mt-10 flex items-center gap-3 font-mono text-[11px] font-bold uppercase tracking-[0.14em] first:mt-0 ${
+        tone === 'accent' ? 'text-brand' : 'text-slate-500'
+      }`}
+    >
+      {children}
+      <span className="h-px flex-1 bg-ink-700/60" aria-hidden />
+    </h2>
+  )
+}
+
+/** A command entry: bold command name, indented description (hanging indent). */
+function ManCmd({ cmd, desc }: { cmd: string; desc: string }) {
+  return (
+    <div className="grid gap-1 py-2.5 sm:grid-cols-[240px_1fr] sm:gap-6">
+      <code className="font-mono text-sm font-semibold text-slate-50">{cmd}</code>
+      <p className="text-sm leading-relaxed text-slate-400">{desc}</p>
+    </div>
+  )
+}
+
 export default function DocsPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-16">
@@ -56,86 +84,122 @@ export default function DocsPage() {
         </p>
       </div>
 
-      {/* Quickstart */}
-      <section className="mb-14">
-        <h2 className="mb-6 text-2xl font-bold text-slate-50">Quickstart</h2>
-        <div className="grid gap-5 md:grid-cols-3">
-          {STEPS.map(s => (
-            <div key={s.n} className="card">
-              <div className="font-mono text-sm text-brand">{s.n}</div>
-              <h3 className="mt-2 font-semibold text-slate-50">{s.title}</h3>
-              <code className="mt-3 block rounded-lg bg-ink-900 px-3 py-2 font-mono text-xs text-emerald-700 dark:text-emerald-300">
-                {s.code}
-              </code>
-              <p className="mt-3 text-sm leading-relaxed text-slate-400">{s.body}</p>
-            </div>
-          ))}
+      {/* man vectalon — the whole page is one console frame */}
+      <div className="console">
+        <div className="console-head">
+          <span className="flex items-center gap-2">
+            <span className="text-brand">$</span>
+            man vectalon
+          </span>
+          <span className="hidden items-center gap-1.5 sm:flex">
+            <span className="live-dot" aria-hidden />
+            v0.5.0
+          </span>
         </div>
-      </section>
 
-      {/* Command matrix */}
-      <section className="mb-14">
-        <h2 className="mb-6 text-2xl font-bold text-slate-50">Commands</h2>
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="card !p-0">
-            <div className="border-b border-ink-700 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-              Free — genuinely useful
-            </div>
-            <ul className="divide-y divide-ink-700/60">
-              {FREE.map(([cmd, desc]) => (
-                <li key={cmd} className="flex flex-col gap-1 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
-                  <code className="font-mono text-sm text-slate-50">{cmd}</code>
-                  <span className="text-sm text-slate-400">{desc}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="card !p-0">
-            <div className="border-b border-ink-700 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-brand">
-              Pro — teams & hard problems
-            </div>
-            <ul className="divide-y divide-ink-700/60">
-              {PRO.map(([cmd, desc]) => (
-                <li key={cmd} className="flex flex-col gap-1 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
-                  <code className="font-mono text-sm text-slate-50">{cmd}</code>
-                  <span className="text-sm text-slate-400">{desc}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* Trial CTA */}
-      <section className="card flex flex-col items-center gap-4 text-center sm:flex-row sm:justify-between sm:text-left">
-        <div>
-          <h3 className="text-lg font-semibold text-slate-50">Try every Pro command free</h3>
-          <p className="mt-1 text-sm text-slate-400">
-            14 days, no credit card — one GitHub login. The full upgrade copilot included.
+        <div className="px-5 py-6 sm:px-8 sm:py-8">
+          {/* NAME */}
+          <ManH>name</ManH>
+          <p className="mt-3 font-mono text-sm text-slate-300">
+            <span className="font-bold text-slate-50">vectalon</span> — the AI harness that lives
+            in your terminal
           </p>
-        </div>
-        <Link href="/trial" className="btn-primary shrink-0">
-          Start the trial
-        </Link>
-      </section>
 
-      <div className="mt-12 rounded-xl border border-ink-700 bg-ink-800 p-6 text-sm text-slate-400">
-        Looking for the full reference? It lives in the repo and covers every command, the MCP
-        tool catalog, the benchmark harness, and the upgrade pipeline.
-        <Link
-          href="https://github.com/Vectalon/Vectalon/blob/main/apps/website/docs/CLI_REFERENCE.md"
-          target="_blank"
-          className="ml-2 text-brand hover:underline"
-        >
-          CLI Reference →
-        </Link>
-        <Link
-          href="https://github.com/Vectalon/Vectalon/blob/main/apps/website/docs/TELEMETRY.md"
-          target="_blank"
-          className="ml-3 text-brand hover:underline"
-        >
-          Telemetry formats →
-        </Link>
+          {/* SYNOPSIS */}
+          <ManH>synopsis</ManH>
+          <pre className="mt-3 overflow-x-auto font-mono text-sm leading-relaxed text-slate-300">
+            <span className="text-brand">$</span> npx vectalon &lt;command&gt; [options]
+            {'\n'}
+            <span className="text-slate-600">$</span> npx vectalon feature "login screen with auth API"
+          </pre>
+
+          {/* QUICKSTART */}
+          <ManH>quickstart</ManH>
+          <div className="mt-3 divide-y divide-ink-700/50">
+            {STEPS.map(s => (
+              <div key={s.n} className="grid gap-2 py-3 sm:grid-cols-[240px_1fr] sm:gap-6">
+                <div className="flex items-baseline gap-3">
+                  <span className="font-mono text-xs text-slate-600">[{s.n}]</span>
+                  <code className="font-mono text-sm font-semibold text-brand">{s.code}</code>
+                </div>
+                <div>
+                  <div className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    {s.title}
+                  </div>
+                  <p className="mt-1 text-sm leading-relaxed text-slate-400">{s.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* COMMANDS — free */}
+          <ManH tone="accent">commands · free — genuinely useful</ManH>
+          <div className="mt-3 divide-y divide-ink-700/50 border-t border-ink-700/50">
+            {FREE.map(([cmd, desc]) => (
+              <ManCmd key={cmd} cmd={cmd} desc={desc} />
+            ))}
+          </div>
+
+          {/* COMMANDS — pro */}
+          <ManH tone="accent">commands · pro — teams & hard problems</ManH>
+          <div className="mt-3 divide-y divide-ink-700/50 border-t border-ink-700/50">
+            {PRO.map(([cmd, desc]) => (
+              <ManCmd key={cmd} cmd={cmd} desc={desc} />
+            ))}
+          </div>
+
+          {/* SEE ALSO */}
+          <ManH>see also</ManH>
+          <ul className="mt-3 space-y-2 font-mono text-sm">
+            <li>
+              <span className="text-slate-600">vectalon-cli(1)</span>{' '}
+              <Link
+                href="https://github.com/Vectalon/Vectalon/blob/main/apps/website/docs/CLI_REFERENCE.md"
+                target="_blank"
+                className="text-brand transition hover:text-brand-strong hover:underline"
+              >
+                full CLI reference in the repo →
+              </Link>
+            </li>
+            <li>
+              <span className="text-slate-600">vectalon-telemetry(7)</span>{' '}
+              <Link
+                href="https://github.com/Vectalon/Vectalon/blob/main/apps/website/docs/TELEMETRY.md"
+                target="_blank"
+                className="text-brand transition hover:text-brand-strong hover:underline"
+              >
+                telemetry formats →
+              </Link>
+            </li>
+            <li>
+              <span className="text-slate-600">vectalon-trial(1)</span>{' '}
+              <Link href="/trial" className="text-brand transition hover:text-brand-strong hover:underline">
+                start the 14-day Pro trial →
+              </Link>
+            </li>
+            <li>
+              <span className="text-slate-600">vectalon-team-policy(7)</span>{' '}
+              <Link
+                href="https://github.com/Vectalon/Vectalon/blob/main/apps/website/docs/TEAM_POLICY.md"
+                target="_blank"
+                className="text-brand transition hover:text-brand-strong hover:underline"
+              >
+                org-wide guardrail policy setup →
+              </Link>
+            </li>
+          </ul>
+
+          {/* TRIAL CTA — the prompt line */}
+          <div className="mt-10 rounded-[3px] border border-ink-700 bg-ink-900 px-4 py-3.5">
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-sm text-slate-300">
+              <span className="text-brand">vectalon@main:~$</span> npx vectalon trial --14-days
+              <span className="caret" />
+            </p>
+            <p className="mt-1.5 font-mono text-[11px] text-slate-500">
+              14 days, no credit card — one GitHub login. The full upgrade copilot included.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   )

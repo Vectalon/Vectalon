@@ -1,0 +1,193 @@
+{
+  "title": "Choose Vectalon's visual world",
+  "question": "The roll assigned THE DIFF. Keep it, take an alternate, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "THE DIFF",
+      "kicker": "THE ROLL",
+      "lineage": "unified diff / patch culture — the code review, the PR, the changelog",
+      "thesis": "The page is one unified diff between your project before Vectalon (red) and after (green). The product's proof is patches — healing, generation, upgrades all land as diffs — so the site speaks the developer's native review language instead of the dark-terminal hero.",
+      "palette": [
+        "#F7F5F0",
+        "#1F2328",
+        "#C74B36",
+        "#1E7A46",
+        "#B57614"
+      ],
+      "materials": [
+        "editor paper ground",
+        "patch hunks with line-number gutters",
+        "@@ hunk headers",
+        "--- a/ +++ b/ file banners",
+        "one blinking caret"
+      ],
+      "viewport": "One hunk fills the hero: --- a/your-project with red lines (generic AI guesses, manual upgrades, broken build) above +++ b/your-project with green lines (living knowledge graph, compile-checked healing, always-current model). A diffstat bar heads it (58 tools, 11 scenarios, 90% guardrail pass rate). The primary action is the green added line at the hunk's foot: See it run.",
+      "risk": "A patch is dev-native but visually quiet — if the red/green grammar is timid, the page reads as plain text. The hunks must be set at poster scale, full-bleed, with the gutters and file banners doing real structural work.",
+      "raised": [
+        { "from": "challenger-versailles", "raise": "Hidden depth inside the main artifact: the hero hunk folds open to reveal the agent's reasoning trail, a bosquet behind the parterre." },
+        { "from": "challenger-cyclorama", "raise": "States are named cues: every red/green diff state also carries a word or gutter symbol, never color alone." },
+        { "from": "challenger-ebru", "raise": "One contact: the first viewport carries the whole offer in a single hunk; everything below is one lift of detail, not stacked promises." }
+      ]
+    },
+    {
+      "id": "model-pick",
+      "label": "THE CONSOLE",
+      "kicker": "MY PICK",
+      "lineage": "TUI dashboard culture — tmux, htop, lazygit, btop",
+      "thesis": "The page is a live multi-pane terminal dashboard: a statusline top (branch, bench, intel), the agent loop as split panes (ecosystem feed, guardrails, healing log), and the product's commands as keystrokes that change the panes.",
+      "palette": [
+        "#0F1419",
+        "#E8E4D8",
+        "#E35336",
+        "#4ADE80"
+      ],
+      "materials": [
+        "statusline segments",
+        "split-pane frames",
+        "ASCII borders",
+        "live-updating panels"
+      ],
+      "viewport": "A full-bleed terminal: statusline with vectalon main · bench 90% · intel 26 live; three panes showing the intel feed reranking, a guardrail passing, and the healing log; a prompt line at the bottom is the primary action (type npx vectalon init).",
+      "risk": "Familiar — terminal-screen culture is this category's default, and the incumbent site is already terminal-heavy. It risks re-delivering the black page the user is fleeing.",
+      "signature": "Each pane updates when you press the product's real commands; a keystroke on the prompt runs the demo."
+    },
+    {
+      "id": "challenger-starship",
+      "label": "THE WORKHOUSE CONSOLE",
+      "verdict": "competitive",
+      "lineage": "used-future starship crew terminals",
+      "thesis": "The harness as a ship's ready-room console: green phosphor answers typed queries line by line, amber warnings flash under striped hazard plates, stenciled equipment codes label every zone of the product.",
+      "palette": [
+        "#0A0F0B",
+        "#33FF66",
+        "#FFB000",
+        "#E8E4D8"
+      ],
+      "materials": [
+        "phosphor caps",
+        "curved CRT glass",
+        "stencil codes",
+        "striped hazard plates"
+      ],
+      "viewport": "A curved glass screen in grimy off-white panel chrome; you type npx vectalon init and the green caps type themselves out, one character at a time, while an amber line blinks the build status.",
+      "case": "Fuses cleanly — the harness as ship's paperwork made screen; wins audience identification, loses product clarity: its CRT-black ground is exactly the black overlay the user is fleeing.",
+      "risk": "Reads as retro-novelty if the typed-line grammar is not strict."
+    },
+    {
+      "id": "challenger-oscilloscope",
+      "label": "THE BENCH INSTRUMENT",
+      "verdict": "competitive",
+      "lineage": "CRT oscilloscope on a signal bench",
+      "thesis": "The harness as a measurement instrument: your repo's health is a phosphor trace riding an etched graticule, compile-check is the trigger lock that holds the waveform still, and the benchmark grid is the ten-division screen.",
+      "palette": [
+        "#0A0F0B",
+        "#33FF66",
+        "#E8E4D8",
+        "#FFB000"
+      ],
+      "materials": [
+        "phosphor trace",
+        "etched graticule",
+        "detented knobs",
+        "seven-segment readouts"
+      ],
+      "viewport": "One screen, many signals: the trace is your project without Vectalon (noise), the trigger engages at the compile-check, and the frozen waveform is your project healed. Readouts carry the real benchmarks.",
+      "case": "Holds audience identification (instrumentation is engineering-native) and loses narrowly on clarity for the generation story.",
+      "risk": "Strong for measurement, thin for codegen — the diff of added code must still be told."
+    },
+    {
+      "id": "challenger-gateboard",
+      "label": "THE GATE BOARD",
+      "verdict": "competitive",
+      "lineage": "boarding passes and live departure gate boards",
+      "thesis": "The project is your flight and the agent loop is the gate board: live intel reranks in place, a changed gate flashes and holds until noticed, and the SDLC phases tear off a segmented pass.",
+      "palette": [
+        "#F2F2F0",
+        "#1A1A18",
+        "#C74B36",
+        "#1E7A46"
+      ],
+      "materials": [
+        "segmented pass",
+        "scannable blocks",
+        "fixed column grid",
+        "tabulated figures"
+      ],
+      "viewport": "A departure board lists the day's flights (your commands); one row flashes — a fix landed — holds its alert color, and reranks to the top.",
+      "case": "Fuses cleanly — change-flash-and-hold carries the healing loop and the pass segments carry the workflow; holds product clarity, identification is the weak axis.",
+      "risk": "The travel metaphor can drift from the code the product actually ships."
+    },
+    {
+      "id": "challenger-versailles",
+      "label": "THE GARDEN PLAN",
+      "verdict": "declined",
+      "lineage": "Versailles axial vistas and concealed bosquets",
+      "palette": [
+        "#4A6B3A",
+        "#D9CDB0",
+        "#C9A227",
+        "#8E8E8E"
+      ],
+      "case": "Fuses poorly: a CLI tool as a choreographed formal garden fails audience identification and buries the product's clarity.",
+      "kept": "Hidden depth inside the main artifact — secret rooms behind the public axis.",
+      "hero": "https://impeccable.style/worlds/cards/architecture-inhabitable-space-versailles-bosquet-vistas-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/architecture-inhabitable-space-versailles-bosquet-vistas.webp"
+    },
+    {
+      "id": "challenger-cyclorama",
+      "label": "THE LIGHTING CUE",
+      "verdict": "declined",
+      "lineage": "stage lighting cyclorama from blackout to day",
+      "palette": [
+        "#0A0A0A",
+        "#1B2A6B",
+        "#E08A9E",
+        "#F5F5F0"
+      ],
+      "case": "Fuses poorly: the dev day as a dawn cue is a mood, not a structure the product's facts can drive.",
+      "kept": "States as named cues — color never the sole signal for failing, healing, passing.",
+      "hero": "https://impeccable.style/worlds/cards/stagecraft-theater-lighting-cyclorama-dawn-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/stagecraft-theater-lighting-cyclorama-dawn.webp"
+    },
+    {
+      "id": "challenger-ebru",
+      "label": "THE ONE-PASS LIFT",
+      "verdict": "declined",
+      "lineage": "ebru floated-pigment marbling",
+      "palette": [
+        "#F5EFE2",
+        "#1F3A5F",
+        "#C74B36",
+        "#2E7D5B"
+      ],
+      "case": "Fuses poorly: irreversible pigment displacement is a beautiful ritual with no grip on the product's review-and-heal loop.",
+      "kept": "One contact — the whole offer lands in the first viewport, lifted once.",
+      "hero": "https://impeccable.style/worlds/cards/medium-native-ebru-floated-pigment-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/medium-native-ebru-floated-pigment.webp"
+    }
+  ],
+  "reroll": {
+    "registers": [
+      "safer",
+      "bolder"
+    ]
+  },
+  "canon": true,
+  "canonCard": {
+    "label": "The category standard",
+    "thesis": "Dark hero with a terminal window, gradient glow, three feature cards, pricing grid. Played straight at full fidelity.",
+    "palette": [
+      "#0A0A0A",
+      "#FFFFFF",
+      "#6C5CE7"
+    ],
+    "materials": [
+      "glow",
+      "terminal screenshot",
+      "card grid"
+    ],
+    "viewport": "Centered headline over a terminal screenshot, three equal cards, pricing table.",
+    "risk": "This is the rut the redesign exists to leave."
+  }
+}

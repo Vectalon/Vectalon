@@ -2,9 +2,17 @@ import Link from 'next/link'
 
 const RELEASES = [
   {
-    version: 'v0.4.0',
+    version: 'v0.5.0',
     date: '2026-08-13',
     tag: 'latest',
+    highlights: [
+      'Project Diagnostics (Roadmap 011-015) — the new vectalon diagnostics command validates the build/toolchain surface in one deterministic pass with a suggested fix for every finding: Metro config (shape, alias targets, watchFolders in monorepos, cache advice), Hermes compatibility against a known-issue database (hermesEnabled/newArchEnabled states, New-Arch-without-Hermes, legacy RN), Android/Gradle project checks plus a build-log parser that classifies the top RN build errors (SDK, AGP, dependency resolution, AAPT, NDK, Java, network, OOM) and Xcode/Podfile checks plus a log parser for CocoaPods, signing, linker, plist, and Xcode-version failures, and dependency conflict detection against an RN ecosystem matrix with duplicate versions across monorepo members',
+      'Code generation (Roadmap 016-020) — the new vectalon generate command writes deterministic templates into the project (or previews them with --dry-run): components (functional TS + StyleSheet), screens (React Navigation wired), tests (Jest RTL or Detox), native modules (iOS ObjC++ + Android Kotlin scaffolds via --api rn-cli|expo from a JSON spec), and API clients (typed service class + apiBase.ts with ApiError generated from an OpenAPI spec — path params, request bodies, response types, error handling)',
+    ],
+  },
+  {
+    version: 'v0.4.0',
+    date: '2026-08-13',
     highlights: [
       'Project Intelligence Core (Roadmap 001-010) — the new vectalon intel command runs one deterministic pass producing the versioned project manifest + validation, workspace/monorepo discovery (pnpm, yarn, npm, turbo, lerna, and now Nx), a file-to-file dependency graph with circular-import cycle detection, AST parse-rate statistics, an incremental repository index (content fingerprints, re-index only changed files), component + navigation graphs (navigators, Expo Router routes, deep-link map), a native module registry (Podfile pods, podspecs, Gradle includes, TurboModule specs), and ranked knowledge retrieval over hash-embedded chunked source with a sub-second benchmark',
       'Repository-wide scans — when the target is a workspace root, every member package is indexed too; reports land in docs/vectalon/intel/ (gitignored); --json, --graph deps|components|navigation|native|manifest, --search, and --bench',
@@ -156,7 +164,7 @@ export default function ChangelogPage() {
         ))}
       </div>
 
-      <div className="mt-12 rounded-xl border border-ink-700 bg-ink-800 p-6 text-sm text-slate-400">
+      <div className="mt-12 rounded-[3px] border border-ink-700 bg-ink-800 p-6 text-sm text-slate-400">
         The full changelog — including the pre-0.1.22 history — lives in the repository.
         <Link href="https://github.com/Vectalon/Vectalon/blob/main/packages/rn/CHANGELOG.md" target="_blank" className="ml-2 text-brand hover:underline">
           View on GitHub →

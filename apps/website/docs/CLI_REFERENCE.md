@@ -12,8 +12,9 @@ when the package is installed; `npx` prefers the local binary.)
 
 Running `npx vectalon` with no arguments opens an **interactive menu** covering
 the most common actions (init, feature, refresh, suggestions, bundle, status,
-daemon, telemetry, impact, coverage, intel, smoke, ci, release, ecosystem,
-doctor, selftest, bench, leaderboard, sync, policy, serve, pull, models, help).
+daemon, telemetry, impact, coverage, intel, diagnostics, generate, smoke, ci,
+release, ecosystem, doctor, selftest, bench, leaderboard, sync, policy, serve,
+pull, models, help).
 
 ---
 
@@ -54,6 +55,9 @@ npx vectalon init --model vllm     # local vLLM server — no API key
 |---|---|
 | `[directory]` | Project root to scan (default: cwd) |
 | `--model <provider>` | Default model provider: `local` \| `wasm` \| `openai` \| `anthropic` \| `azure-openai` \| `groq` \| `ollama` \| `vllm` |
+| `--resume` | Resume an interrupted init from its last completed phase |
+| `--clean-restart` | Roll back an interrupted init (restore originals) and start over |
+| `--force` | Re-initialize even when the project is already initialized |
 
 **What it does**
 
@@ -117,7 +121,8 @@ npx vectalon serve --model openai     # override the model provider for this run
 
 **What it does**
 
-- Exposes **60 built-in MCP tools** — 50 core tools by default, plus the knowledge-base
+- Exposes **65 built-in MCP tools** — 58 available by default (core harness, SDLC, ecosystem,
+  upgrade, perf, sandbox, and render tools), plus the knowledge-base
   and team-brain tools when those services are present (project context, SDLC
   modules, devices & E2E incl. screen-reader control, cross-package impact,
   release planning & crash monitoring, sandboxed execution, headless
@@ -274,6 +279,7 @@ npx vectalon feature --ticket MOB-123 --push   # ticket-to-PR: read the ticket, 
 | `--heal-interactive` | Prompt before applying each self-healing review fix |
 | `--heal-attempts <n>` | Max review→fix→re-review cycles (default 3) |
 | `--heal-severity <level>` | Lowest severity that heals: `error` \| `warning` \| `info` |
+| `--strict-verification` | Gate on pre-existing project failures too (default: ignore failures that reference no workflow-touched file) |
 | `--ticket <key>` | Read a ticket from the PM adapter (Jira/GitHub/Monday) and run the workflow headlessly from its title + description. The positional prompt becomes optional when this is set |
 
 **What it does**
@@ -339,8 +345,10 @@ npx vectalon ecosystem --export --json      # ... as JSON
 | `--enable <id>` | Enable an ecosystem item — for MCP items, the npm package is first verified to exist on the registry (fail-fast: a confirmed 404 blocks with a clear message instead of surfacing as a serve-time failure). Offline, the check is skipped with a warning |
 | `--force` | Skip the npm-registry existence check when enabling an MCP item |
 | `--disable <id>` | Disable an enabled item |
+| `--info <id>` | Show the install command + capabilities for one item |
 | `--export` | Export enabled items as an MCP client config fragment |
 | `--json` | Print the export as JSON |
+| `--expanded` | Force the full catalog view (descriptions + commands) even when piped |
 
 **Exit codes**
 
@@ -488,7 +496,7 @@ command to enable real inference (or **fails** under `--require-model`).
 | Option | Description |
 |---|---|
 | `[directory]` | Project root (default: cwd) — only used for the report output dir |
-| `--category <cat>` | Run only one category (`cli`, `sdlc`, `guardrails`, `knowledge`, `harness`, `model`, `mcp`, `workflows`, `ecosystem`, `bench`, `adapters`, `memory`, `upgrade`, `perf`, `sandbox`, `render`, `diagnostics`) |
+| `--category <cat>` | Run only one category (`cli`, `sdlc`, `guardrails`, `knowledge`, `harness`, `model`, `mcp`, `workflows`, `ecosystem`, `bench`, `adapters`, `memory`, `upgrade`, `perf`, `sandbox`, `render`, `diagnostics`, `naming`) |
 | `--only <id>` | Run a single check by id |
 | `--model <provider>` | Force the model provider for the real-inference check: `local` \| `wasm` \| `openai` \| `anthropic` \| `azure-openai` \| `groq` \| `ollama` \| `vllm` (default: the project's configured provider, or `local`) |
 | `--require-model` | Fail (instead of warn) when the inference check cannot run a real model (no downloaded GGUF / WASM weights, no API key) — for CI runs that guarantee a model |
@@ -617,12 +625,150 @@ npx vectalon ci ./my-app
   `--push` run, so `vectalon ci` is only needed to add CI to an existing repo
   or to (re)generate after script changes
 
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--provider <host>` | Force a CI host instead of detecting from the git remote (`github` \| `azure` \| `gitlab` \| `bitbucket`) |
+| `--dry-run` | Show what would be generated without writing files |
+
 **Exit codes**
 
 | Code | When |
 |---|---|
 | 0 | Workflow generated (or already present) |
 | 1 | No `.vectalon/` directory found |
+
+---
+
+## `visual-ci`
+
+PR-mode **visual regression**: capture the screens a branch changes, diff
+them against the committed baselines (`docs/vectalon/visual-baselines`), post
+the report on the PR, and exit with a gating code — the visual half of the
+self-healing CI pipeline.
+
+```bash
+npx vectalon visual-ci                          # diff changed screens vs origin/main
+npx vectalon visual-ci --base main              # use a different base ref
+npx vectalon visual-ci --screens LoginScreen,ProfileScreen   # explicit screens
+npx vectalon visual-ci --verdict strict         # fail on any visual diff
+npx vectalon visual-ci --pr 123 --push          # post the report as a PR comment
+npx vectalon visual-ci --json                   # machine-readable outcome
+npx vectalon visual-ci --dry-run                # describe the plan, touch nothing
+npx vectalon visual-ci --incident               # file a triaged incident on regression
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--base <ref>` | Ref whose baselines are used (default: `GITHUB_BASE_REF` or `origin/main`) |
+| `--screens <list>` | Comma-separated screen keys to check (default: derived from changed files) |
+| `--changed <files>` | Comma-separated changed files (default: `git diff base...HEAD`) |
+| `--platform <type>` | Device platform (`ios` \| `android`) |
+| `--attempts <n>` | Capture attempts per screen (default 3) |
+| `--settle-ms <n>` | Settle wait before each capture in ms (default 2500) |
+| `--verdict <policy>` | Gating policy: `strict` \| `warn` \| `report` (default `warn`) |
+| `--pr <number>` | Post the report as a PR comment (upsert) |
+| `--push` | Allow git push / PR comments |
+| `--out <dir>` | Run output directory (default `.vectalon/visual-ci`) |
+| `--json` | Print the machine-readable outcome as JSON |
+| `--dry-run` | Describe the plan without touching a device |
+| `--incident` | File a triaged incident into the knowledge base when the gate fails (regression only — infrastructure failures are reported, not filed) |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | No regressions (or `--verdict warn`/`report` passed) |
+| 1 | A regression failed the gate under `--verdict strict`, or the run errored |
+
+---
+
+## `ci-incident`
+
+The **self-healing CI gate**: file a triaged incident — severity, cause bucket,
+rollback suggestion — for a failed CI gate into the knowledge base, so every
+CI failure becomes something the team brain learns from.
+
+```bash
+npx vectalon ci-incident --gate bundle-budget --step quality --exit 1
+npx vectalon ci-incident --gate visual-regression --commit abc1234 --severity sev1
+npx vectalon ci-incident --command "vectalon bench --baseline" --output "$(cat fail.log)"
+npx vectalon ci-incident --telemetry telemetry/ --json   # data-driven triage
+npx vectalon ci-incident --dry-run                       # analyze + print, don't persist
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--gate <name>` | Gate that failed, e.g. `visual-regression` \| `quality` \| `bundle-budget` \| `bench-regression` (default `ci`) |
+| `--step <name>` | Workflow step that failed |
+| `--command <cmd>` | The failing command |
+| `--exit <code>` | Exit code of the failing step |
+| `--output <text>` | Failing output (truncated in the report) |
+| `--commit <sha>` | Failing commit sha (default: `git HEAD`) |
+| `--branch <name>` | Failing branch (default: git / CI env) |
+| `--severity <level>` | Override severity: `sev1` \| `sev2` \| `sev3` |
+| `--telemetry <dir>` | Ingest crash telemetry exports to make the triage data-driven |
+| `--json` | Print the incident as JSON |
+| `--dry-run` | Analyze + print without persisting |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Incident filed (or printed with `--dry-run`/`--json`) |
+| 1 | No `.vectalon/`, missing inputs, or the triage failed |
+
+---
+
+## `visual-baseline`
+
+Manage the **committed visual baselines** (`docs/vectalon/visual-baselines`)
+that `visual-ci` diffs against: list, capture, update, prune, and quarantine
+them.
+
+```bash
+npx vectalon visual-baseline --list
+npx vectalon visual-baseline --capture LoginScreen --from login.png --platform ios
+npx vectalon visual-baseline --update LoginScreen --from login-new.png
+npx vectalon visual-baseline --quarantine LoginScreen --reason "flaky dark mode"
+npx vectalon visual-baseline --unquarantine LoginScreen
+npx vectalon visual-baseline --prune --dry-run        # see what would be removed
+npx vectalon visual-baseline --tolerance '{"driftThreshold":0.05}'
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--list` | List committed baselines |
+| `--capture <key>` | Add a baseline for a screen key |
+| `--update <key>` | Replace a baseline (clears quarantine) |
+| `--from <path>` | PNG source for `--capture`/`--update` |
+| `--platform <type>` | Platform for `--capture` (`ios` \| `android`) |
+| `--note <text>` | Note for the baseline entry |
+| `--tolerance <json>` | Per-key diff tolerance overrides, e.g. `{"driftThreshold":0.05}` |
+| `--quarantine <key>` | Quarantine a baseline (reports but never gates) |
+| `--reason <text>` | Reason for `--quarantine` |
+| `--unquarantine <key>` | Clear a quarantine |
+| `--prune` | Remove baselines whose key matches no screen in the project |
+| `--dry-run` | Show what `--prune` would remove without removing |
+| `--json` | Print the result as JSON |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Operation completed |
+| 1 | No `.vectalon/`, unknown key, missing `--from`, or the operation failed |
 
 ---
 
@@ -900,6 +1046,7 @@ npx vectalon impact --changed "packages/ui/src/Button.tsx,packages/core/src/hook
 | `--push` | Allow git push / PR comments |
 | `--json` | Print the impact report as JSON instead of markdown |
 | `--dry-run` | Simulate the PR comment without posting |
+| `--out <dir>` | Write the impact doc to this directory instead of `docs/vectalon/impact` |
 
 **What it does**
 
@@ -1004,6 +1151,70 @@ gitignored.
 
 ---
 
+## `diagnostics`
+
+**Project Diagnostics** (Roadmap Phase 2, items 011-015) — one deterministic
+pass that validates the build/toolchain surface of a React Native project and
+suggests a concrete fix for every finding:
+
+```bash
+npx vectalon diagnostics                    # full report → docs/vectalon/diagnostics/report.{json,md}
+npx vectalon diagnostics --json             # machine-readable report on stdout
+npx vectalon diagnostics --gradle-log build.log   # classify a Gradle failure's root cause
+npx vectalon diagnostics --xcode-log build.log    # classify an Xcode failure's root cause
+```
+
+**Categories (011-015)**
+
+| # | Category | What it validates |
+|---|---|---|
+| 011 | Metro | Config shape, alias targets (do they resolve?), watchFolders in monorepos, cache advice |
+| 012 | Hermes | hermesEnabled / newArchEnabled flags against a **known-issue database** (disabled, New-Arch mismatch, legacy RN) |
+| 013 | Android (Gradle) | compileSdkVersion, daemon heap, and a **log parser** classifying the top RN build errors (SDK/AGP/deps/AAPT/NDK/Java/network/OOM) |
+| 014 | iOS (Xcode) | Podfile + deployment target, and a **log parser** for CocoaPods/signing/linker/plist/Xcode-version failures |
+| 015 | Dependencies | Peer checks against an RN ecosystem matrix + duplicate versions across monorepo members |
+
+Each check carries `pass` / `warn` / `fail` / `info`, a human detail line, and a
+`fix` with the exact command or config edit. Gradle/Xcode log analysis reports
+the root cause, the matching evidence lines, and the standard fix. In a
+monorepo every member package is scanned (Metro config is also read at the
+workspace root). Writes `docs/vectalon/diagnostics/report.json` + `report.md`
+(gitignored).
+
+---
+
+## `generate`
+
+**Code generation** (Roadmap Phase 2, items 016-020) — deterministic templates
+for the pieces every RN app needs, written into the project (or previewed with
+`--dry-run`):
+
+```bash
+npx vectalon generate component UserCard          # → src/components/UserCard.tsx
+npx vectalon generate screen Profile              # → src/screens/Profile.tsx (with navigation)
+npx vectalon generate test UserCard               # → __tests__/user-card.test.tsx (Jest RTL)
+npx vectalon generate test UserCard --framework detox
+npx vectalon generate native-module CameraScanner --spec '{"moduleName":"CameraScanner","methods":[...]}'
+npx vectalon generate api OrdersApi --spec openapi.json   # typed services + apiBase
+npx vectalon generate component PaymentSheet --dry-run    # preview without writing
+```
+
+**Generators (016-020)**
+
+| # | Generator | Output |
+|---|---|---|
+| 016 | Component | Functional TS component with StyleSheet (flags: `--no-typescript`, `--no-styles`, `--navigation`) |
+| 017 | Screen | Component with React Navigation hooks wired in |
+| 018 | Native module | Full iOS (ObjC++ header/impl) + Android (Kotlin) scaffold, `--api rn-cli` (TurboModule) or `expo`, from a JSON spec |
+| 019 | Test | Jest `@testing-library/react-native` or Detox E2E test for a component |
+| 020 | API client | Typed service class + shared `apiBase.ts` (ApiError) from an **OpenAPI spec** — path params, request bodies, response types, error handling |
+
+`--dry-run` prints the files that would be written and the full generated
+source without touching the project — safe for review. Native-module and api
+generators take `--spec` as inline JSON or a path to a `.json` file.
+
+---
+
 ## `smoke`
 
 **Post-release verification**: run **every CLI command** against the project
@@ -1016,7 +1227,7 @@ npx vectalon smoke                       # every fast check, dev mode, report to
 npx vectalon smoke --full                # + slow/model-heavy checks (feature, bench, selftest, pull)
 npx vectalon smoke --json                # machine-readable report on stdout (CI)
 npx vectalon smoke --only impact,coverage # targeted subset
-npx vectalon smoke --list                # show all 34 checks
+npx vectalon smoke --list                # show all 36 checks
 npx vectalon smoke --no-dev              # respect the real tier — Pro/Team commands report as skips
 ```
 
@@ -1038,7 +1249,7 @@ npx vectalon smoke --no-dev              # respect the real tier — Pro/Team co
 
 **What it does**
 
-- Runs 34 checks covering the whole command surface — version/help, init,
+- Runs 36 checks covering the whole command surface — version/help, init,
   status, models, auth, policy, refresh, suggestions, ecosystem, doctor,
   impact, coverage, intel, telemetry, bundle, profile, sandbox, render, ci,
   release, leaderboard, visual-ci, visual-baseline, ci-incident, serve
@@ -1099,6 +1310,7 @@ npx vectalon upgrade --to 53 --apply     # Expo SDK target
 | `--force` | Also apply `review` steps (New Architecture flips, SDK level bumps) |
 | `--diff` | Also fetch and print the official **rn-diff-purge** template diff (categorized native `android/`/`ios/` vs JS/TS `App.tsx`/`index.js`/configs) for this upgrade — live from GitHub, always current even for releases newer than the catalog. Bare RN CLI only (Expo uses expo-upgrade) |
 | `--json` | Print the report as JSON instead of markdown |
+| `--no-verify` | Skip post-apply verification (doctor, typecheck, bundle budget gate) |
 
 **Workflow stages**
 
@@ -1457,6 +1669,45 @@ npx vectalon sync --push --force               # run even if disabled in config
 
 ---
 
+## `team-policy`
+
+**Org-wide guardrail policy** (Team brain v2): publish your project's policy +
+shared bundle budgets through the sync remote, and pull the org policy into
+`.vectalon/team/` — so one policy change gates every project that follows it.
+
+```bash
+npx vectalon team-policy --push                 # publish policy + budgets as the org policy
+npx vectalon team-policy --pull                 # fetch the org policy into .vectalon/team
+npx vectalon team-policy --show                 # print the effective policy + budget settings
+npx vectalon team-policy --check src/App.tsx    # run the effective (org + local) policy
+npx vectalon team-policy --budget '{"largeLibBytes":65536}'   # local budget override
+npx vectalon team-policy --remove               # stop following the org policy
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--push` | Publish this project's policy + budgets as the org policy on the sync remote |
+| `--pull` | Fetch the org policy into `.vectalon/team` — effective immediately for policy checks, code review, and bundle budgets |
+| `--check <file>` | Run the effective (org + local) policy against a source file |
+| `--show` | Print the effective policy and budget settings |
+| `--budget <json>` | Set local budget overrides, e.g. `{"largeLibBytes":65536}` |
+| `--remove` | Stop following the org policy (delete the cached copy) |
+| `--remote <url>` | Git remote URL (default: `.vectalon/sync.json`) |
+| `--branch <name>` | Remote branch (default: `.vectalon/sync.json`) |
+| `--force` | Override a disabled sync config |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Published / pulled / shown / checked |
+| 1 | No `.vectalon/`, no sync config, no org policy cached, or the operation failed |
+
+---
+
 ## `pull`
 
 Download a local model preset (default: Qwen2.5-Coder-1.5B).
@@ -1494,6 +1745,7 @@ npx vectalon support --upload
 
 | Option | Description |
 |---|---|
+| `[directory]` | Project root (default: cwd) |
 | `--upload` | Upload the sanitized bundle and print the support token |
 | `--out <path>` | Write the bundle to a custom path (default `.vectalon/support-bundle.json`) |
 

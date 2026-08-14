@@ -114,7 +114,7 @@ const FAQ = [
 function PlanCta({ plan }: { plan: (typeof PLANS)[number] }) {
   if (plan.href) {
     return (
-      <a href={plan.href} className={`mt-8 w-full ${plan.highlight ? 'btn-primary' : 'btn-ghost'}`}>
+      <a href={plan.href} className={`mt-6 w-full ${plan.highlight ? 'btn-primary' : 'btn-ghost'}`}>
         {plan.cta}
       </a>
     )
@@ -122,7 +122,7 @@ function PlanCta({ plan }: { plan: (typeof PLANS)[number] }) {
   const url = plan.tier ? checkoutUrlFor(plan.tier) : null
   if (url) {
     return (
-      <a href={url} target="_blank" rel="noreferrer" className={`mt-8 w-full ${plan.highlight ? 'btn-primary' : 'btn-ghost'}`}>
+      <a href={url} target="_blank" rel="noreferrer" className={`mt-6 w-full ${plan.highlight ? 'btn-primary' : 'btn-ghost'}`}>
         {plan.cta}
       </a>
     )
@@ -130,7 +130,7 @@ function PlanCta({ plan }: { plan: (typeof PLANS)[number] }) {
   // Not configured yet — never ship a dead link.
   const fallbackHref = plan.tier === 'team' ? 'mailto:sales@vectalon.in' : '/sdk/react-native'
   return (
-    <a href={fallbackHref} className={`mt-8 w-full ${plan.highlight ? 'btn-accent' : 'btn-ghost'} opacity-90`}>
+    <a href={fallbackHref} className={`mt-6 w-full ${plan.highlight ? 'btn-accent' : 'btn-ghost'} opacity-90`}>
       {plan.fallback}
     </a>
   )
@@ -140,6 +140,11 @@ export default function PricingPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-16">
       <div className="text-center">
+        <div className="mx-auto mb-5 w-fit">
+          <span className="chip font-mono">
+            vectalon pricing — <span className="text-brand">global-first USD</span> — no card
+          </span>
+        </div>
         <h1 className="text-4xl font-bold text-slate-50">Pricing</h1>
         <p className="mx-auto mt-4 max-w-2xl text-slate-400">
           Global-first USD pricing. The free tier is genuinely useful; the paid tier is for teams
@@ -155,53 +160,76 @@ export default function PricingPage() {
         {PLANS.map(p => (
           <div
             key={p.name}
-            className={`card flex flex-col ${
-              p.highlight
-                ? 'border-brand/50 bg-ink-800 ring-1 ring-brand/30 terminal-glow'
-                : ''
+            className={`console flex flex-col ${
+              p.highlight ? '!border-brand/50 terminal-glow' : ''
             }`}
           >
-            <div className="mb-1 font-mono text-xs font-semibold text-slate-400">{p.name}</div>
-            <div className="font-display text-4xl font-bold text-slate-50">
-              {p.price}
-              <span className="ml-1 text-sm font-normal text-slate-500">{p.cadence}</span>
+            {/* Frame header — tier name and slot */}
+            <div className="console-head">
+              <span className="flex items-center gap-2">
+                <span className="text-brand">▣</span>
+                <span className="text-slate-300">{p.name}</span>
+              </span>
+              <span className="text-slate-600">[ {p.tier ?? 'free'} ]</span>
             </div>
-            <p className="mt-3 text-sm leading-relaxed text-slate-400">{p.blurb}</p>
-            <ul className="mt-6 flex-1 space-y-2.5 text-sm">
-              {p.features.map(f => (
-                <li key={f} className="flex gap-2 text-slate-300">
-                  <span className="text-brand">✓</span>
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <PlanCta plan={p} />
+
+            <div className="flex flex-1 flex-col p-5">
+              <div className="font-display text-4xl font-bold text-slate-50">
+                {p.price}
+                <span className="ml-2 text-sm font-normal text-slate-500">{p.cadence}</span>
+              </div>
+              <p className="mt-3 text-sm leading-relaxed text-slate-400">{p.blurb}</p>
+
+              {/* Terminal-style feature listing */}
+              <ul className="mt-5 flex-1 divide-y divide-ink-700/50 border-t border-ink-700/50 font-mono text-[12px]">
+                {p.features.map(f => (
+                  <li key={f} className="flex items-start gap-2.5 py-2 leading-relaxed">
+                    <span className="mt-px shrink-0 text-brand">✓</span>
+                    <span className="text-slate-300">{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <PlanCta plan={p} />
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Enterprise banner — kept out of the 4-up so the tier grid stays readable */}
-      <div className="mt-5 flex flex-col items-start justify-between gap-4 rounded-xl border border-ink-700 bg-ink-800 p-6 sm:flex-row sm:items-center">
-        <div>
-          <div className="font-mono text-xs font-semibold text-slate-400">Enterprise</div>
-          <div className="mt-1 font-display text-2xl font-bold text-slate-50">50+ developers</div>
-          <p className="mt-1.5 max-w-xl text-sm text-slate-400">
-            SOC-2, SSO / SAML, on-prem model endpoints, custom licensing terms, and dedicated
-            support. Annual pricing.
-          </p>
+      {/* Enterprise — a console frame of its own, kept out of the 4-up */}
+      <div className="console mt-5">
+        <div className="console-head">
+          <span className="flex items-center gap-2">
+            <span className="text-brand">▣</span>
+            <span className="text-slate-300">enterprise</span>
+          </span>
+          <span className="text-slate-600">[ 50+ devs ]</span>
         </div>
-        <a href="mailto:sales@vectalon.in" className="btn-ghost shrink-0">
-          Talk to us
-        </a>
+        <div className="flex flex-col items-start justify-between gap-4 p-6 sm:flex-row sm:items-center">
+          <div>
+            <div className="font-display text-2xl font-bold text-slate-50">50+ developers</div>
+            <p className="mt-1.5 max-w-xl text-sm text-slate-400">
+              SOC-2, SSO / SAML, on-prem model endpoints, custom licensing terms, and dedicated
+              support. Annual pricing.
+            </p>
+          </div>
+          <a href="mailto:sales@vectalon.in" className="btn-ghost shrink-0">
+            Talk to us
+          </a>
+        </div>
       </div>
 
+      {/* FAQ — prompt-style Q/A cards */}
       <div className="mt-20">
         <h2 className="text-2xl font-bold text-slate-50">FAQ</h2>
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {FAQ.map(item => (
             <div key={item.q} className="card">
-              <h3 className="font-semibold text-slate-50">{item.q}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-400">{item.a}</p>
+              <h3 className="flex gap-2 font-mono text-sm font-semibold text-slate-50">
+                <span className="text-brand">?</span>
+                {item.q}
+              </h3>
+              <p className="mt-2 pl-5 text-sm leading-relaxed text-slate-400">{item.a}</p>
             </div>
           ))}
         </div>

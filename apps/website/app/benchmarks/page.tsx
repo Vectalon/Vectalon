@@ -1,15 +1,15 @@
 const SCENARIOS = [
   { id: 'rn-01', title: 'Login screen with auth API', suite: 'forms-security', composite: 48 },
   { id: 'rn-02', title: 'Paginated list with pull-to-refresh', suite: 'data-flow', composite: 49 },
-  { id: 'rn-03', title: 'Dark mode component', suite: 'core-ui', composite: 59 },
-  { id: 'rn-04', title: 'Typed navigation', suite: 'navigation', composite: 0 },
-  { id: 'rn-05', title: 'Multi-field form with validation', suite: 'forms-security', composite: 51 },
+  { id: 'rn-03', title: 'Themed card component honoring dark mode', suite: 'core-ui', composite: 59 },
+  { id: 'rn-04', title: 'Settings stack with typed route params and deep links', suite: 'navigation', composite: 0 },
+  { id: 'rn-05', title: 'Multi-field form with validation and secure persistence', suite: 'forms-security', composite: 51 },
   { id: 'rn-06', title: 'Offline-first action queue with optimistic UI', suite: 'data-flow', composite: 37 },
-  { id: 'rn-07', title: 'Image feed', suite: 'core-ui', composite: 59 },
-  { id: 'rn-08', title: 'Feature flags', suite: 'core-ui', composite: 37 },
-  { id: 'rn-09', title: 'Accessible form', suite: 'accessibility', composite: 42 },
-  { id: 'rn-10', title: 'Refactor hooks to TypeScript', suite: 'refactor', composite: 41 },
-  { id: 'rn-11', title: 'Remove a native dependency', suite: 'refactor', composite: null },
+  { id: 'rn-07', title: 'Image-heavy feed with thumbnails', suite: 'perf', composite: 59 },
+  { id: 'rn-08', title: 'Feature-flag wrapper component and hook', suite: 'core-ui', composite: 37 },
+  { id: 'rn-09', title: 'Screen-reader-friendly onboarding form', suite: 'a11y', composite: 42 },
+  { id: 'rn-10', title: 'Convert class/JS component to typed hooks', suite: 'refactor', composite: 41 },
+  { id: 'rn-11', title: 'Remove a dependency with full native cleanup', suite: 'refactor', composite: null },
 ]
 
 const GUARDRAILS = [
@@ -170,7 +170,7 @@ export default function BenchmarksPage() {
             scores guardrails and adherence with the same rules your code review uses. Add any
             model provider and publish your own row.
           </p>
-          <pre className="term-body mt-4 rounded-lg border border-white/10 bg-[#221409] text-[13px]">
+          <pre className="term-body mt-4 rounded-[4px] border bg-[rgb(var(--term))] text-[13px]" style={{ borderColor: 'rgb(var(--term-border))' }}>
             <span className="text-[#E35336]">$</span> npx vectalon bench --model local{'\n'}
             <span className="text-[#E35336]">$</span> npx vectalon bench --model openai --live --json -o bench/results/openai.json{'\n'}
             <span className="text-[#E35336]">$</span> npx vectalon leaderboard
