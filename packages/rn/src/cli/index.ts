@@ -33,6 +33,7 @@ import { syncCommand } from './commands/sync'
 import { teamPolicyCommand } from './commands/teamPolicy'
 import { teamCommand } from './commands/team'
 import { reviewCommand } from './commands/review'
+import { archCommand } from './commands/arch'
 import { benchCommand } from './commands/bench'
 import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
 import { impactCommand } from './commands/impact'
@@ -382,6 +383,16 @@ export function createProgram(): Command {
     .action(reviewCommand)
 
   program
+    .command('arch [directory]')
+    .description('Architecture Review Agent (Roadmap 062): one deterministic pass over the module graph — circular dependencies, layering violations (shared code importing feature code), god modules, module over-coupling, wide fan-in, orphans, and deep nesting — with a verdict and severity-ranked recommendations; report to docs/vectalon/arch/')
+    .option('--src <dir>', 'Source directory to analyze (default src)')
+    .option('--max-fanout <n>', 'Internal dependencies that make a file a god module (default 12)', Number)
+    .option('--max-module-fanout <n>', 'Module fan-out that flags over-coupling (default 8)', Number)
+    .option('--max-depth <n>', 'Directory levels under src that flag deep nesting (default 5)', Number)
+    .option('--json', 'Print machine-readable output')
+    .action(archCommand)
+
+  program
     .command('doctor [directory]')
     .description('Diagnose ecosystem items, native toolchain, leaderboard readiness, model access + web intel — with numbered fix steps and quick enable/disable')
     .option('--json', 'Print the report as JSON')
@@ -686,6 +697,7 @@ async function runInteractive(): Promise<void> {
       { value: 'sync', label: 'Sync team brain', hint: 'Push/pull .vectalon/knowledge to a hosted git remote' },
       { value: 'team', label: 'Run team brain', hint: 'Glossary, coding standards, expertise, decisions, onboarding (041-049)' },
       { value: 'review', label: 'Run PR review', hint: 'Review the diff — deterministic rules + team-brain standards (061)' },
+      { value: 'arch', label: 'Run architecture review', hint: 'Cycles, layering, coupling, god modules, orphans (062)' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
       { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
       { value: 'pull', label: 'Download local model', hint: 'Download the default Qwen2.5-Coder model' },
@@ -1147,6 +1159,12 @@ async function runInteractive(): Promise<void> {
     const base = reviewScope === 'branch' ? (await p.text({ message: 'Base ref', placeholder: 'main' })) as string : undefined
     await reviewCommand('', { base })
     p.outro('Review complete')
+    return
+  }
+
+  if (action === 'arch') {
+    await archCommand('', {})
+    p.outro('Architecture review complete')
     return
   }
 

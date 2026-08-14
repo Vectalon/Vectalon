@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Architecture Review Agent — `vectalon arch`** (Roadmap Phase 8, item
+  062): one deterministic pass over the project's module graph that reviews
+  its architecture — circular dependencies (error), layering violations
+  (shared code like utils/components importing feature code, warning), god
+  modules (high fan-out or oversized files, warning), module over-coupling
+  (a module importing from many siblings, warning), wide fan-in blast
+  radius, unreachable orphans, and over-deep nesting (info) — with per-module
+  coupling metrics (files, fan-in, fan-out, external packages) and a verdict
+  approved / needs-attention / changes-requested. `--json`; `--src <dir>`
+  and threshold overrides (`--max-fanout`, `--max-module-fanout`,
+  `--max-depth`); reports to `docs/vectalon/arch/` (gitignored).
+
 - **PR Review Agent — `vectalon review`** (Roadmap Phase 8, item 061): one
   pass over the git diff (uncommitted changes by default, or `--base <ref>`
   for a branch vs its base) that flags what a PR introduces — the

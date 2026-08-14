@@ -234,6 +234,12 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['review', '--json'],
   },
   {
+    id: 'arch',
+    name: 'Architecture review (cycles, layering, coupling, god modules, orphans)',
+    category: 'analysis',
+    args: () => ['arch', '--json'],
+  },
+  {
     id: 'support',
     name: 'Support bundle guide',
     category: 'setup',
