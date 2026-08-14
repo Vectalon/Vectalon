@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Refactoring Agent — `vectalon refactor`** (Roadmap Phase 8, item 066):
+  one deterministic pass over the project's source files that proposes
+  concrete, safe refactors — dead code (AST-backed unused imports, unused
+  variables, unreachable statements after return/throw), duplication
+  (repeated 4-line blocks, repeated long strings), modernization (optional
+  chaining, `.includes` over `indexOf`, strict equality, const/let), type
+  smells (`any`, `@ts-ignore` vs `@ts-expect-error`), inline-style debt,
+  console noise, and complexity (long functions and oversized files via the
+  shared RefactorSuggester) — every finding line-pinned with a specific
+  suggestion, severity-ranked, with top opportunities and a verdict.
+  `--json`; reports to `docs/vectalon/refactor/` (gitignored).
+
 - **Test Repair Agent — `vectalon test-repair`** (Roadmap Phase 8, item
   065): one deterministic diagnosis of a failing Jest, Detox, or Maestro
   test run from its output log — the test kind is auto-detected from

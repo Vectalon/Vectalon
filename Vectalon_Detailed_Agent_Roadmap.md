@@ -309,9 +309,9 @@ Acceptance:
 
 ## Phase 8 – Autonomous Engineering
 
-> **Status: items 061-065 shipped as `vectalon review`, `vectalon arch`,
-> `vectalon sec`, `vectalon build-fix`, and `vectalon test-repair`** — the
-> PR Review Agent reviews the git diff (uncommitted by
+> **Status: items 061-066 shipped as `vectalon review`, `vectalon arch`,
+> `vectalon sec`, `vectalon build-fix`, `vectalon test-repair`, and
+> `vectalon refactor`** — the PR Review Agent reviews the git diff (uncommitted by
 > default, or `--base <ref>` for a branch vs its base) in one pass: the
 > deterministic CodeReviewAnalyzer runs on each changed file's added lines
 > (pinned to real new-file line numbers), the team-brain coding standards
@@ -354,6 +354,15 @@ Acceptance:
 > visibility, app state, device connection, CLI version), and corroborating
 > failures are listed as a fix plan; `--json`, `--log <path>`; reports to
 > `docs/vectalon/test-repair/` (gitignored).
+> The Refactoring Agent scans the project source files in one deterministic
+> pass and proposes concrete, safe refactors — dead code (AST-backed unused
+> imports, unused variables, unreachable statements), duplication (repeated
+> 4-line blocks, repeated long strings), modernization (optional chaining,
+> `.includes` over `indexOf`, strict equality, const/let), type smells
+> (`any`, `@ts-ignore`/`@ts-expect-error`), inline-style debt, console
+> noise, and complexity (long functions, oversized files via the shared
+> RefactorSuggester) — every finding line-pinned with a specific suggestion;
+> `--json`; reports to `docs/vectalon/refactor/` (gitignored).
 
 ### 061. PR Review Agent
 ### 062. Architecture Review Agent

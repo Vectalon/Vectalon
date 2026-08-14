@@ -37,6 +37,7 @@ import { archCommand } from './commands/arch'
 import { secCommand } from './commands/sec'
 import { buildFixCommand, forcedKind } from './commands/buildFix'
 import { testRepairCommand, forcedKind as forcedTestKind } from './commands/testRepair'
+import { refactorCommand } from './commands/refactor'
 import { benchCommand } from './commands/bench'
 import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
 import { impactCommand } from './commands/impact'
@@ -425,6 +426,12 @@ export function createProgram(): Command {
       testRepairCommand(directory, { ...options, kind: forcedTestKind(options) }))
 
   program
+    .command('refactor [directory]')
+    .description('Refactoring Agent (Roadmap 066): one deterministic pass over the project source files that proposes concrete, safe refactors — dead code (unused imports/variables, unreachable statements), duplication (repeated blocks and strings), modernization (optional chaining, includes, strict equality, const/let), type smells (any, ts-ignore), inline-style debt, console noise, and complexity — line-pinned with suggestions; report to docs/vectalon/refactor/')
+    .option('--json', 'Print machine-readable output')
+    .action(refactorCommand)
+
+  program
     .command('doctor [directory]')
     .description('Diagnose ecosystem items, native toolchain, leaderboard readiness, model access + web intel — with numbered fix steps and quick enable/disable')
     .option('--json', 'Print the report as JSON')
@@ -733,6 +740,7 @@ async function runInteractive(): Promise<void> {
       { value: 'sec', label: 'Run security review', hint: 'Secrets, unsafe patterns, dependency advisories (063)' },
       { value: 'build-fix', label: 'Diagnose a failing build', hint: 'Metro/Gradle/Xcode log → root cause + fix plan (064)' },
       { value: 'test-repair', label: 'Diagnose failing tests', hint: 'Jest/Detox/Maestro log → root cause + fix plan (065)' },
+      { value: 'refactor', label: 'Scan for refactor opportunities', hint: 'Dead code, duplication, modernization, type smells (066)' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
       { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
       { value: 'pull', label: 'Download local model', hint: 'Download the default Qwen2.5-Coder model' },
@@ -1220,6 +1228,12 @@ async function runInteractive(): Promise<void> {
     const logPath = (await p.text({ message: 'Path to the failing test log', placeholder: 'test.log', validate: v => v ? undefined : 'A log path is required' })) as string
     await testRepairCommand('', { log: logPath })
     p.outro('Test fix diagnosis complete')
+    return
+  }
+
+  if (action === 'refactor') {
+    await refactorCommand('', {})
+    p.outro('Refactor scan complete')
     return
   }
 

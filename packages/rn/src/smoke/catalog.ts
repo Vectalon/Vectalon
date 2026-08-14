@@ -258,6 +258,12 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['test-repair', '--json'],
   },
   {
+    id: 'refactor',
+    name: 'Refactor scan (dead code, duplication, modernization, type smells)',
+    category: 'analysis',
+    args: () => ['refactor', '--json'],
+  },
+  {
     id: 'support',
     name: 'Support bundle guide',
     category: 'setup',
