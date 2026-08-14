@@ -237,6 +237,18 @@ For each:
 
 ## Phase 5 – RN Upgrade Intelligence
 
+> **Status: Phase 5 complete as of v0.6.0** — `vectalon upgrade` covers the
+> full ten-item surface: 031 (deterministic planner with risk scoring),
+> 032 (RN↔React and Expo-SDK↔RN compatibility tables), 033 (deprecated-API
+> blast radius in the impact stage), 034 (Expo SDK targeting + pairing
+> guidance), 035 (Android SDK-level and Kotlin/AGP requirement codemods),
+> 036 (iOS deployment-target advisor — added here: the Podfile platform floor
+> is detected in both spellings and raised to the target release's minimum,
+> 12.4 for RN 0.73-0.75 and 15.1 for RN 0.76+), 037 (substring codemod
+> engine with backups + provenance), 038 (doctor + typecheck + bundle-budget
+> verification), 039 (risk weighting per migration step + impact findings),
+> and 040 (markdown migration guide in `docs/vectalon/upgrades/`).
+
 ### 031. RN Upgrade Planner
 ### 032. RN Compatibility Matrix
 ### 033. Deprecated API Scanner

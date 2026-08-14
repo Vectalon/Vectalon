@@ -116,6 +116,26 @@ function removeLines(ctx: CatalogContext, relPath: string | null, content: strin
   return edits.length > 0 ? edits : null
 }
 
+/**
+ * Minimum iOS deployment target per RN release (Roadmap 036). The floor
+ * jumped from 12.4 to 15.1 in RN 0.76 (official release announcement: "iOS —
+ * from 13.4 to 15.1"; the 0.73+ template floor is 12.4). Lower bounds only —
+ * a release above the highest known minor keeps the highest known floor.
+ */
+const IOS_DEPLOYMENT_FLOORS: Array<{ minor: number; floor: number }> = [
+  { minor: 76, floor: 15.1 },
+  { minor: 73, floor: 12.4 },
+]
+
+/** The iOS deployment target a target RN release requires, or null below 0.73. */
+export function requiredIosDeploymentTarget(target: [number, number] | null): number | null {
+  if (!target || target[0] !== 0) return null
+  for (const { minor, floor } of IOS_DEPLOYMENT_FLOORS) {
+    if (target[1] >= minor) return floor
+  }
+  return null
+}
+
 /** Bump `ext.<name>` values in android/build.gradle that are below `minimum`. */
 function bumpGradleExt(ctx: CatalogContext, name: string, minimum: string, detail: string): CodemodEdit | null {
   const gradle = ctx.versions.android.buildGradle
@@ -417,6 +437,57 @@ export const MIGRATION_CATALOG: CatalogEntry[] = [
       return edits.length > 0 ? edits : null
     },
     manual: ['To disable Hermes on iOS set `ENV[\'HERMES_ENABLED\'] = false` at the top of the Podfile.'],
+  },
+  {
+    id: 'rn-073-ios-deployment-target',
+    title: 'iOS: deployment target floor',
+    description: 'Newer RN releases require a higher minimum iOS deployment target — the Podfile platform floor must match.',
+    category: 'ios',
+    risk: 'medium',
+    review: true,
+    applies: ctx => {
+      const required = requiredIosDeploymentTarget(targetRn(ctx))
+      if (required === null || ctx.versions.ios.podfile === null || ctx.versions.ios.podfilePath === null) return false
+      const current = ctx.versions.ios.deploymentTarget
+      // Absent floor = defaults apply (may be too low); explicit floor below
+      // the requirement = must raise. At/above the requirement = no-op.
+      return current === null || current < required
+    },
+    codemod: ctx => {
+      const required = requiredIosDeploymentTarget(targetRn(ctx))
+      const content = ctx.versions.ios.podfile
+      const relPath = ctx.versions.ios.podfilePath
+      if (required === null || content === null || relPath === null) return null
+      // Both Podfile spellings: `platform :ios, '13.4'` and
+      // `platform :ios, :deployment_target => '13.4'`.
+      const platformRe = /(platform\s*:\s*ios\s*,\s*(?::\s*deployment_target\s*=>\s*)?['"])(\d+(?:\.\d+)?)(['"])/
+      const m = content.match(platformRe)
+      if (!m) return null // no explicit floor — leave the manual instruction
+      const current = Number(m[2])
+      if (current >= required) return null
+      return [{
+        path: relPath,
+        action: 'replace',
+        original: m[0],
+        updated: `${m[1]}${required}${m[3]}`,
+        detail: `iOS deployment target ${current} → ${required} (required floor for the target RN release)`,
+      }]
+    },
+    manual: ctx => {
+      const required = requiredIosDeploymentTarget(targetRn(ctx))
+      const current = ctx.versions.ios.deploymentTarget
+      const lines = [
+        required !== null
+          ? `Set the Podfile floor to at least ${required}: \`platform :ios, '${required}'\`.`
+          : 'Set the Podfile platform floor to the minimum your target RN release requires.',
+      ]
+      if (current === null) {
+        lines.push('No explicit platform floor found — CocoaPods defaults may be below the RN-required minimum.', 'Also raise IPHONEOS_DEPLOYMENT_TARGET in the Xcode project / generated project settings, and re-run `cd ios && pod install`.', 'Raising the floor drops support for older iOS versions — confirm your device support matrix first.')
+      } else {
+        lines.push(`Current floor is ${current} — raising it drops iOS < ${required} support; confirm the device matrix.`, 'Re-run `cd ios && pod install` after the change.')
+      }
+      return lines
+    },
   },
   {
     id: 'rn-076-podfile-newarch',

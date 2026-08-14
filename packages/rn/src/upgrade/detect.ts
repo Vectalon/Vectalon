@@ -110,15 +110,21 @@ function parseIos(root: string): IosVersions {
   const podfilePath = join(root, 'ios', 'Podfile')
   const podfile = readIfExists(podfilePath)
   if (podfile === null) {
-    return { podfilePath: null, podfile: null, hermesEnabled: null, newArchFlag: null }
+    return { podfilePath: null, podfile: null, hermesEnabled: null, newArchFlag: null, deploymentTarget: null }
   }
   const hermesRaw = podfile.match(/:hermes_enabled\s*=>\s*(true|false)/)
   const newArchOn = /(?:RCT_NEW_ARCH_ENABLED|ENABLE_NEW_ARCH_ENABLED)[^\n]*==\s*['"]?1['"]?/.test(podfile)
+  // The deployment-target floor the upgrade advisor (Roadmap 036) compares
+  // against the target release's required minimum. Both Podfile spellings:
+  // `platform :ios, '13.4'` (shorthand) and
+  // `platform :ios, :deployment_target => '13.4'` (hash form).
+  const platform = podfile.match(/platform\s*:\s*ios\s*,\s*(?::\s*deployment_target\s*=>\s*)?['"](\d+(?:\.\d+)?)['"]/)
   return {
     podfilePath: 'ios/Podfile',
     podfile,
     hermesEnabled: hermesRaw ? hermesRaw[1] === 'true' : null,
     newArchFlag: newArchOn,
+    deploymentTarget: platform ? Number(platform[1]) : null,
   }
 }
 
