@@ -34,6 +34,7 @@ import { teamPolicyCommand } from './commands/teamPolicy'
 import { teamCommand } from './commands/team'
 import { reviewCommand } from './commands/review'
 import { archCommand } from './commands/arch'
+import { secCommand } from './commands/sec'
 import { benchCommand } from './commands/bench'
 import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
 import { impactCommand } from './commands/impact'
@@ -393,6 +394,13 @@ export function createProgram(): Command {
     .action(archCommand)
 
   program
+    .command('sec [directory]')
+    .description('Security Review Agent (Roadmap 063): one deterministic pass — hardcoded secrets (redacted), unsafe code patterns (eval, shell injection, disabled TLS, cleartext HTTP, SQL concatenation, weak crypto), and best-effort npm audit dependency advisories — with a verdict and severity-ranked recommendations; report to docs/vectalon/sec/')
+    .option('--no-audit', 'Skip the npm audit dependency pass (fast, offline)')
+    .option('--json', 'Print machine-readable output')
+    .action(secCommand)
+
+  program
     .command('doctor [directory]')
     .description('Diagnose ecosystem items, native toolchain, leaderboard readiness, model access + web intel — with numbered fix steps and quick enable/disable')
     .option('--json', 'Print the report as JSON')
@@ -698,6 +706,7 @@ async function runInteractive(): Promise<void> {
       { value: 'team', label: 'Run team brain', hint: 'Glossary, coding standards, expertise, decisions, onboarding (041-049)' },
       { value: 'review', label: 'Run PR review', hint: 'Review the diff — deterministic rules + team-brain standards (061)' },
       { value: 'arch', label: 'Run architecture review', hint: 'Cycles, layering, coupling, god modules, orphans (062)' },
+      { value: 'sec', label: 'Run security review', hint: 'Secrets, unsafe patterns, dependency advisories (063)' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
       { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
       { value: 'pull', label: 'Download local model', hint: 'Download the default Qwen2.5-Coder model' },
@@ -1165,6 +1174,12 @@ async function runInteractive(): Promise<void> {
   if (action === 'arch') {
     await archCommand('', {})
     p.outro('Architecture review complete')
+    return
+  }
+
+  if (action === 'sec') {
+    await secCommand('', {})
+    p.outro('Security review complete')
     return
   }
 

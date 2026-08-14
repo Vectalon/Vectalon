@@ -309,21 +309,30 @@ Acceptance:
 
 ## Phase 8 – Autonomous Engineering
 
-> **Status: items 061-062 shipped as `vectalon review` and `vectalon arch`** —
-> the PR Review Agent reviews the git diff (uncommitted by default, or
-> `--base <ref>` for a branch vs its base) in one pass: the deterministic
-> CodeReviewAnalyzer runs on each changed file's added lines (pinned to real
-> new-file line numbers), the team-brain coding standards (043) are
-> cross-checked as line-level probes, and an optional LLM pass reviews
-> against the standards context (degrading to the deterministic pass when no
-> model is configured). Verdict approved / needs-attention /
+> **Status: items 061-063 shipped as `vectalon review`, `vectalon arch`, and
+> `vectalon sec`** — the PR Review Agent reviews the git diff (uncommitted by
+> default, or `--base <ref>` for a branch vs its base) in one pass: the
+> deterministic CodeReviewAnalyzer runs on each changed file's added lines
+> (pinned to real new-file line numbers), the team-brain coding standards
+> (043) are cross-checked as line-level probes, and an optional LLM pass
+> reviews against the standards context (degrading to the deterministic pass
+> when no model is configured). Verdict approved / needs-attention /
 > changes-requested; `--json`; reports to `docs/vectalon/review/`
 > (gitignored). The Architecture Review Agent reviews the whole module graph
 > in one deterministic pass — circular dependencies, layering violations
 > (shared code importing feature code), god modules, module over-coupling,
 > wide fan-in, unreachable orphans, and over-deep nesting — with per-module
 > coupling metrics and a verdict; `--json`, `--src <dir>` and threshold
-> overrides; reports to `docs/vectalon/arch/` (gitignored).
+> overrides; reports to `docs/vectalon/arch/` (gitignored). The Security
+> Review Agent reviews the project's security posture in one deterministic
+> pass — hardcoded secrets (provider tokens as errors, generic
+> key/secret/password assignments as warnings, every value redacted in
+> reports), unsafe code patterns (dynamic code execution, shell command
+> interpolation, disabled TLS verification, cleartext HTTP, Math.random for
+> security material, SQL concatenation, XSS sinks, weak hashes), and
+> best-effort dependency advisories via `npm audit` (degrading to a skip when
+> the audit can't run, plus an unpinned-dependencies check) — with a verdict;
+> `--json`, `--no-audit`; reports to `docs/vectalon/sec/` (gitignored).
 
 ### 061. PR Review Agent
 ### 062. Architecture Review Agent

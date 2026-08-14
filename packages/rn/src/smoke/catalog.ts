@@ -240,6 +240,12 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['arch', '--json'],
   },
   {
+    id: 'sec',
+    name: 'Security review (secrets, unsafe patterns, dependency advisories)',
+    category: 'analysis',
+    args: () => ['sec', '--json', '--no-audit'],
+  },
+  {
     id: 'support',
     name: 'Support bundle guide',
     category: 'setup',

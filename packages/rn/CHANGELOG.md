@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Security Review Agent — `vectalon sec`** (Roadmap Phase 8, item 063):
+  one deterministic pass over the project's security posture — hardcoded
+  secrets (provider tokens like AWS/GitHub/Slack/Stripe/Google and private
+  keys as errors, generic key/secret/password assignments as warnings, with
+  every captured value redacted in reports), unsafe code patterns (dynamic
+  code execution, shell command interpolation, disabled TLS verification,
+  cleartext HTTP, Math.random used for security material, SQL string
+  concatenation, XSS sinks, unhardened WebViews, weak MD5/SHA-1 hashes), and
+  best-effort dependency advisories via `npm audit --json` (critical →
+  error, high → warning, moderate/low → info, with direct/transitive
+  labeling; the audit degrades to a skip when it cannot run, and an
+  unpinned-dependencies check flags missing lockfiles) — with a verdict
+  approved / needs-attention / changes-requested. `--json`; `--no-audit` to
+  skip the subprocess pass; reports to `docs/vectalon/sec/` (gitignored).
+
 - **Architecture Review Agent — `vectalon arch`** (Roadmap Phase 8, item
   062): one deterministic pass over the project's module graph that reviews
   its architecture — circular dependencies (error), layering violations
