@@ -1853,6 +1853,615 @@ npx vectalon auth --logout            # clear the license and revert to the free
 
 ---
 
+## `team`
+
+**Team Brain** (Roadmap 041-049): project glossary, coding standards,
+expertise map, ADR/decision index, PR knowledge, and onboarding brief —
+seeded into the knowledge base and written to `docs/vectalon/team/`.
+`--search` queries the team knowledge base across projects.
+
+```bash
+npx vectalon team                          # build the team knowledge base
+npx vectalon team --search "navigation patterns"  # semantic/lexical search
+npx vectalon team --project my-app --type adr --search "codegen"
+npx vectalon team --projects               # list registered projects
+npx vectalon team --json                   # machine-readable output
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--search <query>` | Search the team knowledge base (semantic when embeddings configured, lexical otherwise) |
+| `--project <name>` | Scope `--search` to one registered project |
+| `--team <name>` | Scope `--search` to one team |
+| `--type <type>` | Scope `--search` to one artifact type |
+| `--limit <n>` | Search result cap (default 5) |
+| `--projects` | List registered team projects |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Knowledge base built or search results printed |
+| 1 | Fatal error |
+
+---
+
+## `review`
+
+**PR Review Agent** (Roadmap 061): reviews the diff (uncommitted by default,
+or `--base <ref>`) with deterministic rules plus the team-brain coding
+standards, and an optional LLM pass. Report to `docs/vectalon/review/`.
+
+```bash
+npx vectalon review                        # review the uncommitted diff
+npx vectalon review --base main            # review commits since main
+npx vectalon review --model openai         # LLM pass override
+npx vectalon review --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--base <ref>` | Git ref the diff is taken against (default: uncommitted changes) |
+| `--model <provider>` | Model provider override for the LLM pass |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Review complete (verdict may still find issues) |
+| 1 | Fatal error |
+
+---
+
+## `arch`
+
+**Architecture Review Agent** (Roadmap 062): one deterministic pass over the
+module graph — circular dependencies, layering violations (shared code
+importing feature code), god modules, module over-coupling, wide fan-in,
+orphans, and deep nesting — with a verdict and severity-ranked
+recommendations. Report to `docs/vectalon/arch/`.
+
+```bash
+npx vectalon arch                          # analyze src/ by default
+npx vectalon arch --src lib                # analyze a different source dir
+npx vectalon arch --max-fanout 15 --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--src <dir>` | Source directory to analyze (default `src`) |
+| `--max-fanout <n>` | Internal dependencies that make a file a god module (default 12) |
+| `--max-module-fanout <n>` | Module fan-out that flags over-coupling (default 8) |
+| `--max-depth <n>` | Directory levels under src that flag deep nesting (default 5) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Analysis complete |
+| 1 | Fatal error |
+
+---
+
+## `sec`
+
+**Security Review Agent** (Roadmap 063): one deterministic pass — hardcoded
+secrets (redacted), unsafe code patterns (eval, shell injection, disabled
+TLS, cleartext HTTP, SQL concatenation, weak crypto), and best-effort
+`npm audit` dependency advisories — with a verdict and severity-ranked
+recommendations. Report to `docs/vectalon/sec/`.
+
+```bash
+npx vectalon sec                           # full pass incl. npm audit
+npx vectalon sec --no-audit                # skip the audit (fast, offline)
+npx vectalon sec --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--no-audit` | Skip the npm audit dependency pass (fast, offline) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan complete |
+| 1 | Fatal error |
+
+---
+
+## `build-fix`
+
+**Build Fix Agent** (Roadmap 064): diagnoses a failing Metro, Gradle, or
+Xcode build from its log — the kind is auto-detected (or forced with
+`--metro`/`--gradle`/`--xcode`), the root cause is classified with the
+standard fix, and corroborating failures are listed as a fix plan. Report to
+`docs/vectalon/build-fix/`.
+
+```bash
+npx vectalon build-fix --log gradle.log    # auto-detect the build kind
+npx vectalon build-fix --log build.log --metro   # force Metro
+npx vectalon build-fix --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--log <path>` | Build log file to diagnose (Metro, Gradle, or Xcode) |
+| `--metro` | Force the log kind to Metro bundler output |
+| `--gradle` | Force the log kind to Gradle output |
+| `--xcode` | Force the log kind to Xcode output |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Diagnosis complete |
+| 1 | Fatal error |
+
+---
+
+## `test-repair`
+
+**Test Repair Agent** (Roadmap 065): diagnoses a failing Jest, Detox, or
+Maestro test run from its output log — the kind is auto-detected (or forced
+with `--jest`/`--detox`/`--maestro`), the root cause is classified with the
+standard fix, and corroborating failures are listed as a fix plan. Report to
+`docs/vectalon/test-repair/`.
+
+```bash
+npx vectalon test-repair --log jest.log     # auto-detect the runner
+npx vectalon test-repair --log out.log --maestro  # force Maestro
+npx vectalon test-repair --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--log <path>` | Test output log to diagnose (Jest, Detox, or Maestro) |
+| `--jest` | Force the log kind to Jest output |
+| `--detox` | Force the log kind to Detox output |
+| `--maestro` | Force the log kind to Maestro output |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Diagnosis complete |
+| 1 | Fatal error |
+
+---
+
+## `refactor`
+
+**Refactoring Agent** (Roadmap 066): one deterministic pass over the project
+source files that proposes concrete, safe refactors — dead code (unused
+imports/variables, unreachable statements), duplication (repeated blocks and
+strings), modernization (optional chaining, includes, strict equality,
+const/let), type smells (any, ts-ignore), inline-style debt, console noise,
+and complexity — line-pinned with suggestions. Report to
+`docs/vectalon/refactor/`.
+
+```bash
+npx vectalon refactor                      # full refactor scan
+npx vectalon refactor --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan complete |
+| 1 | Fatal error |
+
+---
+
+## `deps`
+
+**Dependency Upgrade Agent** (Roadmap 067): finds what to upgrade and the
+safe path — RN ecosystem pairing violations against the curated matrix,
+duplicate versions across workspace members, and vulnerable dependencies via
+best-effort `npm audit` (critical → error, high → warning) with `npm audit
+fix` guidance. Report to `docs/vectalon/deps/`.
+
+```bash
+npx vectalon deps                          # full pass incl. npm audit
+npx vectalon deps --no-audit               # skip the audit (fast, offline)
+npx vectalon deps --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--no-audit` | Skip the npm audit dependency pass (fast, offline) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan complete |
+| 1 | Fatal error |
+
+---
+
+## `a11y`
+
+**Accessibility Agent** (Roadmap 068): one deterministic pass over component
+files — unlabeled images (error), touchables without roles, unlabeled
+TextInputs, and undersized touch targets — line-pinned with fixes. Report to
+`docs/vectalon/a11y/`.
+
+```bash
+npx vectalon a11y                          # accessibility scan
+npx vectalon a11y --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan complete |
+| 1 | Fatal error |
+
+---
+
+## `release-ready`
+
+**Release Readiness Agent** (Roadmap 069): answers “can we ship?” — version
+bumped past the last tag, CHANGELOG section present, clean tree, CI
+workflows, lockfile, tests configured, secrets hygiene, and TODO/FIXME
+triage. Read-only git. Report to `docs/vectalon/release-ready/`.
+
+```bash
+npx vectalon release-ready                 # ship / no-ship verdict
+npx vectalon release-ready --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Check complete (verdict may be no-ship) |
+| 1 | Fatal error |
+
+---
+
+## `bug-fix`
+
+**Autonomous Bug Fix Agent** (Roadmap 070): proposes fixes for deterministic
+defects and applies the provably-safe ones — whole-line unused-import
+removal and var→const — with `--apply` (refusing a dirty git tree unless
+`--force`). Dry-run by default. Report to `docs/vectalon/bug-fix/`.
+
+```bash
+npx vectalon bug-fix                       # dry-run: propose fixes only
+npx vectalon bug-fix --apply               # apply the safe fixes (clean tree)
+npx vectalon bug-fix --apply --force       # allow a dirty working tree
+npx vectalon bug-fix --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--apply` | Execute the safe fixes (git working tree must be clean unless `--force`) |
+| `--force` | Allow `--apply` on a dirty working tree |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Report printed, or fixes applied successfully |
+| 1 | Fatal error |
+
+---
+
+## `crash`
+
+**Crash Intelligence Agent** (Roadmap 071): classifies an iOS, Android, or JS
+crash log into a root-cause bucket with the standard fix and investigation
+steps. Platform is auto-detected or forced with
+`--platform ios|android|javascript`. Report to `docs/vectalon/crash/`.
+
+```bash
+npx vectalon crash --log crash.log         # auto-detect the platform
+npx vectalon crash --log crash.log --platform ios
+npx vectalon crash --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--log <path>` | Path to the crash log to classify |
+| `--platform <name>` | Force the crash platform (ios, android, javascript) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Classification complete |
+| 1 | Fatal error |
+
+---
+
+## `arch-score`
+
+**Mobile Architecture Scorecard** (Roadmap 072): a deterministic 0-100 score
+across cycles, layer boundaries, coupling, module cohesion, testability, and
+nesting depth — with a grade and top improvements. Report to
+`docs/vectalon/arch-score/`.
+
+```bash
+npx vectalon arch-score                    # score src/ by default
+npx vectalon arch-score --src lib --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--src <dir>` | Source directory to score (default: `src`) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scorecard complete |
+| 1 | Fatal error |
+
+---
+
+## `cicd`
+
+**CI/CD Intelligence Agent** (Roadmap 073): scans CI workflows for
+anti-patterns — unpinned third-party actions, missing concurrency/timeouts,
+secrets in inline env, deploy steps without a test gate, missing
+`workflow_dispatch`. Report to `docs/vectalon/cicd/`.
+
+```bash
+npx vectalon cicd                          # scan .github/workflows
+npx vectalon cicd --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan complete |
+| 1 | Fatal error |
+
+---
+
+## `app-store`
+
+**App Store Readiness Agent** (Roadmap 074): iOS/Android store-readiness —
+version/version-code consistency across Info.plist, build.gradle, and
+package.json, app icons, iOS privacy manifest, Android permissions,
+cleartext posture. Report to `docs/vectalon/app-store/`.
+
+```bash
+npx vectalon app-store                     # store-readiness checklist
+npx vectalon app-store --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Check complete |
+| 1 | Fatal error |
+
+---
+
+## `soc2`
+
+**SOC2 Readiness Agent** (Roadmap 075): a repository-evidence checklist
+mapped to the five trust-service criteria plus operational hygiene — access
+control, audit logging, encryption, backups, incident response, vendor
+management, privacy policy. Report to `docs/vectalon/soc2/`.
+
+```bash
+npx vectalon soc2                          # evidence checklist
+npx vectalon soc2 --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Check complete |
+| 1 | Fatal error |
+
+---
+
+## `tokens`
+
+**Design Token Sync Agent** (Roadmap 076): parses the design-token file and
+checks for drift — tokens never referenced in source (orphans), hardcoded
+colors that should be tokens, and duplicate token values. Report to
+`docs/vectalon/tokens/`.
+
+```bash
+npx vectalon tokens                        # token drift scan
+npx vectalon tokens --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan complete |
+| 1 | Fatal error |
+
+---
+
+## `team-stats`
+
+**Team Productivity Analytics** (Roadmap 077): deterministic git-history
+analytics — commit cadence, author distribution, bus factor, category mix,
+change velocity. Read-only git. Report to `docs/vectalon/team-stats/`.
+
+```bash
+npx vectalon team-stats                    # git analytics
+npx vectalon team-stats --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Analytics complete |
+| 1 | Fatal error |
+
+---
+
+## `perms`
+
+**Agent Permissions Audit** (Roadmap 078): scans agent/MCP configuration
+(Claude Code settings, Cursor MCP, `.mcp.json`) for over-permissioned tool
+grants and credentials in config. Report to `docs/vectalon/perms/`.
+
+```bash
+npx vectalon perms                         # permissions audit
+npx vectalon perms --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Audit complete |
+| 1 | Fatal error |
+
+---
+
+## `dashboard`
+
+**Engineering Dashboard** (Roadmap 079): aggregates every agent report into
+one executive view — per-agent health, overall verdict, and a
+self-contained HTML dashboard. `--run` regenerates the fast core reports
+first. Report to `docs/vectalon/dashboard/`.
+
+```bash
+npx vectalon dashboard                     # aggregate existing reports
+npx vectalon dashboard --run               # regenerate fast reports first
+npx vectalon dashboard --open              # open the HTML dashboard
+npx vectalon dashboard --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--run` | Regenerate the fast core reports (release-ready, arch-score, soc2) first |
+| `--open` | Open the HTML dashboard in the default browser |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Dashboard written |
+| 1 | Fatal error |
+
+---
+
 ## Global `--diagnostics` flag
 
 `--diagnostics` works on **every** command (before or after the subcommand):
