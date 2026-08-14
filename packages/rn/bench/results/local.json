@@ -6,32 +6,14 @@
       "title": "Login screen with auth API",
       "suite": "forms-security",
       "scaffoldable": true,
-      "generatedFiles": [
-        "src/CreateLoginScreenEmailPassword.tsx",
-        "src/authContext.tsx"
-      ],
-      "guardrail": [
-        {
-          "path": "src/CreateLoginScreenEmailPassword.tsx",
-          "passed": 24,
-          "failed": 3,
-          "skipped": 9,
-          "ok": false
-        },
-        {
-          "path": "src/authContext.tsx",
-          "passed": 25,
-          "failed": 0,
-          "skipped": 11,
-          "ok": true
-        }
-      ],
+      "generatedFiles": [],
+      "guardrail": [],
       "axes": {
         "correctness": 0,
-        "adherence": 0.7777777777777778,
-        "guardrails": 0.9423076923076923
+        "adherence": null,
+        "guardrails": null
       },
-      "composite": 0.516025641025641,
+      "composite": 0,
       "correctnessDetails": [
         "- Tests: failed (exit 1)",
         "- Type check: failed (exit 1)",
@@ -50,9 +32,9 @@
         "composite": 0.841897233201581,
         "relative": {
           "correctness": null,
-          "adherence": 1.0694444444444444,
-          "guardrails": 0.9851398601398601,
-          "composite": 0.612931864692428
+          "adherence": null,
+          "guardrails": null,
+          "composite": 0
         }
       }
     },
@@ -62,8 +44,7 @@
       "suite": "data-flow",
       "scaffoldable": true,
       "generatedFiles": [
-        "src/screens/CreateScreenThatFetchesPaginated.tsx",
-        "src/hooks/useFetchData.ts"
+        "src/screens/CreateScreenThatFetchesPaginated.tsx"
       ],
       "guardrail": [
         {
@@ -72,21 +53,14 @@
           "failed": 2,
           "skipped": 11,
           "ok": false
-        },
-        {
-          "path": "src/hooks/useFetchData.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
-          "ok": true
         }
       ],
       "axes": {
         "correctness": 0,
-        "adherence": 0.7142857142857143,
-        "guardrails": 0.9534883720930233
+        "adherence": 0.6666666666666666,
+        "guardrails": 0.92
       },
-      "composite": 0.5003322259136213,
+      "composite": 0.476,
       "correctnessDetails": [
         "- Tests: failed (exit 1)",
         "- Type check: failed (exit 1)",
@@ -104,9 +78,9 @@
         "composite": 0.9093406593406593,
         "relative": {
           "correctness": null,
-          "adherence": 0.8333333333333334,
-          "guardrails": 0.9916279069767442,
-          "composite": 0.550214290732804
+          "adherence": 0.7777777777777778,
+          "guardrails": 0.9568,
+          "composite": 0.5234561933534743
         }
       }
     },
@@ -121,18 +95,18 @@
       "guardrail": [
         {
           "path": "src/components/ReusableCardComponentTha.tsx",
-          "passed": 24,
-          "failed": 2,
+          "passed": 23,
+          "failed": 3,
           "skipped": 10,
           "ok": false
         }
       ],
       "axes": {
         "correctness": 0,
-        "adherence": 0.5,
-        "guardrails": 0.9230769230769231
+        "adherence": 0.6666666666666666,
+        "guardrails": 0.8846153846153846
       },
-      "composite": 0.42692307692307696,
+      "composite": 0.4653846153846154,
       "correctnessDetails": [
         "- Tests: failed (exit 1)",
         "- Type check: failed (exit 1)",
@@ -151,9 +125,9 @@
         "composite": 1,
         "relative": {
           "correctness": null,
-          "adherence": 0.5,
-          "guardrails": 0.9230769230769231,
-          "composite": 0.42692307692307696
+          "adherence": 0.6666666666666666,
+          "guardrails": 0.8846153846153846,
+          "composite": 0.4653846153846154
         }
       }
     },
@@ -201,23 +175,23 @@
       "suite": "forms-security",
       "scaffoldable": true,
       "generatedFiles": [
-        "src/CreateMultiFieldFormClient.tsx"
+        "src/components/CreateMultiFieldFormClient.tsx"
       ],
       "guardrail": [
         {
-          "path": "src/CreateMultiFieldFormClient.tsx",
-          "passed": 24,
-          "failed": 3,
+          "path": "src/components/CreateMultiFieldFormClient.tsx",
+          "passed": 26,
+          "failed": 1,
           "skipped": 9,
           "ok": false
         }
       ],
       "axes": {
         "correctness": 0,
-        "adherence": 0.6666666666666666,
-        "guardrails": 0.8888888888888888
+        "adherence": 0.5714285714285714,
+        "guardrails": 0.9629629629629629
       },
-      "composite": 0.4666666666666667,
+      "composite": 0.46031746031746024,
       "correctnessDetails": [
         "- Tests: failed (exit 1)",
         "- Type check: failed (exit 1)",
@@ -236,9 +210,9 @@
         "composite": 0.8565217391304347,
         "relative": {
           "correctness": null,
-          "adherence": 0.8333333333333333,
-          "guardrails": 0.9735449735449736,
-          "composite": 0.544839255499154
+          "adherence": 0.7142857142857142,
+          "guardrails": 1.054673721340388,
+          "composite": 0.5374264765127709
         }
       }
     },
@@ -247,14 +221,24 @@
       "title": "Offline-first action queue with optimistic UI",
       "suite": "data-flow",
       "scaffoldable": true,
-      "generatedFiles": [],
-      "guardrail": [],
+      "generatedFiles": [
+        "src/CreateOfflineFirstActionQueue.ts"
+      ],
+      "guardrail": [
+        {
+          "path": "src/CreateOfflineFirstActionQueue.ts",
+          "passed": 15,
+          "failed": 3,
+          "skipped": 18,
+          "ok": false
+        }
+      ],
       "axes": {
         "correctness": 0,
-        "adherence": null,
-        "guardrails": null
+        "adherence": 0,
+        "guardrails": 0.8333333333333334
       },
-      "composite": 0,
+      "composite": 0.25,
       "correctnessDetails": [
         "- Tests: failed (exit 1)",
         "- Type check: failed (exit 1)",
@@ -273,9 +257,9 @@
         "composite": 0.6772727272727274,
         "relative": {
           "correctness": null,
-          "adherence": null,
-          "guardrails": null,
-          "composite": 0
+          "adherence": 0,
+          "guardrails": 0.873015873015873,
+          "composite": 0.36912751677852346
         }
       }
     },
@@ -322,31 +306,31 @@
       "suite": "core-ui",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/FeatureFlag.tsx",
+        "src/components/CreateTypedFeatureflagComponent.tsx",
         "src/hooks/useFeatureFlag.ts"
       ],
       "guardrail": [
         {
-          "path": "src/components/FeatureFlag.tsx",
-          "passed": 24,
-          "failed": 1,
+          "path": "src/components/CreateTypedFeatureflagComponent.tsx",
+          "passed": 25,
+          "failed": 0,
           "skipped": 11,
-          "ok": false
+          "ok": true
         },
         {
           "path": "src/hooks/useFeatureFlag.ts",
-          "passed": 15,
-          "failed": 3,
+          "passed": 18,
+          "failed": 0,
           "skipped": 18,
-          "ok": false
+          "ok": true
         }
       ],
       "axes": {
         "correctness": 0,
-        "adherence": 0,
-        "guardrails": 0.9069767441860465
+        "adherence": 1,
+        "guardrails": 1
       },
-      "composite": 0.2720930232558139,
+      "composite": 0.6,
       "correctnessDetails": [
         "- Tests: failed (exit 1)",
         "- Type check: failed (exit 1)",
@@ -367,8 +351,8 @@
         "relative": {
           "correctness": null,
           "adherence": null,
-          "guardrails": 0.9069767441860465,
-          "composite": 0.2720930232558139
+          "guardrails": 1,
+          "composite": 0.6
         }
       }
     },
@@ -378,23 +362,23 @@
       "suite": "a11y",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/CreateFullyAccessibleOnboardingForm.tsx"
+        "src/onboarding/CreateFullyAccessibleOnboarding.tsx"
       ],
       "guardrail": [
         {
-          "path": "src/components/CreateFullyAccessibleOnboardingForm.tsx",
-          "passed": 23,
-          "failed": 4,
-          "skipped": 9,
+          "path": "src/onboarding/CreateFullyAccessibleOnboarding.tsx",
+          "passed": 25,
+          "failed": 1,
+          "skipped": 10,
           "ok": false
         }
       ],
       "axes": {
         "correctness": 0,
         "adherence": 0.6666666666666666,
-        "guardrails": 0.8518518518518519
+        "guardrails": 0.9615384615384616
       },
-      "composite": 0.4555555555555555,
+      "composite": 0.4884615384615384,
       "correctnessDetails": [
         "- Tests: failed (exit 1)",
         "- Type check: failed (exit 1)",
@@ -413,8 +397,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0.7619047619047619,
-          "guardrails": 0.9173789173789173,
-          "composite": 0.505170517051705
+          "guardrails": 1.0355029585798816,
+          "composite": 0.5416603198781416
         }
       }
     },
@@ -459,48 +443,14 @@
       "title": "Remove a dependency with full native cleanup",
       "suite": "refactor",
       "scaffoldable": false,
-      "generatedFiles": [
-        "src/RemoveAppcenterPackageThisProj.ts",
-        "ios/RemoveAppcenterPackageThisProj.podspec",
-        "android/settings.gradle",
-        "android/app/src/main/AndroidManifest.xml"
-      ],
-      "guardrail": [
-        {
-          "path": "src/RemoveAppcenterPackageThisProj.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
-          "ok": true
-        },
-        {
-          "path": "ios/RemoveAppcenterPackageThisProj.podspec",
-          "passed": 12,
-          "failed": 1,
-          "skipped": 23,
-          "ok": false
-        },
-        {
-          "path": "android/settings.gradle",
-          "passed": 13,
-          "failed": 0,
-          "skipped": 23,
-          "ok": true
-        },
-        {
-          "path": "android/app/src/main/AndroidManifest.xml",
-          "passed": 12,
-          "failed": 1,
-          "skipped": 23,
-          "ok": false
-        }
-      ],
+      "generatedFiles": [],
+      "guardrail": [],
       "axes": {
         "correctness": null,
-        "adherence": 1,
-        "guardrails": 0.9649122807017544
+        "adherence": null,
+        "guardrails": null
       },
-      "composite": 0.9824561403508774,
+      "composite": null,
       "reference": {
         "files": [
           "package.json",
@@ -516,9 +466,9 @@
         "composite": 0.9903846153846152,
         "relative": {
           "correctness": null,
-          "adherence": 1,
-          "guardrails": 0.9838321293429653,
-          "composite": 0.9919945494804977
+          "adherence": null,
+          "guardrails": null,
+          "composite": null
         }
       }
     }
@@ -530,8 +480,8 @@
         "rn-01-login-screen",
         "rn-05-form-validation"
       ],
-      "composite": 0.4913461538461538,
-      "guardrails": 0.9155982905982906
+      "composite": 0.23015873015873012,
+      "guardrails": 0.9629629629629629
     },
     {
       "suite": "data-flow",
@@ -539,8 +489,8 @@
         "rn-02-flatlist-fetch",
         "rn-06-offline-queue"
       ],
-      "composite": 0.2501661129568106,
-      "guardrails": 0.9534883720930233
+      "composite": 0.363,
+      "guardrails": 0.8766666666666667
     },
     {
       "suite": "core-ui",
@@ -548,8 +498,8 @@
         "rn-03-dark-mode-component",
         "rn-08-feature-flags"
       ],
-      "composite": 0.3495080500894454,
-      "guardrails": 0.9150268336314848
+      "composite": 0.5326923076923077,
+      "guardrails": 0.9423076923076923
     },
     {
       "suite": "navigation",
@@ -572,8 +522,8 @@
       "scenarioIds": [
         "rn-09-accessible-form"
       ],
-      "composite": 0.4555555555555555,
-      "guardrails": 0.8518518518518519
+      "composite": 0.4884615384615384,
+      "guardrails": 0.9615384615384616
     },
     {
       "suite": "refactor",
@@ -581,12 +531,12 @@
         "rn-10-refactor-hooks-ts",
         "rn-11-remove-dependency-native"
       ],
-      "composite": 0.4912280701754387,
-      "guardrails": 0.9649122807017544
+      "composite": 0,
+      "guardrails": null
     }
   ],
-  "overallComposite": 0.32909566633556847,
-  "overallGuardrails": 0.9187861075865973,
+  "overallComposite": 0.27401636141636143,
+  "overallGuardrails": 0.9270750237416904,
   "overallReferenceComposite": 0.8951543099619127,
-  "overallRelativeComposite": 0.3549242343304982
+  "overallRelativeComposite": 0.30370551219075254
 }
