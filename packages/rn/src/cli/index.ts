@@ -35,6 +35,7 @@ import { teamCommand } from './commands/team'
 import { reviewCommand } from './commands/review'
 import { archCommand } from './commands/arch'
 import { secCommand } from './commands/sec'
+import { buildFixCommand, forcedKind } from './commands/buildFix'
 import { benchCommand } from './commands/bench'
 import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
 import { impactCommand } from './commands/impact'
@@ -401,6 +402,17 @@ export function createProgram(): Command {
     .action(secCommand)
 
   program
+    .command('build-fix [directory]')
+    .description('Build Fix Agent (Roadmap 064): diagnose a failing Metro, Gradle, or Xcode build from its log — the kind is auto-detected (or forced with --metro/--gradle/--xcode), the root cause is classified with the standard fix, and corroborating failures are listed as a fix plan; report to docs/vectalon/build-fix/')
+    .option('--log <path>', 'Build log file to diagnose (Metro bundler output, Gradle, or Xcode)')
+    .option('--metro', 'Force the log kind to Metro bundler output')
+    .option('--gradle', 'Force the log kind to Gradle output')
+    .option('--xcode', 'Force the log kind to Xcode output')
+    .option('--json', 'Print machine-readable output')
+    .action((directory: string, options: { metro?: boolean; gradle?: boolean; xcode?: boolean }) =>
+      buildFixCommand(directory, { ...options, kind: forcedKind(options) }))
+
+  program
     .command('doctor [directory]')
     .description('Diagnose ecosystem items, native toolchain, leaderboard readiness, model access + web intel — with numbered fix steps and quick enable/disable')
     .option('--json', 'Print the report as JSON')
@@ -707,6 +719,7 @@ async function runInteractive(): Promise<void> {
       { value: 'review', label: 'Run PR review', hint: 'Review the diff — deterministic rules + team-brain standards (061)' },
       { value: 'arch', label: 'Run architecture review', hint: 'Cycles, layering, coupling, god modules, orphans (062)' },
       { value: 'sec', label: 'Run security review', hint: 'Secrets, unsafe patterns, dependency advisories (063)' },
+      { value: 'build-fix', label: 'Diagnose a failing build', hint: 'Metro/Gradle/Xcode log → root cause + fix plan (064)' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
       { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
       { value: 'pull', label: 'Download local model', hint: 'Download the default Qwen2.5-Coder model' },
@@ -1180,6 +1193,13 @@ async function runInteractive(): Promise<void> {
   if (action === 'sec') {
     await secCommand('', {})
     p.outro('Security review complete')
+    return
+  }
+
+  if (action === 'build-fix') {
+    const logPath = (await p.text({ message: 'Path to the failing build log', placeholder: 'build.log', validate: v => v ? undefined : 'A log path is required' })) as string
+    await buildFixCommand('', { log: logPath })
+    p.outro('Build fix diagnosis complete')
     return
   }
 

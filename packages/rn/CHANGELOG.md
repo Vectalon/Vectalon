@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Build Fix Agent — `vectalon build-fix`** (Roadmap Phase 8, item 064):
+  one deterministic diagnosis of a failing Metro, Gradle, or Xcode build
+  from its log — the build kind is auto-detected from content (or forced
+  with `--metro`/`--gradle`/`--xcode`), and a pattern classifier returns the
+  root cause with the standard fix plus corroborating symptoms as a fix
+  plan. Ships the Metro bundler-failure database (module resolution, syntax/
+  transform errors, haste collisions, Metro port conflicts, cache
+  corruption, asset resolution, bundler OOM, file-watching, monorepo
+  package entry points) and reuses the Gradle (013) and Xcode (014) log
+  analyzers from project diagnostics. `--json`; `--log <path>`; reports to
+  `docs/vectalon/build-fix/` (gitignored).
+
 - **Security Review Agent — `vectalon sec`** (Roadmap Phase 8, item 063):
   one deterministic pass over the project's security posture — hardcoded
   secrets (provider tokens like AWS/GitHub/Slack/Stripe/Google and private

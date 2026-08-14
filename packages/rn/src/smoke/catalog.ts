@@ -246,6 +246,12 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['sec', '--json', '--no-audit'],
   },
   {
+    id: 'build-fix',
+    name: 'Build fix diagnosis (Metro/Gradle/Xcode log classification)',
+    category: 'analysis',
+    args: () => ['build-fix', '--json'],
+  },
+  {
     id: 'support',
     name: 'Support bundle guide',
     category: 'setup',

@@ -309,8 +309,9 @@ Acceptance:
 
 ## Phase 8 – Autonomous Engineering
 
-> **Status: items 061-063 shipped as `vectalon review`, `vectalon arch`, and
-> `vectalon sec`** — the PR Review Agent reviews the git diff (uncommitted by
+> **Status: items 061-064 shipped as `vectalon review`, `vectalon arch`,
+> `vectalon sec`, and `vectalon build-fix`** — the PR Review Agent reviews
+> the git diff (uncommitted by
 > default, or `--base <ref>` for a branch vs its base) in one pass: the
 > deterministic CodeReviewAnalyzer runs on each changed file's added lines
 > (pinned to real new-file line numbers), the team-brain coding standards
@@ -333,6 +334,15 @@ Acceptance:
 > best-effort dependency advisories via `npm audit` (degrading to a skip when
 > the audit can't run, plus an unpinned-dependencies check) — with a verdict;
 > `--json`, `--no-audit`; reports to `docs/vectalon/sec/` (gitignored).
+> The Build Fix Agent diagnoses a failing Metro, Gradle, or Xcode build from
+> its log — the kind is auto-detected from content (or forced with
+> `--metro`/`--gradle`/`--xcode`), a pattern classifier finds the root cause
+> with the standard fix (a new Metro bundler-failure database: module
+> resolution, transform/syntax errors, haste collisions, port conflicts,
+> cache corruption, assets, OOM, file watching, monorepo entry points —
+> alongside the Gradle (013) and Xcode (014) log analyzers), and
+> corroborating failures are listed as a fix plan; `--json`, `--log <path>`;
+> reports to `docs/vectalon/build-fix/` (gitignored).
 
 ### 061. PR Review Agent
 ### 062. Architecture Review Agent
