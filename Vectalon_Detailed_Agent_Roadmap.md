@@ -309,9 +309,9 @@ Acceptance:
 
 ## Phase 8 – Autonomous Engineering
 
-> **Status: items 061-064 shipped as `vectalon review`, `vectalon arch`,
-> `vectalon sec`, and `vectalon build-fix`** — the PR Review Agent reviews
-> the git diff (uncommitted by
+> **Status: items 061-065 shipped as `vectalon review`, `vectalon arch`,
+> `vectalon sec`, `vectalon build-fix`, and `vectalon test-repair`** — the
+> PR Review Agent reviews the git diff (uncommitted by
 > default, or `--base <ref>` for a branch vs its base) in one pass: the
 > deterministic CodeReviewAnalyzer runs on each changed file's added lines
 > (pinned to real new-file line numbers), the team-brain coding standards
@@ -343,6 +343,17 @@ Acceptance:
 > alongside the Gradle (013) and Xcode (014) log analyzers), and
 > corroborating failures are listed as a fix plan; `--json`, `--log <path>`;
 > reports to `docs/vectalon/build-fix/` (gitignored).
+> The Test Repair Agent diagnoses a failing Jest, Detox, or Maestro test run
+> from its output log — the kind is auto-detected from content (or forced
+> with `--jest`/`--detox`/`--maestro`), a pattern classifier finds the root
+> cause with the standard fix (Jest: assertion/snapshot mismatches, open
+> handles, suite-collection errors, test module resolution, transform
+> errors, missing globals, worker crashes, async timeouts; Detox: app launch
+> failures, element-not-found/waitFor timeouts, TOCTOU flakiness, build
+> failures, permissions, test-runner config; Maestro: assertions, element
+> visibility, app state, device connection, CLI version), and corroborating
+> failures are listed as a fix plan; `--json`, `--log <path>`; reports to
+> `docs/vectalon/test-repair/` (gitignored).
 
 ### 061. PR Review Agent
 ### 062. Architecture Review Agent

@@ -252,6 +252,12 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['build-fix', '--json'],
   },
   {
+    id: 'test-repair',
+    name: 'Test repair diagnosis (Jest/Detox/Maestro log classification)',
+    category: 'analysis',
+    args: () => ['test-repair', '--json'],
+  },
+  {
     id: 'support',
     name: 'Support bundle guide',
     category: 'setup',

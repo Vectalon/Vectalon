@@ -36,6 +36,7 @@ import { reviewCommand } from './commands/review'
 import { archCommand } from './commands/arch'
 import { secCommand } from './commands/sec'
 import { buildFixCommand, forcedKind } from './commands/buildFix'
+import { testRepairCommand, forcedKind as forcedTestKind } from './commands/testRepair'
 import { benchCommand } from './commands/bench'
 import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
 import { impactCommand } from './commands/impact'
@@ -413,6 +414,17 @@ export function createProgram(): Command {
       buildFixCommand(directory, { ...options, kind: forcedKind(options) }))
 
   program
+    .command('test-repair [directory]')
+    .description('Test Repair Agent (Roadmap 065): diagnose a failing Jest, Detox, or Maestro test run from its output log — the kind is auto-detected (or forced with --jest/--detox/--maestro), the root cause is classified with the standard fix, and corroborating failures are listed as a fix plan; report to docs/vectalon/test-repair/')
+    .option('--log <path>', 'Test output log to diagnose (Jest, Detox, or Maestro)')
+    .option('--jest', 'Force the log kind to Jest output')
+    .option('--detox', 'Force the log kind to Detox output')
+    .option('--maestro', 'Force the log kind to Maestro output')
+    .option('--json', 'Print machine-readable output')
+    .action((directory: string, options: { jest?: boolean; detox?: boolean; maestro?: boolean }) =>
+      testRepairCommand(directory, { ...options, kind: forcedTestKind(options) }))
+
+  program
     .command('doctor [directory]')
     .description('Diagnose ecosystem items, native toolchain, leaderboard readiness, model access + web intel — with numbered fix steps and quick enable/disable')
     .option('--json', 'Print the report as JSON')
@@ -720,6 +732,7 @@ async function runInteractive(): Promise<void> {
       { value: 'arch', label: 'Run architecture review', hint: 'Cycles, layering, coupling, god modules, orphans (062)' },
       { value: 'sec', label: 'Run security review', hint: 'Secrets, unsafe patterns, dependency advisories (063)' },
       { value: 'build-fix', label: 'Diagnose a failing build', hint: 'Metro/Gradle/Xcode log → root cause + fix plan (064)' },
+      { value: 'test-repair', label: 'Diagnose failing tests', hint: 'Jest/Detox/Maestro log → root cause + fix plan (065)' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
       { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
       { value: 'pull', label: 'Download local model', hint: 'Download the default Qwen2.5-Coder model' },
@@ -1200,6 +1213,13 @@ async function runInteractive(): Promise<void> {
     const logPath = (await p.text({ message: 'Path to the failing build log', placeholder: 'build.log', validate: v => v ? undefined : 'A log path is required' })) as string
     await buildFixCommand('', { log: logPath })
     p.outro('Build fix diagnosis complete')
+    return
+  }
+
+  if (action === 'test-repair') {
+    const logPath = (await p.text({ message: 'Path to the failing test log', placeholder: 'test.log', validate: v => v ? undefined : 'A log path is required' })) as string
+    await testRepairCommand('', { log: logPath })
+    p.outro('Test fix diagnosis complete')
     return
   }
 

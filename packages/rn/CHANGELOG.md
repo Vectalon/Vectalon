@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Test Repair Agent — `vectalon test-repair`** (Roadmap Phase 8, item
+  065): one deterministic diagnosis of a failing Jest, Detox, or Maestro
+  test run from its output log — the test kind is auto-detected from
+  content (or forced with `--jest`/`--detox`/`--maestro`), and a pattern
+  classifier returns the root cause with the standard fix plus
+  corroborating symptoms as a fix plan. Ships three pattern databases —
+  Jest (assertion and snapshot mismatches, open handles, suite-collection
+  errors, test module resolution, transform errors, missing globals,
+  worker crashes, async timeouts), Detox (app launch failures,
+  element-not-found / waitFor timeouts, TOCTOU flakiness, build failures,
+  permissions dialogs, test-runner config), and Maestro (assertions,
+  element visibility, app state, device connection, CLI version) — each
+  with the standard fix. `--json`; `--log <path>`; reports to
+  `docs/vectalon/test-repair/` (gitignored).
+
 - **Build Fix Agent — `vectalon build-fix`** (Roadmap Phase 8, item 064):
   one deterministic diagnosis of a failing Metro, Gradle, or Xcode build
   from its log — the build kind is auto-detected from content (or forced
