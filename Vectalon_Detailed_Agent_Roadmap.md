@@ -206,6 +206,18 @@ This roadmap is written so autonomous coding agents can pick up individual tasks
 
 ## Phase 4 – Performance
 
+> **Status: Phase 4 complete as of v0.6.0** — items 021-023, 027, 029
+> shipped together in `vectalon perf` (a single deterministic static pass:
+> render-phase setState + inline handler/literal + unmemoized context-value
+> detection, heavyweight-import and entry-file side-effect startup analysis,
+> legacy bridge-traffic detection, and a severity-ranked recommendation
+> engine, with `--json` and reports to `docs/vectalon/perf/`, gitignored).
+> The remaining items already shipped earlier: 024/026 (Hermes heap + JS-thread
+> analysis in `vectalon profile`), 025 (Metro bundle analysis in
+> `vectalon bundle`), 028 (benchmark suite in `vectalon bench`), and 030
+> (regression baselines via `profile --baseline` + the bundle-budget gate in
+> the release workflow).
+
 ### 021. Render Profiler
 ### 022. Re-render Detector
 ### 023. Startup Performance Analyzer

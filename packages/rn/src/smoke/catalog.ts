@@ -119,6 +119,12 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['generate', 'component', 'SmokeProbe', '--dry-run'],
   },
   {
+    id: 'perf',
+    name: 'Static performance scan (re-render, startup, bridge)',
+    category: 'analysis',
+    args: () => ['perf', '--json'],
+  },
+  {
     id: 'telemetry',
     name: 'Telemetry formats guide',
     category: 'analysis',

@@ -83,6 +83,7 @@ Run `npx vectalon <command> --help` for detailed options.
 | `daemon` | Live Metro/Hermes companion daemon | `-p <port>`, `--metro-port`, `--stop`, `--status`, `--once`, `--wire-metro`, `--no-device-probe` |
 | `impact [dir]` | Cross-package blast radius of changed files (monorepo) — affected screens, navigation stacks, and the Maestro E2E flows that must run, including **accessibility variants** for screens covered by a11y criteria and flags for screens with **no deterministic route** | `--changed <files>`, `--pr <number>`, `--push`, `--json`, `--dry-run` |
 | `intel [dir]` | **Project Intelligence Core (Roadmap 001-010)** — one deterministic pass: versioned project manifest + validation, workspace/monorepo discovery (pnpm/yarn/npm/turbo/lerna/nx), file→file dependency graph with circular-import cycles, AST parse-rate stats, incremental repository index (content fingerprints), component + navigation graphs, native module registry (pods/podspecs/gradle/TurboModule specs), and ranked knowledge retrieval with a sub-second benchmark — repository-wide in monorepos, writes `docs/vectalon/intel/report.{json,md}` | `--json`, `--graph <deps\|components\|navigation\|native\|manifest>`, `--search <q>`, `--bench` |
+| `perf [dir]` | **Static performance scan (Roadmap Phase 4, items 021-023/027/029)** — one deterministic pass over source: render-phase `setState` (021), inline handler/literal props + unmemoized context values that defeat `React.memo` (022), heavyweight module-scope imports + entry-file side effects that delay first render (023), legacy bridge traffic (`NativeModules` / `requireNativeComponent` / `TurboModuleRegistry`) (027), and a severity-ranked, deduped recommendation engine (029) — with a markdown report to `docs/vectalon/perf/` | `--json` |
 | `coverage [dir]` | Render the **coverage dashboard** (`docs/vectalon/coverage/coverage-gaps.md`) — a per-screen E2E + a11y gap summary with links to the open follow-up tasks | `--json`, `--limit <n>` |
 | `smoke [dir]` | **Post-release verification** — run every CLI command against the project (dev mode by default so all features run), capture the full output of each, and report pass/warn/skip/fail; exits non-zero on any failure. Wired into the generated release workflows as a `verify` job | `--list`, `--only <ids>`, `--skip <ids>`, `--full`, `--json`, `--no-dev`, `--out <dir>`, `--timeout <ms>` |
 | `bench` | RN coding-test benchmark (deterministic baseline or real-model) | `--model <provider>`, `--suite <id>`, `--live`, `--install`, `--json`, `-o <path>`, `--baseline <file>`, `--tolerance <n>` |
@@ -124,6 +125,7 @@ Run `npx vectalon` with no arguments (Node `>=20.12`, TTY required) to launch an
   ○ Ingest telemetry
   ○ Analyze impact
   ○ Show coverage dashboard
+  ○ Run performance scan
   ○ Run post-release smoke
   ○ Generate CI workflow
   ○ Release pipeline
@@ -242,12 +244,12 @@ npx vectalon smoke --only impact,coverage
 npx vectalon smoke --no-dev       # respect the real tier — Pro/Team commands become skips
 ```
 
-- **36 checks** cover the whole surface — version/help, init, status, models,
+- **37 checks** cover the whole surface — version/help, init, status, models,
   auth, policy, refresh, suggestions, ecosystem, doctor, impact, coverage,
-  intel, telemetry, bundle, profile, sandbox, render, ci, release,
-  leaderboard, visual-ci, visual-baseline, ci-incident, serve (boot-probed
-  then killed), daemon, sync, team-policy, support; `--full` adds feature,
-  bench, selftest, pull
+  intel, diagnostics, generate, perf, telemetry, bundle, profile, sandbox,
+  render, ci, release, leaderboard, visual-ci, visual-baseline, ci-incident,
+  serve (boot-probed then killed), daemon, sync, team-policy, support;
+  `--full` adds feature, bench, selftest, pull
 - **Full captured output** per command lands in `report.log` (readable),
   `report.json` (CI), and an HTML dashboard; the terminal streams each check
   live and prints a summary table
@@ -334,6 +336,35 @@ npx vectalon generate api OrdersApi --spec openapi.json  # typed client + apiBas
 - **Native module (018)** — iOS (ObjC++) + Android (Kotlin) scaffold, `--api rn-cli` (TurboModule) or `expo`, from a JSON spec
 - **Test (019)** — Jest `@testing-library/react-native` or Detox test
 - **API client (020)** — typed service class + `apiBase.ts` (ApiError) from an **OpenAPI spec**: path params, request bodies, response types, error handling
+
+## Static Performance Scan (`vectalon perf`)
+
+One deterministic pass (Roadmap Phase 4, items 021-023, 027, 029) over the
+project's source — no build, no device, no model calls:
+
+```bash
+npx vectalon perf                      # findings + markdown report → docs/vectalon/perf/
+npx vectalon perf --json               # machine-readable report (CI)
+```
+
+- **Render profiler / re-render detector (021-022)** — render-phase
+  `setState` calls (error), and the memo-defeating patterns that re-render
+  subtrees: 2+ inline arrow handlers on one element, inline object/array
+  literal props, and unmemoized `<X.Provider value={{…}}>` context values
+- **Startup analyzer (023)** — heavyweight module-scope imports (moment,
+  lodash, rxjs, d3, three, Skia, victory-native, tfjs, realm, ffmpeg) and
+  top-level side effects in entry files (index.*, App.*) that delay first
+  render
+- **Bridge traffic analyzer (027)** — legacy bridge usage that blocks or
+  bypasses the New Architecture: direct `NativeModules.X.method()` calls,
+  `requireNativeComponent`, and `TurboModuleRegistry.get(...)` access
+  (warning severity in JSX/TSX render paths, info in service files)
+- **Recommendation engine (029)** — severity-ranked (error → warning → info),
+  deduplicated fix suggestions, surfaced as the report's top 3
+
+Reports land in docs/vectalon/perf/report.{json,md} (gitignored). Complements
+`vectalon profile` (measured runtime data) and `vectalon bundle` (bundle
+budgets): `perf` catches the static hazards before you ever profile.
 
 ## Hermes Runtime Profiling (`vectalon profile`)
 

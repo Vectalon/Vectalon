@@ -11,6 +11,7 @@ const FREE: Array<[string, string]> = [
   ['selftest', 'Test every harness feature in isolated sandboxes — live pass/fail stream'],
   ['impact', 'Cross-package blast radius — affected screens, navigation stacks, and the Maestro E2E flows that must run (with accessibility variants for covered screens)'],
   ['coverage', 'Per-screen E2E + accessibility gap dashboard with links to the open follow-up tasks'],
+  ['perf', 'Static performance scan — render-phase setState, memo-defeating props, heavy startup imports, legacy bridge traffic, with ranked fixes'],
   ['bench / leaderboard', 'Run the RN benchmark suite against any model'],
 ]
 

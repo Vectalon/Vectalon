@@ -12,9 +12,9 @@ when the package is installed; `npx` prefers the local binary.)
 
 Running `npx vectalon` with no arguments opens an **interactive menu** covering
 the most common actions (init, feature, refresh, suggestions, bundle, status,
-daemon, telemetry, impact, coverage, intel, diagnostics, generate, smoke, ci,
-release, ecosystem, doctor, selftest, bench, leaderboard, sync, policy, serve,
-pull, models, help).
+daemon, telemetry, impact, coverage, intel, diagnostics, generate, perf,
+smoke, ci, release, ecosystem, doctor, selftest, bench, leaderboard, sync,
+policy, serve, pull, models, help).
 
 ---
 
@@ -1215,6 +1215,54 @@ generators take `--spec` as inline JSON or a path to a `.json` file.
 
 ---
 
+## `perf`
+
+**Static performance scan** (Roadmap Phase 4, items 021-023, 027, 029) — one
+deterministic pass over the project's source that catches the render and
+startup hazards `profile`/`bundle` only see after you build or profile. No
+build, no device, no model calls.
+
+```bash
+npx vectalon perf                      # findings + markdown report → docs/vectalon/perf/
+npx vectalon perf --json               # machine-readable report (CI)
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print the JSON report to stdout (the markdown report is still written) |
+
+**What it checks**
+
+- **Render profiler / re-render detector (021-022)** — render-phase
+  `setState(...)` calls in a component body (error), plus the memo-defeating
+  patterns that re-render subtrees: 2+ inline arrow handlers on one element,
+  inline object/array literal props, and unmemoized `<X.Provider value={{…}}>`
+  context values (warnings)
+- **Startup analyzer (023)** — heavyweight module-scope imports (moment,
+  lodash, rxjs, d3, three, Skia, victory-native, tfjs, realm, ffmpeg;
+  moment/lodash warn, the rest error) and top-level side effects in entry
+  files (`index.*`, `App.*`) that delay the first render
+- **Bridge traffic analyzer (027)** — legacy bridge usage that blocks or
+  bypasses the New Architecture: direct `NativeModules.X.method()` calls,
+  `requireNativeComponent`, and `TurboModuleRegistry.get(...)` access
+  (warning severity in JSX/TSX render paths, info in service files)
+- **Recommendation engine (029)** — severity-ranked (error → warning → info),
+  deduplicated fix suggestions, surfaced as the report's top 3
+
+Reports land in `docs/vectalon/perf/report.{json,md}` (gitignored).
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed (findings are informational — they never gate) |
+| 1 | Project root unreadable or no source files found |
+
+---
+
 ## `smoke`
 
 **Post-release verification**: run **every CLI command** against the project
@@ -1227,7 +1275,7 @@ npx vectalon smoke                       # every fast check, dev mode, report to
 npx vectalon smoke --full                # + slow/model-heavy checks (feature, bench, selftest, pull)
 npx vectalon smoke --json                # machine-readable report on stdout (CI)
 npx vectalon smoke --only impact,coverage # targeted subset
-npx vectalon smoke --list                # show all 36 checks
+npx vectalon smoke --list                # show all 37 checks
 npx vectalon smoke --no-dev              # respect the real tier — Pro/Team commands report as skips
 ```
 
@@ -1249,10 +1297,11 @@ npx vectalon smoke --no-dev              # respect the real tier — Pro/Team co
 
 **What it does**
 
-- Runs 36 checks covering the whole command surface — version/help, init,
+- Runs 37 checks covering the whole command surface — version/help, init,
   status, models, auth, policy, refresh, suggestions, ecosystem, doctor,
-  impact, coverage, intel, telemetry, bundle, profile, sandbox, render, ci,
-  release, leaderboard, visual-ci, visual-baseline, ci-incident, serve
+  impact, coverage, intel, diagnostics, generate, perf, telemetry, bundle,
+  profile, sandbox, render, ci, release, leaderboard, visual-ci,
+  visual-baseline, ci-incident, serve
   (boot-probed then killed), daemon, sync, team-policy, support, plus
   `--full` adds the feature workflow, benchmark, full self-test, and model
   pull

@@ -5,6 +5,24 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Static performance scan — `vectalon perf`** (Roadmap Phase 4,
+  items 021-023, 027, 029): one deterministic pass over source with no
+  build/device/model calls. Render profiler + re-render detector (021-022:
+  render-phase setState as error; 2+ inline arrow handlers, inline
+  object/array literal props, and unmemoized context provider values that
+  defeat React.memo as warnings), startup analyzer (023: heavyweight
+  module-scope imports — moment, lodash, rxjs, d3, three, Skia, tfjs — and
+  top-level side effects in entry files), bridge traffic analyzer (027:
+  direct NativeModules calls, requireNativeComponent, TurboModuleRegistry
+  access — warning in JSX/TSX render paths, info elsewhere), and a
+  severity-ranked, deduped recommendation engine (029). `--json`; reports
+  to `docs/vectalon/perf/` (gitignored). Completes Phase 4 alongside the
+  existing profile/bundle/bench commands.
+
 ## [0.5.0] - 2026-08-13
 
 ### Added

@@ -38,6 +38,7 @@ import { coverageCommand } from './commands/coverage'
 import { intelCommand } from './commands/intel'
 import { diagnosticsCommand } from './commands/diagnostics'
 import { generateCommand } from './commands/generate'
+import { perfCommand } from './commands/perf'
 import { smokeCommand } from './commands/smoke'
 import { doctorCommand } from './commands/doctor'
 import { selftestCommand } from './commands/selftest'
@@ -427,6 +428,12 @@ export function createProgram(): Command {
     .action(diagnosticsCommand)
 
   program
+    .command('perf [directory]')
+    .description('Static performance scan (Roadmap 021-023, 027, 029) — re-render hazards, startup hot paths, and legacy bridge traffic in one deterministic pass, with severity-ranked recommendations; complements the runtime profile command')
+    .option('--json', 'Print the full report as JSON')
+    .action(perfCommand)
+
+  program
     .command('generate <type> [name]')
     .description('Code generation — component, screen, test, native-module, or api (typed services with error handling + caching from an OpenAPI spec)')
     .option('--dry-run', 'Preview the generated files without writing them')
@@ -645,6 +652,7 @@ async function runInteractive(): Promise<void> {
       { value: 'intel', label: 'Run project intelligence', hint: 'Manifest, deps, AST, graphs, native registry, retrieval (001-010)' },
       { value: 'diagnostics', label: 'Run project diagnostics', hint: 'Metro, Hermes, Android/iOS build analysis, dependency conflicts (011-015)' },
       { value: 'generate', label: 'Generate code', hint: 'Component, screen, test, native module, API client (016-020)' },
+      { value: 'perf', label: 'Run static perf scan', hint: 'Re-render hazards, startup hot paths, bridge traffic (021-029)' },
       { value: 'smoke', label: 'Run post-release smoke', hint: 'Every command, full output, pass/skip/fail report' },
       { value: 'ci', label: 'Generate CI workflow', hint: 'EAS Workflows (Expo) or GitHub Actions (bare RN CLI)' },
       { value: 'release', label: 'Release pipeline', hint: 'Detect version bump, changelog, submit workflow, crash monitor' },
@@ -885,6 +893,12 @@ async function runInteractive(): Promise<void> {
     const xcodeLog = xcode ? (await p.text({ message: 'Path to the Xcode log' })) as string : undefined
     await diagnosticsCommand('', { gradleLog, xcodeLog })
     p.outro('Project diagnostics complete')
+    return
+  }
+
+  if (action === 'perf') {
+    await perfCommand('', {})
+    p.outro('Static performance scan complete')
     return
   }
 
