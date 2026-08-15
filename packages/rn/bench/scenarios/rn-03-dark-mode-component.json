@@ -6,13 +6,19 @@
   "prompt": "Create a reusable Card component that reads colors from the design system theme and updates automatically in dark mode. No hardcoded hex colors.",
   "scaffoldable": false,
   "fixtures": {
-    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.3.1\",\n    \"react-native\": \"0.74.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.0\",\n    \"jest\": \"29.7.0\"\n  }\n}",
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.2.0\",\n    \"react-native\": \"0.74.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.4\",\n    \"jest\": \"29.7.0\",\n    \"@babel/core\": \"7.24.9\",\n    \"@babel/preset-env\": \"7.24.8\",\n    \"@babel/preset-typescript\": \"7.24.7\",\n    \"@types/jest\": \"29.5.14\",\n    \"@types/react\": \"18.2.79\",\n    \"@typescript-eslint/eslint-plugin\": \"6.21.0\",\n    \"@typescript-eslint/parser\": \"6.21.0\",\n    \"eslint\": \"8.57.0\"\n  }\n}",
     "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"jsx\": \"react-native\",\n    \"esModuleInterop\": true,\n    \"skipLibCheck\": true\n  }\n}",
     "src/theme/tokens.ts": "export const colors = {\n  background: { light: '#FFFFFF', dark: '#121212' },\n  surface: { light: '#F5F5F5', dark: '#1E1E1E' },\n  text: { light: '#111111', dark: '#FFFFFF' }\n} as const;",
-    "src/theme/index.ts": "import { colors } from './tokens';\nimport { useColorScheme } from 'react-native';\n\nexport function useTheme(): { colors: typeof colors.surface; isDark: boolean } {\n  const isDark = useColorScheme() === 'dark';\n  return { colors: colors.surface, isDark };\n}"
+    "src/theme/index.ts": "import { colors } from './tokens';\nimport { useColorScheme } from 'react-native';\n\nexport function useTheme(): { colors: typeof colors.surface; isDark: boolean } {\n  const isDark = useColorScheme() === 'dark';\n  return { colors: colors.surface, isDark };\n}",
+    "babel.config.js": "module.exports = {\n  presets: ['@babel/preset-env', '@babel/preset-typescript'],\n};\n",
+    ".eslintrc.cjs": "module.exports = {\n  root: true,\n  env: { node: true, jest: true },\n  parser: '@typescript-eslint/parser',\n  parserOptions: { ecmaVersion: 2020, sourceType: 'module', ecmaFeatures: { jsx: true } },\n  plugins: ['@typescript-eslint'],\n  extends: ['plugin:@typescript-eslint/recommended'],\n  rules: { 'no-undef': 'off' },\n};\n",
+    "src/config/app.ts": "export const APP_NAME = 'rn-bench-app';\nexport const APP_VERSION = '1.0.0';\n",
+    "__tests__/smoke.test.ts": "import { APP_NAME, APP_VERSION } from '../src/config/app';\n\ndescribe('project smoke', () => {\n  it('loads the app config', () => {\n    expect(APP_NAME).toBe('rn-bench-app');\n    expect(APP_VERSION).toBe('1.0.0');\n  });\n});\n"
   },
   "expect": {
-    "files": ["src/components/Card.tsx"],
+    "files": [
+      "src/components/Card.tsx"
+    ],
     "behaviors": [
       "colors come from the design system, not hex literals",
       "StyleSheet.create used, no inline styles",
@@ -20,6 +26,14 @@
       "works in dark and light mode"
     ]
   },
-  "correctness": { "tests": true, "typecheck": true, "lint": true },
-  "axes": ["correctness", "adherence", "guardrails"]
+  "correctness": {
+    "tests": true,
+    "typecheck": true,
+    "lint": true
+  },
+  "axes": [
+    "correctness",
+    "adherence",
+    "guardrails"
+  ]
 }

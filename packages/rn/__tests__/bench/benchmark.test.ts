@@ -81,7 +81,7 @@ describe('bench scenario loader', () => {
     const dir = defaultScenariosDir()
     const loaded = loadScenarios(dir)
     expect(loaded.problems).toEqual([])
-    expect(loaded.scenarios.length).toBe(11)
+    expect(loaded.scenarios.length).toBe(13)
     for (const s of loaded.scenarios) {
       expect(validateScenario(s)).toEqual([])
     }
@@ -315,8 +315,8 @@ describe('bench deterministic baseline runner', () => {
   it('runBenchmarkFromDir runs only the scaffold-able subset by default', async () => {
     const { summary, problems } = await runBenchmarkFromDir({})
     expect(problems).toEqual([])
-    // Deterministic baseline (no generate seam) covers rn-01/02/05/06 only.
-    expect(summary.runs.length).toBe(4)
+    // Deterministic baseline (no generate seam) covers the scaffold-able subset.
+    expect(summary.runs.length).toBe(6)
     expect(summary.runs.every(r => r.scaffoldable)).toBe(true)
     expect(summary.overallComposite).not.toBeNull()
     expect(summary.suites.length).toBeGreaterThan(0)
@@ -363,11 +363,12 @@ describe('bench deterministic baseline runner', () => {
     const { summary } = await runBenchmarkFromDir({
       generate: scenario => [{ path: `src/${scenario.id}.tsx`, content: 'export const x = 1;' }],
     })
-    expect(summary.runs.length).toBe(11)
+    expect(summary.runs.length).toBe(13)
   })
 
   it('runBenchmarkFromDir honors an explicit scaffoldable filter override', async () => {
     const { summary } = await runBenchmarkFromDir({ filter: { scaffoldable: false } })
+    // 13 scenarios − 6 scaffoldable = 7 model-only
     expect(summary.runs.length).toBe(7)
     expect(summary.runs.every(r => !r.scaffoldable)).toBe(true)
   })
@@ -401,6 +402,13 @@ describe('bench deterministic baseline runner', () => {
 })
 
 function isScaffoldableSubset(ids: string[]): boolean {
-  const expected = ['rn-01-login-screen', 'rn-02-flatlist-fetch', 'rn-05-form-validation', 'rn-06-offline-queue']
+  const expected = [
+    'rn-01-login-screen',
+    'rn-02-flatlist-fetch',
+    'rn-05-form-validation',
+    'rn-06-offline-queue',
+    'rn-12-notifications-screen',
+    'rn-13-account-delete-screen',
+  ]
   return expected.every(id => ids.includes(id)) && ids.every(id => expected.includes(id))
 }

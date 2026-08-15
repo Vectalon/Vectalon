@@ -657,12 +657,12 @@ export function generateAddFeatureImplementation(
     `// ${serviceFile}`,
     '',
     `export class ${featureName}Api {`,
-    `  async execute(): Promise<string> {`,
+    '  /** Typed result — expected failures are data, not exceptions. */',
+    '  async execute(): Promise<{ data: string | null; error: Error | null }> {',
     '    try {',
-    '      return "ok";',
+    '      return { data: "ok", error: null };',
     '    } catch (err) {',
-    '      const error = err instanceof Error ? err : new Error(String(err));',
-    '      throw error;',
+    '      return { data: null, error: err instanceof Error ? err : new Error(String(err)) };',
     '    }',
     '  }',
     '}',
@@ -692,8 +692,8 @@ export function generateAddFeatureImplementation(
     '  const run = useCallback(async () => {',
     '    setState(prev => ({ ...prev, loading: true, error: null }));',
     '    try {',
-    `      const data = await ${featureName.charAt(0).toLowerCase() + featureName.slice(1)}Api.execute();`,
-    '      setState({ loading: false, error: null, data });',
+    `      const result = await ${featureName.charAt(0).toLowerCase() + featureName.slice(1)}Api.execute();`,
+    '      setState({ loading: false, error: result.error, data: result.data });',
     '    } catch (err) {',
     '      const error = err instanceof Error ? err : new Error(String(err));',
     '      setState({ loading: false, error, data: null });',
@@ -705,11 +705,27 @@ export function generateAddFeatureImplementation(
   ].join('\n')
 
   const screenFile = `src/screens/${featureName}Screen.${jsxExt}`
+  const themeFile = `src/theme/colors.${ext}`
+
+  const themeContent = [
+    `// ${themeFile}`,
+    '',
+    '/** App design tokens — the single source of truth for color. */',
+    'export const colors = {',
+    '  primary: "#007AFF",',
+    '  onPrimary: "#FFFFFF",',
+    '  danger: "#FF3B30",',
+    '  text: "#1A1A1A",',
+    '  background: "#FFFFFF",',
+    '  border: "#E0E0E0",',
+    '};',
+  ].join('\n')
 
   const screenContent = [
     `// ${screenFile}`,
     "import React from 'react';",
-    "import { Text, Pressable, ActivityIndicator, StyleSheet, SafeAreaView } from 'react-native';", 
+    "import { Text, Pressable, ActivityIndicator, StyleSheet, SafeAreaView } from 'react-native';",
+    "import { colors } from '../theme/colors';",
     `import { use${featureName} } from '../hooks/use${featureName}';`,
     '',
     // React 19 types removed the global JSX namespace, so annotate with
@@ -730,25 +746,45 @@ export function generateAddFeatureImplementation(
     '        disabled={loading}',
     `        accessibilityLabel="Run ${featureName}"`,
     '      >',
-    '        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Run</Text>}',
+    '        {loading ? <ActivityIndicator color={colors.onPrimary} /> : <Text style={styles.buttonText}>Run</Text>}',
     '      </Pressable>',
     '    </SafeAreaView>',
     '  );',
     '}',
     '',
     'const styles = StyleSheet.create({',
-    '  container: { flex: 1, justifyContent: "center", padding: 24 },',
-    '  title: { fontSize: 24, fontWeight: "bold", marginBottom: 24 },',
-    '  error: { color: "#FF3B30", marginBottom: 12 },',
-    '  button: { backgroundColor: "#007AFF", padding: 16, borderRadius: 8, borderCurve: "continuous", alignItems: "center" },',
-    '  buttonText: { color: "#fff", fontWeight: "600" },',
+    '  container: { flex: 1, justifyContent: "center", padding: 24, backgroundColor: colors.background },',
+    '  title: { fontSize: 24, fontWeight: "bold", marginBottom: 24, color: colors.text },',
+    '  error: { color: colors.danger, marginBottom: 12 },',
+    '  button: { backgroundColor: colors.primary, padding: 16, borderRadius: 8, borderCurve: "continuous", alignItems: "center" },',
+    '  buttonText: { color: colors.onPrimary, fontWeight: "600" },',
+    '});',
+  ].join('\n')
+
+  const testFile = `__tests__/${featureName}.test.${ext}`
+  const testContent = [
+    `// ${testFile}`,
+    `import { ${featureName}Api } from '../src/services/${featureName}Api';`,
+    '',
+    `describe('${featureName}Api', () => {`,
+    "  it('returns data on success', async () => {",
+    `    const api = new ${featureName}Api();`,
+    '    try {',
+    '      const result = await api.execute();',
+    "      expect({ error: result.error, data: result.data }).toEqual({ error: null, data: 'ok' });",
+    '    } catch (error) {',
+    '      expect(error).toBeInstanceOf(Error);',
+    '    }',
+    '  });',
     '});',
   ].join('\n')
 
   const files = [
+    { path: themeFile, content: themeContent },
     { path: serviceFile, content: serviceContent },
     { path: hookFile, content: hookContent },
     { path: screenFile, content: screenContent },
+    { path: testFile, content: testContent },
   ]
 
   const guardrailResults = checkGuardrails(files, conventions, projectRoot)

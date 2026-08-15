@@ -185,15 +185,18 @@ describe('benchCommand', () => {
     const exit = jest.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('exit')
     })
-    // A baseline with an inflated overall composite forces every run to regress.
+    // The deterministic scaffold scores 1.0 on every scored axis, so an
+    // inflated-axis baseline can no longer regress — instead, list a scenario
+    // the current run does not produce, which fails the gate as "baseline
+    // scenario no longer runs".
     const dir = createTempProject({
       'baseline.json': JSON.stringify({
         specVersion: 1,
         runs: [
           {
-            id: 'rn-01-login-screen',
-            title: 'Login',
-            suite: 'forms-security',
+            id: 'rn-99-baseline-only',
+            title: 'Baseline-only scenario',
+            suite: 'core-ui',
             scaffoldable: true,
             generatedFiles: [],
             guardrail: [],
@@ -201,7 +204,7 @@ describe('benchCommand', () => {
             composite: 1,
           },
         ],
-        suites: [{ suite: 'forms-security', scenarioIds: ['rn-01-login-screen'], composite: 1, guardrails: 1 }],
+        suites: [{ suite: 'core-ui', scenarioIds: ['rn-99-baseline-only'], composite: 1, guardrails: 1 }],
         overallComposite: 1,
         overallGuardrails: 1,
         overallReferenceComposite: 1,
@@ -219,7 +222,7 @@ describe('benchCommand', () => {
       const stdout = (process.stdout.write as jest.Mock).mock.calls
         .map((call: unknown[]) => (typeof call[0] === 'string' ? call[0] : ''))
         .join('')
-      expect(stdout).toContain('REGRESSIONS')
+      expect(stdout).toContain('rn-99-baseline-only')
     } finally {
       cleanup(dir)
     }

@@ -6,12 +6,20 @@
   "prompt": "Create an offline-first action queue: enqueue user actions, retry when back online, and update the UI optimistically with rollback on failure.",
   "scaffoldable": true,
   "fixtures": {
-    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.3.1\",\n    \"react-native\": \"0.74.0\",\n    \"@react-native-community/netinfo\": \"11.1.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.0\",\n    \"jest\": \"29.7.0\"\n  }\n}",
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.2.0\",\n    \"react-native\": \"0.74.0\",\n    \"@react-native-community/netinfo\": \"11.1.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.4\",\n    \"jest\": \"29.7.0\",\n    \"@babel/core\": \"7.24.9\",\n    \"@babel/preset-env\": \"7.24.8\",\n    \"@babel/preset-typescript\": \"7.24.7\",\n    \"@types/jest\": \"29.5.14\",\n    \"@types/react\": \"18.2.79\",\n    \"@typescript-eslint/eslint-plugin\": \"6.21.0\",\n    \"@typescript-eslint/parser\": \"6.21.0\",\n    \"eslint\": \"8.57.0\"\n  }\n}",
     "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"jsx\": \"react-native\",\n    \"esModuleInterop\": true,\n    \"skipLibCheck\": true\n  }\n}",
-    "src/store/queue.ts": "export interface QueuedAction {\n  id: string;\n  type: string;\n  payload: unknown;\n  createdAt: number;\n}\n\nexport class ActionQueue {\n  private items: QueuedAction[] = [];\n  enqueue(action: Omit<QueuedAction, 'id' | 'createdAt'>): QueuedAction {\n    const item: QueuedAction = { ...action, id: `q-${this.items.length}`, createdAt: Date.now() };\n    this.items.push(item);\n    return item;\n  }\n  pending(): QueuedAction[] {\n    return this.items.slice();\n  }\n}"
+    "src/store/queue.ts": "export interface QueuedAction {\n  id: string;\n  type: string;\n  payload: unknown;\n  createdAt: number;\n}\n\nexport class ActionQueue {\n  private items: QueuedAction[] = [];\n  enqueue(action: Omit<QueuedAction, 'id' | 'createdAt'>): QueuedAction {\n    const item: QueuedAction = { ...action, id: `q-${this.items.length}`, createdAt: Date.now() };\n    this.items.push(item);\n    return item;\n  }\n  pending(): QueuedAction[] {\n    return this.items.slice();\n  }\n}",
+    "babel.config.js": "module.exports = {\n  presets: ['@babel/preset-env', '@babel/preset-typescript'],\n};\n",
+    ".eslintrc.cjs": "module.exports = {\n  root: true,\n  env: { node: true, jest: true },\n  parser: '@typescript-eslint/parser',\n  parserOptions: { ecmaVersion: 2020, sourceType: 'module', ecmaFeatures: { jsx: true } },\n  plugins: ['@typescript-eslint'],\n  extends: ['plugin:@typescript-eslint/recommended'],\n  rules: { 'no-undef': 'off' },\n};\n",
+    "src/config/app.ts": "export const APP_NAME = 'rn-bench-app';\nexport const APP_VERSION = '1.0.0';\n",
+    "__tests__/smoke.test.ts": "import { APP_NAME, APP_VERSION } from '../src/config/app';\n\ndescribe('project smoke', () => {\n  it('loads the app config', () => {\n    expect(APP_NAME).toBe('rn-bench-app');\n    expect(APP_VERSION).toBe('1.0.0');\n  });\n});\n"
   },
   "expect": {
-    "files": ["src/store/queue.ts", "src/hooks/useOfflineQueue.ts", "src/screens/QueueScreen.tsx"],
+    "files": [
+      "src/store/queue.ts",
+      "src/hooks/useOfflineQueue.ts",
+      "src/screens/QueueScreen.tsx"
+    ],
     "behaviors": [
       "optimistic update with rollback",
       "immutable updates",
@@ -19,6 +27,14 @@
       "error states"
     ]
   },
-  "correctness": { "tests": true, "typecheck": true, "lint": true },
-  "axes": ["correctness", "adherence", "guardrails"]
+  "correctness": {
+    "tests": true,
+    "typecheck": true,
+    "lint": true
+  },
+  "axes": [
+    "correctness",
+    "adherence",
+    "guardrails"
+  ]
 }

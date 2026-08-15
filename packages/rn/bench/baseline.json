@@ -7,11 +7,20 @@
       "suite": "forms-security",
       "scaffoldable": true,
       "generatedFiles": [
+        "src/theme/colors.ts",
         "src/services/CreateLoginScreenEmailPasswordApi.ts",
         "src/hooks/useCreateLoginScreenEmailPassword.ts",
-        "src/screens/CreateLoginScreenEmailPasswordScreen.tsx"
+        "src/screens/CreateLoginScreenEmailPasswordScreen.tsx",
+        "__tests__/CreateLoginScreenEmailPassword.test.ts"
       ],
       "guardrail": [
+        {
+          "path": "src/theme/colors.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
+        },
         {
           "path": "src/services/CreateLoginScreenEmailPasswordApi.ts",
           "passed": 18,
@@ -32,14 +41,21 @@
           "failed": 0,
           "skipped": 9,
           "ok": true
+        },
+        {
+          "path": "__tests__/CreateLoginScreenEmailPassword.test.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
         }
       ],
       "axes": {
         "correctness": null,
-        "adherence": 0.6666666666666666,
+        "adherence": 1,
         "guardrails": 1
       },
-      "composite": 0.8333333333333334,
+      "composite": 1,
       "reference": {
         "files": [
           "src/services/auth.ts",
@@ -53,9 +69,9 @@
         "composite": 0.841897233201581,
         "relative": {
           "correctness": null,
-          "adherence": 0.9166666666666666,
+          "adherence": 1.375,
           "guardrails": 1.0454545454545454,
-          "composite": 0.9898278560250391
+          "composite": 1.187793427230047
         }
       }
     },
@@ -65,11 +81,20 @@
       "suite": "data-flow",
       "scaffoldable": true,
       "generatedFiles": [
+        "src/theme/colors.ts",
         "src/services/CreateScreenThatFetchesPaginatApi.ts",
         "src/hooks/useCreateScreenThatFetchesPaginat.ts",
-        "src/screens/CreateScreenThatFetchesPaginatScreen.tsx"
+        "src/screens/CreateScreenThatFetchesPaginatScreen.tsx",
+        "__tests__/CreateScreenThatFetchesPaginat.test.ts"
       ],
       "guardrail": [
+        {
+          "path": "src/theme/colors.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
+        },
         {
           "path": "src/services/CreateScreenThatFetchesPaginatApi.ts",
           "passed": 18,
@@ -90,14 +115,21 @@
           "failed": 0,
           "skipped": 9,
           "ok": true
+        },
+        {
+          "path": "__tests__/CreateScreenThatFetchesPaginat.test.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
         }
       ],
       "axes": {
         "correctness": null,
-        "adherence": 0.6666666666666666,
+        "adherence": 1,
         "guardrails": 1
       },
-      "composite": 0.8333333333333334,
+      "composite": 1,
       "reference": {
         "files": [
           "src/screens/FeedScreen.tsx"
@@ -110,9 +142,9 @@
         "composite": 0.9093406593406593,
         "relative": {
           "correctness": null,
-          "adherence": 0.7777777777777778,
+          "adherence": 1.1666666666666667,
           "guardrails": 1.04,
-          "composite": 0.9164149043303123
+          "composite": 1.0996978851963746
         }
       }
     },
@@ -122,11 +154,20 @@
       "suite": "forms-security",
       "scaffoldable": true,
       "generatedFiles": [
+        "src/theme/colors.ts",
         "src/services/CreateMultiFieldFormClientApi.ts",
         "src/hooks/useCreateMultiFieldFormClient.ts",
-        "src/screens/CreateMultiFieldFormClientScreen.tsx"
+        "src/screens/CreateMultiFieldFormClientScreen.tsx",
+        "__tests__/CreateMultiFieldFormClient.test.ts"
       ],
       "guardrail": [
+        {
+          "path": "src/theme/colors.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
+        },
         {
           "path": "src/services/CreateMultiFieldFormClientApi.ts",
           "passed": 18,
@@ -147,14 +188,21 @@
           "failed": 0,
           "skipped": 9,
           "ok": true
+        },
+        {
+          "path": "__tests__/CreateMultiFieldFormClient.test.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
         }
       ],
       "axes": {
         "correctness": null,
-        "adherence": 0.6666666666666666,
+        "adherence": 1,
         "guardrails": 1
       },
-      "composite": 0.8333333333333334,
+      "composite": 1,
       "reference": {
         "files": [
           "src/services/credentials.ts",
@@ -168,9 +216,9 @@
         "composite": 0.8565217391304347,
         "relative": {
           "correctness": null,
-          "adherence": 0.8333333333333333,
+          "adherence": 1.25,
           "guardrails": 1.0952380952380953,
-          "composite": 0.972927241962775
+          "composite": 1.1675126903553301
         }
       }
     },
@@ -180,11 +228,20 @@
       "suite": "data-flow",
       "scaffoldable": true,
       "generatedFiles": [
+        "src/theme/colors.ts",
         "src/services/CreateOfflineFirstActionQueueApi.ts",
         "src/hooks/useCreateOfflineFirstActionQueue.ts",
-        "src/screens/CreateOfflineFirstActionQueueScreen.tsx"
+        "src/screens/CreateOfflineFirstActionQueueScreen.tsx",
+        "__tests__/CreateOfflineFirstActionQueue.test.ts"
       ],
       "guardrail": [
+        {
+          "path": "src/theme/colors.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
+        },
         {
           "path": "src/services/CreateOfflineFirstActionQueueApi.ts",
           "passed": 18,
@@ -205,14 +262,21 @@
           "failed": 0,
           "skipped": 9,
           "ok": true
+        },
+        {
+          "path": "__tests__/CreateOfflineFirstActionQueue.test.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
         }
       ],
       "axes": {
         "correctness": null,
-        "adherence": 0.6666666666666666,
+        "adherence": 1,
         "guardrails": 1
       },
-      "composite": 0.8333333333333334,
+      "composite": 1,
       "reference": {
         "files": [
           "src/hooks/useOfflineQueue.ts",
@@ -226,9 +290,157 @@
         "composite": 0.6772727272727274,
         "relative": {
           "correctness": null,
-          "adherence": 1.6666666666666665,
+          "adherence": 2.5,
           "guardrails": 1.0476190476190477,
-          "composite": 1.2304250559284116
+          "composite": 1.4765100671140938
+        }
+      }
+    },
+    {
+      "id": "rn-12-notifications-screen",
+      "title": "Notifications screen with list fetch",
+      "suite": "data-flow",
+      "scaffoldable": true,
+      "generatedFiles": [
+        "src/theme/colors.ts",
+        "src/services/AddNotificationsScreenThatFetcApi.ts",
+        "src/hooks/useAddNotificationsScreenThatFetc.ts",
+        "src/screens/AddNotificationsScreenThatFetcScreen.tsx",
+        "__tests__/AddNotificationsScreenThatFetc.test.ts"
+      ],
+      "guardrail": [
+        {
+          "path": "src/theme/colors.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
+        },
+        {
+          "path": "src/services/AddNotificationsScreenThatFetcApi.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
+        },
+        {
+          "path": "src/hooks/useAddNotificationsScreenThatFetc.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
+        },
+        {
+          "path": "src/screens/AddNotificationsScreenThatFetcScreen.tsx",
+          "passed": 27,
+          "failed": 0,
+          "skipped": 9,
+          "ok": true
+        },
+        {
+          "path": "__tests__/AddNotificationsScreenThatFetc.test.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
+        }
+      ],
+      "axes": {
+        "correctness": null,
+        "adherence": 1,
+        "guardrails": 1
+      },
+      "composite": 1,
+      "reference": {
+        "files": [
+          "src/services/notifications.ts",
+          "src/screens/NotificationsScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.7777777777777778,
+          "guardrails": 1
+        },
+        "composite": 0.888888888888889,
+        "relative": {
+          "correctness": null,
+          "adherence": 1.2857142857142856,
+          "guardrails": 1,
+          "composite": 1.125
+        }
+      }
+    },
+    {
+      "id": "rn-13-account-delete-screen",
+      "title": "Account deletion screen with confirmation",
+      "suite": "forms-security",
+      "scaffoldable": true,
+      "generatedFiles": [
+        "src/theme/colors.ts",
+        "src/services/AddAccountDeletionConfirmationApi.ts",
+        "src/hooks/useAddAccountDeletionConfirmation.ts",
+        "src/screens/AddAccountDeletionConfirmationScreen.tsx",
+        "__tests__/AddAccountDeletionConfirmation.test.ts"
+      ],
+      "guardrail": [
+        {
+          "path": "src/theme/colors.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
+        },
+        {
+          "path": "src/services/AddAccountDeletionConfirmationApi.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
+        },
+        {
+          "path": "src/hooks/useAddAccountDeletionConfirmation.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
+        },
+        {
+          "path": "src/screens/AddAccountDeletionConfirmationScreen.tsx",
+          "passed": 27,
+          "failed": 0,
+          "skipped": 9,
+          "ok": true
+        },
+        {
+          "path": "__tests__/AddAccountDeletionConfirmation.test.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
+        }
+      ],
+      "axes": {
+        "correctness": null,
+        "adherence": 1,
+        "guardrails": 1
+      },
+      "composite": 1,
+      "reference": {
+        "files": [
+          "src/services/account.ts",
+          "src/screens/AccountDeleteScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.7777777777777778,
+          "guardrails": 1
+        },
+        "composite": 0.888888888888889,
+        "relative": {
+          "correctness": null,
+          "adherence": 1.2857142857142856,
+          "guardrails": 1,
+          "composite": 1.125
         }
       }
     }
@@ -238,23 +450,25 @@
       "suite": "forms-security",
       "scenarioIds": [
         "rn-01-login-screen",
-        "rn-05-form-validation"
+        "rn-05-form-validation",
+        "rn-13-account-delete-screen"
       ],
-      "composite": 0.8333333333333334,
+      "composite": 1,
       "guardrails": 1
     },
     {
       "suite": "data-flow",
       "scenarioIds": [
         "rn-02-flatlist-fetch",
-        "rn-06-offline-queue"
+        "rn-06-offline-queue",
+        "rn-12-notifications-screen"
       ],
-      "composite": 0.8333333333333334,
+      "composite": 1,
       "guardrails": 1
     }
   ],
-  "overallComposite": 0.8333333333333334,
+  "overallComposite": 1,
   "overallGuardrails": 1,
-  "overallReferenceComposite": 0.8212580897363505,
-  "overallRelativeComposite": 1.0273987645616345
+  "overallReferenceComposite": 0.8438016894538634,
+  "overallRelativeComposite": 1.1969190116493076
 }
