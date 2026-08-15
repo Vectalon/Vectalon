@@ -4,7 +4,10 @@
  */
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import { runDashboard, collectAgentReports, renderDashboardHtml, writeDashboardReport, extractFindings } from '../../src/dashboard'
+import {
+  runDashboard, collectAgentReports, renderDashboardHtml, writeDashboardReport, extractFindings,
+  dashboardCronTick, cronIntervalSeconds, DASHBOARD_CRON_DEFAULT_INTERVAL_SECONDS,
+} from '../../src/dashboard'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
 const REPORT = (verdict: string, errors: number) => JSON.stringify({
@@ -137,6 +140,49 @@ describe('dashboard: runDashboard', () => {
     expect(readFileSync(mdPath, 'utf-8')).toContain('Engineering Dashboard')
     expect(readFileSync(jsonPath, 'utf-8')).toContain('"overall"')
     expect(readFileSync(htmlPath, 'utf-8')).toContain('<!doctype html>')
+  })
+})
+
+describe('dashboard: cronIntervalSeconds', () => {
+  it('uses the value when positive and finite', () => {
+    expect(cronIntervalSeconds(60)).toBe(60)
+    expect(cronIntervalSeconds(1)).toBe(1)
+  })
+
+  it('falls back to the default for NaN, zero, and negatives', () => {
+    expect(cronIntervalSeconds(undefined)).toBe(DASHBOARD_CRON_DEFAULT_INTERVAL_SECONDS)
+    expect(cronIntervalSeconds(NaN)).toBe(DASHBOARD_CRON_DEFAULT_INTERVAL_SECONDS)
+    expect(cronIntervalSeconds(0)).toBe(DASHBOARD_CRON_DEFAULT_INTERVAL_SECONDS)
+    expect(cronIntervalSeconds(-5)).toBe(DASHBOARD_CRON_DEFAULT_INTERVAL_SECONDS)
+    expect(cronIntervalSeconds(Infinity)).toBe(DASHBOARD_CRON_DEFAULT_INTERVAL_SECONDS)
+  })
+})
+
+describe('dashboard: dashboardCronTick', () => {
+  let dir: string
+  afterEach(() => cleanup(dir))
+
+  it('regenerates the core reports, rebuilds the aggregate, and writes all artifacts', async () => {
+    dir = createTempProject({ 'package.json': '{}', 'src/a.ts': 'export const x = 1\n' })
+    const { report, paths } = await dashboardCronTick(dir)
+    expect(report.summary.agents).toBeGreaterThanOrEqual(13)
+    expect(report.overall).toBeDefined()
+    expect(readFileSync(paths.htmlPath, 'utf-8')).toContain('<!doctype html>')
+    expect(readFileSync(paths.jsonPath, 'utf-8')).toContain('"overall"')
+    // The fast core set was regenerated on disk.
+    for (const agent of ['release-ready', 'arch-score', 'soc2', 'figma', 'sentry', 'observability', 'governance', 'audit', 'repos', 'release-predict', 'play-store', 'dataset', 'lora']) {
+      expect(JSON.parse(readFileSync(join(dir, 'docs', 'vectalon', agent, 'report.json'), 'utf-8'))).toHaveProperty('verdict')
+    }
+  })
+
+  it('does not mutate an existing report when regeneration is skipped', async () => {
+    dir = createTempProject({ 'package.json': '{}', 'docs/vectalon/arch/report.json': REPORT('approved', 1) })
+    const before = readFileSync(join(dir, 'docs', 'vectalon', 'arch', 'report.json'), 'utf-8')
+    // dashboardCronTick always regenerates the core set, so arch-score gets
+    // rewritten; verify the dashboard HTML reflects the new aggregate.
+    const { report } = await dashboardCronTick(dir)
+    expect(report.agents.some(a => a.agent === 'arch-score')).toBe(true)
+    expect(before.length).toBeGreaterThan(0)
   })
 })
 

@@ -534,8 +534,10 @@ export function createProgram(): Command {
 
   program
     .command('dashboard [directory]')
-    .description('Engineering Dashboard (Roadmap 079): aggregates every agent report under docs/vectalon/* into one executive view — per-agent health, overall verdict, and a self-contained HTML dashboard; --run regenerates the fast Phase 9/10 core reports (release-ready, arch-score, soc2, figma, sentry, observability, governance, audit, repos, release-predict, play-store, dataset, lora) first; report to docs/vectalon/dashboard/')
+    .description('Engineering Dashboard (Roadmap 079): aggregates every agent report under docs/vectalon/* into one executive view — per-agent health, overall verdict, and a self-contained HTML dashboard with per-agent drill-down; --run regenerates the fast Phase 9/10 core reports (release-ready, arch-score, soc2, figma, sentry, observability, governance, audit, repos, release-predict, play-store, dataset, lora) first; --cron keeps regenerating them on a schedule so the HTML stays fresh; report to docs/vectalon/dashboard/')
     .option('--run', 'Regenerate the fast core reports (release-ready, arch-score, soc2) first')
+    .option('--cron', 'Keep regenerating the fast core reports + HTML on a schedule until Ctrl-C')
+    .option('--interval <seconds>', 'Cron regeneration interval in seconds (default 300)', Number)
     .option('--open', 'Open the HTML dashboard in the default browser')
     .option('--json', 'Print machine-readable output')
     .action(dashboardCommand)

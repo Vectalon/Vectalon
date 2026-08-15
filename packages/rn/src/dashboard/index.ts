@@ -124,26 +124,54 @@ export function extractFindings(report: Record<string, unknown>): DashboardFindi
   return out
 }
 
+/**
+ * Regenerate the fast Phase 9/10 core reports (all deterministic file scans /
+ * git reads) and write each to docs/vectalon/<agent>/ so a fresh project gets
+ * the full set. Shared by `--run` and the `--cron` loop.
+ */
+export async function regenerateCoreReports(root: string): Promise<void> {
+  writeReleaseReadyReport(root, await runReleaseReady(root))
+  writeArchScoreReport(root, runArchScore(root))
+  writeSoc2Report(root, runSoc2Scan(root))
+  writeFigmaReport(root, runFigmaSync(root))
+  writeSentryReport(root, runSentryScan(root))
+  writeObsReport(root, runObsScan(root))
+  writeGovReport(root, runGovScan(root))
+  writeAuditReport(root, runAuditScan(root))
+  writeReposReport(root, runReposScan(root))
+  writePredictReport(root, runReleasePredict(root))
+  writePlayReport(root, runPlayScan(root))
+  writeDatasetReport(root, runDatasetScan(root))
+  writeLoraReport(root, runLoraScan(root))
+}
+
+/** Default `--cron` regeneration interval in seconds. */
+export const DASHBOARD_CRON_DEFAULT_INTERVAL_SECONDS = 300
+
+/** Guard the interval option: NaN/<=0 from the CLI falls back to the default. */
+export function cronIntervalSeconds(interval: unknown): number {
+  return typeof interval === 'number' && Number.isFinite(interval) && interval > 0
+    ? interval
+    : DASHBOARD_CRON_DEFAULT_INTERVAL_SECONDS
+}
+
+/**
+ * One `--cron` tick: regenerate the fast core reports, rebuild the aggregate
+ * dashboard, and write all three artifacts (md / json / html). Returns the
+ * fresh report plus the written paths.
+ */
+export async function dashboardCronTick(root: string): Promise<{ report: DashboardReport; paths: { mdPath: string; jsonPath: string; htmlPath: string } }> {
+  await regenerateCoreReports(root)
+  const report = await runDashboard(root, { run: false })
+  const paths = writeDashboardReport(root, report)
+  return { report, paths }
+}
+
 /** Run one dashboard generation. */
 export async function runDashboard(root: string, options: DashboardOptions = {}): Promise<DashboardReport> {
   const generatedAt = Date.now()
   if (options.run) {
-    // Fast, read-only core reports so the dashboard is never empty — the
-    // Phase 9/10 agent set (all deterministic file scans / git reads).
-    // Each is computed AND written, so a fresh project gets the full set.
-    writeReleaseReadyReport(root, await runReleaseReady(root))
-    writeArchScoreReport(root, runArchScore(root))
-    writeSoc2Report(root, runSoc2Scan(root))
-    writeFigmaReport(root, runFigmaSync(root))
-    writeSentryReport(root, runSentryScan(root))
-    writeObsReport(root, runObsScan(root))
-    writeGovReport(root, runGovScan(root))
-    writeAuditReport(root, runAuditScan(root))
-    writeReposReport(root, runReposScan(root))
-    writePredictReport(root, runReleasePredict(root))
-    writePlayReport(root, runPlayScan(root))
-    writeDatasetReport(root, runDatasetScan(root))
-    writeLoraReport(root, runLoraScan(root))
+    await regenerateCoreReports(root)
   }
   const reports = collectAgentReports(root)
   const agents: DashboardAgent[] = reports.map(({ agent, report, file }) => {

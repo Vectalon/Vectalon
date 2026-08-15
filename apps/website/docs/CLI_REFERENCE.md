@@ -2437,12 +2437,15 @@ npx vectalon perms --json
 verdict, and a self-contained HTML dashboard with per-agent drill-down:
 click any agent card to open its full findings list (severity, id, message,
 suggestion) with links to that agent's markdown and JSON reports. `--run`
-regenerates the fast Phase 9/10 core reports first. Report to
-`docs/vectalon/dashboard/`.
+regenerates the fast Phase 9/10 core reports first. `--cron` keeps
+regenerating them (and the HTML) on a schedule until Ctrl-C, so the
+dashboard stays fresh while you work. Report to `docs/vectalon/dashboard/`.
 
 ```bash
 npx vectalon dashboard                     # aggregate existing reports
 npx vectalon dashboard --run               # regenerate fast reports first
+npx vectalon dashboard --cron              # regenerate every 5 min until Ctrl-C
+npx vectalon dashboard --cron --interval 60
 npx vectalon dashboard --open              # open the HTML dashboard
 npx vectalon dashboard --json
 ```
@@ -2453,6 +2456,8 @@ npx vectalon dashboard --json
 |---|---|
 | `[directory]` | Project root (default: cwd) |
 | `--run` | Regenerate the fast Phase 9/10 core reports (release-ready, arch-score, soc2, figma, sentry, observability, governance, audit, repos, release-predict, play-store, dataset, lora) first |
+| `--cron` | Keep regenerating the fast core reports + HTML on a schedule until Ctrl-C |
+| `--interval <seconds>` | Cron regeneration interval in seconds (default 300) |
 | `--open` | Open the HTML dashboard in the default browser |
 | `--json` | Print machine-readable output |
 
