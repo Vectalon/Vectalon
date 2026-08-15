@@ -5,6 +5,84 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-08-15
+
+### Added
+
+- **GitHub PR Triage Agent — `vectalon gh-pr`** (Roadmap Phase 11, item
+  090): scores every open PR for merge-readiness in one deterministic pass
+  — age (stale > 30d), draft state, size (additions+deletions, huge >
+  1500 lines), review decision, CI check rollup (passing/failing/pending),
+  and mergeability — with a per-PR verdict, an overall verdict, and
+  findings with suggestions; reads `gh pr list --json` when the GitHub CLI
+  is available or a `--file` export, and degrades to an explicit no-data
+  verdict (never a guess) when neither exists; `--max-prs <n>`;
+  `--json`; reports to `docs/vectalon/gh-pr/` (gitignored).
+- **GitHub Issue Intelligence Agent — `vectalon gh-issue`** (Roadmap Phase
+  11, item 091): turns the open-issue backlog into a triage queue —
+  staleness ranking, unassigned gaps (nobody owns the issue), label
+  hygiene (unlabeled issues, fragmented single-use labels, label-less
+  backlogs) — with a prioritized queue and an overall verdict; reads `gh
+  issue list` or a `--file` export; `--max <n>`; `--json`; reports to
+  `docs/vectalon/gh-issue/` (gitignored).
+- **GitHub Workflow Reliability Agent — `vectalon gh-ci`** (Roadmap Phase
+  11, item 092): flake + duration intelligence from `gh run list` —
+  per-workflow failure rates, flaky-job detection (the same workflow both
+  passing and failing across ≥ 5 completed runs at ≥ 20% failure), and
+  slow-CI outliers (> 30min average) — with a reliability verdict; reads
+  `gh run list` or a `--file` export; `--limit <n>`; `--json`; reports to
+  `docs/vectalon/gh-ci/` (gitignored).
+- **GitHub Security Posture Agent — `vectalon gh-sec`** (Roadmap Phase
+  11, item 093): one deterministic security snapshot — open dependabot
+  alerts (critical/high → blocker), secret-scanning findings, and branch
+  protection with review enforcement — each with remediation steps; reads
+  the `gh api` endpoints or a `--file` export; `--json`; reports to
+  `docs/vectalon/gh-sec/` (gitignored).
+- **Observability Dashboard Agent — `vectalon monitor`** (Roadmap Phase
+  11, item 094): folds the telemetry surfaces into one executive view —
+  crash classes (sentry), instrumentation + slow traces (observability),
+  crash intelligence, the engineering-dashboard verdict, and raw
+  `.vectalon/telemetry` event counts — with an overall verdict;
+  `--json`; reports to `docs/vectalon/monitor/` (gitignored).
+- **Model Evaluation Harness — `vectalon evals`** (Roadmap Phase 11, item
+  095): scores golden eval cases (`.vectalon/evals/cases.json` or
+  `--cases`) deterministically — exact / includes / regex matchers — with
+  a per-case pass/fail note and a regression comparison against the
+  previous run (any drop > 5pt is flagged); same inputs → same scores on
+  any machine; `--json`; reports to `docs/vectalon/evals/` (gitignored).
+- **Semantic Code Search Agent — `vectalon search`** (Roadmap Phase 11,
+  item 096): lexical project search over the source tree with line-pinned,
+  density-ranked results (files mostly about the topic surface first),
+  sub-second on mid-size repos; requires `--query <terms>`; `--limit <n>`;
+  `--json`; reports to `docs/vectalon/search/` (gitignored).
+- **Incident Commander Agent — `vectalon incident`** (Roadmap Phase 11,
+  item 097): from a crash log (`--log`) or the latest crash report to an
+  incident brief — root-cause bucket via the shared RootCauseAnalyzer,
+  hot files with their recent commits (git blame-lite), release risk from
+  the release-predict agent, and next steps; `--json`; reports to
+  `docs/vectalon/incident/` (gitignored).
+- **Release Train Automation — `vectalon train`** (Roadmap Phase 11, item
+  098): dry-run release planning across every workspace repo — version vs
+  the last tag, changelog section present, clean tree, and a suggested
+  semver bump from recent commit types; read-only — the plan is the
+  deliverable, nothing is modified; `--json`; reports to
+  `docs/vectalon/train/` (gitignored).
+- **Cost Governance Agent — `vectalon cost`** (Roadmap Phase 11, item
+  099): auditable cloud + model spend estimates from project config —
+  LoRA training (VRAM class × GPU-hours), eval inference (case count ×
+  tokens), dataset preprocessing (bytes) — with the rate assumptions
+  printed so every figure can be checked; all amounts are labeled as
+  estimates; `--json`; reports to `docs/vectalon/cost/` (gitignored).
+- **DX Scoring Agent — `vectalon dx`** (Roadmap Phase 11, item 100): one
+  0-100 developer-experience score from local evidence — README,
+  contributing guide, docs, CI, tests, lint, strict types, changelog,
+  onboarding assets, and source complexity — across twelve weighted axes
+  with a letter grade and the top improvements ranked by gain; `--json`;
+  reports to `docs/vectalon/dx/` (gitignored).
+- **CLI smoke catalog** now covers all 40 deterministic agents (Phase
+  8-11); the smoke sweep runs the real commands against a project and
+  fails the release on any non-pass.
+
 ## [0.8.0] - 2026-08-15
 
 ### Added

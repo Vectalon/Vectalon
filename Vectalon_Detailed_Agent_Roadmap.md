@@ -503,14 +503,140 @@ Acceptance:
 - Design, telemetry, and release surfaces have deterministic agents
 - Training-data and model-adjacent workflows are first-class commands
 
-## Remaining Backlog (090-100)
+## Phase 11 – Platform & GitHub Intelligence (090-100)
 
-Focus Areas:
-- GitHub integration (deep)
-- Mobile observability dashboards
-- Model evaluation harness
-- Semantic code search
-- On-call / incident commander
-- Release train automation
-- Cost governance (cloud + model spend)
-- Developer experience (DX) scoring
+> **Status: items 090-100 shipped** — eleven deterministic agents across the
+> eight focus areas, each registered as a `vectalon` command, documented in
+> `CLI_REFERENCE.md`, smoke-checked, and covered by hermetic tests.
+>
+> - **GitHub integration (deep):** `vectalon gh-pr` (PR triage), `gh-issue`
+>   (backlog triage), `gh-ci` (workflow reliability), `gh-sec` (security
+>   posture) — each reads the live `gh` CLI when available or a `--file`
+>   export, and degrades to an explicit "no data" verdict, never a guess.
+> - **Observability dashboard:** `vectalon monitor` folds sentry crash
+>   classes, observability findings, crash intelligence, the dashboard
+>   verdict, and raw `.vectalon/telemetry` events into one executive view.
+> - **Model evaluation:** `vectalon evals` scores golden cases (exact /
+>   includes / regex) with a regression comparison vs the previous run.
+> - **Semantic code search:** `vectalon search` — lexical, line-pinned,
+>   density-ranked results across the source tree.
+> - **On-call / incident command:** `vectalon incident` — from a crash log
+>   (or the latest crash report) to a brief with root cause, hot files,
+>   release risk, and next steps, via the shared RootCauseAnalyzer.
+> - **Release-train automation:** `vectalon train` — read-only dry-run
+>   planning across every workspace repo (version vs tag, changelog,
+>   suggested semver bump).
+> - **Cost governance:** `vectalon cost` — auditable spend estimates (LoRA
+>   GPU-hours, eval tokens, dataset GB) with explicit rate assumptions.
+> - **DX scoring:** `vectalon dx` — one 0-100 developer-experience score
+>   across twelve weighted axes with ranked improvements.
+>
+> Verified: typecheck + eslint clean, 80 new hermetic tests across the
+> eleven agents, full suite green (272 suites / 2545 tests), CLI smoke
+> sweep exercises every new command end-to-end.
+
+### 090. GitHub PR Triage Agent
+**Goal:** Score every open PR's merge-readiness in one deterministic pass.
+**Deliverables:**
+- `vectalon gh-pr` — reads `gh pr list --json` (or a `--file` export)
+- Per-PR health: age, draft state, size (additions+deletions), review
+  decision, CI check rollup, mergeability
+- Per-PR verdict + overall verdict, findings with suggestions
+**Acceptance Criteria:**
+- Degrades to a clear "no data" verdict when `gh` is unavailable
+  and no export file is provided
+- Reports to `docs/vectalon/gh-pr/` (gitignored); `--json`
+
+### 091. GitHub Issue Intelligence Agent
+**Goal:** Turn the open-issue backlog into a triage signal.
+**Deliverables:**
+- `vectalon gh-issue` — `gh issue list` or export
+- Staleness ranking, unassigned triage gaps, label distribution,
+  issue-vs-PR velocity
+**Acceptance Criteria:**
+- Prioritized triage queue + label hygiene findings; same degradation rule
+
+### 092. GitHub Workflow Reliability Agent
+**Goal:** Detect flaky and slow CI before they cost a release.
+**Deliverables:**
+- `vectalon gh-ci` — workflow run history (`gh run list` / export)
+- Flaky-job detection (same job, mixed outcomes), duration trends,
+  failure clusters
+**Acceptance Criteria:**
+- Per-workflow health with a flake score and top failure signatures
+
+### 093. GitHub Security Posture Agent
+**Goal:** One deterministic security snapshot of the GitHub surface.
+**Deliverables:**
+- `vectalon gh-sec` — dependabot alerts, secret scanning, branch
+  protection, review enforcement, stale required checks
+**Acceptance Criteria:**
+- Posture verdict per surface with concrete remediation steps
+
+### 094. Observability Dashboard Agent
+**Goal:** Fold telemetry into the executive view.
+**Deliverables:**
+- Extends `vectalon dashboard` with observability surfaces: crash-class
+  volume (081), slow traces/spans (082), coverage, bundle budget
+**Acceptance Criteria:**
+- Dashboard drill-down gains telemetry panes without breaking existing
+  report aggregation
+
+### 095. Model Evaluation Harness
+**Goal:** Score model outputs against golden references, deterministically.
+**Deliverables:**
+- `vectalon evals` — `.vectalon/evals/*.json` golden sets, deterministic
+  scoring (exact/rubric/keyword) with a lexical fallback
+- Eval report with per-case pass/fail and a regression comparison
+**Acceptance Criteria:**
+- Same inputs → same scores on any machine; report to
+  `docs/vectalon/evals/`
+
+### 096. Semantic Code Search Agent
+**Goal:** Project-aware search over the knowledge graph, sub-second.
+**Deliverables:**
+- `vectalon search` — reuse the intel embedding pipeline + lexical
+  fallback; rank by relevance with metadata filters
+**Acceptance Criteria:**
+- Sub-second retrieval on mid-size repos; degrades to lexical search
+
+### 097. Incident Commander Agent
+**Goal:** Turn a crash or failing release into an incident brief.
+**Deliverables:**
+- `vectalon incident` — root cause via the shared RootCauseAnalyzer,
+  git-blame hot files, affected surface from release-predict, severity
+  + next steps
+**Acceptance Criteria:**
+- One command from crash log to actionable incident brief
+
+### 098. Release Train Automation
+**Goal:** Coordinate the release checklist across workspace repos.
+**Deliverables:**
+- `vectalon train` — orchestrate release-ready (069), version bump,
+  changelog, tag dry-run across every registered repo
+**Acceptance Criteria:**
+- Dry-run by default; refuses a dirty tree unless forced
+
+### 099. Cost Governance Agent
+**Goal:** Surface cloud + model spend risk before the invoice.
+**Deliverables:**
+- `vectalon cost` — estimate inference/API spend from config (model
+  endpoints, evals, dataset sizes, LoRA VRAM), flag budget drift
+**Acceptance Criteria:**
+- Spend estimate report with per-item breakdown and warnings
+
+### 100. DX Scoring Agent
+**Goal:** One developer-experience score for the repo.
+**Deliverables:**
+- `vectalon dx` — README/CONTRIBUTING/docs presence, CI speed, test
+  coverage, onboarding brief (049), complexity, comments-to-code
+**Acceptance Criteria:**
+- 0-100 DX score with per-axis breakdown and ranked improvements
+
+Acceptance:
+- GitHub, telemetry, evaluation, and spend surfaces have deterministic agents
+
+> **Phase 11 shipped** — every item above is implemented, registered,
+> documented, and tested. With items 001-100 complete, the roadmap is
+> fully delivered: 100/100 items across eleven phases.
+- Release-train and incident workflows are first-class commands

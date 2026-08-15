@@ -20,7 +20,7 @@ The mechanism a competitor could not copy-paste: the agent never works from a ge
 
 ## Operating Context
 
-The product is a CLI (`npx vectalon init / serve / feature / doctor / diagnostics / generate / upgrade / bench / smoke …`) plus 29 deterministic agent commands (review, arch, sec, soc2, dashboard, figma, lora, … — phases 8-10, roadmap items 061-089) that run on the free tier with a report and a verdict and no model calls. The website's demo is a real recorded terminal session (90 s, no cuts) and real benchmark numbers (11 scenarios, guardrail pass rate 90%). Pricing: Free tier $0 (init, serve, feature, doctor, + all 29 agents; no card), Pro $19/mo, All-access $49/mo, Team $99/mo. Business Source License 1.1 — free for personal/education/OSS and commercial teams ≤3 devs; becomes MIT after 4 years. React Native product live (current release 0.8.0); iOS, Android, Flutter in development.
+The product is a CLI (`npx vectalon init / serve / feature / doctor / diagnostics / generate / upgrade / bench / smoke …`) plus 40 deterministic agent commands (review, arch, sec, soc2, dashboard, figma, gh-pr, monitor, evals, dx, … — phases 8-11, roadmap items 061-100) that run on the free tier with a report and a verdict and no model calls. The website's demo is a real recorded terminal session (90 s, no cuts) and real benchmark numbers (11 scenarios, guardrail pass rate 90%). Pricing: Free tier $0 (init, serve, feature, doctor, + all 40 agents; no card), Pro $19/mo, All-access $49/mo, Team $99/mo. Business Source License 1.1 — free for personal/education/OSS and commercial teams ≤3 devs; becomes MIT after 4 years. React Native product live (current release 0.9.0); iOS, Android, Flutter in development.
 
 ## Capabilities and Constraints
 

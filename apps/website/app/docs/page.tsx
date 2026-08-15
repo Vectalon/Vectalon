@@ -42,6 +42,10 @@ const AGENTS: Array<[string, string]> = [
     'phase 10 — enterprise',
     'figma · sentry · observability · governance · audit · repos · release-predict · play-store · dataset · lora',
   ],
+  [
+    'phase 11 — platform & github',
+    'gh-pr · gh-issue · gh-ci · gh-sec · monitor · evals · search · incident · train · cost · dx',
+  ],
 ]
 
 const STEPS = [
@@ -55,7 +59,7 @@ const STEPS = [
     n: '02',
     title: 'Serve the agent',
     code: 'npx vectalon serve',
-    body: 'Boots the MCP server. Your editor or any MCP client connects and gets 58+ project-aware tools — plus 29 deterministic agent commands that need no model at all. Web intel and the knowledge base auto-refresh hourly.',
+    body: 'Boots the MCP server. Your editor or any MCP client connects and gets 58+ project-aware tools — plus 40 deterministic agent commands that need no model at all. Web intel and the knowledge base auto-refresh hourly.',
   },
   {
     n: '03',
@@ -109,7 +113,7 @@ export default function DocsPage() {
           </span>
           <span className="hidden items-center gap-1.5 sm:flex">
             <span className="live-dot" aria-hidden />
-            v0.8.0
+            v0.9.0
           </span>
         </div>
 

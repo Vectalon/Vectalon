@@ -2753,6 +2753,340 @@ npx vectalon lora --json
 
 ---
 
+## `gh-pr`
+
+**GitHub PR Triage Agent** (Roadmap 090): scores every open PR for
+merge-readiness in one deterministic pass — age, draft state, size
+(additions+deletions), review decision, CI check rollup, and
+mergeability. Reads `gh pr list --json` when the GitHub CLI is available,
+or a `--file` export with the same shape; degrades to an explicit
+no-data verdict when neither exists. Report to `docs/vectalon/gh-pr/`.
+
+```bash
+npx vectalon gh-pr               # triage open PRs via the gh CLI
+npx vectalon gh-pr --file prs.json
+npx vectalon gh-pr --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--file <path>` | Read PR JSON from an export file instead of the gh CLI |
+| `--max-prs <n>` | Maximum number of PRs to analyze (default 50) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `gh-issue`
+
+**GitHub Issue Intelligence Agent** (Roadmap 091): triage signal from the
+open-issue backlog in one deterministic pass — staleness, unassigned
+triage gaps, and label hygiene. Reads `gh issue list` when the GitHub CLI
+is available, or a `--file` export with the same shape; degrades to an
+explicit no-data verdict when neither exists. Report to
+`docs/vectalon/gh-issue/`.
+
+```bash
+npx vectalon gh-issue              # triage the open issue backlog
+npx vectalon gh-issue --file issues.json
+npx vectalon gh-issue --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--file <path>` | Read issue JSON from an export file instead of the gh CLI |
+| `--max <n>` | Maximum number of issues to analyze (default 100) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `gh-ci`
+
+**GitHub Workflow Reliability Agent** (Roadmap 092): flake + duration
+intelligence from recent workflow runs — per-workflow failure rates,
+flaky-run detection (passed on retry), and slow-CI duration outliers.
+Reads `gh run list --json` when the GitHub CLI is available, or a `--file`
+export with the same shape; degrades to an explicit no-data verdict when
+neither exists. Report to `docs/vectalon/gh-ci/`.
+
+```bash
+npx vectalon gh-ci                 # analyze recent workflow runs
+npx vectalon gh-ci --file runs.json
+npx vectalon gh-ci --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--file <path>` | Read run JSON from an export file instead of the gh CLI |
+| `--limit <n>` | Number of recent runs to fetch (default 100) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `gh-sec`
+
+**GitHub Security Posture Agent** (Roadmap 093): repository security in one
+deterministic pass — dependabot alerts, secret scanning, branch
+protection, and review enforcement. Reads the `gh api` endpoints when the
+GitHub CLI is available, or a `--file` export with the same shape;
+degrades to an explicit no-data verdict when neither exists. Report to
+`docs/vectalon/gh-sec/`.
+
+```bash
+npx vectalon gh-sec                # scan the security posture
+npx vectalon gh-sec --file sec.json
+npx vectalon gh-sec --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--file <path>` | Read security data from a JSON export instead of the gh API |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `monitor`
+
+**Observability Dashboard Agent** (Roadmap 094): folds telemetry into one
+executive view — crash classes (sentry), instrumentation + slow traces
+(observability), crash intelligence, the engineering dashboard verdict,
+and raw `.vectalon/telemetry` events. Report to `docs/vectalon/monitor/`.
+
+```bash
+npx vectalon monitor               # fold telemetry into one executive view
+npx vectalon monitor --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `evals`
+
+**Model Evaluation Harness** (Roadmap 095): scores golden eval cases
+exactly (`exact` / `includes` / `regex` matchers) from
+`.vectalon/evals/cases.json`, with a regression comparison against the
+previous run when one exists. Report to `docs/vectalon/evals/`.
+
+```bash
+npx vectalon evals                  # score .vectalon/evals/cases.json
+npx vectalon evals --cases my-cases.json
+npx vectalon evals --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--cases <path>` | Path to the cases file (default .vectalon/evals/cases.json) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `search`
+
+**Semantic Code Search Agent** (Roadmap 096): lexical project search with
+line-pinned, ranked results across source files. Requires `--query`;
+results are ranked by hit density and file relevance. Report to
+`docs/vectalon/search/`.
+
+```bash
+npx vectalon search --query "memoized list"
+npx vectalon search --query "perf" --limit 50
+npx vectalon search --query "theme" --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--query <terms>` | Search terms to find in the project source (required) |
+| `--limit <n>` | Maximum number of results (default 20) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `incident`
+
+**Incident Commander Agent** (Roadmap 097): from a crash log (`--log`) or
+the latest crash report to an incident brief — root cause, hot files with
+recent commits, release risk, and next steps. Report to
+`docs/vectalon/incident/`.
+
+```bash
+npx vectalon incident --log crash.log
+npx vectalon incident               # uses the latest crash report
+npx vectalon incident --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--log <path>` | Path to the crash log to analyze (default: latest crash report) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `train`
+
+**Release Train Automation** (Roadmap 098): dry-run release planning across
+every workspace repo — version vs the last tag, changelog section present,
+clean tree, and a suggested semver bump. Read-only; nothing is modified.
+Report to `docs/vectalon/train/`.
+
+```bash
+npx vectalon train                  # plan the release train
+npx vectalon train --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `cost`
+
+**Cost Governance Agent** (Roadmap 099): estimates cloud + model spend from
+project config — LoRA training (VRAM × hours), eval inference, dataset
+processing, model endpoints — with explicit rate assumptions. All figures
+are labeled as estimates, never actuals. Report to `docs/vectalon/cost/`.
+
+```bash
+npx vectalon cost                   # estimate project spend
+npx vectalon cost --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `dx`
+
+**DX Scoring Agent** (Roadmap 100): one developer-experience score (0-100)
+from local evidence — README, contributing guide, docs, CI, tests, lint,
+strict types, changelog, onboarding, and source complexity — with a grade
+and the top improvements. Report to `docs/vectalon/dx/`.
+
+```bash
+npx vectalon dx                     # score the developer experience
+npx vectalon dx --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
 ## Global `--diagnostics` flag
 
 `--diagnostics` works on **every** command (before or after the subcommand):

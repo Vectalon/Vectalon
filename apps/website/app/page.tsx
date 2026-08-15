@@ -15,7 +15,7 @@ const SDK_CHIPS = [
 const FEATURES: Array<{ title: string; body: string; icon: FeatureIconName }> = [
   {
     title: 'MCP-native agent',
-    body: 'A local model runs as an agent over 58 project-aware tools — feature workflows, code review, upgrades, E2E generation, device control — all through the MCP protocol your editor already speaks. On top of the model sits a fleet of 29 deterministic agents (review, security, SOC 2, release prediction, Figma sync) that need no model at all.',
+    body: 'A local model runs as an agent over 58 project-aware tools — feature workflows, code review, upgrades, E2E generation, device control — all through the MCP protocol your editor already speaks. On top of the model sits a fleet of 40 deterministic agents (review, security, SOC 2, GitHub PR triage, DX scoring) that need no model at all.',
     icon: 'robot',
   },
   {
@@ -59,11 +59,11 @@ const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'Does it need a model?',
-    a: 'The optional model-driven agent does — but the 29 deterministic commands (review, security, SOC 2, release prediction, Figma sync, …) need no model at all. They run offline with a report and a verdict, zero model calls, free on every tier.',
+    a: 'The optional model-driven agent does — but the 40 deterministic commands (review, security, SOC 2, GitHub PR triage, incident command, …) need no model at all. They run offline with a report and a verdict, zero model calls, free on every tier.',
   },
   {
     q: 'Which platforms are supported?',
-    a: 'React Native is live at v0.8.0. iOS, Android, and Flutter harnesses are in development — join the waitlist and we’ll email the moment a beta opens.',
+    a: 'React Native is live at v0.9.0. iOS, Android, and Flutter harnesses are in development — join the waitlist and we’ll email the moment a beta opens.',
   },
   {
     q: 'How is it different from other AI coding tools?',
@@ -71,7 +71,7 @@ const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'What does it cost, and what’s the license?',
-    a: 'The free tier is genuinely useful — init, serve, feature, doctor, and all 29 agents, no card. Pro $19/mo, All-Access $49/mo, Team $99/seat/mo, each with a 14-day trial. Business Source License 1.1: free for personal, education, and OSS use and teams up to three devs; MIT after four years.',
+    a: 'The free tier is genuinely useful — init, serve, feature, doctor, and all 40 agents, no card. Pro $19/mo, All-Access $49/mo, Team $99/seat/mo, each with a 14-day trial. Business Source License 1.1: free for personal, education, and OSS use and teams up to three devs; MIT after four years.',
   },
 ]
 
@@ -511,7 +511,7 @@ export default async function Home() {
         <div className="mx-auto max-w-6xl px-4">
           <div className="max-w-2xl">
             <h2 className="text-3xl font-bold text-slate-50">
-              29 deterministic agents — <span className="text-brand">zero model calls</span>
+              40 deterministic agents — <span className="text-brand">zero model calls</span>
             </h2>
             <p className="mt-3 text-slate-400">
               Same result every run, on any machine, with a report and a verdict. They run on the
@@ -557,7 +557,7 @@ export default async function Home() {
                 read is the feed the model sees. If the ecosystem ships it, the model knows it.
               </p>
               <Link href="/changelog" className="mt-6 inline-block text-sm text-brand hover:underline">
-                See what shipped in v0.8.0 →
+                See what shipped in v0.9.0 →
               </Link>
             </div>
             <div className="card !p-0">

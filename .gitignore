@@ -5,7 +5,8 @@ extension/out/
 
 # Generated docs — smoke/feature runs write impact, coverage, and
 # feature-development artifacts here; keep them out of git status.
-docs/vectalon/
+# **/ so reports under demo projects and monorepo packages are ignored too.
+**/docs/vectalon/
 *.tsbuildinfo
 .DS_Store
 .env

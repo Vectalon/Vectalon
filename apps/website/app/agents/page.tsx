@@ -12,7 +12,7 @@ import {
 } from '../../lib/agents'
 
 export const metadata = {
-  title: 'Vectalon agents — 29 deterministic commands, zero model calls',
+  title: 'Vectalon agents — 40 deterministic commands, zero model calls',
   description:
     'Every deterministic Vectalon agent — code review, security, SOC 2, release prediction, Figma sync — with its verdict and the report it produces.',
 }
@@ -180,11 +180,11 @@ export default function AgentsPage({ searchParams }: { searchParams: { repo?: st
       {/* Bottom strip */}
       <div className="statusline mt-6 !border-0">
         <div className="seg !block !px-6 !py-4 text-center">
-          <div className="font-display text-2xl font-bold text-brand">29</div>
+          <div className="font-display text-2xl font-bold text-brand">40</div>
           <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-500">agents in the RN harness</div>
         </div>
         <div className="seg !block !px-6 !py-4 text-center">
-          <div className="font-display text-2xl font-bold text-brand">3</div>
+          <div className="font-display text-2xl font-bold text-brand">4</div>
           <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-500">roadmap phases</div>
         </div>
         <div className="seg !block !px-6 !py-4 text-center">

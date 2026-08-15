@@ -11,10 +11,10 @@ export interface AgentInfo {
   cmd: string
   /** Full agent name. */
   name: string
-  /** Roadmap item id (061-089). */
+  /** Roadmap item id (061-100). */
   item: string
   /** Roadmap phase this agent belongs to. */
-  phase: 8 | 9 | 10
+  phase: 8 | 9 | 10 | 11
   /** One-to-two-sentence description of what the agent does. */
   summary: string
   /** Sample verdict — what a typical run returns. */
@@ -356,6 +356,125 @@ const RN_AGENTS: AgentInfo[] = [
     verdictFor: 'the config is missing or incomplete (that is the point)',
     flags: '--config <path>',
   },
+
+  // ── Phase 11 — Platform & GitHub Intelligence (090-100) ────────────────
+  {
+    cmd: 'gh-pr',
+    name: 'GitHub PR Triage Agent',
+    item: '090',
+    phase: 11,
+    summary:
+      'Scores every open PR for merge-readiness in one deterministic pass — age, draft state, size, review decision, CI check rollup, and mergeability — from the gh CLI or an export; degrades to an explicit no-data verdict when neither exists.',
+    verdict: 'changes-requested',
+    verdictFor: 'a stale, huge, or CI-failing PR is blocking merge',
+    flags: '--file <path> · --max-prs <n>',
+  },
+  {
+    cmd: 'gh-issue',
+    name: 'GitHub Issue Intelligence Agent',
+    item: '091',
+    phase: 11,
+    summary:
+      'Turns the open-issue backlog into a triage queue — staleness ranking, unassigned gaps nobody owns, and label hygiene — so old issues stop being a background tax on every dev.',
+    verdict: 'needs-attention',
+    verdictFor: 'a stale or unassigned issue is in the backlog',
+    flags: '--file <path> · --max <n>',
+  },
+  {
+    cmd: 'gh-ci',
+    name: 'GitHub Workflow Reliability Agent',
+    item: '092',
+    phase: 11,
+    summary:
+      'Detects flaky and slow CI before it costs a release — per-workflow failure rates, workflows that both pass and fail across their runs, and 30-minute-plus duration outliers.',
+    verdict: 'needs-attention',
+    verdictFor: 'a workflow fails more than 15% of runs or flips outcomes',
+    flags: '--file <path> · --limit <n>',
+  },
+  {
+    cmd: 'gh-sec',
+    name: 'GitHub Security Posture Agent',
+    item: '093',
+    phase: 11,
+    summary:
+      'One security snapshot of the GitHub surface — open dependabot alerts, secret-scanning findings, and branch protection with review enforcement — plus remediation steps for every finding.',
+    verdict: 'changes-requested',
+    verdictFor: 'a critical dependabot alert or exposed secret is open',
+    flags: '--file <path>',
+  },
+  {
+    cmd: 'monitor',
+    name: 'Observability Dashboard Agent',
+    item: '094',
+    phase: 11,
+    summary:
+      'Folds telemetry into one executive view — crash classes ranked by the Sentry agent, observability instrumentation findings, crash intelligence, the engineering-dashboard verdict, and raw telemetry event counts.',
+    verdict: 'needs-attention',
+    verdictFor: 'a telemetry surface carries a warning verdict',
+  },
+  {
+    cmd: 'evals',
+    name: 'Model Evaluation Harness',
+    item: '095',
+    phase: 11,
+    summary:
+      'Scores golden eval cases deterministically — exact, includes, or regex matching — and compares the pass rate against the previous run, flagging any regression bigger than five points.',
+    verdict: 'needs-attention',
+    verdictFor: 'a golden case fails or the pass rate regresses',
+    flags: '--cases <path>',
+  },
+  {
+    cmd: 'search',
+    name: 'Semantic Code Search Agent',
+    item: '096',
+    phase: 11,
+    summary:
+      'Sub-second, line-pinned search across the source tree — term matches ranked by density so files that are mostly about the topic surface first, with a no-results verdict that tells you to broaden the query.',
+    verdict: 'approved',
+    verdictFor: 'any match is found (no-results otherwise)',
+    flags: '--query <terms> · --limit <n>',
+  },
+  {
+    cmd: 'incident',
+    name: 'Incident Commander Agent',
+    item: '097',
+    phase: 11,
+    summary:
+      'From a crash log — or the latest crash report — to an incident brief: root-cause bucket via the shared analyzer, hot files with their recent commits, release risk from the prediction agent, and next steps.',
+    verdict: 'changes-requested',
+    verdictFor: 'an error-severity crash is analyzed',
+    flags: '--log <path>',
+  },
+  {
+    cmd: 'train',
+    name: 'Release Train Automation',
+    item: '098',
+    phase: 11,
+    summary:
+      'Dry-run release planning across every workspace repo — version versus the last tag, changelog section present, clean tree, and a suggested semver bump from recent commit types. Read-only: the plan is the deliverable.',
+    verdict: 'changes-requested',
+    verdictFor: 'a repo is missing a version or changelog section, or is dirty',
+  },
+  {
+    cmd: 'cost',
+    name: 'Cost Governance Agent',
+    item: '099',
+    phase: 11,
+    summary:
+      'Estimates cloud + model spend from project config — LoRA GPU-hours at the VRAM class, eval inference tokens, dataset bytes — with the rate assumptions printed so the estimate is auditable.',
+    verdict: 'approved',
+    verdictFor: 'no warning-level spend finding (estimates are labeled estimates)',
+  },
+  {
+    cmd: 'dx',
+    name: 'DX Scoring Agent',
+    item: '100',
+    phase: 11,
+    summary:
+      'One 0–100 developer-experience score from local evidence — README, contributing guide, docs, CI, tests, lint, strict types, changelog, onboarding — across twelve weighted axes with the top gains ranked.',
+    verdict: 'needs-attention',
+    verdictFor: 'score between 50 and 69 (grade C)',
+  },
 ]
 
 const SOON_REPOS: AgentRepo[] = [
@@ -391,7 +510,7 @@ export const AGENT_REPOS: AgentRepo[] = [
     name: 'React Native',
     package: '@vectalon-dev/rn',
     status: 'live',
-    tagline: 'The full harness — 29 deterministic agents across three roadmap phases.',
+    tagline: 'The full harness — 40 deterministic agents across four roadmap phases.',
     agents: RN_AGENTS,
   },
   ...SOON_REPOS,
@@ -401,6 +520,7 @@ export const AGENT_PHASE_LABELS: Record<AgentInfo['phase'], string> = {
   8: 'phase 8 · autonomous engineering',
   9: 'phase 9 · release engineering',
   10: 'phase 10 · enterprise intelligence',
+  11: 'phase 11 · platform & github intelligence',
 }
 
 export function agentRepo(slug: string): AgentRepo | undefined {

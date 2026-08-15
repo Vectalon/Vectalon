@@ -2,9 +2,17 @@ import Link from 'next/link'
 
 const RELEASES = [
   {
-    version: 'v0.8.0',
+    version: 'v0.9.0',
     date: '2026-08-15',
     tag: 'latest',
+    highlights: [
+      'Phase 11 — Platform & GitHub Intelligence (Roadmap 090-100): eleven new deterministic agents, every one free and report-driven — `vectalon gh-pr` (merge-readiness triage on every open PR: age, draft state, size, review decision, CI rollup, mergeability), `vectalon gh-issue` (the open-issue backlog as a triage queue: staleness, unassigned gaps, label hygiene), `vectalon gh-ci` (workflow reliability: flaky-job detection, failure rates, slow-CI duration outliers), `vectalon gh-sec` (security posture: dependabot alerts, secret scanning, branch protection), `vectalon monitor` (telemetry folded into one executive view — crash classes, instrumentation findings, telemetry events, the dashboard verdict), `vectalon evals` (golden eval cases scored deterministically with a regression comparison), `vectalon search` (sub-second line-pinned project search, density-ranked), `vectalon incident` (a crash log to an incident brief: root cause, hot files, release risk, next steps), `vectalon train` (read-only release-train dry-run across every workspace repo), `vectalon cost` (auditable spend estimates — LoRA GPU-hours, eval tokens, dataset GB — with explicit rate assumptions), and `vectalon dx` (one 0-100 developer-experience score across twelve weighted axes). Each GitHub-family agent reads the live gh CLI when available or a `--file` export, and degrades to an explicit no-data verdict — never a guess',
+      'The deterministic fleet is now **40 agents across four roadmap phases** — verified end-to-end: the CLI smoke sweep runs all 40 against a real Expo/React Native project (40 passed, 0 failed), every agent writes its report to `docs/vectalon/<cmd>/`, and the website agents catalog lists all 40 with their verdicts and reports',
+    ],
+  },
+  {
+    version: 'v0.8.0',
+    date: '2026-08-15',
     highlights: [
       'Phase 10 — Enterprise Intelligence (Roadmap 080-089): ten new deterministic agents, every one free and report-driven — `vectalon figma` (design↔code drift: colors with no token match, components with no source, fonts never used), `vectalon sentry` (crash classes ranked by volume + user impact with a root-cause verdict per class and release-regression detection), `vectalon observability` (instrumentation coverage + slow traces/spans from telemetry), `vectalon governance` (license, security policy, CODEOWNERS, PR template, lockfile/SBOM, Dependabot, CI evidence checklist), `vectalon audit` (org-wide audit-trail validation: required fields, sequence gaps, secret hygiene), `vectalon repos` (multi-repo manifest verification — reachability, git checkout, memory store), `vectalon release-predict` (deterministic 0-100 release-risk score from read-only git history), `vectalon play-store` (deep Play checks: manifest permissions → data-safety, exported components, backup rules, SDK levels, signing, measured listing assets), `vectalon dataset` (fine-tuning data validation: schema, duplicates, label imbalance, PII leakage), and `vectalon lora` (training prerequisites with a VRAM estimate)',
       'Engineering Dashboard v2 — `vectalon dashboard` now regenerates all 13 fast agent reports in one pass (`--run`), keeps them fresh on a schedule (`--cron`, default 300s), and renders a self-contained HTML dashboard with per-agent drill-down — click any card for the full findings list with severity filters, full-text search, and links to each agent’s report',

@@ -59,6 +59,17 @@ import { auditCommand } from './commands/audit'
 import { reposCommand } from './commands/repos'
 import { releasePredictCommand } from './commands/releasePredict'
 import { playStoreCommand } from './commands/playStore'
+import { ghPrCommand } from './commands/ghPr'
+import { ghIssueCommand } from './commands/ghIssue'
+import { ghCiCommand } from './commands/ghCi'
+import { ghSecCommand } from './commands/ghSec'
+import { monitorCommand } from './commands/monitor'
+import { evalsCommand } from './commands/evals'
+import { searchCommand } from './commands/search'
+import { incidentCommand } from './commands/incident'
+import { trainCommand } from './commands/train'
+import { costCommand } from './commands/cost'
+import { dxCommand } from './commands/dx'
 import { datasetCommand } from './commands/dataset'
 import { loraCommand } from './commands/lora'
 import { benchCommand } from './commands/bench'
@@ -604,6 +615,84 @@ export function createProgram(): Command {
     .action(loraCommand)
 
   program
+  program
+    .command('gh-pr [directory]')
+    .description('GitHub PR Triage Agent (Roadmap 090): scores every open PR for merge-readiness in one deterministic pass — age, draft state, size (additions+deletions), review decision, CI check rollup, mergeability — from `gh pr list --json` or a --file export; degrades to an explicit no-data verdict when neither is available; report to docs/vectalon/gh-pr/')
+    .option('--file <path>', 'Read PR JSON from an export file instead of the gh CLI')
+    .option('--max-prs <n>', 'Maximum number of PRs to analyze (default 50)', Number)
+    .option('--json', 'Print machine-readable output')
+    .action(ghPrCommand)
+
+  program
+    .command('gh-issue [directory]')
+    .description('GitHub Issue Intelligence Agent (Roadmap 091): triage signal from the open-issue backlog — staleness, unassigned triage gaps, label hygiene — from `gh issue list` or a --file export; degrades to an explicit no-data verdict; report to docs/vectalon/gh-issue/')
+    .option('--file <path>', 'Read issue JSON from an export file instead of the gh CLI')
+    .option('--max <n>', 'Maximum number of issues to analyze (default 100)', Number)
+    .option('--json', 'Print machine-readable output')
+    .action(ghIssueCommand)
+
+  program
+    .command('gh-ci [directory]')
+    .description('GitHub Workflow Reliability Agent (Roadmap 092): flake + duration intelligence from `gh run list` or a --file export — failure rates, flaky workflows, slow CI; report to docs/vectalon/gh-ci/')
+    .option('--file <path>', 'Read run JSON from an export file instead of the gh CLI')
+    .option('--limit <n>', 'Number of recent runs to fetch (default 100)', Number)
+    .option('--json', 'Print machine-readable output')
+    .action(ghCiCommand)
+
+  program
+    .command('gh-sec [directory]')
+    .description('GitHub Security Posture Agent (Roadmap 093): dependabot alerts, secret scanning, branch protection, and review enforcement — from the gh API or a --file export; report to docs/vectalon/gh-sec/')
+    .option('--file <path>', 'Read security data from a JSON export instead of the gh API')
+    .option('--json', 'Print machine-readable output')
+    .action(ghSecCommand)
+
+  program
+    .command('monitor [directory]')
+    .description('Observability Dashboard Agent (Roadmap 094): folds telemetry into one executive view — crash classes (sentry), instrumentation + slow traces (observability), crash intelligence, the engineering dashboard verdict, and raw .vectalon/telemetry events; report to docs/vectalon/monitor/')
+    .option('--json', 'Print machine-readable output')
+    .action(monitorCommand)
+
+  program
+    .command('evals [directory]')
+    .description('Model Evaluation Harness (Roadmap 095): scores golden eval cases (exact / includes / regex) from .vectalon/evals/cases.json with a regression comparison vs the previous run; report to docs/vectalon/evals/')
+    .option('--cases <path>', 'Path to the cases file (default .vectalon/evals/cases.json)')
+    .option('--json', 'Print machine-readable output')
+    .action(evalsCommand)
+
+  program
+    .command('search [directory]')
+    .description('Semantic Code Search Agent (Roadmap 096): lexical project search with line-pinned ranked results across source files; requires --query; report to docs/vectalon/search/')
+    .option('--query <terms>', 'Search terms to find in the project source')
+    .option('--limit <n>', 'Maximum number of results (default 20)', Number)
+    .option('--json', 'Print machine-readable output')
+    .action(searchCommand)
+
+  program
+    .command('incident [directory]')
+    .description('Incident Commander Agent (Roadmap 097): from a crash log (--log) or the latest crash report to an incident brief — root cause, hot files with recent commits, release risk, next steps; report to docs/vectalon/incident/')
+    .option('--log <path>', 'Path to the crash log to analyze (default: latest crash report)')
+    .option('--json', 'Print machine-readable output')
+    .action(incidentCommand)
+
+  program
+    .command('train [directory]')
+    .description('Release Train Automation (Roadmap 098): dry-run release planning across every workspace repo — version vs last tag, changelog section, clean tree, suggested semver bump; read-only, nothing is modified; report to docs/vectalon/train/')
+    .option('--json', 'Print machine-readable output')
+    .action(trainCommand)
+
+  program
+    .command('cost [directory]')
+    .description('Cost Governance Agent (Roadmap 099): estimates cloud + model spend from project config — LoRA training (VRAM × hours), eval inference, dataset processing, model endpoints — with explicit rate assumptions; estimates are labeled as estimates; report to docs/vectalon/cost/')
+    .option('--json', 'Print machine-readable output')
+    .action(costCommand)
+
+  program
+    .command('dx [directory]')
+    .description('DX Scoring Agent (Roadmap 100): one developer-experience score (0-100) from local evidence — README, contributing guide, docs, CI, tests, lint, strict types, changelog, onboarding, source complexity; report to docs/vectalon/dx/')
+    .option('--json', 'Print machine-readable output')
+    .action(dxCommand)
+
+  program
     .command('doctor [directory]')
     .description('Diagnose ecosystem items, native toolchain, leaderboard readiness, model access + web intel — with numbered fix steps and quick enable/disable')
     .option('--json', 'Print the report as JSON')
@@ -936,6 +1025,17 @@ async function runInteractive(): Promise<void> {
       { value: 'play-store', label: 'Play Store readiness', hint: 'Deep Play-specific checklist (087)' },
       { value: 'dataset', label: 'Fine-tuning dataset', hint: 'Validate JSONL training data (088)' },
       { value: 'lora', label: 'LoRA readiness', hint: 'Training prerequisites + VRAM (089)' },
+      { value: 'gh-pr', label: 'GitHub PR triage', hint: 'PR age, size, review, CI, mergeability (090)' },
+      { value: 'gh-issue', label: 'GitHub issue triage', hint: 'Staleness, unassigned gaps, labels (091)' },
+      { value: 'gh-ci', label: 'GitHub workflow health', hint: 'Flake + duration from run history (092)' },
+      { value: 'gh-sec', label: 'GitHub security posture', hint: 'Dependabot, secrets, branch protection (093)' },
+      { value: 'monitor', label: 'Observability dashboard', hint: 'Telemetry in one executive view (094)' },
+      { value: 'evals', label: 'Model evaluations', hint: 'Golden-case scoring + regression (095)' },
+      { value: 'search', label: 'Semantic code search', hint: 'Ranked, line-pinned project search (096)' },
+      { value: 'incident', label: 'Incident commander', hint: 'Crash log → incident brief (097)' },
+      { value: 'train', label: 'Release train', hint: 'Dry-run release plan across repos (098)' },
+      { value: 'cost', label: 'Cost governance', hint: 'Cloud + model spend estimate (099)' },
+      { value: 'dx', label: 'DX score', hint: 'Developer-experience score (100)' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
       { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
       { value: 'pull', label: 'Download local model', hint: 'Download the default Qwen2.5-Coder model' },
