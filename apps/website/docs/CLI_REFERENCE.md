@@ -2434,8 +2434,11 @@ npx vectalon perms --json
 
 **Engineering Dashboard** (Roadmap 079): aggregates every agent report under
 `docs/vectalon/*` into one executive view — per-agent health, overall
-verdict, and a self-contained HTML dashboard. `--run` regenerates the fast
-Phase 9/10 core reports first. Report to `docs/vectalon/dashboard/`.
+verdict, and a self-contained HTML dashboard with per-agent drill-down:
+click any agent card to open its full findings list (severity, id, message,
+suggestion) with links to that agent's markdown and JSON reports. `--run`
+regenerates the fast Phase 9/10 core reports first. Report to
+`docs/vectalon/dashboard/`.
 
 ```bash
 npx vectalon dashboard                     # aggregate existing reports

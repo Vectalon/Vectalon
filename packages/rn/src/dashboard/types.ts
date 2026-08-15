@@ -10,6 +10,14 @@
  * first so the dashboard is never empty.
  */
 
+/** One normalized finding rendered inside the dashboard drill-down. */
+export interface DashboardFinding {
+  id?: string
+  severity: string
+  message: string
+  suggestion?: string
+}
+
 export interface DashboardAgent {
   agent: string
   verdict: string
@@ -17,7 +25,12 @@ export interface DashboardAgent {
   errors: number
   warnings: number
   infos: number
+  /** Root-relative path to the agent's report.json. */
   reportFile?: string
+  /** Root-relative path to the agent's report.md. */
+  reportMd?: string
+  /** Normalized findings (capped) for the HTML drill-down. */
+  findings?: DashboardFinding[]
 }
 
 export interface DashboardReport {

@@ -4,7 +4,7 @@
  */
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import { runDashboard, collectAgentReports, renderDashboardHtml, writeDashboardReport } from '../../src/dashboard'
+import { runDashboard, collectAgentReports, renderDashboardHtml, writeDashboardReport, extractFindings } from '../../src/dashboard'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
 const REPORT = (verdict: string, errors: number) => JSON.stringify({
@@ -103,6 +103,33 @@ describe('dashboard: runDashboard', () => {
     expect(html).toContain('arch')
   })
 
+  it('embeds per-agent findings for the drill-down dialog', async () => {
+    dir = createTempProject({
+      'package.json': '{}',
+      'docs/vectalon/sec/report.json': JSON.stringify({
+        scannedAt: 1, root: '/x', verdict: 'changes-requested',
+        findings: [{ id: 'hardcoded-secret', severity: 'error', message: 'Found an API key in src/config.ts', suggestion: 'Move it to env vars.' }],
+        summary: { total: 1, bySeverity: { error: 1 } },
+      }),
+    })
+    const report = await runDashboard(dir)
+    const agent = report.agents.find(a => a.agent === 'sec')
+    expect(agent?.findings?.[0]?.message).toContain('API key')
+    const html = renderDashboardHtml(report)
+    // The dialog markup, the embedded JSON payload, and the escaped message.
+    expect(html).toContain('<dialog id="agent-detail">')
+    expect(html).toContain('hardcoded-secret')
+    expect(html).toContain('Found an API key in src/config.ts')
+    expect(html).toContain('report.md')
+  })
+
+  it('renders no findings message when an agent has none', async () => {
+    dir = createTempProject({ 'package.json': '{}', 'docs/vectalon/arch/report.json': REPORT('approved', 0) })
+    const report = await runDashboard(dir)
+    const html = renderDashboardHtml(report)
+    expect(html).toContain('click for details')
+  })
+
   it('writes markdown, JSON, and HTML', async () => {
     dir = createTempProject({ 'package.json': '{}', 'docs/vectalon/arch/report.json': REPORT('approved', 0) })
     const report = await runDashboard(dir)
@@ -110,5 +137,41 @@ describe('dashboard: runDashboard', () => {
     expect(readFileSync(mdPath, 'utf-8')).toContain('Engineering Dashboard')
     expect(readFileSync(jsonPath, 'utf-8')).toContain('"overall"')
     expect(readFileSync(htmlPath, 'utf-8')).toContain('<!doctype html>')
+  })
+})
+
+describe('dashboard: extractFindings', () => {
+  it('normalizes findings[] reports (Phase 9/10 agents)', () => {
+    const findings = extractFindings({
+      findings: [{ id: 'x', severity: 'warning', message: 'careful', suggestion: 'do it' }],
+    })
+    expect(findings).toEqual([{ id: 'x', severity: 'warning', message: 'careful', suggestion: 'do it' }])
+  })
+
+  it('normalizes release-ready checks[] with title + fix', () => {
+    const findings = extractFindings({
+      checks: [{ id: 'version', severity: 'error', title: 'Version', message: 'not bumped', fix: 'bump it' }],
+    })
+    expect(findings[0]).toMatchObject({ id: 'version', severity: 'error', message: 'Version: not bumped', suggestion: 'bump it' })
+  })
+
+  it('normalizes soc2 controls[] with status → severity', () => {
+    const findings = extractFindings({
+      controls: [{ id: 'access', status: 'fail', title: 'Access control', evidence: 'no auth lib' }],
+    })
+    expect(findings[0]).toMatchObject({ id: 'access', severity: 'error', message: 'Access control — no auth lib' })
+  })
+
+  it('normalizes arch-score dimensions[] + topImprovements', () => {
+    const findings = extractFindings({
+      dimensions: [{ id: 'cycles', title: 'Cycles', score: 5, maxScore: 10 }],
+      topImprovements: ['break the a→b cycle'],
+    })
+    expect(findings.some(f => f.message.includes('Cycles'))).toBe(true)
+    expect(findings.some(f => f.message.includes('break the a→b cycle'))).toBe(true)
+  })
+
+  it('returns [] for reports with no items', () => {
+    expect(extractFindings({ verdict: 'approved' })).toEqual([])
   })
 })

@@ -9,7 +9,7 @@
  */
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs'
-import { join, relative } from 'path'
+import { dirname, join, relative } from 'path'
 import { runReleaseReady, writeReleaseReadyReport } from '../releaseReady'
 import { runArchScore, writeArchScoreReport } from '../archScore'
 import { runSoc2Scan, writeSoc2Report } from '../soc2'
@@ -23,7 +23,7 @@ import { runReleasePredict, writePredictReport } from '../releasePredict'
 import { runPlayScan, writePlayReport } from '../playStore'
 import { runDatasetScan, writeDatasetReport } from '../dataset'
 import { runLoraScan, writeLoraReport } from '../lora'
-import type { DashboardAgent, DashboardOptions, DashboardReport } from './types'
+import type { DashboardAgent, DashboardFinding, DashboardOptions, DashboardReport } from './types'
 
 export type { DashboardAgent, DashboardOptions, DashboardReport } from './types'
 
@@ -63,6 +63,67 @@ function severitiesOf(report: Record<string, unknown>): { errors: number; warnin
   return { errors: count('error'), warnings: count('warning'), infos: count('info'), total }
 }
 
+/**
+ * Normalize an agent report's items into findings for the drill-down. Handles
+ * the shapes the core agents use: `findings[]` (Phase 9/10 agents),
+ * `checks[]` (release-ready), `controls[]` (soc2), and `dimensions[]` +
+ * `topImprovements` (arch-score). Always returns a list (possibly empty).
+ */
+export function extractFindings(report: Record<string, unknown>): DashboardFinding[] {
+  const out: DashboardFinding[] = []
+  const push = (severity: string, id: unknown, message: unknown, suggestion: unknown) => {
+    if (typeof message !== 'string' || message.trim().length === 0) return
+    out.push({
+      id: typeof id === 'string' ? id : undefined,
+      severity,
+      message,
+      suggestion: typeof suggestion === 'string' ? suggestion : undefined,
+    })
+  }
+
+  const findings = report.findings as Array<{ id?: unknown; severity?: unknown; message?: unknown; suggestion?: unknown }> | undefined
+  if (Array.isArray(findings)) {
+    for (const f of findings) {
+      push(String(f.severity ?? 'info'), f.id, f.message, f.suggestion)
+    }
+    return out
+  }
+
+  const checks = report.checks as Array<{ id?: unknown; severity?: unknown; title?: unknown; message?: unknown; fix?: unknown }> | undefined
+  if (Array.isArray(checks)) {
+    for (const c of checks) {
+      const title = typeof c.title === 'string' && c.title.trim().length > 0 ? c.title : undefined
+      push(String(c.severity ?? 'info'), c.id, title ? `${title}: ${String(c.message ?? '')}` : c.message, c.fix)
+    }
+    return out
+  }
+
+  const controls = report.controls as Array<{ id?: unknown; status?: unknown; title?: unknown; evidence?: unknown; suggestion?: unknown }> | undefined
+  if (Array.isArray(controls)) {
+    for (const c of controls) {
+      const status = String(c.status ?? 'n/a')
+      const severity = status === 'fail' ? 'error' : status === 'partial' ? 'warning' : status === 'pass' ? 'info' : 'info'
+      const message = `${typeof c.title === 'string' ? c.title : c.id} — ${typeof c.evidence === 'string' && c.evidence.length > 0 ? c.evidence : 'no evidence'}`
+      push(severity, c.id, message, c.suggestion)
+    }
+    return out
+  }
+
+  const dimensions = report.dimensions as Array<{ id?: unknown; title?: unknown; score?: unknown; maxScore?: unknown; detail?: unknown }> | undefined
+  if (Array.isArray(dimensions)) {
+    for (const d of dimensions) {
+      const score = typeof d.score === 'number' ? d.score : typeof d.maxScore === 'number' ? d.maxScore : 0
+      const max = typeof d.maxScore === 'number' ? d.maxScore : score
+      push('info', d.id, `${typeof d.title === 'string' ? d.title : d.id} — score ${score}/${max}`, d.detail)
+    }
+  }
+  const top = report.topImprovements as unknown
+  if (Array.isArray(top)) {
+    for (const t of top) push('info', undefined, String(t), undefined)
+  }
+  return out
+}
+
 /** Run one dashboard generation. */
 export async function runDashboard(root: string, options: DashboardOptions = {}): Promise<DashboardReport> {
   const generatedAt = Date.now()
@@ -85,12 +146,19 @@ export async function runDashboard(root: string, options: DashboardOptions = {})
     writeLoraReport(root, runLoraScan(root))
   }
   const reports = collectAgentReports(root)
-  const agents: DashboardAgent[] = reports.map(({ agent, report, file }) => ({
-    agent,
-    verdict: String(report.verdict ?? 'unknown'),
-    ...severitiesOf(report),
-    reportFile: relative(root, file).replace(/\\/g, '/'),
-  }))
+  const agents: DashboardAgent[] = reports.map(({ agent, report, file }) => {
+    const rel = (p: string): string => relative(root, p).replace(/\\/g, '/')
+    const reportJson = rel(file)
+    const reportMd = rel(join(dirname(file), 'report.md'))
+    return {
+      agent,
+      verdict: String(report.verdict ?? 'unknown'),
+      ...severitiesOf(report),
+      reportFile: reportJson,
+      reportMd,
+      findings: extractFindings(report).slice(0, 25),
+    }
+  })
   const errors = agents.reduce((a, x) => a + x.errors, 0)
   const warnings = agents.reduce((a, x) => a + x.warnings, 0)
   const infos = agents.reduce((a, x) => a + x.infos, 0)
@@ -104,15 +172,101 @@ export async function runDashboard(root: string, options: DashboardOptions = {})
   }
 }
 
-/** Self-contained HTML dashboard. */
+/** Self-contained HTML dashboard with per-agent drill-down dialogs. */
 export function renderDashboardHtml(report: DashboardReport): string {
   const cards = report.agents.map(a => {
     const cls = a.verdict === 'approved' ? 'ok' : a.verdict === 'needs-attention' ? 'warn' : 'bad'
-    return `<div class="card ${cls}"><h3>${escapeHtml(a.agent)}</h3><div class="verdict">${escapeHtml(a.verdict)}</div>` +
+    return `<button type="button" class="card ${cls}" data-agent="${escapeHtml(a.agent)}" title="Click for ${escapeHtml(a.agent)} details">` +
+      `<h3>${escapeHtml(a.agent)}</h3><div class="verdict">${escapeHtml(a.verdict)}</div>` +
       `<div class="counts"><span class="err">${a.errors} err</span> <span class="warn">${a.warnings} warn</span> <span class="info">${a.infos} info</span></div>` +
-      (a.reportFile ? `<div class="file">${escapeHtml(a.reportFile)}</div>` : '') + `</div>`
+      `<div class="drill">${a.findings?.length ?? 0} findings — click for details</div>` +
+      `</button>`
   }).join('\n')
   const pct = report.summary.agents > 0 ? Math.round((report.agents.filter(a => a.verdict === 'approved').length / report.summary.agents) * 100) : 0
+
+  // Embed the findings as JSON so the dialog needs no fetch and no CDN.
+  const data = report.agents.map(a => ({
+    agent: a.agent,
+    verdict: a.verdict,
+    errors: a.errors, warnings: a.warnings, infos: a.infos, total: a.total,
+    reportFile: a.reportFile,
+    reportMd: a.reportMd,
+    findings: (a.findings ?? []).map(f => ({ severity: f.severity, id: f.id, message: f.message, suggestion: f.suggestion })),
+  }))
+  const dataJson = JSON.stringify(data).replace(/</g, '\\u003c')
+
+  const dialog = `<dialog id="agent-detail">
+    <div class="dialog-head"><h3 id="detail-title"></h3><div class="verdict" id="detail-verdict"></div><button type="button" class="close" id="detail-close" aria-label="Close">×</button></div>
+    <div class="counts" id="detail-counts"></div>
+    <div class="detail-links" id="detail-links"></div>
+    <div class="findings" id="detail-findings"></div>
+  </dialog>`
+
+  const script = `<script>
+  (function () {
+    var DATA = ${dataJson};
+    var byName = {};
+    DATA.forEach(function (d) { byName[d.agent] = d; });
+    var dialog = document.getElementById('agent-detail');
+    var title = document.getElementById('detail-title');
+    var verdict = document.getElementById('detail-verdict');
+    var counts = document.getElementById('detail-counts');
+    var links = document.getElementById('detail-links');
+    var findings = document.getElementById('detail-findings');
+    var close = document.getElementById('detail-close');
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function open(name) {
+      var d = byName[name];
+      if (!d) return;
+      title.textContent = d.agent;
+      verdict.textContent = d.verdict;
+      counts.textContent = d.errors + ' errors · ' + d.warnings + ' warnings · ' + d.infos + ' info · ' + d.total + ' total';
+      links.innerHTML = '';
+      if (d.reportMd) {
+        var m = document.createElement('a');
+        m.href = '../' + encodeURIComponent(d.agent) + '/report.md';
+        m.textContent = 'Full report (markdown)';
+        links.appendChild(m);
+      }
+      if (d.reportFile) {
+        var j = document.createElement('a');
+        j.href = '../' + encodeURIComponent(d.agent) + '/report.json';
+        j.textContent = 'Raw data (JSON)';
+        links.appendChild(j);
+      }
+      findings.innerHTML = '';
+      var list = d.findings || [];
+      if (list.length === 0) {
+        findings.innerHTML = '<div class="empty">No findings recorded for this agent.</div>';
+      } else {
+        list.forEach(function (f) {
+          var item = document.createElement('div');
+          item.className = 'finding ' + (f.severity === 'error' || f.severity === 'critical' ? 'err' : f.severity === 'warning' || f.severity === 'warn' ? 'warn' : 'info');
+          var head = '<span class="sev">' + esc(f.severity) + '</span>';
+          if (f.id) head += '<span class="id">' + esc(f.id) + '</span>';
+          item.innerHTML = head + '<div class="msg">' + esc(f.message) + '</div>' + (f.suggestion ? '<div class="sug">' + esc(f.suggestion) + '</div>' : '');
+          findings.appendChild(item);
+        });
+        if (list.length < d.total) {
+          var more = document.createElement('div');
+          more.className = 'empty';
+          more.textContent = '… and ' + (d.total - list.length) + ' more in the full report.';
+          findings.appendChild(more);
+        }
+      }
+      dialog.showModal();
+    }
+    var cards = document.querySelectorAll('.card');
+    Array.prototype.forEach.call(cards, function (card) {
+      card.addEventListener('click', function () { open(card.getAttribute('data-agent')); });
+    });
+    close.addEventListener('click', function () { dialog.close(); });
+    dialog.addEventListener('click', function (e) { if (e.target === dialog) dialog.close(); });
+  })();
+  </script>`
+
   return `<!doctype html><html><head><meta charset="utf-8"><title>Engineering Dashboard</title>
 <style>
 body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:#0f1115;color:#e6e8eb;padding:32px}
@@ -121,15 +275,32 @@ h1{font-size:22px;margin:0 0 4px}h2{font-size:15px;color:#9aa4b2;font-weight:500
 .big{font-size:44px;font-weight:700}${report.overall === 'approved' ? '.big{color:#3fb950}' : report.overall === 'needs-attention' ? '.big{color:#d29922}' : '.big{color:#f85149}'}
 .meta{color:#9aa4b2;font-size:13px;line-height:1.6}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
-.card{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:14px}
+.card{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:14px;cursor:pointer;text-align:left;color:inherit;font:inherit;font-family:inherit}
+.card:hover{border-color:#30363d}
 .card.ok{border-left:3px solid #3fb950}.card.warn{border-left:3px solid #d29922}.card.bad{border-left:3px solid #f85149}
 h3{margin:0 0 8px;font-size:14px}.verdict{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#9aa4b2;margin-bottom:10px}
 .counts{font-size:12px}.counts .err{color:#f85149}.counts .warn{color:#d29922}.counts .info{color:#58a6ff}
-.file{font-size:11px;color:#6e7681;margin-top:8px;word-break:break-all}
+.drill{font-size:11px;color:#58a6ff;margin-top:8px}
 .empty{color:#9aa4b2;font-size:14px}
+dialog{background:#161b22;border:1px solid #30363d;border-radius:12px;color:#e6e8eb;width:min(680px,92vw);max-height:80vh;overflow:auto;padding:20px}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+.dialog-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.dialog-head h3{margin:0;font-size:18px;flex:1}
+.dialog-head .close{background:#21262d;border:1px solid #30363d;color:#e6e8eb;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:16px;line-height:1}
+.detail-links{display:flex;gap:16px;margin:10px 0}
+.detail-links a{color:#58a6ff;font-size:13px}
+.finding{border:1px solid #21262d;border-radius:8px;padding:10px;margin-bottom:8px;background:#0f1115}
+.finding.err{border-left:3px solid #f85149}.finding.warn{border-left:3px solid #d29922}.finding.info{border-left:3px solid #58a6ff}
+.finding .sev{font-size:11px;text-transform:uppercase;font-weight:700;margin-right:8px}
+.finding.err .sev{color:#f85149}.finding.warn .sev{color:#d29922}.finding.info .sev{color:#58a6ff}
+.finding .id{font-size:11px;color:#6e7681;font-family:monospace}
+.finding .msg{margin-top:4px;font-size:13px;line-height:1.5}
+.finding .sug{margin-top:4px;font-size:12px;color:#9aa4b2}
 </style></head><body><h1>Engineering Dashboard</h1><h2>Vectalon agent reports — ${escapeHtml(report.root)}</h2>
 <div class="overall"><div class="big">${pct}%</div><div class="meta">${report.summary.agents} agents · ${report.summary.findings} findings<br>${report.summary.errors} errors · ${report.summary.warnings} warnings · ${report.summary.infos} infos<br>Overall: <b>${report.overall}</b></div></div>
 <div class="grid">${cards || '<div class="empty">No agent reports found — run `vectalon dashboard --run` to generate the core set.</div>'}</div>
+${dialog}
+${script}
 </body></html>`
 }
 
