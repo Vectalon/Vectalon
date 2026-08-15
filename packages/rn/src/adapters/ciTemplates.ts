@@ -12,6 +12,14 @@ export interface CiTemplateOptions {
   isExpo: boolean
   /** CI host to target. Defaults to detection from the git remote (github fallback). */
   provider?: CiProvider
+  /**
+   * Add the Archive & Share job to the generated workflow: build + archive
+   * the default flavor (`vectalon archive`), distribute the latest build to
+   * the SaaS portal when `VECTALON_API_KEY` is set, and upload
+   * `.vectalon/builds/` as an artifact. GitHub Actions and EAS Workflows
+   * support it; other providers ignore it (documented in the template).
+   */
+  withArchive?: boolean
 }
 
 export interface GeneratedCiFile {
@@ -79,7 +87,7 @@ export function detectCiProvider(root: string): CiProvider {
  */
 export function ensureCiConfigs(root: string, options: CiTemplateOptions): GeneratedCiFile[] {
   if (options.isExpo) {
-    return [writeIfMissing(root, EAS_WORKFLOW_PATH, generateEasWorkflow(root))]
+    return [writeIfMissing(root, EAS_WORKFLOW_PATH, generateEasWorkflow(root, options.withArchive))]
   }
   const provider = options.provider ?? detectCiProvider(root)
   switch (provider) {
@@ -90,7 +98,7 @@ export function ensureCiConfigs(root: string, options: CiTemplateOptions): Gener
     case 'bitbucket':
       return [writeIfMissing(root, BITBUCKET_PIPELINES_PATH, generateBitbucketPipelines(root))]
     case 'github':
-      return [writeIfMissing(root, GH_ACTIONS_PATH, generateGithubActionsWorkflow(root))]
+      return [writeIfMissing(root, GH_ACTIONS_PATH, generateGithubActionsWorkflow(root, options.withArchive))]
   }
 }
 
@@ -198,11 +206,50 @@ function visualJobLines(pm: 'npm' | 'yarn' | 'pnpm'): string[] {
 }
 
 /**
+ * Archive & Share job (CI/CD integration, design doc §7): on a push to main,
+ * build + archive the configured flavor, distribute the latest build to the
+ * SaaS portal when `VECTALON_API_KEY` is set, and upload `.vectalon/builds/`
+ * as an artifact so anyone can grab the binary from the workflow run.
+ */
+function archiveJobLines(pm: 'npm' | 'yarn' | 'pnpm'): string[] {
+  return [
+    '  archive:',
+    '    name: Build, archive, and distribute',
+    '    runs-on: macos-latest',
+    '    needs: quality',
+    "    if: github.event_name == 'push' && github.ref == 'refs/heads/main'",
+    '    env:',
+    "      VECTALON_BUILD_FLAVOR: ${{ vars.VECTALON_BUILD_FLAVOR || 'production' }}",
+    '    steps:',
+    '      - uses: actions/checkout@v4',
+    '      - uses: actions/setup-node@v4',
+    '        with:',
+    '          node-version: 20',
+    `          cache: ${pm}`,
+    ...managerSetup(pm).map(s => `      ${s}`),
+    `      - run: ${installCommand(pm)}`,
+    '      - name: Archive the build',
+    '        run: npx vectalon@latest archive --flavor "$VECTALON_BUILD_FLAVOR"',
+    '      - name: Distribute the latest build to the SaaS portal',
+    "        if: secrets.VECTALON_API_KEY != ''",
+    '        run: npx vectalon@latest distribute --latest --target saas',
+    '        env:',
+    '          VECTALON_API_KEY: ${{ secrets.VECTALON_API_KEY }}',
+    '      - uses: actions/upload-artifact@v4',
+    '        with:',
+    '          name: vectalon-builds',
+    '          path: .vectalon/builds/',
+    '        if: always()',
+    '',
+  ]
+}
+
+/**
  * GitHub Actions workflow for a bare RN CLI project. Steps come from the
  * project's actual scripts (test/lint/typecheck/prettier) plus the detected
  * native build commands — so the workflow matches what `vectalon` verifies.
  */
-export function generateGithubActionsWorkflow(root: string): string {
+export function generateGithubActionsWorkflow(root: string, withArchive?: boolean): string {
   const pm = detectPackageManager(root)
   const scripts = readScripts(root)
   const detected = detectValidationCommands(root)
@@ -267,6 +314,7 @@ export function generateGithubActionsWorkflow(root: string): string {
       ...ciIncidentStepLines('native').map(s => `      ${s}`),
       '',
       ...visualJobLines(pm),
+      ...(withArchive ? archiveJobLines(pm) : []),
     ].join('\n')
   }
 
@@ -287,6 +335,7 @@ export function generateGithubActionsWorkflow(root: string): string {
     ...ciIncidentStepLines('quality').map(s => `      ${s}`),
     '',
     ...visualJobLines(pm),
+    ...(withArchive ? archiveJobLines(pm) : []),
   ].join('\n')
 }
 
@@ -540,7 +589,7 @@ export function generateBitbucketPipelines(root: string): string {
  * project's quality scripts on every pull request. EAS pre-checks out the
  * pushed commit, so steps are plain `run:` commands.
  */
-export function generateEasWorkflow(root: string): string {
+export function generateEasWorkflow(root: string, withArchive?: boolean): string {
   const pm = detectPackageManager(root)
   const scripts = readScripts(root)
 
@@ -549,6 +598,26 @@ export function generateEasWorkflow(root: string): string {
   if (scripts.typecheck || scripts['type-check']) steps.push(`- run: ${scriptRun(pm, scripts.typecheck ? 'typecheck' : 'type-check')}`)
   if (scripts['prettier:check'] || scripts['format:check']) steps.push(`- run: ${scriptRun(pm, scripts['prettier:check'] ? 'prettier:check' : 'format:check')}`)
   if (scripts.test || scripts.jest) steps.push(`- run: ${scriptRun(pm, scripts.test ? 'test' : 'jest')}`)
+
+  const archive: string[] = withArchive
+    ? [
+        '',
+        '  archive:',
+        '    name: Build, archive, and distribute',
+        "    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}",
+        '    env:',
+        "      VECTALON_BUILD_FLAVOR: ${{ vars.VECTALON_BUILD_FLAVOR || 'production' }}",
+        '    steps:',
+        `      - run: ${installCommand(pm)}`,
+        '      - name: Archive the build',
+        '        run: npx vectalon@latest archive --flavor "$VECTALON_BUILD_FLAVOR"',
+        '      - name: Distribute the latest build to the SaaS portal',
+        "        if: ${{ secrets.VECTALON_API_KEY != '' }}",
+        '        run: npx vectalon@latest distribute --latest --target saas',
+        '        env:',
+        '          VECTALON_API_KEY: ${{ secrets.VECTALON_API_KEY }}',
+      ]
+    : []
 
   return [
     'name: vectalon-ci',
@@ -563,6 +632,7 @@ export function generateEasWorkflow(root: string): string {
     '    name: Lint, typecheck, and test',
     '    steps:',
     ...steps.map(s => `      ${s}`),
+    ...archive,
     '',
   ].join('\n')
 }

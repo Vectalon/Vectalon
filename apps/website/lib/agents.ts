@@ -4,17 +4,33 @@
  * repo's agents is a data-only change here, no page edits.
  */
 
-export type AgentVerdict = 'approved' | 'needs-attention' | 'changes-requested'
+/** The three verdicts a deterministic agent can return — word plus color, never color alone. */
+export const AGENT_VERDICTS = ['approved', 'needs-attention', 'changes-requested'] as const
+export type AgentVerdict = (typeof AGENT_VERDICTS)[number]
+
+/** Badge class per verdict — single source for the chip on the agents page and the report windows. */
+export const VERDICT_BADGE: Record<AgentVerdict, string> = {
+  approved: 'badge-ok',
+  'needs-attention': 'badge-warn',
+  'changes-requested': 'badge-danger',
+}
+
+/** Roadmap phases shipping deterministic agents (8-11) plus Archive & Share (12). */
+export const AGENT_PHASES = [8, 9, 10, 11, 12] as const
+export type AgentPhase = (typeof AGENT_PHASES)[number]
+
+/** Report landing path inside the project — a directory (`docs/vectalon/<cmd>/`) or a specific file (dashboard). */
+export type AgentReportPath = `docs/vectalon/${string}/` | `docs/vectalon/${string}.${string}`
 
 export interface AgentInfo {
   /** CLI command, e.g. `review` — run as `vectalon <cmd>`. */
   cmd: string
   /** Full agent name. */
   name: string
-  /** Roadmap item id (061-100). */
+  /** Roadmap item id (061-104). */
   item: string
   /** Roadmap phase this agent belongs to. */
-  phase: 8 | 9 | 10 | 11
+  phase: AgentPhase
   /** One-to-two-sentence description of what the agent does. */
   summary: string
   /** Sample verdict — what a typical run returns. */
@@ -24,7 +40,7 @@ export interface AgentInfo {
   /** Notable CLI flags beyond the universal `--json`. */
   flags?: string
   /** Where the report lands inside the project (gitignored). */
-  report?: string
+  report?: AgentReportPath
 }
 
 export type AgentRepo =
@@ -475,6 +491,55 @@ const RN_AGENTS: AgentInfo[] = [
     verdict: 'needs-attention',
     verdictFor: 'score between 50 and 69 (grade C)',
   },
+  // ── Phase 12 — Archive & Share (101-104) ─────────────────────────────────
+  {
+    cmd: 'archive',
+    name: 'Build Archive Agent',
+    item: '101',
+    phase: 12,
+    summary:
+      'Builds (or ingests a pre-built) IPA/APK/AAB, computes its SHA-256, and writes a typed BuildManifest with full provenance — git commit, flavor, environment, build number, platform — stored under .vectalon/builds/. Zero-config flavor detection from Gradle productFlavors, Xcode schemes, and eas.json profiles.',
+    verdict: 'approved',
+    verdictFor: 'a build is archived with a checksum and a manifest',
+    flags: '--flavor · --platform · --no-build --artifact <path> · --list · --init · --dry-run',
+    report: 'docs/vectalon/archive/',
+  },
+  {
+    cmd: 'distribute',
+    name: 'Distribution Agent',
+    item: '102',
+    phase: 12,
+    summary:
+      'Deploys an archived build to TestFlight, the Google Play Store, the SaaS portal, or a generated white-label portal. Credentials are never stored — Fastlane/EAS/Expo or direct API env vars are detected and delegated, or actionable instructions are printed. --dry-run plans without side effects.',
+    verdict: 'approved',
+    verdictFor: 'a dry-run plan resolves a build and target (real uploads need credentials)',
+    flags: '--target <testflight|play-store|saas|portal> · --track · --latest · --dry-run',
+    report: 'docs/vectalon/distribute/',
+  },
+  {
+    cmd: 'share',
+    name: 'Local Share Agent',
+    item: '103',
+    phase: 12,
+    summary:
+      'Serves an archived build on an ephemeral static install page — download link, optional tunnel (ngrok/localtunnel), optional QR code, and auto-shutdown after --expires. Free tier; nothing leaves your machine unless the tunnel is enabled.',
+    verdict: 'approved',
+    verdictFor: 'an archived build is served with a URL (no build → explicit no-data verdict)',
+    flags: '--build <id> · --tunnel · --qr · --expires <30m|2h>',
+    report: 'docs/vectalon/share/',
+  },
+  {
+    cmd: 'portal',
+    name: 'White-label Portal Agent',
+    item: '104',
+    phase: 12,
+    summary:
+      'Generates a self-contained static build portal (SSG) from the archive store — a listing page plus per-build detail pages with install instructions and an embedded builds.json. --deploy prints the vercel/netlify command; --deploy static exports the site for any host.',
+    verdict: 'approved',
+    verdictFor: 'the portal is generated from the archive store',
+    flags: '--generate · --out <dir> · --domain · --branding · --deploy <static|vercel|netlify>',
+    report: 'docs/vectalon/portal/',
+  },
 ]
 
 const SOON_REPOS: AgentRepo[] = [
@@ -510,18 +575,19 @@ export const AGENT_REPOS: AgentRepo[] = [
     name: 'React Native',
     package: '@vectalon-dev/rn',
     status: 'live',
-    tagline: 'The full harness — 40 deterministic agents across four roadmap phases.',
+    tagline: 'The full harness — 44 deterministic agents across five phases.',
     agents: RN_AGENTS,
   },
   ...SOON_REPOS,
 ]
 
-export const AGENT_PHASE_LABELS: Record<AgentInfo['phase'], string> = {
+export const AGENT_PHASE_LABELS = {
   8: 'phase 8 · autonomous engineering',
   9: 'phase 9 · release engineering',
   10: 'phase 10 · enterprise intelligence',
   11: 'phase 11 · platform & github intelligence',
-}
+  12: 'phase 12 · archive & share',
+} satisfies Record<AgentPhase, string>
 
 export function agentRepo(slug: string): AgentRepo | undefined {
   return AGENT_REPOS.find(r => r.slug === slug)

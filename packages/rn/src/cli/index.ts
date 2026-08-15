@@ -74,6 +74,10 @@ import { datasetCommand } from './commands/dataset'
 import { loraCommand } from './commands/lora'
 import { benchCommand } from './commands/bench'
 import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
+import { archiveCommand } from './commands/archive'
+import { distributeCommand } from './commands/distribute'
+import { shareCommand } from './commands/share'
+import { portalCommand } from './commands/portal'
 import { impactCommand } from './commands/impact'
 import { coverageCommand } from './commands/coverage'
 import { intelCommand } from './commands/intel'
@@ -292,6 +296,7 @@ export function createProgram(): Command {
     .command('ci [directory]')
     .description('Generate the project CI workflow (EAS Workflows for Expo; GitHub Actions / Azure Pipelines / GitLab CI / Bitbucket Pipelines for bare RN CLI, detected from the git remote)')
     .option('--provider <host>', 'Force a CI host instead of detecting from the git remote (github|azure|gitlab|bitbucket)')
+    .option('--with-archive', 'Add the Archive & Share job: build + archive + SaaS distribute on push to main (GitHub Actions / EAS)')
     .option('--dry-run', 'Show what would be generated without writing files')
     .action(ciCommand)
 
@@ -811,6 +816,62 @@ export function createProgram(): Command {
     .action(selftestCommand)
 
   program
+    .command('archive [directory]')
+    .description('Archive & Share — build artifacts: detect flavors, run the platform build (or ingest --artifact), compute SHA-256, write a typed BuildManifest, and store under .vectalon/builds/ — with --list, --init, --dry-run, and reports to docs/vectalon/archive/')
+    .option('--flavor <name>', 'Flavor to build (productFlavors / Xcode scheme / eas.json profile)')
+    .option('--platform <p>', 'Platform to build (ios|android, default android)')
+    .option('--environment <env>', 'Build environment (debug|release, default release)')
+    .option('--env-file <path>', 'Load KEY=VALUE env before the build command')
+    .option('--build-number <n>', 'Override the auto-incremented build number', Number)
+    .option('--no-build', 'Skip the build — archive the existing artifact')
+    .option('--artifact <path>', 'Archive a pre-built artifact file')
+    .option('--list', 'List archived builds')
+    .option('--init', 'Write .vectalon/builds/flavors.json from auto-detected flavors')
+    .option('--dry-run', 'Plan the build + manifest without running the build or writing the store')
+    .option('--json', 'Print machine-readable output')
+    .action(archiveCommand)
+
+  program
+    .command('distribute [directory]')
+    .description('Archive & Share — distribution: deploy an archived build to TestFlight, the Play Store, the SaaS portal, or a generated white-label portal — credentials never stored (Fastlane/EAS/Expo detection + direct API fallback), --dry-run plans without side effects; reports to docs/vectalon/distribute/')
+    .option('--build <id>', 'Build id to distribute')
+    .option('--latest', 'Distribute the latest build (optionally --flavor/--platform filtered)')
+    .option('--flavor <name>', 'Filter the latest build by flavor')
+    .option('--platform <p>', 'Filter the latest build by platform')
+    .option('--target <t>', 'Distribution target: testflight|play-store|saas|portal (default testflight)')
+    .option('--track <t>', 'Play Store track: internal|alpha|beta|production (default internal)')
+    .option('--domain <d>', 'Custom domain for the portal target')
+    .option('--list-targets', 'Show available distribution targets')
+    .option('--dry-run', 'Plan the distribution without executing it')
+    .option('--json', 'Print machine-readable output')
+    .action(distributeCommand)
+
+  program
+    .command('share [directory]')
+    .description('Archive & Share — local sharing: serve an archived build as a self-contained install page with a download link, optional tunnel (ngrok/localtunnel), and auto-shutdown after --expires; reports to docs/vectalon/share/')
+    .option('--build <id>', 'Build id to serve')
+    .option('--flavor <name>', 'Serve the latest build for a flavor')
+    .option('--platform <p>', 'Serve the latest build for a platform')
+    .option('--port <n>', 'Port to bind (default: ephemeral)', Number)
+    .option('--host <h>', 'Bind host (default 127.0.0.1)')
+    .option('--tunnel', 'Expose via ngrok (PATH) or localtunnel')
+    .option('--qr', 'Print a QR code to the terminal')
+    .option('--expires <dur>', 'Auto-shutdown after a duration, e.g. 30m, 2h')
+    .option('--json', 'Print machine-readable output')
+    .action(shareCommand)
+
+  program
+    .command('portal [directory]')
+    .description('Archive & Share — white-label portal: generate a static build portal (SSG) from the archive store — listing, per-build detail + install pages, embedded builds.json — and plan deploys to vercel|netlify|static; reports to docs/vectalon/portal/')
+    .option('--generate', 'Generate the portal site (default action)')
+    .option('--out <dir>', 'Output directory (default .vectalon/portal)')
+    .option('--domain <d>', 'Custom domain for the portal')
+    .option('--branding <json>', 'Branding overrides: {"logo":"./logo.png","primaryColor":"#FF5733","title":"..."}')
+    .option('--deploy <target>', 'Deploy plan: vercel|netlify|static')
+    .option('--json', 'Print machine-readable output')
+    .action(portalCommand)
+
+  program
     .command('leaderboard [directory]')
     .description('Merge per-model benchmark results into a timestamped BENCHMARK_RESULTS.md leaderboard')
     .option('--out <path>', 'Output file (default BENCHMARK_RESULTS.md)')
@@ -994,6 +1055,10 @@ async function runInteractive(): Promise<void> {
       { value: 'selftest', label: 'Run self-test', hint: 'Test every feature — visible report + activity trace' },
       { value: 'bench', label: 'Run benchmark', hint: 'Score the harness on the RN coding tests (11 scenarios)' },
       { value: 'leaderboard', label: 'Update leaderboard', hint: 'Merge bench/results into BENCHMARK_RESULTS.md' },
+      { value: 'archive', label: 'Archive a build', hint: 'Build + manifest + store under .vectalon/builds/' },
+      { value: 'distribute', label: 'Distribute a build', hint: 'TestFlight / Play Store / SaaS / portal' },
+      { value: 'share', label: 'Share a build locally', hint: 'Ephemeral install page server' },
+      { value: 'portal', label: 'Generate a build portal', hint: 'White-label static site for team builds' },
       { value: 'sync', label: 'Sync team brain', hint: 'Push/pull .vectalon/knowledge to a hosted git remote' },
       { value: 'team', label: 'Run team brain', hint: 'Glossary, coding standards, expertise, decisions, onboarding (041-049)' },
       { value: 'review', label: 'Run PR review', hint: 'Review the diff — deterministic rules + team-brain standards (061)' },
@@ -1426,6 +1491,44 @@ async function runInteractive(): Promise<void> {
   if (action === 'leaderboard') {
     leaderboardCommand({})
     p.outro('Leaderboard updated')
+    return
+  }
+
+  if (action === 'archive') {
+    const flavor = (await p.text({ message: 'Flavor (or Enter for the default)', placeholder: 'staging' })) as string
+    await archiveCommand('', { flavor: flavor || undefined, dryRun: true })
+    p.outro('Archive planned — re-run with --dry-run removed to build for real')
+    return
+  }
+
+  if (action === 'distribute') {
+    const target = (await p.select({
+      message: 'Distribution target',
+      options: [
+        { value: 'testflight', label: 'TestFlight', hint: 'Pro' },
+        { value: 'play-store', label: 'Play Store', hint: 'Pro' },
+        { value: 'saas', label: 'SaaS portal', hint: 'Team' },
+        { value: 'portal', label: 'White-label portal', hint: 'Team' },
+      ],
+    })) as string
+    if (p.isCancel(target)) {
+      p.outro('Cancelled')
+      return
+    }
+    await distributeCommand('', { target, dryRun: true })
+    p.outro('Distribution planned — re-run with --dry-run removed to distribute for real')
+    return
+  }
+
+  if (action === 'share') {
+    await shareCommand('', {})
+    p.outro('Share server stopped')
+    return
+  }
+
+  if (action === 'portal') {
+    await portalCommand('', { generate: true })
+    p.outro('Portal generated')
     return
   }
 

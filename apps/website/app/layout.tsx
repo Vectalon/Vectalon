@@ -104,6 +104,72 @@ const motionBudget = `
   })();
 `
 
+// Scroll reveals (.reveal): below-fold surfaces (agents cards, report
+// windows, homepage sections) enter as they scroll into view instead of
+// playing their entrance off-screen at load. The hidden state only exists
+// under html.js-reveal — added here, so a no-JS client sees everything
+// immediately. Each element is revealed once (unobserved after); the
+// classes are stripped after the transition so the element returns to its
+// natural styles (hover lifts, theme crossfades). A stalled-compositor
+// safety net mirrors the fade-up watchdog, but checks only reveal
+// elements that are actually in the viewport — below-fold ones are
+// legitimately hidden until scrolled to.
+const revealObserver = `
+  (function () {
+    function inViewport(el) {
+      var r = el.getBoundingClientRect();
+      var vh = window.innerHeight || document.documentElement.clientHeight;
+      return r.top < vh && r.bottom > 0;
+    }
+    function init() {
+      try {
+        var els = document.querySelectorAll('.reveal');
+        if (!els.length) return;
+        if (!('IntersectionObserver' in window)) return;
+        document.documentElement.classList.add('js-reveal');
+        var io = new IntersectionObserver(function (entries) {
+          for (var i = 0; i < entries.length; i++) {
+            if (entries[i].isIntersecting) {
+              reveal(entries[i].target);
+              io.unobserve(entries[i].target);
+            }
+          }
+        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.02 });
+        for (var i = 0; i < els.length; i++) io.observe(els[i]);
+        // Stalled-compositor net: if any in-viewport reveal never became
+        // visible after its max delay plus margin, freeze — globals.css
+        // strips the hidden state under html.anim-frozen.
+        var maxDelay = 0;
+        for (var i = 0; i < els.length; i++) {
+          var d = parseFloat(window.getComputedStyle(els[i]).transitionDelay) || 0;
+          if (d > maxDelay) maxDelay = d;
+        }
+        window.setTimeout(function () {
+          for (var i = 0; i < els.length; i++) {
+            if (inViewport(els[i]) && parseFloat(window.getComputedStyle(els[i]).opacity) <= 0.05) {
+              document.documentElement.classList.add('anim-frozen');
+              return;
+            }
+          }
+        }, maxDelay * 1000 + 900);
+      } catch (e) {}
+    }
+    function reveal(el) {
+      el.classList.add('is-revealed');
+      var delay = 0;
+      try {
+        delay = parseFloat(window.getComputedStyle(el).transitionDelay) || 0;
+      } catch (e) {}
+      window.setTimeout(function () {
+        el.classList.remove('reveal');
+        el.classList.remove('is-revealed');
+      }, delay * 1000 + 600);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  })();
+`
+
 // The direction contract for this build — emitted into the HTML so a
 // production build can be audited against it (grep the built output).
 const directionContract = `<!--
@@ -138,6 +204,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <script dangerouslySetInnerHTML={{ __html: animWatchdog }} />
         <script dangerouslySetInnerHTML={{ __html: motionBudget }} />
+        <script dangerouslySetInnerHTML={{ __html: revealObserver }} />
       </head>
       <body className="flex min-h-screen flex-col">
         <div dangerouslySetInnerHTML={{ __html: directionContract }} />
@@ -166,7 +233,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="flex items-stretch">
                 <div className="seg hidden text-xs text-slate-500 md:flex">
                   <span className="text-emerald-600 dark:text-emerald-400">●</span>
-                  main · v0.10.0
+                  main · v0.11.0
                 </div>
                 <MobileMenu />
                 <ThemeToggle />

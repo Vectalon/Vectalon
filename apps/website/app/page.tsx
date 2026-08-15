@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { CSSProperties } from 'react'
 import { FeatureIcon, type FeatureIconName } from '../components/FeatureIcon'
 import { DemoPlayer } from '../components/DemoPlayer'
 import { TypePrompt, type TypePromptHeadline } from '../components/TypePrompt'
@@ -15,7 +16,7 @@ const SDK_CHIPS = [
 const FEATURES: Array<{ title: string; body: string; icon: FeatureIconName }> = [
   {
     title: 'MCP-native agent',
-    body: 'A local model runs as an agent over 58 project-aware tools — feature workflows, code review, upgrades, E2E generation, device control — all through the MCP protocol your editor already speaks. On top of the model sits a fleet of 40 deterministic agents (review, security, SOC 2, GitHub PR triage, DX scoring) that need no model at all.',
+    body: 'A local model runs as an agent over 58 project-aware tools — feature workflows, code review, upgrades, E2E generation, device control — all through the MCP protocol your editor already speaks. On top of the model sits a fleet of 44 deterministic agents (review, security, SOC 2, GitHub PR triage, DX scoring, build archive) that need no model at all.',
     icon: 'robot',
   },
   {
@@ -59,7 +60,7 @@ const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'Does it need a model?',
-    a: 'The optional model-driven agent does — but the 40 deterministic commands (review, security, SOC 2, GitHub PR triage, incident command, …) need no model at all. They run offline with a report and a verdict, zero model calls, free on every tier. Deterministic means reproducible, not static: every run re-scans your project’s current state, so the results are as fresh as your last command.',
+    a: 'The optional model-driven agent does — but the 44 deterministic commands (review, security, SOC 2, GitHub PR triage, incident command, build archive, …) need no model at all. They run offline with a report and a verdict, zero model calls, free on every tier. Deterministic means reproducible, not static: every run re-scans your project’s current state, so the results are as fresh as your last command.',
   },
   {
     q: 'Do the deterministic agents go stale?',
@@ -67,21 +68,21 @@ const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'Which platforms are supported?',
-    a: 'React Native is live at v0.10.0. iOS, Android, and Flutter harnesses are in development — join the waitlist and we’ll email the moment a beta opens.',
+    a: 'React Native is live at v0.11.0. iOS, Android, and Flutter harnesses are in development — join the waitlist and we’ll email the moment a beta opens.',
   },
   {
     q: 'How is it different from other AI coding tools?',
-    a: 'Deterministic and compile-checked. Agents produce the same result on any machine, every fix is typechecked before it lands and reverted if it doesn’t reduce errors, and the benchmark suite measures 11 scenarios against human references (90% guardrail pass rate).',
+    a: 'Deterministic and compile-checked. Agents produce the same result on any machine, every fix is typechecked before it lands and reverted if it doesn’t reduce errors, and the benchmark suite measures 13 scenarios against human references (92% guardrail pass rate).',
   },
   {
     q: 'What does it cost, and what’s the license?',
-    a: 'The free tier is genuinely useful — init, serve, feature, doctor, and all 40 agents, no card. Pro $19/mo, All-Access $49/mo, Team $99/seat/mo, each with a 14-day trial. Business Source License 1.1: free for personal, education, and OSS use and teams up to three devs; MIT after four years.',
+    a: 'The free tier is genuinely useful — init, serve, feature, doctor, and all 44 agents, no card. Pro $19/mo, All-Access $49/mo, Team $99/seat/mo, each with a 14-day trial. Business Source License 1.1: free for personal, education, and OSS use and teams up to three devs; MIT after four years.',
   },
 ]
 
 const STATS = [
-  { value: '90%', label: 'guardrail pass rate' },
-  { value: '11', label: 'benchmark scenarios' },
+  { value: '92%', label: 'guardrail pass rate' },
+  { value: '13', label: 'benchmark scenarios' },
   { value: '58', label: 'project-aware tools' },
   { value: '13', label: 'workflow phases' },
 ]
@@ -411,7 +412,11 @@ export default async function Home() {
             </div>
             <div className="divide-y divide-ink-700/60">
               {STEPS.map((s, i) => (
-                <div key={s.title} className="grid gap-3 px-5 py-6 sm:px-7 md:grid-cols-[260px_1fr] md:gap-8">
+                <div
+                  key={s.title}
+                  className="reveal grid gap-3 px-5 py-6 sm:px-7 md:grid-cols-[260px_1fr] md:gap-8"
+                  style={{ '--reveal-delay': `${i * 90}ms` } as CSSProperties}
+                >
                   <div>
                     <div className="font-mono text-sm text-brand">
                       <span>$</span> {s.cmd}
@@ -435,9 +440,9 @@ export default async function Home() {
       <section id="demo" className="border-t border-ink-700/70 py-20">
         <div className="mx-auto max-w-4xl px-4">
           <div className="mb-10 text-center">
-            <h2 className="text-3xl font-bold text-slate-50">Watch it run — 90 seconds, no cuts</h2>
+            <h2 className="text-3xl font-bold text-slate-50">Watch it run — 85 seconds, no cuts</h2>
             <p className="mt-3 text-sm text-slate-400">
-              The real CLI, recorded live on a fresh project.
+              The real CLI on a real 19-screen Expo app — init, arch, sec, feature, bench.
             </p>
           </div>
           <DemoPlayer />
@@ -448,8 +453,12 @@ export default async function Home() {
       <section className="border-t border-ink-700/70">
         <div className="mx-auto max-w-6xl px-4 py-10">
           <div className="statusline !border-0 !bg-transparent">
-            {STATS.map(s => (
-              <div key={s.label} className="seg !block !px-6 !py-4 text-center">
+            {STATS.map((s, i) => (
+              <div
+                key={s.label}
+                className="reveal seg !block !px-6 !py-4 text-center"
+                style={{ '--reveal-delay': `${i * 90}ms` } as CSSProperties}
+              >
                 <div className="font-display text-3xl font-bold text-brand">{s.value}</div>
                 <div className="mt-1 font-mono text-[11px] uppercase tracking-wider text-slate-500">
                   {s.label}
@@ -479,9 +488,10 @@ export default async function Home() {
             {FEATURES.map((f, i) => (
               <div
                 key={f.title}
-                className={`card flex flex-col transition hover:-translate-y-0.5 hover:border-brand/50 ${
+                className={`reveal card flex flex-col transition hover:-translate-y-0.5 hover:border-brand/50 ${
                   i === 0 || i === FEATURES.length - 1 ? 'sm:col-span-2 lg:col-span-2' : ''
                 }`}
+                style={{ '--reveal-delay': `${(i % 3) * 90}ms` } as CSSProperties}
               >
                 <FeatureIcon name={f.icon} />
                 <h3 className="mt-4 font-semibold text-slate-50">{f.title}</h3>
@@ -494,7 +504,7 @@ export default async function Home() {
               waitlist" promise lands on a working form. */}
           <Link
             href="/sdk/ios"
-            className="card group mt-3 flex flex-col justify-between transition hover:-translate-y-0.5 hover:border-brand/50 lg:flex-row lg:items-center"
+            className="reveal card group mt-3 flex flex-col justify-between transition hover:-translate-y-0.5 hover:border-brand/50 lg:flex-row lg:items-center"
           >
             <div>
               <h3 className="font-semibold text-slate-50">Your platform next</h3>
@@ -515,7 +525,7 @@ export default async function Home() {
         <div className="mx-auto max-w-6xl px-4">
           <div className="max-w-2xl">
             <h2 className="text-3xl font-bold text-slate-50">
-              40 deterministic agents — <span className="text-brand">zero model calls</span>
+              44 deterministic agents — <span className="text-brand">zero model calls</span>
             </h2>
             <p className="mt-3 text-slate-400">
               Same result every run, on any machine, with a report and a verdict. They run on the
@@ -524,8 +534,12 @@ export default async function Home() {
             </p>
           </div>
           <div className="mt-12 grid gap-3 lg:grid-cols-3">
-            {AGENT_PHASES.map(p => (
-              <div key={p.phase} className="card flex flex-col">
+            {AGENT_PHASES.map((p, i) => (
+              <div
+                key={p.phase}
+                className="reveal card flex flex-col"
+                style={{ '--reveal-delay': `${i * 90}ms` } as CSSProperties}
+              >
                 <div className="flex items-center gap-2">
                   <span className="chip !px-2 !py-0.5 font-mono text-[10px]">{p.phase}</span>
                   <h3 className="font-semibold text-slate-50">{p.title}</h3>
@@ -553,7 +567,7 @@ export default async function Home() {
       <section className="border-t border-ink-700/70 py-20">
         <div className="mx-auto max-w-6xl px-4">
           <div className="grid items-start gap-10 lg:grid-cols-2">
-            <div>
+            <div className="reveal">
               <h2 className="text-3xl font-bold text-slate-50">The model is never stale</h2>
               <p className="mt-4 leading-relaxed text-slate-400">
                 Vectalon refreshes its own web intel — every hour under serve — and inlines the
@@ -561,10 +575,10 @@ export default async function Home() {
                 read is the feed the model sees. If the ecosystem ships it, the model knows it.
               </p>
               <Link href="/changelog" className="mt-6 inline-block text-sm text-brand hover:underline">
-                See what shipped in v0.10.0 →
+                See what shipped in v0.11.0 →
               </Link>
             </div>
-            <div className="card !p-0">
+            <div className="reveal card !p-0" style={{ '--reveal-delay': '120ms' } as CSSProperties}>
               <div className="pane-head !border-0 px-5 py-3">
                 <span>live intel sources</span>
                 <span className="flex items-center gap-1.5 !normal-case tracking-normal text-slate-500">
@@ -593,15 +607,19 @@ export default async function Home() {
           <h2 className="text-3xl font-bold text-slate-50">Questions, answered</h2>
           <p className="mt-3 text-slate-400">The short version of everything.</p>
           <div className="mt-10 space-y-3">
-            {FAQ.map(item => (
-              <details key={item.q} className="card group !p-0">
+            {FAQ.map((item, i) => (
+              <details
+                key={item.q}
+                className="reveal card group !p-0"
+                style={{ '--reveal-delay': `${i * 60}ms` } as CSSProperties}
+              >
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 font-mono text-sm font-semibold text-slate-50 [&::-webkit-details-marker]:hidden">
                   {item.q}
                   <span aria-hidden className="text-lg text-slate-500 transition-transform duration-200 group-open:rotate-45">
                     +
                   </span>
                 </summary>
-                <p className="px-5 pb-5 text-sm leading-relaxed text-slate-400">{item.a}</p>
+                <p className="faq-a px-5 pb-5 text-sm leading-relaxed text-slate-400">{item.a}</p>
               </details>
             ))}
           </div>
@@ -611,7 +629,7 @@ export default async function Home() {
       {/* CTA — the closing prompt */}
       <section className="border-t border-ink-700/70 py-20">
         <div className="mx-auto max-w-3xl px-4 text-center">
-          <div className="console">
+          <div className="reveal console">
             <div className="console-head justify-center">
               <span>vectalon — install</span>
             </div>

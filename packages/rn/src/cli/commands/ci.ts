@@ -14,6 +14,8 @@ interface CiOptions {
   dryRun?: boolean
   /** Force a CI host instead of detecting from the git remote. */
   provider?: string
+  /** Add the Archive & Share job (build + archive + SaaS distribute) to the workflow. */
+  withArchive?: boolean
 }
 
 const VALID_PROVIDERS: CiProvider[] = ['github', 'azure', 'gitlab', 'bitbucket']
@@ -91,11 +93,14 @@ export async function ciCommand(directory: string, options: CiOptions): Promise<
     } else if (isReactNativeCLIProject(root)) {
       logger.info(`   Would write: ${PROVIDER_PATHS[provider]}`)
     }
+    if (options.withArchive) {
+      logger.info('   Archive & Share job: build + archive + SaaS distribute on push to main')
+    }
     return
   }
 
   if (isExpoProject(root)) {
-    const results = ensureCiConfigs(root, { isExpo: true })
+    const results = ensureCiConfigs(root, { isExpo: true, withArchive: options.withArchive })
     for (const file of results) {
       if (file.written) {
         logger.success(`Generated ${file.path}`)
@@ -108,7 +113,7 @@ export async function ciCommand(directory: string, options: CiOptions): Promise<
   }
 
   if (isReactNativeCLIProject(root)) {
-    const results = ensureCiConfigs(root, { isExpo: false, provider })
+    const results = ensureCiConfigs(root, { isExpo: false, provider, withArchive: options.withArchive })
     for (const file of results) {
       if (file.written) {
         logger.success(`Generated ${file.path}`)

@@ -91,6 +91,22 @@
         "title": "Vectalon: Generate Component"
       },
       {
+        "command": "vectalon.archiveBuild",
+        "title": "Vectalon: Archive Build"
+      },
+      {
+        "command": "vectalon.distributeBuild",
+        "title": "Vectalon: Distribute Build (dry-run plan)"
+      },
+      {
+        "command": "vectalon.shareBuild",
+        "title": "Vectalon: Share Build (local server)"
+      },
+      {
+        "command": "vectalon.generatePortal",
+        "title": "Vectalon: Generate Build Portal"
+      },
+      {
         "command": "vectalon.projectContext",
         "title": "Vectalon: Show Project Context"
       },

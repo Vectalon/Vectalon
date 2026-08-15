@@ -19,6 +19,7 @@ import {
   PerfTools,
   SandboxTools,
   RenderTools,
+  ArchiveTools,
   type ToolContext,
   type ToolRegistry,
 } from './tools'
@@ -139,6 +140,7 @@ export class MCPServer {
       new PerfTools(ctx),
       new SandboxTools(ctx),
       new RenderTools(ctx),
+      new ArchiveTools(ctx),
     ]
     this.registerTools()
   }

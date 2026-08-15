@@ -100,6 +100,24 @@ describe('ciTemplates', () => {
       expect(workflow).toContain('./gradlew clean')
       expect(workflow).toContain('ci-incident --gate native')
     })
+
+    it('adds the archive job when withArchive is set, and omits it otherwise', () => {
+      for (const [name, content] of Object.entries(RN_PKG)) {
+        writeFileSync(join(dir, name), content)
+      }
+
+      const plain = generateGithubActionsWorkflow(dir)
+      expect(plain).not.toContain('  archive:')
+
+      const workflow = generateGithubActionsWorkflow(dir, true)
+      expect(workflow).toContain('  archive:')
+      expect(workflow).toContain('Build, archive, and distribute')
+      expect(workflow).toContain('npx vectalon@latest archive --flavor "$VECTALON_BUILD_FLAVOR"')
+      expect(workflow).toContain('npx vectalon@latest distribute --latest --target saas')
+      expect(workflow).toContain('VECTALON_API_KEY')
+      expect(workflow).toContain('upload-artifact@v4')
+      expect(workflow).toContain('.vectalon/builds/')
+    })
   })
 
   describe('generateEasWorkflow', () => {
@@ -117,6 +135,21 @@ describe('ciTemplates', () => {
       expect(workflow).toContain('- run: npm run test')
       expect(workflow).toContain('on:')
       expect(workflow).toContain('pull_request:')
+    })
+
+    it('adds the archive job to the EAS workflow when withArchive is set', () => {
+      for (const [name, content] of Object.entries(EXPO_PKG)) {
+        writeFileSync(join(dir, name), content)
+      }
+
+      const plain = generateEasWorkflow(dir)
+      expect(plain).not.toContain('  archive:')
+
+      const workflow = generateEasWorkflow(dir, true)
+      expect(workflow).toContain('  archive:')
+      expect(workflow).toContain('Build, archive, and distribute')
+      expect(workflow).toContain('npx vectalon@latest archive --flavor "$VECTALON_BUILD_FLAVOR"')
+      expect(workflow).toContain('npx vectalon@latest distribute --latest --target saas')
     })
   })
 
@@ -284,6 +317,19 @@ describe('ciTemplates', () => {
       expect(result[0].path).toBe('.eas/workflows/vectalon.yml')
       expect(result[0].written).toBe(true)
       expect(existsSync(join(dir, '.eas', 'workflows', 'vectalon.yml'))).toBe(true)
+    })
+
+    it('writes the archive job into the generated workflow when withArchive is set', () => {
+      for (const [name, content] of Object.entries(RN_PKG)) {
+        writeFileSync(join(dir, name), content)
+      }
+
+      const result = ensureCiConfigs(dir, { isExpo: false, withArchive: true })
+      const written = readFileSync(join(dir, '.github', 'workflows', 'vectalon-ci.yml'), 'utf-8')
+      expect(result[0].written).toBe(true)
+      expect(written).toContain('  archive:')
+      expect(written).toContain('vectalon@latest archive')
+      expect(written).toContain('vectalon@latest distribute')
     })
 
     it('never overwrites an existing workflow', () => {

@@ -42,8 +42,8 @@ for (const cmdMatch of agentsSrc.matchAll(/cmd:\s*'([a-z0-9-]+)'/g)) {
 }
 const cmds = pairs.map(([c]) => c)
 const names = pairs.map(([, n]) => n)
-if (cmds.length !== names.length || cmds.length !== 40) {
-  throw new Error(`catalog parse mismatch: ${cmds.length} cmds vs ${names.length} names (expected 40)`)
+if (cmds.length !== names.length || cmds.length !== 44) {
+  throw new Error(`catalog parse mismatch: ${cmds.length} cmds vs ${names.length} names (expected 44)`)
 }
 const catalog = Object.fromEntries(pairs)
 

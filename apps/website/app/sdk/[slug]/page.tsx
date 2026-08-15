@@ -18,10 +18,10 @@ const SDK_DATA: Record<string, SdkData> = {
   'react-native': {
     name: 'React Native',
     status: 'live',
-    statusLabel: 'Live — v0.10.0',
-    tagline: 'The full harness — context, codegen, upgrade copilot, device control, regression coverage, and 40 deterministic agents.',
+    statusLabel: 'Live — v0.11.0',
+    tagline: 'The full harness — context, codegen, upgrade copilot, device control, regression coverage, and 44 deterministic agents.',
     description:
-      'The original Vectalon harness. Scans your RN project, builds a living knowledge graph, runs a local MCP-aware agent over 58 project-aware tools, keeps the model current with ecosystem releases — every hour — and ships 40 deterministic agent commands (review, security, SOC 2, GitHub PR triage, incident command, …) that need no model at all.',
+      'The original Vectalon harness. Scans your RN project, builds a living knowledge graph, runs a local MCP-aware agent over 58 project-aware tools, keeps the model current with ecosystem releases — every hour — and ships 44 deterministic agent commands (review, security, SOC 2, GitHub PR triage, incident command, archive, share, …) that need no model at all.',
     features: [
       { title: 'MCP-native agent', body: 'Feature workflows, code review, E2E generation, and device control over the MCP protocol your editor already speaks.' },
       { title: 'Impact regression coverage', body: 'Changed files map to affected screens, each gets a Maestro regression flow with an accessibility variant for covered screens — screens without a deterministic route are flagged, followed up, and tracked in the coverage dashboard.' },
@@ -30,11 +30,11 @@ const SDK_DATA: Record<string, SdkData> = {
       { title: 'Bundle budget guardrails', body: 'Metro bundle deltas tracked per package with swap candidates and replacement suggestions.' },
       { title: 'Device control', body: 'Simulators, taps, swipes, deep links, VoiceOver/TalkBack trees, and visual regression checks from the CLI.' },
       { title: 'Compile-checked healing', body: 'Every fix is typechecked before it lands; fixes that don’t reduce errors are reverted.' },
-      { title: 'Deterministic agent fleet', body: '40 agent commands across four phases — code review, security, build/test repair, SOC 2, CI/CD, store readiness, team analytics, enterprise intelligence (sentry, observability, governance, audit, release prediction, dataset, LoRA), and platform intelligence (PR triage, workflow reliability, incident command, release train, cost governance, DX scoring). Deterministic, no model required, each with a report and a verdict.' },
+      { title: 'Deterministic agent fleet', body: '44 agent commands across five phases — code review, security, build/test repair, SOC 2, CI/CD, store readiness, team analytics, enterprise intelligence (sentry, observability, governance, audit, release prediction, dataset, LoRA), platform intelligence (PR triage, workflow reliability, incident command, release train, cost governance, DX scoring), and archive & share (build archive, TestFlight/Play/SaaS distribution, local sharing, white-label portals). Deterministic, no model required, each with a report and a verdict.' },
       { title: 'Executive dashboard', body: 'vectalon dashboard aggregates every agent report into one executive view — per-agent health cards, an overall verdict, and a self-contained HTML dashboard with click-through drill-down, severity filters, and full-text search.' },
     ],
     install: 'npx vectalon init',
-    note: 'Free tier: init, serve, feature, doctor, plus all 40 deterministic agent commands. Pro adds upgrade copilot, self-healing CI, and bundle budgets.',
+    note: 'Free tier: init, serve, feature, doctor, plus all 44 deterministic agent commands. Pro adds upgrade copilot, self-healing CI, and bundle budgets.',
   },
   ios: {
     name: 'iOS',
@@ -127,10 +127,10 @@ export default function SdkPage({ params }: { params: { slug: string } }) {
           <>
             <div className="term w-full max-w-xl">
               <div className="term-head">
-                <span className="text-xs text-[#9c8f74]">terminal</span>
+                <span className="text-xs text-term-meta">terminal</span>
               </div>
               <pre className="term-body text-sm">
-                <span className="text-[#E35336]">$</span> {sdk.install}
+                <span className="text-term-brand">$</span> {sdk.install}
                 <span className="caret ml-1.5" />
               </pre>
             </div>

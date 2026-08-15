@@ -33,6 +33,12 @@ module.exports = {
         },
         'on-brand': 'rgb(var(--on-brand) / <alpha-value>)',
         'on-accent': 'rgb(var(--on-accent) / <alpha-value>)',
+        term: {
+          ink: 'rgb(var(--term-ink) / <alpha-value>)',
+          brand: 'rgb(var(--term-brand) / <alpha-value>)',
+          meta: 'rgb(var(--term-meta) / <alpha-value>)',
+          frame: 'rgb(var(--term-border) / <alpha-value>)',
+        },
         slate: {
           50: 'rgb(var(--slate-50) / <alpha-value>)',
           100: 'rgb(var(--slate-100) / <alpha-value>)',

@@ -80,7 +80,7 @@ const STEPS = [
     n: '02',
     title: 'Serve the agent',
     code: 'npx vectalon serve',
-    body: 'Boots the MCP server. Your editor or any MCP client connects and gets 58+ project-aware tools — plus 40 deterministic agent commands that need no model at all. The VS Code extension (vectalon-dev, free) connects here: one-click workflows, inline guardrail status, and the team knowledge base. Web intel and the knowledge base auto-refresh hourly.',
+    body: 'Boots the MCP server. Your editor or any MCP client connects and gets 58+ project-aware tools — plus 44 deterministic agent commands that need no model at all. The VS Code extension (vectalon-dev, free) connects here: one-click workflows, inline guardrail status, and the team knowledge base. Web intel and the knowledge base auto-refresh hourly.',
   },
   {
     n: '03',
@@ -133,15 +133,15 @@ export default function DocsPage() {
             <span className="term-dot bg-[#ffbd2e]" />
             <span className="term-dot bg-[#27c93f]" />
           </div>
-          <div className="flex min-w-0 items-center gap-2 font-mono text-[11px] text-[#E8E0C8]/70">
+          <div className="flex min-w-0 items-center gap-2 font-mono text-[11px] text-term-ink/70">
             <span className="truncate">
-              <span className="text-[#E8E0C8]">$</span>{' '}
+              <span className="text-term-ink">$</span>{' '}
               <span className="text-[rgb(var(--brand))]">man vectalon</span>
             </span>
           </div>
-          <span className="flex shrink-0 items-center gap-1.5 font-mono text-[11px] text-[#E8E0C8]/45">
+          <span className="flex shrink-0 items-center gap-1.5 font-mono text-[11px] text-term-ink/45">
             <span className="live-dot" aria-hidden />
-            v0.10.0
+            v0.11.0
           </span>
         </div>
 

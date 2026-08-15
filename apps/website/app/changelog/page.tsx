@@ -2,9 +2,20 @@ import Link from 'next/link'
 
 const RELEASES = [
   {
-    version: 'v0.10.0',
+    version: 'v0.11.0',
     date: '2026-08-15',
     tag: 'latest',
+    highlights: [
+      'Archive & Share — four new deterministic agents (Roadmap 101-104), every one report-driven and free: `vectalon archive` (build or ingest an IPA/APK/AAB, SHA-256 checksum, typed BuildManifest with git/flavor/environment provenance under .vectalon/builds/ — with zero-config flavor detection from Gradle productFlavors, Xcode schemes, and eas.json), `vectalon distribute` (TestFlight, Play Store, SaaS, and portal targets as dry-run-first plans that never store credentials — delegates to fastlane/EAS/Expo or direct API env vars), `vectalon share` (an ephemeral install page with download link, optional tunnel, QR code, and auto-shutdown via --expires — free tier), and `vectalon portal` (a self-contained static install portal with per-build detail pages and embedded builds.json, deployable to static hosting, Vercel, or Netlify)',
+      'Archive & Share is wired through everything — six new MCP tools under `vectalon serve` (archive_build, list_builds, detect_flavors, distribute_build, share_build_locally, generate_portal), four new VS Code command-palette entries (vectalon.archiveBuild, distributeBuild, shareBuild, generatePortal), and `vectalon ci --with-archive` now emits a build → archive → SaaS-distribute job (gated on VECTALON_API_KEY, uploading .vectalon/builds/ as an artifact) into GitHub Actions and EAS workflows',
+      'The agents catalog is now **44 commands across five phases** — Phase 12 (Archive & Share, items 101-104) is live on /agents with per-command docs, real verdicts, and deep links to the /reports documents; every Archive & Share command writes a markdown + JSON report like the other 40',
+      'Demo video regenerated end-to-end — the website demo now runs against a real 19-screen Expo 53 / React Native 0.79 app (auth flow, catalog with cart and checkout, orders, profile, security with 2FA and sessions, billing, activity, support — each screen with its own hook, service, and test, 32/32 green). The 85-second recording walks the real CLI through init, the arch module graph, security review, the captured feature paper trail, the benchmark, and archive — shot on the same codebase visitors can clone',
+      'Site motion layer — scroll-triggered reveals replace the invisible below-fold entrance choreography on /agents, /reports, and the homepage (no-JS-safe, reduced-motion-safe, watchdog-safe), FAQ answers rise in when opened, and the copy buttons pop on success; plus a token cleanup that replaced 26 raw hex colors in terminal surfaces with terminal-scoped design tokens',
+    ],
+  },
+  {
+    version: 'v0.10.0',
+    date: '2026-08-15',
     highlights: [
       'Carbon report windows everywhere — every one of the 40 agent verdicts now prints as a box-drawing terminal window with traffic-light dots, a colored verdict chip, and a wrapped bordered body: truecolor fills on iTerm/WezTerm/Ghostty/Kitty/Alacritty/JetBrains, standard ANSI elsewhere, and zero escape codes under NO_COLOR. The docs man page and report surfaces on this site share the same aesthetic',
       'Benchmark correctness is now scored for real — `vectalon bench --live --install` was dead on arrival (fixtures pinned react 18.3.1 against react-native 0.74.0’s 18.2.0 peer, and typescript 5.5.0 doesn’t exist on npm — every temp install failed, so jest/tsc/eslint never ran against real deps). The fixture template is now a real checkable RN project, the deterministic scaffold generates a unit test per feature, and the live model pass re-run jumped the overall composite from 28% to **68%** and relative-to-human from 30% to **76%** — with tests passing on 12 of 13 scenarios and rn-03 + rn-09 at 100% correctness',

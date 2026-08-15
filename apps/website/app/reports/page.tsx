@@ -5,7 +5,7 @@ import { ReportWindow } from '../../components/ReportWindow'
 export const metadata = {
   title: 'Vectalon — generated documents, real reports',
   description:
-    'All 40 real documents vectalon generates — crash intelligence, incident briefs, DX scorecards, sentry triage, release trains, and every other agent report — shown exactly as written to docs/vectalon/.',
+    'All 44 real documents vectalon generates — crash intelligence, incident briefs, DX scorecards, sentry triage, release trains, build archives, and every other agent report — shown exactly as written to docs/vectalon/.',
 }
 
 const VERDICT_COUNT = REPORT_SAMPLES.reduce<Record<ReportSample['verdict'], number>>(
@@ -33,7 +33,7 @@ export default function ReportsPage() {
           Every agent ends in the same place: a report written to{' '}
           <span className="font-mono text-slate-300">docs/vectalon/</span> in your project. Below
           are <span className="font-mono text-slate-300">all {REPORT_SAMPLES.length} documents</span>{' '}
-          — one per agent, all 40 of them — generated against the demo app and rendered{' '}
+          — one per agent, all 44 of them — generated against the demo app and rendered{' '}
           <em>exactly as written</em>. Verdicts included, warts included, honest
           “nothing to fix” verdicts included. Regenerate any of them with the command shown.
         </p>
@@ -73,7 +73,7 @@ export default function ReportsPage() {
 
       <div className="mt-12 flex flex-col items-center gap-3">
         <Link href="/agents" className="text-sm text-brand transition hover:text-brand-strong hover:underline">
-          The 40 agents that produce these documents →
+          The 44 agents that produce these documents →
         </Link>
         <p className="font-mono text-xs text-slate-500">
           all {REPORT_SAMPLES.length} verified end-to-end — each one writes a report like these to

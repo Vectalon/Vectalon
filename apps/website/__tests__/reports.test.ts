@@ -43,8 +43,8 @@ describe('catalog agents vs the /reports documents', () => {
   const agents = catalogAgents(fs.readFileSync(AGENTS, 'utf8'))
   const samples = sampleCommands(fs.readFileSync(REPORT_SAMPLES, 'utf8'))
 
-  it('parses exactly 40 catalog agents (sanity check on the parser)', () => {
-    expect(agents).toHaveLength(40)
+  it('parses exactly 44 catalog agents (sanity check on the parser)', () => {
+    expect(agents).toHaveLength(44)
   })
 
   it('shows a document for every catalog agent — nothing missing', () => {

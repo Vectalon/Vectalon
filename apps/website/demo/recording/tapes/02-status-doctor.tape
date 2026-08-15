@@ -7,7 +7,7 @@ Set Padding 24
 Set TypingSpeed 30ms
 Set Shell bash
 
-Type "cd ../cli-app"
+Type "cd ../login-app"
 Enter
 Sleep 600ms
 Type "export VECTALON_DEV_MODE=1"

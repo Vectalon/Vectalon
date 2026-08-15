@@ -54,6 +54,16 @@
   --glow-accent: rgba(30, 120, 68, 0.22);
   --term: 20 23 18; /* the product terminal — stays dark in both modes */
   --term-border: 58 64 50;
+  --term-ink: 232 224 200; /* terminal text */
+  --term-brand: 227 83 54; /* terminal brand — prompt $, command highlights (constant across themes) */
+  --term-meta: 156 143 116; /* terminal dim meta text */
+}
+
+/* Consistent keyboard focus — the theme's brand token in both modes, so
+   every focusable element shows the same high-contrast indicator. */
+:focus-visible {
+  outline: 2px solid rgb(var(--brand));
+  outline-offset: 2px;
 }
 
 /* No-theme fallback = dark console. The bootstrap script in layout.tsx
@@ -97,6 +107,9 @@
   --glow-accent: rgba(74, 222, 128, 0.16);
   --term: 20 23 18; /* the product terminal — stays dark in both modes */
   --term-border: 58 64 50;
+  --term-ink: 232 224 200; /* terminal text */
+  --term-brand: 227 83 54; /* terminal brand — prompt $, command highlights (constant across themes) */
+  --term-meta: 156 143 116; /* terminal dim meta text */
 }
 
 /* Display type is the terminal face: JetBrains Mono everywhere. */
@@ -329,7 +342,7 @@
     background: rgb(255 255 255 / 0.04);
   }
   .term-body {
-    @apply overflow-x-auto p-4 text-[13px] leading-relaxed text-[#E8E0C8];
+    @apply overflow-x-auto p-4 text-[13px] leading-relaxed text-term-ink;
   }
   .term-dot {
     @apply h-2.5 w-2.5 rounded-full;
@@ -683,6 +696,69 @@
   animation: report-target 2.2s ease-out both;
 }
 
+/* Scroll reveals — below-fold surfaces (agents cards, report windows,
+   homepage sections) enter as they scroll into view instead of playing
+   their entrance off-screen at load. The hidden state exists only under
+   html.js-reveal (set by layout.tsx), so a no-JS client — the site's
+   zero-JS ethos — still sees everything. Per-item stagger rides the
+   --reveal-delay custom property set inline. The observer removes the
+   .reveal class after the transition completes so the element returns to
+   its natural styles (hover lifts, theme crossfades) untouched. */
+html.js-reveal .reveal {
+  opacity: 0;
+  transform: translateY(12px);
+}
+html.js-reveal .reveal.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1) var(--reveal-delay, 0ms),
+    transform 0.5s cubic-bezier(0.25, 1, 0.5, 1) var(--reveal-delay, 0ms);
+}
+
+/* FAQ answer — rises in as its <details> opens. Zero-JS: pure CSS on the
+   [open] state; closing snaps, which is fine (exits should be faster). */
+details[open] .faq-a {
+  animation: faq-open 0.25s ease-out both;
+}
+@keyframes faq-open {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Copy button — a quick pop acknowledges the copied state. */
+.copy-pop {
+  animation: copy-pop 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+}
+@keyframes copy-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Long surfaces render lazily off-screen (Chrome/Edge/Safari): the /reports
+   page holds all 44 full documents and /agents holds 44 cards, so layout
+   and paint of everything below the fold is skipped until scrolled into
+   view. contain-intrinsic-size reserves the height so the scrollbar never
+   jumps. Unsupported browsers ignore both properties harmlessly. */
+.report-window,
+.card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 400px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .caret,
   .animate-fade-up,
@@ -691,8 +767,16 @@
   .boot-line,
   .menu-pop,
   .console:target,
-  .report-window:target {
+  .report-window:target,
+  details[open] .faq-a,
+  .copy-pop {
     animation: none;
+  }
+  /* Scroll reveals: content shows immediately, no spatial movement. */
+  html.js-reveal .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
   /* Reduced motion keeps meaningful feedback but drops spatial movement:
      the beam sweep, the underline sweep, and the icon's rotation all go
@@ -717,4 +801,12 @@
 html.anim-frozen .animate-fade-up,
 html.anim-frozen .caret {
   animation: none;
+}
+/* Frozen-compositor safety net applies to scroll reveals too: a stalled
+   compositor never advances the reveal transition, so without this the
+   below-fold content would stay invisible. */
+html.anim-frozen .reveal {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
 }

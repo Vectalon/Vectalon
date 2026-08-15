@@ -3,7 +3,7 @@
  * Regenerate with: node scripts/sync-reports.mjs
  *
  * The real documents vectalon writes to docs/vectalon/<cmd>/ in the demo
- * project (apps/website/demo/login-app). Every one of the 40 catalog
+ * project (apps/website/demo/login-app). Every one of the 44 catalog
  * agents is represented, exactly as written. The completeness guard in
  * __tests__/reports.test.ts fails if this list ever drifts from the catalog.
  */
@@ -385,5 +385,41 @@ export const REPORT_SAMPLES: ReportSample[] = [
     reportPath: "docs/vectalon/dx/report.md",
     regenerate: "vectalon dx",
     doc: "# vectalon dx — Developer Experience Score\n\nScore: **34/100 (D)**  ·  Verdict: **changes-requested**\n\n| Axis | Score | Weight | Note |\n|---|---|---|---|\n| README | 0/100 | 10% | No README — new devs start blind |\n| Contributing guide | 0/100 | 8% | No contributing guide |\n| Docs directory | 100/100 | 8% | docs/ populated |\n| CI workflows | 0/100 | 12% | No CI workflows |\n| Test setup | 0/100 | 12% | No test setup |\n| Lockfile | 100/100 | 6% | Lockfile committed |\n| Lint config | 0/100 | 6% | No lint config |\n| Format config | 0/100 | 4% | No editor config |\n| TypeScript strict | 100/100 | 8% | strict mode on |\n| Changelog | 0/100 | 8% | No changelog |\n| Onboarding assets | 0/100 | 6% | No onboarding artifacts |\n| Source complexity | 99/100 | 12% | avg 20 lines/file, no giant-file sprawl |\n\n## Top improvements\n\n- **CI workflows** (+12pts): No CI workflows\n- **Test setup** (+12pts): No test setup\n- **README** (+10pts): No README — new devs start blind\n- **Contributing guide** (+8pts): No contributing guide\n- **Changelog** (+8pts): No changelog",
+  },
+  {
+    cmd: "archive",
+    name: "Build Archive Agent",
+    verdict: "approved",
+    project: "apps/website/demo/login-app",
+    reportPath: "docs/vectalon/archive/report.md",
+    regenerate: "vectalon archive",
+    doc: "# vectalon archive — Build Archive\n\nVerdict: **approved**  ·  Project: login-app  ·  Flavor: production\nBuild: **#1** (1.0.0)  ·  android · release  ·  apk · 35 B\nSHA-256: `cd0ff5ada27562d2e2c8e0277a8438087cca22caac9c9db50f3f0f70d1a344e6`\nGit: d2da6c8e0eb6d7008cfca2d4200bffe456087615 on main (tag rn-v0.10.0-core-v0.1.0)  ·  built by sanyalbishak93@gmail.com\nStored: `/Users/bhishaksanyal/Documents/Github/Vectalon/apps/website/demo/login-app/.vectalon/builds/login-app/production/release/1.0.0/1/android/app.apk`\n\nPlanned build command (skipped — artifact provided): `eas build --platform android --profile production --non-interactive`\n\n## Flavors\n- production (default)\n",
+  },
+  {
+    cmd: "distribute",
+    name: "Distribution Agent",
+    verdict: "approved",
+    project: "apps/website/demo/login-app",
+    reportPath: "docs/vectalon/distribute/report.md",
+    regenerate: "vectalon distribute",
+    doc: "# vectalon distribute — Distribution\n\nTarget: **play-store**  ·  Verdict: **approved (dry-run)**\nBuild: **#1** (1.0.0)  ·  android · production · release  ·  apk · `8d46cafa-d48a-40a1-be02-3c71ee1a8cb9`\n\n## Plan\n- No credential provider detected — dry run, nothing to execute (track: internal).\n- No credential provider detected. To distribute to the Play Store, either:\n  1. Install Fastlane and run `fastlane init` in your android/ directory, or\n  2. Set GOOGLE_PLAY_SERVICE_ACCOUNT to a service-account JSON path for direct API access.\n\n> Dry run — no side effects. Remove `--dry-run` to execute for real (credentials are never stored).\n",
+  },
+  {
+    cmd: "share",
+    name: "Local Share Agent",
+    verdict: "approved",
+    project: "apps/website/demo/login-app",
+    reportPath: "docs/vectalon/share/report.md",
+    regenerate: "vectalon share",
+    doc: "# vectalon share — Local Share\n\nVerdict: **approved**  ·  Build: `8d46cafa-d48a-40a1-be02-3c71ee1a8cb9`\nURL: http://127.0.0.1:55661  ·  Port: 55661\n\n> Ephemeral — nothing leaves your machine unless a tunnel is enabled.\n",
+  },
+  {
+    cmd: "portal",
+    name: "White-label Portal Agent",
+    verdict: "approved",
+    project: "apps/website/demo/login-app",
+    reportPath: "docs/vectalon/portal/report.md",
+    regenerate: "vectalon portal",
+    doc: "# vectalon portal — Build Portal\n\nVerdict: **approved**  ·  Output: `/tmp/vectalon-demo/portal`  ·  Builds: 1  ·  Files: 5\n\n- Domain: builds.login-app.dev\n- Deploy: `vectalon portal --deploy vercel` (or netlify / static)\n",
   },
 ]

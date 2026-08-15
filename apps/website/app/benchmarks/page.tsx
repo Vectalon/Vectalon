@@ -156,9 +156,9 @@ export default function BenchmarksPage() {
         </div>
         <div className="mt-6">
           <pre className="term-body rounded-[4px] border bg-[rgb(var(--term))] p-4 text-[13px]" style={{ borderColor: 'rgb(var(--term-border))' }}>
-            <span className="text-[#E35336]">composite</span> <span className="text-slate-400">=</span> 0.4·correctness + 0.3·adherence + 0.3·guardrails{'\\n'}
-            <span className="text-[#E35336]"># no --live run?</span> <span className="text-slate-400">correctness is excluded and the rest renormalized:</span>{'\\n'}
-            <span className="text-[#E35336]">composite</span> <span className="text-slate-400">= (0.3·adherence + 0.3·guardrails) / 0.6</span>
+            <span className="text-term-brand">composite</span> <span className="text-slate-400">=</span> 0.4·correctness + 0.3·adherence + 0.3·guardrails{'\\n'}
+            <span className="text-term-brand"># no --live run?</span> <span className="text-slate-400">correctness is excluded and the rest renormalized:</span>{'\\n'}
+            <span className="text-term-brand">composite</span> <span className="text-slate-400">= (0.3·adherence + 0.3·guardrails) / 0.6</span>
           </pre>
         </div>
       </section>
@@ -360,7 +360,7 @@ export default function BenchmarksPage() {
               their first live model-pass numbers on the leaderboard above — 65% and 67%.
             </p>
             <pre className="term-body mt-4 rounded-[4px] border bg-[rgb(var(--term))] p-3 text-[12px]" style={{ borderColor: 'rgb(var(--term-border))' }}>
-              <span className="text-[#E35336]">$</span> npx vectalon bench --baseline bench/baseline.json{'\\n'}
+              <span className="text-term-brand">$</span> npx vectalon bench --baseline bench/baseline.json{'\\n'}
               <span className="text-slate-500"># exit 1 on any axis regression</span>
             </pre>
           </div>
@@ -378,13 +378,13 @@ export default function BenchmarksPage() {
             correctness axis for real, the way these numbers were produced.
           </p>
           <pre className="term-body mt-4 rounded-[4px] border bg-[rgb(var(--term))] p-4 text-[13px]" style={{ borderColor: 'rgb(var(--term-border))' }}>
-            <span className="text-[#E35336]">$</span> npx vectalon bench                          <span className="text-slate-500"># 1 · deterministic baseline (offline)</span>{'\\n'}
-            <span className="text-[#E35336]">$</span> npx vectalon bench --model local --live --install  <span className="text-slate-500"># 1 · model leaderboard, correctness scored (all 13)</span>{'\\n'}
-            <span className="text-[#E35336]">$</span> npx vectalon bench --suite forms-security   <span className="text-slate-500"># 2 · one suite</span>{'\\n'}
-            <span className="text-[#E35336]">$</span> npx vectalon bench --live --install         <span className="text-slate-500"># real tests/typecheck/lint → correctness axis</span>{'\\n'}
-            <span className="text-[#E35336]">$</span> npx vectalon leaderboard                    <span className="text-slate-500"># merge model passes → BENCHMARK_RESULTS.md</span>{'\\n'}
-            <span className="text-[#E35336]">$</span> npx vectalon bench --baseline bench/baseline.json  <span className="text-slate-500"># 4 · CI regression gate</span>{'\\n'}
-            <span className="text-[#E35336]">$</span> npx vectalon bench --scenarios ./my-evals --references ./my-refs  <span className="text-slate-500"># your own eval pack</span>
+            <span className="text-term-brand">$</span> npx vectalon bench                          <span className="text-slate-500"># 1 · deterministic baseline (offline)</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx vectalon bench --model local --live --install  <span className="text-slate-500"># 1 · model leaderboard, correctness scored (all 13)</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx vectalon bench --suite forms-security   <span className="text-slate-500"># 2 · one suite</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx vectalon bench --live --install         <span className="text-slate-500"># real tests/typecheck/lint → correctness axis</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx vectalon leaderboard                    <span className="text-slate-500"># merge model passes → BENCHMARK_RESULTS.md</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx vectalon bench --baseline bench/baseline.json  <span className="text-slate-500"># 4 · CI regression gate</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx vectalon bench --scenarios ./my-evals --references ./my-refs  <span className="text-slate-500"># your own eval pack</span>
           </pre>
         </div>
       </section>

@@ -3103,6 +3103,169 @@ npx vectalon dx --json
 
 ---
 
+## `archive`
+
+**Build Archive Agent** (Archive & Share, Phase 1): builds (or ingests a
+pre-built) IPA/APK/AAB, computes its SHA-256, writes a typed `BuildManifest`
+with full provenance (git, flavor, environment, build number, platform), and
+stores both under `.vectalon/builds/`. Zero-config flavor detection from
+Gradle `productFlavors`, Xcode schemes, and `eas.json` build profiles.
+Credentials are never stored. Reports to `docs/vectalon/archive/`.
+
+```bash
+npx vectalon archive                        # archive default flavor, current platform
+npx vectalon archive --flavor staging       # archive the staging flavor
+npx vectalon archive --list                 # list archived builds
+npx vectalon archive --init                 # write flavors.json (auto-detected)
+npx vectalon archive --no-build --artifact ./app.apk   # ingest a pre-built artifact
+npx vectalon archive --dry-run              # plan without side effects
+npx vectalon archive --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--flavor <name>` | Build flavor (auto-detected when omitted) |
+| `--platform <ios\|android>` | Target platform |
+| `--environment <name>` | Build environment label |
+| `--env-file <path>` | Env file to load for the build |
+| `--build-number <n>` | Override the auto-incremented build number |
+| `--no-build` | Skip the build; ingest an existing artifact |
+| `--artifact <path>` | Path to a pre-built artifact (with `--no-build`) |
+| `--list` | List archived builds |
+| `--init` | Write `flavors.json` from auto-detection |
+| `--dry-run` | Plan the build + manifest without writing anything |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Archive (or dry-run) completed |
+| 1 | Fatal error (no flavor, no artifact, build failure) |
+
+---
+
+## `distribute`
+
+**Distribution Agent** (Archive & Share, Phase 2): deploys an archived build
+to TestFlight, the Google Play Store, the SaaS portal (`builds.vectalon.in`),
+or a generated white-label portal. Credentials are never stored — the
+command detects Fastlane/EAS/Expo or the direct API env vars and delegates,
+or prints actionable instructions. `--dry-run` produces the exact plan with
+zero side effects. Reports to `docs/vectalon/distribute/`.
+
+```bash
+npx vectalon distribute --target testflight --dry-run   # plan a TestFlight upload
+npx vectalon distribute --target play-store --track internal
+npx vectalon distribute --target saas --latest           # push latest build to SaaS
+npx vectalon distribute --target portal --deploy static  # generate + deploy a portal
+npx vectalon distribute --list-targets                   # list distribution targets
+npx vectalon distribute --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--build <id>` | Build ID to distribute |
+| `--latest` | Use the latest archived build |
+| `--flavor <name>` | Filter builds by flavor |
+| `--platform <ios\|android>` | Filter builds by platform |
+| `--target <id>` | `testflight` \| `play-store` \| `saas` \| `portal` |
+| `--track <name>` | Play Store track (default `internal`) |
+| `--domain <host>` | Custom domain for portal deploy |
+| `--list-targets` | List targets with tiers |
+| `--dry-run` | Plan only — no side effects, no credentials needed |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Distribution (or dry-run) completed |
+| 1 | Fatal error (no build, unknown target, upload failure) |
+
+---
+
+## `share`
+
+**Local Share Agent** (Archive & Share, Phase 3): spins up an ephemeral
+static server for an archived build — a self-contained install page with a
+download link, optional tunnel (ngrok/localtunnel), optional QR code, and
+auto-shutdown after `--expires`. Free tier, nothing leaves your machine
+unless you enable the tunnel. Reports to `docs/vectalon/share/`.
+
+```bash
+npx vectalon share                        # serve the latest build locally
+npx vectalon share --tunnel --qr           # tunnel + QR code for phone installs
+npx vectalon share --expires 2h            # auto-shutdown after 2 hours
+npx vectalon share --port 8787 --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--build <id>` | Build ID to share (default: the latest archived build) |
+| `--flavor <name>` | Filter builds by flavor |
+| `--platform <ios\|android>` | Filter builds by platform |
+| `--port <n>` | Local port (default: ephemeral) |
+| `--host <host>` | Bind host (default `127.0.0.1`) |
+| `--tunnel` | Expose via ngrok/localtunnel if installed |
+| `--qr` | Print a QR code for the share URL |
+| `--expires <dur>` | Auto-shutdown after e.g. `30m`, `2h`, `90s` |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Server started (and reported) |
+| 1 | Fatal error (no build, port in use) |
+
+---
+
+## `portal`
+
+**White-label Portal Agent** (Archive & Share, Phase 4): generates a
+self-contained static build portal (SSG) from the archive store — a listing
+page plus per-build detail pages with install instructions and an embedded
+`builds.json`. `--deploy vercel|netlify` prints the deploy command;
+`--deploy static` exports the site for hosting anywhere. Team tier. Reports
+to `docs/vectalon/portal/`.
+
+```bash
+npx vectalon portal --generate --out ./portal   # build the static portal
+npx vectalon portal --deploy static --domain builds.example.com
+npx vectalon portal --deploy vercel --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--generate` | Generate the static portal from the archive store |
+| `--out <dir>` | Output directory (default `portal-dist`) |
+| `--domain <host>` | Custom domain for the portal |
+| `--branding <name>` | Portal title/branding (default project name) |
+| `--deploy <target>` | `static` \| `vercel` \| `netlify` |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Portal generated / deploy plan printed |
+| 1 | Fatal error (no builds, generation failure) |
+
+---
+
 ## Global `--diagnostics` flag
 
 `--diagnostics` works on **every** command (before or after the subcommand):

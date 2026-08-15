@@ -1,33 +1,28 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import type { CSSProperties } from 'react'
 import { WaitlistForm } from '../../components/WaitlistForm'
 import {
   AGENT_PHASE_LABELS,
   AGENT_REPOS,
   DEFAULT_REPO,
+  VERDICT_BADGE,
   agentRepo,
   isLiveRepo,
   type AgentInfo,
-  type AgentVerdict,
 } from '../../lib/agents'
 
 export const metadata = {
-  title: 'Vectalon agents — 40 deterministic commands, zero model calls',
+  title: 'Vectalon agents — 44 deterministic commands, zero model calls',
   description:
     'Every deterministic Vectalon agent — code review, security, SOC 2, release prediction, Figma sync — with its verdict and the report it produces.',
-}
-
-const VERDICT_CHIP: Record<AgentVerdict, string> = {
-  approved: 'badge-ok',
-  'needs-attention': 'badge-warn',
-  'changes-requested': 'badge-danger',
 }
 
 function AgentCard({ agent, index }: { agent: AgentInfo; index: number }) {
   return (
     <div
-      className="card animate-fade-up flex flex-col !p-4"
-      style={{ animationDelay: `${Math.min(index * 45, 630)}ms` }}
+      className="card reveal flex flex-col !p-4"
+      style={{ '--reveal-delay': `${Math.min(index * 45, 630)}ms` } as CSSProperties}
     >
       {/* command + phase */}
       <div className="flex items-center justify-between gap-2">
@@ -48,7 +43,7 @@ function AgentCard({ agent, index }: { agent: AgentInfo; index: number }) {
 
       {/* verdict */}
       <div className="mt-4 flex items-start gap-2 border-t border-ink-700/60 pt-3">
-        <span className={`badge shrink-0 ${VERDICT_CHIP[agent.verdict]}`}>{agent.verdict}</span>
+        <span className={`badge shrink-0 ${VERDICT_BADGE[agent.verdict]}`}>{agent.verdict}</span>
         <span className="text-xs leading-relaxed text-slate-500">{agent.verdictFor}</span>
       </div>
 
@@ -186,12 +181,12 @@ export default function AgentsPage({ searchParams }: { searchParams: { repo?: st
       {/* Bottom strip */}
       <div className="statusline mt-6 !border-0">
         <div className="seg !block !px-6 !py-4 text-center">
-          <div className="font-display text-2xl font-bold text-brand">40</div>
+          <div className="font-display text-2xl font-bold text-brand">44</div>
           <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-500">agents in the RN harness</div>
         </div>
         <div className="seg !block !px-6 !py-4 text-center">
-          <div className="font-display text-2xl font-bold text-brand">4</div>
-          <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-500">roadmap phases</div>
+          <div className="font-display text-2xl font-bold text-brand">5</div>
+          <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-500">phases</div>
         </div>
         <div className="seg !block !px-6 !py-4 text-center">
           <div className="font-display text-2xl font-bold text-brand">0</div>

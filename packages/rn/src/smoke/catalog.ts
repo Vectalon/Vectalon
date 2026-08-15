@@ -473,6 +473,31 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     category: 'setup',
     args: () => ['support'],
   },
+  // ---- Archive & Share (dry-run by default; deterministic, no side effects) ----
+  {
+    id: 'archive',
+    name: 'Archive build (dry-run plan)',
+    category: 'release',
+    args: () => ['archive', '--dry-run', '--json'],
+  },
+  {
+    id: 'archive-list',
+    name: 'List archived builds',
+    category: 'release',
+    args: () => ['archive', '--list', '--json'],
+  },
+  {
+    id: 'distribute',
+    name: 'Distribution targets + dry-run plan',
+    category: 'release',
+    args: () => ['distribute', '--list-targets', '--json'],
+  },
+  {
+    id: 'portal',
+    name: 'Portal generation (SSG, temp output)',
+    category: 'release',
+    args: () => ['portal', '--generate', '--out', '.vectalon/smoke-portal', '--json'],
+  },
   // ---- Slow / model-heavy (only with --full) ----
   {
     id: 'feature',

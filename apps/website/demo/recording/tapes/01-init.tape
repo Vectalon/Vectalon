@@ -1,4 +1,4 @@
-# 01 - init: reset to a virgin project, then initialize
+# 01 - init: reset to a virgin project, then initialize the 19-screen Expo app
 Output "clips/01-init.mp4"
 Set Width 1440
 Set Height 900
@@ -7,7 +7,7 @@ Set Padding 24
 Set TypingSpeed 30ms
 Set Shell bash
 
-Type "cd ../cli-app"
+Type "cd ../login-app"
 Enter
 Sleep 600ms
 Type "export VECTALON_DEV_MODE=1"

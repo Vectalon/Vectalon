@@ -73,9 +73,11 @@ describe('MCPServer', () => {
     return new MCPServer(engine, router)
   }
 
-  it('advertises the core, workflow, BA, QA, architecture, and ops tools', () => {
+  it('advertises the core, workflow, BA, QA, architecture, ops, and archive tools', () => {
     const names = createServer().getToolList().map(t => t.name)
-    expect(names).toHaveLength(58)
+    // 58 base tools + 6 Archive & Share tools (archive_build, list_builds,
+    // detect_flavors, distribute_build, share_build_locally, generate_portal).
+    expect(names).toHaveLength(64)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',
@@ -83,6 +85,9 @@ describe('MCPServer', () => {
         'write_test',
         'check_guardrails',
         'analyze_error',
+        'archive_build',
+        'list_builds',
+        'detect_flavors',
         'suggest_dependency_update',
         'analyze_impact',
         'get_learned_patterns',

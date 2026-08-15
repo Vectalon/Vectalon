@@ -19,11 +19,12 @@ const MIN_BOOT_MS = 2000
 const LOAD_TIMEOUT_MS = 12000
 
 const BOOT_LINES: Array<{ pre: string; text: string; cls: string }> = [
-  { pre: '$', text: 'vectalon --record demo/full-demo.mp4', cls: 'text-[#E35336]' },
-  { pre: '◆', text: 'booting sandbox — react-native-cli 0.86.2', cls: 'text-slate-500' },
-  { pre: '✔', text: 'knowledge base seeded (5 artifacts)', cls: 'text-emerald-400' },
-  { pre: '◆', text: 'capturing session — 90s · 60fps', cls: 'text-slate-500' },
-  { pre: '✔', text: 'compile-checked — 0 errors after 2 healing passes', cls: 'text-emerald-400' },
+  { pre: '$', text: 'vectalon --record demo/full-demo.mp4', cls: 'text-term-brand' },
+  { pre: '◆', text: 'booting sandbox — expo 53 · react-native 0.79', cls: 'text-slate-500' },
+  { pre: '✔', text: 'scanned 19 screens · 6 hooks · 5 services', cls: 'text-emerald-400' },
+  { pre: '◆', text: 'capturing session — 85s · 25fps', cls: 'text-slate-500' },
+  { pre: '✔', text: 'arch: module graph clean — 0 error findings', cls: 'text-emerald-400' },
+  { pre: '✔', text: 'bench: 6 scenarios · 100% composite', cls: 'text-emerald-400' },
   { pre: '✔', text: 'ffmpeg encode — demo/full-demo.mp4', cls: 'text-emerald-400' },
   { pre: '✦', text: 'handoff — starting playback', cls: 'text-slate-500' },
 ]
@@ -81,7 +82,7 @@ export function DemoPlayer() {
           <span className="term-dot bg-yellow-400/70" />
           <span className="term-dot bg-green-400/70" />
         </div>
-        <span className="text-xs text-[#9c8f74]">demo/full-demo.mp4 — v0.1.30</span>
+        <span className="text-xs text-term-meta">demo/full-demo.mp4 — v0.2.0</span>
       </div>
 
       <div className="relative">
@@ -131,7 +132,7 @@ export function DemoPlayer() {
                   className="boot-line flex gap-2.5"
                   style={{ animationDelay: `${BOOT_LINES.length * 260}ms` }}
                 >
-                  <span className="text-[#E35336]">$</span>
+                  <span className="text-term-brand">$</span>
                   <span className="caret" />
                 </li>
               </ul>

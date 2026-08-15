@@ -41,6 +41,10 @@ code --install-extension vectalon-local.vsix
 | `vectalon.review` | Guardrail + code review the current file |
 | `vectalon.check` | Run guardrails on the current file only |
 | `vectalon.generate` | Generate a component from a description |
+| `vectalon.archive` | Build + archive the current project (flavor prompt, auto-detect) |
+| `vectalon.distribute` | Plan a distribution (TestFlight / Play / SaaS / portal) |
+| `vectalon.share` | Serve the latest build on a local install page |
+| `vectalon.portal` | Generate a white-label static build portal |
 | `vectalon.project` | Show the project context snapshot |
 | `vectalon.search` | Search the knowledge base |
 | `vectalon.knowledge` | Open the Knowledge Base sidebar |

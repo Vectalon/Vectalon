@@ -5,6 +5,36 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2026-08-15
+
+### Added
+
+- **Archive & Share (Roadmap 101-104)** — four new deterministic agents:
+  `vectalon archive` (build or ingest an IPA/APK/AAB, SHA-256 checksum,
+  typed `BuildManifest` with git/flavor/environment provenance under
+  `.vectalon/builds/`; zero-config flavor detection from Gradle
+  `productFlavors`, Xcode schemes, and `eas.json`), `vectalon distribute`
+  (TestFlight, Play Store, SaaS, and portal targets as dry-run-first plans
+  that never store credentials — delegates to fastlane/EAS/Expo or direct
+  API env vars), `vectalon share` (an ephemeral install page with download
+  link, optional tunnel, QR code, and auto-shutdown via `--expires`), and
+  `vectalon portal` (a self-contained static install portal with per-build
+  detail pages and embedded `builds.json`, deployable to static hosting,
+  Vercel, or Netlify).
+- **Archive & Share wired everywhere** — six new MCP tools under `vectalon
+  serve` (`archive_build`, `list_builds`, `detect_flavors`,
+  `distribute_build`, `share_build_locally`, `generate_portal`), four new
+  VS Code command-palette entries (`vectalon.archiveBuild`,
+  `vectalon.distributeBuild`, `vectalon.shareBuild`,
+  `vectalon.generatePortal`), and `vectalon ci --with-archive` emits a
+  build → archive → SaaS-distribute job (gated on `VECTALON_API_KEY`,
+  uploading `.vectalon/builds/` as an artifact) into GitHub Actions and
+  EAS workflows.
+- **Markdown + JSON reports for all four Archive & Share agents** — the
+  site's promise that every agent ends in a `report.md` + `report.json`
+  holds for archive, distribute, share, and portal, with verdicts mapped
+  to the approved / needs-attention / changes-requested vocabulary.
+
 ## [0.10.0] - 2026-08-15
 
 ### Added
