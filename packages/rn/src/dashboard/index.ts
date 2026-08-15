@@ -10,9 +10,19 @@
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import { join, relative } from 'path'
-import { runReleaseReady } from '../releaseReady'
-import { runArchScore } from '../archScore'
-import { runSoc2Scan } from '../soc2'
+import { runReleaseReady, writeReleaseReadyReport } from '../releaseReady'
+import { runArchScore, writeArchScoreReport } from '../archScore'
+import { runSoc2Scan, writeSoc2Report } from '../soc2'
+import { runFigmaSync, writeFigmaReport } from '../figma'
+import { runSentryScan, writeSentryReport } from '../sentry'
+import { runObsScan, writeObsReport } from '../observability'
+import { runGovScan, writeGovReport } from '../governance'
+import { runAuditScan, writeAuditReport } from '../audit'
+import { runReposScan, writeReposReport } from '../repos'
+import { runReleasePredict, writePredictReport } from '../releasePredict'
+import { runPlayScan, writePlayReport } from '../playStore'
+import { runDatasetScan, writeDatasetReport } from '../dataset'
+import { runLoraScan, writeLoraReport } from '../lora'
 import type { DashboardAgent, DashboardOptions, DashboardReport } from './types'
 
 export type { DashboardAgent, DashboardOptions, DashboardReport } from './types'
@@ -45,7 +55,10 @@ function severitiesOf(report: Record<string, unknown>): { errors: number; warnin
   const findings = report.findings as { severity?: string }[] | undefined
   const summary = report.summary as { bySeverity?: Record<string, number>; total?: number } | undefined
   const bySeverity = summary?.bySeverity ?? {}
-  const count = (sev: string) => findings?.filter(f => f.severity === sev).length ?? bySeverity[sev] ?? 0
+  const bucketOf = (sev: string | undefined): 'error' | 'warning' | 'info' | undefined =>
+    sev === 'critical' || sev === 'error' ? 'error' : sev === 'warning' || sev === 'warn' ? 'warning' : sev === 'info' ? 'info' : undefined
+  const count = (bucket: 'error' | 'warning' | 'info') =>
+    findings ? findings.filter(f => bucketOf(f.severity) === bucket).length : Object.entries(bySeverity).reduce((sum, [sev, n]) => (bucketOf(sev) === bucket ? sum + n : sum), 0)
   const total = summary?.total ?? findings?.length ?? 0
   return { errors: count('error'), warnings: count('warning'), infos: count('info'), total }
 }
@@ -54,10 +67,22 @@ function severitiesOf(report: Record<string, unknown>): { errors: number; warnin
 export async function runDashboard(root: string, options: DashboardOptions = {}): Promise<DashboardReport> {
   const generatedAt = Date.now()
   if (options.run) {
-    // Fast, read-only core reports so the dashboard is never empty.
-    await runReleaseReady(root)
-    runArchScore(root)
-    runSoc2Scan(root)
+    // Fast, read-only core reports so the dashboard is never empty — the
+    // Phase 9/10 agent set (all deterministic file scans / git reads).
+    // Each is computed AND written, so a fresh project gets the full set.
+    writeReleaseReadyReport(root, await runReleaseReady(root))
+    writeArchScoreReport(root, runArchScore(root))
+    writeSoc2Report(root, runSoc2Scan(root))
+    writeFigmaReport(root, runFigmaSync(root))
+    writeSentryReport(root, runSentryScan(root))
+    writeObsReport(root, runObsScan(root))
+    writeGovReport(root, runGovScan(root))
+    writeAuditReport(root, runAuditScan(root))
+    writeReposReport(root, runReposScan(root))
+    writePredictReport(root, runReleasePredict(root))
+    writePlayReport(root, runPlayScan(root))
+    writeDatasetReport(root, runDatasetScan(root))
+    writeLoraReport(root, runLoraScan(root))
   }
   const reports = collectAgentReports(root)
   const agents: DashboardAgent[] = reports.map(({ agent, report, file }) => ({

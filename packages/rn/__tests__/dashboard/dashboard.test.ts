@@ -3,6 +3,7 @@
  * Business Source License 1.1 (BSL-1.1)
  */
 import { readFileSync } from 'fs'
+import { join } from 'path'
 import { runDashboard, collectAgentReports, renderDashboardHtml, writeDashboardReport } from '../../src/dashboard'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
@@ -51,6 +52,46 @@ describe('dashboard: runDashboard', () => {
     })
     const report = await runDashboard(dir)
     expect(report.overall).toBe('approved')
+  })
+
+  it('rolls up Phase 10 reports — sentry critical severities count as errors', async () => {
+    dir = createTempProject({
+      'package.json': '{}',
+      // A sentry report with a critical finding: the dashboard must bucket it
+      // as an error and the overall verdict must reflect it.
+      'docs/vectalon/sentry/report.json': JSON.stringify({
+        scannedAt: 1, root: '/x', verdict: 'changes-requested',
+        findings: [{ severity: 'critical' }],
+        summary: { total: 1, bySeverity: { critical: 1 } },
+      }),
+      'docs/vectalon/figma/report.json': REPORT('approved', 0),
+    })
+    const report = await runDashboard(dir)
+    const sentry = report.agents.find(a => a.agent === 'sentry')
+    expect(sentry?.errors).toBe(1)
+    expect(report.summary.errors).toBe(1)
+    expect(report.overall).toBe('changes-requested')
+  })
+
+  it('aggregates every Phase 10 agent dir present on disk', async () => {
+    const phase10 = ['figma', 'sentry', 'observability', 'governance', 'audit', 'repos', 'release-predict', 'play-store', 'dataset', 'lora']
+    const files: Record<string, string> = { 'package.json': '{}' }
+    for (const agent of phase10) files[`docs/vectalon/${agent}/report.json`] = REPORT('approved', 0)
+    dir = createTempProject(files)
+    const report = await runDashboard(dir)
+    expect(report.summary.agents).toBe(10)
+    expect(report.agents.map(a => a.agent).sort()).toEqual([...phase10].sort())
+  })
+
+  it('--run regenerates the Phase 9/10 fast core reports', async () => {
+    dir = createTempProject({ 'package.json': '{}' })
+    await runDashboard(dir, { run: true })
+    const phase10 = ['figma', 'sentry', 'observability', 'governance', 'audit', 'repos', 'release-predict', 'play-store', 'dataset', 'lora']
+    const phase9core = ['release-ready', 'arch-score', 'soc2']
+    for (const agent of [...phase9core, ...phase10]) {
+      const p = join(dir, 'docs', 'vectalon', agent, 'report.json')
+      expect(JSON.parse(readFileSync(p, 'utf-8'))).toHaveProperty('verdict')
+    }
   })
 
   it('renders a self-contained HTML dashboard', async () => {

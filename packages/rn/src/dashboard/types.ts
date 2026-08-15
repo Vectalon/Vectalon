@@ -4,7 +4,9 @@
  *
  * Aggregates every `vectalon` agent report under docs/vectalon/* into one
  * executive view: per-agent health, an overall verdict, and a self-contained
- * HTML dashboard (no network). `--run` regenerates the fast core reports
+ * HTML dashboard (no network). `--run` regenerates the fast Phase 9/10 core
+ * reports (release-ready, arch-score, soc2, figma, sentry, observability,
+ * governance, audit, repos, release-predict, play-store, dataset, lora)
  * first so the dashboard is never empty.
  */
 
@@ -28,6 +30,6 @@ export interface DashboardReport {
 }
 
 export interface DashboardOptions {
-  /** Regenerate the fast core reports (release-ready, arch-score, soc2) first. */
+  /** Regenerate the fast Phase 9/10 core reports first (see module docs). */
   run?: boolean
 }

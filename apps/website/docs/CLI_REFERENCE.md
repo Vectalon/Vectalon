@@ -2432,10 +2432,10 @@ npx vectalon perms --json
 
 ## `dashboard`
 
-**Engineering Dashboard** (Roadmap 079): aggregates every agent report into
-one executive view — per-agent health, overall verdict, and a
-self-contained HTML dashboard. `--run` regenerates the fast core reports
-first. Report to `docs/vectalon/dashboard/`.
+**Engineering Dashboard** (Roadmap 079): aggregates every agent report under
+`docs/vectalon/*` into one executive view — per-agent health, overall
+verdict, and a self-contained HTML dashboard. `--run` regenerates the fast
+Phase 9/10 core reports first. Report to `docs/vectalon/dashboard/`.
 
 ```bash
 npx vectalon dashboard                     # aggregate existing reports
@@ -2449,7 +2449,7 @@ npx vectalon dashboard --json
 | Option | Description |
 |---|---|
 | `[directory]` | Project root (default: cwd) |
-| `--run` | Regenerate the fast core reports (release-ready, arch-score, soc2) first |
+| `--run` | Regenerate the fast Phase 9/10 core reports (release-ready, arch-score, soc2, figma, sentry, observability, governance, audit, repos, release-predict, play-store, dataset, lora) first |
 | `--open` | Open the HTML dashboard in the default browser |
 | `--json` | Print machine-readable output |
 
