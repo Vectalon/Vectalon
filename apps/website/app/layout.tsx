@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 import { JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import Link from 'next/link'
-import { ProductsMenu } from '../components/ProductsMenu'
+import { SiteNav } from '../components/SiteNav'
+import { MobileMenu } from '../components/MobileMenu'
 import { ThemeToggle } from '../components/ThemeToggle'
 
 const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' })
@@ -12,13 +13,6 @@ export const metadata: Metadata = {
   description:
     'Vectalon scans your React Native, iOS, Android, and Flutter projects, builds a living knowledge base, and powers an MCP-aware agent that generates, reviews, upgrades, and heals your code.',
 }
-
-const NAV = [
-  { href: '/benchmarks', label: 'Benchmarks' },
-  { href: '/pricing', label: 'Pricing' },
-  { href: '/docs', label: 'Docs' },
-  { href: '/changelog', label: 'Changelog' },
-]
 
 const themeScript = `
   (function () {
@@ -139,20 +133,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </span>
                   vectalon<span className="text-brand">.in</span>
                 </Link>
-                <nav className="hidden items-stretch lg:flex">
-                  <ProductsMenu />
-                  {NAV.map(item => (
-                    <Link key={item.href} href={item.href} className="seg">
-                      {item.label}
-                    </Link>
-                  ))}
-                </nav>
+                <SiteNav />
               </div>
               <div className="flex items-stretch">
                 <div className="seg hidden text-xs text-slate-500 md:flex">
                   <span className="text-emerald-600 dark:text-emerald-400">●</span>
                   main · v0.8.0
                 </div>
+                <MobileMenu />
                 <ThemeToggle />
                 <Link
                   href="/trial"

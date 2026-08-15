@@ -210,9 +210,11 @@
     @apply flex items-center justify-between border-b border-ink-700/70 bg-ink-900/90 px-3 py-2 font-mono text-[11px] text-slate-500;
   }
 
-  /* Statusline — tmux-style segmented bar. */
+  /* Statusline — tmux-style segmented bar. Opaque: the header is sticky,
+     and content scrolling under a translucent bar would bleed through the
+     mono text. Ink-900 is the deepest surface in both themes. */
   .statusline {
-    @apply flex items-stretch divide-x divide-ink-700/70 border-b border-ink-700/70 bg-ink-900/70 font-mono;
+    @apply flex items-stretch divide-x divide-ink-700/70 border-b border-ink-700/70 bg-ink-900 font-mono;
   }
   .statusline .seg {
     @apply flex items-center gap-2 px-3.5 py-2 text-[12px] text-slate-400 transition hover:text-slate-200;

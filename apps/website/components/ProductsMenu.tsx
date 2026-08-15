@@ -13,14 +13,28 @@ const PRODUCTS = [
 export function ProductsMenu() {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const firstItemRef = useRef<HTMLAnchorElement>(null)
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false)
+    }
     document.addEventListener('mousedown', onDocClick)
-    return () => document.removeEventListener('mousedown', onDocClick)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDocClick)
+      document.removeEventListener('keydown', onKey)
+    }
   }, [])
+
+  // Move focus into the menu when it opens so keyboard users land on the
+  // first product instead of tabbing through hidden content.
+  useEffect(() => {
+    if (open) firstItemRef.current?.focus()
+  }, [open])
 
   return (
     <div
@@ -33,17 +47,23 @@ export function ProductsMenu() {
         type="button"
         onClick={() => setOpen(o => !o)}
         aria-expanded={open}
+        aria-haspopup="menu"
         className="seg gap-1.5"
       >
         products
         <span className={`text-[10px] text-slate-500 transition-transform ${open ? 'rotate-180' : ''}`}>▼</span>
       </button>
       {open && (
-        <div className="absolute left-1/2 top-full mt-3 w-80 -translate-x-1/2 rounded-[3px] border border-ink-700 bg-ink-800 p-1.5 shadow-2xl shadow-black/60">
-          {PRODUCTS.map(p => (
+        <div
+          role="menu"
+          className="absolute left-1/2 top-full mt-3 w-80 -translate-x-1/2 rounded-[3px] border border-ink-700 bg-ink-800 p-1.5 shadow-2xl shadow-black/60"
+        >
+          {PRODUCTS.map((p, i) => (
             <Link
               key={p.slug}
+              ref={i === 0 ? firstItemRef : undefined}
               href={`/sdk/${p.slug}`}
+              role="menuitem"
               onClick={() => setOpen(false)}
               className="flex items-center justify-between gap-3 rounded-[3px] px-3 py-2.5 transition hover:bg-ink-700/60"
             >

@@ -174,6 +174,12 @@ export default function DocsPage() {
               </div>
             ))}
           </div>
+          <p className="mt-3 font-mono text-xs text-slate-500">
+            One card per agent — verdict, triggers, and the report it produces — on the{' '}
+            <Link href="/agents" className="text-brand transition hover:text-brand-strong hover:underline">
+              agents catalog →
+            </Link>
+          </p>
 
           {/* SEE ALSO */}
           <ManH>see also</ManH>

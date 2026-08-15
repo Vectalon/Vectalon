@@ -1,0 +1,414 @@
+/**
+ * Deterministic agent catalog — one entry per repo so each platform's
+ * harness can ship its own agent set. The page is data-driven: adding a
+ * repo's agents is a data-only change here, no page edits.
+ */
+
+export type AgentVerdict = 'approved' | 'needs-attention' | 'changes-requested'
+
+export interface AgentInfo {
+  /** CLI command, e.g. `review` — run as `vectalon <cmd>`. */
+  cmd: string
+  /** Full agent name. */
+  name: string
+  /** Roadmap item id (061-089). */
+  item: string
+  /** Roadmap phase this agent belongs to. */
+  phase: 8 | 9 | 10
+  /** One-to-two-sentence description of what the agent does. */
+  summary: string
+  /** Sample verdict — what a typical run returns. */
+  verdict: AgentVerdict
+  /** The condition that produces the sample verdict. */
+  verdictFor: string
+  /** Notable CLI flags beyond the universal `--json`. */
+  flags?: string
+  /** Where the report lands inside the project (gitignored). */
+  report?: string
+}
+
+export type AgentRepo =
+  | {
+      slug: string
+      name: string
+      package: string
+      status: 'live'
+      tagline: string
+      /** Live agents for this repo. */
+      agents: AgentInfo[]
+    }
+  | {
+      slug: string
+      name: string
+      package: string
+      status: 'soon'
+      tagline: string
+      /** Planned surface, shown on the page until the harness ships. */
+      planned: string[]
+    }
+
+const RN_AGENTS: AgentInfo[] = [
+  // ── Phase 8 — Autonomous Engineering (061-070) ──────────────────────────
+  {
+    cmd: 'review',
+    name: 'PR Review Agent',
+    item: '061',
+    phase: 8,
+    summary:
+      'Reviews the git diff against the project’s own derived coding standards — every added line probed line-level, with an optional LLM pass that degrades to the deterministic review when no model is configured.',
+    verdict: 'needs-attention',
+    verdictFor: 'any finding on the diff, or the LLM pass requests changes',
+    flags: '--base <ref>',
+  },
+  {
+    cmd: 'arch',
+    name: 'Architecture Review Agent',
+    item: '062',
+    phase: 8,
+    summary:
+      'One pass over the module graph — circular dependencies, layering violations, god modules, over-coupling, wide fan-in, orphans, and over-deep nesting — with per-module coupling metrics.',
+    verdict: 'needs-attention',
+    verdictFor: 'a layering violation or god module is present',
+    flags: '--src <dir> · --max-fanout · --max-depth',
+  },
+  {
+    cmd: 'sec',
+    name: 'Security Review Agent',
+    item: '063',
+    phase: 8,
+    summary:
+      'Scans for hardcoded secrets (every captured value redacted in reports), unsafe code patterns, and best-effort dependency advisories via npm audit.',
+    verdict: 'changes-requested',
+    verdictFor: 'a secret, critical advisory, or unsafe sink is found',
+    flags: '--no-audit',
+  },
+  {
+    cmd: 'build-fix',
+    name: 'Build Fix Agent',
+    item: '064',
+    phase: 8,
+    summary:
+      'Diagnoses a failing Metro, Gradle, or Xcode build from its log — kind auto-detected, a pattern classifier returns the root cause, the standard fix, and corroborating symptoms as a fix plan.',
+    verdict: 'changes-requested',
+    verdictFor: 'a failing build is given (that is the point)',
+    flags: '--log <path> · --metro | --gradle | --xcode',
+  },
+  {
+    cmd: 'test-repair',
+    name: 'Test Repair Agent',
+    item: '065',
+    phase: 8,
+    summary:
+      'Diagnoses a failing Jest, Detox, or Maestro run from its output — pattern databases per runner return the root cause with the standard fix and corroborating symptoms.',
+    verdict: 'changes-requested',
+    verdictFor: 'a failing test run is given (that is the point)',
+    flags: '--log <path> · --jest | --detox | --maestro',
+  },
+  {
+    cmd: 'refactor',
+    name: 'Refactoring Agent',
+    item: '066',
+    phase: 8,
+    summary:
+      'Scans source for dead code (AST-backed), duplication, modernization opportunities, type smells, inline-style debt, console noise, and complexity — every finding line-pinned with a specific suggestion.',
+    verdict: 'needs-attention',
+    verdictFor: 'any dead code, duplication, or complexity finding',
+  },
+  {
+    cmd: 'deps',
+    name: 'Dependency Upgrade Agent',
+    item: '067',
+    phase: 8,
+    summary:
+      'Finds what to upgrade and the safe path — RN ecosystem pairing violations, duplicate versions across workspace members, and vulnerable dependencies via best-effort npm audit.',
+    verdict: 'needs-attention',
+    verdictFor: 'a pairing violation or duplicate version is found',
+    flags: '--no-audit',
+  },
+  {
+    cmd: 'a11y',
+    name: 'Accessibility Agent',
+    item: '068',
+    phase: 8,
+    summary:
+      'One deterministic pass over component files — unlabeled images, touchables without roles, unlabeled inputs, and undersized touch targets below the 44×44pt guideline.',
+    verdict: 'needs-attention',
+    verdictFor: 'an unlabeled image or undersized target is found',
+  },
+  {
+    cmd: 'release-ready',
+    name: 'Release Readiness Agent',
+    item: '069',
+    phase: 8,
+    summary:
+      'Answers “can we ship?” — version past the last tag, CHANGELOG section, clean tree, CI present, lockfile, tests configured, secrets hygiene, TODO/FIXME triage — read-only git.',
+    verdict: 'changes-requested',
+    verdictFor: 'any error-severity check (missing CHANGELOG, dirty tree, …)',
+  },
+  {
+    cmd: 'bug-fix',
+    name: 'Autonomous Bug Fix Agent',
+    item: '070',
+    phase: 8,
+    summary:
+      'Proposes fixes for deterministic defects and executes the provably-safe ones — whole-line unused-import removal and var→const — with `--apply` refusing a dirty tree unless forced.',
+    verdict: 'needs-attention',
+    verdictFor: 'a fixable defect is detected (dry-run by default)',
+    flags: '--apply · --force',
+  },
+
+  // ── Phase 9 — Release Engineering (071-079) ─────────────────────────────
+  {
+    cmd: 'crash',
+    name: 'Crash Intelligence Agent',
+    item: '071',
+    phase: 9,
+    summary:
+      'Classifies an iOS, Android, or JavaScript crash log into a root-cause bucket (null-reference, module-resolution, resource, network, state-mutation, concurrency) with the standard fix and investigation steps.',
+    verdict: 'changes-requested',
+    verdictFor: 'a crash log is analyzed (error-severity root cause)',
+    flags: '--log <path> · --platform <ios|android|js>',
+  },
+  {
+    cmd: 'arch-score',
+    name: 'Mobile Architecture Scorecard',
+    item: '072',
+    phase: 9,
+    summary:
+      'Scores the module graph 0–100 across circular dependencies, layer boundaries, coupling, module cohesion, testability, and nesting depth — with a letter grade and top improvements.',
+    verdict: 'needs-attention',
+    verdictFor: 'score 40–69 (grade C) — typical for a growing codebase',
+    flags: '--src <dir>',
+  },
+  {
+    cmd: 'cicd',
+    name: 'CI/CD Intelligence Agent',
+    item: '073',
+    phase: 9,
+    summary:
+      'Scans CI workflow files for anti-patterns — actions pinned to tags instead of SHAs, missing concurrency and timeouts, inline secrets, deploys without a test gate, missing triggers — with other CI systems detected and named.',
+    verdict: 'needs-attention',
+    verdictFor: 'an unpinned action or missing concurrency group',
+  },
+  {
+    cmd: 'app-store',
+    name: 'App Store Readiness Agent',
+    item: '074',
+    phase: 9,
+    summary:
+      'Store-submission checks — version/version-code consistency across Info.plist, build.gradle, and package.json, app icons, the iOS privacy manifest, launch screen, ATS/cleartext posture, and permissions.',
+    verdict: 'needs-attention',
+    verdictFor: 'a version mismatch or missing privacy manifest',
+  },
+  {
+    cmd: 'soc2',
+    name: 'SOC2 Readiness Agent',
+    item: '075',
+    phase: 9,
+    summary:
+      'A repository-evidence checklist mapped to the five trust-service criteria plus operational hygiene — auth, secrets, lockfiles, CI, coverage, TLS, privacy policy, audit logs, backups, incident response — with a score.',
+    verdict: 'needs-attention',
+    verdictFor: 'any partial control (self-assessment, not an audit)',
+  },
+  {
+    cmd: 'tokens',
+    name: 'Design Token Sync Agent',
+    item: '076',
+    phase: 9,
+    summary:
+      'Flattens a style-dictionary-style token JSON and checks source for drift — tokens never referenced, hardcoded colors that should be tokens, and token pairs with identical values.',
+    verdict: 'needs-attention',
+    verdictFor: 'an orphaned token or hardcoded color is found',
+  },
+  {
+    cmd: 'team-stats',
+    name: 'Team Productivity Analytics',
+    item: '077',
+    phase: 9,
+    summary:
+      'One read-only git log derives commit cadence, author distribution, bus factor, category mix, and change velocity — warning on single-owner risk and low cadence.',
+    verdict: 'approved',
+    verdictFor: 'a healthy cadence with no single-owner risk',
+  },
+  {
+    cmd: 'perms',
+    name: 'Agent Permissions Audit',
+    item: '078',
+    phase: 9,
+    summary:
+      'Scans agent/MCP configuration for auto-approved shell and file-mutation tool grants, local-exec MCP servers, and credential-shaped values in config — errors redacted.',
+    verdict: 'needs-attention',
+    verdictFor: 'an auto-approved grant or credential-shaped value',
+  },
+  {
+    cmd: 'dashboard',
+    name: 'Engineering Dashboard',
+    item: '079',
+    phase: 9,
+    summary:
+      'Aggregates every agent report under docs/vectalon/* into one executive view — per-agent health cards, an overall verdict, and a self-contained HTML dashboard with drill-down, filtering, and search.',
+    verdict: 'changes-requested',
+    verdictFor: 'any agent report carries an error finding',
+    flags: '--run · --cron · --open · --interval <sec>',
+    report: 'docs/vectalon/dashboard/report.{md,json,html}',
+  },
+
+  // ── Phase 10 — Enterprise Intelligence (080-089) ────────────────────────
+  {
+    cmd: 'figma',
+    name: 'Figma-to-code Sync Agent',
+    item: '080',
+    phase: 10,
+    summary:
+      'Parses a Figma design export and checks design↔code drift — design colors with no matching token or hardcoded value, component names with no source component, text styles with no font usage.',
+    verdict: 'needs-attention',
+    verdictFor: 'a design color with no source match',
+  },
+  {
+    cmd: 'sentry',
+    name: 'Sentry Intelligence Agent',
+    item: '081',
+    phase: 10,
+    summary:
+      'Ingests Sentry/Crashlytics telemetry exports, groups crashes into classes by exception type, ranks them by volume and distinct-user impact, and flags release regressions.',
+    verdict: 'changes-requested',
+    verdictFor: 'a crash class is critical or a release regression appears',
+  },
+  {
+    cmd: 'observability',
+    name: 'Mobile Observability Agent',
+    item: '082',
+    phase: 10,
+    summary:
+      'Audits instrumentation coverage in source — Sentry init, crash handlers, analytics SDK, network breadcrumbs, performance tracing — and flags slow traces and spans from telemetry.',
+    verdict: 'needs-attention',
+    verdictFor: 'missing instrumentation or a slow trace',
+  },
+  {
+    cmd: 'governance',
+    name: 'Enterprise Governance Agent',
+    item: '083',
+    phase: 10,
+    summary:
+      'A repository-evidence checklist — license, security policy, contributing guide, CODEOWNERS, PR template, lockfile/SBOM, Dependabot, CI — with pass/warn/fail statuses.',
+    verdict: 'needs-attention',
+    verdictFor: 'any missing governance artifact',
+  },
+  {
+    cmd: 'audit',
+    name: 'Org-wide Audit Trail Agent',
+    item: '084',
+    phase: 10,
+    summary:
+      'Validates the .vectalon/audit/*.jsonl trail — required fields, sequence continuity, malformed lines, secret-shaped values — and summarizes activity by actor and action.',
+    verdict: 'approved',
+    verdictFor: 'a clean, continuous trail with no secrets',
+  },
+  {
+    cmd: 'repos',
+    name: 'Multi-repository Memory Agent',
+    item: '085',
+    phase: 10,
+    summary:
+      'Verifies the .vectalon/repos.json workspace manifest — each sibling repo reachable, a git checkout, with a memory store — and flags missing or non-git entries.',
+    verdict: 'needs-attention',
+    verdictFor: 'a manifest entry is unreachable or memory-less',
+  },
+  {
+    cmd: 'release-predict',
+    name: 'Release Prediction Agent',
+    item: '086',
+    phase: 10,
+    summary:
+      'A deterministic 0–100 release-risk score from read-only git history — fix density, refactor density, staleness, breaking changes, author breadth in the release window — with a per-factor breakdown.',
+    verdict: 'changes-requested',
+    verdictFor: 'a fix-dense, stale, or breaking window (score ≥ 60)',
+    flags: '--window <days>',
+  },
+  {
+    cmd: 'play-store',
+    name: 'Deep Play Store Readiness Agent',
+    item: '087',
+    phase: 10,
+    summary:
+      'Play-specific checks beyond the shared store surface — manifest permissions and the data-safety form they imply, exported components, backup rules, SDK levels, signing, and measured listing assets.',
+    verdict: 'needs-attention',
+    verdictFor: 'a permission not reflected in data-safety or a missing asset',
+  },
+  {
+    cmd: 'dataset',
+    name: 'Fine-tuning Dataset Agent',
+    item: '088',
+    phase: 10,
+    summary:
+      'Validates .vectalon/dataset/*.jsonl training data — schema consistency, duplicates, label balance, length outliers, and PII leakage (emails, phones, keys, SSNs).',
+    verdict: 'needs-attention',
+    verdictFor: 'a duplicate, imbalance, or PII leak is found',
+  },
+  {
+    cmd: 'lora',
+    name: 'LoRA Training Readiness Agent',
+    item: '089',
+    phase: 10,
+    summary:
+      'Checks the .vectalon/lora config — dataset path, base model with a VRAM estimate, r/alpha hyperparams, quantization, output dir, wandb — and flags what’s missing before training starts.',
+    verdict: 'changes-requested',
+    verdictFor: 'the config is missing or incomplete (that is the point)',
+    flags: '--config <path>',
+  },
+]
+
+const SOON_REPOS: AgentRepo[] = [
+  {
+    slug: 'ios',
+    name: 'iOS',
+    package: '@vectalon-dev/ios',
+    status: 'soon',
+    tagline: 'Swift + SwiftUI harness — Figma-accurate codegen, safe-area linting, Xcode healing.',
+    planned: ['swift codegen from Figma', 'auto-layout & safe-area lint', 'xcode build healing', 'dependency health'],
+  },
+  {
+    slug: 'android',
+    name: 'Android',
+    package: '@vectalon-dev/android',
+    status: 'soon',
+    tagline: 'Kotlin + Compose harness — Gradle health, manifest linting, emulator control.',
+    planned: ['manifest & permission lint', 'gradle/AGP health', 'compose codegen', 'emulator control'],
+  },
+  {
+    slug: 'flutter',
+    name: 'Flutter',
+    package: '@vectalon-dev/flutter',
+    status: 'soon',
+    tagline: 'Dart + Widget harness — pub.dev health, widget-test generation, golden checks.',
+    planned: ['pub.dev dependency health', 'widget-test generation', 'golden visual checks', 'accessibility checks'],
+  },
+]
+
+export const AGENT_REPOS: AgentRepo[] = [
+  {
+    slug: 'react-native',
+    name: 'React Native',
+    package: '@vectalon-dev/rn',
+    status: 'live',
+    tagline: 'The full harness — 29 deterministic agents across three roadmap phases.',
+    agents: RN_AGENTS,
+  },
+  ...SOON_REPOS,
+]
+
+export const AGENT_PHASE_LABELS: Record<AgentInfo['phase'], string> = {
+  8: 'phase 8 · autonomous engineering',
+  9: 'phase 9 · release engineering',
+  10: 'phase 10 · enterprise intelligence',
+}
+
+export function agentRepo(slug: string): AgentRepo | undefined {
+  return AGENT_REPOS.find(r => r.slug === slug)
+}
+
+export function isLiveRepo(repo: AgentRepo): repo is Extract<AgentRepo, { status: 'live' }> {
+  return repo.status === 'live'
+}
+
+export const DEFAULT_REPO = 'react-native'

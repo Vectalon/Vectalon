@@ -1,0 +1,185 @@
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import {
+  AGENT_PHASE_LABELS,
+  AGENT_REPOS,
+  DEFAULT_REPO,
+  agentRepo,
+  isLiveRepo,
+  type AgentInfo,
+  type AgentVerdict,
+} from '../../lib/agents'
+
+export const metadata = {
+  title: 'Vectalon agents — 29 deterministic commands, zero model calls',
+  description:
+    'Every deterministic Vectalon agent — code review, security, SOC 2, release prediction, Figma sync — with its verdict and the report it produces.',
+}
+
+const VERDICT_CHIP: Record<AgentVerdict, string> = {
+  approved: 'badge-ok',
+  'needs-attention': 'badge-warn',
+  'changes-requested': 'badge-danger',
+}
+
+function AgentCard({ agent }: { agent: AgentInfo }) {
+  return (
+    <div className="card flex flex-col !p-4">
+      {/* command + phase */}
+      <div className="flex items-center justify-between gap-2">
+        <code className="font-mono text-sm font-bold text-brand">
+          <span className="text-slate-600">$</span> vectalon {agent.cmd}
+        </code>
+        <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">
+          #{agent.item}
+        </span>
+      </div>
+      <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-600">
+        {AGENT_PHASE_LABELS[agent.phase]}
+      </div>
+
+      {/* name + summary */}
+      <h3 className="mt-3 font-semibold text-slate-50">{agent.name}</h3>
+      <p className="mt-1.5 flex-1 text-sm leading-relaxed text-slate-400">{agent.summary}</p>
+
+      {/* verdict */}
+      <div className="mt-4 flex items-start gap-2 border-t border-ink-700/60 pt-3">
+        <span className={`badge shrink-0 ${VERDICT_CHIP[agent.verdict]}`}>{agent.verdict}</span>
+        <span className="text-xs leading-relaxed text-slate-500">{agent.verdictFor}</span>
+      </div>
+
+      {/* report it produces */}
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] text-slate-500">
+        <span>
+          reports → <span className="text-slate-400">{agent.report ?? `docs/vectalon/${agent.cmd}/`}</span>
+        </span>
+        {agent.flags && <span className="text-slate-600">{agent.flags}</span>}
+      </div>
+    </div>
+  )
+}
+
+export default function AgentsPage({ searchParams }: { searchParams: { repo?: string } }) {
+  const slug = searchParams.repo ?? DEFAULT_REPO
+  const repo = agentRepo(slug)
+  if (!repo) notFound()
+
+  return (
+    <div className="mx-auto max-w-6xl px-4 py-16">
+      <div className="text-center">
+        <div className="mx-auto mb-5 flex w-fit items-center gap-2">
+          <span className="chip font-mono">
+            vectalon<span className="text-brand">/</span>agents
+          </span>
+          <span className={`badge ${repo.status === 'live' ? 'badge-ok' : 'badge-warn'}`}>
+            {repo.status === 'live' ? '● live' : '○ in development'}
+          </span>
+        </div>
+        <h1 className="text-4xl font-bold text-slate-50 sm:text-5xl">
+          Deterministic agents — <span className="text-brand">zero model calls</span>
+        </h1>
+        <p className="mx-auto mt-4 max-w-2xl text-slate-400">
+          Same result every run, on any machine — each agent scans, reaches a verdict, and writes a
+          report to <span className="font-mono text-slate-300">docs/vectalon/</span>. Free on every
+          tier, fully offline.
+        </p>
+      </div>
+
+      {/* Console frame */}
+      <div className="console mt-12">
+        <div className="console-head">
+          <span className="flex items-center gap-2">
+            <span className="text-brand">▣</span>
+            <span className="text-slate-300">
+              {repo.name} — {isLiveRepo(repo) ? repo.agents.length : 0} agents
+            </span>
+          </span>
+          <span className="hidden items-center gap-1.5 sm:flex">
+            <span className="live-dot" aria-hidden />
+            deterministic
+          </span>
+        </div>
+
+        {/* Repo switcher — tmux segments */}
+        <div className="flex flex-wrap items-center gap-2 border-b border-ink-700/70 px-4 py-3">
+          <span className="font-mono text-[11px] uppercase tracking-wider text-slate-500">repo</span>
+          {AGENT_REPOS.map(r => (
+            <Link
+              key={r.slug}
+              href={`/agents?repo=${r.slug}`}
+              className={`seg !py-1.5 ${r.slug === slug ? 'seg-active' : ''}`}
+            >
+              <span className={r.status === 'live' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-600'}>
+                {r.status === 'live' ? '●' : '○'}
+              </span>
+              {r.name}
+            </Link>
+          ))}
+        </div>
+
+        {isLiveRepo(repo) ? (
+          <div className="p-4 sm:p-6">
+            <p className="mb-5 font-mono text-[11px] uppercase tracking-wider text-slate-500">
+              {repo.tagline} — every verdict is word-plus-color, never color alone.
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {repo.agents.map(a => (
+                <AgentCard key={a.cmd} agent={a} />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="p-6 sm:p-10">
+            <div className="mx-auto max-w-xl text-center">
+              <h2 className="text-2xl font-bold text-slate-50">
+                No agents here yet — the {repo.name} harness is in development
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-slate-400">{repo.tagline}</p>
+              <div className="mt-5 flex flex-wrap justify-center gap-1.5">
+                {repo.planned.map(p => (
+                  <code key={p} className="rounded-[3px] border border-ink-700 bg-ink-900 px-1.5 py-0.5 font-mono text-[11px] text-slate-400">
+                    {p}
+                  </code>
+                ))}
+              </div>
+              <p className="mt-5 font-mono text-xs text-slate-500">
+                agents for {repo.package} ship with the harness
+              </p>
+              <div className="mt-6 flex justify-center gap-3">
+                <Link href={`/sdk/${repo.slug}`} className="btn-primary">
+                  See the {repo.name} plan
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom strip */}
+      <div className="statusline mt-6 !border-0">
+        <div className="seg !block !px-6 !py-4 text-center">
+          <div className="font-display text-2xl font-bold text-brand">29</div>
+          <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-500">agents in the RN harness</div>
+        </div>
+        <div className="seg !block !px-6 !py-4 text-center">
+          <div className="font-display text-2xl font-bold text-brand">3</div>
+          <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-500">roadmap phases</div>
+        </div>
+        <div className="seg !block !px-6 !py-4 text-center">
+          <div className="font-display text-2xl font-bold text-brand">0</div>
+          <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-500">model calls</div>
+        </div>
+        <div className="seg !block !px-6 !py-4 text-center">
+          <div className="font-display text-2xl font-bold text-brand">$0</div>
+          <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-500">on the free tier</div>
+        </div>
+      </div>
+
+      <div className="mt-6 text-center">
+        <Link href="/docs" className="text-sm text-brand transition hover:text-brand-strong hover:underline">
+          Full CLI reference — every command, every flag →
+        </Link>
+      </div>
+    </div>
+  )
+}

@@ -493,8 +493,8 @@ export default async function Home() {
             ))}
           </div>
           <div className="mt-7 text-center">
-            <Link href="/docs" className="text-sm text-brand transition hover:text-brand-strong hover:underline">
-              Full agent command reference — every command, every verdict →
+            <Link href="/agents" className="text-sm text-brand transition hover:text-brand-strong hover:underline">
+              Full agent catalog — every command, every verdict, every report →
             </Link>
           </div>
         </div>
