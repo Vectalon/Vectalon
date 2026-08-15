@@ -83,6 +83,27 @@ const animWatchdog = `
   })();
 `
 
+// Motion budget: pause decorative loops (the hero beam) while they are
+// offscreen. A transform-only loop is cheap, but an infinite animation the
+// user cannot see should not keep running — pause on exit, resume on return.
+const motionBudget = `
+  (function () {
+    if (!('IntersectionObserver' in window)) return;
+    function init() {
+      var els = document.querySelectorAll('.js-loop');
+      if (!els.length) return;
+      var io = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          entries[i].target.style.animationPlayState = entries[i].isIntersecting ? 'running' : 'paused';
+        }
+      }, { threshold: 0 });
+      for (var i = 0; i < els.length; i++) io.observe(els[i]);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  })();
+`
+
 // The direction contract for this build — emitted into the HTML so a
 // production build can be audited against it (grep the built output).
 const directionContract = `<!--
@@ -116,9 +137,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <script dangerouslySetInnerHTML={{ __html: animWatchdog }} />
+        <script dangerouslySetInnerHTML={{ __html: motionBudget }} />
       </head>
       <body className="flex min-h-screen flex-col">
         <div dangerouslySetInnerHTML={{ __html: directionContract }} />
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[3px] focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-on-brand"
+        >
+          Skip to content
+        </a>
         {/* Statusline header */}
         <header className="sticky top-0 z-40">
           <div className="statusline">
@@ -152,7 +180,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </div>
         </header>
-        <main className="flex-1">{children}</main>
+        <main id="main" className="flex-1">{children}</main>
         {/* Console footer */}
         <footer className="border-t border-ink-700/70 font-mono">
           <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-[13px] text-slate-400 sm:flex-row sm:items-center sm:justify-between">

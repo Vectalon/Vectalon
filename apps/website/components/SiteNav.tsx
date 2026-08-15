@@ -12,7 +12,7 @@ import { ProductsMenu } from './ProductsMenu'
 export function SiteNav() {
   const pathname = usePathname()
   return (
-    <nav className="hidden items-stretch lg:flex" aria-label="Primary">
+    <nav className="site-nav hidden items-stretch lg:flex" aria-label="Primary">
       <ProductsMenu />
       {NAV.map(item => (
         <Link

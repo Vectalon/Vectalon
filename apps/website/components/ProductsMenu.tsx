@@ -51,12 +51,17 @@ export function ProductsMenu() {
         className="seg gap-1.5"
       >
         products
-        <span className={`text-[10px] text-slate-500 transition-transform ${open ? 'rotate-180' : ''}`}>▼</span>
+        <span aria-hidden className={`text-[10px] text-slate-500 transition-transform ${open ? 'rotate-180' : ''}`}>▼</span>
       </button>
       {open && (
+        /* The wrapper's pt-3 is a hover-safe bridge: the panel sits below the
+           trigger, and the padding keeps the pointer inside the parent's hit
+           area while crossing the gap — without it, mouseleave fires in the
+           dead zone and the menu dies before it can be clicked. */
+        <div className="absolute left-0 top-full pt-3">
         <div
           role="menu"
-          className="absolute left-1/2 top-full mt-3 w-80 -translate-x-1/2 rounded-[3px] border border-ink-700 bg-ink-800 p-1.5 shadow-2xl shadow-black/60"
+          className="menu-pop w-80 rounded-[3px] border border-ink-700 bg-ink-800 p-1.5 shadow-2xl shadow-black/60"
         >
           {PRODUCTS.map((p, i) => (
             <Link
@@ -74,6 +79,7 @@ export function ProductsMenu() {
               <span className={`badge ${p.status === 'live' ? 'badge-ok' : 'badge-muted'}`}>{p.statusLabel}</span>
             </Link>
           ))}
+        </div>
         </div>
       )}
     </div>

@@ -45,11 +45,14 @@ export function ThemeToggle() {
       title={label}
       className="seg hover:!text-brand"
     >
-      {theme === 'dark' ? (
-        <Sun size={15} weight="regular" aria-hidden />
-      ) : (
-        <Moon size={15} weight="regular" aria-hidden />
-      )}
+      {/* key={theme} remounts the glyph so the swap animation replays */}
+      <span key={theme} className="icon-swap grid place-items-center">
+        {theme === 'dark' ? (
+          <Sun size={15} weight="regular" aria-hidden />
+        ) : (
+          <Moon size={15} weight="regular" aria-hidden />
+        )}
+      </span>
       <span className="hidden sm:inline">{theme === 'dark' ? 'light' : 'dark'}</span>
     </button>
   )

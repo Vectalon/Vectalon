@@ -54,13 +54,16 @@ export function MobileMenu() {
         className="seg hover:!text-brand"
       >
         menu
-        <span className={`text-[10px] text-slate-500 transition-transform ${open ? 'rotate-180' : ''}`}>▼</span>
+        <span aria-hidden className={`text-[10px] text-slate-500 transition-transform ${open ? 'rotate-180' : ''}`}>▼</span>
       </button>
       {open && (
+        /* pt-2 bridge keeps the panel hoverable across the gap below the
+           trigger (same pattern as ProductsMenu). */
+        <div className="absolute right-0 top-full z-50 pt-2">
         <div
           id="mobile-nav"
           role="menu"
-          className="absolute right-0 top-full z-50 mt-2 w-72 rounded-[3px] border border-ink-700 bg-ink-800 p-1.5 shadow-2xl shadow-black/60"
+          className="menu-pop w-72 rounded-[3px] border border-ink-700 bg-ink-800 p-1.5 shadow-2xl shadow-black/60"
         >
           <div className="px-2 pb-1 pt-1.5 font-mono text-[10px] uppercase tracking-wider text-slate-500">
             products
@@ -103,6 +106,7 @@ export function MobileMenu() {
           >
             Get started
           </Link>
+        </div>
         </div>
       )}
     </div>

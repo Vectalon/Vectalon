@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { WaitlistForm } from '../../components/WaitlistForm'
 import {
   AGENT_PHASE_LABELS,
   AGENT_REPOS,
@@ -22,9 +23,12 @@ const VERDICT_CHIP: Record<AgentVerdict, string> = {
   'changes-requested': 'badge-danger',
 }
 
-function AgentCard({ agent }: { agent: AgentInfo }) {
+function AgentCard({ agent, index }: { agent: AgentInfo; index: number }) {
   return (
-    <div className="card flex flex-col !p-4">
+    <div
+      className="card animate-fade-up flex flex-col !p-4"
+      style={{ animationDelay: `${Math.min(index * 45, 630)}ms` }}
+    >
       {/* command + phase */}
       <div className="flex items-center justify-between gap-2">
         <code className="font-mono text-sm font-bold text-brand">
@@ -100,21 +104,36 @@ export default function AgentsPage({ searchParams }: { searchParams: { repo?: st
           </span>
         </div>
 
-        {/* Repo switcher — tmux segments */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-ink-700/70 px-4 py-3">
+        {/* Repo switcher — tmux segments. The dot is the radio state: filled
+            brand ● on the selected repo, hollow ○ elsewhere; seg-active paints
+            the selected segment so the choice is never ambiguous. */}
+        <div role="group" aria-label="Agent repo" className="flex flex-wrap items-center gap-2 border-b border-ink-700/70 px-4 py-3">
           <span className="font-mono text-[11px] uppercase tracking-wider text-slate-500">repo</span>
-          {AGENT_REPOS.map(r => (
-            <Link
-              key={r.slug}
-              href={`/agents?repo=${r.slug}`}
-              className={`seg !py-1.5 ${r.slug === slug ? 'seg-active' : ''}`}
-            >
-              <span className={r.status === 'live' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-600'}>
-                {r.status === 'live' ? '●' : '○'}
-              </span>
-              {r.name}
-            </Link>
-          ))}
+          {AGENT_REPOS.map(r => {
+            const active = r.slug === slug
+            return (
+              <Link
+                key={r.slug}
+                href={`/agents?repo=${r.slug}`}
+                aria-current={active ? 'page' : undefined}
+                className={`seg !py-1.5 ${active ? 'seg-active' : ''}`}
+              >
+                <span
+                  aria-hidden
+                  className={
+                    active
+                      ? 'text-brand'
+                      : r.status === 'live'
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-slate-600'
+                  }
+                >
+                  {active ? '●' : '○'}
+                </span>
+                {r.name}
+              </Link>
+            )
+          })}
         </div>
 
         {isLiveRepo(repo) ? (
@@ -123,8 +142,8 @@ export default function AgentsPage({ searchParams }: { searchParams: { repo?: st
               {repo.tagline} — every verdict is word-plus-color, never color alone.
             </p>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {repo.agents.map(a => (
-                <AgentCard key={a.cmd} agent={a} />
+              {repo.agents.map((a, i) => (
+                <AgentCard key={a.cmd} agent={a} index={i} />
               ))}
             </div>
           </div>
@@ -146,9 +165,12 @@ export default function AgentsPage({ searchParams }: { searchParams: { repo?: st
                 agents for {repo.package} ship with the harness
               </p>
               <div className="mt-6 flex justify-center gap-3">
-                <Link href={`/sdk/${repo.slug}`} className="btn-primary">
+                <Link href={`/sdk/${repo.slug}`} className="btn-ghost">
                   See the {repo.name} plan
                 </Link>
+              </div>
+              <div className="mt-6 flex justify-center">
+                <WaitlistForm product={repo.slug} />
               </div>
             </div>
           </div>

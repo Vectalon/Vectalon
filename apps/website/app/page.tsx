@@ -50,6 +50,31 @@ const FEATURES: Array<{ title: string; body: string; icon: FeatureIconName }> = 
   },
 ]
 
+const MCP_CLIENTS = ['claude code', 'cursor', 'copilot', 'codex', 'gemini', 'zed', 'windsurf', 'opencode']
+
+const FAQ: Array<{ q: string; a: string }> = [
+  {
+    q: 'What do I need to run Vectalon?',
+    a: 'Node.js ≥ 20.12 on macOS or Linux. npx vectalon init scans your repo and builds the knowledge graph; vectalon serve starts the MCP server your agent connects to.',
+  },
+  {
+    q: 'Does it need a model?',
+    a: 'The optional model-driven agent does — but the 29 deterministic commands (review, security, SOC 2, release prediction, Figma sync, …) need no model at all. They run offline with a report and a verdict, zero model calls, free on every tier.',
+  },
+  {
+    q: 'Which platforms are supported?',
+    a: 'React Native is live at v0.8.0. iOS, Android, and Flutter harnesses are in development — join the waitlist and we’ll email the moment a beta opens.',
+  },
+  {
+    q: 'How is it different from other AI coding tools?',
+    a: 'Deterministic and compile-checked. Agents produce the same result on any machine, every fix is typechecked before it lands and reverted if it doesn’t reduce errors, and the benchmark suite measures 11 scenarios against human references (90% guardrail pass rate).',
+  },
+  {
+    q: 'What does it cost, and what’s the license?',
+    a: 'The free tier is genuinely useful — init, serve, feature, doctor, and all 29 agents, no card. Pro $19/mo, All-Access $49/mo, Team $99/seat/mo, each with a 14-day trial. Business Source License 1.1: free for personal, education, and OSS use and teams up to three devs; MIT after four years.',
+  },
+]
+
 const STATS = [
   { value: '90%', label: 'guardrail pass rate' },
   { value: '11', label: 'benchmark scenarios' },
@@ -193,6 +218,8 @@ export default async function Home() {
       {/* Hero — the console: statusline, three live panes, one prompt */}
       <section className="relative overflow-hidden">
         <div className="scanlines pointer-events-none absolute inset-0" aria-hidden />
+        {/* Phosphor beam — the console's authored focal moment (see globals.css) */}
+        <div className="beam js-loop" aria-hidden />
         <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-10 sm:pt-14">
           <div className="console animate-fade-up">
             <div className="flex items-center justify-between border-b border-ink-700/70 bg-ink-900/90 px-3.5 py-2 font-mono text-[11px] text-slate-500">
@@ -344,6 +371,22 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Works with — one MCP server, every client. The product exposes the
+          MCP protocol (vectalon serve), so the compat story is a list of the
+          clients that speak it — not a claim about any single integration. */}
+      <section className="border-t border-ink-700/70">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 font-mono md:flex-row md:items-center md:justify-between">
+          <span className="micro shrink-0">one mcp server — every client</span>
+          <div className="flex flex-wrap justify-center gap-2 md:justify-end">
+            {MCP_CLIENTS.map(c => (
+              <code key={c} className="chip transition hover:border-brand/50 hover:text-brand">
+                {c}
+              </code>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* How it works — one recorded session */}
       <section className="border-t border-ink-700/70 py-20">
         <div className="mx-auto max-w-6xl px-4">
@@ -442,9 +485,11 @@ export default async function Home() {
               </div>
             ))}
           </div>
-          {/* Roadmap pane — full-width CTA below the grid */}
+          {/* Roadmap pane — full-width CTA below the grid. Goes to the iOS
+              waitlist (the first in-development harness) so the "join the
+              waitlist" promise lands on a working form. */}
           <Link
-            href="/sdk/react-native"
+            href="/sdk/ios"
             className="card group mt-3 flex flex-col justify-between transition hover:-translate-y-0.5 hover:border-brand/50 lg:flex-row lg:items-center"
           >
             <div>
@@ -455,7 +500,7 @@ export default async function Home() {
               </p>
             </div>
             <span className="mt-4 inline-flex items-center gap-1 text-sm text-brand transition group-hover:gap-2 lg:mt-0 lg:shrink-0">
-              See the platforms <span aria-hidden>→</span>
+              Join the waitlist <span aria-hidden>→</span>
             </span>
           </Link>
         </div>
@@ -533,6 +578,28 @@ export default async function Home() {
                 </ul>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ — the questions that decide a download. Zero-JS <details>
+          accordions, mirroring the console's no-JS ethos. */}
+      <section className="border-t border-ink-700/70 py-20">
+        <div className="mx-auto max-w-3xl px-4">
+          <h2 className="text-3xl font-bold text-slate-50">Questions, answered</h2>
+          <p className="mt-3 text-slate-400">The short version of everything.</p>
+          <div className="mt-10 space-y-3">
+            {FAQ.map(item => (
+              <details key={item.q} className="card group !p-0">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 font-mono text-sm font-semibold text-slate-50 [&::-webkit-details-marker]:hidden">
+                  {item.q}
+                  <span aria-hidden className="text-lg text-slate-500 transition-transform duration-200 group-open:rotate-45">
+                    +
+                  </span>
+                </summary>
+                <p className="px-5 pb-5 text-sm leading-relaxed text-slate-400">{item.a}</p>
+              </details>
+            ))}
           </div>
         </div>
       </section>
