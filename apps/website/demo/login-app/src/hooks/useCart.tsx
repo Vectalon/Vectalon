@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from 'react';
 import type { Product } from '../services/CatalogApi';
 
 export interface CartLine {
@@ -6,14 +6,23 @@ export interface CartLine {
   qty: number;
 }
 
-export function useCart(): {
+interface CartValue {
   lines: CartLine[];
   add: (product: Product) => void;
   remove: (productId: string) => void;
   clear: () => void;
   count: number;
   total: number;
-} {
+}
+
+/**
+ * Shared cart store. Before this existed every screen called useCart() and
+ * got its own fresh empty cart; now the provider mounted in App.tsx owns the
+ * state, so catalog → cart → checkout → confirmation read the same lines.
+ */
+const CartContext = createContext<CartValue | null>(null);
+
+export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
 
   const add = useCallback((product: Product) => {
@@ -40,5 +49,11 @@ export function useCart(): {
     [lines],
   );
 
-  return { lines, add, remove, clear, count, total };
+  return <CartContext.Provider value={{ lines, add, remove, clear, count, total }}>{children}</CartContext.Provider>;
+}
+
+export function useCart(): CartValue {
+  const ctx = useContext(CartContext);
+  if (!ctx) throw new Error('useCart must be used within a CartProvider');
+  return ctx;
 }

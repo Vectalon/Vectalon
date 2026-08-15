@@ -10,7 +10,7 @@
  * lint-aware.
  */
 
-export { renderInSandbox } from './run'
+export { renderInSandbox, extractRelativeRequires, resolveRelativeFile } from './run'
 export { compileSource, resolveProjectBabel } from './compile'
 export { buildHarnessScript, buildShimFile, RENDER_MARKER } from './harness'
 export { SHIM_SOURCE } from './shim'

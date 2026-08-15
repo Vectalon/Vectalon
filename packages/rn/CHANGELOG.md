@@ -5,6 +5,41 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] - 2026-08-15
+
+### Added
+
+- **`vectalon render` now renders whole apps — Expo packages resolve via
+  curated stubs, and the entry's relative import graph is followed like
+  Metro.** `vectalon render --entry App.tsx` on a real Expo app previously
+  died on the first bare import it could not resolve (`expo-status-bar`),
+  because the sandbox denies network and has no node_modules. The render
+  harness now aliases the curated Expo/navigation set (`expo-status-bar`,
+  `react-native-safe-area-context`, `@react-navigation/native`,
+  `@react-navigation/native-stack`) to built-in headless stubs —
+  `StatusBar` + no-op style setters, `SafeAreaProvider`/insets passthrough,
+  `NavigationContainer` passthrough, and a `createNativeStackNavigator`
+  whose `Screen`s render their components with a safe navigation/route pair
+  — and `renderInSandbox` follows relative `require()`s from the compiled
+  output (extensionless + `index.*` resolution) to compile the entry's whole
+  module graph. Rendering the demo's 19-screen `App.tsx` now compiles 36
+  files and prints the full screen tree with zero model calls. Six new unit
+  tests (require extraction, file resolution, expo/safe-area stub render,
+  native-stack screen render, relative-graph render) plus a new
+  `render-expo-stubs` selftest check.
+
+### Fixed
+
+- **Demo app cart is now a real end-to-end flow.** Every screen previously
+  called `useCart()` independently, so each mounted its own fresh empty cart
+  — adding items in the catalog did nothing for the cart screen. `useCart`
+  is now a context-backed shared store (`CartProvider` mounted at the app
+  root), and a new integration test drives the real navigator from
+  onboarding → login → catalog (add items) → cart → checkout → order
+  confirmation, asserting the orders service recorded the order and the
+  shared cart cleared. RNTL v14 note: every `fireEvent` call is async and
+  must be awaited.
+
 ## [0.11.0] - 2026-08-15
 
 ### Added

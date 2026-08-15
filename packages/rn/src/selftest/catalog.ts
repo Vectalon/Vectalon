@@ -1712,6 +1712,40 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
       return ok(`guarded: ${missing.loadError}`)
     },
   },
+  {
+    id: 'render-expo-stubs',
+    name: 'Render: Expo/navigation stubs + relative graph',
+    category: 'render',
+    description:
+      'An Expo-style entry importing expo-status-bar, react-native-safe-area-context, react-navigation stubs, and a relative screen compiles and renders headlessly — the sandbox resolves the curated package set it cannot install (network denied, no node_modules) and follows the entry\'s relative import graph like Metro.',
+    async run(ctx) {
+      const files: Record<string, string> = {
+        'App.tsx': [
+          `import { StatusBar } from 'expo-status-bar';`,
+          `import { SafeAreaProvider } from 'react-native-safe-area-context';`,
+          `import { NavigationContainer } from '@react-navigation/native';`,
+          `import { createNativeStackNavigator } from '@react-navigation/native-stack';`,
+          `import Home from './src/Home';`,
+          `const Stack = createNativeStackNavigator();`,
+          `export default function App() { return <SafeAreaProvider><NavigationContainer><Stack.Navigator><Stack.Screen name="Home" component={Home} /></Stack.Navigator></NavigationContainer><StatusBar style="auto" /></SafeAreaProvider> }`,
+        ].join('\n'),
+        'src/Home.tsx': `import { View, Text } from 'react-native'; export default function Home() { return <View><Text>Home Screen</Text></View> }`,
+      }
+      for (const [rel, content] of Object.entries(files)) ctx.sandbox.file(rel, content)
+      const result = await renderInSandbox({
+        files: [{ path: 'App.tsx', content: files['App.tsx'] }],
+        entry: 'App.tsx',
+        projectRoot: ctx.sandbox.root,
+        timeoutMs: 15_000,
+      })
+      if (!result.ok) return fail(`render failed: ${result.runtimeError || result.loadError}`)
+      const flat = JSON.stringify(result.tree)
+      if (!flat.includes('StatusBar')) return fail('render tree missing the expo StatusBar node')
+      if (!flat.includes('Home Screen')) return fail('relative screen did not render')
+      if (result.compiled.length < 2) return fail(`expected >= 2 compiled files, got ${result.compiled.length}`)
+      return ok(`Expo-style entry rendered — ${result.compiled.length} file(s) compiled via ${result.transpiler}/${result.renderer}, screen body in the tree`)
+    },
+  },
 
   // ---------------------------------------------------------------------------
   // Diagnostics & error telemetry

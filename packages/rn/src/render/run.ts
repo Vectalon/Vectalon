@@ -15,15 +15,16 @@
  *     is ever presented
  */
 
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from 'fs'
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from 'fs'
 import { tmpdir } from 'os'
-import { dirname, isAbsolute, join } from 'path'
+import { dirname, isAbsolute, join, resolve } from 'path'
 import { runSandboxed } from '../sandbox'
-import { compileSource } from './compile'
+import { compileSource, type CompileOutput } from './compile'
 import { buildHarnessScript, buildShimFile, RENDER_MARKER } from './harness'
 import type { RenderOptions, RenderResult } from './types'
 
 const RENDER_TIMEOUT_MS = 30_000
+const COMPILE_EXTS = ['.ts', '.tsx', '.js', '.jsx']
 
 /** Strip a .tsx/.ts/.jsx/.js extension so Node resolves the compiled .js. */
 function toJsPath(filePath: string): string {
@@ -47,6 +48,41 @@ function normalizeRel(p: string): string {
   return p.replace(/^\.\/+/, '').replace(/\/\/+/g, '/').replace(/\\/g, '/')
 }
 
+/**
+ * Extract project-relative `require()` targets from compiled CJS output, so
+ * the entry's module graph can be discovered and compiled too (Metro-style
+ * graph following). Query/hash suffixes (rare in CJS output) are stripped.
+ */
+export function extractRelativeRequires(code: string): string[] {
+  const specs: string[] = []
+  const re = /require\(\s*['"](\.[^'"]+)['"]\s*\)/g
+  let m: RegExpExecArray | null
+  while ((m = re.exec(code))) {
+    const spec = m[1].split(/[?#]/)[0]
+    if (spec) specs.push(spec)
+  }
+  return specs
+}
+
+/**
+ * Resolve a relative import to a project-relative compileable file, or null.
+ * Tries the exact path, then each compileable extension, then `index.<ext>`.
+ */
+export function resolveRelativeFile(projectRoot: string, fromDir: string, spec: string): string | null {
+  const base = normalizeRel(join(fromDir, spec))
+  const candidates: string[] = []
+  if (/\.(ts|tsx|js|jsx)$/.test(base)) {
+    candidates.push(base)
+  } else {
+    for (const ext of COMPILE_EXTS) candidates.push(base + ext)
+    for (const ext of COMPILE_EXTS) candidates.push(join(base, 'index' + ext))
+  }
+  for (const rel of candidates) {
+    if (existsSync(resolve(projectRoot, rel))) return rel
+  }
+  return null
+}
+
 export async function renderInSandbox(options: RenderOptions): Promise<RenderResult> {
   const started = Date.now()
   const root = mkdtempSync(join(tmpdir(), 'vectalon-render-'))
@@ -57,10 +93,36 @@ export async function renderInSandbox(options: RenderOptions): Promise<RenderRes
 
   const entryNorm = normalizeRel(options.entry)
   try {
-    // 1. Compile every file. Paths are sandbox-relative (reject traversal).
-    for (const rawFile of options.files) {
+    // 1. Compile the entry + its relative import graph (Metro-style). BFS from
+    //    the provided files; when a project root is available, relative
+    //    requires in the compiled output pull in their targets and compile
+    //    them too — so `--entry App.tsx` renders the whole app, not just the
+    //    one file. Paths stay sandbox-relative (traversal rejected).
+    const graph: Array<{ path: string; content: string; out: CompileOutput }> = []
+    const seen = new Set<string>()
+    const queue: Array<{ path: string; content: string }> = options.files.map(f => ({ path: safeRelativePath(f.path), content: f.content }))
+    while (queue.length > 0) {
+      const file = queue.shift() as { path: string; content: string }
+      const norm = normalizeRel(file.path)
+      if (seen.has(norm)) continue
+      seen.add(norm)
+      const out = compileSource(file.content, norm, options.projectRoot)
+      graph.push({ path: file.path, content: file.content, out })
+      if (out.ok && out.code && options.projectRoot) {
+        const fromDir = dirname(norm)
+        for (const spec of extractRelativeRequires(out.code)) {
+          const target = resolveRelativeFile(options.projectRoot, fromDir, spec)
+          if (target && !seen.has(normalizeRel(target))) {
+            queue.push({ path: target, content: readFileSync(resolve(options.projectRoot, target), 'utf-8') })
+          }
+        }
+      }
+    }
+
+    // 2. Write every compiled module into the sandbox root.
+    for (const rawFile of graph) {
       const relPath = safeRelativePath(rawFile.path)
-      const out = compileSource(rawFile.content, relPath, options.projectRoot)
+      const out = rawFile.out
       if (transpiler === 'none' || transpiler === 'parser') transpiler = out.transpiler
       if (out.warning) warning = out.warning
       if (!out.ok) {

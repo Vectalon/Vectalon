@@ -6,10 +6,13 @@
  *   vectalon render [dir] --entry src/App.tsx [--file src/Home.tsx ...]
  *
  * Transpiles the given TS/TSX files (project Babel when available, offline
- * TypeScript otherwise), renders the entry headlessly inside the V-1 sandbox
- * (scrubbed env, network denied, timeout/memory bounded), and prints console
- * logs, the render tree, and any load/runtime errors — before any diff is
- * presented. Pro tier.
+ * TypeScript otherwise), follows the entry's relative import graph like
+ * Metro, renders the entry headlessly inside the V-1 sandbox (scrubbed env,
+ * network denied, timeout/memory bounded), and prints console logs, the
+ * render tree, and any load/runtime errors — before any diff is presented.
+ * Curated Expo/navigation packages (expo-status-bar, safe-area context,
+ * react-navigation) resolve to built-in stubs; anything else unresolvable
+ * surfaces as a load error. Pro tier.
  */
 
 import { existsSync, readFileSync } from 'fs'

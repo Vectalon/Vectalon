@@ -50,14 +50,26 @@ const fs = require('fs');
 const shimPath = require.resolve(path.join(${JSON.stringify(input.root)}, 'shim.cjs'));
 const shim = require(shimPath);
 
-// 1. Alias react / react-native to the bundled shim so generated components
-//    (which import them) load without any installed deps. The classic JSX
-//    runtime emits bare React.createElement, so also expose a global React.
+// 1. Alias react / react-native and the curated Expo/navigation packages to
+//    the bundled shim so generated components (which import them) load
+//    without any installed deps — the sandbox denies network and has no
+//    node_modules. The classic JSX runtime emits bare React.createElement, so
+//    also expose a global React.
 global.React = shim;
 global.ReactNative = shim;
 const origResolve = Module._resolveFilename;
+const SHIM_ALIASES = new Set([
+  'react',
+  'react-native',
+  'react/jsx-runtime',
+  'react/jsx-dev-runtime',
+  'expo-status-bar',
+  'react-native-safe-area-context',
+  '@react-navigation/native',
+  '@react-navigation/native-stack',
+]);
 Module._resolveFilename = function (request, parent, isMain, options) {
-  if (request === 'react' || request === 'react-native' || request === 'react/jsx-runtime' || request === 'react/jsx-dev-runtime') {
+  if (SHIM_ALIASES.has(request)) {
     return shimPath;
   }
   return origResolve.call(this, request, parent, isMain, options);

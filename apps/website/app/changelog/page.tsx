@@ -2,9 +2,17 @@ import Link from 'next/link'
 
 const RELEASES = [
   {
-    version: 'v0.11.0',
+    version: 'v0.12.0',
     date: '2026-08-15',
     tag: 'latest',
+    highlights: [
+      '`vectalon render` now renders whole apps — `vectalon render --entry App.tsx` on a real Expo app previously died on the first bare import the sandbox could not resolve (`expo-status-bar`, since the sandbox denies network and has no node_modules). The render harness now aliases the curated Expo/navigation set (expo-status-bar, react-native-safe-area-context, @react-navigation/native, @react-navigation/native-stack) to built-in headless stubs — StatusBar + no-op setters, SafeAreaProvider passthrough, NavigationContainer passthrough, and a native-stack navigator whose screens render their components — and follows the entry\'s relative import graph like Metro (extensionless + index.* resolution), so rendering the demo\'s 19-screen App.tsx compiles 36 files and prints the full screen tree with zero model calls',
+      'Demo app cart is now a real end-to-end flow — `useCart` is a context-backed shared store (CartProvider mounted at the app root) so adding in the catalog appears in the cart, checkout places the order through the orders service, and the shared cart clears; a new integration test drives the real navigator from onboarding through order confirmation',
+    ],
+  },
+  {
+    version: 'v0.11.0',
+    date: '2026-08-15',
     highlights: [
       'Archive & Share — four new deterministic agents (Roadmap 101-104), every one report-driven and free: `vectalon archive` (build or ingest an IPA/APK/AAB, SHA-256 checksum, typed BuildManifest with git/flavor/environment provenance under .vectalon/builds/ — with zero-config flavor detection from Gradle productFlavors, Xcode schemes, and eas.json), `vectalon distribute` (TestFlight, Play Store, SaaS, and portal targets as dry-run-first plans that never store credentials — delegates to fastlane/EAS/Expo or direct API env vars), `vectalon share` (an ephemeral install page with download link, optional tunnel, QR code, and auto-shutdown via --expires — free tier), and `vectalon portal` (a self-contained static install portal with per-build detail pages and embedded builds.json, deployable to static hosting, Vercel, or Netlify)',
       'Archive & Share is wired through everything — six new MCP tools under `vectalon serve` (archive_build, list_builds, detect_flavors, distribute_build, share_build_locally, generate_portal), four new VS Code command-palette entries (vectalon.archiveBuild, distributeBuild, shareBuild, generatePortal), and `vectalon ci --with-archive` now emits a build → archive → SaaS-distribute job (gated on VECTALON_API_KEY, uploading .vectalon/builds/ as an artifact) into GitHub Actions and EAS workflows',

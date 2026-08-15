@@ -2,7 +2,9 @@
 
 import React from 'react';
 import { render } from '@testing-library/react-native';
+import type { ReactElement } from 'react';
 import { SignupScreen } from '../screens/SignupScreen';
+import { CartProvider } from '../hooks/useCart';
 import { ForgotPasswordScreen } from '../screens/ForgotPasswordScreen';
 import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { HomeScreen } from '../screens/HomeScreen';
@@ -18,6 +20,11 @@ import { OrderConfirmationScreen } from '../screens/OrderConfirmationScreen';
 import { DebugScreen } from '../screens/DebugScreen';
 
 const navigation = { replace: jest.fn(), navigate: jest.fn(), goBack: jest.fn() } as never;
+
+/** Cart-dependent screens need the shared store; wrap them in CartProvider. */
+function renderWithCart(ui: ReactElement) {
+  return render(<CartProvider>{ui}</CartProvider>);
+}
 
 describe('remaining demo screens', () => {
   it('SignupScreen renders', async () => {
@@ -36,7 +43,7 @@ describe('remaining demo screens', () => {
   });
 
   it('HomeScreen renders dashboard links', async () => {
-    const { getByText } = await render(<HomeScreen navigation={navigation} route={{ key: 'Home', name: 'Home' } as never} />);
+    const { getByText } = await renderWithCart(<HomeScreen navigation={navigation} route={{ key: 'Home', name: 'Home' } as never} />);
     expect(getByText('Shop the catalog')).toBeDefined();
     expect(getByText('Your orders')).toBeDefined();
   });
@@ -47,7 +54,7 @@ describe('remaining demo screens', () => {
   });
 
   it('SettingsScreen renders toggles', async () => {
-    const { getByText } = await render(<SettingsScreen navigation={navigation} route={{ key: 'Settings', name: 'Settings' } as never} />);
+    const { getByText } = await renderWithCart(<SettingsScreen navigation={navigation} route={{ key: 'Settings', name: 'Settings' } as never} />);
     expect(getByText('Dark mode')).toBeDefined();
     expect(getByText('Push notifications')).toBeDefined();
   });
@@ -74,12 +81,12 @@ describe('remaining demo screens', () => {
   });
 
   it('CartScreen shows empty state', async () => {
-    const { getByText } = await render(<CartScreen navigation={navigation} route={{ key: 'Cart', name: 'Cart' } as never} />);
+    const { getByText } = await renderWithCart(<CartScreen navigation={navigation} route={{ key: 'Cart', name: 'Cart' } as never} />);
     expect(getByText('Your cart is empty.')).toBeDefined();
   });
 
   it('CheckoutScreen renders', async () => {
-    const { getByText } = await render(<CheckoutScreen navigation={navigation} route={{ key: 'Checkout', name: 'Checkout' } as never} />);
+    const { getByText } = await renderWithCart(<CheckoutScreen navigation={navigation} route={{ key: 'Checkout', name: 'Checkout' } as never} />);
     expect(getByText('Checkout')).toBeDefined();
   });
 

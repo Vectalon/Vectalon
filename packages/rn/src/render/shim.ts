@@ -197,6 +197,52 @@ const StyleSheet = { create: (s) => s, flatten: (s) => s };
 const Platform = { OS: 'web', select: (spec) => (spec && spec.web !== undefined ? spec.web : spec && spec.default) };
 const Dimensions = { get: () => ({ width: 390, height: 844, scale: 1 }) };
 
+// --- curated third-party stubs: the packages real Expo apps import that the
+//     sandbox cannot install (network denied, no node_modules). These are
+//     headless approximations — providers/containers pass children through,
+//     host components render as host nodes, navigation surfaces a no-op API,
+//     and setters are no-ops. Enough to render the element tree truthfully,
+//     not to simulate device behavior. The harness aliases the package ids
+//     below to this module.
+const noop = () => {};
+const noopNavigation = {
+  navigate: noop, replace: noop, goBack: noop, push: noop, pop: noop, popToTop: noop,
+  setOptions: noop, setParams: noop, reset: noop, dispatch: noop,
+  canGoBack: () => false, isFocused: () => true, addListener: () => noop, removeListener: noop,
+  getParent: () => null, getState: () => ({}), getId: () => undefined,
+};
+const safeRoute = (name) => ({ key: name, name, params: {} });
+function passthrough(props) { return createElement(Fragment, null, props && props.children); }
+
+// expo-status-bar
+const setStatusBarStyle = noop;
+const setStatusBarHidden = noop;
+const setStatusBarNetworkActivityIndicatorVisible = noop;
+const setStatusBarTranslucent = noop;
+const setStatusBarBackgroundColor = noop;
+
+// react-native-safe-area-context
+function useSafeAreaInsets() { return { top: 0, right: 0, bottom: 0, left: 0 }; }
+const SafeAreaProvider = passthrough;
+
+// @react-navigation/native
+const NavigationContainer = passthrough;
+
+// @react-navigation/native-stack — renders each Screen's component with a
+// safe navigation/route pair so screen bodies appear in the render tree
+// without a real navigator.
+function createNativeStackNavigator() {
+  return {
+    Navigator: function Navigator(props) { return createElement(Fragment, null, props && props.children); },
+    Screen: function Screen(props) {
+      if (props && props.component) {
+        return createElement(props.component, { navigation: noopNavigation, route: safeRoute(props.name || 'Screen') });
+      }
+      return createElement(Fragment, null, props && props.children);
+    },
+  };
+}
+
 module.exports = {
   __esModule: true,
   createElement,
@@ -214,6 +260,14 @@ module.exports = {
   View, Text, ScrollView, Image, TextInput, Pressable, TouchableOpacity, TouchableHighlight,
   SafeAreaView, Modal, ActivityIndicator, FlatList, SectionList, KeyboardAvoidingView, StatusBar, Switch,
   StyleSheet, Platform, Dimensions,
+  // expo-status-bar surface
+  setStatusBarStyle, setStatusBarHidden, setStatusBarNetworkActivityIndicatorVisible, setStatusBarTranslucent, setStatusBarBackgroundColor,
+  // react-native-safe-area-context surface
+  SafeAreaProvider, useSafeAreaInsets, initialWindowMetrics: null,
+  // @react-navigation/native surface
+  NavigationContainer, useNavigation: () => noopNavigation, useRoute: () => safeRoute('unknown'), useIsFocused: () => true, useFocusEffect: noop,
+  // @react-navigation/native-stack surface
+  createNativeStackNavigator,
   default: { createElement, Fragment, useState, useEffect, useMemo, useCallback, useRef, useContext, createContext, jsx, jsxs },
 };
 `
