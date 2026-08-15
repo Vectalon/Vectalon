@@ -30,6 +30,13 @@ export type { DashboardAgent, DashboardOptions, DashboardReport } from './types'
 /** Where dashboard reports are written. */
 export const dashboardDocsDir = (root: string): string => join(root, 'docs', 'vectalon', 'dashboard')
 
+/**
+ * Max findings embedded per agent for the drill-down dialog. High enough that
+ * real reports are fully searchable client-side, capped only to bound the
+ * HTML size for pathological reports.
+ */
+export const DASHBOARD_FINDINGS_EMBED_CAP = 1000
+
 function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/["]/g, '&quot;')
 }
@@ -184,7 +191,7 @@ export async function runDashboard(root: string, options: DashboardOptions = {})
       ...severitiesOf(report),
       reportFile: reportJson,
       reportMd,
-      findings: extractFindings(report).slice(0, 25),
+      findings: extractFindings(report).slice(0, DASHBOARD_FINDINGS_EMBED_CAP),
     }
   })
   const errors = agents.reduce((a, x) => a + x.errors, 0)
@@ -226,6 +233,16 @@ export function renderDashboardHtml(report: DashboardReport): string {
   const dialog = `<dialog id="agent-detail">
     <div class="dialog-head"><h3 id="detail-title"></h3><div class="verdict" id="detail-verdict"></div><button type="button" class="close" id="detail-close" aria-label="Close">×</button></div>
     <div class="counts" id="detail-counts"></div>
+    <div class="detail-controls">
+      <input type="search" id="detail-search" placeholder="Search findings…" aria-label="Search findings" autocomplete="off" />
+      <div class="sev-filter" role="group" aria-label="Filter by severity">
+        <button type="button" class="sev-btn active" data-sev="" aria-pressed="true">All</button>
+        <button type="button" class="sev-btn" data-sev="err" aria-pressed="false">Errors</button>
+        <button type="button" class="sev-btn" data-sev="warn" aria-pressed="false">Warnings</button>
+        <button type="button" class="sev-btn" data-sev="info" aria-pressed="false">Info</button>
+      </div>
+    </div>
+    <div class="result-count" id="detail-result-count"></div>
     <div class="detail-links" id="detail-links"></div>
     <div class="findings" id="detail-findings"></div>
   </dialog>`
@@ -241,13 +258,74 @@ export function renderDashboardHtml(report: DashboardReport): string {
     var counts = document.getElementById('detail-counts');
     var links = document.getElementById('detail-links');
     var findings = document.getElementById('detail-findings');
+    var resultCount = document.getElementById('detail-result-count');
+    var search = document.getElementById('detail-search');
     var close = document.getElementById('detail-close');
+    var sevBtns = document.querySelectorAll('.sev-btn');
+    var current = { name: null, sev: '', query: '' };
     function esc(s) {
       return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function bucket(f) {
+      var s = f.severity;
+      if (s === 'error' || s === 'critical') return 'err';
+      if (s === 'warning' || s === 'warn') return 'warn';
+      return 'info';
+    }
+    function matches(f) {
+      if (current.sev && bucket(f) !== current.sev) return false;
+      var q = current.query.trim().toLowerCase();
+      if (!q) return true;
+      return (f.id || '').toLowerCase().indexOf(q) !== -1 ||
+        (f.message || '').toLowerCase().indexOf(q) !== -1 ||
+        (f.suggestion || '').toLowerCase().indexOf(q) !== -1;
+    }
+    function renderFindings() {
+      var d = byName[current.name];
+      if (!d) return;
+      var list = d.findings || [];
+      var filtered = list.filter(matches);
+      var hasActiveFilter = current.sev !== '' || current.query.trim() !== '';
+      resultCount.textContent = hasActiveFilter
+        ? 'Showing ' + filtered.length + ' of ' + list.length + ' findings'
+        : list.length + ' findings';
+      findings.innerHTML = '';
+      if (list.length === 0) {
+        findings.innerHTML = '<div class="empty">No findings recorded for this agent.</div>';
+      } else if (filtered.length === 0) {
+        findings.innerHTML = '<div class="empty">No findings match the current filter.</div>';
+      } else {
+        filtered.forEach(function (f) {
+          var item = document.createElement('div');
+          item.className = 'finding ' + bucket(f);
+          var head = '<span class="sev">' + esc(f.severity) + '</span>';
+          if (f.id) head += '<span class="id">' + esc(f.id) + '</span>';
+          item.innerHTML = head + '<div class="msg">' + esc(f.message) + '</div>' + (f.suggestion ? '<div class="sug">' + esc(f.suggestion) + '</div>' : '');
+          findings.appendChild(item);
+        });
+        if (filtered.length < list.length && !hasActiveFilter && list.length < d.total) {
+          var more = document.createElement('div');
+          more.className = 'empty';
+          more.textContent = '… and ' + (d.total - list.length) + ' more in the full report.';
+          findings.appendChild(more);
+        }
+      }
+    }
+    function setSeverity(sev) {
+      current.sev = sev;
+      Array.prototype.forEach.call(sevBtns, function (btn) {
+        var active = btn.getAttribute('data-sev') === sev;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', String(active));
+      });
+      renderFindings();
     }
     function open(name) {
       var d = byName[name];
       if (!d) return;
+      current.name = name;
+      current.query = '';
+      search.value = '';
       title.textContent = d.agent;
       verdict.textContent = d.verdict;
       counts.textContent = d.errors + ' errors · ' + d.warnings + ' warnings · ' + d.infos + ' info · ' + d.total + ' total';
@@ -264,28 +342,16 @@ export function renderDashboardHtml(report: DashboardReport): string {
         j.textContent = 'Raw data (JSON)';
         links.appendChild(j);
       }
-      findings.innerHTML = '';
-      var list = d.findings || [];
-      if (list.length === 0) {
-        findings.innerHTML = '<div class="empty">No findings recorded for this agent.</div>';
-      } else {
-        list.forEach(function (f) {
-          var item = document.createElement('div');
-          item.className = 'finding ' + (f.severity === 'error' || f.severity === 'critical' ? 'err' : f.severity === 'warning' || f.severity === 'warn' ? 'warn' : 'info');
-          var head = '<span class="sev">' + esc(f.severity) + '</span>';
-          if (f.id) head += '<span class="id">' + esc(f.id) + '</span>';
-          item.innerHTML = head + '<div class="msg">' + esc(f.message) + '</div>' + (f.suggestion ? '<div class="sug">' + esc(f.suggestion) + '</div>' : '');
-          findings.appendChild(item);
-        });
-        if (list.length < d.total) {
-          var more = document.createElement('div');
-          more.className = 'empty';
-          more.textContent = '… and ' + (d.total - list.length) + ' more in the full report.';
-          findings.appendChild(more);
-        }
-      }
+      setSeverity('');
       dialog.showModal();
     }
+    search.addEventListener('input', function () {
+      current.query = search.value;
+      renderFindings();
+    });
+    Array.prototype.forEach.call(sevBtns, function (btn) {
+      btn.addEventListener('click', function () { setSeverity(btn.getAttribute('data-sev')); });
+    });
     var cards = document.querySelectorAll('.card');
     Array.prototype.forEach.call(cards, function (card) {
       card.addEventListener('click', function () { open(card.getAttribute('data-agent')); });
@@ -310,11 +376,18 @@ h3{margin:0 0 8px;font-size:14px}.verdict{font-size:12px;text-transform:uppercas
 .counts{font-size:12px}.counts .err{color:#f85149}.counts .warn{color:#d29922}.counts .info{color:#58a6ff}
 .drill{font-size:11px;color:#58a6ff;margin-top:8px}
 .empty{color:#9aa4b2;font-size:14px}
-dialog{background:#161b22;border:1px solid #30363d;border-radius:12px;color:#e6e8eb;width:min(680px,92vw);max-height:80vh;overflow:auto;padding:20px}
+dialog{background:#161b22;border:1px solid #30363d;border-radius:12px;color:#e6e8eb;width:min(720px,94vw);max-height:82vh;overflow:auto;padding:20px}
 dialog::backdrop{background:rgba(0,0,0,.6)}
 .dialog-head{display:flex;align-items:center;gap:12px;margin-bottom:8px}
 .dialog-head h3{margin:0;font-size:18px;flex:1}
 .dialog-head .close{background:#21262d;border:1px solid #30363d;color:#e6e8eb;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:16px;line-height:1}
+.detail-controls{display:flex;gap:10px;align-items:center;margin:10px 0 4px;flex-wrap:wrap}
+#detail-search{flex:1;min-width:180px;background:#0f1115;border:1px solid #30363d;border-radius:6px;color:#e6e8eb;padding:7px 10px;font-size:13px}
+#detail-search:focus{outline:none;border-color:#58a6ff}
+.sev-filter{display:flex;gap:6px}
+.sev-btn{background:#21262d;border:1px solid #30363d;color:#9aa4b2;border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer}
+.sev-btn.active{background:#30363d;color:#e6e8eb;border-color:#58a6ff}
+.result-count{font-size:11px;color:#6e7681;margin:6px 0 10px}
 .detail-links{display:flex;gap:16px;margin:10px 0}
 .detail-links a{color:#58a6ff;font-size:13px}
 .finding{border:1px solid #21262d;border-radius:8px;padding:10px;margin-bottom:8px;background:#0f1115}

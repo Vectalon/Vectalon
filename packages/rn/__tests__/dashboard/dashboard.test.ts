@@ -6,7 +6,7 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import {
   runDashboard, collectAgentReports, renderDashboardHtml, writeDashboardReport, extractFindings,
-  dashboardCronTick, cronIntervalSeconds, DASHBOARD_CRON_DEFAULT_INTERVAL_SECONDS,
+  dashboardCronTick, cronIntervalSeconds, DASHBOARD_CRON_DEFAULT_INTERVAL_SECONDS, DASHBOARD_FINDINGS_EMBED_CAP,
 } from '../../src/dashboard'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
@@ -124,6 +124,41 @@ describe('dashboard: runDashboard', () => {
     expect(html).toContain('hardcoded-secret')
     expect(html).toContain('Found an API key in src/config.ts')
     expect(html).toContain('report.md')
+  })
+
+  it('renders the search input and severity filter in the drill-down', async () => {
+    dir = createTempProject({ 'package.json': '{}', 'docs/vectalon/arch/report.json': REPORT('approved', 0) })
+    const report = await runDashboard(dir)
+    const html = renderDashboardHtml(report)
+    expect(html).toContain('id="detail-search"')
+    expect(html).toContain('Search findings')
+    expect(html).toContain('data-sev="err"')
+    expect(html).toContain('data-sev="warn"')
+    expect(html).toContain('data-sev="info"')
+    expect(html).toContain('id="detail-result-count"')
+    // The filter logic (bucket/matches) is inlined.
+    expect(html).toContain('function matches(f)')
+    expect(html).toContain('No findings match the current filter.')
+  })
+
+  it('embeds large finding sets so they are searchable (cap well above 25)', async () => {
+    const findings = Array.from({ length: 60 }, (_, i) => ({
+      id: `f-${i}`, severity: i % 3 === 0 ? 'error' : i % 3 === 1 ? 'warning' : 'info',
+      message: `finding ${i}`, suggestion: `fix ${i}`,
+    }))
+    dir = createTempProject({
+      'package.json': '{}',
+      'docs/vectalon/sec/report.json': JSON.stringify({
+        scannedAt: 1, root: '/x', verdict: 'changes-requested',
+        findings, summary: { total: findings.length, bySeverity: { error: 20, warning: 20, info: 20 } },
+      }),
+    })
+    const report = await runDashboard(dir)
+    const agent = report.agents.find(a => a.agent === 'sec')
+    expect(agent?.findings?.length).toBe(60)
+    expect(DASHBOARD_FINDINGS_EMBED_CAP).toBeGreaterThanOrEqual(1000)
+    const html = renderDashboardHtml(report)
+    expect(html).toContain('finding 59')
   })
 
   it('renders no findings message when an agent has none', async () => {
