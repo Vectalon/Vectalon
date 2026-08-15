@@ -2450,6 +2450,22 @@ npx vectalon dashboard --open              # open the HTML dashboard
 npx vectalon dashboard --json
 ```
 
+**Reading your reports** — reports never leave your project unless you share
+them. Three ways to read them:
+
+1. **In the terminal** — every run prints the verdict, severity-ranked
+   findings, and the fix plan to stdout; `vectalon dashboard` prints the
+   aggregate across every agent.
+2. **In your repo** — each agent writes `docs/vectalon/<cmd>/report.md` +
+   `report.json`: plain markdown/JSON that renders on GitHub/GitLab and in
+   editors, and is machine-readable for your own dashboards or CI gates.
+   Gitignored by default, so reports stay local unless you commit or share
+   them.
+3. **One HTML file, in a browser** — `vectalon dashboard` writes a
+   self-contained `docs/vectalon/dashboard/report.html` with per-agent
+   drill-down, search, and severity filters. No server, works offline,
+   portable: attach it to a PR or host it anywhere.
+
 **Options**
 
 | Option | Description |

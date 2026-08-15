@@ -52,11 +52,17 @@ function AgentCard({ agent, index }: { agent: AgentInfo; index: number }) {
         <span className="text-xs leading-relaxed text-slate-500">{agent.verdictFor}</span>
       </div>
 
-      {/* report it produces */}
+      {/* report it produces + deep link to the real document on /reports */}
       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] text-slate-500">
         <span>
           reports → <span className="text-slate-400">{agent.report ?? `docs/vectalon/${agent.cmd}/`}</span>
         </span>
+        <Link
+          href={`/reports#report-${agent.cmd}`}
+          className="text-brand transition hover:text-brand-strong hover:underline"
+        >
+          view report →
+        </Link>
         {agent.flags && <span className="text-slate-600">{agent.flags}</span>}
       </div>
     </div>
@@ -197,8 +203,11 @@ export default function AgentsPage({ searchParams }: { searchParams: { repo?: st
         </div>
       </div>
 
-      <div className="mt-6 text-center">
-        <Link href="/docs" className="text-sm text-brand transition hover:text-brand-strong hover:underline">
+      <div className="mt-6 flex flex-col items-center gap-2">
+        <Link href="/reports" className="text-sm text-brand transition hover:text-brand-strong hover:underline">
+          See real generated documents — crash briefs, DX scorecards, release trains →
+        </Link>
+        <Link href="/docs" className="text-sm text-slate-500 transition hover:text-brand-strong hover:underline">
           Full CLI reference — every command, every flag →
         </Link>
       </div>

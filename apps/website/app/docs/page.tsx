@@ -48,6 +48,27 @@ const AGENTS: Array<[string, string]> = [
   ],
 ]
 
+const REPORTS: Array<{ n: string; code: string; title: string; body: string }> = [
+  {
+    n: '01',
+    code: 'vectalon <agent>',
+    title: 'In the terminal',
+    body: 'Every run prints the verdict, severity-ranked findings, and the fix plan to stdout — `vectalon dashboard` prints the aggregate across every agent.',
+  },
+  {
+    n: '02',
+    code: 'docs/vectalon/<cmd>/report.md',
+    title: 'In your repo',
+    body: 'Each agent writes report.md + report.json into your project — plain markdown/JSON that renders on GitHub/GitLab and in editors, and is machine-readable for your own dashboards or CI gates. Gitignored by default: reports stay local unless you commit or share them.',
+  },
+  {
+    n: '03',
+    code: 'vectalon dashboard',
+    title: 'One HTML file, in a browser',
+    body: 'Aggregates every agent report into docs/vectalon/dashboard/report.html — a self-contained page with per-agent drill-down, search, and severity filters. No server, works offline, portable: attach it to a PR or host it anywhere.',
+  },
+]
+
 const STEPS = [
   {
     n: '01',
@@ -59,7 +80,7 @@ const STEPS = [
     n: '02',
     title: 'Serve the agent',
     code: 'npx vectalon serve',
-    body: 'Boots the MCP server. Your editor or any MCP client connects and gets 58+ project-aware tools — plus 40 deterministic agent commands that need no model at all. Web intel and the knowledge base auto-refresh hourly.',
+    body: 'Boots the MCP server. Your editor or any MCP client connects and gets 58+ project-aware tools — plus 40 deterministic agent commands that need no model at all. The VS Code extension (vectalon-dev, free) connects here: one-click workflows, inline guardrail status, and the team knowledge base. Web intel and the knowledge base auto-refresh hourly.',
   },
   {
     n: '03',
@@ -185,6 +206,34 @@ export default function DocsPage() {
             </Link>
           </p>
 
+          {/* REPORTS — the three local paths for reading your own reports */}
+          <ManH tone="accent">reports — see your own</ManH>
+          <p className="mt-3 text-sm leading-relaxed text-slate-400">
+            Reports never leave your project unless you share them. Three ways to read them:
+          </p>
+          <div className="mt-3 divide-y divide-ink-700/50 border-t border-ink-700/50">
+            {REPORTS.map(r => (
+              <div key={r.n} className="grid gap-2 py-3 sm:grid-cols-[240px_1fr] sm:gap-6">
+                <div className="flex items-baseline gap-3">
+                  <span className="font-mono text-xs text-slate-600">[{r.n}]</span>
+                  <code className="font-mono text-sm font-semibold text-brand">{r.code}</code>
+                </div>
+                <div>
+                  <div className="font-mono text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    {r.title}
+                  </div>
+                  <p className="mt-1 text-sm leading-relaxed text-slate-400">{r.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 font-mono text-xs text-slate-500">
+            The documents on this site are generated from a demo project —{' '}
+            <Link href="/reports" className="text-brand transition hover:text-brand-strong hover:underline">
+              see the real output →
+            </Link>
+          </p>
+
           {/* SEE ALSO */}
           <ManH>see also</ManH>
           <ul className="mt-3 space-y-2 font-mono text-sm">
@@ -206,6 +255,16 @@ export default function DocsPage() {
                 className="text-brand transition hover:text-brand-strong hover:underline"
               >
                 telemetry formats →
+              </Link>
+            </li>
+            <li>
+              <span className="text-slate-600">vectalon-vscode(7)</span>{' '}
+              <Link
+                href="https://marketplace.visualstudio.com/items?itemName=vectalon-dev.vectalon"
+                target="_blank"
+                className="text-brand transition hover:text-brand-strong hover:underline"
+              >
+                VS Code extension — workflow commands, guardrail status, knowledge base →
               </Link>
             </li>
             <li>

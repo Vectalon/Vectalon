@@ -59,7 +59,11 @@ const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'Does it need a model?',
-    a: 'The optional model-driven agent does — but the 40 deterministic commands (review, security, SOC 2, GitHub PR triage, incident command, …) need no model at all. They run offline with a report and a verdict, zero model calls, free on every tier.',
+    a: 'The optional model-driven agent does — but the 40 deterministic commands (review, security, SOC 2, GitHub PR triage, incident command, …) need no model at all. They run offline with a report and a verdict, zero model calls, free on every tier. Deterministic means reproducible, not static: every run re-scans your project’s current state, so the results are as fresh as your last command.',
+  },
+  {
+    q: 'Do the deterministic agents go stale?',
+    a: 'No — every run reads the project as it is right now: source files, git history, CI config, and telemetry exports are scanned at run time, and the GitHub family (gh-pr, gh-issue, gh-ci, gh-sec) queries the live gh CLI, so a report always reflects now, not a cached snapshot. The one cyclical input — ecosystem knowledge and web intel — auto-refreshes hourly under vectalon serve, or on demand with vectalon refresh; and when a data source is missing, an agent returns an explicit no-data verdict rather than guessing.',
   },
   {
     q: 'Which platforms are supported?',

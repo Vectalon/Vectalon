@@ -446,13 +446,35 @@
   }
 }
 
+/* Deep link from the agents catalog: when a report frame is the anchor
+   target (…/reports#report-<cmd>), flash its border so the jump lands
+   visibly among 40 stacked documents. */
+@keyframes console-target {
+  0% {
+    box-shadow:
+      0 0 0 1px rgb(24 191 122 / 0.55),
+      0 0 32px -6px rgb(24 191 122 / 0.45);
+  }
+  100% {
+    /* the console frame's resting shadow — end state matches so the flash
+       resolves to the element's natural look in either theme. */
+    box-shadow:
+      0 1px 0 0 rgb(255 255 255 / 0.03) inset,
+      0 24px 70px -30px rgb(0 0 0 / 0.55);
+  }
+}
+.console:target {
+  animation: console-target 2.2s ease-out both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .caret,
   .animate-fade-up,
   .ticker-inner,
   .live-dot,
   .boot-line,
-  .menu-pop {
+  .menu-pop,
+  .console:target {
     animation: none;
   }
   /* Reduced motion keeps meaningful feedback but drops spatial movement:
