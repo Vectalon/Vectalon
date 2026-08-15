@@ -1,56 +1,11 @@
 import Link from 'next/link'
 import { REPORT_SAMPLES, type ReportSample } from '../../lib/reportSamples'
+import { ReportWindow } from '../../components/ReportWindow'
 
 export const metadata = {
   title: 'Vectalon — generated documents, real reports',
   description:
     'All 40 real documents vectalon generates — crash intelligence, incident briefs, DX scorecards, sentry triage, release trains, and every other agent report — shown exactly as written to docs/vectalon/.',
-}
-
-const VERDICT_CHIP: Record<ReportSample['verdict'], string> = {
-  approved: 'badge-ok',
-  'needs-attention': 'badge-warn',
-  'changes-requested': 'badge-danger',
-}
-
-function ReportFrame({ sample, index }: { sample: ReportSample; index: number }) {
-  return (
-    <div
-      id={`report-${sample.cmd}`}
-      className="console animate-fade-up scroll-mt-24"
-      style={{ animationDelay: `${Math.min(index * 60, 480)}ms` }}
-    >
-      {/* console head — the command that produced this document */}
-      <div className="console-head">
-        <span className="flex items-center gap-2">
-          <span className="text-brand">$</span>
-          <span className="font-mono text-slate-300">vectalon {sample.cmd}</span>
-        </span>
-        <span className="hidden items-center gap-1.5 sm:flex">
-          <span className={`badge shrink-0 ${VERDICT_CHIP[sample.verdict]}`}>{sample.verdict}</span>
-          <span className="font-mono text-[10px] uppercase tracking-wider text-slate-500">{sample.name}</span>
-        </span>
-      </div>
-
-      {/* meta strip — where it lives + how to regenerate it */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-ink-700/70 px-4 py-2 font-mono text-[11px] text-slate-500">
-        <span>
-          project <span className="text-slate-400">{sample.project}</span>
-        </span>
-        <span>
-          report <span className="text-slate-400">{sample.reportPath}</span>
-        </span>
-        <span className="ml-auto">
-          regenerate <span className="text-brand">$ {sample.regenerate}</span>
-        </span>
-      </div>
-
-      {/* the document itself — exactly as vectalon wrote it */}
-      <pre className="overflow-x-auto whitespace-pre-wrap break-words px-4 py-4 font-mono text-[12.5px] leading-relaxed text-slate-300 sm:px-6 sm:py-5">
-        {sample.doc}
-      </pre>
-    </div>
-  )
 }
 
 const VERDICT_COUNT = REPORT_SAMPLES.reduce<Record<ReportSample['verdict'], number>>(
@@ -86,9 +41,7 @@ export default function ReportsPage() {
 
       {/* coverage strip — every verdict, every command */}
       <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-        <span className="badge badge-ok">
-          {VERDICT_COUNT.approved} approved
-        </span>
+        <span className="badge badge-ok">{VERDICT_COUNT.approved} approved</span>
         <span className="badge badge-warn">
           {VERDICT_COUNT['needs-attention']} needs attention
         </span>
@@ -106,13 +59,19 @@ export default function ReportsPage() {
         ))}
       </div>
 
-      <div className="mt-12 space-y-8">
+      {/* the documents — one carbon window per agent */}
+      <div className="relative mt-14 space-y-10">
+        {/* carbon dot-grid backdrop */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 [background-image:radial-gradient(rgb(var(--slate-700)/0.35)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,black,transparent_78%)]"
+        />
         {REPORT_SAMPLES.map((s, i) => (
-          <ReportFrame key={s.cmd} sample={s} index={i} />
+          <ReportWindow key={s.cmd} sample={s} index={i} />
         ))}
       </div>
 
-      <div className="mt-10 flex flex-col items-center gap-3">
+      <div className="mt-12 flex flex-col items-center gap-3">
         <Link href="/agents" className="text-sm text-brand transition hover:text-brand-strong hover:underline">
           The 40 agents that produce these documents →
         </Link>

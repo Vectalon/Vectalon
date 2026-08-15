@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runTrain, writeTrainReport } from '../../train'
 
 export interface TrainCommandOptions {
@@ -25,26 +25,30 @@ export async function trainCommand(directory: string, options: TrainCommandOptio
     return
   }
 
-  logger.info(pc.bold('vectalon train — Release Train (098, dry-run)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-  logger.info(`Repos: ${report.repos.length} | verdict: ${report.verdict === 'approved' ? pc.green(report.verdict) : pc.yellow(report.verdict)} | read-only: nothing was modified`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`Repos: ${report.repos.length} | read-only: nothing was modified`)
+  body.push('')
   for (const r of report.repos) {
-    const bump = r.suggestedBump === 'none' ? pc.dim('none') : pc.bold(r.suggestedBump)
-    logger.info(pc.bold(r.name))
-    logger.info(
-      `  version: ${r.version ?? pc.dim('—')} | last tag: ${r.lastTag ?? pc.dim('—')} | bump: ${bump} | changelog: ${r.changelogSection ? pc.green('✓') : pc.red('✗')} | clean: ${r.dirty ? pc.red('✗') : pc.green('✓')}`,
+    const bump = r.suggestedBump === 'none' ? dim('none') : pc.bold(r.suggestedBump)
+    body.push(pc.bold(r.name))
+    body.push(
+      `  version: ${r.version ?? dim('—')} | last tag: ${r.lastTag ?? dim('—')} | bump: ${bump} | changelog: ${r.changelogSection ? pc.green('✓') : pc.red('✗')} | clean: ${r.dirty ? pc.red('✗') : pc.green('✓')}`,
     )
     for (const c of r.checks) {
-      logger.info(`    ${c.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')} ${c.message}`)
+      body.push(`    ${c.severity === 'warning' ? pc.yellow('▲') : dim('•')} ${c.message}`)
     }
   }
-  logger.info('')
+  body.push('')
   for (const f of report.findings) {
-    logger.info(`  ${pc.yellow('▲')} [${f.severity}] ${f.id} (${f.repo}) — ${f.message}`)
-    logger.info(`    ${pc.dim(f.suggestion)}`)
+    body.push(`  ${pc.yellow('▲')} [${f.severity}] ${f.id} (${f.repo}) — ${f.message}`)
+    body.push(`    ${dim(f.suggestion)}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon train — Release Train (098, dry-run)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runSoc2Scan, writeSoc2Report } from '../../soc2'
 
 export interface Soc2CommandOptions {
@@ -25,18 +25,23 @@ export async function soc2Command(directory: string, options: Soc2CommandOptions
     return
   }
 
-  logger.info(pc.bold('vectalon soc2 — SOC2 Readiness Agent (075)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
+  const body: string[] = []
   const color = report.score >= 80 ? pc.green : report.score >= 50 ? pc.yellow : pc.red
-  logger.info(`Score: ${color(`${report.score}%`)} (${report.summary.pass} pass, ${report.summary.partial} partial, ${report.summary.fail} fail) — ${report.verdict}`)
-  logger.info('')
+  body.push(`Score: ${color(`${report.score}%`)} (${report.summary.pass} pass, ${report.summary.partial} partial, ${report.summary.fail} fail)`)
+  body.push('')
   for (const c of report.controls) {
     const icon = c.status === 'pass' ? pc.green('✓') : c.status === 'partial' ? pc.yellow('▲') : pc.red('✖')
-    logger.info(`  ${icon} [${c.criteria}] ${c.title} — ${c.status}`)
-    logger.info(`    ${pc.dim(c.evidence || 'no evidence')}`)
+    body.push(`  ${icon} [${c.criteria}] ${c.title} — ${c.status}`)
+    body.push(`    ${dim(c.evidence || 'no evidence')}`)
   }
-  logger.info('')
-  logger.info('Note: repository-evidence self-assessment, not an audit. Process/personnel evidence is required for certification.')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+  body.push('')
+  body.push(dim('Note: repository-evidence self-assessment, not an audit. Process/personnel evidence is required for certification.'))
+
+  printCarbonReport({
+    title: 'vectalon soc2 — SOC2 Readiness Agent (075)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

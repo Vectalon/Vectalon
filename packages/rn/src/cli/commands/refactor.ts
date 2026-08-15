@@ -10,7 +10,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, parchment, dim } from '../carbon'
 import { runRefactorScan, writeRefactorReport } from '../../refactor'
 
 export interface RefactorCommandOptions {
@@ -29,42 +29,39 @@ export async function refactorCommand(directory: string, options: RefactorComman
     return
   }
 
-  logger.info(pc.bold('vectalon refactor — Refactoring Agent (066)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-
-  const verdictColor = report.verdict === 'approved'
-    ? pc.green
-    : report.verdict === 'needs-attention'
-      ? pc.yellow
-      : pc.red
-  logger.info(`Verdict: ${verdictColor(report.verdict)}`)
-  logger.info(`Files scanned: ${report.fileCount}`)
-  logger.info(`Findings: ${report.summary.total} (${report.summary.bySeverity.warning} warning(s), ${report.summary.bySeverity.info} info)`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`Files scanned: ${report.fileCount}`)
+  body.push(`Findings: ${report.summary.total} (${report.summary.bySeverity.warning} warning(s), ${report.summary.bySeverity.info} info)`)
+  body.push('')
 
   if (report.findings.length === 0) {
-    logger.info('No refactor opportunities found — the code is clean.')
+    body.push('No refactor opportunities found — the code is clean.')
   }
   // Whole-project scans can surface hundreds of small findings — print the
   // severity-ranked top, point at the full report for the rest.
   const printed = report.findings.slice(0, 15)
   for (const f of printed) {
-    const icon = f.severity === 'error' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
+    const icon = f.severity === 'error' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : dim('•')
     const loc = f.line > 0 ? `${f.file}:${f.line}` : f.file
-    logger.info(`  ${icon} [${f.severity}] ${f.id} — ${loc}`)
-    logger.info(`    ${f.message}`)
-    logger.info(`    ${pc.dim(f.suggestion)}`)
+    body.push(`  ${icon} [${f.severity}] ${f.id} — ${loc}`)
+    body.push(`    ${parchment(f.message)}`)
+    body.push(`    ${dim(f.suggestion)}`)
   }
   if (report.findings.length > printed.length) {
-    logger.info(pc.dim(`  …and ${report.findings.length - printed.length} more — see report.json / report.md for the full list`))
+    body.push(dim(`  …and ${report.findings.length - printed.length} more — see report.json / report.md for the full list`))
   }
-  logger.info('')
+  body.push('')
 
   for (const line of report.summary.topRecommendations) {
-    logger.info(`→ ${line}`)
+    body.push(`→ ${line}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
-  logger.success('Refactor scan complete — start with the warnings; they are the safest, highest-value wins.')
+
+  printCarbonReport({
+    title: 'vectalon refactor — Refactoring Agent (066)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+    done: 'Refactor scan complete — start with the warnings; they are the safest, highest-value wins.',
+  })
 }

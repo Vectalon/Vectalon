@@ -11,6 +11,7 @@ import { execSync } from 'child_process'
 import { resolve } from 'path'
 import pc from 'picocolors'
 import { logger } from '../logger'
+import { printCarbonReport, renderCarbonWindow } from '../carbon'
 import { runDashboard, writeDashboardReport, dashboardCronTick, cronIntervalSeconds } from '../../dashboard'
 import type { DashboardOptions, DashboardReport } from '../../dashboard'
 
@@ -50,15 +51,15 @@ async function openInBrowser(htmlPath: string): Promise<void> {
   }
 }
 
-function renderTerminalSummary(report: DashboardReport): void {
-  const color = report.overall === 'approved' ? pc.green : report.overall === 'needs-attention' ? pc.yellow : pc.red
-  logger.info(`Overall: ${color(report.overall)} | ${report.summary.agents} agents, ${report.summary.findings} findings (${report.summary.errors} err, ${report.summary.warnings} warn)`)
-  logger.info('')
+function terminalSummaryLines(report: DashboardReport): string[] {
+  const body: string[] = []
+  body.push(`Overall: ${report.overall} | ${report.summary.agents} agents, ${report.summary.findings} findings (${report.summary.errors} err, ${report.summary.warnings} warn)`)
+  body.push('')
   for (const a of report.agents) {
     const c = a.verdict === 'approved' ? pc.green : a.verdict === 'needs-attention' ? pc.yellow : pc.red
-    logger.info(`  ${c(a.verdict.padEnd(18))} ${a.agent.padEnd(16)} ${a.errors} err / ${a.warnings} warn / ${a.infos} info`)
+    body.push(`  ${c(a.verdict.padEnd(18))} ${a.agent.padEnd(16)} ${a.errors} err / ${a.warnings} warn / ${a.infos} info`)
   }
-  logger.info('')
+  return body
 }
 
 /** One `--cron` tick with a compact status line. */
@@ -78,18 +79,22 @@ export async function dashboardCommand(directory: string, options: DashboardComm
   // --- Cron mode: regenerate on a schedule until Ctrl-C -----------------
   if (options.cron) {
     const intervalSeconds = cronIntervalSeconds(options.interval)
-    logger.info(pc.bold('vectalon dashboard — Engineering Dashboard (079) — cron mode'))
-    logger.info(`project: ${root}`)
-    logger.info(`Regenerating the fast core reports + HTML every ${intervalSeconds}s — Ctrl-C to stop`)
-    logger.info('')
     const report = await runDashboard(root, { run: true })
-    const { jsonPath, htmlPath } = writeDashboardReport(root, report)
-    renderTerminalSummary(report)
+    const { htmlPath } = writeDashboardReport(root, report)
+    logger.info(renderCarbonWindow({
+      title: 'vectalon dashboard — Engineering Dashboard (079) — cron mode',
+      verdict: report.overall,
+      lines: [
+        `project: ${root}`,
+        `Regenerating the fast core reports + HTML every ${intervalSeconds}s — Ctrl-C to stop`,
+        '',
+        ...terminalSummaryLines(report),
+      ],
+      footer: htmlPath,
+    }))
     if (options.json) {
       process.stdout.write(JSON.stringify(report, null, 2) + '\n')
     }
-    logger.info(`Report: ${pc.dim(jsonPath)}`)
-    logger.info(`HTML:   ${pc.dim(htmlPath)}`)
     if (options.open) await openInBrowser(htmlPath)
 
     let tickNo = 1
@@ -122,11 +127,13 @@ export async function dashboardCommand(directory: string, options: DashboardComm
     return
   }
 
-  logger.info(pc.bold('vectalon dashboard — Engineering Dashboard (079)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-  renderTerminalSummary(report)
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
-  logger.info(`HTML:   ${pc.dim(htmlPath)}`)
+  printCarbonReport({
+    title: 'vectalon dashboard — Engineering Dashboard (079)',
+    verdict: report.overall,
+    lines: terminalSummaryLines(report),
+    reportPath: jsonPath,
+    root,
+    footer: htmlPath,
+  })
   if (options.open) await openInBrowser(htmlPath)
 }

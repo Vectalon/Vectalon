@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runSentryScan, writeSentryReport } from '../../sentry'
 
 export interface SentryCommandOptions {
@@ -25,22 +25,25 @@ export async function sentryCommand(directory: string, options: SentryCommandOpt
     return
   }
 
-  logger.info(pc.bold('vectalon sentry — Sentry Intelligence Agent (081)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-  const verdictColor = report.verdict === 'approved' ? pc.green : report.verdict === 'needs-attention' ? pc.yellow : pc.red
-  logger.info(`Verdict: ${verdictColor(report.verdict)} | files: ${report.filesScanned} | events: ${report.events} | crash classes: ${report.crashClasses.length}`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`files: ${report.filesScanned} | events: ${report.events} | crash classes: ${report.crashClasses.length}`)
+  body.push('')
   for (const c of report.crashClasses.slice(0, 10)) {
-    const color = c.severity === 'critical' ? pc.red : c.severity === 'warning' ? pc.yellow : pc.dim
-    logger.info(`  ${color(`[${c.severity.toUpperCase()}]`)} ${c.key} — ${c.eventCount} events, ${c.userCount} users, bucket: ${c.bucket}`)
+    const color = c.severity === 'critical' ? pc.red : c.severity === 'warning' ? pc.yellow : dim
+    body.push(`  ${color(`[${c.severity.toUpperCase()}]`)} ${c.key} — ${c.eventCount} events, ${c.userCount} users, bucket: ${c.bucket}`)
   }
-  if (report.crashClasses.length > 10) logger.info(pc.dim(`  … and ${report.crashClasses.length - 10} more classes`))
+  if (report.crashClasses.length > 10) body.push(dim(`  … and ${report.crashClasses.length - 10} more classes`))
   for (const f of report.findings) {
-    const icon = f.severity === 'critical' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-    logger.info(`  ${icon} [${f.severity}] ${f.id} ${f.key ? `— ${f.key}` : ''}`)
-    logger.info(`    ${f.message}`)
+    const icon = f.severity === 'critical' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+    body.push(`  ${icon} [${f.severity}] ${f.id} ${f.key ? `— ${f.key}` : ''}`)
+    body.push(`    ${f.message}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon sentry — Sentry Intelligence Agent (081)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

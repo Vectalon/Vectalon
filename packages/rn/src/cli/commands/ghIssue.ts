@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runGhIssue, writeGhIssueReport } from '../../ghIssue'
 
 export interface GhIssueCommandOptions {
@@ -29,30 +29,44 @@ export async function ghIssueCommand(directory: string, options: GhIssueCommandO
     return
   }
 
-  logger.info(pc.bold('vectalon gh-issue — GitHub Issue Intelligence (091)'))
-  logger.info(`project: ${root} · source: ${report.source}`)
-  logger.info('')
   if (report.issues.length === 0) {
+    const body: string[] = []
+    body.push(`source: ${report.source}`)
+    body.push('')
     for (const f of report.findings) {
-      logger.info(`  ${pc.yellow('▲')} [${f.severity}] ${f.id}`)
-      logger.info(`    ${f.message}`)
-      logger.info(`    ${pc.dim(f.suggestion)}`)
+      body.push(`  ${pc.yellow('▲')} [${f.severity}] ${f.id}`)
+      body.push(`    ${f.message}`)
+      body.push(`    ${dim(f.suggestion)}`)
     }
-    logger.info('')
-    logger.info(`Verdict: ${pc.red(report.verdict)} (no issue data)`)
-    logger.info(`Report: ${pc.dim(jsonPath)}`)
+    body.push('')
+    body.push('Verdict: no issue data')
+    printCarbonReport({
+      title: 'vectalon gh-issue — GitHub Issue Intelligence (091)',
+      verdict: report.verdict,
+      lines: body,
+      reportPath: jsonPath,
+      root,
+    })
     return
   }
   const s = report.summary
-  logger.info(`Open: ${s.total} | stale: ${pc.yellow(String(s.stale))} | unassigned: ${pc.yellow(String(s.unassigned))} | triaged: ${pc.green(String(s.triaged))} | verdict: ${report.verdict === 'approved' ? pc.green(report.verdict) : pc.yellow(report.verdict)}`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`source: ${report.source}`)
+  body.push(`Open: ${s.total} | stale: ${pc.yellow(String(s.stale))} | unassigned: ${pc.yellow(String(s.unassigned))} | triaged: ${pc.green(String(s.triaged))}`)
+  body.push('')
   for (const i of report.issues) {
-    logger.info(`  #${String(i.number).padEnd(5)} ${i.title.slice(0, 48).padEnd(50)} ${String(i.ageDays).padStart(3)}d  ${i.labels.join(',') || pc.dim('unlabeled')}  ${i.verdict}`)
+    body.push(`  #${String(i.number).padEnd(5)} ${i.title.slice(0, 48).padEnd(50)} ${String(i.ageDays).padStart(3)}d  ${i.labels.join(',') || dim('unlabeled')}  ${i.verdict}`)
   }
-  logger.info('')
+  body.push('')
   for (const f of report.findings.filter(x => x.severity === 'warning')) {
-    logger.info(`  ${pc.yellow('▲')} [${f.severity}] ${f.id}${f.issue ? ` (issue #${f.issue})` : ''} — ${f.message}`)
+    body.push(`  ${pc.yellow('▲')} [${f.severity}] ${f.id}${f.issue ? ` (issue #${f.issue})` : ''} — ${f.message}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon gh-issue — GitHub Issue Intelligence (091)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

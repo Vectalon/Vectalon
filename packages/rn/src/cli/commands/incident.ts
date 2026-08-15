@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runIncident, writeIncidentReport } from '../../incident'
 
 export interface IncidentCommandOptions {
@@ -27,38 +27,49 @@ export async function incidentCommand(directory: string, options: IncidentComman
     return
   }
 
-  logger.info(pc.bold('vectalon incident — Incident Commander (097)'))
-  logger.info(`project: ${root} · source: ${report.source}`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`source: ${report.source}`)
+  body.push('')
   if (report.rootCause === 'no-data') {
-    logger.info(`  ${pc.yellow('▲')} No crash data — ${report.probableCause}`)
-    logger.info('')
-    for (const s of report.nextSteps) logger.info(`  - ${s}`)
-    logger.info('')
-    logger.info(`Report: ${pc.dim(jsonPath)}`)
+    body.push(`  ${pc.yellow('▲')} No crash data — ${report.probableCause}`)
+    body.push('')
+    for (const s of report.nextSteps) body.push(`  - ${s}`)
+    printCarbonReport({
+      title: 'vectalon incident — Incident Commander (097)',
+      verdict: report.verdict,
+      lines: body,
+      reportPath: jsonPath,
+      root,
+    })
     return
   }
   const sev = report.severity === 'error' ? pc.red(report.severity) : pc.yellow(report.severity)
-  logger.info(`Platform: ${report.platform} | root cause: ${pc.bold(report.rootCause)} | severity: ${sev} | verdict: ${report.verdict === 'approved' ? pc.green(report.verdict) : pc.yellow(report.verdict)}`)
-  if (report.exceptionType) logger.info(`Exception: ${report.exceptionType}`)
-  logger.info('')
-  logger.info(pc.bold('Probable cause:'))
-  logger.info(`  ${report.probableCause}`)
+  body.push(`Platform: ${report.platform} | root cause: ${pc.bold(report.rootCause)} | severity: ${sev}`)
+  if (report.exceptionType) body.push(`Exception: ${report.exceptionType}`)
+  body.push('')
+  body.push(pc.bold('Probable cause:'))
+  body.push(`  ${report.probableCause}`)
   if (report.releaseRisk) {
     const risk = report.releaseRisk.risk
-    logger.info(`  ${pc.dim('Release risk:')} ${risk === 'low' ? pc.green(risk) : pc.yellow(risk)} (${report.releaseRisk.score}/100)`)
+    body.push(`  ${dim('Release risk:')} ${risk === 'low' ? pc.green(risk) : pc.yellow(risk)} (${report.releaseRisk.score}/100)`)
   }
-  logger.info('')
+  body.push('')
   if (report.hotFiles.length > 0) {
-    logger.info(pc.bold('Hot files:'))
+    body.push(pc.bold('Hot files:'))
     for (const h of report.hotFiles) {
-      logger.info(`  ${h.file}`)
-      for (const c of h.recentCommits) logger.info(`    ${pc.dim(c)}`)
+      body.push(`  ${h.file}`)
+      for (const c of h.recentCommits) body.push(`    ${dim(c)}`)
     }
-    logger.info('')
+    body.push('')
   }
-  logger.info(pc.bold('Next steps:'))
-  for (const s of report.nextSteps) logger.info(`  - ${s}`)
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+  body.push(pc.bold('Next steps:'))
+  for (const s of report.nextSteps) body.push(`  - ${s}`)
+
+  printCarbonReport({
+    title: 'vectalon incident — Incident Commander (097)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

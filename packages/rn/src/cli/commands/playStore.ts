@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport } from '../carbon'
 import { runPlayScan, writePlayReport } from '../../playStore'
 
 export interface PlayStoreCommandOptions {
@@ -25,16 +25,19 @@ export async function playStoreCommand(directory: string, options: PlayStoreComm
     return
   }
 
-  logger.info(pc.bold('vectalon play-store — Deep Play Store Readiness Agent (087)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-  const verdictColor = report.verdict === 'approved' ? pc.green : report.verdict === 'needs-attention' ? pc.yellow : pc.red
-  logger.info(`Verdict: ${verdictColor(report.verdict)} | checks: ${report.checks.length}`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`checks: ${report.checks.length}`)
+  body.push('')
   for (const c of report.checks) {
     const mark = c.status === 'pass' ? pc.green('✔') : c.status === 'warn' ? pc.yellow('▲') : pc.red('✖')
-    logger.info(`  ${mark} ${c.label.padEnd(20)} ${c.message}`)
+    body.push(`  ${mark} ${c.label.padEnd(20)} ${c.message}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon play-store — Deep Play Store Readiness Agent (087)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

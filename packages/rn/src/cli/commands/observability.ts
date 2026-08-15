@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runObsScan, writeObsReport } from '../../observability'
 
 export interface ObsCommandOptions {
@@ -25,20 +25,23 @@ export async function observabilityCommand(directory: string, options: ObsComman
     return
   }
 
-  logger.info(pc.bold('vectalon observability — Mobile Observability Agent (082)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-  const verdictColor = report.verdict === 'approved' ? pc.green : pc.yellow
-  logger.info(`Verdict: ${verdictColor(report.verdict)} | traces: ${report.tracesScanned} | slow: ${report.slowTraces.length}`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`traces: ${report.tracesScanned} | slow: ${report.slowTraces.length}`)
+  body.push('')
   for (const f of report.findings.slice(0, 15)) {
-    const icon = f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-    logger.info(`  ${icon} [${f.severity}] ${f.id}`)
-    logger.info(`    ${f.message}`)
+    const icon = f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+    body.push(`  ${icon} [${f.severity}] ${f.id}`)
+    body.push(`    ${f.message}`)
   }
   for (const s of report.slowTraces.slice(0, 5)) {
-    logger.info(`  ${pc.yellow('▲')} slow trace: ${s.name} — ${s.durationMs} ms${s.release ? ` (${s.release})` : ''}`)
+    body.push(`  ${pc.yellow('▲')} slow trace: ${s.name} — ${s.durationMs} ms${s.release ? ` (${s.release})` : ''}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon observability — Mobile Observability Agent (082)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, parchment, dim } from '../carbon'
 import { runPermsScan, writePermsReport } from '../../perms'
 
 export interface PermsCommandOptions {
@@ -25,21 +25,24 @@ export async function permsCommand(directory: string, options: PermsCommandOptio
     return
   }
 
-  logger.info(pc.bold('vectalon perms — Agent Permissions Audit (078)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-  const verdictColor = report.verdict === 'approved' ? pc.green : report.verdict === 'needs-attention' ? pc.yellow : pc.red
-  logger.info(`Verdict: ${verdictColor(report.verdict)} | config files: ${report.configFiles.length}`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`config files: ${report.configFiles.length}`)
+  body.push('')
   if (report.configFiles.length === 0) {
-    logger.info('No agent/MCP config files found — nothing to audit.')
+    body.push('No agent/MCP config files found — nothing to audit.')
   }
   for (const f of report.findings) {
-    const icon = f.severity === 'error' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-    logger.info(`  ${icon} [${f.severity}] ${f.id} — ${f.file}:${f.line}`)
-    logger.info(`    ${f.message}`)
-    logger.info(`    ${pc.dim(f.suggestion)}`)
+    const icon = f.severity === 'error' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+    body.push(`  ${icon} [${f.severity}] ${f.id} — ${f.file}:${f.line}`)
+    body.push(`    ${parchment(f.message)}`)
+    body.push(`    ${dim(f.suggestion)}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon perms — Agent Permissions Audit (078)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

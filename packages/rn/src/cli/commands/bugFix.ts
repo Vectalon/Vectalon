@@ -9,6 +9,7 @@
 import { resolve } from 'path'
 import pc from 'picocolors'
 import { logger } from '../logger'
+import { printCarbonReport, parchment, dim } from '../carbon'
 import { runBugFix, writeBugFixReport } from '../../bugFix'
 import type { BugFixOptions } from '../../bugFix'
 
@@ -27,27 +28,29 @@ export async function bugFixCommand(directory: string, options: BugFixCommandOpt
     return
   }
 
-  logger.info(pc.bold('vectalon bug-fix — Autonomous Bug Fix Agent (070)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-
-  const verdictColor = report.verdict === 'approved' ? pc.green : report.verdict === 'needs-attention' ? pc.yellow : pc.red
-  logger.info(`Verdict: ${verdictColor(report.verdict)}`)
-  logger.info(`Findings: ${report.summary.total} (${report.summary.fixable} auto-fixable) | Applied: ${report.summary.applied} | Refused (dirty tree): ${report.refused}`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`Findings: ${report.summary.total} (${report.summary.fixable} auto-fixable) | Applied: ${report.summary.applied} | Refused (dirty tree): ${report.refused}`)
+  body.push('')
 
   if (report.findings.length === 0) {
-    logger.info('No fixable findings — nothing to do.')
+    body.push('No fixable findings — nothing to do.')
   }
   for (const f of report.findings.slice(0, 15)) {
-    const icon = f.severity === 'error' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-    logger.info(`  ${icon} [${f.severity}] ${f.id} — ${f.file}:${f.line} (${f.fixable ? 'auto' : 'manual'})`)
-    logger.info(`    ${f.message}`)
-    logger.info(`    ${pc.dim(f.suggestion)}`)
+    const icon = f.severity === 'error' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+    body.push(`  ${icon} [${f.severity}] ${f.id} — ${f.file}:${f.line} (${f.fixable ? 'auto' : 'manual'})`)
+    body.push(`    ${parchment(f.message)}`)
+    body.push(`    ${dim(f.suggestion)}`)
   }
-  if (report.findings.length > 15) logger.info(pc.dim(`  … and ${report.findings.length - 15} more (full plan in the report)`))
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+  if (report.findings.length > 15) body.push(dim(`  … and ${report.findings.length - 15} more (full plan in the report)`))
+  body.push('')
+
+  printCarbonReport({
+    title: 'vectalon bug-fix — Autonomous Bug Fix Agent (070)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
   if (options.apply && report.refused > 0) {
     logger.warn(`Refused ${report.refused} auto-fixes: working tree is dirty. Commit/stash, or re-run with --force.`)
   } else if (options.apply) {

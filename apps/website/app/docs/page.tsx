@@ -125,20 +125,27 @@ export default function DocsPage() {
         </p>
       </div>
 
-      {/* man vectalon — the whole page is one console frame */}
-      <div className="console">
-        <div className="console-head">
-          <span className="flex items-center gap-2">
-            <span className="text-brand">$</span>
-            man vectalon
-          </span>
-          <span className="hidden items-center gap-1.5 sm:flex">
+      {/* man vectalon — one carbon window, like the report documents */}
+      <div className="term report-window man-term">
+        <div className="term-head">
+          <div className="flex items-center gap-1.5" aria-hidden>
+            <span className="term-dot bg-[#ff5f56]" />
+            <span className="term-dot bg-[#ffbd2e]" />
+            <span className="term-dot bg-[#27c93f]" />
+          </div>
+          <div className="flex min-w-0 items-center gap-2 font-mono text-[11px] text-[#E8E0C8]/70">
+            <span className="truncate">
+              <span className="text-[#E8E0C8]">$</span>{' '}
+              <span className="text-[rgb(var(--brand))]">man vectalon</span>
+            </span>
+          </div>
+          <span className="flex shrink-0 items-center gap-1.5 font-mono text-[11px] text-[#E8E0C8]/45">
             <span className="live-dot" aria-hidden />
             v0.9.0
           </span>
         </div>
 
-        <div className="px-5 py-6 sm:px-8 sm:py-8">
+        <div className="man-body px-5 py-6 sm:px-8 sm:py-8">
           {/* NAME */}
           <ManH>name</ManH>
           <p className="mt-3 font-mono text-sm text-slate-300">

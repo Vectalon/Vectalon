@@ -10,6 +10,7 @@
 import { resolve } from 'path'
 import pc from 'picocolors'
 import { logger } from '../logger'
+import { printCarbonReport, parchment, dim } from '../carbon'
 import { runReleaseReady, writeReleaseReadyReport } from '../../releaseReady'
 
 export interface ReleaseReadyCommandOptions {
@@ -28,32 +29,29 @@ export async function releaseReadyCommand(directory: string, options: ReleaseRea
     return
   }
 
-  logger.info(pc.bold('vectalon release-ready — Release Readiness Agent (069)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-
-  const verdictColor = report.verdict === 'approved'
-    ? pc.green
-    : report.verdict === 'needs-attention'
-      ? pc.yellow
-      : pc.red
-  logger.info(`Verdict: ${verdictColor(report.verdict)}`)
-  logger.info(`Version: ${report.version || '(none)'} | Last tag: ${report.lastTag || '(none)'}`)
-  logger.info(`Checks: ${report.summary.total} (${report.summary.bySeverity.error} error(s), ${report.summary.bySeverity.warning} warning(s), ${report.summary.bySeverity.info} info)`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`Version: ${report.version || '(none)'} | Last tag: ${report.lastTag || '(none)'}`)
+  body.push(`Checks: ${report.summary.total} (${report.summary.bySeverity.error} error(s), ${report.summary.bySeverity.warning} warning(s), ${report.summary.bySeverity.info} info)`)
+  body.push('')
 
   for (const c of report.checks) {
-    const icon = c.severity === 'error' ? pc.red('✖') : c.severity === 'warning' ? pc.yellow('▲') : pc.dim('✓')
-    logger.info(`  ${icon} [${c.severity}] ${c.title}`)
-    logger.info(`    ${c.message}${c.fix ? pc.dim(` — ${c.fix}`) : ''}`)
+    const icon = c.severity === 'error' ? pc.red('✖') : c.severity === 'warning' ? pc.yellow('▲') : dim('✓')
+    body.push(`  ${icon} [${c.severity}] ${c.title}`)
+    body.push(`    ${parchment(c.message)}${c.fix ? dim(` — ${c.fix}`) : ''}`)
   }
-  logger.info('')
+  body.push('')
 
   for (const line of report.summary.topRecommendations) {
-    logger.info(`→ ${line}`)
+    body.push(`→ ${line}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon release-ready — Release Readiness Agent (069)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
   if (report.verdict === 'approved') {
     logger.success('Release ready — ship it.')
   } else {

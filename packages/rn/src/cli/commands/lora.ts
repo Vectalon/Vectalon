@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport } from '../carbon'
 import { runLoraScan, writeLoraReport } from '../../lora'
 
 export interface LoraCommandOptions {
@@ -27,16 +27,19 @@ export async function loraCommand(directory: string, options: LoraCommandOptions
     return
   }
 
-  logger.info(pc.bold('vectalon lora — LoRA Training Readiness Agent (089)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-  const verdictColor = report.verdict === 'approved' ? pc.green : report.verdict === 'needs-attention' ? pc.yellow : pc.red
-  logger.info(`Verdict: ${verdictColor(report.verdict)} | checks: ${report.checks.length}`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`checks: ${report.checks.length}`)
+  body.push('')
   for (const c of report.checks) {
     const mark = c.status === 'pass' ? pc.green('✔') : c.status === 'warn' ? pc.yellow('▲') : pc.red('✖')
-    logger.info(`  ${mark} ${c.label.padEnd(20)} ${c.message}`)
+    body.push(`  ${mark} ${c.label.padEnd(20)} ${c.message}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon lora — LoRA Training Readiness Agent (089)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

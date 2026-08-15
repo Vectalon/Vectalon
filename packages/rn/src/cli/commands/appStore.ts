@@ -8,7 +8,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, parchment, dim } from '../carbon'
 import { runStoreScan, writeStoreReport } from '../../appStore'
 
 export interface AppStoreCommandOptions {
@@ -26,18 +26,19 @@ export async function appStoreCommand(directory: string, options: AppStoreComman
     return
   }
 
-  logger.info(pc.bold('vectalon app-store — Store Readiness Agent (074)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-  const verdictColor = report.verdict === 'approved' ? pc.green : report.verdict === 'needs-attention' ? pc.yellow : pc.red
-  logger.info(`Verdict: ${verdictColor(report.verdict)} (${report.summary.total} findings)`)
-  logger.info('')
-  if (report.findings.length === 0) logger.info('No store-readiness issues found.')
+  const body: string[] = []
+  if (report.findings.length === 0) body.push('No store-readiness issues found.')
   for (const f of report.findings) {
-    const icon = f.severity === 'error' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-    logger.info(`  ${icon} [${f.severity}] ${f.platform} — ${f.message}`)
-    logger.info(`    ${pc.dim(f.suggestion)}`)
+    const icon = f.severity === 'error' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+    body.push(`  ${icon} [${f.severity}] ${f.platform} — ${parchment(f.message)}`)
+    body.push(`    ${dim(f.suggestion)}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon app-store — Store Readiness Agent (074)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

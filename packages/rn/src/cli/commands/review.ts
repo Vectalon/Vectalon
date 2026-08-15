@@ -10,7 +10,7 @@
 
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, parchment, dim } from '../carbon'
 import { runReview, writeReviewReport, reviewDocsDir } from '../../review'
 import { ModelRouter } from '../../model/ModelRouter'
 import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
@@ -47,45 +47,42 @@ export async function reviewCommand(directory: string, options: ReviewCommandOpt
     return
   }
 
-  logger.info(pc.bold(`vectalon review — PR Review Agent (061)`))
-  logger.info(`project: ${root}`)
-  logger.info(`base: ${result.base}`)
-  logger.info('')
-
-  const verdictColor = result.verdict === 'approved'
-    ? pc.green
-    : result.verdict === 'needs-attention'
-      ? pc.yellow
-      : pc.red
-  logger.info(`Verdict: ${verdictColor(result.verdict)}`)
-  logger.info(`Files: ${result.summary.files} | Added lines: ${result.summary.addedLines}`)
-  logger.info(`Findings: ${result.summary.findings} (${result.summary.errors} error(s), ${result.summary.warnings} warning(s), ${result.summary.infos} info)`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`base: ${result.base}`)
+  body.push(`Files: ${result.summary.files} | Added lines: ${result.summary.addedLines}`)
+  body.push(`Findings: ${result.summary.findings} (${result.summary.errors} error(s), ${result.summary.warnings} warning(s), ${result.summary.infos} info)`)
+  body.push('')
 
   if (result.files.length === 0) {
-    logger.info('No changes to review — the diff is empty.')
+    body.push('No changes to review — the diff is empty.')
   }
   for (const file of result.files) {
     const all = [...file.findings, ...file.standardFindings]
-    logger.info(pc.bold(file.path) + pc.dim(`  (${file.addedLines} added line(s))`))
+    body.push(pc.bold(file.path) + dim(`  (${file.addedLines} added line(s))`))
     for (const f of all) {
-      const icon = f.severity === 'error' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-      logger.info(`  ${icon} [${f.severity}] ${f.rule} (line ${f.line})`)
-      logger.info(`    ${f.message}`)
+      const icon = f.severity === 'error' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+      body.push(`  ${icon} [${f.severity}] ${f.rule} (line ${f.line})`)
+      body.push(`    ${parchment(f.message)}`)
     }
     if (file.llm) {
-      logger.info(`  ${pc.dim('LLM:')} ${file.llm.verdict} — ${file.llm.summary}`)
+      body.push(`  ${dim('LLM:')} ${file.llm.verdict} — ${file.llm.summary}`)
     }
     if (all.length === 0 && !file.llm) {
-      logger.info(pc.dim('  No findings.'))
+      body.push(dim('  No findings.'))
     }
-    logger.info('')
+    body.push('')
   }
 
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
   if (result.files.length > 0) {
-    logger.info('')
-    logger.info(pc.dim(`Markdown: ${reviewDocsDir(root)}/review.md`))
+    body.push(dim(`Markdown: ${reviewDocsDir(root)}/review.md`))
   }
-  logger.success('Review complete — address the findings before merging.')
+
+  printCarbonReport({
+    title: 'vectalon review — PR Review Agent (061)',
+    verdict: result.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+    done: 'Review complete — address the findings before merging.',
+  })
 }

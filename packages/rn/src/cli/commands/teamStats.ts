@@ -8,7 +8,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runTeamStats, writeTeamStatsReport } from '../../teamStats'
 
 export interface TeamStatsCommandOptions {
@@ -26,21 +26,25 @@ export async function teamStatsCommand(directory: string, options: TeamStatsComm
     return
   }
 
-  logger.info(pc.bold('vectalon team-stats — Team Productivity Analytics (077)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-  logger.info(`Commits: ${report.totalCommits} | Authors: ${report.authors.length} | Bus factor: ${report.busFactor} | Cadence: ${report.cadencePerDay.toFixed(1)}/day | Verdict: ${report.verdict === 'approved' ? pc.green(report.verdict) : pc.yellow(report.verdict)}`)
-  logger.info('')
-  logger.info(pc.bold('Authors:'))
+  const body: string[] = []
+  body.push(`Commits: ${report.totalCommits} | Authors: ${report.authors.length} | Bus factor: ${report.busFactor} | Cadence: ${report.cadencePerDay.toFixed(1)}/day`)
+  body.push('')
+  body.push(pc.bold('Authors:'))
   for (const a of report.authors.slice(0, 8)) {
-    logger.info(`  ${a.author.padEnd(20)} ${String(a.commits).padStart(4)} commits  ${pc.dim(`(${(a.share * 100).toFixed(0)}%)`)}`)
+    body.push(`  ${a.author.padEnd(20)} ${String(a.commits).padStart(4)} commits  ${dim(`(${(a.share * 100).toFixed(0)}%)`)}`)
   }
-  logger.info('')
+  body.push('')
   for (const f of report.findings) {
-    const icon = f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-    logger.info(`  ${icon} [${f.severity}] ${f.id} — ${f.message}`)
-    logger.info(`    ${pc.dim(f.suggestion)}`)
+    const icon = f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+    body.push(`  ${icon} [${f.severity}] ${f.id} — ${f.message}`)
+    body.push(`    ${dim(f.suggestion)}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon team-stats — Team Productivity Analytics (077)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

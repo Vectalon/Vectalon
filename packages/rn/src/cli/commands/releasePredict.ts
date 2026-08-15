@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runReleasePredict, writePredictReport } from '../../releasePredict'
 
 export interface ReleasePredictCommandOptions {
@@ -25,22 +25,26 @@ export async function releasePredictCommand(directory: string, options: ReleaseP
     return
   }
 
-  logger.info(pc.bold('vectalon release-predict — Release Prediction Agent (086)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
+  const body: string[] = []
   const riskColor = report.risk === 'low' ? pc.green : report.risk === 'moderate' ? pc.yellow : report.risk === 'high' ? pc.red : pc.bgRed
-  logger.info(`Risk: ${riskColor(report.risk)} | score: ${report.score}/100 | window: ${report.windowDays}d (${report.windowCommits} commits)`)
-  logger.info('')
-  logger.info(report.riskDescription)
-  logger.info('')
+  body.push(`Risk: ${riskColor(report.risk)} | score: ${report.score}/100 | window: ${report.windowDays}d (${report.windowCommits} commits)`)
+  body.push('')
+  body.push(report.riskDescription)
+  body.push('')
   for (const f of report.factors) {
-    logger.info(`  ${pc.dim(f.name.padEnd(26))} ${String(f.value).padStart(6)}  (${f.goodDirection === 'lower' ? 'lower = safer' : 'higher = safer'})`)
+    body.push(`  ${dim(f.name.padEnd(26))} ${String(f.value).padStart(6)}  (${f.goodDirection === 'lower' ? 'lower = safer' : 'higher = safer'})`)
   }
   for (const f of report.findings) {
-    const icon = f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-    logger.info(`  ${icon} [${f.severity}] ${f.id}`)
-    logger.info(`    ${f.message}`)
+    const icon = f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+    body.push(`  ${icon} [${f.severity}] ${f.id}`)
+    body.push(`    ${f.message}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon release-predict — Release Prediction Agent (086)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

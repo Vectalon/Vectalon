@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runAuditScan, writeAuditReport } from '../../audit'
 
 export interface AuditCommandOptions {
@@ -25,18 +25,21 @@ export async function auditCommand(directory: string, options: AuditCommandOptio
     return
   }
 
-  logger.info(pc.bold('vectalon audit — Org-wide Audit Trail Agent (084)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-  const verdictColor = report.verdict === 'approved' ? pc.green : pc.yellow
-  logger.info(`Verdict: ${verdictColor(report.verdict)} | entries: ${report.summary.entries} | files: ${report.summary.files}`)
-  logger.info('')
-  for (const a of report.summary.actors.slice(0, 5)) logger.info(`  ${pc.dim('actor')} ${a.actor.padEnd(20)} ${a.count} entries`)
+  const body: string[] = []
+  body.push(`entries: ${report.summary.entries} | files: ${report.summary.files}`)
+  body.push('')
+  for (const a of report.summary.actors.slice(0, 5)) body.push(`  ${dim('actor')} ${a.actor.padEnd(20)} ${a.count} entries`)
   for (const f of report.findings.slice(0, 15)) {
-    const icon = f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-    logger.info(`  ${icon} [${f.severity}] ${f.id}${f.line !== undefined ? ` (line ${f.line})` : ''}`)
-    logger.info(`    ${f.message}`)
+    const icon = f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+    body.push(`  ${icon} [${f.severity}] ${f.id}${f.line !== undefined ? ` (line ${f.line})` : ''}`)
+    body.push(`    ${f.message}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon audit — Org-wide Audit Trail Agent (084)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

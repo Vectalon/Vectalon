@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runCost, writeCostReport } from '../../cost'
 
 export interface CostCommandOptions {
@@ -25,24 +25,28 @@ export async function costCommand(directory: string, options: CostCommandOptions
     return
   }
 
-  logger.info(pc.bold('vectalon cost — Cost Governance (099)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-  logger.info(`Estimated spend: ${pc.bold('$' + report.totalUsd + '/mo')} | verdict: ${report.verdict === 'approved' ? pc.green(report.verdict) : pc.yellow(report.verdict)}`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`Estimated spend: ${pc.bold('$' + report.totalUsd + '/mo')}`)
+  body.push('')
   for (const l of report.lines) {
-    logger.info(`  ${pc.dim('•')} ${l.label.padEnd(40)} $${l.amountUsd}  (${l.basis})`)
+    body.push(`  ${dim('•')} ${l.label.padEnd(40)} $${l.amountUsd}  (${l.basis})`)
   }
-  if (report.lines.length === 0) logger.info(`  ${pc.dim('No cost surfaces found — see findings.')}`)
-  logger.info('')
-  logger.info(pc.dim('Assumptions:'))
-  for (const a of report.assumptions) logger.info(`  ${pc.dim('- ' + a)}`)
-  logger.info('')
+  if (report.lines.length === 0) body.push(`  ${dim('No cost surfaces found — see findings.')}`)
+  body.push('')
+  body.push(dim('Assumptions:'))
+  for (const a of report.assumptions) body.push(`  ${dim('- ' + a)}`)
+  body.push('')
   for (const f of report.findings) {
-    const icon = f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-    logger.info(`  ${icon} [${f.severity}] ${f.id} — ${f.message}`)
-    logger.info(`    ${pc.dim(f.suggestion)}`)
+    const icon = f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+    body.push(`  ${icon} [${f.severity}] ${f.id} — ${f.message}`)
+    body.push(`    ${dim(f.suggestion)}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon cost — Cost Governance (099)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

@@ -22,13 +22,15 @@ export function MobileMenu() {
   const ref = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
 
-  // Outside click closes.
+  // Outside press closes. pointerdown (not mousedown) so touch devices fire
+  // it immediately — on iOS a tap that ends in a scroll never produces a
+  // mouse event, which would leave the menu stuck open.
   useEffect(() => {
-    function onDocClick(e: MouseEvent) {
+    function onDocDown(e: PointerEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
-    document.addEventListener('mousedown', onDocClick)
-    return () => document.removeEventListener('mousedown', onDocClick)
+    document.addEventListener('pointerdown', onDocDown)
+    return () => document.removeEventListener('pointerdown', onDocDown)
   }, [])
 
   // Esc closes; route change closes.
@@ -44,22 +46,23 @@ export function MobileMenu() {
   }, [pathname])
 
   return (
-    <div className="relative lg:hidden" ref={ref}>
+    /* Same stretch-to-row rule as the desktop ProductsMenu: the wrapper
+       fills the 48px header row so the trigger text centers with the
+       surrounding controls, and the panel anchors flush to its bottom. */
+    <div className="relative z-50 flex lg:hidden" ref={ref}>
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
         aria-expanded={open}
         aria-controls="mobile-nav"
         aria-haspopup="menu"
-        className="seg hover:!text-brand"
+        className="seg hover:!text-brand [touch-action:manipulation]"
       >
-        menu
+        Menu
         <span aria-hidden className={`text-[10px] text-slate-500 transition-transform ${open ? 'rotate-180' : ''}`}>▼</span>
       </button>
       {open && (
-        /* pt-2 bridge keeps the panel hoverable across the gap below the
-           trigger (same pattern as ProductsMenu). */
-        <div className="absolute right-0 top-full z-50 pt-2">
+        <div className="absolute right-0 top-full z-50">
         <div
           id="mobile-nav"
           role="menu"
@@ -74,7 +77,7 @@ export function MobileMenu() {
               href={`/sdk/${p.slug}`}
               role="menuitem"
               onClick={() => setOpen(false)}
-              className="flex items-center justify-between rounded-[3px] px-2.5 py-2 transition hover:bg-ink-700/60"
+              className="flex items-center justify-between rounded-[3px] px-2.5 py-2 transition hover:bg-ink-700/60 [touch-action:manipulation]"
             >
               <span className="font-mono text-sm text-slate-50">{p.name}</span>
               <span className={p.status === 'live' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-600'}>
@@ -91,7 +94,7 @@ export function MobileMenu() {
               href={item.href}
               role="menuitem"
               onClick={() => setOpen(false)}
-              className={`flex items-center justify-between rounded-[3px] px-2.5 py-2 transition hover:bg-ink-700/60 ${
+              className={`flex items-center justify-between rounded-[3px] px-2.5 py-2 transition hover:bg-ink-700/60 [touch-action:manipulation] ${
                 pathname === item.href ? 'bg-brand/15 text-brand' : 'text-slate-50'
               }`}
             >
@@ -102,7 +105,7 @@ export function MobileMenu() {
             href="/trial"
             role="menuitem"
             onClick={() => setOpen(false)}
-            className="mt-1.5 block bg-brand px-2.5 py-2 text-center text-[13px] font-semibold text-on-brand transition hover:bg-brand-strong"
+            className="mt-1.5 block bg-brand px-2.5 py-2 text-center text-[13px] font-semibold text-on-brand transition hover:bg-brand-strong [touch-action:manipulation]"
           >
             Get started
           </Link>

@@ -8,7 +8,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport } from '../carbon'
 import { runGovScan, writeGovReport } from '../../governance'
 
 export interface GovCommandOptions {
@@ -26,16 +26,19 @@ export async function governanceCommand(directory: string, options: GovCommandOp
     return
   }
 
-  logger.info(pc.bold('vectalon governance — Enterprise Governance Agent (083)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-  const verdictColor = report.verdict === 'approved' ? pc.green : pc.yellow
-  logger.info(`Verdict: ${verdictColor(report.verdict)} | checks: ${report.checks.length}`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`checks: ${report.checks.length}`)
+  body.push('')
   for (const c of report.checks) {
     const mark = c.status === 'pass' ? pc.green('✔') : c.status === 'warn' ? pc.yellow('▲') : pc.red('✖')
-    logger.info(`  ${mark} ${c.label.padEnd(18)} ${c.evidence}`)
+    body.push(`  ${mark} ${c.label.padEnd(18)} ${c.evidence}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon governance — Enterprise Governance Agent (083)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

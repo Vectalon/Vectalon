@@ -9,6 +9,7 @@ import { readFileSync } from 'fs'
 import { resolve } from 'path'
 import pc from 'picocolors'
 import { logger } from '../logger'
+import { printCarbonReport, renderCarbonWindow, parchment, dim } from '../carbon'
 import { runCrashAnalysis, writeCrashReport } from '../../crash'
 import type { CrashOptions } from '../../crash'
 
@@ -25,10 +26,14 @@ export async function crashCommand(directory: string, options: CrashCommandOptio
   try {
     log = readFileSync(resolve(options.log), 'utf-8')
   } catch {
-    logger.info(pc.bold('vectalon crash — Crash Intelligence Agent (071)'))
-    logger.info('No crash log provided.')
-    logger.info(pc.dim('Pass --log <path> to an iOS/Android/JS crash log — the platform is auto-detected.'))
-    logger.info(pc.dim('Or force it: --platform ios / android / javascript'))
+    logger.info(renderCarbonWindow({
+      title: 'vectalon crash — Crash Intelligence Agent (071)',
+      lines: [
+        'No crash log provided.',
+        dim('Pass --log <path> to an iOS/Android/JS crash log — the platform is auto-detected.'),
+        dim('Or force it: --platform ios / android / javascript'),
+      ],
+    }))
     return
   }
   const report = runCrashAnalysis(log, { platform: options.platform })
@@ -39,19 +44,25 @@ export async function crashCommand(directory: string, options: CrashCommandOptio
     return
   }
 
-  logger.info(pc.bold('vectalon crash — Crash Intelligence Agent (071)'))
-  logger.info(`platform: ${report.platform} | verdict: ${report.verdict === 'changes-requested' ? pc.red(report.verdict) : pc.yellow(report.verdict)}`)
-  if (report.exceptionType) logger.info(`exception: ${pc.dim(report.exceptionType)}`)
-  if (report.message) logger.info(`message: ${pc.dim(report.message)}`)
-  logger.info('')
-  logger.info(pc.bold(`Root cause: ${report.finding.bucket}`))
-  logger.info(report.finding.probableCause)
-  logger.info('')
-  logger.info(pc.bold('Standard fix:'))
-  logger.info(`  ${report.finding.fix}`)
-  logger.info('')
-  logger.info(pc.bold('Investigation:'))
-  for (const s of report.finding.investigation.slice(0, 5)) logger.info(`  - ${s}`)
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+  const body: string[] = []
+  body.push(`platform: ${report.platform}`)
+  if (report.exceptionType) body.push(`exception: ${dim(report.exceptionType)}`)
+  if (report.message) body.push(`message: ${dim(report.message)}`)
+  body.push('')
+  body.push(pc.bold(`Root cause: ${report.finding.bucket}`))
+  body.push(parchment(report.finding.probableCause))
+  body.push('')
+  body.push(pc.bold('Standard fix:'))
+  body.push(`  ${report.finding.fix}`)
+  body.push('')
+  body.push(pc.bold('Investigation:'))
+  for (const s of report.finding.investigation.slice(0, 5)) body.push(`  - ${parchment(s)}`)
+
+  printCarbonReport({
+    title: 'vectalon crash — Crash Intelligence Agent (071)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

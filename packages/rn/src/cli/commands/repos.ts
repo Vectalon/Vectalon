@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runReposScan, writeReposReport } from '../../repos'
 
 export interface ReposCommandOptions {
@@ -25,21 +25,24 @@ export async function reposCommand(directory: string, options: ReposCommandOptio
     return
   }
 
-  logger.info(pc.bold('vectalon repos — Multi-repository Memory Agent (085)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-  const verdictColor = report.verdict === 'approved' ? pc.green : pc.yellow
-  logger.info(`Verdict: ${verdictColor(report.verdict)} | manifest: ${report.manifestFile ?? 'none'} | repos: ${report.repoCount}`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`manifest: ${report.manifestFile ?? 'none'} | repos: ${report.repoCount}`)
+  body.push('')
   for (const c of report.checks) {
     const mark = c.status === 'ok' ? pc.green('✔') : c.status === 'no-memory' ? pc.yellow('▲') : pc.red('✖')
-    logger.info(`  ${mark} ${c.name.padEnd(24)} ${c.path} — ${c.evidence}`)
+    body.push(`  ${mark} ${c.name.padEnd(24)} ${c.path} — ${c.evidence}`)
   }
   for (const f of report.findings.slice(0, 15)) {
-    const icon = f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-    logger.info(`  ${icon} [${f.severity}] ${f.id} ${f.repo ? `— ${f.repo}` : ''}`)
-    logger.info(`    ${f.message}`)
+    const icon = f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+    body.push(`  ${icon} [${f.severity}] ${f.id} ${f.repo ? `— ${f.repo}` : ''}`)
+    body.push(`    ${f.message}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon repos — Multi-repository Memory Agent (085)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

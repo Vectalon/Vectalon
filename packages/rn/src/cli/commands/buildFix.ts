@@ -9,7 +9,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, parchment, dim } from '../carbon'
 import { runBuildFix, writeBuildFixReport } from '../../buildFix'
 import type { BuildFixOptions, BuildKind } from '../../buildFix'
 
@@ -29,42 +29,45 @@ export async function buildFixCommand(directory: string, options: BuildFixComman
     return
   }
 
-  logger.info(pc.bold('vectalon build-fix — Build Fix Agent (064)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-
   if (report.detection === 'none') {
-    logger.info('No build log provided.')
-    logger.info(pc.dim('Pass --log <path> to a failing Metro/Gradle/Xcode log — the kind is auto-detected.'))
-    logger.info(pc.dim('Or force it: --metro / --gradle / --xcode'))
-    logger.info('')
-    logger.info(`Report: ${pc.dim(jsonPath)}`)
+    printCarbonReport({
+      title: 'vectalon build-fix — Build Fix Agent (064)',
+      verdict: report.verdict,
+      lines: [
+        'No build log provided.',
+        dim('Pass --log <path> to a failing Metro/Gradle/Xcode log — the kind is auto-detected.'),
+        dim('Or force it: --metro / --gradle / --xcode'),
+      ],
+      reportPath: jsonPath,
+      root,
+    })
     return
   }
 
-  logger.info(`Build system: ${pc.bold(report.kind)} (${report.detection === 'forced' ? 'forced' : 'auto-detected'})`)
-  const verdictColor = report.verdict === 'approved'
-    ? pc.green
-    : report.verdict === 'needs-attention'
-      ? pc.yellow
-      : pc.red
-  logger.info(`Verdict: ${verdictColor(report.verdict)}`)
-  logger.info(`Findings: ${report.summary.total} (${report.summary.bySeverity.error} error(s), ${report.summary.bySeverity.warning} warning(s))`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`Build system: ${pc.bold(report.kind)} (${report.detection === 'forced' ? 'forced' : 'auto-detected'})`)
+  body.push(`Findings: ${report.summary.total} (${report.summary.bySeverity.error} error(s), ${report.summary.bySeverity.warning} warning(s))`)
+  body.push('')
 
   for (const f of report.findings) {
     const icon = f.severity === 'error' ? pc.red('✖') : pc.yellow('▲')
     const loc = f.line ? ` (log line ${f.line})` : ''
-    logger.info(`  ${icon} [${f.severity}] ${f.id}${loc}`)
-    logger.info(`    ${f.message}`)
-    logger.info(`    ${pc.dim(f.fix)}`)
+    body.push(`  ${icon} [${f.severity}] ${f.id}${loc}`)
+    body.push(`    ${parchment(f.message)}`)
+    body.push(`    ${dim(f.fix)}`)
   }
-  logger.info('')
-  logger.info(pc.bold('Fix plan'))
-  report.summary.fixPlan.forEach((step, i) => logger.info(`  ${i + 1}. ${step}`))
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
-  logger.success('Build fix diagnosis complete — apply the fix plan and re-run the build.')
+  body.push('')
+  body.push(pc.bold('Fix plan'))
+  report.summary.fixPlan.forEach((step, i) => body.push(`  ${i + 1}. ${step}`))
+
+  printCarbonReport({
+    title: 'vectalon build-fix — Build Fix Agent (064)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+    done: 'Build fix diagnosis complete — apply the fix plan and re-run the build.',
+  })
 }
 
 /** Parse --metro/--gradle/--xcode into a forced kind (undefined when absent). */

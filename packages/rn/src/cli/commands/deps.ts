@@ -8,7 +8,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, parchment, dim } from '../carbon'
 import { runDepsScan, writeDepsReport } from '../../deps'
 import type { DepOptions } from '../../deps'
 
@@ -31,42 +31,39 @@ export async function depsCommand(directory: string, options: DepsCommandOptions
     return
   }
 
-  logger.info(pc.bold('vectalon deps — Dependency Upgrade Agent (067)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-
-  const verdictColor = report.verdict === 'approved'
-    ? pc.green
-    : report.verdict === 'needs-attention'
-      ? pc.yellow
-      : pc.red
-  logger.info(`Verdict: ${verdictColor(report.verdict)}`)
-  logger.info(`Dependencies: ${report.depCount}`)
-  logger.info(`Findings: ${report.summary.total} (${report.summary.bySeverity.error} error(s), ${report.summary.bySeverity.warning} warning(s), ${report.summary.bySeverity.info} info)`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`Dependencies: ${report.depCount}`)
+  body.push(`Findings: ${report.summary.total} (${report.summary.bySeverity.error} error(s), ${report.summary.bySeverity.warning} warning(s), ${report.summary.bySeverity.info} info)`)
+  body.push('')
 
   if (!report.audit.ran) {
-    logger.info(`${pc.dim('Dependency audit:')} skipped — ${report.audit.skippedReason ?? 'not run'}`)
+    body.push(`${dim('Dependency audit:')} skipped — ${report.audit.skippedReason ?? 'not run'}`)
   } else {
-    logger.info(`${pc.dim('Dependency audit:')} ${report.audit.total} advisory(ies) — ${report.audit.critical} critical, ${report.audit.high} high`)
+    body.push(`${dim('Dependency audit:')} ${report.audit.total} advisory(ies) — ${report.audit.critical} critical, ${report.audit.high} high`)
   }
-  logger.info('')
+  body.push('')
 
   if (report.findings.length === 0) {
-    logger.info('No dependency issues found — the tree is aligned and clean.')
+    body.push('No dependency issues found — the tree is aligned and clean.')
   }
   for (const f of report.findings) {
-    const icon = f.severity === 'error' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-    logger.info(`  ${icon} [${f.severity}] ${f.id} — ${f.package} (${f.current})`)
-    logger.info(`    ${f.message}`)
-    logger.info(`    ${pc.dim(f.suggestion)}`)
+    const icon = f.severity === 'error' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+    body.push(`  ${icon} [${f.severity}] ${f.id} — ${f.package} (${f.current})`)
+    body.push(`    ${parchment(f.message)}`)
+    body.push(`    ${dim(f.suggestion)}`)
   }
-  logger.info('')
+  body.push('')
 
   for (const line of report.summary.topRecommendations) {
-    logger.info(`→ ${line}`)
+    body.push(`→ ${line}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
-  logger.success('Dependency scan complete — apply the upgrade paths one at a time, then re-run.')
+
+  printCarbonReport({
+    title: 'vectalon deps — Dependency Upgrade Agent (067)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+    done: 'Dependency scan complete — apply the upgrade paths one at a time, then re-run.',
+  })
 }

@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runGhPr, writeGhPrReport } from '../../ghPr'
 import type { GhPrVerdict } from '../../ghPr'
 
@@ -30,45 +30,55 @@ export async function ghPrCommand(directory: string, options: GhPrCommandOptions
     return
   }
 
-  logger.info(pc.bold('vectalon gh-pr — GitHub PR Triage Agent (090)'))
-  logger.info(`project: ${root}`)
-  logger.info(`source: ${report.source}`)
-  logger.info('')
-
   if (report.prs.length === 0) {
+    const body: string[] = []
+    body.push(`source: ${report.source}`)
+    body.push('')
     for (const f of report.findings) {
-      logger.info(`  ${pc.yellow('▲')} [${f.severity}] ${f.id}`)
-      logger.info(`    ${f.message}`)
-      logger.info(`    ${pc.dim(f.suggestion)}`)
+      body.push(`  ${pc.yellow('▲')} [${f.severity}] ${f.id}`)
+      body.push(`    ${f.message}`)
+      body.push(`    ${dim(f.suggestion)}`)
     }
-    logger.info('')
-    logger.info(`Verdict: ${pc.red(report.verdict)} (no PR data)`)
-    logger.info(`Report: ${pc.dim(jsonPath)}`)
+    body.push('')
+    body.push('Verdict: no PR data')
+    printCarbonReport({
+      title: 'vectalon gh-pr — GitHub PR Triage Agent (090)',
+      verdict: report.verdict,
+      lines: body,
+      reportPath: jsonPath,
+      root,
+    })
     return
   }
 
   const verdictColor = (v: GhPrVerdict): string =>
     v === 'approved' ? pc.green(v) : v === 'needs-attention' ? pc.yellow(v) : pc.red(v)
   const s = report.summary
-  logger.info(
-    `PRs: ${s.total} | healthy: ${pc.green(String(s.healthy))} | attention: ${pc.yellow(String(s.attention))} | blockers: ${pc.red(String(s.blockers))} | avg age: ${s.avgAgeDays}d | verdict: ${verdictColor(report.verdict)}`,
-  )
-  logger.info('')
+  const body: string[] = []
+  body.push(`source: ${report.source}`)
+  body.push(`PRs: ${s.total} | healthy: ${pc.green(String(s.healthy))} | attention: ${pc.yellow(String(s.attention))} | blockers: ${pc.red(String(s.blockers))} | avg age: ${s.avgAgeDays}d`)
+  body.push('')
   for (const p of report.prs) {
     const flags = [
-      p.isDraft ? pc.dim('draft') : '',
+      p.isDraft ? dim('draft') : '',
       p.mergeable === 'CONFLICTING' ? pc.red('conflict') : '',
       p.ciState === 'failing' ? pc.red(`ci ${p.ciFailures.join(',')}`) : '',
       p.reviewDecision === 'CHANGES_REQUESTED' ? pc.yellow('changes-requested') : '',
     ].filter(Boolean).join(' · ')
-    logger.info(
-      `  #${String(p.number).padEnd(5)} ${p.title.slice(0, 48).padEnd(50)} ${String(p.ageDays).padStart(3)}d  ${String(p.sizeLines).padStart(5)}L  ${verdictColor(p.verdict)}${flags ? pc.dim(`  (${flags})`) : ''}`,
+    body.push(
+      `  #${String(p.number).padEnd(5)} ${p.title.slice(0, 48).padEnd(50)} ${String(p.ageDays).padStart(3)}d  ${String(p.sizeLines).padStart(5)}L  ${verdictColor(p.verdict)}${flags ? dim(`  (${flags})`) : ''}`,
     )
   }
-  logger.info('')
+  body.push('')
   for (const f of report.findings.filter(x => x.severity === 'warning')) {
-    logger.info(`  ${pc.yellow('▲')} [${f.severity}] ${f.id} (PR #${f.pr}) — ${f.message}`)
+    body.push(`  ${pc.yellow('▲')} [${f.severity}] ${f.id} (PR #${f.pr}) — ${f.message}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon gh-pr — GitHub PR Triage Agent (090)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

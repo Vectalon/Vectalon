@@ -10,7 +10,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, parchment, dim } from '../carbon'
 import { runSecurityReview, writeSecurityReport } from '../../security'
 import type { SecurityOptions } from '../../security'
 
@@ -35,43 +35,40 @@ export async function secCommand(directory: string, options: SecCommandOptions):
     return
   }
 
-  logger.info(pc.bold('vectalon sec — Security Review Agent (063)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-
-  const verdictColor = report.verdict === 'approved'
-    ? pc.green
-    : report.verdict === 'needs-attention'
-      ? pc.yellow
-      : pc.red
-  logger.info(`Verdict: ${verdictColor(report.verdict)}`)
-  logger.info(`Files scanned: ${report.fileCount}`)
-  logger.info(`Findings: ${report.summary.total} (${report.summary.bySeverity.error} error(s), ${report.summary.bySeverity.warning} warning(s), ${report.summary.bySeverity.info} info)`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`Files scanned: ${report.fileCount}`)
+  body.push(`Findings: ${report.summary.total} (${report.summary.bySeverity.error} error(s), ${report.summary.bySeverity.warning} warning(s), ${report.summary.bySeverity.info} info)`)
+  body.push('')
 
   if (!report.audit.ran) {
-    logger.info(`${pc.dim('Dependency audit:')} skipped — ${report.audit.skippedReason ?? 'not run'}`)
+    body.push(`${dim('Dependency audit:')} skipped — ${report.audit.skippedReason ?? 'not run'}`)
   } else {
-    logger.info(`${pc.dim('Dependency audit:')} ${report.audit.total} advisory(ies) — ${report.audit.critical} critical, ${report.audit.high} high, ${report.audit.moderate} moderate, ${report.audit.low} low`)
+    body.push(`${dim('Dependency audit:')} ${report.audit.total} advisory(ies) — ${report.audit.critical} critical, ${report.audit.high} high, ${report.audit.moderate} moderate, ${report.audit.low} low`)
   }
-  logger.info('')
+  body.push('')
 
   if (report.findings.length === 0) {
-    logger.info('No security issues found.')
+    body.push('No security issues found.')
   }
   for (const f of report.findings) {
-    const icon = f.severity === 'error' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
+    const icon = f.severity === 'error' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : dim('•')
     const loc = f.line > 0 ? `${f.file}:${f.line}` : f.file
-    logger.info(`  ${icon} [${f.severity}] ${f.id} — ${loc}`)
-    logger.info(`    ${f.message}`)
-    logger.info(`    ${pc.dim(f.suggestion)}`)
+    body.push(`  ${icon} [${f.severity}] ${f.id} — ${loc}`)
+    body.push(`    ${parchment(f.message)}`)
+    body.push(`    ${dim(f.suggestion)}`)
   }
-  logger.info('')
+  body.push('')
 
   for (const line of report.summary.topRecommendations) {
-    logger.info(`→ ${line}`)
+    body.push(`→ ${line}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
-  logger.success('Security review complete — fix the errors before shipping.')
+
+  printCarbonReport({
+    title: 'vectalon sec — Security Review Agent (063)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+    done: 'Security review complete — fix the errors before shipping.',
+  })
 }

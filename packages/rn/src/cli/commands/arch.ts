@@ -10,7 +10,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, parchment, dim } from '../carbon'
 import { runArchReview, writeArchReport } from '../../arch'
 import type { ArchOptions } from '../../arch'
 
@@ -30,43 +30,40 @@ export async function archCommand(directory: string, options: ArchCommandOptions
     return
   }
 
-  logger.info(pc.bold('vectalon arch — Architecture Review Agent (062)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-
-  const verdictColor = report.verdict === 'approved'
-    ? pc.green
-    : report.verdict === 'needs-attention'
-      ? pc.yellow
-      : pc.red
-  logger.info(`Verdict: ${verdictColor(report.verdict)}`)
-  logger.info(`Files: ${report.fileCount} in ${report.srcDir}/ | Modules: ${report.modules.length}`)
-  logger.info(`Findings: ${report.summary.total} (${report.summary.bySeverity.error} error(s), ${report.summary.bySeverity.warning} warning(s), ${report.summary.bySeverity.info} info)`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`Files: ${report.fileCount} in ${report.srcDir}/ | Modules: ${report.modules.length}`)
+  body.push(`Findings: ${report.summary.total} (${report.summary.bySeverity.error} error(s), ${report.summary.bySeverity.warning} warning(s), ${report.summary.bySeverity.info} info)`)
+  body.push('')
 
   if (report.modules.length > 0) {
-    logger.info(pc.bold('Modules'))
+    body.push(pc.bold('Modules'))
     for (const m of report.modules) {
-      logger.info(`  ${pc.bold(m.path)}  ${pc.dim(`${m.files} file(s), fan-in ${m.fanIn}, fan-out ${m.fanOut}`)}`)
+      body.push(`  ${pc.bold(m.path)}  ${dim(`${m.files} file(s), fan-in ${m.fanIn}, fan-out ${m.fanOut}`)}`)
     }
-    logger.info('')
+    body.push('')
   }
 
   if (report.findings.length === 0) {
-    logger.info('No architecture issues found — the module graph is clean.')
+    body.push('No architecture issues found — the module graph is clean.')
   }
   for (const f of report.findings) {
-    const icon = f.severity === 'error' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-    logger.info(`  ${icon} [${f.severity}] ${f.id} — ${f.file || f.module}`)
-    logger.info(`    ${f.message}`)
-    logger.info(`    ${pc.dim(f.suggestion)}`)
+    const icon = f.severity === 'error' ? pc.red('✖') : f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+    body.push(`  ${icon} [${f.severity}] ${f.id} — ${f.file || f.module}`)
+    body.push(`    ${parchment(f.message)}`)
+    body.push(`    ${dim(f.suggestion)}`)
   }
-  logger.info('')
+  body.push('')
 
   for (const line of report.summary.topRecommendations) {
-    logger.info(`→ ${line}`)
+    body.push(`→ ${line}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
-  logger.success('Architecture review complete — address the findings before the debt compounds.')
+
+  printCarbonReport({
+    title: 'vectalon arch — Architecture Review Agent (062)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+    done: 'Architecture review complete — address the findings before the debt compounds.',
+  })
 }

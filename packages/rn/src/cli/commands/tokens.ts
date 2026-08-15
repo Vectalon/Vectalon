@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, parchment, dim } from '../carbon'
 import { runTokenScan, writeTokenReport } from '../../tokens'
 
 export interface TokensCommandOptions {
@@ -25,20 +25,23 @@ export async function tokensCommand(directory: string, options: TokensCommandOpt
     return
   }
 
-  logger.info(pc.bold('vectalon tokens — Design Token Sync Agent (076)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-  const verdictColor = report.verdict === 'approved' ? pc.green : pc.yellow
-  logger.info(`Verdict: ${verdictColor(report.verdict)} | tokens: ${report.tokenCount} | file: ${report.tokenFile ?? 'none'}`)
-  logger.info('')
-  if (report.findings.length === 0) logger.info('No token drift detected.')
+  const body: string[] = []
+  body.push(`tokens: ${report.tokenCount} | file: ${report.tokenFile ?? 'none'}`)
+  body.push('')
+  if (report.findings.length === 0) body.push('No token drift detected.')
   for (const f of report.findings.slice(0, 15)) {
-    const icon = f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-    logger.info(`  ${icon} [${f.severity}] ${f.id} ${f.token ? `— ${f.token}` : ''}`)
-    logger.info(`    ${f.message}`)
-    logger.info(`    ${pc.dim(f.suggestion)}`)
+    const icon = f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+    body.push(`  ${icon} [${f.severity}] ${f.id} ${f.token ? `— ${f.token}` : ''}`)
+    body.push(`    ${parchment(f.message)}`)
+    body.push(`    ${dim(f.suggestion)}`)
   }
-  if (report.findings.length > 15) logger.info(pc.dim(`  … and ${report.findings.length - 15} more`))
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+  if (report.findings.length > 15) body.push(dim(`  … and ${report.findings.length - 15} more`))
+
+  printCarbonReport({
+    title: 'vectalon tokens — Design Token Sync Agent (076)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

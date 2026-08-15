@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runGhCi, writeGhCiReport } from '../../ghCi'
 
 export interface GhCiCommandOptions {
@@ -29,30 +29,43 @@ export async function ghCiCommand(directory: string, options: GhCiCommandOptions
     return
   }
 
-  logger.info(pc.bold('vectalon gh-ci — GitHub Workflow Reliability (092)'))
-  logger.info(`project: ${root} · source: ${report.source}`)
-  logger.info('')
   if (report.workflows.length === 0) {
+    const body: string[] = []
+    body.push(`source: ${report.source}`)
+    body.push('')
     for (const f of report.findings) {
-      logger.info(`  ${pc.yellow('▲')} [${f.severity}] ${f.id}`)
-      logger.info(`    ${f.message}`)
-      logger.info(`    ${pc.dim(f.suggestion)}`)
+      body.push(`  ${pc.yellow('▲')} [${f.severity}] ${f.id}`)
+      body.push(`    ${f.message}`)
+      body.push(`    ${dim(f.suggestion)}`)
     }
-    logger.info('')
-    logger.info(`Report: ${pc.dim(jsonPath)}`)
+    printCarbonReport({
+      title: 'vectalon gh-ci — GitHub Workflow Reliability (092)',
+      verdict: report.verdict,
+      lines: body,
+      reportPath: jsonPath,
+      root,
+    })
     return
   }
   const s = report.summary
-  logger.info(`Workflows: ${s.workflows} | runs: ${s.runs} | flaky: ${pc.yellow(String(s.flakyWorkflows))} | failing: ${pc.yellow(String(s.failingWorkflows))} | avg: ${Math.round(s.avgDurationSec / 60)}m | verdict: ${report.verdict === 'approved' ? pc.green(report.verdict) : pc.yellow(report.verdict)}`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`source: ${report.source}`)
+  body.push(`Workflows: ${s.workflows} | runs: ${s.runs} | flaky: ${pc.yellow(String(s.flakyWorkflows))} | failing: ${pc.yellow(String(s.failingWorkflows))} | avg: ${Math.round(s.avgDurationSec / 60)}m`)
+  body.push('')
   for (const w of report.workflows) {
     const flag = w.flaky ? pc.red(' FLAKY') : w.failureRate >= 0.15 && w.runs >= 3 ? pc.yellow(' FAILING') : ''
-    logger.info(`  ${w.name.padEnd(30)} ${String(w.runs).padStart(3)} runs  ${String(Math.round(w.failureRate * 100)).padStart(3)}% fail  ${Math.round(w.avgDurationSec / 60)}m${flag}`)
+    body.push(`  ${w.name.padEnd(30)} ${String(w.runs).padStart(3)} runs  ${String(Math.round(w.failureRate * 100)).padStart(3)}% fail  ${Math.round(w.avgDurationSec / 60)}m${flag}`)
   }
-  logger.info('')
+  body.push('')
   for (const f of report.findings.filter(x => x.severity === 'warning')) {
-    logger.info(`  ${pc.yellow('▲')} [${f.severity}] ${f.id} (${f.workflow}) — ${f.message}`)
+    body.push(`  ${pc.yellow('▲')} [${f.severity}] ${f.id} (${f.workflow}) — ${f.message}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon gh-ci — GitHub Workflow Reliability (092)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

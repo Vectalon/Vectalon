@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runDatasetScan, writeDatasetReport } from '../../dataset'
 
 export interface DatasetCommandOptions {
@@ -25,20 +25,23 @@ export async function datasetCommand(directory: string, options: DatasetCommandO
     return
   }
 
-  logger.info(pc.bold('vectalon dataset — Fine-tuning Dataset Agent (088)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-  const verdictColor = report.verdict === 'approved' ? pc.green : pc.yellow
-  logger.info(`Verdict: ${verdictColor(report.verdict)} | examples: ${report.stats.entries} | files: ${report.stats.files}`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`examples: ${report.stats.entries} | files: ${report.stats.files}`)
+  body.push('')
   if (report.stats.entries > 0) {
-    logger.info(`  ${pc.dim('median length')} ${report.stats.medianLength} chars  ·  ${pc.dim('max')} ${report.stats.maxLength}  ·  ${pc.dim('duplicates')} ${report.stats.duplicates}`)
+    body.push(`  ${dim('median length')} ${report.stats.medianLength} chars  ·  ${dim('max')} ${report.stats.maxLength}  ·  ${dim('duplicates')} ${report.stats.duplicates}`)
   }
   for (const f of report.findings.slice(0, 15)) {
-    const icon = f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-    logger.info(`  ${icon} [${f.severity}] ${f.id}${f.line !== undefined ? ` (line ${f.line})` : ''}`)
-    logger.info(`    ${f.message}`)
+    const icon = f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+    body.push(`  ${icon} [${f.severity}] ${f.id}${f.line !== undefined ? ` (line ${f.line})` : ''}`)
+    body.push(`    ${f.message}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon dataset — Fine-tuning Dataset Agent (088)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

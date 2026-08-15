@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, parchment, dim } from '../carbon'
 import { runFigmaSync, writeFigmaReport } from '../../figma'
 
 export interface FigmaCommandOptions {
@@ -25,20 +25,23 @@ export async function figmaCommand(directory: string, options: FigmaCommandOptio
     return
   }
 
-  logger.info(pc.bold('vectalon figma — Figma-to-code Sync Agent (080)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-  const verdictColor = report.verdict === 'approved' ? pc.green : pc.yellow
-  logger.info(`Verdict: ${verdictColor(report.verdict)} | colors: ${report.colors.length} | components: ${report.components.length} | file: ${report.designFile ?? 'none'}`)
-  logger.info('')
-  if (report.findings.length === 0) logger.info('No design↔code drift detected.')
+  const body: string[] = []
+  body.push(`colors: ${report.colors.length} | components: ${report.components.length} | file: ${report.designFile ?? 'none'}`)
+  body.push('')
+  if (report.findings.length === 0) body.push('No design↔code drift detected.')
   for (const f of report.findings.slice(0, 15)) {
-    const icon = f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-    logger.info(`  ${icon} [${f.severity}] ${f.id} ${f.designName ? `— ${f.designName}` : ''}`)
-    logger.info(`    ${f.message}`)
-    logger.info(`    ${pc.dim(f.suggestion)}`)
+    const icon = f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+    body.push(`  ${icon} [${f.severity}] ${f.id} ${f.designName ? `— ${f.designName}` : ''}`)
+    body.push(`    ${parchment(f.message)}`)
+    body.push(`    ${dim(f.suggestion)}`)
   }
-  if (report.findings.length > 15) logger.info(pc.dim(`  … and ${report.findings.length - 15} more`))
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+  if (report.findings.length > 15) body.push(dim(`  … and ${report.findings.length - 15} more`))
+
+  printCarbonReport({
+    title: 'vectalon figma — Figma-to-code Sync Agent (080)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

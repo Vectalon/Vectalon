@@ -8,6 +8,7 @@
 import { resolve } from 'path'
 import pc from 'picocolors'
 import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runSearch, writeSearchReport } from '../../search'
 
 export interface SearchCommandOptions {
@@ -35,21 +36,27 @@ export async function searchCommand(directory: string, options: SearchCommandOpt
     return
   }
 
-  logger.info(pc.bold(`vectalon search — "${report.query}" (096)`))
-  logger.info(`project: ${root} · files scanned: ${report.filesScanned} · hits: ${report.hits.length} · ${report.ms}ms`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`files scanned: ${report.filesScanned} · hits: ${report.hits.length} · ${report.ms}ms`)
+  body.push('')
   let lastFile = ''
   for (const h of report.hits) {
     if (h.file !== lastFile) {
-      logger.info(pc.bold(h.file))
+      body.push(pc.bold(h.file))
       lastFile = h.file
     }
-    logger.info(`  ${pc.dim(String(h.line).padStart(4))}  ${h.text}`)
+    body.push(`  ${dim(String(h.line).padStart(4))}  ${h.text}`)
   }
-  logger.info('')
+  body.push('')
   for (const f of report.findings) {
-    logger.info(`  ${pc.dim('•')} [${f.severity}] ${f.id} — ${f.message}`)
+    body.push(`  ${dim('•')} [${f.severity}] ${f.id} — ${f.message}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: `vectalon search — "${report.query}" (096)`,
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

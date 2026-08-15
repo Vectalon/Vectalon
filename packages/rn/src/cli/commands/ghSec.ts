@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runGhSec, writeGhSecReport } from '../../ghSec'
 
 export interface GhSecCommandOptions {
@@ -27,20 +27,25 @@ export async function ghSecCommand(directory: string, options: GhSecCommandOptio
     return
   }
 
-  logger.info(pc.bold('vectalon gh-sec — GitHub Security Posture (093)'))
-  logger.info(`project: ${root} · source: ${report.source}`)
-  logger.info('')
   const d = report.dependabot
-  logger.info(
-    `Dependabot: ${d.open} open (${d.critical} critical/high) | secrets: ${report.secretScanning.open} | protection: ${report.branchProtection.enabled ? pc.green('on') : pc.yellow('off')} | verdict: ${report.verdict === 'approved' ? pc.green(report.verdict) : pc.yellow(report.verdict)}`,
+  const body: string[] = []
+  body.push(`source: ${report.source}`)
+  body.push(
+    `Dependabot: ${d.open} open (${d.critical} critical/high) | secrets: ${report.secretScanning.open} | protection: ${report.branchProtection.enabled ? pc.green('on') : pc.yellow('off')}`,
   )
-  logger.info('')
+  body.push('')
   for (const f of report.findings) {
-    const icon = f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-    logger.info(`  ${icon} [${f.severity}] ${f.id} (${f.surface})`)
-    logger.info(`    ${f.message}`)
-    logger.info(`    ${pc.dim(f.suggestion)}`)
+    const icon = f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+    body.push(`  ${icon} [${f.severity}] ${f.id} (${f.surface})`)
+    body.push(`    ${f.message}`)
+    body.push(`    ${dim(f.suggestion)}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon gh-sec — GitHub Security Posture (093)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

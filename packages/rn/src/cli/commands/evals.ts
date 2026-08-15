@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runEvalsCommand, writeEvalsReport } from '../../evals'
 
 export interface EvalsCommandOptions {
@@ -27,22 +27,26 @@ export async function evalsCommand(directory: string, options: EvalsCommandOptio
     return
   }
 
-  logger.info(pc.bold('vectalon evals — Model Evaluation Harness (095)'))
-  logger.info(`project: ${root}`)
-  logger.info(`source: ${report.source}`)
-  logger.info('')
   const r = report.regression
-  logger.info(
-    `Cases: ${report.cases.length} | pass: ${pc.green(String(report.passed))}/${report.cases.length} (${report.passRate}%) | verdict: ${report.verdict === 'approved' ? pc.green(report.verdict) : pc.yellow(report.verdict)}${r.delta !== null ? pc.dim(` | Δ ${r.delta >= 0 ? '+' : ''}${r.delta}pt vs previous`) : ''}`,
+  const body: string[] = []
+  body.push(`source: ${report.source}`)
+  body.push(
+    `Cases: ${report.cases.length} | pass: ${pc.green(String(report.passed))}/${report.cases.length} (${report.passRate}%)${r.delta !== null ? dim(` | Δ ${r.delta >= 0 ? '+' : ''}${r.delta}pt vs previous`) : ''}`,
   )
-  logger.info('')
+  body.push('')
   for (const c of report.cases) {
-    logger.info(`  ${c.passed ? pc.green('✓') : pc.red('✗')} ${c.id.padEnd(24)} [${c.mode}] ${c.note}`)
+    body.push(`  ${c.passed ? pc.green('✓') : pc.red('✗')} ${c.id.padEnd(24)} [${c.mode}] ${c.note}`)
   }
-  logger.info('')
+  body.push('')
   for (const f of report.findings.filter(x => x.severity === 'warning')) {
-    logger.info(`  ${pc.yellow('▲')} [${f.severity}] ${f.id} — ${f.message}`)
+    body.push(`  ${pc.yellow('▲')} [${f.severity}] ${f.id} — ${f.message}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon evals — Model Evaluation Harness (095)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }

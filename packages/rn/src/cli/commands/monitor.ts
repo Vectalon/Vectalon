@@ -7,7 +7,7 @@
  */
 import { resolve } from 'path'
 import pc from 'picocolors'
-import { logger } from '../logger'
+import { printCarbonReport, dim } from '../carbon'
 import { runMonitor, writeMonitorReport } from '../../monitor'
 
 export interface MonitorCommandOptions {
@@ -25,20 +25,24 @@ export async function monitorCommand(directory: string, options: MonitorCommandO
     return
   }
 
-  logger.info(pc.bold('vectalon monitor — Observability Dashboard (094)'))
-  logger.info(`project: ${root}`)
-  logger.info('')
-  logger.info(`Crash classes: ${report.crashClasses} | telemetry events: ${report.telemetryEvents} | verdict: ${report.verdict === 'approved' ? pc.green(report.verdict) : pc.yellow(report.verdict)}`)
-  logger.info('')
+  const body: string[] = []
+  body.push(`Crash classes: ${report.crashClasses} | telemetry events: ${report.telemetryEvents}`)
+  body.push('')
   for (const s of report.surfaces) {
-    const mark = s.verdict === 'approved' ? pc.green('✓') : s.verdict === 'no-data' ? pc.dim('○') : pc.yellow('▲')
-    logger.info(`  ${mark} ${s.label.padEnd(32)} ${String(s.verdict).padEnd(18)} ${s.summary}`)
+    const mark = s.verdict === 'approved' ? pc.green('✓') : s.verdict === 'no-data' ? dim('○') : pc.yellow('▲')
+    body.push(`  ${mark} ${s.label.padEnd(32)} ${String(s.verdict).padEnd(18)} ${s.summary}`)
   }
-  logger.info('')
+  body.push('')
   for (const f of report.findings) {
-    const icon = f.severity === 'warning' ? pc.yellow('▲') : pc.dim('•')
-    logger.info(`  ${icon} [${f.severity}] ${f.id} — ${f.message}`)
+    const icon = f.severity === 'warning' ? pc.yellow('▲') : dim('•')
+    body.push(`  ${icon} [${f.severity}] ${f.id} — ${f.message}`)
   }
-  logger.info('')
-  logger.info(`Report: ${pc.dim(jsonPath)}`)
+
+  printCarbonReport({
+    title: 'vectalon monitor — Observability Dashboard (094)',
+    verdict: report.verdict,
+    lines: body,
+    reportPath: jsonPath,
+    root,
+  })
 }
