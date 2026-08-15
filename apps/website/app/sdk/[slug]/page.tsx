@@ -18,10 +18,10 @@ const SDK_DATA: Record<string, SdkData> = {
   'react-native': {
     name: 'React Native',
     status: 'live',
-    statusLabel: 'Live — v0.5.0',
-    tagline: 'The full harness — context, codegen, upgrade copilot, device control, regression coverage.',
+    statusLabel: 'Live — v0.8.0',
+    tagline: 'The full harness — context, codegen, upgrade copilot, device control, regression coverage, and 29 deterministic agents.',
     description:
-      'The original Vectalon harness. Scans your RN project, builds a living knowledge graph, runs a local MCP-aware agent over 58 project-aware tools, and keeps the model current with ecosystem releases — every hour.',
+      'The original Vectalon harness. Scans your RN project, builds a living knowledge graph, runs a local MCP-aware agent over 58 project-aware tools, keeps the model current with ecosystem releases — every hour — and ships 29 deterministic agent commands (review, security, SOC 2, release prediction, Figma sync, …) that need no model at all.',
     features: [
       { title: 'MCP-native agent', body: 'Feature workflows, code review, E2E generation, and device control over the MCP protocol your editor already speaks.' },
       { title: 'Impact regression coverage', body: 'Changed files map to affected screens, each gets a Maestro regression flow with an accessibility variant for covered screens — screens without a deterministic route are flagged, followed up, and tracked in the coverage dashboard.' },
@@ -30,9 +30,11 @@ const SDK_DATA: Record<string, SdkData> = {
       { title: 'Bundle budget guardrails', body: 'Metro bundle deltas tracked per package with swap candidates and replacement suggestions.' },
       { title: 'Device control', body: 'Simulators, taps, swipes, deep links, VoiceOver/TalkBack trees, and visual regression checks from the CLI.' },
       { title: 'Compile-checked healing', body: 'Every fix is typechecked before it lands; fixes that don’t reduce errors are reverted.' },
+      { title: 'Deterministic agent fleet', body: '29 agent commands across three phases — code review, security, build/test repair, SOC 2, CI/CD, store readiness, team analytics, and enterprise intelligence (sentry, observability, governance, audit, release prediction, dataset, LoRA). Deterministic, no model required, each with a report and a verdict.' },
+      { title: 'Executive dashboard', body: 'vectalon dashboard aggregates every agent report into one executive view — per-agent health cards, an overall verdict, and a self-contained HTML dashboard with click-through drill-down, severity filters, and full-text search.' },
     ],
     install: 'npx vectalon init',
-    note: 'Free tier: init, serve, feature, doctor. Pro adds upgrade copilot, self-healing CI, and bundle budgets.',
+    note: 'Free tier: init, serve, feature, doctor, plus all 29 deterministic agent commands. Pro adds upgrade copilot, self-healing CI, and bundle budgets.',
   },
   ios: {
     name: 'iOS',

@@ -2,9 +2,33 @@ import Link from 'next/link'
 
 const RELEASES = [
   {
+    version: 'v0.8.0',
+    date: '2026-08-15',
+    tag: 'latest',
+    highlights: [
+      'Phase 10 — Enterprise Intelligence (Roadmap 080-089): ten new deterministic agents, every one free and report-driven — `vectalon figma` (design↔code drift: colors with no token match, components with no source, fonts never used), `vectalon sentry` (crash classes ranked by volume + user impact with a root-cause verdict per class and release-regression detection), `vectalon observability` (instrumentation coverage + slow traces/spans from telemetry), `vectalon governance` (license, security policy, CODEOWNERS, PR template, lockfile/SBOM, Dependabot, CI evidence checklist), `vectalon audit` (org-wide audit-trail validation: required fields, sequence gaps, secret hygiene), `vectalon repos` (multi-repo manifest verification — reachability, git checkout, memory store), `vectalon release-predict` (deterministic 0-100 release-risk score from read-only git history), `vectalon play-store` (deep Play checks: manifest permissions → data-safety, exported components, backup rules, SDK levels, signing, measured listing assets), `vectalon dataset` (fine-tuning data validation: schema, duplicates, label imbalance, PII leakage), and `vectalon lora` (training prerequisites with a VRAM estimate)',
+      'Engineering Dashboard v2 — `vectalon dashboard` now regenerates all 13 fast agent reports in one pass (`--run`), keeps them fresh on a schedule (`--cron`, default 300s), and renders a self-contained HTML dashboard with per-agent drill-down — click any card for the full findings list with severity filters, full-text search, and links to each agent’s report',
+    ],
+  },
+  {
+    version: 'v0.7.0',
+    date: '2026-08-14',
+    highlights: [
+      'Phase 9 — Release Engineering (Roadmap 071-079) plus the Autonomous Bug Fix Agent (070): `vectalon crash` (iOS/Android/JS crash logs → root-cause bucket with the standard fix), `vectalon arch-score` (module-graph score 0-100 across cycles, layering, coupling, cohesion, testability, depth), `vectalon cicd` (workflow anti-patterns — unpinned actions, missing concurrency/timeouts, inline secrets, deploys without tests), `vectalon app-store` (version consistency across Info.plist/build.gradle/package.json, icons, privacy manifest, permissions), `vectalon soc2` (repository evidence against the five trust-service criteria with a score), `vectalon tokens` (design-token drift — orphans, hardcoded values, duplicates), `vectalon team-stats` (cadence, author distribution, bus factor from one read-only git log), `vectalon perms` (agent/MCP config audit — auto-approved grants, local-exec servers, credentials), `vectalon dashboard` (every agent report aggregated into one executive view with an HTML dashboard), and `vectalon bug-fix` (proposes fixes for deterministic defects and executes the provably-safe ones, with `--apply` guarded by a dirty-tree check)',
+    ],
+  },
+  {
+    version: 'v0.6.0',
+    date: '2026-08-14',
+    highlights: [
+      'Phase 8 — Autonomous Engineering (Roadmap 061-069): `vectalon review` (git diff reviewed against the project’s own derived coding standards), `vectalon arch` (circular deps, layering violations, god modules, coupling metrics), `vectalon sec` (hardcoded secrets — redacted in reports, unsafe patterns, best-effort npm audit advisories), `vectalon build-fix` (Metro/Gradle/Xcode failures → root cause + standard fix), `vectalon test-repair` (Jest/Detox/Maestro failures → root cause + standard fix), `vectalon refactor` (dead code, duplication, modernization, type smells, complexity), `vectalon deps` (RN ecosystem pairing, duplicate versions, vulnerable dependencies), `vectalon a11y` (unlabeled images, missing roles, 44pt touch targets), and `vectalon release-ready` (can-we-ship checklist against read-only git)',
+      'Static performance scan — `vectalon perf`: render-phase setState, memo-defeating props, heavy startup imports, and legacy bridge traffic in one deterministic pass',
+      'Team Brain — `vectalon team`: glossary, coding standards, expertise map, ADR index, PR knowledge, and onboarding brief seeded into the knowledge base, with semantic search across projects and an hourly refresh under serve (Team tier)',
+    ],
+  },
+  {
     version: 'v0.5.0',
     date: '2026-08-13',
-    tag: 'latest',
     highlights: [
       'Project Diagnostics (Roadmap 011-015) — the new vectalon diagnostics command validates the build/toolchain surface in one deterministic pass with a suggested fix for every finding: Metro config (shape, alias targets, watchFolders in monorepos, cache advice), Hermes compatibility against a known-issue database (hermesEnabled/newArchEnabled states, New-Arch-without-Hermes, legacy RN), Android/Gradle project checks plus a build-log parser that classifies the top RN build errors (SDK, AGP, dependency resolution, AAPT, NDK, Java, network, OOM) and Xcode/Podfile checks plus a log parser for CocoaPods, signing, linker, plist, and Xcode-version failures, and dependency conflict detection against an RN ecosystem matrix with duplicate versions across monorepo members',
       'Code generation (Roadmap 016-020) — the new vectalon generate command writes deterministic templates into the project (or previews them with --dry-run): components (functional TS + StyleSheet), screens (React Navigation wired), tests (Jest RTL or Detox), native modules (iOS ObjC++ + Android Kotlin scaffolds via --api rn-cli|expo from a JSON spec), and API clients (typed service class + apiBase.ts with ApiError generated from an OpenAPI spec — path params, request bodies, response types, error handling)',

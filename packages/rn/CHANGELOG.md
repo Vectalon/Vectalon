@@ -66,9 +66,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   item 089): checks the .vectalon/lora config — dataset path, base model
   with a VRAM estimate (param count × quantization + adapter/overhead),
   r/alpha hyperparams, output dir, wandb — and flags what's missing before
-  training starts; `--config <path>`; `--json`; reports to
+  training starts;  `--config <path>`; `--json`; reports to
   `docs/vectalon/lora/` (gitignored). Starts Phase 10 (Enterprise
   Intelligence).
+- **Engineering Dashboard v2 — `vectalon dashboard` evolves in this
+  release.** `--run` now regenerates **and writes** all 13 fast agent
+  reports (release-ready, arch-score, soc2, plus the ten Phase 10
+  agents) instead of computing them and throwing them away — a fresh
+  dashboard covers every agent under `docs/vectalon/*`. New `--cron`
+  mode (default 300s, `--interval <seconds>`) regenerates the core
+  reports and rewrites the HTML on a schedule until Ctrl-C/SIGTERM,
+  with a per-tick status line and graceful failure. The self-contained
+  HTML dashboard gains per-agent drill-down — clicking a card opens the
+  agent's full findings list (shape-aware across `findings[]`,
+  `checks[]`, `controls[]`, and `dimensions[]` reports) with severity
+  filtering, full-text search across id/message/suggestion, a live
+  showing-N-of-M counter, and links to the markdown/JSON reports.
+  Severity aliases (`critical` → error, `warn` → warning) roll up
+  correctly so a sentry report's critical findings can never zero out
+  the dashboard error count.
 
 ## [0.7.0] - 2026-08-14
 

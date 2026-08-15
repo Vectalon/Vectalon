@@ -167,7 +167,7 @@ Sharp corners, one scale: panes, cards, buttons, inputs, chips all 3px; consoles
 - `.term`: the product terminal — fixed dark livery (`rgb(20 23 18)` + `rgb(58 64 50)` border) in both themes, with traffic-light dots and a `[title]` bar.
 
 ### Statusline (Navigation)
-- A 48px tmux-style bar: segments divided by hairlines; logo left, nav center, theme toggle + "main · v0.5.0" + Get started right. Nav items hover to vermilion; the CTA is a solid vermilion block.
+- A 48px tmux-style bar: segments divided by hairlines; logo left, nav center, theme toggle + "main · v0.8.0" + Get started right. Nav items hover to vermilion; the CTA is a solid vermilion block.
 
 ### Signature Component: The Live Ticker
 A vertical feed of intel rows (RN 0.87-rc · GitHub Atom …) that reranks continuously by translating a duplicated list 22s/loop, pausing on hover. The first copy is the accessible content (the duplicate is `aria-hidden`); reduced-motion renders it static. Paired with a blinking `.live-dot` (phosphor green) that marks genuinely live state.

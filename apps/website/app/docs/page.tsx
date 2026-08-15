@@ -29,6 +29,21 @@ const PRO: Array<[string, string]> = [
   ['team-policy', 'Org-wide guardrail policy — publish/pull the team policy + shared bundle budgets through the sync remote (Team)'],
 ]
 
+const AGENTS: Array<[string, string]> = [
+  [
+    'phase 8 — review',
+    'review · arch · sec · build-fix · test-repair · refactor · deps · a11y · release-ready · bug-fix',
+  ],
+  [
+    'phase 9 — release eng',
+    'crash · arch-score · cicd · app-store · soc2 · tokens · team-stats · perms · dashboard',
+  ],
+  [
+    'phase 10 — enterprise',
+    'figma · sentry · observability · governance · audit · repos · release-predict · play-store · dataset · lora',
+  ],
+]
+
 const STEPS = [
   {
     n: '01',
@@ -40,7 +55,7 @@ const STEPS = [
     n: '02',
     title: 'Serve the agent',
     code: 'npx vectalon serve',
-    body: 'Boots the MCP server. Your editor or any MCP client connects and gets 58+ project-aware tools. Web intel and the knowledge base auto-refresh hourly.',
+    body: 'Boots the MCP server. Your editor or any MCP client connects and gets 58+ project-aware tools — plus 29 deterministic agent commands that need no model at all. Web intel and the knowledge base auto-refresh hourly.',
   },
   {
     n: '03',
@@ -94,7 +109,7 @@ export default function DocsPage() {
           </span>
           <span className="hidden items-center gap-1.5 sm:flex">
             <span className="live-dot" aria-hidden />
-            v0.5.0
+            v0.8.0
           </span>
         </div>
 
@@ -146,6 +161,17 @@ export default function DocsPage() {
           <div className="mt-3 divide-y divide-ink-700/50 border-t border-ink-700/50">
             {PRO.map(([cmd, desc]) => (
               <ManCmd key={cmd} cmd={cmd} desc={desc} />
+            ))}
+          </div>
+
+          {/* AGENTS — free on every tier */}
+          <ManH tone="accent">agents — deterministic, free, report-driven</ManH>
+          <div className="mt-3 divide-y divide-ink-700/50 border-t border-ink-700/50">
+            {AGENTS.map(([phase, cmds]) => (
+              <div key={phase} className="grid gap-1 py-2.5 sm:grid-cols-[240px_1fr] sm:gap-6">
+                <code className="font-mono text-sm font-semibold text-brand">{phase}</code>
+                <p className="font-mono text-[13px] leading-relaxed text-slate-400">{cmds}</p>
+              </div>
             ))}
           </div>
 

@@ -15,7 +15,7 @@ const SDK_CHIPS = [
 const FEATURES: Array<{ title: string; body: string; icon: FeatureIconName }> = [
   {
     title: 'MCP-native agent',
-    body: 'A local model runs as an agent over 58 project-aware tools — feature workflows, code review, upgrades, E2E generation, device control — all through the MCP protocol your editor already speaks.',
+    body: 'A local model runs as an agent over 58 project-aware tools — feature workflows, code review, upgrades, E2E generation, device control — all through the MCP protocol your editor already speaks. On top of the model sits a fleet of 29 deterministic agents (review, security, SOC 2, release prediction, Figma sync) that need no model at all.',
     icon: 'robot',
   },
   {
@@ -88,6 +88,32 @@ const HEALING_LOG = [
   '✦ 13/13 phases — index.md · 3 lessons distilled',
   '◆ rn-diff-purge diff fetched: 0.85.3 → 0.86.2',
   '✔ 42 template changes mapped (14 native · 28 JS/TS)',
+]
+
+const AGENT_PHASES: Array<{
+  phase: string
+  title: string
+  body: string
+  cmds: string[]
+}> = [
+  {
+    phase: 'Phase 8',
+    title: 'Autonomous engineering',
+    body: 'Review the diff, audit the architecture, scan for secrets, diagnose a broken build or test run, propose safe refactors — and, for provably-safe fixes, apply them.',
+    cmds: ['review', 'arch', 'sec', 'build-fix', 'test-repair', 'refactor', 'deps', 'a11y', 'release-ready', 'bug-fix'],
+  },
+  {
+    phase: 'Phase 9',
+    title: 'Release engineering',
+    body: 'Classify crashes, score the architecture, police CI/CD workflows, check store surfaces, gather SOC 2 evidence, and aggregate everything into one executive dashboard.',
+    cmds: ['crash', 'arch-score', 'cicd', 'app-store', 'soc2', 'tokens', 'team-stats', 'perms', 'dashboard'],
+  },
+  {
+    phase: 'Phase 10',
+    title: 'Enterprise intelligence',
+    body: 'Sync design to code, rank crash classes, audit instrumentation, verify org evidence, predict release risk, and validate training data before you spend GPU time.',
+    cmds: ['figma', 'sentry', 'observability', 'governance', 'audit', 'repos', 'release-predict', 'play-store', 'dataset', 'lora'],
+  },
 ]
 
 const TERMINAL_SESSION = `$ npx vectalon init
@@ -435,6 +461,45 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* The deterministic agent fleet — no model required */}
+      <section className="border-t border-ink-700/70 py-20">
+        <div className="mx-auto max-w-6xl px-4">
+          <div className="max-w-2xl">
+            <h2 className="text-3xl font-bold text-slate-50">
+              29 deterministic agents — <span className="text-brand">zero model calls</span>
+            </h2>
+            <p className="mt-3 text-slate-400">
+              Same result every run, on any machine, with a report and a verdict. They run on the
+              free tier, offline, and they feed the dashboard — one executive view of the whole
+              project.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-3 lg:grid-cols-3">
+            {AGENT_PHASES.map(p => (
+              <div key={p.phase} className="card flex flex-col">
+                <div className="flex items-center gap-2">
+                  <span className="chip !px-2 !py-0.5 font-mono text-[10px]">{p.phase}</span>
+                  <h3 className="font-semibold text-slate-50">{p.title}</h3>
+                </div>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-400">{p.body}</p>
+                <div className="mt-4 flex flex-wrap gap-1.5">
+                  {p.cmds.map(c => (
+                    <code key={c} className="rounded-[3px] border border-ink-700 bg-ink-900 px-1.5 py-0.5 font-mono text-[11px] text-brand">
+                      {c}
+                    </code>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-7 text-center">
+            <Link href="/docs" className="text-sm text-brand transition hover:text-brand-strong hover:underline">
+              Full agent command reference — every command, every verdict →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Currency — the always-current model */}
       <section className="border-t border-ink-700/70 py-20">
         <div className="mx-auto max-w-6xl px-4">
@@ -447,7 +512,7 @@ export default async function Home() {
                 read is the feed the model sees. If the ecosystem ships it, the model knows it.
               </p>
               <Link href="/changelog" className="mt-6 inline-block text-sm text-brand hover:underline">
-                See what shipped in v0.5.0 →
+                See what shipped in v0.8.0 →
               </Link>
             </div>
             <div className="card !p-0">
