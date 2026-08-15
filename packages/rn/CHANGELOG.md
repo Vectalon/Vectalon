@@ -5,6 +5,71 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-08-15
+
+### Added
+
+- **Figma-to-code Sync Agent — `vectalon figma`** (Roadmap Phase 10, item
+  080): parses a Figma design export (figma.json / design-export.json) and
+  checks design↔code drift — design colors with no matching token or
+  hardcoded source value (warning), component names with no source
+  component (info, PascalCase + kebab lookups), and text styles with no
+  font usage; `--json`; reports to `docs/vectalon/figma/` (gitignored).
+- **Sentry Intelligence Agent — `vectalon sentry`** (Roadmap Phase 10,
+  item 081): ingests Sentry/Crashlytics telemetry exports
+  (.vectalon/telemetry) through the shared parsers, groups crashes into
+  classes by exception type, ranks them by volume and distinct-user impact
+  (critical/warning/info), attaches a RootCauseAnalyzer verdict per class,
+  and flags release regressions (a crash class appearing in a new release);
+  `--json`; reports to `docs/vectalon/sentry/` (gitignored).
+- **Mobile Observability Agent — `vectalon observability`** (Roadmap Phase
+  10, item 082): audits instrumentation coverage in source (Sentry init,
+  crash handlers, analytics SDK, network breadcrumbs, performance tracing)
+  and flags slow traces/spans from telemetry exports above 1s/500ms
+  thresholds; `--json`; reports to `docs/vectalon/observability/`
+  (gitignored).
+- **Enterprise Governance Agent — `vectalon governance`** (Roadmap Phase
+  10, item 083): repository-evidence checklist — license, security policy,
+  contributing guide, CODEOWNERS, PR template, lockfile, SBOM, Dependabot,
+  CI — with pass/warn/fail statuses; `--json`; reports to
+  `docs/vectalon/governance/` (gitignored).
+- **Org-wide Audit Trail Agent — `vectalon audit`** (Roadmap Phase 10,
+  item 084): validates the .vectalon/audit/*.jsonl trail — required fields,
+  sequence continuity (gaps), malformed lines, secret-shaped values — and
+  summarizes activity by actor and action; `--json`; reports to
+  `docs/vectalon/audit/` (gitignored).
+- **Multi-repository Memory Agent — `vectalon repos`** (Roadmap Phase 10,
+  item 085): verifies the .vectalon/repos.json workspace manifest — each
+  sibling repo reachable, a git checkout, with a .vectalon/ memory store —
+  and flags missing/non-git/memory-less entries; `--json`; reports to
+  `docs/vectalon/repos/` (gitignored).
+- **Release Prediction Agent — `vectalon release-predict`** (Roadmap Phase
+  10, item 086): a deterministic 0-100 release-risk score from read-only git
+  history — fix density, refactor density, hours since last commit, breaking
+  changes, author breadth in a configurable release window (default 14
+  days) — with a low/moderate/high/critical verdict and per-factor
+  breakdown; `--json`; reports to `docs/vectalon/release-predict/`
+  (gitignored).
+- **Deep Play Store Readiness Agent — `vectalon play-store`** (Roadmap
+  Phase 10, item 087): Play-specific checks beyond the shared store surface
+  — manifest permissions and the data-safety form they imply, exported
+  components, backup rules, cleartext posture, SDK target/compile/min
+  levels, signing config, and measured store-listing assets (512×512 icon,
+  1024×500 feature graphic, screenshots, listing text); `--json`; reports
+  to `docs/vectalon/play-store/` (gitignored).
+- **Fine-tuning Dataset Agent — `vectalon dataset`** (Roadmap Phase 10,
+  item 088): validates .vectalon/dataset/*.jsonl training data — schema
+  consistency (chat vs instruction), duplicates, label balance, length
+  outliers, and PII leakage (emails, phones, API keys, private keys, SSNs);
+  `--json`; reports to `docs/vectalon/dataset/` (gitignored).
+- **LoRA Training Readiness Agent — `vectalon lora`** (Roadmap Phase 10,
+  item 089): checks the .vectalon/lora config — dataset path, base model
+  with a VRAM estimate (param count × quantization + adapter/overhead),
+  r/alpha hyperparams, output dir, wandb — and flags what's missing before
+  training starts; `--config <path>`; `--json`; reports to
+  `docs/vectalon/lora/` (gitignored). Starts Phase 10 (Enterprise
+  Intelligence).
+
 ## [0.7.0] - 2026-08-14
 
 ### Added

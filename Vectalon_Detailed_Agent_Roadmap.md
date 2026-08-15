@@ -450,18 +450,67 @@ Acceptance:
 - Release surfaces (stores, CI, SOC2, tokens) have deterministic agents
 - Team and agent-ops analytics are first-class commands
 
-## Remaining Backlog (080-100)
+## Phase 10 – Enterprise Intelligence
+
+> **Status: items 080-089 shipped as of v0.8.0** — the Figma-to-code Sync
+> Agent (`vectalon figma`) parses a Figma JSON export (figma.json /
+> design-export.json) and checks design↔code drift: design colors with no
+> matching token or hardcoded value, component names with no source
+> component, text styles with no font usage. The Sentry Intelligence Agent
+> (`vectalon sentry`) ingests Sentry/Crashlytics telemetry exports
+> (.vectalon/telemetry) and ranks crash classes by volume and user impact
+> with a RootCauseAnalyzer verdict per class plus release-regression
+> detection. The Mobile Observability Agent (`vectalon observability`)
+> audits instrumentation coverage in source (Sentry init, crash handlers,
+> analytics SDK, network breadcrumbs, performance tracing) and flags slow
+> traces/spans from telemetry. The Enterprise Governance Agent
+> (`vectalon governance`) runs a repository-evidence checklist — license,
+> security policy, contributing guide, CODEOWNERS, PR template,
+> lockfile/SBOM, Dependabot, CI. The Org-wide Audit Trail Agent
+> (`vectalon audit`) validates the .vectalon/audit/*.jsonl trail (required
+> fields, sequence continuity, secret hygiene) and summarizes activity by
+> actor and action. The Multi-repository Memory Agent (`vectalon repos`)
+> verifies the .vectalon/repos.json workspace manifest — each sibling repo
+> reachable, a git checkout, with a memory store. The Release Prediction
+> Agent (`vectalon release-predict`) derives a deterministic 0-100
+> release-risk score from read-only git history (fix density, refactor
+> density, staleness, breaking changes, author breadth in the release
+> window). The Deep Play Store Readiness Agent (`vectalon play-store`)
+> goes beyond the shared store surface: manifest permissions and the
+> data-safety form they imply, exported components, backup rules, cleartext
+> posture, SDK target/compile/min levels, signing, and measured store-listing
+> assets (icon, feature graphic, screenshots, listing text). The
+> Fine-tuning Dataset Agent (`vectalon dataset`) validates
+> .vectalon/dataset/*.jsonl training data — schema consistency, duplicates,
+> label balance, length outliers, PII leakage. The LoRA Training Readiness
+> Agent (`vectalon lora`) checks the .vectalon/lora config — dataset path,
+> base model with a VRAM estimate, r/alpha/quantization, output dir. All
+> ten agents (080-089) ship `--json` and reports to their
+> `docs/vectalon/<agent>/` dir (gitignored).
+
+### 080. Figma-to-code Sync Agent
+### 081. Sentry Intelligence Agent
+### 082. Mobile Observability Agent
+### 083. Enterprise Governance Agent
+### 084. Org-wide Audit Trail Agent
+### 085. Multi-repository Memory Agent
+### 086. Release Prediction Agent
+### 087. Deep Play Store Readiness Agent
+### 088. Fine-tuning Dataset Agent
+### 089. LoRA Training Readiness Agent
+
+Acceptance:
+- Design, telemetry, and release surfaces have deterministic agents
+- Training-data and model-adjacent workflows are first-class commands
+
+## Remaining Backlog (090-100)
 
 Focus Areas:
-- Figma-to-code
-- Fine tuning pipelines
-- LoRA training
 - GitHub integration (deep)
-- Sentry intelligence (event API sync)
-- Mobile observability
-- Enterprise governance
-- Audit trails (org-wide)
-- Multi-repository memory
-- Release prediction models
-- Play Store readiness checks (deep)
 - Mobile observability dashboards
+- Model evaluation harness
+- Semantic code search
+- On-call / incident commander
+- Release train automation
+- Cost governance (cloud + model spend)
+- Developer experience (DX) scoring

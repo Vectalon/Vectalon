@@ -2462,6 +2462,289 @@ npx vectalon dashboard --json
 
 ---
 
+## `figma`
+
+**Figma-to-code Sync Agent** (Roadmap 080): parses a Figma design export
+(figma.json / design-export.json) and checks design↔code drift — design
+colors with no matching token or hardcoded value, component names with no
+source component, text styles with no font usage. Report to
+`docs/vectalon/figma/`.
+
+```bash
+npx vectalon figma                # check design↔code drift
+npx vectalon figma --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `sentry`
+
+**Sentry Intelligence Agent** (Roadmap 081): ingests Sentry/Crashlytics
+telemetry exports (.vectalon/telemetry), groups crashes into classes by
+exception type, ranks them by volume and user impact, attaches a
+root-cause verdict per class, and flags release regressions. Report to
+`docs/vectalon/sentry/`.
+
+```bash
+npx vectalon sentry               # rank crash classes from telemetry
+npx vectalon sentry --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `observability`
+
+**Mobile Observability Agent** (Roadmap 082): audits instrumentation
+coverage in source (Sentry init, crash handlers, analytics SDK, network
+breadcrumbs, performance tracing) and flags slow traces/spans from
+telemetry exports. Report to `docs/vectalon/observability/`.
+
+```bash
+npx vectalon observability        # audit instrumentation + slow traces
+npx vectalon observability --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `governance`
+
+**Enterprise Governance Agent** (Roadmap 083): repository-evidence
+checklist — license, security policy, contributing guide, CODEOWNERS, PR
+template, lockfile/SBOM, Dependabot, CI. Report to
+`docs/vectalon/governance/`.
+
+```bash
+npx vectalon governance           # governance evidence checklist
+npx vectalon governance --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `audit`
+
+**Org-wide Audit Trail Agent** (Roadmap 084): validates the
+.vectalon/audit/*.jsonl trail — required fields, sequence continuity,
+secret hygiene — and summarizes activity by actor and action. Report to
+`docs/vectalon/audit/`.
+
+```bash
+npx vectalon audit                # validate the audit trail
+npx vectalon audit --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `repos`
+
+**Multi-repository Memory Agent** (Roadmap 085): verifies the
+.vectalon/repos.json workspace manifest — each sibling repo reachable, a
+git checkout, with a memory store. Report to `docs/vectalon/repos/`.
+
+```bash
+npx vectalon repos                # verify the workspace manifest
+npx vectalon repos --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `release-predict`
+
+**Release Prediction Agent** (Roadmap 086): deterministic release-risk
+score (0-100) from read-only git history — fix density, refactor density,
+staleness, breaking changes, author breadth in the release window. Report
+to `docs/vectalon/release-predict/`.
+
+```bash
+npx vectalon release-predict      # predict release risk
+npx vectalon release-predict --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `play-store`
+
+**Deep Play Store Readiness Agent** (Roadmap 087): Play-specific checks
+beyond the shared store surface — manifest permissions and the data-safety
+form they imply, exported components, backup rules, SDK target/compile/min
+levels, signing, and measured listing assets (icon, feature graphic,
+screenshots, listing text). Report to `docs/vectalon/play-store/`.
+
+```bash
+npx vectalon play-store           # deep Play readiness checklist
+npx vectalon play-store --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `dataset`
+
+**Fine-tuning Dataset Agent** (Roadmap 088): validates
+.vectalon/dataset/*.jsonl training data — schema consistency, duplicates,
+label balance, length outliers, PII leakage. Report to
+`docs/vectalon/dataset/`.
+
+```bash
+npx vectalon dataset              # validate training data
+npx vectalon dataset --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
+## `lora`
+
+**LoRA Training Readiness Agent** (Roadmap 089): checks the
+.vectalon/lora config — dataset path, base model with a VRAM estimate,
+r/alpha/quantization, output dir. Report to `docs/vectalon/lora/`.
+
+```bash
+npx vectalon lora                 # LoRA training readiness
+npx vectalon lora --config .vectalon/lora/config.yaml
+npx vectalon lora --json
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--config <path>` | Path to the LoRA config (default .vectalon/lora/config.json) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Scan completed |
+| 1 | Fatal error |
+
+---
+
 ## Global `--diagnostics` flag
 
 `--diagnostics` works on **every** command (before or after the subcommand):

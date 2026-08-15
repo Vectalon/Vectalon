@@ -51,6 +51,16 @@ import { tokensCommand } from './commands/tokens'
 import { teamStatsCommand } from './commands/teamStats'
 import { permsCommand } from './commands/perms'
 import { dashboardCommand } from './commands/dashboard'
+import { figmaCommand } from './commands/figma'
+import { sentryCommand } from './commands/sentry'
+import { observabilityCommand } from './commands/observability'
+import { governanceCommand } from './commands/governance'
+import { auditCommand } from './commands/audit'
+import { reposCommand } from './commands/repos'
+import { releasePredictCommand } from './commands/releasePredict'
+import { playStoreCommand } from './commands/playStore'
+import { datasetCommand } from './commands/dataset'
+import { loraCommand } from './commands/lora'
 import { benchCommand } from './commands/bench'
 import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
 import { impactCommand } from './commands/impact'
@@ -531,6 +541,67 @@ export function createProgram(): Command {
     .action(dashboardCommand)
 
   program
+    .command('figma [directory]')
+    .description('Figma-to-code Sync Agent (Roadmap 080): parses a Figma design export (figma.json / design-export.json) and checks drift — design colors with no matching token/hardcoded value, component names with no source component, text styles with no font usage; report to docs/vectalon/figma/')
+    .option('--json', 'Print machine-readable output')
+    .action(figmaCommand)
+
+  program
+    .command('sentry [directory]')
+    .description('Sentry Intelligence Agent (Roadmap 081): ranks crash classes from Sentry/Crashlytics telemetry exports (.vectalon/telemetry) by volume and user impact, flags release regressions, and attaches a root-cause verdict per class; report to docs/vectalon/sentry/')
+    .option('--json', 'Print machine-readable output')
+    .action(sentryCommand)
+
+  program
+    .command('observability [directory]')
+    .description('Mobile Observability Agent (Roadmap 082): audits instrumentation coverage (Sentry init, crash handlers, analytics SDK, network breadcrumbs, performance tracing) and flags slow traces/spans from telemetry; report to docs/vectalon/observability/')
+    .option('--json', 'Print machine-readable output')
+    .action(observabilityCommand)
+
+  program
+    .command('governance [directory]')
+    .description('Enterprise Governance Agent (Roadmap 083): repository-evidence checklist — license, security policy, contributing guide, CODEOWNERS, PR template, lockfile/SBOM, Dependabot, CI; report to docs/vectalon/governance/')
+    .option('--json', 'Print machine-readable output')
+    .action(governanceCommand)
+
+  program
+    .command('audit [directory]')
+    .description('Org-wide Audit Trail Agent (Roadmap 084): validates the .vectalon/audit/*.jsonl trail — required fields, sequence continuity, secret hygiene — and summarizes activity by actor/action; report to docs/vectalon/audit/')
+    .option('--json', 'Print machine-readable output')
+    .action(auditCommand)
+
+  program
+    .command('repos [directory]')
+    .description('Multi-repository Memory Agent (Roadmap 085): verifies the .vectalon/repos.json workspace manifest — each sibling repo reachable, a git checkout, with a memory store; report to docs/vectalon/repos/')
+    .option('--json', 'Print machine-readable output')
+    .action(reposCommand)
+
+  program
+    .command('release-predict [directory]')
+    .description('Release Prediction Agent (Roadmap 086): deterministic release-risk score (0-100) from read-only git history — fix density, churn, staleness, breaking changes, author breadth in the release window; report to docs/vectalon/release-predict/')
+    .option('--json', 'Print machine-readable output')
+    .action(releasePredictCommand)
+
+  program
+    .command('play-store [directory]')
+    .description('Deep Play Store Readiness Agent (Roadmap 087): Play-specific checks beyond the shared store surface — manifest permissions + data-safety, exported components, backup rules, SDK target/compile/min, signing, listing assets (icon, feature graphic, screenshots, listing text); report to docs/vectalon/play-store/')
+    .option('--json', 'Print machine-readable output')
+    .action(playStoreCommand)
+
+  program
+    .command('dataset [directory]')
+    .description('Fine-tuning Dataset Agent (Roadmap 088): validates .vectalon/dataset/*.jsonl training data — schema consistency, duplicates, label balance, length outliers, PII leakage; report to docs/vectalon/dataset/')
+    .option('--json', 'Print machine-readable output')
+    .action(datasetCommand)
+
+  program
+    .command('lora [directory]')
+    .description('LoRA Training Readiness Agent (Roadmap 089): checks .vectalon/lora/config prerequisites — dataset path, base model with VRAM estimate, r/alpha/quantization, output dir; report to docs/vectalon/lora/')
+    .option('--config <path>', 'Path to the LoRA config (default .vectalon/lora/config.json)')
+    .option('--json', 'Print machine-readable output')
+    .action(loraCommand)
+
+  program
     .command('doctor [directory]')
     .description('Diagnose ecosystem items, native toolchain, leaderboard readiness, model access + web intel — with numbered fix steps and quick enable/disable')
     .option('--json', 'Print the report as JSON')
@@ -853,6 +924,16 @@ async function runInteractive(): Promise<void> {
       { value: 'team-stats', label: 'Team productivity analytics', hint: 'Cadence, bus factor, author distribution (077)' },
       { value: 'perms', label: 'Audit agent permissions', hint: 'Agent/MCP config grants + credentials (078)' },
       { value: 'dashboard', label: 'Engineering dashboard', hint: 'Aggregate all agent reports + HTML (079)' },
+      { value: 'figma', label: 'Figma-to-code sync', hint: 'Design export drift check (080)' },
+      { value: 'sentry', label: 'Sentry intelligence', hint: 'Rank crash classes from telemetry (081)' },
+      { value: 'observability', label: 'Observability audit', hint: 'Instrumentation + slow traces (082)' },
+      { value: 'governance', label: 'Enterprise governance', hint: 'License, policy, SBOM, CODEOWNERS (083)' },
+      { value: 'audit', label: 'Audit trail', hint: 'Org-wide .vectalon/audit validation (084)' },
+      { value: 'repos', label: 'Multi-repo memory', hint: 'Workspace manifest verification (085)' },
+      { value: 'release-predict', label: 'Release prediction', hint: 'Release-risk score from git history (086)' },
+      { value: 'play-store', label: 'Play Store readiness', hint: 'Deep Play-specific checklist (087)' },
+      { value: 'dataset', label: 'Fine-tuning dataset', hint: 'Validate JSONL training data (088)' },
+      { value: 'lora', label: 'LoRA readiness', hint: 'Training prerequisites + VRAM (089)' },
       { value: 'policy', label: 'Manage policy', hint: 'Configure project-specific guardrails' },
       { value: 'serve', label: 'Start MCP server', hint: 'Expose project-aware tools to agents' },
       { value: 'pull', label: 'Download local model', hint: 'Download the default Qwen2.5-Coder model' },
@@ -1426,6 +1507,66 @@ async function runInteractive(): Promise<void> {
   if (action === 'dashboard') {
     await dashboardCommand('', {})
     p.outro('Dashboard generated')
+    return
+  }
+
+  if (action === 'figma') {
+    await figmaCommand('', {})
+    p.outro('Figma sync report generated')
+    return
+  }
+
+  if (action === 'sentry') {
+    await sentryCommand('', {})
+    p.outro('Sentry intelligence report generated')
+    return
+  }
+
+  if (action === 'observability') {
+    await observabilityCommand('', {})
+    p.outro('Observability audit report generated')
+    return
+  }
+
+  if (action === 'governance') {
+    await governanceCommand('', {})
+    p.outro('Governance report generated')
+    return
+  }
+
+  if (action === 'audit') {
+    await auditCommand('', {})
+    p.outro('Audit trail report generated')
+    return
+  }
+
+  if (action === 'repos') {
+    await reposCommand('', {})
+    p.outro('Multi-repo report generated')
+    return
+  }
+
+  if (action === 'release-predict') {
+    await releasePredictCommand('', {})
+    p.outro('Release prediction report generated')
+    return
+  }
+
+  if (action === 'play-store') {
+    await playStoreCommand('', {})
+    p.outro('Play Store readiness report generated')
+    return
+  }
+
+  if (action === 'dataset') {
+    await datasetCommand('', {})
+    p.outro('Dataset report generated')
+    return
+  }
+
+  if (action === 'lora') {
+    await loraCommand('', {})
+    p.outro('LoRA readiness report generated')
     return
   }
 
