@@ -18,7 +18,7 @@ const SDK_DATA: Record<string, SdkData> = {
   'react-native': {
     name: 'React Native',
     status: 'live',
-    statusLabel: 'Live — v0.9.0',
+    statusLabel: 'Live — v0.10.0',
     tagline: 'The full harness — context, codegen, upgrade copilot, device control, regression coverage, and 40 deterministic agents.',
     description:
       'The original Vectalon harness. Scans your RN project, builds a living knowledge graph, runs a local MCP-aware agent over 58 project-aware tools, keeps the model current with ecosystem releases — every hour — and ships 40 deterministic agent commands (review, security, SOC 2, GitHub PR triage, incident command, …) that need no model at all.',

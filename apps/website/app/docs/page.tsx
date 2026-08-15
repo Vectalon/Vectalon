@@ -141,7 +141,7 @@ export default function DocsPage() {
           </div>
           <span className="flex shrink-0 items-center gap-1.5 font-mono text-[11px] text-[#E8E0C8]/45">
             <span className="live-dot" aria-hidden />
-            v0.9.0
+            v0.10.0
           </span>
         </div>
 

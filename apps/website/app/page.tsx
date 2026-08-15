@@ -67,7 +67,7 @@ const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'Which platforms are supported?',
-    a: 'React Native is live at v0.9.0. iOS, Android, and Flutter harnesses are in development — join the waitlist and we’ll email the moment a beta opens.',
+    a: 'React Native is live at v0.10.0. iOS, Android, and Flutter harnesses are in development — join the waitlist and we’ll email the moment a beta opens.',
   },
   {
     q: 'How is it different from other AI coding tools?',
@@ -561,7 +561,7 @@ export default async function Home() {
                 read is the feed the model sees. If the ecosystem ships it, the model knows it.
               </p>
               <Link href="/changelog" className="mt-6 inline-block text-sm text-brand hover:underline">
-                See what shipped in v0.9.0 →
+                See what shipped in v0.10.0 →
               </Link>
             </div>
             <div className="card !p-0">

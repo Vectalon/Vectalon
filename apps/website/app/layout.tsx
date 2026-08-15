@@ -166,7 +166,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="flex items-stretch">
                 <div className="seg hidden text-xs text-slate-500 md:flex">
                   <span className="text-emerald-600 dark:text-emerald-400">●</span>
-                  main · v0.9.0
+                  main · v0.10.0
                 </div>
                 <MobileMenu />
                 <ThemeToggle />

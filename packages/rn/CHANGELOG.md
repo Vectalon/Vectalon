@@ -5,6 +5,55 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2026-08-15
+
+### Added
+
+- **Carbon report windows** — every agent terminal verdict now renders as a
+  box-drawing window with traffic-light dots, the agent title, a colored
+  verdict chip, and a wrapped bordered body; truecolor detection drives
+  24-bit fills on iTerm/WezTerm/Ghostty/Kitty/Alacritty/JetBrains, degrades
+  to standard ANSI, and is fully clean under `NO_COLOR` or piped output
+  (ANSI-aware wrapping keeps styled findings intact across line breaks).
+  The same aesthetic now styles the website docs man page and all
+  report-adjacent surfaces.
+- **Live-scored benchmark correctness** — the `--live --install` path was
+  dead on arrival: fixtures pinned `react@18.3.1` against
+  `react-native@0.74.0`'s `react@18.2.0` peer (npm `ERESOLVE`) and
+  `typescript@5.5.0`, which npm unpublished — every temp install failed, so
+  jest/tsc/eslint never ran against real deps and correctness was
+  structurally 0. The fixture template is now a real checkable RN project
+  (peer-correct react, `@types/react`, babel config, eslint +
+  typescript-eslint, jest smoke test), and the deterministic scaffold
+  generates a unit test per feature — the gate holds 100% with tests in the
+  loop.
+- **Model pass re-run with `--live --install`** — overall composite 28% →
+  **68%** across all 13 scenarios, relative-to-human 30% → **76%** (of the
+  89% human reference), correctness genuinely scored (tests pass on 12 of 13
+  scenarios; rn-03 and rn-09 at 100% across install + jest + tsc + eslint),
+  guardrails 91% → 92%. Published to `bench/results/local.json`,
+  `BENCHMARK_RESULTS.md`, and the /benchmarks page with its data-drift
+  guard.
+- **Benchmark suite expanded** — /benchmarks now presents one harness, four
+  benchmarks (axes, leaderboard, suite breakdown, relative-to-human,
+  regression gate); two new scaffoldable scenarios (rn-12 notifications,
+  rn-13 account deletion) bring the CI gate to six scenarios at 100%.
+- **Website report showcase + deep links** — the agents catalog links every
+  card to its report on /reports; docs documents the three local
+  report-viewing paths (terminal, markdown in repo, dashboard HTML),
+  mirrored in CLI_REFERENCE.md and the RN package README.
+
+### Fixed
+
+- **Dropdown alignment** — full-size product dropdown and mobile menu
+  dropdown realigned flush to their triggers; mobile menu no longer sticks
+  open on touch devices (outside-close now listens to `pointerdown`, which
+  fires on touch before scroll cancels mouse events, with
+  `touch-action: manipulation` killing the iOS tap delay).
+- **Benchmark fixture installs** — `react@18.2.0` peer pin and
+  `typescript@5.5.4` (5.5.0 is unpublished) make every temp-project install
+  succeed.
+
 ## [0.9.0] - 2026-08-15
 
 ### Added

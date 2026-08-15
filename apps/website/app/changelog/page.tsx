@@ -2,9 +2,20 @@ import Link from 'next/link'
 
 const RELEASES = [
   {
-    version: 'v0.9.0',
+    version: 'v0.10.0',
     date: '2026-08-15',
     tag: 'latest',
+    highlights: [
+      'Carbon report windows everywhere — every one of the 40 agent verdicts now prints as a box-drawing terminal window with traffic-light dots, a colored verdict chip, and a wrapped bordered body: truecolor fills on iTerm/WezTerm/Ghostty/Kitty/Alacritty/JetBrains, standard ANSI elsewhere, and zero escape codes under NO_COLOR. The docs man page and report surfaces on this site share the same aesthetic',
+      'Benchmark correctness is now scored for real — `vectalon bench --live --install` was dead on arrival (fixtures pinned react 18.3.1 against react-native 0.74.0’s 18.2.0 peer, and typescript 5.5.0 doesn’t exist on npm — every temp install failed, so jest/tsc/eslint never ran against real deps). The fixture template is now a real checkable RN project, the deterministic scaffold generates a unit test per feature, and the live model pass re-run jumped the overall composite from 28% to **68%** and relative-to-human from 30% to **76%** — with tests passing on 12 of 13 scenarios and rn-03 + rn-09 at 100% correctness',
+      'Benchmark suite expanded — the /benchmarks page now presents one harness, four benchmarks (axes, model leaderboard, suite breakdown, relative-to-human, CI regression gate) across 13 scenarios; two new scenarios (rn-12 notifications, rn-13 account deletion) extend the every-PR gate to six at a 100% floor',
+      'Website report showcase — the agents catalog deep-links every card to its live report on /reports, and the docs page documents the three local report-viewing paths (terminal verdict, markdown in the repo, dashboard HTML) — mirrored in CLI_REFERENCE.md and the package README',
+      'Fixed: product and mobile dropdowns realigned flush to their triggers, and the mobile menu no longer sticks open on touch devices (outside-close now listens to pointerdown, which fires on touch before a scroll cancels mouse events)',
+    ],
+  },
+  {
+    version: 'v0.9.0',
+    date: '2026-08-15',
     highlights: [
       'Phase 11 — Platform & GitHub Intelligence (Roadmap 090-100): eleven new deterministic agents, every one free and report-driven — `vectalon gh-pr` (merge-readiness triage on every open PR: age, draft state, size, review decision, CI rollup, mergeability), `vectalon gh-issue` (the open-issue backlog as a triage queue: staleness, unassigned gaps, label hygiene), `vectalon gh-ci` (workflow reliability: flaky-job detection, failure rates, slow-CI duration outliers), `vectalon gh-sec` (security posture: dependabot alerts, secret scanning, branch protection), `vectalon monitor` (telemetry folded into one executive view — crash classes, instrumentation findings, telemetry events, the dashboard verdict), `vectalon evals` (golden eval cases scored deterministically with a regression comparison), `vectalon search` (sub-second line-pinned project search, density-ranked), `vectalon incident` (a crash log to an incident brief: root cause, hot files, release risk, next steps), `vectalon train` (read-only release-train dry-run across every workspace repo), `vectalon cost` (auditable spend estimates — LoRA GPU-hours, eval tokens, dataset GB — with explicit rate assumptions), and `vectalon dx` (one 0-100 developer-experience score across twelve weighted axes). Each GitHub-family agent reads the live gh CLI when available or a `--file` export, and degrades to an explicit no-data verdict — never a guess',
       'The deterministic fleet is now **40 agents across four roadmap phases** — verified end-to-end: the CLI smoke sweep runs all 40 against a real Expo/React Native project (40 passed, 0 failed), every agent writes its report to `docs/vectalon/<cmd>/`, and the website agents catalog lists all 40 with their verdicts and reports',

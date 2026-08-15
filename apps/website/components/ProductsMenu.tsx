@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 
 const PRODUCTS = [
-  { slug: 'react-native', name: 'React Native', status: 'live', statusLabel: 'Live', hint: 'v0.9.0 — 40 deterministic agents' },
+  { slug: 'react-native', name: 'React Native', status: 'live', statusLabel: 'Live', hint: 'v0.10.0 — 40 deterministic agents' },
   { slug: 'ios', name: 'iOS', status: 'soon', statusLabel: 'In development', hint: 'Swift — SwiftUI — codegen' },
   { slug: 'android', name: 'Android', status: 'soon', statusLabel: 'In development', hint: 'Kotlin — Gradle — new arch' },
   { slug: 'flutter', name: 'Flutter', status: 'soon', statusLabel: 'In development', hint: 'Dart — pub.dev — widgets' },
