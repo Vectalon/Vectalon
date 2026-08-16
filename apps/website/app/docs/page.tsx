@@ -3,7 +3,7 @@ import Link from 'next/link'
 const FREE: Array<[string, string]> = [
   ['fix "issue"', 'THE workflow — tell it what\'s broken (or pass --log) and get root cause → evidence → impact → recommended fix → applied → verification → confidence in one structured verdict, applied in a sandbox by default'],
   ['score', 'The Vectalon Engineering Health Score — one 0-100 number from eight dimensions, the delta vs your last run, and P0/P1/P2 actions'],
-  ['init', 'Scan your project and build the knowledge base'],
+  ['init', 'The 15-minute proof of value — scan the project, build the knowledge base, and end with the scan summary + Health Score + Top 5 problems. No LLM config asked'],
   ['serve', 'Run the MCP server — agents connect from your editor'],
   ['feature "…"', 'Generate components, write tests, run workflows'],
   ['doctor', 'Ecosystem + native toolchain + leaderboard readiness, with numbered fix steps'],

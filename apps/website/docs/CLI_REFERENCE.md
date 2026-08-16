@@ -32,12 +32,18 @@ policy, serve, pull, models, help).
 
 ## `init`
 
-Initialize vectalon in a React Native project: scan the codebase, build the
-context snapshot, detect tooling (Expo vs bare RN-CLI), set up the model
-provider, and enable the recommended ecosystem items.
+**The 15-minute proof of value.** Initialize vectalon in a React Native
+project with one command: scan the codebase, build the context snapshot,
+detect tooling (Expo vs bare RN-CLI), set up the model provider, and enable
+the recommended ecosystem items — then end with the **payoff**: the scan
+summary, the **Vectalon Health Score**, and the **Top 5 problems** Vectalon
+found, in the proof-of-value window. **No LLM configuration is ever asked**
+— the model router's local auto-select (or WASM/remote with automatic
+fallback) runs silently underneath, and the summary itself is zero model
+calls.
 
 ```bash
-npx vectalon init                  # scan cwd and create .vectalon/
+npx vectalon init                  # scan cwd, create .vectalon/, and show the score + top problems
 npx vectalon init ./my-app         # scan a specific directory
 npx vectalon init --model local    # use the local Qwen2.5-Coder provider
 npx vectalon init --model wasm     # zero-config ONNX/WASM provider (downloads on first use)
@@ -48,6 +54,36 @@ npx vectalon init --model groq     # Groq fast inference (GROQ_API_KEY)
 npx vectalon init --model ollama   # local Ollama server — no API key
 npx vectalon init --model vllm     # local vLLM server — no API key
 ```
+
+The proof-of-value window is exactly the commercial surface:
+
+```
+Scanning React Native project...
+
+✓  1,842 files
+✓    127 components
+✓     34 screens
+✓     18 native modules
+✓    412 dependencies
+✓      6 navigation stacks
+✓     23 tests
+!      4 architecture risks
+
+Vectalon Health Score: 76/100  grade C
+
+Top problems Vectalon found:
+
+  1. ● Android dependency conflict
+  2. ● Circular dependency
+  3. ● Checkout has no E2E coverage
+  4. ● 3 unnecessary render cycles
+  5. ○ RN upgrade risk detected
+```
+
+The counts come from the shared Project Intelligence model; the score is the
+eight-dimension `vc score` aggregation (offline, deterministic). The run also
+seeds the intel + score-history caches, so the next `vc score` is instant
+and already has a baseline for its "↓ N points this week" delta.
 
 **Options**
 
@@ -83,6 +119,10 @@ npx vectalon init --model vllm     # local vLLM server — no API key
   maintenance is Vectalon's job, and the same idempotent seed re-runs on every
   periodic refresh (hourly in `serve`, or `vectalon refresh`) so the knowledge
   base tracks code changes on its own
+- **Ends with the proof-of-value window** — scan summary counts, the Vectalon
+  Health Score (the `vc score` aggregation, offline), and the Top 5 problems
+  with P0/P1/P2 severity dots. Zero model calls, no configuration asked; the
+  run also seeds the intel + score-history caches for an instant next `vc score`
 
 **Exit codes**
 

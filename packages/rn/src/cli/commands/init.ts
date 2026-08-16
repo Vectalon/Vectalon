@@ -39,6 +39,9 @@ import {
 import type { ModelSetupProvider, ProjectModelConfig } from '../../model/setup'
 import { dynamicImport } from '../../utils/dynamicImport'
 import { resolveProjectModelProvider, resolveProjectModelConfig, readProjectManifest } from '../../projectManifest'
+import { runScore } from '../../score'
+import { renderPovWindow } from '../../score/pov'
+import { readProjectIntel } from '../../intel/model'
 import { warnIfRnVersionAhead } from '../../upgrade/drift'
 import {
   detectInitState,
@@ -141,6 +144,18 @@ export async function initCommand(rootDir: string, options: InitOptions = {}): P
     state.status = 'complete'
     state.updatedAt = Date.now()
     writeInitState(root, state)
+
+    // The 15-minute proof of value: the payoff of init. Deterministic and
+    // offline (no model calls), so it never blocks on LLM configuration —
+    // the local auto-select already ran silently underneath. It also seeds
+    // the intel + score-history caches, so the next `vc score` is instant.
+    try {
+      const score = await runScore(root, { skipAudit: true })
+      const intel = readProjectIntel(root).report
+      logger.info(renderPovWindow(root, score, intel))
+    } catch (povErr) {
+      reportError(povErr, 'init: proof-of-value summary failed — init itself succeeded', 'warn')
+    }
   } catch (err) {
     state.status = 'in-progress'
     state.updatedAt = Date.now()

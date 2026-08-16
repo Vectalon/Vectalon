@@ -76,6 +76,10 @@ const FAQ: Array<{ q: string; a: string }> = [
     a: 'It isn’t an AI coding assistant — it’s an engineering control plane. Give Vectalon a React Native repository and it continuously understands, reviews, diagnoses, upgrades, and validates it. Deterministic and compile-checked: agents produce the same result on any machine, every fix is typechecked before it lands and reverted if it doesn’t reduce errors, and the benchmark suite measures 35 scenarios against human references (94% guardrail pass rate).',
   },
   {
+    q: 'What does the 15-minute proof of value look like?',
+    a: 'One command: npx vectalon init. It scans your project, seeds the knowledge base, and configures the model silently underneath — no LLM setup is ever asked of you — then ends with the payoff: the scan summary (files, components, screens, native modules, dependencies, navigation stacks, tests, architecture risks), the Vectalon Health Score out of 100, and the Top 5 problems it found, each with its P0/P1/P2 severity. Zero model calls, offline, deterministic.',
+  },
+  {
     q: 'What does it cost, and what’s the license?',
     a: 'The free tier is genuinely useful — init, serve, feature, doctor, and all 44 agents, no card. Pro $19/mo, All-Access $49/mo, Team $99/seat/mo, each with a 14-day trial. Business Source License 1.1: free for personal, education, and OSS use and teams up to three devs; MIT after four years.',
   },
