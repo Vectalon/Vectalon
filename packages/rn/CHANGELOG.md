@@ -59,6 +59,86 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Expo/navigation stubs, extensionless + index resolution) so a real Expo
   app renders headlessly with zero model calls.
 
+### Added
+
+- **The AI engineering control plane for React Native (P0 repositioning).**
+  Vectalon is not an AI coding assistant: give it a repository and it
+  continuously understands, reviews, diagnoses, upgrades, and validates the
+  application. `vc fix` — the "Fix my React Native issue" killer workflow:
+  one command that understands the project, diagnoses the root cause (from
+  your words or a `--log`), explains it, proposes a fix, applies it in a
+  sandbox (or `--apply` to your tree), runs tests/build, verifies, and shows
+  exactly what changed — one structured verdict (root cause / evidence /
+  impact / recommended fix / applied / verification / confidence), zero
+  model calls. And **Project Intelligence as the shared foundation**: every
+  agent consumes the same intel model (`vc intel` — manifest, workspace
+  discovery, dependency graph, circular-dependency analysis, AST stats,
+  repository index, component graph, navigation graph, native module
+  registry, knowledge retrieval) rather than rediscovering the repo, with
+  `fix` and `upgrade` now consuming it for their impact analysis.
+- **The Vectalon Engineering Health Score — `vc score`** (P0): one 0-100
+  number an EM immediately understands, aggregated from eight deterministic
+  dimensions (Architecture, Dependencies, Build Health, Testing,
+  Performance, Security, Accessibility, RN Upgrade Risk), each scored by a
+  committed scanner consuming the shared Project Intelligence model. Shows
+  the overall + per-dimension bars, the delta vs the previous run ("↓ 8
+  points this week", from `docs/vectalon/score/history.json`), newly
+  arrived problems, and P0/P1/P2 recommended actions (error → P0, warning →
+  P1, info → P2). Offline by default, zero model calls, and a dimension
+  whose scanner cannot run is skipped with the overall renormalized.
+- **`vc init` is the 15-minute proof of value** (P0): the commercial
+  experience is one command. It scans, seeds the knowledge base, and
+  configures the model router silently underneath — no LLM configuration is
+  ever asked — then ends with the payoff window: the scan summary (files,
+  components, screens, native modules, dependencies, navigation stacks,
+  tests, architecture risks), the Health Score, and the Top 5 problems with
+  P0/P1/P2 severity dots. Zero model calls; seeds the intel + score-history
+  caches so the next `vc score` is instant with a delta baseline.
+- **`vc mode` — the deployment-mode surface (Cloud / Private /
+  Air-gapped)** (P0): the local/self-hosted AI differentiator. Three
+  explicit modes map the ModelRouter's providers onto a privacy ladder and
+  are **enforced, not labeled** — `vc init --mode private --model openai` is
+  refused, `vc mode --set <mode>` refuses an outside provider, and
+  `vc mode`/`--json` verify the configured provider against the declared
+  mode with its dataflow line. The deterministic agents need no model at
+  all, so the entire control plane works fully air-gapped.
+- **`vc demo` — the feature workflow as the flagship hero demonstration**
+  (P0): "Build a Login feature." → Requirement → Architecture decision →
+  Affected files → Implementation plan → Code → Tests → Review → Build
+  verification → PR, plus the **self-healing loop** (build failed →
+  diagnose → modify → rebuild → verify). Deterministic and offline — shows a
+  real prior workflow run when one exists under
+  `docs/vectalon/feature-development/`.
+- **`vc brain` — the productized Team Brain** (P1): the move from developer
+  tool to organizational infrastructure. Ask "Why are we using Zustand
+  instead of Redux?" and get the decision card (Decision: adr-017 · Reason:
+  performance + simplicity · Approved by: Architecture Team · Related:
+  Checkout, Payments, Profile · Reviewed: March 2026); ask "Who understands
+  our authentication architecture?" and get the expertise tree (Owner,
+  Experts, ADRs, Services, Recent changes). Decision cards parse from the
+  ADR files the brain indexes (the files remain the source of truth);
+  expertise derives from git history grouped by area. Deterministic,
+  offline, hermetic-testable.
+- **`vc plan` — start charging earlier than you think** (P1): the three
+  commercial plans on top of the deterministic engine gating — **Individual**
+  $19/dev/mo (Local AI + project intelligence + diagnostics), **Team**
+  $49/dev/mo (Team Brain, shared policies, PR review, CI, shared knowledge,
+  dashboards), **Enterprise** custom (self-hosted, SSO, audit, private
+  models, org-wide policies, multi-repo intel). Shows your current plan
+  from the active license or trial and the full ladder — pricing
+  deliberately simple, aimed at the first 5 paying teams, not pricing-page
+  psychology.
+- **`vc outcomes` — engineering outcomes, not feature counts** (P1): the
+  sales material. Aggregates every committed deterministic report into the
+  ledger an EM reads — issues detected, automatically fixed or prevented,
+  PR issues caught, build failures diagnosed and resolved, RN upgrades
+  completed, tests generated, performance regressions detected — and
+  estimates the developer hours + dollars saved (hours × blended rate,
+  $75/hr default, `--rate` override). Every number derives from real
+  `report.json` artifacts (build-fix, fix/bug-fix, review, score, sec/arch/
+  a11y/soc2, `.vectalon/upgrades/` provenance dirs, feature-run test files)
+  — zero model calls; if no reports exist it says so.
+
 ## [0.12.0] - 2026-08-15
 
 ### Added

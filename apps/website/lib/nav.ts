@@ -1,6 +1,7 @@
 /** Header navigation — single source of truth for desktop and mobile menus. */
 export const NAV = [
   { href: '/demo', label: 'Demo' },
+  { href: '/outcomes', label: 'Outcomes' },
   { href: '/benchmarks', label: 'Benchmarks' },
   { href: '/pricing', label: 'Pricing' },
   { href: '/agents', label: 'Agents' },

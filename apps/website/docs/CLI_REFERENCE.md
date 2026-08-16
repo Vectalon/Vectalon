@@ -1965,6 +1965,57 @@ works on every tier with zero model calls.
 
 ---
 
+## `outcomes`
+
+**Engineering outcomes, not feature counts — the sales material.**
+Aggregates every committed deterministic report into the ledger an
+engineering manager actually reads, exactly the dimensions the roadmap
+names: issues detected, automatically fixed or prevented, issues caught in
+PR review, build failures diagnosed and resolved, RN upgrades completed,
+tests generated, performance regressions detected — then estimates the
+developer hours and dollars saved.
+
+```bash
+npx vectalon outcomes             # the Acme-style ledger + savings estimate
+npx vectalon outcomes --json      # counts, hours, savings, per-outcome hours
+npx vectalon outcomes --rate 100  # override the blended rate ($/hour)
+```
+
+Every number is derived from real artifacts, never estimated from thin air:
+
+| Outcome | Source |
+|---|---|
+| Build failures diagnosed / resolved | `docs/vectalon/build-fix/report.json` (findings; verdict passes = resolved) |
+| Build failures fixed | `docs/vectalon/fix/` and `bug-fix/` reports with `applied: true` |
+| PR issues caught | `docs/vectalon/review/report.json` error+warning findings |
+| Performance regressions detected | the score report's performance-dimension findings |
+| Issues prevented | score `newProblems` + approved scans (a11y, soc2, …) |
+| Issues detected | error+warning findings across sec, arch, a11y, arch-score, soc2, governance, perms, tokens, deps |
+| RN upgrades completed | one provenance dir with `UPGRADE.md` per run under `.vectalon/upgrades/` |
+| Tests generated | test/spec files under `docs/vectalon/feature-development/` runs |
+
+The savings estimate is `hours × blended rate` with per-outcome hour
+weights (diagnosed 0.5h, fixed 1h, PR issue 0.25h, upgrade 8h, test 0.5h,
+perf regression 1h, detected issue 0.25h, prevented 0.5h) and a $75/hr
+default rate. Deterministic and offline — zero model calls. If no reports
+exist yet, the ledger says so instead of inventing numbers.
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `--json` | Machine-readable: counts, hours saved, savings USD, blended rate, per-outcome hours |
+| `--rate <usd>` | Blended rate override for the savings estimate (default $75/hr) |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Ledger rendered (or reported empty) |
+| 1 | Fatal error |
+
+---
+
 ## `demo`
 
 **The flagship demonstration — the feature workflow, live.** The most

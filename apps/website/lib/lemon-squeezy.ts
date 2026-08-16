@@ -25,9 +25,9 @@ const DAY = 24 * 3600 * 1000
 
 /** Approximate monthly-revenue contribution per tier (US cents). */
 export const TIER_MRR_CENTS: Record<LsTier, number> = {
-  pro: 1900,
-  'all-access': 4900,
-  team: 9900,
+  pro: 1900, // Individual $19/dev/mo
+  'all-access': 4900, // legacy cross-SDK tier, kept for existing subscriptions
+  team: 4900, // Team $49/dev/mo
   enterprise: 0,
 }
 

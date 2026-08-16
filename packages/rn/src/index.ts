@@ -468,6 +468,10 @@ export type { DeploymentMode, ModeDefinition, ModeCheckResult } from './model/mo
 export { PLANS, PLAN_BY_ID, planForTier, planCovers } from './billing/plans'
 export type { PlanId, PlanDef } from './billing/plans'
 
+export { collectOutcomes, hoursSaved, savingsEstimate, blendedRate, OUTCOME_HOURS, EMPTY_COUNTS } from './outcomes/ledger'
+export type { OutcomeCounts } from './outcomes/ledger'
+export { renderOutcomeLines } from './cli/commands/outcomes'
+
 export { runScore, aggregateOverall, buildRecommendations, renderScoreMarkdown, writeScoreReport, scoreDocsDir, findingKey, priorityOf, verdictOf as scoreVerdictOf, readHistory, writeHistory, collectSourceAndTests } from './score'
 export type { ScoreReport, ScoreDimension, ScoreFinding, ScoreOptions, ScorePriority, ScoreRecommendation, ScoreVerdict, ScoreHistory, ScoreHistoryEntry } from './score'
 

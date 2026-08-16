@@ -29,7 +29,7 @@ Vectalon is an open-core developer tool that embeds AI intelligence directly int
 Vectalon is licensed under the **Business Source License 1.1 (BSL-1.1)**.
 
 - **Free for:** Personal use, education, open source, and commercial teams with ≤3 developers
-- **Paid for:** Commercial teams with >3 developers (starting at $19/mo)
+- **Paid for:** Commercial teams with >3 developers (starting at $19/dev/mo)
 - **Becomes MIT:** On August 6, 2030, this version will automatically convert to MIT license
 
 See [LICENSE](LICENSE) for full terms.
@@ -123,26 +123,36 @@ npx vectalon init    # Scan project, build context
 npx vectalon serve   # Start MCP server for agents
 ```
 
-### Free Tier Features
+### Free — $0
 - Project scanning and context building
-- 58 MCP project-aware tools
-- **29 deterministic agent commands** — code review, architecture, security, build/test repair, refactoring, SOC 2, CI/CD, store readiness, team analytics, and enterprise intelligence (figma, sentry, governance, release-predict, dataset, lora, …), each with a report and a verdict — no model required
+- 60+ MCP project-aware tools
+- **All deterministic agent commands** — code review, architecture, security, build/test repair, refactoring, SOC 2, CI/CD, store readiness, team analytics, and enterprise intelligence (figma, sentry, governance, release-predict, dataset, lora, …), each with a report and a verdict — no model required
 - Component generation
 - Test writing
 - Ecosystem doctor
 - Benchmark suite
 
-### Pro Tier Features ($19/mo)
+### Individual — $19/developer/month
+- **Local AI** — local GGUF/WASM models, your source never leaves the machine
+- **Project intelligence** — intel, score, review, sec, arch
+- **Diagnostics** — doctor, build-fix, profile, sandbox, render
 - **Upgrade Copilot** — Automated React Native/Expo upgrades with codemods
 - **Self-healing CI** — Auto-generate and fix CI workflows
-- **Bundle Budgets** — Performance guardrails in code review
-- **Advanced Guardrails** — New Architecture, React Compiler checks
 
-### Team Tier Features ($99/seat/mo)
-- **Team Brain** — Cross-project knowledge sharing
-- **Cloud Sync** — Hosted knowledge base
-- **Custom Models** — Azure, Ollama, vLLM support
-- **Priority Inference** — Fast LLM responses
+### Team — $49/developer/month
+- **Team Brain** — decisions, expertise, shared knowledge across projects
+- **Shared policies + PR review**
+- **CI + dashboards** — coverage, score trends
+- **Cross-project intelligence + cloud sync**
+
+### Enterprise — Custom (annual)
+- Self-hosted deployment (air-gapped ready)
+- SSO / SAML + audit trails
+- Private / company-controlled models (Ollama, vLLM)
+- Organization-wide policies + multi-repository intelligence
+
+See your current plan and what each tier unlocks with `npx vectalon plan`, and
+the engineering outcomes your reports produce with `npx vectalon outcomes`.
 
 ---
 

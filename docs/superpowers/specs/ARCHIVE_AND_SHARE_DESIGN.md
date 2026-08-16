@@ -23,7 +23,7 @@ The feature integrates into Vectalon's existing CLI, MCP server, VS Code extensi
 ### Goals
 - Zero-config flavor detection from `build.gradle` and Xcode schemes.
 - Deterministic local archive with SHA-256 checksums and BuildManifest.
-- Tiered access: Free (local), Pro (store distribution), Team (SaaS + custom domain).
+- Tiered access: Free (local), Individual (store distribution), Team (SaaS + custom domain).
 - Credential delegation — Vectalon never stores App Store Connect or Google Play keys.
 - Ephemeral local sharing with QR codes and install pages.
 - White-label Next.js portal generator for custom-domain build sharing.
@@ -465,7 +465,7 @@ Generates a Next.js 14+ app using App Router:
 
 ## 6. Tier Gating
 
-| Feature | Free | Pro ($19/mo) | Team ($99/seat/mo) |
+| Feature | Free | Individual ($19/dev/mo) | Team ($49/dev/mo) |
 |---|---|---|---|
 | `vectalon archive` (local) | ✅ | ✅ | ✅ |
 | `vectalon archive --list` | ✅ | ✅ | ✅ |

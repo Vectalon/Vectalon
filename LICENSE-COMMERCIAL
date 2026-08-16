@@ -13,28 +13,31 @@ Vectalon ("Licensor") and the licensee ("Licensee").
 
 2. LICENSE TIERS
 
-   Pro ($19/month or $190/year):
-   - One product (e.g., @vectalon/rn)
-   - All advanced features (upgrade copilot, CI generation, bundle budgets)
-   - Single developer use
-   
-   All-Access ($49/month or $490/year):
+   Individual ($19/developer/month):
+   - Local AI — local GGUF/WASM models, source never leaves the machine
+   - Project intelligence (intel, score, review, sec, arch)
+   - Diagnostics (doctor, build-fix, profile, sandbox, render)
+   - Upgrade copilot + self-healing CI
+   - All deterministic agents, zero model calls
    - All current and future Vectalon products
-   - Cross-product features
    - Single developer use
    
-   Team ($99/seat/month):
-   - All products
-   - Team brain / cross-project knowledge
-   - Cloud-synced knowledge base
-   - Custom model endpoints
-   - Priority LLM inference
+   Team ($49/developer/month):
+   - Everything in Individual
+   - Team Brain — decisions, expertise, shared knowledge across projects
+   - Shared policies + PR review
+   - CI + dashboards (coverage, score trends)
+   - Cross-project intelligence + cloud sync
    - Up to 50 seats
    
-   Enterprise (Custom):
-   - Unlimited seats
+   Enterprise (Custom, annual):
+   - Everything in Team
+   - Self-hosted deployment (air-gapped ready)
    - SSO / SAML
-   - SOC-2 compliance
+   - Audit trails
+   - Private / company-controlled models (Ollama, vLLM)
+   - Organization-wide policies
+   - Multi-repository intelligence
    - Dedicated support
    - Custom integrations
 

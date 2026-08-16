@@ -87,6 +87,10 @@ const FAQ: Array<{ q: string; a: string }> = [
     q: 'What does it cost, and what’s the license?',
     a: 'The free tier is genuinely useful — init, serve, feature, doctor, and all 44 agents, no card. Individual $19/dev/mo (local AI + project intelligence + diagnostics), Team $49/dev/mo (Team Brain, shared policies, PR review, CI, dashboards), Enterprise custom (self-hosted, SSO, audit, private models) — each with a 14-day trial. `vectalon plan` shows your current plan. Business Source License 1.1: free for personal, education, and OSS use and teams up to three devs; MIT after four years.',
   },
+  {
+    q: 'What outcomes does it actually produce?',
+    a: 'The sales material is outcomes, not agent counts: `vectalon outcomes` aggregates every committed report into the ledger an engineering manager reads — issues detected and automatically fixed, issues caught in PR review, build failures diagnosed and resolved, RN upgrades completed, tests generated, performance regressions detected — and estimates the developer hours + dollars saved (hours × a $75/hr blended rate, `--rate` to change it). Every number comes from real report.json files in your repo, deterministically, zero model calls. See the /outcomes page for the shape of it.',
+  },
 ]
 
 const STATS = [
@@ -336,8 +340,8 @@ export default async function Home() {
                   <a href="#demo" className="btn-primary">
                     See it run
                   </a>
-                  <Link href="/pricing" className="btn-ghost">
-                    Compare plans
+                  <Link href="/outcomes" className="btn-ghost">
+                    See the outcomes
                   </Link>
                 </div>
               </div>

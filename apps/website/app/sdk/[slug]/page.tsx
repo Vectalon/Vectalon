@@ -101,7 +101,7 @@ export default function SdkPage({ params }: { params: { slug: string } }) {
   if (!sdk) notFound()
 
   const proUrl = checkoutUrlFor('pro', params.slug as ProductId)
-  const allAccessUrl = checkoutUrlFor('all-access')
+  const teamUrl = checkoutUrlFor('team')
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-16">
@@ -161,20 +161,21 @@ export default function SdkPage({ params }: { params: { slug: string } }) {
       <section className="mt-20">
         <h2 className="text-center text-2xl font-bold text-slate-50">Pricing</h2>
         <p className="mx-auto mt-2 max-w-xl text-center text-sm text-slate-400">
-          Per-platform Pro license, or one All-Access key for every Vectalon SDK.
+          Three plans — one license key covers every Vectalon SDK on every tier.
         </p>
         <div className="mx-auto mt-8 grid max-w-4xl gap-5 md:grid-cols-3">
           <div className="card flex flex-col">
-            <div className="font-mono text-xs font-semibold text-slate-400">Pro — {sdk.name}</div>
+            <div className="font-mono text-xs font-semibold text-slate-400">Individual</div>
             <div className="mt-1 font-display text-3xl font-bold text-slate-50">
-              $19<span className="text-sm font-normal text-slate-500">/mo</span>
+              $19<span className="text-sm font-normal text-slate-500">/dev/mo</span>
             </div>
             <p className="mt-2 flex-1 text-sm text-slate-400">
-              All Pro features for this platform. 14-day trial, one GitHub login.
+              Local AI + project intelligence + diagnostics for {sdk.name}. 14-day
+              trial, one GitHub login.
             </p>
             {sdk.status === 'live' && proUrl ? (
               <a href={proUrl} target="_blank" rel="noreferrer" className="btn-ghost mt-6 w-full">
-                Buy Pro
+                Buy Individual
               </a>
             ) : (
               <Link href="/trial" className="btn-ghost mt-6 w-full">
@@ -183,16 +184,17 @@ export default function SdkPage({ params }: { params: { slug: string } }) {
             )}
           </div>
           <div className="card terminal-glow flex flex-col border-brand/50 ring-1 ring-brand/30">
-            <div className="font-mono text-xs font-semibold text-brand">All-Access</div>
+            <div className="font-mono text-xs font-semibold text-brand">Team</div>
             <div className="mt-1 font-display text-3xl font-bold text-slate-50">
-              $49<span className="text-sm font-normal text-slate-500">/mo</span>
+              $49<span className="text-sm font-normal text-slate-500">/dev/mo</span>
             </div>
             <p className="mt-2 flex-1 text-sm text-slate-400">
-              Every platform — RN, iOS, Android, Flutter. One license, one auth.
+              Everything in Individual + Team Brain, shared policies, PR review,
+              CI, shared knowledge, dashboards.
             </p>
-            {allAccessUrl ? (
-              <a href={allAccessUrl} target="_blank" rel="noreferrer" className="btn-primary mt-6 w-full">
-                Get All-Access
+            {teamUrl ? (
+              <a href={teamUrl} target="_blank" rel="noreferrer" className="btn-primary mt-6 w-full">
+                Buy Team
               </a>
             ) : (
               <a href="/pricing" className="btn-primary mt-6 w-full">
@@ -201,15 +203,14 @@ export default function SdkPage({ params }: { params: { slug: string } }) {
             )}
           </div>
           <div className="card flex flex-col">
-            <div className="font-mono text-xs font-semibold text-slate-400">Team</div>
-            <div className="mt-1 font-display text-3xl font-bold text-slate-50">
-              $99<span className="text-sm font-normal text-slate-500">/seat/mo</span>
-            </div>
+            <div className="font-mono text-xs font-semibold text-slate-400">Enterprise</div>
+            <div className="mt-1 font-display text-3xl font-bold text-slate-50">Custom</div>
             <p className="mt-2 flex-1 text-sm text-slate-400">
-              5–50 seats, shared brain, org-wide gates, custom model endpoints.
+              Self-hosted (air-gapped ready), SSO, audit trails, private models,
+              org-wide policies, multi-repo intelligence.
             </p>
             <a href="mailto:sales@vectalon.in" className="btn-ghost mt-6 w-full">
-              Contact us
+              Talk to us
             </a>
           </div>
         </div>

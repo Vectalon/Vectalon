@@ -42,6 +42,7 @@ import { modeCommand } from './commands/mode'
 import { demoCommand } from './commands/demo'
 import { brainCommand } from './commands/brain'
 import { planCommand } from './commands/plan'
+import { outcomesCommand } from './commands/outcomes'
 import { testRepairCommand, forcedKind as forcedTestKind } from './commands/testRepair'
 import { refactorCommand } from './commands/refactor'
 import { depsCommand } from './commands/deps'
@@ -502,6 +503,13 @@ export function createProgram(): Command {
     .description('The commercial plan surface — Individual $19/dev/mo (Local AI + project intelligence + diagnostics), Team $49/dev/mo (Team Brain, shared policies, PR review, CI, shared knowledge, dashboards), Enterprise custom (self-hosted, SSO, audit, private models, org-wide policies, multi-repo intelligence). Shows your current plan from the active license or trial, everything each tier includes, and where to buy — deterministic and offline')
     .option('--json', 'Print machine-readable output')
     .action((options: { json?: boolean }) => planCommand(options))
+
+  program
+    .command('outcomes')
+    .description('Engineering outcomes, not feature counts — the sales material. Aggregates every committed deterministic report (build-fix, fix, review, score, sec, arch, a11y, upgrades, tests) into the ledger an EM actually reads: issues detected, automatically fixed or prevented, issues caught in PR review, build failures diagnosed and resolved, RN upgrades completed, tests generated, performance regressions detected — and the estimated engineering savings in dollars (hours × blended rate). Deterministic and offline')
+    .option('--json', 'Print machine-readable output')
+    .option('--rate <usd>', 'Blended rate override for the savings estimate (default $75/hr)')
+    .action((options: { json?: boolean; rate?: string }) => outcomesCommand(options))
 
   program
     .command('test-repair [directory]')
@@ -1092,6 +1100,7 @@ async function runInteractive(): Promise<void> {
       { value: 'demo', label: 'Run the flagship workflow demo', hint: 'Requirement → … → PR + the self-healing loop (zero model calls)' },
       { value: 'brain', label: 'Ask the Team Brain', hint: '“Why Zustand?” → the decision card · “Who owns auth?” → the expertise tree' },
       { value: 'plan', label: 'Show the commercial plan', hint: 'Individual $19 · Team $49 · Enterprise custom — what you pay for, and what each tier includes' },
+      { value: 'outcomes', label: 'Show engineering outcomes', hint: 'Issues detected / fixed, PR issues caught, build failures resolved, hours + $ saved — not feature counts' },
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Force refresh knowledge', hint: refreshHint },
       { value: 'suggestions', label: suggestionCount > 0 ? `View suggestions (${suggestionCount})` : 'View suggestions', hint: 'Improvement suggestions from the knowledge refresh' },
@@ -1708,6 +1717,12 @@ async function runInteractive(): Promise<void> {
   if (action === 'plan') {
     await planCommand({})
     p.outro('Plan shown above')
+    return
+  }
+
+  if (action === 'outcomes') {
+    await outcomesCommand({})
+    p.outro('Outcomes shown above')
     return
   }
 

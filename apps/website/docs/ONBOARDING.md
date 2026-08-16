@@ -249,6 +249,16 @@ as a first-class deliverable:
   `coverage`-labeled follow-up task (deduplicated against open tasks in the PM
   provider), and `vectalon coverage` renders the accumulated dashboard
 
+### 3.9.6 Outcomes (the sales material)
+
+`npx vectalon outcomes` — the ledger an engineering manager actually reads,
+aggregated from every committed report: issues detected, automatically fixed
+or prevented, PR issues caught, build failures diagnosed and resolved, RN
+upgrades completed, tests generated, performance regressions detected — and
+the estimated developer hours + dollars saved (hours × blended rate, $75/hr
+default, `--rate` override). Deterministic and offline; if no reports exist
+it says so instead of inventing numbers.
+
 ### 3.10 Ops & support
 
 - `npx vectalon status` — one command: daemon health, MCP reachability, model

@@ -288,6 +288,12 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['plan', '--json'],
   },
   {
+    id: 'outcomes',
+    name: 'Engineering outcomes ledger (issues detected/fixed, PR issues, savings estimate)',
+    category: 'cli',
+    args: () => ['outcomes', '--json'],
+  },
+  {
     id: 'test-repair',
     name: 'Test repair diagnosis (Jest/Detox/Maestro log classification)',
     category: 'analysis',
