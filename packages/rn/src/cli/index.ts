@@ -37,6 +37,7 @@ import { archCommand } from './commands/arch'
 import { secCommand } from './commands/sec'
 import { buildFixCommand, forcedKind } from './commands/buildFix'
 import { fixCommand } from './commands/fix'
+import { scoreCommand } from './commands/score'
 import { testRepairCommand, forcedKind as forcedTestKind } from './commands/testRepair'
 import { refactorCommand } from './commands/refactor'
 import { depsCommand } from './commands/deps'
@@ -463,6 +464,14 @@ export function createProgram(): Command {
     .option('--force', 'Allow --apply on a dirty working tree')
     .option('--json', 'Print machine-readable output')
     .action(fixCommand)
+
+  program
+    .command('score')
+    .description('The Vectalon Engineering Health Score: one 0-100 number from eight deterministic dimensions (Architecture, Dependencies, Build Health, Testing, Performance, Security, Accessibility, RN Upgrade Risk), the delta vs the previous run, the newly-arrived problems, and P0/P1/P2 recommended actions — the number an engineering manager immediately understands, zero model calls')
+    .option('--audit', 'Run the npm audit pass inside deps/security (default: skipped — offline)')
+    .option('--json', 'Print machine-readable output')
+    .action((options: { audit?: boolean; json?: boolean }) =>
+      scoreCommand({ ...options, skipAudit: !options.audit }))
 
   program
     .command('test-repair [directory]')
@@ -1048,6 +1057,7 @@ async function runInteractive(): Promise<void> {
     options: [
       { value: 'init', label: 'Initialize a project', hint: 'Scan React Native project and create .vectalon/' },
       { value: 'fix', label: 'Fix my React Native issue', hint: 'THE workflow — root cause → fix → verify → diff (killer P0)' },
+      { value: 'score', label: 'Show the Engineering Health Score', hint: 'One 0-100 number — 8 dimensions, delta, P0/P1/P2 actions' },
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Force refresh knowledge', hint: refreshHint },
       { value: 'suggestions', label: suggestionCount > 0 ? `View suggestions (${suggestionCount})` : 'View suggestions', hint: 'Improvement suggestions from the knowledge refresh' },
@@ -1633,6 +1643,12 @@ async function runInteractive(): Promise<void> {
     const issue = (await p.text({ message: 'What\'s the issue?', placeholder: 'Android build started failing after upgrading RN' })) as string
     await fixCommand(typeof issue === 'string' ? issue : '', {})
     p.outro('Fix loop complete — root cause, applied edits, and verification above')
+    return
+  }
+
+  if (action === 'score') {
+    await scoreCommand({})
+    p.outro('Engineering Health Score complete')
     return
   }
 

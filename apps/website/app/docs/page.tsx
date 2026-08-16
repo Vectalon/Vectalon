@@ -2,6 +2,7 @@ import Link from 'next/link'
 
 const FREE: Array<[string, string]> = [
   ['fix "issue"', 'THE workflow — tell it what\'s broken (or pass --log) and get root cause → evidence → impact → recommended fix → applied → verification → confidence in one structured verdict, applied in a sandbox by default'],
+  ['score', 'The Vectalon Engineering Health Score — one 0-100 number from eight dimensions, the delta vs your last run, and P0/P1/P2 actions'],
   ['init', 'Scan your project and build the knowledge base'],
   ['serve', 'Run the MCP server — agents connect from your editor'],
   ['feature "…"', 'Generate components, write tests, run workflows'],
@@ -35,7 +36,7 @@ const PRO: Array<[string, string]> = [
 const AGENTS: Array<[string, string]> = [
   [
     'phase 8 — review',
-    'review · arch · sec · build-fix · test-repair · refactor · deps · a11y · release-ready · bug-fix',
+    'review · arch · sec · build-fix · test-repair · refactor · deps · a11y · release-ready · bug-fix · score',
   ],
   [
     'phase 9 — release eng',

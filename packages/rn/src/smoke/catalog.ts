@@ -258,6 +258,12 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['fix', '--json'],
   },
   {
+    id: 'score',
+    name: 'Engineering Health Score (8 dimensions → overall 0-100, delta, P0/P1/P2 actions)',
+    category: 'analysis',
+    args: () => ['score', '--json'],
+  },
+  {
     id: 'test-repair',
     name: 'Test repair diagnosis (Jest/Detox/Maestro log classification)',
     category: 'analysis',

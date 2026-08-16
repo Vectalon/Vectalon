@@ -2094,6 +2094,72 @@ strength, applied edits, and verification results.
 
 ---
 
+## `score`
+
+**The Vectalon Engineering Health Score** (P0) — one 0-100 number an
+engineering manager immediately understands, aggregated from eight
+deterministic dimensions, each scored by a committed scanner consuming the
+shared Project Intelligence model (`readProjectIntel`): Architecture
+(arch-score), Dependencies (deps scan + dep-graph cycles), Build Health
+(native config vs the RN-required table), Testing (test-file ratio + jest),
+Performance (perf-scan), Security (secrets/unsafe/audit), Accessibility
+(a11y scan), and RN Upgrade Risk (impact vs the latest known RN). Zero model
+calls. Report + history to `docs/vectalon/score/`.
+
+```bash
+npx vectalon score                # the full scorecard — overall + 8 dimensions
+npx vectalon score --json         # machine-readable report
+```
+
+The scorecard is the sellable number:
+
+```
+Overall  82/100  ████████████████████░░░░░░  grade B
+
+Architecture     91 ██████████████████████░░  Clean module boundaries, no cycles
+Dependencies     74 ██████████████████░░░░░░  3 findings (1 error, 2 warning)
+Build Health     88 ██████████████████████░░  Native config aligned with RN-required versions
+Testing          67 ████████████████░░░░░░░░  4 test files for 21 source files
+Performance      81 ████████████████████░░░░  2 hazards (0 error, 2 warning)
+Security         93 ██████████████████████░░  No secrets or unsafe patterns found
+Accessibility    72 ██████████████████░░░░░░  5 findings (1 error, 4 warning)
+RN Upgrade Risk  61 ██████████████░░░░░░░░░░  react-native 0.72.5 → 0.86.2 (0 majors behind)
+
+↓ 8 points this week
+
+New problems:
+3 dependency risks · 2 performance regressions · 1 architecture violation
+
+Recommended actions
+P0  Fix Android dependency conflict
+P1  Add E2E test for Checkout
+P1  Remove circular dependency
+P2  Upgrade deprecated RN API
+```
+
+The delta ("↓ 8 points this week") comes from `history.json` — the previous
+run is always the baseline, and findings that newly appeared are reported as
+"New problems". Every finding maps to a P0/P1/P2 recommended action (error →
+P0, warning → P1, info → P2). A dimension whose scanner cannot run (missing
+source, unreadable config) is skipped and the overall renormalizes over the
+dimensions that scored — `vc score` never fails the run.
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `--audit` | Run the npm audit pass inside deps/security (default: skipped — the score is offline) |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Score computed (verdict is in the report) |
+| 1 | Fatal error |
+
+---
+
 ## `test-repair`
 
 **Test Repair Agent** (Roadmap 065): diagnoses a failing Jest, Detox, or
