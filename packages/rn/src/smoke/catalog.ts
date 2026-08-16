@@ -252,6 +252,12 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['build-fix', '--json'],
   },
   {
+    id: 'fix',
+    name: 'Fix my React Native issue (root cause → fix → verify → diff, the killer workflow)',
+    category: 'analysis',
+    args: () => ['fix', '--json'],
+  },
+  {
     id: 'test-repair',
     name: 'Test repair diagnosis (Jest/Detox/Maestro log classification)',
     category: 'analysis',

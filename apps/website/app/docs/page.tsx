@@ -1,6 +1,7 @@
 import Link from 'next/link'
 
 const FREE: Array<[string, string]> = [
+  ['fix "issue"', 'THE workflow — tell it what\'s broken (or pass --log) and get root cause → evidence → impact → recommended fix → applied → verification → confidence in one structured verdict, applied in a sandbox by default'],
   ['init', 'Scan your project and build the knowledge base'],
   ['serve', 'Run the MCP server — agents connect from your editor'],
   ['feature "…"', 'Generate components, write tests, run workflows'],

@@ -36,6 +36,7 @@ import { reviewCommand } from './commands/review'
 import { archCommand } from './commands/arch'
 import { secCommand } from './commands/sec'
 import { buildFixCommand, forcedKind } from './commands/buildFix'
+import { fixCommand } from './commands/fix'
 import { testRepairCommand, forcedKind as forcedTestKind } from './commands/testRepair'
 import { refactorCommand } from './commands/refactor'
 import { depsCommand } from './commands/deps'
@@ -453,6 +454,15 @@ export function createProgram(): Command {
     .option('--json', 'Print machine-readable output')
     .action((directory: string, options: { metro?: boolean; gradle?: boolean; xcode?: boolean }) =>
       buildFixCommand(directory, { ...options, kind: forcedKind(options) }))
+
+  program
+    .command('fix [issue]')
+    .description('THE killer workflow: "fix my React Native issue" — understand the project, diagnose the root cause (from your words or a --log), explain it, propose a fix, apply it in a sandbox (or --apply to your tree), run tests/build, verify, and show exactly what changed — one structured verdict, zero model calls')
+    .option('--log <path>', 'A failing Metro/Gradle/Xcode build log to classify')
+    .option('--apply', 'Write the verified edits to your tree (refuses a dirty git tree unless --force)')
+    .option('--force', 'Allow --apply on a dirty working tree')
+    .option('--json', 'Print machine-readable output')
+    .action(fixCommand)
 
   program
     .command('test-repair [directory]')
@@ -1036,6 +1046,7 @@ async function runInteractive(): Promise<void> {
     message: 'What would you like to do?',
     options: [
       { value: 'init', label: 'Initialize a project', hint: 'Scan React Native project and create .vectalon/' },
+      { value: 'fix', label: 'Fix my React Native issue', hint: 'THE workflow — root cause → fix → verify → diff (killer P0)' },
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Force refresh knowledge', hint: refreshHint },
       { value: 'suggestions', label: suggestionCount > 0 ? `View suggestions (${suggestionCount})` : 'View suggestions', hint: 'Improvement suggestions from the knowledge refresh' },
@@ -1614,6 +1625,13 @@ async function runInteractive(): Promise<void> {
   if (action === 'sec') {
     await secCommand('', {})
     p.outro('Security review complete')
+    return
+  }
+
+  if (action === 'fix') {
+    const issue = (await p.text({ message: 'What\'s the issue?', placeholder: 'Android build started failing after upgrading RN' })) as string
+    await fixCommand(typeof issue === 'string' ? issue : '', {})
+    p.outro('Fix loop complete — root cause, applied edits, and verification above')
     return
   }
 

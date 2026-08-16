@@ -2027,6 +2027,65 @@ npx vectalon build-fix --json
 
 ---
 
+## `fix`
+
+**The killer workflow — "Fix my React Native issue"** (P0): one command that
+understands the project, diagnoses the root cause, explains it, proposes a
+fix, applies it in a sandbox, runs tests/build, verifies, and shows exactly
+what changed — one structured verdict, zero model calls. Pass the issue in
+your own words (or attach a failing build log with `--log`). Report to
+`docs/vectalon/fix/`.
+
+```bash
+npx vectalon fix "Android build started failing after upgrading RN"
+npx vectalon fix "Android build started failing after upgrading RN" --log gradle.log
+npx vectalon fix "iOS build is failing after pod install" --log xcode.log
+npx vectalon fix "..." --apply        # write the verified edits to your tree
+npx vectalon fix "..." --json
+```
+
+The verdict is one structured block:
+
+```
+Root cause:        Kotlin 1.8.0 is below the 1.9.24 this project needs
+Evidence:          android/build.gradle — kotlinVersion = 1.8.0 → requires >= 1.9.24
+Impact:            3 packages (react-native, react-native-ble, @react-native-community/slider)
+Recommended fix:   Upgrade the Kotlin plugin to 1.9.24 in android/build.gradle.
+Applied:           ✓ android/build.gradle ×3 · ✓ android/gradle/wrapper/gradle-wrapper.properties
+Verification:      ✓ TypeScript · ✓ Jest · ○ Gradle (not run — sandbox has no Android SDK)
+Confidence:        94%
+```
+
+Diagnosis reuses the committed analyzers: the Gradle/Xcode/Metro log
+classifiers, the project-side SDK/AGP/Kotlin checks against the RN-required
+versions (compileSdk, Kotlin, Gradle wrapper, AGP, NDK per RN release), and
+`requires Kotlin >= X` parsing from the log or issue text. Edits are literal
+text replacements (`from` must exist verbatim or the edit is skipped) applied
+in a throwaway sandbox copy by default — your tree is never touched without
+`--apply`. Verification is bounded: `tsc --noEmit`, `jest --silent`, and
+`./gradlew assembleDebug` (the last only with `--apply`, since a sandbox has
+no Android SDK). Confidence is deterministic and explainable: evidence
+strength, applied edits, and verification results.
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[issue]` | Natural-language issue, e.g. "Android build started failing after upgrading RN" |
+| `--log <path>` | A failing Metro/Gradle/Xcode build log to classify |
+| `--apply` | Write the verified edits to your tree (refuses a dirty git tree unless `--force`) |
+| `--force` | Allow `--apply` on a dirty working tree |
+| `--json` | Print machine-readable output |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Diagnosis complete (verdict is in the report) |
+| 1 | Fatal error |
+
+---
+
 ## `test-repair`
 
 **Test Repair Agent** (Roadmap 065): diagnoses a failing Jest, Detox, or

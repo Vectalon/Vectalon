@@ -451,3 +451,6 @@ export type { Result } from './utils/safe'
 
 export * from './diagnostics'
 
+export { runFix, verdictOf, renderFixMarkdown, writeFixReport, fixDocsDir } from './fix'
+export type { FixReport, FixFinding, FixEdit, FixOptions, FixVerdict, FixEvidence, FixVerification } from './fix'
+
