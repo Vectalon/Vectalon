@@ -8,17 +8,18 @@ const STORAGE_KEY = 'vectalon-hero-ab'
 const COOKIE_NAME = 'vectalon_ab'
 
 /**
- * Hero headline A/B (Week 2 roadmap 2.3).
+ * Hero headline A/B.
  *
- * Variant B — the "works offline" positioning — is the headline this release
- * ships: "Generate production-grade React Native code without sending your
- * source to the cloud." Variant A is the incumbent control ("The AI harness
- * that lives in your terminal"). Assignment is a 50/50 split persisted in
- * localStorage so each visitor stays in one bucket; the bucket is also
- * written to a `vectalon_ab` cookie and a `data-ab-bucket` attribute on
- * <html>, so the pricing-CTA click rate can be measured per variant by any
- * analytics hook. The server renders variant B by default (the shipped
- * headline); only visitors bucketed A swap on mount.
+ * The product is defined as the AI engineering control plane for React Native
+ * teams — deliberately not "an AI coding assistant". Variant B (shipped): the
+ * primary value proposition — "give Vectalon a React Native repository and it
+ * continuously understands, reviews, diagnoses, upgrades, and validates the
+ * application." Variant A is the concise control-plane framing. Assignment is
+ * a 50/50 split persisted in localStorage so each visitor stays in one
+ * bucket; the bucket is also written to a `vectalon_ab` cookie and a
+ * `data-ab-bucket` attribute on <html>, so the pricing-CTA click rate can be
+ * measured per variant by any analytics hook. The server renders variant B by
+ * default (the shipped headline); only visitors bucketed A swap on mount.
  */
 export default function HeroHeadline() {
   const [variant, setVariant] = useState<HeroVariant>('b')
@@ -50,8 +51,8 @@ export default function HeroHeadline() {
         data-ab-bucket={variant}
       >
         {variant === 'b'
-          ? 'Generate production-grade React Native code without sending your source to the cloud'
-          : 'The AI harness that lives in your terminal'}
+          ? 'Give Vectalon a React Native repository. It continuously understands, reviews, diagnoses, upgrades, and validates it.'
+          : 'The AI engineering control plane for React Native teams'}
         <span className="caret" />
       </h1>
       <p
@@ -60,8 +61,8 @@ export default function HeroHeadline() {
         data-ab-bucket={variant}
       >
         {variant === 'b'
-          ? 'A local 1.5B/3B/7B model on your laptop — Vectalon scans your project, builds a living knowledge base, and runs an MCP agent that writes, reviews, and heals your code, fully offline.'
-          : 'Vectalon scans your project, builds a living knowledge base, and runs an MCP agent that writes, reviews, and heals your code.'}
+          ? 'Point it at your repository. Vectalon builds a living knowledge graph, then runs 44 deterministic agents and a local MCP agent that review, diagnose, upgrade, and validate your app — compile-checked and fully offline, no source leaves your machine.'
+          : 'Point it at your repository. Vectalon builds a living knowledge graph, then continuously reviews, diagnoses, upgrades, and validates your app — with 44 deterministic agents that need no model and no cloud.'}
       </p>
     </>
   )

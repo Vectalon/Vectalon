@@ -73,7 +73,7 @@ const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'How is it different from other AI coding tools?',
-    a: 'Deterministic and compile-checked. Agents produce the same result on any machine, every fix is typechecked before it lands and reverted if it doesn’t reduce errors, and the benchmark suite measures 35 scenarios against human references (94% guardrail pass rate).',
+    a: 'It isn’t an AI coding assistant — it’s an engineering control plane. Give Vectalon a React Native repository and it continuously understands, reviews, diagnoses, upgrades, and validates it. Deterministic and compile-checked: agents produce the same result on any machine, every fix is typechecked before it lands and reverted if it doesn’t reduce errors, and the benchmark suite measures 35 scenarios against human references (94% guardrail pass rate).',
   },
   {
     q: 'What does it cost, and what’s the license?',

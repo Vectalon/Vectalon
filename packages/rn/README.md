@@ -1,6 +1,6 @@
 # @vectalon-dev/rn
 
-**The adaptive AI harness for React Native.**
+**The AI engineering control plane for React Native.** Give it a repository and it continuously understands, reviews, diagnoses, upgrades, and validates the application.
 
 Project-aware SDLC intelligence for any agent — CLI, MCP server, VS Code extension, benchmark suite, and fine-tuning pipeline in one package.
 

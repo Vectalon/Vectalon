@@ -151,8 +151,9 @@ export default function DocsPage() {
           {/* NAME */}
           <ManH>name</ManH>
           <p className="mt-3 font-mono text-sm text-slate-300">
-            <span className="font-bold text-slate-50">vectalon</span> — the AI harness that lives
-            in your terminal
+            <span className="font-bold text-slate-50">vectalon</span> — the AI engineering control
+            plane for React Native teams: give it a repository and it continuously understands,
+            reviews, diagnoses, upgrades, and validates the application
           </p>
 
           {/* SYNOPSIS */}

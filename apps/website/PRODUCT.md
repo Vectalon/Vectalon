@@ -12,15 +12,27 @@ Primary: professional React Native developers working on real codebases (bare RN
 
 ## Product Purpose
 
-Vectalon is an open-core developer tool that embeds an AI harness directly into a codebase: it scans a project, builds a living knowledge base, and runs a local MCP-native agent that generates, reviews, upgrades, and heals code. The website exists to make the mechanism credible (a real CLI, real terminal output, real benchmarks) and convert visitors to the free tier / trial.
+Vectalon is the AI engineering control plane for React Native teams. Give it a React Native repository and it continuously **understands, reviews, diagnoses, upgrades, and validates** the application. It embeds an AI harness directly into a codebase: it scans a project, builds a living knowledge base, and runs a local MCP-native agent plus 44 deterministic, report-driven commands. The website exists to make the mechanism credible (a real CLI, real terminal output, real benchmarks) and convert visitors to the free tier / trial.
 
 ## Positioning
 
-The mechanism a competitor could not copy-paste: the agent never works from a generic guess — it works from a versioned project knowledge graph (L0→L3 memory) refreshed from live ecosystem intel hourly, and every generated fix is compile-checked before it lands. "The AI harness that lives in your terminal."
+Vectalon is deliberately **not** "an AI coding assistant". The product definition is a control plane for the RN engineering loop: give it a repository and it continuously
+
+- **understands** — versioned project knowledge graph (L0→L3 memory) + live ecosystem intel (refreshed hourly under `serve`),
+- **reviews** — guardrails on save, `review` / `arch` / `sec` / SOC 2 / GitHub PR triage,
+- **diagnoses** — `diagnostics`, `build-fix`, `test-repair`, `crash`, `incident`,
+- **upgrades** — rn-diff-purge diffs, AST-grade impact analysis, codemods,
+- **validates** — `bench` (the 35-scenario pack + CI regression gate), `smoke`, E2E generation.
+
+The mechanism a competitor could not copy-paste: the agent never works from a generic guess — it works from the versioned knowledge graph, and every generated fix is compile-checked before it lands. Tagline: "The AI harness that lives in your terminal."
 
 ## Operating Context
 
 The product is a CLI (`npx vectalon init / serve / feature / doctor / diagnostics / generate / upgrade / bench / smoke …`) plus 44 deterministic agent commands (review, arch, sec, soc2, dashboard, figma, gh-pr, monitor, evals, dx, archive, share, … — phases 8-12, roadmap items 061-104) that run on the free tier with a report and a verdict and no model calls. The website's demo is a real recorded terminal session (85 s, no cuts, on a 19-screen Expo app) and real benchmark numbers (13 scenarios, guardrail pass rate 92%). Pricing: Free tier $0 (init, serve, feature, doctor, + all 44 agents; no card), Pro $19/mo, All-access $49/mo, Team $99/mo. Business Source License 1.1 — free for personal/education/OSS and commercial teams ≤3 devs; becomes MIT after 4 years. React Native product live (current release 0.12.0); iOS, Android, Flutter in development.
+
+## Strategy — Capability Freeze (P0)
+
+The initial product is defined and closed: Vectalon = the AI engineering control plane for React Native teams. **P0: stop adding major capabilities.** No new agents, diagnostics, models, or workflows unless the user explicitly overrides. The existing surface is the product: the 44 deterministic agents, the 13-phase workflow (PRD → Scope → Impact → Design → Architecture → Tasks → Tests → Implementation → Review → Verification → Readiness → PR → Documentation → Close, with self-healing from verification/readiness back into implementation), the fast/balanced/quality model presets, and the 35-scenario benchmark pack. New work goes into depth, reliability, and validation of what already exists.
 
 ## Capabilities and Constraints
 

@@ -84,9 +84,10 @@ export default function AgentsPage({ searchParams }: { searchParams: { repo?: st
           Deterministic agents — <span className="text-brand">zero model calls</span>
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-slate-400">
-          Same result every run, on any machine — each agent scans, reaches a verdict, and writes a
-          report to <span className="font-mono text-slate-300">docs/vectalon/</span>. Free on every
-          tier, fully offline.
+          The deterministic fleet behind the control plane — the review, diagnose, and validate
+          muscles that need no model. Same result every run, on any machine: each agent scans, reaches
+          a verdict, and writes a report to <span className="font-mono text-slate-300">docs/vectalon/</span>.
+          Free on every tier, fully offline.
         </p>
       </div>
 

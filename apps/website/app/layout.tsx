@@ -9,9 +9,9 @@ import { ThemeToggle } from '../components/ThemeToggle'
 const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' })
 
 export const metadata: Metadata = {
-  title: 'Vectalon — the AI harness that lives in your terminal',
+  title: 'Vectalon — the AI engineering control plane for React Native',
   description:
-    'Vectalon scans your React Native, iOS, Android, and Flutter projects, builds a living knowledge base, and powers an MCP-aware agent that generates, reviews, upgrades, and heals your code.',
+    'Give Vectalon a React Native repository and it continuously understands, reviews, diagnoses, upgrades, and validates the application — 44 deterministic agents, zero model calls, no source leaves your machine.',
 }
 
 const themeScript = `
