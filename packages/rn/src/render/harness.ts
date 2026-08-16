@@ -50,7 +50,8 @@ const fs = require('fs');
 const shimPath = require.resolve(path.join(${JSON.stringify(input.root)}, 'shim.cjs'));
 const shim = require(shimPath);
 
-// 1. Alias react / react-native and the curated Expo/navigation packages to
+// 1. Alias react / react-native and the curated Expo/navigation/animation
+//    packages (safe-area, gesture-handler, reanimated, expo-font, ...) to
 //    the bundled shim so generated components (which import them) load
 //    without any installed deps — the sandbox denies network and has no
 //    node_modules. The classic JSX runtime emits bare React.createElement, so
@@ -64,9 +65,21 @@ const SHIM_ALIASES = new Set([
   'react/jsx-runtime',
   'react/jsx-dev-runtime',
   'expo-status-bar',
+  'expo',
   'react-native-safe-area-context',
   '@react-navigation/native',
   '@react-navigation/native-stack',
+  'react-native-gesture-handler',
+  'react-native-reanimated',
+  'expo-font',
+  'react-native-screens',
+  'expo-linear-gradient',
+  'expo-constants',
+  '@expo/vector-icons',
+  'expo-router',
+  'expo-router/stack',
+  'expo-router/tabs',
+  'expo-router/link',
 ]);
 Module._resolveFilename = function (request, parent, isMain, options) {
   if (SHIM_ALIASES.has(request)) {

@@ -49,13 +49,15 @@ function normalizeRel(p: string): string {
 }
 
 /**
- * Extract project-relative `require()` targets from compiled CJS output, so
- * the entry's module graph can be discovered and compiled too (Metro-style
- * graph following). Query/hash suffixes (rare in CJS output) are stripped.
+ * Extract project-relative module targets from compiled output, so the
+ * entry's module graph can be discovered and compiled too (Metro-style
+ * graph following). Handles CJS `require('./x')` and dynamic `import('./x')`
+ * (Babel CJS output keeps dynamic imports as-is). Query/hash suffixes are
+ * stripped.
  */
 export function extractRelativeRequires(code: string): string[] {
   const specs: string[] = []
-  const re = /require\(\s*['"](\.[^'"]+)['"]\s*\)/g
+  const re = /(?:require\(|import\()\s*['"](\.[^'"]+)['"]\s*\)/g
   let m: RegExpExecArray | null
   while ((m = re.exec(code))) {
     const spec = m[1].split(/[?#]/)[0]

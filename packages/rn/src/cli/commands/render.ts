@@ -10,9 +10,11 @@
  * Metro, renders the entry headlessly inside the V-1 sandbox (scrubbed env,
  * network denied, timeout/memory bounded), and prints console logs, the
  * render tree, and any load/runtime errors — before any diff is presented.
- * Curated Expo/navigation packages (expo-status-bar, safe-area context,
- * react-navigation) resolve to built-in stubs; anything else unresolvable
- * surfaces as a load error. Pro tier.
+ * Curated Expo/navigation/animation packages (expo-status-bar, expo,
+ * safe-area context, react-navigation, gesture-handler, reanimated,
+ * expo-font, screens, linear-gradient, constants, vector-icons,
+ * expo-router + stack/tabs/link subpaths) resolve to built-in stubs;
+ * anything else unresolvable surfaces as a load error. Pro tier.
  */
 
 import { existsSync, readFileSync } from 'fs'

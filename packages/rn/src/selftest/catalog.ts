@@ -1746,6 +1746,92 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
       return ok(`Expo-style entry rendered — ${result.compiled.length} file(s) compiled via ${result.transpiler}/${result.renderer}, screen body in the tree`)
     },
   },
+  {
+    id: 'render-expo-extended-stubs',
+    name: 'Render: extended Expo stubs (gesture-handler, reanimated, expo-font)',
+    category: 'render',
+    description:
+      'An entry importing react-native-gesture-handler (root view, detector, chainable gesture builders), react-native-reanimated (Animated.View, shared values, entering presets), and expo-font (useFonts gate) compiles and renders headlessly — the expanded curated stub set covers the packages real generated apps import beyond the base Expo/navigation set.',
+    async run(ctx) {
+      const files: Record<string, string> = {
+        'App.tsx': [
+          `import 'expo';`,
+          `import { registerRootComponent } from 'expo';`,
+          `import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';`,
+          `import Animated, { useSharedValue, useAnimatedStyle, withTiming, FadeIn } from 'react-native-reanimated';`,
+          `import { useFonts } from 'expo-font';`,
+          `import { Text } from 'react-native';`,
+          `function App() {`,
+          `  const [loaded] = useFonts({});`,
+          `  if (!loaded) return null;`,
+          `  const x = useSharedValue(0);`,
+          `  const style = useAnimatedStyle(() => ({ opacity: withTiming(x.value) }));`,
+          `  const pan = Gesture.Pan().onStart(() => {});`,
+          `  return <GestureHandlerRootView><GestureDetector gesture={pan}><Animated.View entering={FadeIn.duration(300)} style={style}><Text>Extended stubs render</Text></Animated.View></GestureDetector></GestureHandlerRootView>;`,
+          `}`,
+          `export default registerRootComponent(App);`,
+        ].join('\n'),
+      }
+      for (const [rel, content] of Object.entries(files)) ctx.sandbox.file(rel, content)
+      const result = await renderInSandbox({
+        files: [{ path: 'App.tsx', content: files['App.tsx'] }],
+        entry: 'App.tsx',
+        timeoutMs: 15_000,
+      })
+      if (!result.ok) return fail(`render failed: ${result.runtimeError || result.loadError}`)
+      const flat = JSON.stringify(result.tree)
+      if (!flat.includes('Animated.View')) return fail('render tree missing the Animated.View node')
+      if (!flat.includes('Extended stubs render')) return fail('reanimated child text missing')
+      return ok(`extended Expo stubs rendered — ${result.transpiler}/${result.renderer}, Animated.View + font gate in the tree`)
+    },
+  },
+  {
+    id: 'render-expo-router',
+    name: 'Render: expo-router (app-router) stubs',
+    category: 'render',
+    description:
+      'An app-router-style layout + screen importing expo-router (Stack/Tabs with Screen configs, Link, useRouter/useLocalSearchParams/usePathname) and the stack/tabs/link subpaths compiles and renders headlessly — file-based routing surfaces resolve to the curated shim so route files render without a real navigator.',
+    async run(ctx) {
+      const files: Record<string, string> = {
+        'app/_layout.tsx': [
+          `import { Stack } from 'expo-router';`,
+          `import { GestureHandlerRootView } from 'react-native-gesture-handler';`,
+          `export default function RootLayout() { return <GestureHandlerRootView><Stack><Stack.Screen name="index" options={{ title: 'Home' }} /><Stack.Screen name="product/[id]" options={{ title: 'Product' }} /></Stack></GestureHandlerRootView>; }`,
+        ].join('\n'),
+        'app/index.tsx': [
+          `import { Tabs, Link, useRouter, useLocalSearchParams, usePathname } from 'expo-router';`,
+          `import { Stack as StackSub } from 'expo-router/stack';`,
+          `import { Text, View } from 'react-native';`,
+          `export default function Home() {`,
+          `  const router = useRouter();`,
+          `  const params = useLocalSearchParams();`,
+          `  const pathname = usePathname();`,
+          `  return <View><Text>Path: {pathname}</Text><Text>Id: {String(params.id || 'none')}</Text><Link href="/cart">Open cart</Link><Tabs><Tabs.Screen name="home" options={{ title: 'Home' }} /></Tabs><StackSub><StackSub.Screen name="extra" /></StackSub></View>;`,
+          `}`,
+        ].join('\n'),
+      }
+      for (const [rel, content] of Object.entries(files)) ctx.sandbox.file(rel, content)
+      const layout = await renderInSandbox({
+        files: [{ path: 'app/_layout.tsx', content: files['app/_layout.tsx'] }],
+        entry: 'app/_layout.tsx',
+        timeoutMs: 15_000,
+      })
+      if (!layout.ok) return fail(`layout render failed: ${layout.runtimeError || layout.loadError}`)
+      const layoutFlat = JSON.stringify(layout.tree)
+      if (!layoutFlat.includes('product/[id]')) return fail('layout tree missing the dynamic-route Screen config')
+      const screen = await renderInSandbox({
+        files: [{ path: 'app/index.tsx', content: files['app/index.tsx'] }],
+        entry: 'app/index.tsx',
+        timeoutMs: 15_000,
+      })
+      if (!screen.ok) return fail(`screen render failed: ${screen.runtimeError || screen.loadError}`)
+      const flat = JSON.stringify(screen.tree)
+      if (!flat.includes('Open cart')) return fail('screen tree missing the Link node')
+      if (!flat.includes('"Tabs.Screen"')) return fail('screen tree missing the Tabs.Screen config')
+      if (!flat.includes('"Stack.Screen"')) return fail('screen tree missing the subpath Stack.Screen config')
+      return ok(`app-router layout + screen rendered — ${layout.transpiler}/${layout.renderer}, Stack/Tabs/Link + hooks in the tree`)
+    },
+  },
 
   // ---------------------------------------------------------------------------
   // Diagnostics & error telemetry

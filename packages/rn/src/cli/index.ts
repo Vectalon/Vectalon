@@ -235,7 +235,7 @@ export function createProgram(): Command {
 
   program
     .command('render [directory]')
-    .description('Compile + headless-render generated TS/TSX in the sandbox — follows the entry\'s relative import graph like Metro, resolves curated Expo/navigation packages (expo-status-bar, safe-area, react-navigation) via built-in stubs, and returns console logs, render tree, and runtime errors before the diff')
+    .description('Compile + headless-render generated TS/TSX in the sandbox — follows the entry\'s relative import graph like Metro, resolves curated Expo/navigation/animation packages (expo-status-bar, expo, safe-area, react-navigation, gesture-handler, reanimated, expo-font, screens, linear-gradient, constants, vector-icons, expo-router + stack/tabs/link) via built-in stubs, and returns console logs, render tree, and runtime errors before the diff')
     .option('--entry <file>', 'Entry file to render (required), e.g. src/App.tsx')
     .option(
       '--file <file>',

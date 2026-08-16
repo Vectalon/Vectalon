@@ -68,16 +68,40 @@ export function compileSource(content: string, filename: string, projectRoot?: s
             return false
           }
         })
+        // Pin module output to CommonJS. The harness aliases react/RN/Expo
+        // packages via Module._resolveFilename (CJS require) and the graph
+        // walker extracts require() calls — Babel's default "auto" module
+        // transform can leave import statements as-is, which Node then loads
+        // as ESM and the alias never intercepts. Use the commonjs transform
+        // plugin when the project ships it; otherwise fall back to the
+        // offline TypeScript transpiler below (which always emits CJS).
+        let cjsPlugin: string | null = null
+        try {
+          require.resolve('@babel/plugin-transform-modules-commonjs', { paths: [projectRoot] })
+          cjsPlugin = '@babel/plugin-transform-modules-commonjs'
+        } catch {
+          cjsPlugin = null
+        }
         // Babel without TS/React presets cannot transform TSX — prefer the
         // offline TypeScript transpiler below.
         if (presets.length > 0) {
           const out = babel.transformSync(content, {
             filename,
             presets,
+            plugins: cjsPlugin ? [cjsPlugin] : [],
             babelrc: false,
             configFile: false,
+            sourceType: 'module',
           })
           if (out && out.code) {
+            // Backstop: if the output somehow kept ESM syntax (no commonjs
+            // plugin, e.g. a preset that leaves imports alone), do not emit a
+            // file the sandbox would load as ESM — throw a message the catch
+            // below recognizes so it falls through to the TS transpiler,
+            // which reliably produces require().
+            if (/\b(?:import|export)\s/.test(out.code)) {
+              throw new Error('babel emitted ESM without the commonjs transform preset — falling back to TypeScript')
+            }
             return { ok: true, code: out.code, transpiler: 'babel' }
           }
         }

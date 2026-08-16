@@ -243,6 +243,188 @@ function createNativeStackNavigator() {
   };
 }
 
+// --- extended curated stubs: the packages real generated apps import beyond
+//     the base Expo/navigation set (same rationale — network denied, no
+//     node_modules). Handlers/detectors/containers pass children through,
+//     animation values are inert (shared values are plain { value } boxes,
+//     drivers resolve to their target), fonts report loaded synchronously so
+//     useFonts gates render their children, and icon/gradient/screen
+//     components render as host nodes. One namespace serves every aliased
+//     package, so the merged default export also carries the reanimated
+//     'Animated' hosts and expo-constants fields (expo-constants is a
+//     default-only import).
+// react-native-gesture-handler
+const GestureHandlerRootView = passthrough;
+const GestureDetector = passthrough;
+const State = { UNDETERMINED: 0, FAILED: 1, BEGAN: 2, CANCELLED: 3, ACTIVE: 4, END: 5 };
+const Directions = { RIGHT: 1, LEFT: 2, UP: 4, DOWN: 8 };
+function gestureBuilder() {
+  // A callable proxy: any method access or call chains to another builder, so
+  // Gesture.Pan().onStart(fn).activeOffsetX(10) never throws. .build yields
+  // a plain config object; never thenable; stringifies as a normal function.
+  return new Proxy(function () {}, {
+    get: (_t, key) => {
+      if (key === 'build') return () => ({});
+      if (key === 'then') return undefined;
+      if (key === 'toString') return Function.prototype.toString;
+      if (key === 'valueOf') return Function.prototype.valueOf;
+      return gestureBuilder();
+    },
+    apply: () => gestureBuilder(),
+  });
+}
+const Gesture = {
+  Pan: gestureBuilder, Tap: gestureBuilder, LongPress: gestureBuilder, Pinch: gestureBuilder,
+  Rotation: gestureBuilder, Fling: gestureBuilder, Exclusive: gestureBuilder,
+  Simultaneous: gestureBuilder, Race: gestureBuilder,
+};
+
+// react-native-reanimated
+const useSharedValue = (initial) => ({ value: typeof initial === 'function' ? initial() : initial });
+const useAnimatedStyle = (factory) => { try { return factory() || {}; } catch { return {}; } };
+const useDerivedValue = (factory) => { try { return { value: factory() }; } catch { return { value: undefined }; } };
+const useAnimatedScrollHandler = (handler) => handler || {};
+const useAnimatedRef = () => ({ current: null });
+const useAnimatedReaction = () => undefined;
+const useAnimatedProps = () => ({});
+const useWorkletCallback = (fn) => fn;
+const useEvent = () => undefined;
+const withTiming = (toValue) => toValue;
+const withSpring = (toValue) => toValue;
+const withDelay = (_delay, value) => (typeof value === 'function' ? value() : value);
+const withSequence = function () { const args = [].slice.call(arguments); return args.length ? args[args.length - 1] : undefined; };
+const withRepeat = (value) => (typeof value === 'function' ? value() : value);
+const withDecay = () => 0;
+const cancelAnimation = noop;
+const runOnJS = (fn) => fn;
+const runOnUI = (fn) => fn;
+const isWorklet = () => false;
+function interpolate(x, input, output) {
+  if (!Array.isArray(input) || !Array.isArray(output) || input.length < 2 || output.length < 2) return x;
+  if (x <= input[0]) return output[0];
+  if (x >= input[input.length - 1]) return output[output.length - 1];
+  for (let i = 1; i < input.length; i++) {
+    if (x <= input[i]) {
+      const span = input[i] - input[i - 1];
+      const t = span === 0 ? 0 : (x - input[i - 1]) / span;
+      return output[i - 1] + (output[i] - output[i - 1]) * t;
+    }
+  }
+  return output[output.length - 1];
+}
+const interpolateColor = () => '#000000';
+const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+const Extrapolation = { EXTEND: 'extend', CLAMP: 'clamp', IDENTITY: 'identity' };
+const Extrapolate = Extrapolation;
+const ease = (v) => v;
+const Easing = {
+  linear: ease, ease, quad: ease, cubic: ease, circle: ease, sin: ease, exp: ease,
+  in: ease, out: ease, inOut: ease, poly: () => ease, bezier: () => ease,
+  back: () => ease, bounce: () => ease, elastic: () => ease, steps: () => ease,
+};
+function transitionBuilder() {
+  // Entering/exiting/layout presets: callable AND chainable (.duration, .delay,
+  // .springify, ...) so both entering={FadeIn} and entering={FadeIn.duration(300)}
+  // work; the resulting config is only ever a prop on the element.
+  const builder = () => ({});
+  builder.duration = () => builder; builder.delay = () => builder; builder.springify = () => builder;
+  builder.timing = () => builder; builder.easing = () => builder; builder.mass = () => builder;
+  builder.damping = () => builder; builder.stiffness = () => builder; builder.withInitialValues = () => builder;
+  return builder;
+}
+const FadeIn = transitionBuilder(), FadeOut = transitionBuilder();
+const FadeInDown = transitionBuilder(), FadeInUp = transitionBuilder(), FadeInLeft = transitionBuilder(), FadeInRight = transitionBuilder();
+const FadeOutDown = transitionBuilder(), FadeOutUp = transitionBuilder(), FadeOutLeft = transitionBuilder(), FadeOutRight = transitionBuilder();
+const SlideInDown = transitionBuilder(), SlideInUp = transitionBuilder(), SlideInLeft = transitionBuilder(), SlideInRight = transitionBuilder();
+const SlideOutDown = transitionBuilder(), SlideOutUp = transitionBuilder(), SlideOutLeft = transitionBuilder(), SlideOutRight = transitionBuilder();
+const ZoomIn = transitionBuilder(), ZoomOut = transitionBuilder(), ZoomInEasyDown = transitionBuilder(), ZoomOutEasyDown = transitionBuilder();
+const BounceIn = transitionBuilder(), BounceOut = transitionBuilder(), BounceInDown = transitionBuilder(), BounceOutDown = transitionBuilder();
+const LightSpeedIn = transitionBuilder(), LightSpeedOut = transitionBuilder();
+const StretchInX = transitionBuilder(), StretchInY = transitionBuilder(), StretchOutX = transitionBuilder(), StretchOutY = transitionBuilder();
+const Layout = transitionBuilder(), LinearTransition = transitionBuilder(), FadingTransition = transitionBuilder(),
+  SequencedTransition = transitionBuilder(), JumpingTransition = transitionBuilder(), CurvedTransition = transitionBuilder();
+const Animated = {
+  View: host('Animated.View'), Text: host('Animated.Text'), Image: host('Animated.Image'),
+  ScrollView: host('Animated.ScrollView'), FlatList: host('Animated.FlatList'),
+  createAnimatedComponent: (comp) => comp,
+};
+
+// expo-font — fonts report loaded synchronously so useFonts gates render their
+// children instead of hanging on a promise.
+const FontDisplay = { AUTO: 'auto', BLOCK: 'block', SWAP: 'swap', FALLBACK: 'fallback', OPTIONAL: 'optional' };
+const Font = { loadAsync: () => Promise.resolve(), isLoaded: () => true, isLoading: () => false, getLoadedFonts: () => [], getUsedFonts: () => [] };
+function useFonts() { return [true, null]; }
+function loadAsync() { return Promise.resolve(); }
+function isLoaded() { return true; }
+function isLoading() { return false; }
+
+// react-native-screens
+const enableScreens = noop;
+const enableFreeze = noop;
+const Screen = host('Screen'), ScreenContainer = host('ScreenContainer'), ScreenStack = host('ScreenStack');
+
+// expo-linear-gradient
+const LinearGradient = host('LinearGradient');
+
+// expo-constants (default-only import)
+const Constants = {
+  platform: { ios: { statusBarHeight: 0 }, android: {} }, statusBarHeight: 0, isDevice: false,
+  expoConfig: null, manifest: null, appOwnership: null, sessionId: '', expoVersion: '49.0.0',
+  executionEnvironment: 'storeClient', linkingUri: '',
+};
+
+// @expo/vector-icons — icon components render as host nodes carrying their
+// name/size props (real glyphs need the font + native renderer).
+const Ionicons = host('Ionicons'), MaterialIcons = host('MaterialIcons'), FontAwesome = host('FontAwesome'),
+  Feather = host('Feather'), Entypo = host('Entypo'), AntDesign = host('AntDesign'),
+  MaterialCommunityIcons = host('MaterialCommunityIcons'), Octicons = host('Octicons'),
+  SimpleLineIcons = host('SimpleLineIcons'), EvilIcons = host('EvilIcons'), Foundation = host('Foundation'),
+  Fontisto = host('Fontisto'), Zocial = host('Zocial');
+const createIconSet = () => host('Icon'), createIconSetFromFontello = () => host('Icon'), createIconSetFromIonicons = () => host('Icon');
+
+// expo — the umbrella package. The Expo entry wrapper (index.js) side-effect
+// imports 'expo', and generated code pulls registerRootComponent / legacy
+// re-exports (Constants, Font) / a few async helpers — all inert here.
+const registerRootComponent = (comp) => comp;
+const Asset = { fromModule: (m) => ({ uri: String(m), downloadAsync: () => Promise.resolve() }) };
+const SplashScreen = { preventAutoHideAsync: () => Promise.resolve(), hideAsync: () => Promise.resolve(), setOptions: noop };
+const Updates = { reloadAsync: () => Promise.resolve(), checkForUpdateAsync: () => Promise.resolve(), fetchUpdateAsync: () => Promise.resolve() };
+const Linking = { openURL: () => Promise.resolve(), canOpenURL: () => Promise.resolve(true), addEventListener: () => ({ remove: noop }) };
+const Device = { isDevice: false, brand: null, modelName: null, osName: 'ios', osVersion: '0' };
+
+// expo-router — file-based routing surface for app-router projects. Layout
+// files render their <Stack>/<Tabs> + <Screen> config children as host nodes
+// (the actual route files are discovered by convention, not imports, so a
+// layout entry shows its navigator structure); Link/Redirect render as host
+// nodes; the router singleton and hooks (useRouter / useLocalSearchParams /
+// useSegments / usePathname) return inert values real screen bodies can read
+// without throwing. Subpath imports (expo-router/stack, /tabs, /link) alias
+// to this same namespace, so every re-export resolves here too.
+const Stack = host('Stack');
+Stack.Screen = host('Stack.Screen');
+Stack.Protected = host('Stack.Protected');
+const Tabs = host('Tabs');
+Tabs.Screen = host('Tabs.Screen');
+Tabs.Protected = host('Tabs.Protected');
+const Link = host('Link');
+const Redirect = host('Redirect');
+const Slot = passthrough;
+const ExpoRoot = passthrough;
+const router = {
+  push: noop, replace: noop, back: noop, navigate: noop, dismiss: noop,
+  dismissAll: noop, dismissTo: noop, canGoBack: () => false, setParams: noop,
+  reload: noop, prefetch: noop, getState: () => ({}),
+  asPath: '/', pathname: '/', segments: [], query: {},
+};
+const useRouter = () => router;
+const useLocalSearchParams = () => ({});
+const useGlobalSearchParams = () => ({});
+const useSegments = () => [];
+const usePathname = () => '/';
+const useRootNavigationState = () => ({ key: 'root', index: 0, routes: [], routeNames: [] });
+const useNavigationContainerRef = () => ({ current: Object.assign({}, noopNavigation, { getRootState: () => ({}) }) });
+const withLayoutContext = (Navigator) => Navigator;
+
 module.exports = {
   __esModule: true,
   createElement,
@@ -262,12 +444,65 @@ module.exports = {
   StyleSheet, Platform, Dimensions,
   // expo-status-bar surface
   setStatusBarStyle, setStatusBarHidden, setStatusBarNetworkActivityIndicatorVisible, setStatusBarTranslucent, setStatusBarBackgroundColor,
+  // expo umbrella surface
+  registerRootComponent, Asset, SplashScreen, Updates, Linking, Device,
+  // expo-router surface
+  Stack, Tabs, Link, Redirect, Slot, ExpoRoot, router,
+  useRouter, useLocalSearchParams, useGlobalSearchParams, useSegments, usePathname,
+  useRootNavigationState, useNavigationContainerRef, withLayoutContext,
   // react-native-safe-area-context surface
   SafeAreaProvider, useSafeAreaInsets, initialWindowMetrics: null,
   // @react-navigation/native surface
   NavigationContainer, useNavigation: () => noopNavigation, useRoute: () => safeRoute('unknown'), useIsFocused: () => true, useFocusEffect: noop,
   // @react-navigation/native-stack surface
   createNativeStackNavigator,
-  default: { createElement, Fragment, useState, useEffect, useMemo, useCallback, useRef, useContext, createContext, jsx, jsxs },
+  // react-native-gesture-handler surface
+  GestureHandlerRootView, GestureDetector, Gesture, State, Directions,
+  PanGestureHandler: host('PanGestureHandler'), TapGestureHandler: host('TapGestureHandler'),
+  LongPressGestureHandler: host('LongPressGestureHandler'), PinchGestureHandler: host('PinchGestureHandler'),
+  RotationGestureHandler: host('RotationGestureHandler'), FlingGestureHandler: host('FlingGestureHandler'),
+  NativeViewGestureHandler: host('NativeViewGestureHandler'), ForceTouchGestureHandler: host('ForceTouchGestureHandler'),
+  RectButton: host('RectButton'), BorderlessButton: host('BorderlessButton'), BaseButton: host('BaseButton'), PureNativeButton: host('PureNativeButton'),
+  gestureHandlerRootHOC: (comp) => comp, createNativeWrapper: (comp) => comp,
+  enableExperimentalWebImplementation: noop, enableLegacyWebImplementation: noop,
+  // react-native-reanimated surface
+  Animated,
+  useSharedValue, useAnimatedStyle, useDerivedValue, useAnimatedScrollHandler, useAnimatedRef,
+  useAnimatedReaction, useAnimatedProps, useWorkletCallback, useEvent,
+  withTiming, withSpring, withDelay, withSequence, withRepeat, withDecay, cancelAnimation,
+  runOnJS, runOnUI, isWorklet, interpolate, interpolateColor, clamp, Easing, Extrapolation, Extrapolate,
+  FadeIn, FadeOut, FadeInDown, FadeInUp, FadeInLeft, FadeInRight,
+  FadeOutDown, FadeOutUp, FadeOutLeft, FadeOutRight,
+  SlideInDown, SlideInUp, SlideInLeft, SlideInRight,
+  SlideOutDown, SlideOutUp, SlideOutLeft, SlideOutRight,
+  ZoomIn, ZoomOut, ZoomInEasyDown, ZoomOutEasyDown,
+  BounceIn, BounceOut, BounceInDown, BounceOutDown,
+  LightSpeedIn, LightSpeedOut, StretchInX, StretchInY, StretchOutX, StretchOutY,
+  Layout, LinearTransition, FadingTransition, SequencedTransition, JumpingTransition, CurvedTransition,
+  // expo-font surface
+  useFonts, loadAsync, Font, FontDisplay, isLoaded, isLoading,
+  // react-native-screens surface
+  enableScreens, enableFreeze, Screen, ScreenContainer, ScreenStack,
+  // expo-linear-gradient surface
+  LinearGradient,
+  // expo-constants surface
+  Constants,
+  // @expo/vector-icons surface
+  Ionicons, MaterialIcons, FontAwesome, Feather, Entypo, AntDesign, MaterialCommunityIcons,
+  Octicons, SimpleLineIcons, EvilIcons, Foundation, Fontisto, Zocial,
+  createIconSet, createIconSetFromFontello, createIconSetFromIonicons,
+  default: {
+    createElement, Fragment, useState, useEffect, useMemo, useCallback, useRef, useContext, createContext, jsx, jsxs,
+    // reanimated's default export is 'Animated' — its host components land
+    // here so import Animated from 'react-native-reanimated' yields
+    // Animated.View etc. without colliding with the named RN hosts.
+    View: host('Animated.View'), Text: host('Animated.Text'), Image: host('Animated.Image'),
+    ScrollView: host('Animated.ScrollView'), FlatList: host('Animated.FlatList'),
+    createAnimatedComponent: (comp) => comp,
+    // expo-constants is default-only — its common fields ride along too.
+    platform: Constants.platform, statusBarHeight: 0, isDevice: false,
+    expoConfig: null, manifest: null, appOwnership: null, sessionId: '', expoVersion: '49.0.0',
+    executionEnvironment: 'storeClient', linkingUri: '',
+  },
 };
 `
