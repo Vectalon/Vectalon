@@ -1,0 +1,40 @@
+{
+  "id": "rn-15-product-search",
+  "specVersion": 1,
+  "scaffoldable": false,
+  "correctness": {
+    "tests": true,
+    "typecheck": true,
+    "lint": true
+  },
+  "axes": [
+    "correctness",
+    "adherence",
+    "guardrails"
+  ],
+  "suite": "e-commerce",
+  "title": "Product catalog with debounced search and filters",
+  "prompt": "Create a product catalog screen with a debounced search bar, category filter chips, and a sort toggle. Fetch from the products API, show loading/empty/error states, and render results in a FlatList.",
+  "fixtures": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.2.0\",\n    \"react-native\": \"0.74.0\",\n    \"react-native-safe-area-context\": \"4.10.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.4\",\n    \"jest\": \"29.7.0\",\n    \"@babel/core\": \"7.24.9\",\n    \"@babel/preset-env\": \"7.24.8\",\n    \"@babel/preset-typescript\": \"7.24.7\",\n    \"@types/jest\": \"29.5.14\",\n    \"@types/react\": \"18.2.79\",\n    \"@typescript-eslint/eslint-plugin\": \"6.21.0\",\n    \"@typescript-eslint/parser\": \"6.21.0\",\n    \"eslint\": \"8.57.0\"\n  }\n}",
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"jsx\": \"react-native\",\n    \"esModuleInterop\": true,\n    \"skipLibCheck\": true\n  }\n}",
+    "babel.config.js": "module.exports = {\n  presets: ['@babel/preset-env', '@babel/preset-typescript'],\n};\n",
+    ".eslintrc.cjs": "module.exports = {\n  root: true,\n  env: { node: true, jest: true },\n  parser: '@typescript-eslint/parser',\n  parserOptions: { ecmaVersion: 2020, sourceType: 'module', ecmaFeatures: { jsx: true } },\n  plugins: ['@typescript-eslint'],\n  extends: ['plugin:@typescript-eslint/recommended'],\n  rules: { 'no-undef': 'off' },\n};\n",
+    "src/config/app.ts": "export const APP_NAME = 'rn-bench-app';\nexport const APP_VERSION = '1.0.0';\n",
+    "__tests__/smoke.test.ts": "import { APP_NAME, APP_VERSION } from '../src/config/app';\n\ndescribe('project smoke', () => {\n  it('loads the app config', () => {\n    expect(APP_NAME).toBe('rn-bench-app');\n    expect(APP_VERSION).toBe('1.0.0');\n  });\n});\n",
+    "src/config/api.ts": "export const API_BASE_URL = 'https://api.example.com';\n"
+  },
+  "expect": {
+    "files": [
+      "src/screens/CatalogScreen.tsx",
+      "src/services/products.ts"
+    ],
+    "behaviors": [
+      "FlatList for the product grid",
+      "search input debounced before fetching",
+      "loading, empty, and error states",
+      "filter chips and sort toggle update state immutably",
+      "accessibility labels on interactive controls"
+    ]
+  }
+}

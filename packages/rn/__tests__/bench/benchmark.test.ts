@@ -81,7 +81,7 @@ describe('bench scenario loader', () => {
     const dir = defaultScenariosDir()
     const loaded = loadScenarios(dir)
     expect(loaded.problems).toEqual([])
-    expect(loaded.scenarios.length).toBe(13)
+    expect(loaded.scenarios.length).toBe(33)
     for (const s of loaded.scenarios) {
       expect(validateScenario(s)).toEqual([])
     }
@@ -363,13 +363,13 @@ describe('bench deterministic baseline runner', () => {
     const { summary } = await runBenchmarkFromDir({
       generate: scenario => [{ path: `src/${scenario.id}.tsx`, content: 'export const x = 1;' }],
     })
-    expect(summary.runs.length).toBe(13)
+    expect(summary.runs.length).toBe(33)
   })
 
   it('runBenchmarkFromDir honors an explicit scaffoldable filter override', async () => {
     const { summary } = await runBenchmarkFromDir({ filter: { scaffoldable: false } })
-    // 13 scenarios − 6 scaffoldable = 7 model-only
-    expect(summary.runs.length).toBe(7)
+    // 33 scenarios − 6 scaffoldable = 27 model-only
+    expect(summary.runs.length).toBe(27)
     expect(summary.runs.every(r => !r.scaffoldable)).toBe(true)
   })
 

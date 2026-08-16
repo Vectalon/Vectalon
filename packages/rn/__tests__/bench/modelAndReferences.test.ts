@@ -38,10 +38,10 @@ function stubRouter(content: string): ModelGenerateOptions['modelRouter'] {
 }
 
 describe('bench reference solutions (M6)', () => {
-  it('loads all 13 shipped references without problems', () => {
+  it('loads all 33 shipped references without problems', () => {
     const { references, problems } = loadReferences(defaultReferencesDir())
     expect(problems).toEqual([])
-    expect(references.size).toBe(13)
+    expect(references.size).toBe(33)
     for (const files of references.values()) {
       expect(files.length).toBeGreaterThan(0)
       for (const file of files) {
@@ -245,8 +245,8 @@ describe('bench relative-to-human scoring (M6)', () => {
       })
     )
     const { summary } = await runBenchmarkFromDir({ modelRouter: router })
-    // A model seam runs every scenario (11), not just the scaffold-able subset.
-    expect(summary.runs.length).toBe(13)
+    // A model seam runs every scenario (33), not just the scaffold-able subset.
+    expect(summary.runs.length).toBe(33)
   })
 
   it('runBenchmarkFromDir runs a custom scenarios dir with custom references', async () => {

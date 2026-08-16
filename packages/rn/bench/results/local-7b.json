@@ -1,0 +1,1407 @@
+{
+  "specVersion": 1,
+  "runs": [
+    {
+      "id": "rn-01-login-screen",
+      "title": "Login screen with auth API",
+      "suite": "forms-security",
+      "scaffoldable": true,
+      "generatedFiles": [
+        "src/screens/LoginScreenEmailPassword.tsx"
+      ],
+      "guardrail": [
+        {
+          "path": "src/screens/LoginScreenEmailPassword.tsx",
+          "passed": 22,
+          "failed": 5,
+          "skipped": 9,
+          "ok": false
+        }
+      ],
+      "axes": {
+        "correctness": 0.5,
+        "adherence": 0.5,
+        "guardrails": 0.8148148148148148
+      },
+      "composite": 0.5944444444444443,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: failed (exit 2)",
+        "- Lint: failed (exit 1)"
+      ],
+      "reference": {
+        "files": [
+          "src/services/auth.ts",
+          "src/screens/LoginScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.7272727272727273,
+          "guardrails": 0.9565217391304348
+        },
+        "composite": 0.841897233201581,
+        "relative": {
+          "correctness": null,
+          "adherence": 0.6875,
+          "guardrails": 0.8518518518518517,
+          "composite": 0.7060772039645278
+        }
+      }
+    },
+    {
+      "id": "rn-02-flatlist-fetch",
+      "title": "Paginated list with pull-to-refresh",
+      "suite": "data-flow",
+      "scaffoldable": true,
+      "generatedFiles": [
+        "src/screens/CreateScreenThatFetchesPaginated.tsx"
+      ],
+      "guardrail": [
+        {
+          "path": "src/screens/CreateScreenThatFetchesPaginated.tsx",
+          "passed": 23,
+          "failed": 2,
+          "skipped": 11,
+          "ok": false
+        }
+      ],
+      "axes": {
+        "correctness": 0.75,
+        "adherence": 0.8333333333333334,
+        "guardrails": 0.92
+      },
+      "composite": 0.8260000000000001,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: failed (exit 2)",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/screens/FeedScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.8571428571428571,
+          "guardrails": 0.9615384615384616
+        },
+        "composite": 0.9093406593406593,
+        "relative": {
+          "correctness": null,
+          "adherence": 0.9722222222222223,
+          "guardrails": 0.9568,
+          "composite": 0.9083504531722055
+        }
+      }
+    },
+    {
+      "id": "rn-03-dark-mode-component",
+      "title": "Themed card component honoring dark mode",
+      "suite": "core-ui",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/theme/tokens.ts",
+          "src/components/ThemeCard.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1
+        }
+      }
+    },
+    {
+      "id": "rn-04-typed-navigation",
+      "title": "Settings stack with typed route params and deep links",
+      "suite": "navigation",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/navigation/types.ts",
+          "src/navigation/linking.ts",
+          "src/screens/SettingsScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1
+        }
+      }
+    },
+    {
+      "id": "rn-05-form-validation",
+      "title": "Multi-field form with validation and secure persistence",
+      "suite": "forms-security",
+      "scaffoldable": true,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/credentials.ts",
+          "src/screens/SignUpScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.8,
+          "guardrails": 0.9130434782608695
+        },
+        "composite": 0.8565217391304347,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.1675126903553301
+        }
+      }
+    },
+    {
+      "id": "rn-06-offline-queue",
+      "title": "Offline-first action queue with optimistic UI",
+      "suite": "data-flow",
+      "scaffoldable": true,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/hooks/useOfflineQueue.ts",
+          "src/screens/QueueScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.4,
+          "guardrails": 0.9545454545454546
+        },
+        "composite": 0.6772727272727274,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.4765100671140938
+        }
+      }
+    },
+    {
+      "id": "rn-07-image-feed",
+      "title": "Image-heavy feed with thumbnails",
+      "suite": "perf",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/components/ImageRow.tsx",
+          "src/screens/ImageFeedScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.6666666666666666,
+          "guardrails": 0.9607843137254902
+        },
+        "composite": 0.8137254901960783,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.2289156626506026
+        }
+      }
+    },
+    {
+      "id": "rn-08-feature-flags",
+      "title": "Feature-flag wrapper component and hook",
+      "suite": "core-ui",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/config/flags.ts",
+          "src/hooks/useFeatureFlag.ts",
+          "src/components/FeatureGate.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1
+        }
+      }
+    },
+    {
+      "id": "rn-09-accessible-form",
+      "title": "Screen-reader-friendly onboarding form",
+      "suite": "a11y",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/screens/OnboardingScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.875,
+          "guardrails": 0.9285714285714286
+        },
+        "composite": 0.9017857142857144,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.1089108910891088
+        }
+      }
+    },
+    {
+      "id": "rn-10-refactor-hooks-ts",
+      "title": "Convert class/JS component to typed hooks",
+      "suite": "refactor",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 0.75,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 0.7500000000000001,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: failed (exit 1)"
+      ],
+      "reference": {
+        "files": [
+          "src/components/ProfileCard.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.75,
+          "guardrails": 0.9615384615384616
+        },
+        "composite": 0.8557692307692307,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 0.8764044943820226
+        }
+      }
+    },
+    {
+      "id": "rn-11-remove-dependency-native",
+      "title": "Remove a dependency with full native cleanup",
+      "suite": "refactor",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": null,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": null,
+      "reference": {
+        "files": [
+          "package.json",
+          "ios/Podfile",
+          "android/settings.gradle",
+          "android/app/src/main/AndroidManifest.xml"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 0.9807692307692307
+        },
+        "composite": 0.9903846153846152,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": null
+        }
+      }
+    },
+    {
+      "id": "rn-12-notifications-screen",
+      "title": "Notifications screen with list fetch",
+      "suite": "data-flow",
+      "scaffoldable": true,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/notifications.ts",
+          "src/screens/NotificationsScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.7777777777777778,
+          "guardrails": 1
+        },
+        "composite": 0.888888888888889,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.125
+        }
+      }
+    },
+    {
+      "id": "rn-13-account-delete-screen",
+      "title": "Account deletion screen with confirmation",
+      "suite": "forms-security",
+      "scaffoldable": true,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/account.ts",
+          "src/screens/AccountDeleteScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.7777777777777778,
+          "guardrails": 1
+        },
+        "composite": 0.888888888888889,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.125
+        }
+      }
+    },
+    {
+      "id": "rn-14-checkout-flow",
+      "title": "Multi-step checkout with order confirmation",
+      "suite": "e-commerce",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/orders.ts",
+          "src/screens/CheckoutScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.75,
+          "guardrails": 0.9347826086956522
+        },
+        "composite": 0.8423913043478259,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.1870967741935485
+        }
+      }
+    },
+    {
+      "id": "rn-15-product-search",
+      "title": "Product catalog with debounced search and filters",
+      "suite": "e-commerce",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/products.ts",
+          "src/screens/CatalogScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.75,
+          "guardrails": 0.8913043478260869
+        },
+        "composite": 0.8206521739130433,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.2185430463576161
+        }
+      }
+    },
+    {
+      "id": "rn-16-chat-thread",
+      "title": "Chat thread with optimistic send",
+      "suite": "social-chat",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/messages.ts",
+          "src/screens/ChatScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.8461538461538461,
+          "guardrails": 0.9347826086956522
+        },
+        "composite": 0.8904682274247493,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.1230046948356807
+        }
+      }
+    },
+    {
+      "id": "rn-17-social-feed",
+      "title": "Social feed with likes and comment counts",
+      "suite": "social-chat",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/posts.ts",
+          "src/screens/FeedScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.8,
+          "guardrails": 0.9333333333333333
+        },
+        "composite": 0.8666666666666667,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.1538461538461537
+        }
+      }
+    },
+    {
+      "id": "rn-18-booking-slots",
+      "title": "Appointment booking with availability slots",
+      "suite": "booking-payments",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/booking.ts",
+          "src/screens/BookingScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.7,
+          "guardrails": 0.9111111111111111
+        },
+        "composite": 0.8055555555555555,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.2413793103448276
+        }
+      }
+    },
+    {
+      "id": "rn-19-payment-methods",
+      "title": "Payment method form with card formatting",
+      "suite": "booking-payments",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/charges.ts",
+          "src/screens/PaymentScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.8181818181818182,
+          "guardrails": 0.9347826086956522
+        },
+        "composite": 0.8764822134387351,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.140924464487035
+        }
+      }
+    },
+    {
+      "id": "rn-20-order-tracking",
+      "title": "Order tracking timeline with live status",
+      "suite": "booking-payments",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/tracking.ts",
+          "src/screens/TrackingScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.6666666666666666,
+          "guardrails": 0.9545454545454546
+        },
+        "composite": 0.8106060606060606,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.2336448598130842
+        }
+      }
+    },
+    {
+      "id": "rn-21-health-dashboard",
+      "title": "Health dashboard with activity rings",
+      "suite": "health-fitness",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/health.ts",
+          "src/screens/HealthDashboardScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.6666666666666666,
+          "guardrails": 0.9545454545454546
+        },
+        "composite": 0.8106060606060606,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.2336448598130842
+        }
+      }
+    },
+    {
+      "id": "rn-22-workout-timer",
+      "title": "Interval workout timer with lap history",
+      "suite": "health-fitness",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/hooks/useIntervalTimer.ts",
+          "src/screens/WorkoutTimerScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.8,
+          "guardrails": 0.9777777777777777
+        },
+        "composite": 0.888888888888889,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.125
+        }
+      }
+    },
+    {
+      "id": "rn-23-music-player",
+      "title": "Music player with seek bar and playlist",
+      "suite": "media",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/library.ts",
+          "src/screens/PlayerScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.7777777777777778,
+          "guardrails": 0.9333333333333333
+        },
+        "composite": 0.8555555555555555,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.168831168831169
+        }
+      }
+    },
+    {
+      "id": "rn-24-video-detail",
+      "title": "Video detail with related videos",
+      "suite": "media",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/videos.ts",
+          "src/screens/VideoDetailScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.7777777777777778,
+          "guardrails": 0.9555555555555556
+        },
+        "composite": 0.8666666666666667,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.1538461538461537
+        }
+      }
+    },
+    {
+      "id": "rn-25-profile-edit",
+      "title": "Profile edit with avatar picker and validation",
+      "suite": "profile-onboarding",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/profile.ts",
+          "src/screens/ProfileEditScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.8181818181818182,
+          "guardrails": 0.9130434782608695
+        },
+        "composite": 0.8656126482213439,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.1552511415525115
+        }
+      }
+    },
+    {
+      "id": "rn-26-onboarding-wizard",
+      "title": "Onboarding wizard with progress and skip",
+      "suite": "profile-onboarding",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/onboarding.ts",
+          "src/screens/OnboardingScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.7,
+          "guardrails": 0.9333333333333333
+        },
+        "composite": 0.8166666666666667,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.2244897959183674
+        }
+      }
+    },
+    {
+      "id": "rn-27-biometric-gate",
+      "title": "Biometric unlock gate with PIN fallback",
+      "suite": "security",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/authLocal.ts",
+          "src/screens/LockScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.8,
+          "guardrails": 0.9555555555555556
+        },
+        "composite": 0.8777777777777778,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.139240506329114
+        }
+      }
+    },
+    {
+      "id": "rn-28-document-list",
+      "title": "Document library with search and tags",
+      "suite": "productivity",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/documents.ts",
+          "src/screens/DocumentListScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.7272727272727273,
+          "guardrails": 0.8913043478260869
+        },
+        "composite": 0.8092885375494071,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.2356532356532357
+        }
+      }
+    },
+    {
+      "id": "rn-29-task-board",
+      "title": "Kanban task board with drag-free moves",
+      "suite": "productivity",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/tasks.ts",
+          "src/screens/TaskBoardScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.7,
+          "guardrails": 0.9333333333333333
+        },
+        "composite": 0.8166666666666667,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.2244897959183674
+        }
+      }
+    },
+    {
+      "id": "rn-30-subscription-plans",
+      "title": "Subscription plan picker with comparison",
+      "suite": "commerce-subscriptions",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/subscriptions.ts",
+          "src/screens/PlansScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.7,
+          "guardrails": 0.9111111111111111
+        },
+        "composite": 0.8055555555555555,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.2413793103448276
+        }
+      }
+    },
+    {
+      "id": "rn-31-places-nearby",
+      "title": "Nearby places list with distance sorting",
+      "suite": "travel-weather",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/places.ts",
+          "src/screens/PlacesScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.7272727272727273,
+          "guardrails": 0.9333333333333333
+        },
+        "composite": 0.8303030303030303,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.2043795620437956
+        }
+      }
+    },
+    {
+      "id": "rn-32-weather-forecast",
+      "title": "Hourly forecast with temperature curve",
+      "suite": "travel-weather",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/weather.ts",
+          "src/screens/WeatherScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.8,
+          "guardrails": 0.9333333333333333
+        },
+        "composite": 0.8666666666666667,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.1538461538461537
+        }
+      }
+    },
+    {
+      "id": "rn-33-privacy-settings",
+      "title": "Privacy settings with data controls",
+      "suite": "settings",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": 1,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
+          "src/services/privacy.ts",
+          "src/screens/PrivacyScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.7,
+          "guardrails": 0.9111111111111111
+        },
+        "composite": 0.8055555555555555,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.2413793103448276
+        }
+      }
+    }
+  ],
+  "suites": [
+    {
+      "suite": "forms-security",
+      "scenarioIds": [
+        "rn-01-login-screen",
+        "rn-05-form-validation",
+        "rn-13-account-delete-screen"
+      ],
+      "composite": 0.8648148148148147,
+      "guardrails": 0.8148148148148148
+    },
+    {
+      "suite": "data-flow",
+      "scenarioIds": [
+        "rn-02-flatlist-fetch",
+        "rn-06-offline-queue",
+        "rn-12-notifications-screen"
+      ],
+      "composite": 0.9420000000000001,
+      "guardrails": 0.92
+    },
+    {
+      "suite": "core-ui",
+      "scenarioIds": [
+        "rn-03-dark-mode-component",
+        "rn-08-feature-flags"
+      ],
+      "composite": 1,
+      "guardrails": null
+    },
+    {
+      "suite": "navigation",
+      "scenarioIds": [
+        "rn-04-typed-navigation"
+      ],
+      "composite": 1,
+      "guardrails": null
+    },
+    {
+      "suite": "perf",
+      "scenarioIds": [
+        "rn-07-image-feed"
+      ],
+      "composite": 1,
+      "guardrails": null
+    },
+    {
+      "suite": "a11y",
+      "scenarioIds": [
+        "rn-09-accessible-form"
+      ],
+      "composite": 1,
+      "guardrails": null
+    },
+    {
+      "suite": "refactor",
+      "scenarioIds": [
+        "rn-10-refactor-hooks-ts",
+        "rn-11-remove-dependency-native"
+      ],
+      "composite": 0.7500000000000001,
+      "guardrails": null
+    },
+    {
+      "suite": "e-commerce",
+      "scenarioIds": [
+        "rn-14-checkout-flow",
+        "rn-15-product-search"
+      ],
+      "composite": 1,
+      "guardrails": null
+    },
+    {
+      "suite": "social-chat",
+      "scenarioIds": [
+        "rn-16-chat-thread",
+        "rn-17-social-feed"
+      ],
+      "composite": 1,
+      "guardrails": null
+    },
+    {
+      "suite": "booking-payments",
+      "scenarioIds": [
+        "rn-18-booking-slots",
+        "rn-19-payment-methods",
+        "rn-20-order-tracking"
+      ],
+      "composite": 1,
+      "guardrails": null
+    },
+    {
+      "suite": "health-fitness",
+      "scenarioIds": [
+        "rn-21-health-dashboard",
+        "rn-22-workout-timer"
+      ],
+      "composite": 1,
+      "guardrails": null
+    },
+    {
+      "suite": "media",
+      "scenarioIds": [
+        "rn-23-music-player",
+        "rn-24-video-detail"
+      ],
+      "composite": 1,
+      "guardrails": null
+    },
+    {
+      "suite": "profile-onboarding",
+      "scenarioIds": [
+        "rn-25-profile-edit",
+        "rn-26-onboarding-wizard"
+      ],
+      "composite": 1,
+      "guardrails": null
+    },
+    {
+      "suite": "security",
+      "scenarioIds": [
+        "rn-27-biometric-gate"
+      ],
+      "composite": 1,
+      "guardrails": null
+    },
+    {
+      "suite": "productivity",
+      "scenarioIds": [
+        "rn-28-document-list",
+        "rn-29-task-board"
+      ],
+      "composite": 1,
+      "guardrails": null
+    },
+    {
+      "suite": "commerce-subscriptions",
+      "scenarioIds": [
+        "rn-30-subscription-plans"
+      ],
+      "composite": 1,
+      "guardrails": null
+    },
+    {
+      "suite": "travel-weather",
+      "scenarioIds": [
+        "rn-31-places-nearby",
+        "rn-32-weather-forecast"
+      ],
+      "composite": 1,
+      "guardrails": null
+    },
+    {
+      "suite": "settings",
+      "scenarioIds": [
+        "rn-33-privacy-settings"
+      ],
+      "composite": 1,
+      "guardrails": null
+    }
+  ],
+  "overallComposite": 0.9740763888888889,
+  "overallGuardrails": 0.8674074074074074,
+  "overallReferenceComposite": 0.8622153838179182,
+  "overallRelativeComposite": 1.1413297425327324
+}

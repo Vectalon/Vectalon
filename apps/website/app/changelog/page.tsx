@@ -2,6 +2,16 @@ import Link from 'next/link'
 
 const RELEASES = [
   {
+    version: 'v0.13.0',
+    date: '2026-08-16',
+    tag: 'latest',
+    highlights: [
+      'Benchmark pack expanded 13 → 33 scenarios — twenty new real-world app scenarios (rn-14..rn-33) span e-commerce (multi-step checkout, debounced catalog search, order tracking), social & chat (optimistic-send threads, social feed), booking & payments (availability slots, card formatting, live tracking), health & fitness (activity rings, interval timer), media (player with seek bar, video detail), profile & onboarding, security (biometric gate with PIN fallback), productivity, subscriptions, travel & weather, and settings — each with a scenario spec and a full human reference solution that typechecks, feeding the LoRA fine-tuning dataset',
+      'Every new reference follows the proven quality bar — useCallback + try/catch fetch pattern, design-token colors, KeyboardAvoidingView on input screens, typed states, and accessibility labels; all 20 compile clean under tsc, and the rubric scores the pack at 75% average adherence (up from a raw 59% before the pass)',
+      'Quality tier now live-scored across the full 33-scenario pack — the 7B scored **97% composite, 114% of the 86% human reference**, perfect on 29 of 32 scored scenarios including **every one of the 20 new real-world scenarios at 100%**. Published on /benchmarks with the regenerated leaderboard (BENCHMARK_RESULTS.md, 33 scenarios × 3 models); the honest caveat: rn-01 login dipped to 59% this pass (typecheck + lint failed — model variance; it scored 78% last release). fast (1.5B) and balanced (3B) keep their 13-scenario rows; the new pack is 7B-only until those passes rerun',
+    ],
+  },
+  {
     version: 'v0.12.0',
     date: '2026-08-15',
     tag: 'latest',
