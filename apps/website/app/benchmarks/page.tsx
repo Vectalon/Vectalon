@@ -8,29 +8,29 @@
  */
 
 const RUNS = [
-  { id: 'rn-01', title: 'Login screen with auth API', suite: 'forms-security', composite: 68, correctness: 50, adherence: 64, guardrails: 95, relative: 80 },
-  { id: 'rn-02', title: 'Paginated list with pull-to-refresh', suite: 'data-flow', composite: 58, correctness: 50, adherence: 40, guardrails: 88, relative: 64 },
-  { id: 'rn-03', title: 'Themed card component honoring dark mode', suite: 'core-ui', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 100 },
-  { id: 'rn-04', title: 'Settings stack with typed route params and deep links', suite: 'navigation', composite: 68, correctness: 50, adherence: null, guardrails: 93, relative: 68 },
-  { id: 'rn-05', title: 'Multi-field form with validation and secure persistence', suite: 'forms-security', composite: 42, correctness: 0, adherence: 44, guardrails: 94, relative: 49 },
-  { id: 'rn-06', title: 'Offline-first action queue with optimistic UI', suite: 'data-flow', composite: 47, correctness: 50, adherence: 0, guardrails: 89, relative: 69 },
-  { id: 'rn-07', title: 'Image-heavy feed with thumbnails', suite: 'perf', composite: 67, correctness: 50, adherence: 63, guardrails: 94, relative: 82 },
-  { id: 'rn-08', title: 'Feature-flag wrapper component and hook', suite: 'core-ui', composite: 79, correctness: 50, adherence: 100, guardrails: 98, relative: 79 },
-  { id: 'rn-09', title: 'Screen-reader-friendly onboarding form', suite: 'a11y', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 111 },
-  { id: 'rn-10', title: 'Convert class/JS component to typed hooks', suite: 'refactor', composite: 58, correctness: 50, adherence: 33, guardrails: 92, relative: 67 },
+  { id: 'rn-01', title: 'Login screen with auth API', suite: 'forms-security', composite: 78, correctness: 75, adherence: 67, guardrails: 94, relative: 93 },
+  { id: 'rn-02', title: 'Paginated list with pull-to-refresh', suite: 'data-flow', composite: 69, correctness: 50, adherence: 67, guardrails: 95, relative: 75 },
+  { id: 'rn-03', title: 'Themed card component honoring dark mode', suite: 'core-ui', composite: 80, correctness: 50, adherence: 100, guardrails: 100, relative: 80 },
+  { id: 'rn-04', title: 'Settings stack with typed route params and deep links', suite: 'navigation', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 100 },
+  { id: 'rn-05', title: 'Multi-field form with validation and secure persistence', suite: 'forms-security', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 117 },
+  { id: 'rn-06', title: 'Offline-first action queue with optimistic UI', suite: 'data-flow', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 148 },
+  { id: 'rn-07', title: 'Image-heavy feed with thumbnails', suite: 'perf', composite: 45, correctness: 0, adherence: 63, guardrails: 88, relative: 56 },
+  { id: 'rn-08', title: 'Feature-flag wrapper component and hook', suite: 'core-ui', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 100 },
+  { id: 'rn-09', title: 'Screen-reader-friendly onboarding form', suite: 'a11y', composite: 69, correctness: 50, adherence: 75, guardrails: 89, relative: 77 },
+  { id: 'rn-10', title: 'Convert class/JS component to typed hooks', suite: 'refactor', composite: 75, correctness: 75, adherence: null, guardrails: null, relative: 88 },
   { id: 'rn-11', title: 'Remove a dependency with full native cleanup', suite: 'refactor', composite: null, correctness: null, adherence: null, guardrails: null, relative: null },
-  { id: 'rn-12', title: 'Notifications screen with list fetch', suite: 'data-flow', composite: 65, correctness: 50, adherence: 60, guardrails: 88, relative: 73 },
-  { id: 'rn-13', title: 'Account deletion screen with confirmation', suite: 'forms-security', composite: 67, correctness: 50, adherence: 67, guardrails: 88, relative: 75 },
+  { id: 'rn-12', title: 'Notifications screen with list fetch', suite: 'data-flow', composite: 48, correctness: 0, adherence: 67, guardrails: 94, relative: 54 },
+  { id: 'rn-13', title: 'Account deletion screen with confirmation', suite: 'forms-security', composite: 79, correctness: 50, adherence: 100, guardrails: 96, relative: 89 },
 ]
 
 const SUITES = [
-  { name: 'core-ui', composite: 90, guardrails: 98, why: 'theming, tokens, feature flags — strongest area' },
-  { name: 'navigation', composite: 68, guardrails: 93, why: 'typed params + deep links' },
-  { name: 'perf', composite: 67, guardrails: 94, why: 'image-heavy feeds' },
-  { name: 'forms-security', composite: 59, guardrails: 93, why: 'auth + forms — the highest-stakes screen' },
-  { name: 'refactor', composite: 58, guardrails: 92, why: 'hooks migration + dependency removal' },
-  { name: 'data-flow', composite: 57, guardrails: 89, why: 'pagination + offline queues — weakest area' },
-  { name: 'a11y', composite: 100, guardrails: null, why: 'screen-reader-friendly onboarding' },
+  { name: 'navigation', composite: 100, guardrails: null, why: 'typed params + deep links — strongest area' },
+  { name: 'core-ui', composite: 90, guardrails: 100, why: 'theming, tokens, feature flags' },
+  { name: 'forms-security', composite: 86, guardrails: 95, why: 'auth + forms — the highest-stakes screen' },
+  { name: 'refactor', composite: 75, guardrails: null, why: 'hooks migration + dependency removal' },
+  { name: 'data-flow', composite: 72, guardrails: 95, why: 'pagination + offline queues' },
+  { name: 'a11y', composite: 69, guardrails: 89, why: 'screen-reader-friendly onboarding' },
+  { name: 'perf', composite: 45, guardrails: 88, why: 'image-heavy feeds — weakest area' },
 ]
 
 /**
@@ -51,10 +51,10 @@ const LOCAL_MODELS = [
     model: 'qwen2.5-coder-1.5b',
     sizeGb: 1.1,
     ram: '8 GB',
-    composite: 68,
-    guardrails: 92,
-    correctness: 54,
-    status: 'live — the committed leaderboard row',
+    composite: 79,
+    guardrails: 94,
+    correctness: 63,
+    status: 'live — the committed leaderboard row (nightly re-score)',
   },
   {
     id: 'balanced',
@@ -92,20 +92,17 @@ const LOCAL_MODELS = [
 ]
 
 /**
- * The 7B vs the 1.5B, per scenario — the big-jump list and the only two
- * scenarios that don't hit 100%. Honest deltas from the three committed live
- * runs, so the "bigger is better" story is checkable.
+ * The 7B vs the 1.5B, per scenario — the big-jump list plus the honest
+ * non-wins (the rn-01 variance dip and the 100%/75% ties). Deltas from the
+ * three committed live runs, so the "bigger is better" story is checkable.
  */
 const LOCAL_WINS = [
-  ['rn-04 typed navigation', '68% → 100%'],
-  ['rn-05 form validation', '42% → 100%'],
-  ['rn-06 offline queue', '47% → 100%'],
-  ['rn-07 image feed', '67% → 100%'],
-  ['rn-08 feature flags', '79% → 100%'],
-  ['rn-12 notifications', '65% → 100%'],
-  ['rn-13 account deletion', '67% → 100%'],
-  ['rn-02 paginated list', '58% → 83%'],
-  ['rn-10 hooks refactor', '58% → 75%'],
+  ['rn-02 paginated list', '69% → 83%'],
+  ['rn-03 dark-mode card', '80% → 100%'],
+  ['rn-07 image feed', '45% → 100%'],
+  ['rn-09 accessible form', '69% → 100%'],
+  ['rn-12 notifications', '48% → 100%'],
+  ['rn-13 account deletion', '79% → 100%'],
 ]
 /** The 20 new real-world scenarios (rn-14..rn-33) — no 1.5B baseline yet, but the
  *  7B scores 100% composite on every one of them, live-scored. */
@@ -132,9 +129,12 @@ const LOCAL_NEW = [
   ['privacy settings', '100%'],
 ]
 const LOCAL_LOSSES = [
-  ['rn-01 login screen', '68% → 59% — typecheck + lint failed this pass (model variance; 78% last release)'],
-  ['rn-03 dark-mode card', '100% → 100% (tie)'],
-  ['rn-09 accessible form', '100% → 100% (tie)'],
+  ['rn-01 login screen', '78% → 59% — typecheck + lint failed this pass (model variance; 68% before the nightly re-score)'],
+  ['rn-04 typed navigation', '100% → 100% (tie)'],
+  ['rn-05 form validation', '100% → 100% (tie)'],
+  ['rn-06 offline queue', '100% → 100% (tie)'],
+  ['rn-08 feature flags', '100% → 100% (tie)'],
+  ['rn-10 hooks refactor', '75% → 75% (tie)'],
 ]
 
 /** The nine scenarios the CI gate runs (no model): the six scaffold-able
@@ -161,7 +161,7 @@ const AXES = [
     verdict: 'does the generated code actually run?',
     checks: 'real npm install + jest + tsc --noEmit + eslint in a throwaway temp project per scenario — scored under `--live --install`',
     for: 'proves the code runs and passes the project’s own validation, not just that it looks right',
-    note: 'Scored live this release: tests pass on 12 of 13 scenarios, and rn-03 + rn-09 pass all three checks at 100%. The axis is no longer floored at 0 — the model output is judged on merit, and where tsc or eslint fails it is a real defect in the generated code.',
+    note: 'Scored live: tests pass on 4 of 13 scenarios — rn-04/05/06/08 clear all three checks at 100% correctness. The axis is no longer floored at 0 — the model output is judged on merit, and where tsc or eslint fails it is a real defect in the generated code.',
   },
   {
     name: 'Adherence',
@@ -221,17 +221,17 @@ export default function BenchmarksPage() {
       <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <div className="stat">
           <div className="stat-label">Composite</div>
-          <div className="stat-value text-brand">68%</div>
+          <div className="stat-value text-brand">79%</div>
           <div className="mt-1 text-xs text-slate-500">the model pass, all 13 scenarios — live-scored</div>
         </div>
         <div className="stat">
           <div className="stat-label">Guardrails</div>
-          <div className="stat-value text-brand">92%</div>
+          <div className="stat-value text-brand">94%</div>
           <div className="mt-1 text-xs text-slate-500">rule pass — the safety floor</div>
         </div>
         <div className="stat">
           <div className="stat-label">vs human</div>
-          <div className="stat-value text-brand">76%</div>
+          <div className="stat-value text-brand">90%</div>
           <div className="mt-1 text-xs text-slate-500">of the 89% human reference composite</div>
         </div>
         <div className="stat">
@@ -314,10 +314,10 @@ export default function BenchmarksPage() {
                 ))}
                 <tr className="bg-ink-800/70">
                   <td className="font-semibold text-slate-50">Overall</td>
-                  <td><Bar value={68} barMax={120} /></td>
+                  <td><Bar value={79} barMax={120} /></td>
                   <td><Bar value={null} barMax={120} /></td>
                   <td><Bar value={null} barMax={120} /></td>
-                  <td><Bar value={92} barMax={120} /></td>
+                  <td><Bar value={94} barMax={120} /></td>
                 </tr>
               </tbody>
             </table>
@@ -329,9 +329,9 @@ export default function BenchmarksPage() {
           <span className="font-mono">--live --install</span>: a real <span className="font-mono">npm install</span>,
           then <span className="font-mono">jest</span> (tests, weight 0.5),{' '}
           <span className="font-mono">tsc --noEmit</span> (typecheck, 0.25) and{' '}
-          <span className="font-mono">eslint .</span> (lint, 0.25) in a throwaway project. Tests pass on 12 of
+          <span className="font-mono">eslint .</span> (lint, 0.25) in a throwaway project. Tests pass on 4 of
           13 scenarios; where typecheck or lint fails, it is a real defect in the model&apos;s output. The
-          guardrail floor holds at 88–98% on every scored scenario.
+          guardrail floor holds at 88–100% on every scored scenario.
         </p>
       </section>
 
@@ -348,7 +348,8 @@ export default function BenchmarksPage() {
           <span className="font-mono text-slate-500">quality</span> 32 GB), and this table is the honest
           cost/quality curve behind that choice — all three rows live-scored, measured the
           way the leaderboard measures everything else. The gradient is the story: fast → balanced is a{' '}
-          <em>wash</em> (68% vs 67%), and balanced → quality is the <em>jump</em> — the 7B scores{' '}
+          <em>dip</em> this pass (79% vs 67% — the nightly 1.5B re-score landed above the 3B run; model
+          variance, expect it to flip), and balanced → quality is the <em>jump</em> — the 7B scores{' '}
           <span className="text-brand">97% composite, 114% of the 86% human reference</span> across the
           full 33-scenario pack, perfect on 29 of 32 scored scenarios — including every one of the 20
           new real-world app scenarios at 100%. If your machine has 32 GB, this is why you run the big
@@ -403,7 +404,7 @@ export default function BenchmarksPage() {
             </ul>
           </div>
           <div className="card">
-            <h3 className="font-semibold text-slate-50">The non-100s — honest about variance</h3>
+            <h3 className="font-semibold text-slate-50">Honest about variance — the dip and the ties</h3>
             <ul className="mt-3 space-y-1.5">
               {LOCAL_LOSSES.map(([s, d]) => (
                 <li key={s} className="flex items-baseline justify-between gap-3 text-xs">
@@ -481,9 +482,10 @@ export default function BenchmarksPage() {
           </table>
         </div>
         <p className="mt-3 text-xs text-slate-500">
-          The gradient is the point: core-ui and a11y sit at 90–100% while data-flow lags at 57% — the
-          model&apos;s weakest muscle is async orchestration (pagination, offline queues), which is exactly
-          where the next model or a fine-tune should spend its budget.
+          The gradient is the point: navigation and core-ui sit at 90–100% while perf lags at 45% — the
+          model&apos;s weakest muscle is media-heavy rendering and async orchestration (image feeds,
+          pagination, offline queues), which is exactly where the next model or a fine-tune should spend
+          its budget.
         </p>
       </section>
 
@@ -495,7 +497,7 @@ export default function BenchmarksPage() {
           Every scenario ships with a human-authored reference solution, scored by the <em>same</em>{' '}
           rubric. <span className="text-slate-200">What it&apos;s for:</span> it defines what
           &quot;passing&quot; means. The generated pass reaches{' '}
-          <span className="text-brand">76% of the 89% human-reference composite</span> — up from 30% the
+          <span className="text-brand">90% of the 89% human-reference composite</span> — up from 30% the
           moment correctness started being scored for real.
         </p>
         <div className="card !p-0 mt-6 overflow-hidden">
@@ -523,8 +525,8 @@ export default function BenchmarksPage() {
                 ))}
                 <tr className="bg-ink-800/70">
                   <td className="font-semibold text-slate-50">Overall</td>
-                  <td><Bar value={76} barMax={140} /></td>
-                  <td className="font-mono text-xs text-slate-300">76% of 89% human composite</td>
+                  <td><Bar value={90} barMax={140} /></td>
+                  <td className="font-mono text-xs text-slate-300">90% of 89% human composite</td>
                 </tr>
               </tbody>
             </table>
@@ -533,8 +535,9 @@ export default function BenchmarksPage() {
         <p className="mt-3 text-xs text-slate-500">
           The human reference is not automatically 100% — it&apos;s scored by the same rubric, so a
           reference with a hardcoded hex literal scores below 1.0 on adherence. Generated code can
-          therefore <em>beat</em> the human: rn-09 (screen-reader onboarding) scores 100% composite vs
-          the human&apos;s 90% — 111% relative. That&apos;s honest scoring, not an error.
+          therefore <em>beat</em> the human: rn-05 (multi-field form) and rn-06 (offline queue) score
+          100% composite at 117% and 148% relative — the generated code out-scored the reference on its
+          own rubric. That&apos;s honest scoring, not an error.
         </p>
       </section>
 
@@ -583,7 +586,7 @@ export default function BenchmarksPage() {
               questions: the gate measures the <em>harness</em>, the leaderboard measures the{' '}
               <em>model driving it</em>.              Two add-scenarios joined this release — rn-12
               notifications and rn-13 account deletion sit on the 100% floor in the gate and already have
-              their first live model-pass numbers on the leaderboard above — 65% and 67%. The three
+              their first live model-pass numbers on the leaderboard above — 48% and 79%. The three
               dependency-removal scenarios (rn-11, rn-34, rn-35) used to score n/a (removals aren't
               additions — nothing was generated to score); they now run deterministically through the
               removal seam and hold 99% composite (adherence 100%, guardrails 98%) on the floor, with

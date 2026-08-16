@@ -92,15 +92,15 @@ describe('benchmarks page data', () => {
 
   it('shows the committed overall numbers (composite / guardrails / relative-to-human)', () => {
     // Hero stats rendered as literal percentages in the stat cards.
-    expect(page).toContain('stat-value text-brand">68%')
-    expect(page).toContain('stat-value text-brand">92%')
-    expect(page).toContain('stat-value text-brand">76%')
-    // And the human reference composite that 76% is relative to.
+    expect(page).toContain('stat-value text-brand">79%')
+    expect(page).toContain('stat-value text-brand">94%')
+    expect(page).toContain('stat-value text-brand">90%')
+    // And the human reference composite that 90% is relative to.
     expect(page).toContain('89% human reference composite')
-    expect(pct(local.overallComposite)).toBe(68)
-    expect(pct(local.overallGuardrails)).toBe(92)
+    expect(pct(local.overallComposite)).toBe(79)
+    expect(pct(local.overallGuardrails)).toBe(94)
     expect(pct(local.overallReferenceComposite)).toBe(89)
-    expect(pct(local.overallRelativeComposite)).toBe(76)
+    expect(pct(local.overallRelativeComposite)).toBe(90)
   })
 
   it('matches the CI regression gate to the committed baseline', () => {
