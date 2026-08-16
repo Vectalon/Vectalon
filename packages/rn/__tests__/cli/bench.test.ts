@@ -165,6 +165,32 @@ describe('benchCommand', () => {
     expect(exit).toHaveBeenCalledWith(1)
   })
 
+  it('exits non-zero when --preset is passed without --model local', async () => {
+    const exit = jest.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('exit')
+    })
+    // No --model at all.
+    await expect(benchCommand({ preset: 'balanced' })).rejects.toThrow('exit')
+    expect(exit).toHaveBeenCalledWith(1)
+    // Remote provider — preset only applies to local GGUFs.
+    await expect(benchCommand({ model: 'openai', preset: 'balanced' })).rejects.toThrow('exit')
+    expect(exit).toHaveBeenCalledWith(1)
+  })
+
+  it('exits non-zero for an unknown preset value', async () => {
+    const exit = jest.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('exit')
+    })
+    await expect(benchCommand({ model: 'local', preset: 'bogus' })).rejects.toThrow('exit')
+    expect(exit).toHaveBeenCalledWith(1)
+    const stderr = (process.stderr.write as jest.Mock).mock.calls
+      .map((call: unknown[]) => (typeof call[0] === 'string' ? call[0] : ''))
+      .join('')
+    expect(stderr).toContain('Unknown preset')
+    expect(stderr).toContain('fast')
+    expect(stderr).toContain('quality')
+  })
+
   it('exits non-zero when the baseline file is missing', async () => {
     const exit = jest.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('exit')

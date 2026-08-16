@@ -33,6 +33,81 @@ const SUITES = [
   { name: 'a11y', composite: 100, guardrails: null, why: 'screen-reader-friendly onboarding' },
 ]
 
+/**
+ * Local model tiers (Week 2 roadmap 2.1/2.2) — the same 13 scenarios, run
+ * against each GGUF preset with the same live-scored harness. `balanced`
+ * comes from packages/rn/bench/results/local-3b.json (regenerate with
+ * `vectalon bench --model local --preset balanced --live --install -o
+ * bench/results/local-3b.json`); `quality` needs the 7B model downloaded
+ * (`vectalon pull quality`) and a beefy machine. Composite/guardrails are
+ * percent; null = not yet run.
+ */
+const LOCAL_MODELS = [
+  {
+    id: 'fast',
+    label: 'Fast',
+    model: 'qwen2.5-coder-1.5b',
+    sizeGb: 1.1,
+    ram: '8 GB',
+    composite: 68,
+    guardrails: 92,
+    correctness: 54,
+    status: 'live — the committed leaderboard row',
+  },
+  {
+    id: 'balanced',
+    label: 'Balanced',
+    model: 'qwen2.5-coder-3b',
+    sizeGb: 2.0,
+    ram: '16 GB',
+    composite: 67,
+    guardrails: 93,
+    correctness: 50,
+    status: 'live — this release, scored --live --install',
+  },
+  {
+    id: 'quality',
+    label: 'Quality',
+    model: 'qwen2.5-coder-7b',
+    sizeGb: 4.7,
+    ram: '32 GB',
+    composite: null,
+    guardrails: null,
+    correctness: null,
+    status: 'pending — needs the 7B GGUF + 32 GB machine',
+  },
+  {
+    id: 'cloud',
+    label: 'Cloud baseline',
+    model: 'openai / anthropic',
+    sizeGb: null,
+    ram: '—',
+    composite: null,
+    guardrails: null,
+    correctness: null,
+    status: 'add your provider — the nightly CI matrix row',
+  },
+]
+
+/**
+ * Where the 3B beats / trails the 1.5B, per scenario — honest deltas from
+ * the two committed live runs, so the "bigger is better" story is checkable.
+ */
+const LOCAL_WINS = [
+  ['rn-05 form validation', '42% → 100%'],
+  ['rn-07 image feed', '67% → 100%'],
+  ['rn-08 feature flags', '79% → 100%'],
+  ['rn-02 paginated list', '58% → 63%'],
+  ['rn-13 account deletion', '67% → 70%'],
+]
+const LOCAL_LOSSES = [
+  ['rn-01 login screen', '68% → 45%'],
+  ['rn-03 dark-mode card', '100% → 65%'],
+  ['rn-09 accessible form', '100% → 73%'],
+  ['rn-10 hooks refactor', '58% → 40%'],
+  ['rn-06 offline queue', '47% → 36%'],
+]
+
 /** The six scaffold-able scenarios the CI gate runs (no model). */
 const BASELINE_GATE = [
   'rn-01-login-screen',
@@ -91,7 +166,7 @@ export default function BenchmarksPage() {
       <div className="text-center">
         <div className="mx-auto mb-5 w-fit">
           <span className="chip font-mono">
-            one harness · four benchmarks — spec v1 — <span className="text-brand">1 model</span> — 13 scenarios
+            one harness · four benchmarks — spec v1 — <span className="text-brand">3 local tiers + cloud</span> — 13 scenarios
           </span>
         </div>
         <h1 className="text-4xl font-bold text-slate-50">RN coding tests — the benchmark suite</h1>
@@ -220,6 +295,93 @@ export default function BenchmarksPage() {
           <span className="font-mono">eslint .</span> (lint, 0.25) in a throwaway project. Tests pass on 12 of
           13 scenarios; where typecheck or lint fails, it is a real defect in the model&apos;s output. The
           guardrail floor holds at 88–98% on every scored scenario.
+        </p>
+      </section>
+
+      {/* Benchmark 1b — local model tiers (fast / balanced / quality) */}
+      <section className="mt-16">
+        <SectionLabel>benchmark 1b · the model presets, same harness</SectionLabel>
+        <h2 className="mt-1 text-2xl font-bold text-slate-50">Three local models — which one should you run?</h2>
+        <p className="mt-2 max-w-2xl text-sm text-slate-400">
+          The same 13 scenarios, the same live-scored harness, three GGUF presets you can actually run on
+          your laptop — no API key, no source leaves your machine.{' '}
+          <span className="text-slate-200">What it&apos;s for:</span> init auto-selects a tier from your RAM
+          (<span className="font-mono text-slate-500">fast</span> 8 GB /{' '}
+          <span className="font-mono text-slate-500">balanced</span> 16 GB /{' '}
+          <span className="font-mono text-slate-500">quality</span> 32 GB), and this table is the honest
+          cost/quality curve behind that choice — measured the way the leaderboard measures everything
+          else. The first two rows are both live-scored this release, and the headline is honest: the 3B
+          is a <em>wash</em> on composite (67% vs 68%) — it wins big on the scenarios it wins, and loses
+          on the ones it loses. Bigger is not automatically better; this is the data to argue with.
+        </p>
+        <div className="card !p-0 mt-6 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="tbl min-w-[720px]">
+              <thead>
+                <tr>
+                  <th>Tier</th>
+                  <th>Model</th>
+                  <th>Composite</th>
+                  <th>Correctness</th>
+                  <th>Guardrails</th>
+                  <th className="hidden lg:table-cell">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {LOCAL_MODELS.map(m => (
+                  <tr key={m.id}>
+                    <td>
+                      <span className="font-mono text-xs text-brand">{m.id}</span>
+                      <div className="font-mono text-[11px] text-slate-600">{m.ram}</div>
+                    </td>
+                    <td>
+                      <span className="font-mono text-xs text-slate-300">{m.model}</span>
+                      <div className="font-mono text-[11px] text-slate-600">{m.sizeGb ? `~${m.sizeGb} GB GGUF` : '—'}</div>
+                    </td>
+                    <td><Bar value={m.composite} barMax={140} /></td>
+                    <td><Bar value={m.correctness} barMax={140} /></td>
+                    <td><Bar value={m.guardrails} barMax={140} /></td>
+                    <td className="hidden max-w-[220px] lg:table-cell">
+                      <span className="text-[11px] text-slate-500">{m.status}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div className="mt-6 grid gap-5 md:grid-cols-2">
+          <div className="card">
+            <h3 className="font-semibold text-slate-50">Where the 3B wins</h3>
+            <ul className="mt-3 space-y-1.5">
+              {LOCAL_WINS.map(([s, d]) => (
+                <li key={s} className="flex items-baseline justify-between gap-3 text-xs">
+                  <span className="font-mono text-slate-400">{s}</span>
+                  <span className="font-mono text-emerald-500 dark:text-emerald-400">{d}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="card">
+            <h3 className="font-semibold text-slate-50">Where it trails the 1.5B</h3>
+            <ul className="mt-3 space-y-1.5">
+              {LOCAL_LOSSES.map(([s, d]) => (
+                <li key={s} className="flex items-baseline justify-between gap-3 text-xs">
+                  <span className="font-mono text-slate-400">{s}</span>
+                  <span className="font-mono text-amber-600 dark:text-amber-400">{d}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <p className="mt-3 text-xs text-slate-500">
+          Every tier is scored with <span className="font-mono">--live --install</span>, exactly like the
+          leaderboard above — composite deltas are per-scenario, from the two committed runs
+          (<span className="font-mono">bench/results/local.json</span> +{' '}
+          <span className="font-mono">local-3b.json</span>). Run your own row — or your own machine&apos;s
+          row — with <span className="font-mono">vectalon bench --model local --preset
+          &lt;fast|balanced|quality&gt; --live --install -o bench/results/local-&lt;tier&gt;.json</span>,
+          then merge everything with <span className="font-mono">vectalon leaderboard</span>.
         </p>
       </section>
 

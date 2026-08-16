@@ -8,11 +8,13 @@ const FREE: Array<[string, string]> = [
   ['refresh', 'Re-fetch web intel + re-seed knowledge from the repo'],
   ['status', 'One read-only health screen — daemon, MCP server, model, license'],
   ['ecosystem', 'Browse the tooling catalog — MCP servers, skills, hooks; grouped, with --info cards'],
+  ['models', 'List the local model tiers — fast (1.5B) / balanced (3B) / quality (7B) — with the one auto-selected for your RAM; init picks it for you'],
+  ['pull [tier]', 'Download the local GGUF model — a usage tier (fast|balanced|quality) or a model id; defaults to your machine’s auto-selected tier'],
   ['selftest', 'Test every harness feature in isolated sandboxes — live pass/fail stream'],
   ['impact', 'Cross-package blast radius — affected screens, navigation stacks, and the Maestro E2E flows that must run (with accessibility variants for covered screens)'],
   ['coverage', 'Per-screen E2E + accessibility gap dashboard with links to the open follow-up tasks'],
   ['perf', 'Static performance scan — render-phase setState, memo-defeating props, heavy startup imports, legacy bridge traffic, with ranked fixes'],
-  ['bench / leaderboard', 'Run the RN benchmark suite against any model'],
+  ['bench / leaderboard', 'Run the RN benchmark suite against any model — --preset fast|balanced|quality runs the local tiers'],
 ]
 
 const PRO: Array<[string, string]> = [

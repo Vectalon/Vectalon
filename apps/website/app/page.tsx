@@ -4,6 +4,7 @@ import { FeatureIcon, type FeatureIconName } from '../components/FeatureIcon'
 import { DemoPlayer } from '../components/DemoPlayer'
 import { TypePrompt, type TypePromptHeadline } from '../components/TypePrompt'
 import { FeedAge } from '../components/FeedAge'
+import HeroHeadline from '../components/HeroHeadline'
 import { fetchIntelFeed, type IntelItem } from '../lib/intel'
 
 const SDK_CHIPS = [
@@ -246,20 +247,8 @@ export default async function Home() {
             </div>
 
             <div className="px-5 py-9 sm:px-9 sm:py-12">
-              <h1
-                className="max-w-3xl animate-fade-up font-display text-[2rem] font-bold leading-[1.08] text-slate-50 sm:text-5xl lg:text-[3.4rem]"
-                style={{ animationDelay: '60ms' }}
-              >
-                The AI harness that lives in your terminal
-                <span className="caret" />
-              </h1>
-              <p
-                className="mt-5 max-w-xl animate-fade-up text-sm leading-relaxed text-slate-400 sm:text-base"
-                style={{ animationDelay: '120ms' }}
-              >
-                Vectalon scans your project, builds a living knowledge base, and runs an MCP
-                agent that writes, reviews, and heals your code.
-              </p>
+              {/* Hero headline A/B — variant B is the works-offline positioning (see HeroHeadline) */}
+              <HeroHeadline />
 
               <div className="mt-9 grid animate-fade-up gap-3 md:grid-cols-3" style={{ animationDelay: '180ms' }}>
                 {/* Pane 1 — intel feed (live) */}

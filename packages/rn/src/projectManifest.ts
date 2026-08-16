@@ -25,6 +25,8 @@ export interface ProjectManifest {
   initializedAt: number
   modelProvider?: string
   modelConfig?: ProjectModelConfig
+  /** The usage tier (fast|balanced|quality) init auto-selected for this machine. */
+  modelPreset?: string
   autoLearn?: boolean
 }
 

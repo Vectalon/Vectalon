@@ -98,8 +98,8 @@ Run `npx vectalon <command> --help` for detailed options.
 | `suggestions [dir]` | List improvement suggestions from the knowledge refresh (outdated dependencies), severity-grouped — and act on them: `--apply <id>` installs the latest version (gated behind confirmation), `--open` renders a self-contained HTML dashboard | `--json`, `--limit <n>`, `--apply <id>`, `--yes`, `--open`, `--out <dir>` |
 | `auth` | Manage license/trial, activate keys, GitHub OAuth | `--license <key>`, `--github`, `--status`, `--logout` |
 | `policy [dir]` | Manage project-specific guardrail policy | `--init`, `--check <file>` |
-| `pull [preset]` | Download local model preset (default Qwen2.5-Coder-1.5b) | `[preset-id]` |
-| `models` | List available and downloaded local models | — |
+| `pull [preset]` | Download a local model preset — usage tier (`fast\|balanced\|quality`) or model id (`qwen2.5-coder-1.5b\|3b\|7b`); defaults to the tier auto-selected for this machine's RAM | `[tier-or-model-id]` |
+| `models` | List usage tiers (with the auto-selected one for this machine), downloaded GGUF models, and the WASM model | — |
 | `support [dir]` | Collect + upload a sanitized support bundle (logs, error queue, crash report, package.json, `.vectalon` state) with a support token | `--upload`, `--out <path>` |
 
 ### Global flags
@@ -170,7 +170,7 @@ Run `npx vectalon` with no arguments (Node `>=20.12`, TTY required) to launch an
 
 | Provider | Type | Details |
 |----------|------|---------|
-| **local** | GGUF (node-llama-cpp) | Qwen2.5-Coder presets. Fully offline. Skills inlined into system prompt. |
+| **local** | GGUF (node-llama-cpp) | Qwen2.5-Coder presets in three auto-selected tiers — `fast` (1.5B, 8 GB RAM), `balanced` (3B, 16 GB), `quality` (7B, 32 GB). Fully offline, zero source leaves the machine. Skills inlined into system prompt. |
 | **wasm** | ONNX / WASM (@huggingface/transformers) | Zero-config quantized model. Downloads on first use. No API key, no native build. |
 | **openai** | Remote | Chat Completions API (default `gpt-4o`), `OPENAI_API_KEY`. |
 | **anthropic** | Remote | Messages API (default `claude-sonnet-4-20250514`), `ANTHROPIC_API_KEY`. |

@@ -3,6 +3,8 @@ import { join } from 'path'
 import { initCommand } from '../../src/cli/commands/init'
 import { serveCommand } from '../../src/cli/commands/serve'
 import { buildRefreshHint, timeAgoLabel } from '../../src/cli/refreshHint'
+import { autoSelectModelId, autoSelectUsagePreset } from '../../src/model/local/presets'
+import { totalmem } from 'os'
 import { createTempProject, cleanup, useTempConfig } from '../helpers/tmp'
 
 describe('initCommand', () => {
@@ -145,11 +147,15 @@ describe('initCommand', () => {
     cleanup(depDir)
   })
 
-  it('defaults the model provider to local and records it in the manifest', async () => {
+  it('defaults the model provider to local and auto-selects the model tier for this machine', async () => {
     await initCommand(dir, {})
     const manifest = JSON.parse(readFileSync(join(dir, '.vectalon', 'rn-vectalon.json'), 'utf-8'))
     expect(manifest.modelProvider).toBe('local')
-    expect(manifest.modelConfig).toBeUndefined()
+    // Week 2 roadmap (2.2): init auto-selects a usage tier from this machine's
+    // RAM and persists it as modelConfig.modelName so the ModelRouter runs the
+    // chosen GGUF — the model choice never needs a thought.
+    expect(manifest.modelConfig.modelName).toBe(autoSelectModelId(totalmem() / 1024 / 1024 / 1024))
+    expect(manifest.modelPreset).toBe(autoSelectUsagePreset(totalmem() / 1024 / 1024 / 1024).id)
   })
 
   it('writes the remote model provider and env-key config when --model is passed', async () => {

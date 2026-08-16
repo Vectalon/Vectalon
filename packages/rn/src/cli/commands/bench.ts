@@ -8,13 +8,26 @@ import { createModelGenerate } from '../../bench/modelGenerate'
 import { formatBenchmarkReport, formatScenarioSection, formatBenchmarkOverall } from '../../bench/report'
 import { defaultScenariosDir } from '../../bench/loader'
 import { DEFAULT_BASELINE_TOLERANCE, loadBaselineFile, compareToBaseline, formatBaselineComparison, gateBenchRelease } from '../../bench/baseline'
+import { resolvePresetValue, getPreset, listUsagePresets, listPresets, autoSelectModelId } from '../../model/local/presets'
 import { SCENARIO_SPEC_VERSION } from '../../bench/types'
 import type { BenchGeneratedFile, BenchScenario, BenchSummary } from '../../bench/types'
 import { createTokenPreviewSink } from '../tokenPreview'
+import { totalmem } from 'os'
+
+/** Total system RAM in GB — the input to the preset auto-selector. */
+function osTotalRamGb(): number {
+  return totalmem() / 1024 / 1024 / 1024
+}
 
 export interface BenchCommandOptions {
   /** Model provider (local/openai/anthropic); runs the real-model leaderboard pass. */
   model?: string
+  /**
+   * Local model preset for a `--model local` pass: a usage tier
+   * (fast|balanced|quality) or a model preset id (qwen2.5-coder-3b / …-7b).
+   * Defaults to the preset auto-selected for this machine's RAM.
+   */
+  preset?: string
   /** Only run scenarios in this suite. */
   suite?: string
   /** Run real tests/typecheck/lint for correctness scoring (slow). */
@@ -51,6 +64,26 @@ export async function benchCommand(options: BenchCommandOptions): Promise<void> 
     logger.warn('--install has no effect without --live (it installs deps before live correctness checks)')
   }
 
+  // --preset selects the local GGUF model a `--model local` pass runs. It is
+  // meaningless for remote providers (they name their own model) and for the
+  // deterministic baseline — reject those combinations up front.
+  if (options.preset) {
+    if (!options.model) {
+      logger.error('--preset selects a local model; pass --model local (e.g. `bench --model local --preset balanced`)')
+      process.exit(1)
+    }
+    if (options.model !== 'local') {
+      logger.error(`--preset only applies to --model local (got --model ${options.model}); remote providers name their own model`)
+      process.exit(1)
+    }
+    if (!resolvePresetValue(options.preset)) {
+      logger.error(`Unknown preset: ${options.preset}`)
+      logger.info(`Usage tiers: ${listUsagePresets().map(p => `${p.id} (${p.modelId})`).join(', ')}`)
+      logger.info(`Model presets: ${listPresets().map(p => p.id).join(', ')}`)
+      process.exit(1)
+    }
+  }
+
   const tolerance = options.tolerance ?? DEFAULT_BASELINE_TOLERANCE
   if (!Number.isFinite(tolerance) || tolerance < 0) {
     logger.error(`Invalid tolerance: ${String(options.tolerance)}`)
@@ -73,12 +106,21 @@ export async function benchCommand(options: BenchCommandOptions): Promise<void> 
   let modelRouter: ModelRouter | undefined
   let generate: ((scenario: BenchScenario) => Promise<BenchGeneratedFile[]>) | undefined
   if (options.model) {
-    logger.info(`Running leaderboard pass with model provider: ${options.model}`)
+    // --preset (or the RAM auto-select) names the local GGUF model the pass
+    // measures. Resolved to a concrete model preset id and threaded through
+    // modelConfig.modelName — the same knob the project manifest uses.
+    let modelName: string | undefined
+    if (options.model === 'local') {
+      const resolved = resolvePresetValue(options.preset) || getPreset(autoSelectModelId(osTotalRamGb()))
+      modelName = resolved ? resolved.id : undefined
+    }
+    const modelLabel = modelName || options.model
+    logger.info(`Running leaderboard pass with model provider: ${modelLabel}`)
     // An explicit --model disables the zero-config WASM auto-tier so a `--model
     // local` pass measures the GGUF model (or the deterministic stub when none
     // is downloaded) instead of silently swapping in the WASM model.
     modelRouter = new ModelRouter({ zeroConfigEnabled: options.model ? false : undefined })
-    modelRouter.initialize({ provider: options.model as ModelProviderType })
+    modelRouter.initialize({ provider: options.model as ModelProviderType, modelName })
     // Build the model seam here (not in the runner) so the live token preview
     // can be wired straight into the generate call.
     generate = createModelGenerate({ modelRouter, onTextChunk: preview.push })

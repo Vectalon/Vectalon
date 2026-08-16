@@ -12,6 +12,8 @@ import {
   INIT_PHASES,
 } from '../../src/cli/commands/init/transaction'
 import * as ecosystem from '../../src/ecosystem'
+import { autoSelectModelId, autoSelectUsagePreset } from '../../src/model/local/presets'
+import { totalmem } from 'os'
 import { createTempProject, cleanup, useTempConfig } from '../helpers/tmp'
 
 describe('init transaction — state detection', () => {
@@ -155,6 +157,42 @@ describe('initCommand — idempotency and rollback (P0-6)', () => {
       await initCommand(dir, { model: 'openai', force: true })
       const manifest = JSON.parse(readFileSync(join(dir, '.vectalon', 'rn-vectalon.json'), 'utf-8'))
       expect(manifest.modelProvider).toBe('openai')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('auto-selects the local model tier for this machine and persists it', async () => {
+    const dir = project()
+    try {
+      await initCommand(dir, { model: 'local' })
+      const manifest = JSON.parse(readFileSync(join(dir, '.vectalon', 'rn-vectalon.json'), 'utf-8'))
+      // The manifest must name the exact GGUF model init chose, and the tier
+      // id — the ModelRouter reads modelConfig.modelName to run it.
+      expect(manifest.modelProvider).toBe('local')
+      expect(manifest.modelConfig.modelName).toBe(autoSelectModelId(totalmem() / 1024 / 1024 / 1024))
+      expect(manifest.modelPreset).toBe(autoSelectUsagePreset(totalmem() / 1024 / 1024 / 1024).id)
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('honors an explicit --preset tier over RAM auto-selection', async () => {
+    const dir = project()
+    try {
+      await initCommand(dir, { model: 'local', preset: 'quality' })
+      const manifest = JSON.parse(readFileSync(join(dir, '.vectalon', 'rn-vectalon.json'), 'utf-8'))
+      expect(manifest.modelConfig.modelName).toBe('qwen2.5-coder-7b')
+      expect(manifest.modelPreset).toBe('quality')
+    } finally {
+      cleanup(dir)
+    }
+  })
+
+  it('rejects an unknown --preset value', async () => {
+    const dir = project()
+    try {
+      await expect(initCommand(dir, { model: 'local', preset: 'bogus' })).rejects.toThrow('Unknown preset')
     } finally {
       cleanup(dir)
     }

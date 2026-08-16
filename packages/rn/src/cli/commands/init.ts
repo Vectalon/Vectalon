@@ -19,7 +19,15 @@ import { reportError } from '../../utils/safe'
 import { applyEcosystemRecommendations, recommendEcosystemSetup, detectEcosystemItemsFromDependencies, enableEcosystemItems } from '../../ecosystem'
 import pc from 'picocolors'
 import { pullCommand } from './pull'
-import { getDefaultPreset } from '../../model/local/presets'
+import {
+  getDefaultPreset,
+  getPreset,
+  getUsagePreset,
+  autoSelectUsagePreset,
+  listUsagePresets,
+  MODEL_PRESETS,
+} from '../../model/local/presets'
+import { totalmem } from 'os'
 import { listDownloadedModels } from '../../model/local/ModelStore'
 import {
   detectModelAvailability,
@@ -30,7 +38,7 @@ import {
 } from '../../model/setup'
 import type { ModelSetupProvider, ProjectModelConfig } from '../../model/setup'
 import { dynamicImport } from '../../utils/dynamicImport'
-import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
+import { resolveProjectModelProvider, resolveProjectModelConfig, readProjectManifest } from '../../projectManifest'
 import { warnIfRnVersionAhead } from '../../upgrade/drift'
 import {
   detectInitState,
@@ -46,6 +54,13 @@ import type { InitPhase, InitStateFile } from './init/transaction'
 export interface InitOptions {
   /** Default model provider (local|wasm|openai|anthropic|azure-openai|ollama|vllm|groq). */
   model?: string
+  /**
+   * Local model preset: a usage tier (fast|balanced|quality) or a model
+   * preset id (qwen2.5-coder-3b / qwen2.5-coder-7b). Defaults to the tier
+   * auto-selected for this machine's RAM — the user never has to think about
+   * it.
+   */
+  preset?: string
   /** Resume an interrupted init from its last completed phase. */
   resume?: boolean
   /** Roll back an interrupted init and start over. */
@@ -219,9 +234,17 @@ async function runInitPhases(
     // The model phase already completed in a previous run — rebuild the
     // resolved setup from the persisted manifest for logging.
     const resolved = resolveProjectModelProvider(root) as ModelSetupProvider
-    model = { provider: resolved, modelConfig: resolveProjectModelConfig(root) }
+    model = { provider: resolved, modelConfig: resolveProjectModelConfig(root), modelPreset: readProjectManifest(root)?.modelPreset }
   } else {
     model = await setupModelProvider(options)
+    // Local provider: auto-select (or honor --preset) the GGUF model tier and
+    // persist it as modelConfig.modelName so the ModelRouter actually runs
+    // the chosen model — the user never has to think about which size fits
+    // their machine.
+    if (model.provider === 'local') {
+      const resolvedPreset = resolveInitModelPreset(options)
+      model = { provider: 'local', modelConfig: { modelName: resolvedPreset.modelId }, modelPreset: resolvedPreset.tier }
+    }
     for (const downloaded of listDownloadedModels()) {
       if (!modelsBefore.has(downloaded.id) && !state.modelsDownloaded.includes(downloaded.id)) {
         state.modelsDownloaded.push(downloaded.id)
@@ -243,6 +266,7 @@ async function runInitPhases(
         initializedAt: Date.now(),
         modelProvider: model.provider,
         ...(model.modelConfig ? { modelConfig: model.modelConfig } : {}),
+        ...(model.modelPreset ? { modelPreset: model.modelPreset } : {}),
         autoLearn: true,
       }, null, 2)
     )
@@ -356,10 +380,13 @@ export function ensureGitignored(root: string, entry: string): boolean {
 function logModelSetup(model: ResolvedModelSetup): void {
   if (model.provider === 'local') {
     const availability = detectModelAvailability()
+    const modelName = model.modelConfig?.modelName || getDefaultPreset().id
+    const tier = model.modelPreset
+    const tierText = tier ? ` — ${tier} tier (auto-selected for your RAM)` : ''
     if (availability.localDownloaded) {
-      logger.dim('  Model: local provider configured — Qwen2.5-Coder downloaded.')
+      logger.dim(`  Model: local provider configured — ${modelName} downloaded${tierText}.`)
     } else {
-      logger.dim('  Model: local provider configured — run `vectalon pull` to download Qwen2.5-Coder and enable code generation.')
+      logger.dim(`  Model: local provider configured — ${modelName}${tierText}; run \`vectalon pull\` to download it and enable code generation.`)
     }
     return
   }
@@ -406,19 +433,25 @@ async function setupModelProvider(options: InitOptions): Promise<ResolvedModelSe
 
   const interactive = process.stdin.isTTY === true
   if (!interactive) {
+    // Non-interactive default: local provider with the RAM auto-selected
+    // model tier (enriched to modelConfig.modelName in the model phase).
     return { provider: 'local', modelConfig: undefined }
   }
 
   const p = await dynamicImport<typeof import('@clack/prompts')>('@clack/prompts')
   const availability = detectModelAvailability()
+  // The tier init will auto-select for this machine — surface it so the
+  // download offer and hint match what will actually run.
+  const autoTier = autoSelectUsagePreset(totalmem() / 1024 / 1024 / 1024)
+  const autoModel = getPreset(autoTier.modelId) || getDefaultPreset()
 
   const choice = await p.select({
     message: 'Model provider',
     options: [
       {
         value: 'local',
-        label: 'Local (Qwen2.5-Coder)',
-        hint: availability.localDownloaded ? 'downloaded' : `~${getDefaultPreset().sizeGb} GB download`,
+        label: `Local (${autoModel.name.split(' ')[0]} ${autoModel.name.split(' ')[1]})`,
+        hint: availability.localDownloaded ? 'downloaded' : `~${autoModel.sizeGb} GB download · ${autoTier.id} tier for this machine`,
       },
       {
         value: 'wasm',
@@ -441,14 +474,15 @@ async function setupModelProvider(options: InitOptions): Promise<ResolvedModelSe
 
   const provider = choice as ModelSetupProvider
 
-  // Offer to download the default model when local is chosen and it's missing.
+  // Offer to download the auto-selected model when local is chosen and it's
+  // missing — the tier already matches this machine's RAM.
   if (provider === 'local' && !availability.localDownloaded) {
     const download = await p.confirm({
-      message: `Download ${getDefaultPreset().name} (~${getDefaultPreset().sizeGb} GB)?`,
+      message: `Download ${autoModel.name} (~${autoModel.sizeGb} GB, ${autoTier.id} tier)?`,
       initialValue: false,
     })
     if (!p.isCancel(download) && download) {
-      await pullCommand(undefined)
+      await pullCommand(autoModel.id)
     }
   }
 
@@ -459,7 +493,30 @@ function finalizeModelSetup(provider: ModelSetupProvider): ResolvedModelSetup {
   return { provider, modelConfig: buildModelConfig(provider) }
 }
 
+/**
+ * Resolve the local GGUF model preset for init: `--preset` (usage tier or
+ * model id) wins; otherwise auto-select the tier for this machine's total
+ * RAM. Unknown values throw — init is invoked in-process by tests and MCP
+ * tooling, so it must never process.exit.
+ */
+function resolveInitModelPreset(options: InitOptions): { tier: string | undefined; modelId: string } {
+  const requested = options.preset && options.preset.trim() ? options.preset.trim() : undefined
+  if (requested) {
+    const usage = getUsagePreset(requested)
+    if (usage) return { tier: usage.id, modelId: usage.modelId }
+    const model = getPreset(requested)
+    if (model) return { tier: undefined, modelId: model.id }
+    throw new Error(
+      `Unknown preset: ${requested} — valid usage tiers: ${listUsagePresets().map(p => p.id).join(', ')}; model presets: ${MODEL_PRESETS.map(p => p.id).join(', ')}`
+    )
+  }
+  const usage = autoSelectUsagePreset(totalmem() / 1024 / 1024 / 1024)
+  return { tier: usage.id, modelId: usage.modelId }
+}
+
 interface ResolvedModelSetup {
   provider: ModelSetupProvider
   modelConfig?: ProjectModelConfig
+  /** The usage tier (fast|balanced|quality) persisted to the manifest. */
+  modelPreset?: string
 }

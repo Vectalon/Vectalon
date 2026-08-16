@@ -903,7 +903,9 @@ npx vectalon bench                          # deterministic baseline (offline)
 npx vectalon bench --suite data-flow        # only the data-flow suite
 npx vectalon bench --live                   # run real tests/typecheck/lint
 npx vectalon bench --live --install         # ... installing deps in each temp project first
-npx vectalon bench --model local            # real-model leaderboard (all 11)
+npx vectalon bench --model local            # real-model leaderboard (all 13)
+npx vectalon bench --model local --preset balanced   # ... with the 3B tier (fast|balanced|quality)
+npx vectalon bench --model local --preset balanced --live --install -o bench/results/local-3b.json  # live-scored, saved for the leaderboard
 npx vectalon bench --model wasm             # zero-config WASM model pass
 npx vectalon bench --model openai --json    # JSON summary for tooling
 npx vectalon bench -o report.md             # write the report to a file
@@ -921,6 +923,7 @@ look like a freeze).
 | Option | Description |
 |---|---|
 | `--model <provider>` | `local` \| `wasm` \| `openai` \| `anthropic` \| `azure-openai` \| `groq` \| `ollama` \| `vllm` — run the real-model pass |
+| `--preset <id>` | Local GGUF for `--model local`: a usage tier (`fast` \| `balanced` \| `quality`) or a model id (`qwen2.5-coder-1.5b` \| `qwen2.5-coder-3b` \| `qwen2.5-coder-7b`); defaults to the tier auto-selected for this machine's RAM |
 | `--suite <id>` | Only one suite: `core-ui` \| `data-flow` \| `forms-security` \| `navigation` \| `a11y` \| `perf` \| `refactor` |
 | `--live` | Run real tests/typecheck/lint for correctness (slow) |
 | `--install` | `npm install` each temp project before the live checks (use with `--live` when the fixture project has a `package.json` but no `node_modules`) |
@@ -1759,11 +1762,13 @@ npx vectalon team-policy --remove               # stop following the org policy
 
 ## `pull`
 
-Download a local model preset (default: Qwen2.5-Coder-1.5B).
+Download a local model preset. Accepts a **usage tier** (`fast` \| `balanced` \| `quality`) or a model id; with no argument it downloads the tier auto-selected for this machine's RAM — the same model `init` picked.
 
 ```bash
-npx vectalon pull              # download the default model (~1.1 GB)
-npx vectalon pull <preset>     # download a specific preset
+npx vectalon pull              # download the auto-selected tier for this machine (~1–5 GB)
+npx vectalon pull balanced     # the 3B tier (16 GB RAM class)
+npx vectalon pull quality      # the 7B flagship tier (32 GB RAM class)
+npx vectalon pull qwen2.5-coder-3b   # or a raw model id
 ```
 
 **Exit codes**
@@ -1808,8 +1813,10 @@ npx vectalon support --upload
 
 ## `models`
 
-List available and downloaded local models, including the zero-config WASM
-tier (shows whether its weights are already cached).
+List the three usage tiers (`fast` → 1.5B / 8 GB RAM, `balanced` → 3B / 16 GB,
+`quality` → 7B / 32 GB) with the one **auto-selected for this machine**, the
+GGUF models actually downloaded, and the zero-config WASM tier (whether its
+weights are cached).
 
 ```bash
 npx vectalon models
