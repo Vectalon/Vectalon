@@ -5,6 +5,60 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] - 2026-08-16
+
+### Added
+
+- **Dependency-removal scenarios are now benchmarked, not skipped.** The
+  removal seam applies a scenario's `removedDependencies` to the fixtures and
+  emits the changed files — JSON-aware package.json stripping (including
+  `${name}-*` companion packages), comment-aware line stripping for
+  Podfile/gradle/plist/pbxproj/xcconfig, and element-aware XML stripping that
+  drops whole multi-line manifest providers/services. Three removal scenarios
+  (rn-11 appcenter, rn-34 @sentry/react-native with pbxproj + Info.plist
+  traces, rn-35 @react-native-firebase/app + messaging) score **99% composite
+  (adherence 100%, guardrails 98%)** in the baseline gate, which now covers
+  nine scenarios; the leaderboard gains a deterministic `baseline` column.
+- **Scoped packages derive identity tokens from their scope.**
+  `@sentry/react-native` and `@react-native-firebase/app` previously yielded
+  only the last segment (`react-native` — deliberately dropped), so native
+  traces like `RNSentry`, `io.sentry.android`, `:react-native-sentry`, and
+  `com.google.firebase.provider` went undetected. Tokens now include the
+  scope (`sentry`, `firebase`, `react-native-firebase`) — fixing the removal
+  seam, the rubric's `no-removed-native-traces` check, and the `vectalon deps`
+  native scan for scoped packages.
+- **The model seam speaks removals.** `bench --model local` routes removal
+  scenarios through a `remove-dependency` intent with the fixture files in
+  the prompt, so the next model pass can score rn-11/34/35 in the
+  fast/balanced/quality leaderboard columns; output parsing now accepts
+  `.kts` and extensionless `Podfile`/`Podfile.lock`.
+- **LoRA fine-tuning dataset export.** `scripts/export-bench-dataset.js`
+  turns the 35 scenario + human-reference pairs into a chat-format JSONL
+  under `.vectalon/dataset/` (validated `approved` by `vectalon dataset`).
+- **Benchmark pack grew 13 → 35.** Twenty real-world app scenarios
+  (rn-14..rn-33: checkout, chat, booking, health, media, security,
+  productivity, travel) each with a typechecking human reference, plus the
+  two removal scenarios — the pack now feeds the leaderboard, the CI gate,
+  and the LoRA fine-tuning set.
+
+### Changed
+
+- **Quality tier live-scored across the full 33-scenario pack: 97% composite,
+  114% of the 86% human reference**, perfect on 29 of 32 scored scenarios
+  including every one of the 20 new real-world scenarios at 100%. Honest
+  caveats published: rn-01 login dipped to 59% this pass (model variance),
+  and rn-11-style removals were n/a until this release.
+- **Local model tiers ship** — `fast` (1.5B/8 GB), `balanced` (3B/16 GB),
+  `quality` (7B/32 GB) — auto-selected from RAM on `vectalon init`, with
+  `--preset` overrides on `init`/`bench`/`pull` and a `vectalon models`
+  command showing the tier + auto-selected marker.
+
+### Fixed
+
+- **`vectalon render` follows whole-relative import graphs** (curated
+  Expo/navigation stubs, extensionless + index resolution) so a real Expo
+  app renders headlessly with zero model calls.
+
 ## [0.12.0] - 2026-08-15
 
 ### Added
