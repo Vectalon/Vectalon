@@ -105,6 +105,7 @@ Run `npx vectalon <command> --help` for detailed options.
 | `mode` | **The deployment-mode surface — where your source runs.** Three explicit modes: **Cloud** (hosted models — source goes to the provider you chose), **Private** (company-controlled Ollama/vLLM — nothing leaves your network), **Air-gapped** (local GGUF/WASM — nothing leaves the machine). Shows the current mode from the manifest (default air-gapped), verifies the configured provider is inside it, and **enforces** the mode: `vc init --mode private --model openai` is refused, `vc mode --set <mode>` refuses an outside provider. The deterministic agents need no model at all, so the whole control plane works fully air-gapped | `--set <mode>`, `--json` |
 | `demo` | **The flagship demonstration — the feature workflow, live.** "Build a Login feature." → Requirement → Architecture decision → Affected files → Implementation plan → Code → Tests → Review → Build verification → PR, plus the self-healing loop (build failed → diagnose → modify → rebuild → verify). Shows a real prior workflow run when one exists (`docs/vectalon/feature-development/`); zero model calls. Run `vc feature "<prompt>"` to see it live on your own repo | `--json` |
 | `brain [question]` | **The productized Team Brain — organizational infrastructure.** Ask "Why are we using Zustand instead of Redux?" and get the decision card (ADR, reason, approver, related, reviewed); ask "Who understands our authentication architecture?" and get the expertise tree (owner, experts, ADRs, services, recent changes). Decision cards are parsed from the ADR files the brain indexes — the files remain the source of truth; expertise is derived from git history grouped by area. With no question, shows the whole brain at a glance | `--json` |
+| `plan` | **The commercial plan surface — what you pay for.** Three plans on top of the deterministic engine gating: **Individual** $19/dev/mo (Local AI — your source never leaves the machine — + project intelligence + diagnostics), **Team** $49/dev/mo (Team Brain, shared policies, PR review, CI, shared knowledge, dashboards), **Enterprise** custom (self-hosted, SSO, audit, private models, org-wide policies, multi-repo intel). Shows your current plan from the active license or trial, everything each tier includes, and the full ladder — pricing deliberately simple, aimed at the first paying teams | `--json` |
 | `selftest [dir]` | Test every feature in a sandbox — live progress + visible report + activity trace; runs REAL model inference when a model/API key is available | `--category <cat>`, `--only <id>`, `--model <provider>`, `--require-model`, `--list`, `--json`, `--open`, `--out <dir>`, `--no-html`, `--verbose` |
 | `status` | One read-only health screen — daemon (pid/port/health), MCP reachability + tool count, model provider ready/degraded, last background refresh, license/trial days remaining, `.vectalon/` disk usage. Every probe is wrapped so one broken source degrades to a line. The first thing you ask a customer to run | — |
 | `bundle [dir]` | Metro bundle analysis and performance budgets — ASCII top-package bars in the terminal + optional interactive HTML treemap dashboard (`--open`) with drill-down and replacement suggestions | `--platform <ios\|android>`, `--static`, `--open`, `--no-html`, `--report <dir>` |
@@ -782,11 +783,17 @@ packages/rn/
 
 ## Tiers
 
-| Tier | Price | Features |
+Three commercial plans on top of the deterministic engine gating (`free` /
+`pro` / `team` / `enterprise`). Pricing is deliberately simple — the goal is
+the first paying teams, not pricing-page psychology. Run `npx vectalon plan`
+to see your current plan and what each tier includes.
+
+| Plan | Price | Features |
 |------|-------|----------|
-| **Free** | $0 | Project scanning, 60+ MCP tools, component generation, test writing, ecosystem doctor, benchmark suite |
-| **Pro** | $19/mo | + Upgrade Copilot, Self-healing CI, Bundle Budgets, Advanced Guardrails (New Architecture, React Compiler) |
-| **Team** | $99/seat/mo | + Team Brain, Cloud Sync, Custom Models (Azure/Ollama/vLLM), Priority Inference |
+| **Free** | $0 | Project scanning, 60+ MCP tools, component generation, test writing, ecosystem doctor, benchmark suite, all 44 deterministic agents |
+| **Individual** | $19/developer/month | Local AI (local GGUF / WASM models — your source never leaves the machine) + project intelligence (intel, score, review, sec, arch) + diagnostics (doctor, build-fix, profile, sandbox, render) + upgrade copilot + self-healing CI |
+| **Team** | $49/developer/month | Everything in Individual + Team Brain (decisions, expertise, shared knowledge), shared policies + PR review, CI + dashboards (coverage, score trends), cross-project intelligence + cloud sync |
+| **Enterprise** | Custom (annual) | Everything in Team + self-hosted deployment (air-gapped ready), SSO / SAML + audit trails, private / company-controlled models (Ollama, vLLM), organization-wide policies + multi-repository intelligence |
 
 Start a 14-day free trial: `npx vectalon auth --github`
 

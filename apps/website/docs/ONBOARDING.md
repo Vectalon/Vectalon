@@ -280,10 +280,12 @@ as a first-class deliverable:
 
 ## Tiers at a glance
 
-| Tier | Price | Features |
+| Plan | Price | Features |
 |---|---|---|
-| **Free** | $0 | Project scanning, 40+ MCP tools, component generation, test writing, ecosystem doctor, benchmark suite |
-| **Pro** | $19/mo | + Upgrade Copilot, Self-healing CI, Bundle Budgets, Advanced Guardrails (New Architecture, React Compiler), Hermes profiling, sandbox, render |
-| **Team** | $99/seat/mo | + Team Brain, Cloud Sync, Custom Models (Azure/Ollama/vLLM), Priority Inference |
+| **Free** | $0 | Project scanning, 60+ MCP tools, component generation, test writing, ecosystem doctor, benchmark suite, all 44 deterministic agents |
+| **Individual** | $19/developer/month | + Local AI (local GGUF / WASM models — your source never leaves the machine), project intelligence, diagnostics (doctor, build-fix, profile, sandbox, render), upgrade copilot, self-healing CI |
+| **Team** | $49/developer/month | + Team Brain (decisions, expertise, shared knowledge), shared policies + PR review, CI + dashboards, cross-project intelligence + cloud sync |
+| **Enterprise** | Custom | + Self-hosted (air-gapped ready), SSO / SAML + audit trails, private models (Ollama, vLLM), organization-wide policies, multi-repo intelligence |
 
+See your current plan and what each tier unlocks with `npx vectalon plan`.
 Start a 14-day free trial: `npx vectalon auth --github`

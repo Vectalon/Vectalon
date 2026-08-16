@@ -14,88 +14,68 @@ const PLANS: Array<{
   highlight?: boolean
 }> = [
   {
-    name: 'Starter',
-    price: '$0',
-    cadence: 'free forever',
-    blurb: 'For individual developers and open source. Genuinely useful, no card.',
-    features: [
-      'vectalon init / serve / doctor',
-      'Feature workflow (basic)',
-      '58 MCP project-aware tools',
-      'Local + WASM models',
-      'Web intel auto-refresh',
-      'Guardrails on save',
-    ],
-    cta: 'Start free',
-    fallback: 'Start free',
-    href: '/trial',
-  },
-  {
-    name: 'Pro',
+    name: 'Individual',
     price: '$19',
-    cadence: '/mo or $190/yr',
-    blurb: 'For professional developers who need the headline features.',
+    cadence: '/developer/month',
+    blurb: 'Local AI + project intelligence + diagnostics. Your source never leaves your machine.',
     features: [
-      'Everything in Starter',
-      'Upgrade Copilot (rn-diff-purge + codemods)',
-      'Self-healing CI generation',
-      'Bundle budget guardrails',
-      'New Architecture guardrails',
-      'Priority LLM inference',
+      'Local AI — local GGUF / WASM models',
+      'Project intelligence (intel, score, review, sec, arch)',
+      'Diagnostics (doctor, build-fix, profile, sandbox, render)',
+      'Upgrade copilot + self-healing CI',
+      'All 44 deterministic agents, zero model calls',
     ],
     tier: 'pro',
-    cta: 'Buy Pro',
+    cta: 'Buy Individual',
     fallback: 'Launching soon',
   },
   {
-    name: 'All-Access',
-    price: '$49',
-    cadence: '/mo or $490/yr',
-    blurb: 'Every Vectalon SDK — React Native, iOS, Android, Flutter. One license, one auth.',
-    features: [
-      'Everything in Pro',
-      'React Native harness',
-      'iOS harness (Swift/SwiftUI)',
-      'Android harness (Kotlin)',
-      'Flutter harness (Dart)',
-      'Cross-platform knowledge graph',
-    ],
-    tier: 'all-access',
-    cta: 'Get All-Access',
-    fallback: 'Join the waitlist',
-    highlight: true,
-  },
-  {
     name: 'Team',
-    price: '$99',
-    cadence: '/seat/mo',
-    blurb: 'For engineering teams 5–50 devs. Shared brain, org-wide gates.',
+    price: '$49',
+    cadence: '/developer/month',
+    blurb: 'Team Brain, shared policies, PR review, CI, shared knowledge, dashboards.',
     features: [
-      'Everything in All-Access',
-      'Team brain / cross-project knowledge',
-      'Cloud-synced knowledge base',
-      'Custom model endpoints (Azure, Ollama, vLLM)',
-      'Usage analytics & policy',
-      '5–50 seats',
+      'Everything in Individual',
+      'Team Brain — decisions, expertise, shared knowledge',
+      'Shared policies + PR review',
+      'CI + dashboards (coverage, score trends)',
+      'Cross-project intelligence + cloud sync',
     ],
     tier: 'team',
     cta: 'Buy Team',
     fallback: 'Contact us',
+    highlight: true,
+  },
+  {
+    name: 'Enterprise',
+    price: 'Custom',
+    cadence: 'annual',
+    blurb: 'Self-hosted, SSO, audit, private models, organization-wide policies, multi-repository intelligence.',
+    features: [
+      'Everything in Team',
+      'Self-hosted deployment (air-gapped ready)',
+      'SSO / SAML + audit trails',
+      'Private / company-controlled models (Ollama, vLLM)',
+      'Organization-wide policies + multi-repo intelligence',
+    ],
+    cta: 'Talk to us',
+    fallback: 'Talk to us',
+    href: 'mailto:sales@vectalon.in',
   },
 ]
 
 const FAQ = [
   {
-    q: 'Is the free tier actually useful?',
-    a: 'Yes. init, serve, feature, and doctor work fully offline and cover the daily loop for an individual project. Free means free — no card, no trial countdown.',
+    q: 'Is there still a free tier?',
+    a: 'Yes. init, serve, feature, doctor, and all 44 deterministic agents work fully offline and cover the daily loop for an individual project. Free means free — no card, no trial countdown.',
   },
   {
     q: 'How does the 14-day trial work?',
-    a: 'Premium commands show "Start 14-day Pro trial? [Y/n]". You log in with GitHub once — one trial per GitHub account — and it starts immediately. No credit card.',
+    a: 'Premium commands show "Start 14-day Individual trial? [Y/n]". You log in with GitHub once — one trial per GitHub account — and it starts immediately. No credit card.',
   },
   {
-    q: 'What does All-Access include?',
-    a: 'Every Vectalon SDK: the React Native harness today, and iOS, Android, and Flutter harnesses as they ship. One license key activates every platform via npx vectalon auth.',
+    q: 'What do the tiers cover, platform-wise?',
+    a: 'One license covers every Vectalon SDK: the React Native harness today, and iOS, Android, and Flutter harnesses as they ship — on Individual, Team, and Enterprise alike. `vectalon plan` shows your current plan and what it unlocks.',
   },
   {
     q: 'Why Business Source License?',
@@ -142,21 +122,22 @@ export default function PricingPage() {
       <div className="text-center">
         <div className="mx-auto mb-5 w-fit">
           <span className="chip font-mono">
-            vectalon pricing — <span className="text-brand">global-first USD</span> — no card
+            vectalon pricing — <span className="text-brand">three tiers</span> — no card
           </span>
         </div>
         <h1 className="text-4xl font-bold text-slate-50">Pricing</h1>
         <p className="mx-auto mt-4 max-w-2xl text-slate-400">
-          Global-first USD pricing. The free tier is genuinely useful; the paid tier is for teams
-          and hard problems. Trials are one GitHub login, no card.
+          Individual for developers, Team for the org, Enterprise for the infrastructure. The free
+          tier is genuinely useful; trials are one GitHub login, no card.
         </p>
         <p className="mx-auto mt-2 max-w-2xl font-mono text-xs text-slate-500">
-          per-platform licenses — <span className="text-brand">All-Access covers every SDK</span> —
-          one key via <span className="text-brand">$</span> vectalon auth
+          we're optimizing for the <span className="text-brand">first 5 paying teams</span> — not
+          for pricing page psychology. <span className="text-brand">$</span> vectalon plan shows
+          your current plan
         </p>
       </div>
 
-      <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {PLANS.map(p => (
           <div
             key={p.name}
@@ -170,7 +151,7 @@ export default function PricingPage() {
                 <span className="text-brand">▣</span>
                 <span className="text-slate-300">{p.name}</span>
               </span>
-              <span className="text-slate-600">[ {p.tier ?? 'free'} ]</span>
+              <span className="text-slate-600">[ {p.tier ?? p.name.toLowerCase()} ]</span>
             </div>
 
             <div className="flex flex-1 flex-col p-5">
@@ -194,29 +175,6 @@ export default function PricingPage() {
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Enterprise — a console frame of its own, kept out of the 4-up */}
-      <div className="console mt-5">
-        <div className="console-head">
-          <span className="flex items-center gap-2">
-            <span className="text-brand">▣</span>
-            <span className="text-slate-300">enterprise</span>
-          </span>
-          <span className="text-slate-600">[ 50+ devs ]</span>
-        </div>
-        <div className="flex flex-col items-start justify-between gap-4 p-6 sm:flex-row sm:items-center">
-          <div>
-            <div className="font-display text-2xl font-bold text-slate-50">50+ developers</div>
-            <p className="mt-1.5 max-w-xl text-sm text-slate-400">
-              SOC-2, SSO / SAML, on-prem model endpoints, custom licensing terms, and dedicated
-              support. Annual pricing.
-            </p>
-          </div>
-          <a href="mailto:sales@vectalon.in" className="btn-ghost shrink-0">
-            Talk to us
-          </a>
-        </div>
       </div>
 
       {/* FAQ — prompt-style Q/A cards */}

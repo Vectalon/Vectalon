@@ -1925,6 +1925,46 @@ the entire control-plane surface works fully air-gapped.
 
 ---
 
+## `plan`
+
+**The commercial plan surface — what you pay for, and what each tier
+includes.** The engine already gates features deterministically
+(`free` / `pro` / `team` / `enterprise` via `@vectalon-dev/core`); this is
+the customer-facing view on top: the three plans the roadmap prices, your
+current plan (from the active license or trial on this machine), and the
+full tier ladder.
+
+```bash
+npx vectalon plan          # current plan + what each tier includes
+npx vectalon plan --json   # machine-readable: current tier, plan, all plans
+```
+
+| Plan | Price | Engine tier | What it includes |
+|---|---|---|---|
+| **Individual** | $19/developer/month | `pro` | Local AI (local GGUF / WASM models) + project intelligence (intel, score, review, sec, arch) + diagnostics (doctor, build-fix, profile, sandbox, render); all 44 deterministic agents, zero model calls |
+| **Team** | $49/developer/month | `team` | Everything in Individual + Team Brain (decisions, expertise, shared knowledge), shared policies + PR review, CI + dashboards (coverage, score trends), cross-project intelligence + cloud sync |
+| **Enterprise** | Custom (annual) | `enterprise` | Everything in Team + self-hosted deployment (air-gapped ready), SSO / SAML + audit trails, private / company-controlled models (Ollama, vLLM), organization-wide policies + multi-repository intelligence |
+
+Pricing is deliberately simple — the goal is the first paying teams, not
+pricing-page psychology. A `free`/`pro` license reads as Individual, `team`
+as Team, and `enterprise` as Enterprise; the deterministic control plane
+works on every tier with zero model calls.
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `--json` | Print machine-readable output: current tier + source, mapped plan, and every plan's features |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Plan shown |
+| 1 | Fatal error |
+
+---
+
 ## `demo`
 
 **The flagship demonstration — the feature workflow, live.** The most

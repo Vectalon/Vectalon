@@ -465,6 +465,9 @@ export { parseDecisionCard, buildAreaExpertise, answerBrainQuestion, renderBrain
 export type { DecisionCard, AreaExpertise, BrainAnswer } from './teamBrain/qa'
 export type { DeploymentMode, ModeDefinition, ModeCheckResult } from './model/mode'
 
+export { PLANS, PLAN_BY_ID, planForTier, planCovers } from './billing/plans'
+export type { PlanId, PlanDef } from './billing/plans'
+
 export { runScore, aggregateOverall, buildRecommendations, renderScoreMarkdown, writeScoreReport, scoreDocsDir, findingKey, priorityOf, verdictOf as scoreVerdictOf, readHistory, writeHistory, collectSourceAndTests } from './score'
 export type { ScoreReport, ScoreDimension, ScoreFinding, ScoreOptions, ScorePriority, ScoreRecommendation, ScoreVerdict, ScoreHistory, ScoreHistoryEntry } from './score'
 

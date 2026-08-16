@@ -85,7 +85,7 @@ const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'What does it cost, and what’s the license?',
-    a: 'The free tier is genuinely useful — init, serve, feature, doctor, and all 44 agents, no card. Pro $19/mo, All-Access $49/mo, Team $99/seat/mo, each with a 14-day trial. Business Source License 1.1: free for personal, education, and OSS use and teams up to three devs; MIT after four years.',
+    a: 'The free tier is genuinely useful — init, serve, feature, doctor, and all 44 agents, no card. Individual $19/dev/mo (local AI + project intelligence + diagnostics), Team $49/dev/mo (Team Brain, shared policies, PR review, CI, dashboards), Enterprise custom (self-hosted, SSO, audit, private models) — each with a 14-day trial. `vectalon plan` shows your current plan. Business Source License 1.1: free for personal, education, and OSS use and teams up to three devs; MIT after four years.',
   },
 ]
 

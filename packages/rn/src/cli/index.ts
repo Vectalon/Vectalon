@@ -41,6 +41,7 @@ import { scoreCommand } from './commands/score'
 import { modeCommand } from './commands/mode'
 import { demoCommand } from './commands/demo'
 import { brainCommand } from './commands/brain'
+import { planCommand } from './commands/plan'
 import { testRepairCommand, forcedKind as forcedTestKind } from './commands/testRepair'
 import { refactorCommand } from './commands/refactor'
 import { depsCommand } from './commands/deps'
@@ -495,6 +496,12 @@ export function createProgram(): Command {
     .description('The productized Team Brain: ask "Why are we using Zustand instead of Redux?" and get the decision card (ADR, reason, approver, related, reviewed); ask "Who understands our authentication architecture?" and get the expertise tree (owner, experts, ADRs, services, recent changes). With no question, shows the whole brain at a glance. Decision cards are parsed from the ADR files the brain indexes — the files remain the source of truth; expertise is derived from git history grouped by area. Deterministic and offline')
     .option('--json', 'Print machine-readable output')
     .action((question: string[], options: { json?: boolean }) => brainCommand(question.join(' '), options))
+
+  program
+    .command('plan')
+    .description('The commercial plan surface — Individual $19/dev/mo (Local AI + project intelligence + diagnostics), Team $49/dev/mo (Team Brain, shared policies, PR review, CI, shared knowledge, dashboards), Enterprise custom (self-hosted, SSO, audit, private models, org-wide policies, multi-repo intelligence). Shows your current plan from the active license or trial, everything each tier includes, and where to buy — deterministic and offline')
+    .option('--json', 'Print machine-readable output')
+    .action((options: { json?: boolean }) => planCommand(options))
 
   program
     .command('test-repair [directory]')
@@ -1084,6 +1091,7 @@ async function runInteractive(): Promise<void> {
       { value: 'mode', label: 'Show the deployment mode', hint: 'Cloud / Private / Air-gapped — where your source runs' },
       { value: 'demo', label: 'Run the flagship workflow demo', hint: 'Requirement → … → PR + the self-healing loop (zero model calls)' },
       { value: 'brain', label: 'Ask the Team Brain', hint: '“Why Zustand?” → the decision card · “Who owns auth?” → the expertise tree' },
+      { value: 'plan', label: 'Show the commercial plan', hint: 'Individual $19 · Team $49 · Enterprise custom — what you pay for, and what each tier includes' },
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Force refresh knowledge', hint: refreshHint },
       { value: 'suggestions', label: suggestionCount > 0 ? `View suggestions (${suggestionCount})` : 'View suggestions', hint: 'Improvement suggestions from the knowledge refresh' },
@@ -1694,6 +1702,12 @@ async function runInteractive(): Promise<void> {
     const question = (await p.text({ message: 'Ask the Team Brain', placeholder: 'Why are we using Zustand instead of Redux?' })) as string
     await brainCommand(typeof question === 'string' ? question : '', {})
     p.outro('Team Brain answered above')
+    return
+  }
+
+  if (action === 'plan') {
+    await planCommand({})
+    p.outro('Plan shown above')
     return
   }
 
