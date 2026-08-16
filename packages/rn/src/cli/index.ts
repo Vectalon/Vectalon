@@ -40,6 +40,7 @@ import { fixCommand } from './commands/fix'
 import { scoreCommand } from './commands/score'
 import { modeCommand } from './commands/mode'
 import { demoCommand } from './commands/demo'
+import { brainCommand } from './commands/brain'
 import { testRepairCommand, forcedKind as forcedTestKind } from './commands/testRepair'
 import { refactorCommand } from './commands/refactor'
 import { depsCommand } from './commands/deps'
@@ -488,6 +489,12 @@ export function createProgram(): Command {
     .description('The flagship demonstration: the feature workflow, live. "Build a Login feature." → Requirement → Architecture decision → Affected files → Implementation plan → Code → Tests → Review → Build verification → PR, plus the self-healing loop (build failed → diagnose → modify → rebuild → verify). Shows a real prior run when one exists; zero model calls')
     .option('--json', 'Print machine-readable output')
     .action((options: { json?: boolean }) => demoCommand(options))
+
+  program
+    .command('brain [question...]')
+    .description('The productized Team Brain: ask "Why are we using Zustand instead of Redux?" and get the decision card (ADR, reason, approver, related, reviewed); ask "Who understands our authentication architecture?" and get the expertise tree (owner, experts, ADRs, services, recent changes). With no question, shows the whole brain at a glance. Decision cards are parsed from the ADR files the brain indexes — the files remain the source of truth; expertise is derived from git history grouped by area. Deterministic and offline')
+    .option('--json', 'Print machine-readable output')
+    .action((question: string[], options: { json?: boolean }) => brainCommand(question.join(' '), options))
 
   program
     .command('test-repair [directory]')
@@ -1076,6 +1083,7 @@ async function runInteractive(): Promise<void> {
       { value: 'score', label: 'Show the Engineering Health Score', hint: 'One 0-100 number — 8 dimensions, delta, P0/P1/P2 actions' },
       { value: 'mode', label: 'Show the deployment mode', hint: 'Cloud / Private / Air-gapped — where your source runs' },
       { value: 'demo', label: 'Run the flagship workflow demo', hint: 'Requirement → … → PR + the self-healing loop (zero model calls)' },
+      { value: 'brain', label: 'Ask the Team Brain', hint: '“Why Zustand?” → the decision card · “Who owns auth?” → the expertise tree' },
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Force refresh knowledge', hint: refreshHint },
       { value: 'suggestions', label: suggestionCount > 0 ? `View suggestions (${suggestionCount})` : 'View suggestions', hint: 'Improvement suggestions from the knowledge refresh' },
@@ -1679,6 +1687,13 @@ async function runInteractive(): Promise<void> {
   if (action === 'demo') {
     await demoCommand({})
     p.outro('Flagship workflow demo shown above')
+    return
+  }
+
+  if (action === 'brain') {
+    const question = (await p.text({ message: 'Ask the Team Brain', placeholder: 'Why are we using Zustand instead of Redux?' })) as string
+    await brainCommand(typeof question === 'string' ? question : '', {})
+    p.outro('Team Brain answered above')
     return
   }
 

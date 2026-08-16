@@ -1954,6 +1954,50 @@ npx vectalon demo --json   # pipeline + healing loop + prior run as JSON
 
 ---
 
+## `brain`
+
+**The productized Team Brain** — the move from developer tool to
+organizational infrastructure. Ask a question and get the answer as a card:
+
+```bash
+npx vectalon brain "Why are we using Zustand instead of Redux?"
+# Decision: adr-017 — Use Zustand for state management
+# Reason:   Use Zustand instead of Redux — performance + simplicity
+# Approved by: Architecture Team
+# Related:  Checkout, Payments, Profile
+# Reviewed: March 2026
+
+npx vectalon brain "Who understands our authentication architecture?"
+# authentication — Owner: Team A · Experts: John, Priya
+#   ├── ADRs: 3
+#   ├── Services: 7
+#   └── Recent changes: 14
+```
+
+With no question, `vc brain` shows the whole brain at a glance — the
+indexed decisions and the expertise map by area. `--json` prints the
+machine-readable report.
+
+- **Decision cards** are parsed from the ADR/decision files the brain
+  already indexes (`docs/adr/`, `adr/`, `decisions/`, `*.adr.md`,
+  `DECISIONS.md`) — the files remain the source of truth; edit them and the
+  answer updates.
+- **Expertise trees** are derived from git history grouped by functional
+  area (screens, services, features, state, navigation, hooks, components,
+  api, utils, tests): the most active author is the owner, the next authors
+  are the experts, and ADRs/services/changes are counted per area.
+- The full Team Brain pass (glossary, standards, onboarding, PR knowledge)
+  remains `vectalon team`; `vc brain` is the question surface on top of it.
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Answered (decision card or expertise tree) |
+| 1 | Fatal error |
+
+---
+
 ## `auth`
 
 Manage your license and trial: activate a license key, authenticate with

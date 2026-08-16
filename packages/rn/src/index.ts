@@ -460,6 +460,9 @@ export type { FixReport, FixFinding, FixEdit, FixOptions, FixVerdict, FixEvidenc
 export { MODES, MODE_IDS, MODE_PROVIDERS, MODE_DEFAULT_PROVIDER, modeOfProvider, modeAllows, isDeploymentMode, verifyMode, describeProvider } from './model/mode'
 
 export { PIPELINE, HEAL_LOOP, findPriorRun, renderPipeline, renderHealLoop } from './cli/commands/demo'
+
+export { parseDecisionCard, buildAreaExpertise, answerBrainQuestion, renderBrainAnswer, renderDecisionCard, renderExpertiseTree, tokensOf, decisionMatches, isDecisionQuestion, areaOfFile } from './teamBrain/qa'
+export type { DecisionCard, AreaExpertise, BrainAnswer } from './teamBrain/qa'
 export type { DeploymentMode, ModeDefinition, ModeCheckResult } from './model/mode'
 
 export { runScore, aggregateOverall, buildRecommendations, renderScoreMarkdown, writeScoreReport, scoreDocsDir, findingKey, priorityOf, verdictOf as scoreVerdictOf, readHistory, writeHistory, collectSourceAndTests } from './score'

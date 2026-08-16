@@ -6,6 +6,7 @@ const FREE: Array<[string, string]> = [
   ['init', 'The 15-minute proof of value — scan the project, build the knowledge base, and end with the scan summary + Health Score + Top 5 problems. No LLM config asked'],
   ['mode', 'Where your source runs — Cloud (hosted models) / Private (company LLM) / Air-gapped (local model, nothing leaves the machine); enforced, not labeled'],
   ['demo', 'The flagship demonstration — the feature workflow, live: Requirement → … → PR + the self-healing loop, from a real prior run when present, zero model calls'],
+  ['brain', 'The productized Team Brain — ask "Why Zustand?" and get the decision card (ADR, reason, approver, related, reviewed); ask "Who owns auth?" and get the expertise tree (owner, experts, ADRs, services, changes)'],
   ['serve', 'Run the MCP server — agents connect from your editor'],
   ['feature "…"', 'Generate components, write tests, run workflows'],
   ['doctor', 'Ecosystem + native toolchain + leaderboard readiness, with numbered fix steps'],

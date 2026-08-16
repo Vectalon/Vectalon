@@ -276,6 +276,12 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['demo', '--json'],
   },
   {
+    id: 'brain',
+    name: 'Team Brain Q&A (decision cards + area expertise trees)',
+    category: 'cli',
+    args: () => ['brain', '--json'],
+  },
+  {
     id: 'test-repair',
     name: 'Test repair diagnosis (Jest/Detox/Maestro log classification)',
     category: 'analysis',
