@@ -16,6 +16,8 @@ import { analyzeGradleLog } from '../projectDiagnostics/gradle'
 import { analyzeXcodeLog } from '../projectDiagnostics/xcode'
 import { analyzeMetroLog } from '../buildFix/metro'
 import { detectBuildKind } from '../buildFix'
+import { readProjectIntel } from '../intel/model'
+import type { IntelReport } from '../intel/types'
 import type { LogAnalysis } from '../projectDiagnostics/types'
 import type { FixEvidence, FixFinding, FixOptions, FixSeverity } from './types'
 
@@ -74,8 +76,14 @@ function versionNumber(raw: string | undefined): number | null {
   return Number(`${m[1]}.${m[2]}`)
 }
 
-/** Read package.json deps + native config files into a flat context. */
-export function readProjectContext(root: string): ProjectContext {
+/**
+ * Read package.json deps + native config files into a flat context. When the
+ * Project Intelligence model is available (readProjectIntel), its canonical
+ * manifest + native registry are consumed FIRST — the foundation — and the
+ * direct reads only fill the native-config gaps (compileSdk/Kotlin/AGP, which
+ * the model does not yet capture).
+ */
+export function readProjectContext(root: string, intel: IntelReport | null = null): ProjectContext {
   const ctx: ProjectContext = {
     flavor: 'unknown',
     rnVersion: null,
@@ -89,8 +97,28 @@ export function readProjectContext(root: string): ProjectContext {
     gradleVersion: null,
     jvmArgs: null,
   }
+  // The foundation: consume the intel manifest when it exists.
+  if (intel?.manifest) {
+    const m = intel.manifest
+    ctx.dependencies = m.dependencies ?? {}
+    ctx.rnVersion = versionNumber(m.rnVersion)
+    if (m.tooling === 'expo') {
+      ctx.flavor = 'expo'
+      ctx.expoVersion = m.expoSdkVersion ? versionNumber(m.expoSdkVersion) : null
+    } else if (m.tooling === 'rn-cli') {
+      ctx.flavor = 'rn-cli'
+    }
+    ctx.nativeModules = Object.keys(ctx.dependencies).filter(d =>
+      /^(@react-native|react-native-|expo-)/.test(d) || d === 'react-native' || d === 'expo'
+    )
+    // Native registry entries add modules the dep-name filter would miss.
+    for (const entry of intel.nativeRegistry?.entries ?? []) {
+      if (!ctx.nativeModules.includes(entry.name)) ctx.nativeModules.push(entry.name)
+    }
+  }
+  // Native-config gaps the model does not capture yet — direct, exact reads.
   const pkgPath = join(root, 'package.json')
-  if (existsSync(pkgPath)) {
+  if (existsSync(pkgPath) && !intel?.manifest) {
     try {
       const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> }
       ctx.dependencies = pkg.dependencies ?? {}
@@ -229,7 +257,10 @@ export interface DiagnoseResult {
  * against the RN-required versions.
  */
 export function diagnose(root: string, options: FixOptions): DiagnoseResult {
-  const ctx = readProjectContext(root)
+  // The foundation: consume the shared Project Intelligence model (cached, or
+  // one fresh pass per process). Never blocks the workflow if it is missing.
+  const intel = readProjectIntel(root)
+  const ctx = readProjectContext(root, intel.report)
   const kind = options.log ? mapLogKind(detectBuildKind(readLog(options.log))) : routeIssue(options.issue)
   let logText = ''
   if (options.log) logText = readLog(options.log)

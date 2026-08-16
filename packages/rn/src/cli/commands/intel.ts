@@ -10,6 +10,7 @@ import pc from 'picocolors'
 import { logger } from '../logger'
 import { runProjectIntel, renderIntelMarkdown } from '../../intel'
 import { buildDependencyGraph } from '../../intel/dependencyGraph'
+import { buildApplicationModel, renderApplicationModel } from '../../intel/model'
 import { buildKnowledgeGraph } from '../../harness'
 import { detectUrlScheme } from '../../utils/deepLink'
 import { buildNativeRegistry } from '../../intel/nativeRegistry'
@@ -20,6 +21,7 @@ export interface IntelOptions {
   graph?: string
   search?: string
   bench?: boolean
+  model?: boolean
 }
 
 const GRAPHS: Record<string, string> = {
@@ -55,6 +57,13 @@ export async function intelCommand(directory: string, options: IntelOptions): Pr
   }
 
   const { report, reportPath } = runProjectIntel(root, { search: options.search, bench: options.bench })
+
+  if (options.model) {
+    process.stdout.write(renderApplicationModel(buildApplicationModel(report)) + '\n')
+    logger.info('')
+    logger.dim('The application digest — the shared model every agent consumes (fix, review, upgrade, …).')
+    return
+  }
 
   if (options.json) {
     process.stdout.write(JSON.stringify(report, null, 2) + '\n')

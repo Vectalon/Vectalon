@@ -11,6 +11,7 @@
 import { readProjectFile, walkProjectFiles } from './scan'
 import { buildKnowledgeGraph } from '../harness/KnowledgeGraph'
 import { analyzeSourceFile } from '../harness/AstScanner'
+import { readProjectIntel } from '../intel/model'
 import { isAtLeast, versionParts } from './detect'
 import type { DetectedVersions, ImpactFinding, ImpactCategory, RiskLevel } from './types'
 
@@ -72,8 +73,12 @@ export function analyzeUpgradeImpact(versions: DetectedVersions, target: string 
   const targetMinor = target ? versionParts(target) : null
   const targetIsNewArchDefault = isAtLeast(targetMinor ? [targetMinor[0], targetMinor[1]] : null, [0, 76])
 
-  // 1. Native module boundaries from the Knowledge Graph (AST-grade).
-  const graph = buildKnowledgeGraph(root)
+  // 1. Native module boundaries from the Knowledge Graph — consumed from the
+  //    shared Project Intelligence model (forced fresh: impact analyzes the
+  //    current tree), never rebuilt in isolation. The model is the single
+  //    pipeline; this agent falls back to a direct build only if it is gone.
+  const intel = readProjectIntel(root, { maxAgeMs: 0 })
+  const graph = intel.report?.knowledge ?? buildKnowledgeGraph(root)
   for (const mod of graph.nativeModules) {
     const modules = mod.modules.join(', ')
     push(

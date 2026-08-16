@@ -451,6 +451,9 @@ export type { Result } from './utils/safe'
 
 export * from './diagnostics'
 
+export { readProjectIntel, buildApplicationModel, renderApplicationModel, INTEL_MAX_AGE_DEFAULT_MS } from './intel/model'
+export type { ProjectIntelAccess, ApplicationModel } from './intel/model'
+
 export { runFix, verdictOf, renderFixMarkdown, writeFixReport, fixDocsDir } from './fix'
 export type { FixReport, FixFinding, FixEdit, FixOptions, FixVerdict, FixEvidence, FixVerification } from './fix'
 

@@ -762,8 +762,9 @@ export function createProgram(): Command {
 
   program
     .command('intel [directory]')
-    .description('Project Intelligence Core — canonical manifest, workspace discovery, dependency graph (with cycles), AST parse stats, incremental index, component + navigation graphs, native module registry, and sub-second knowledge retrieval in one deterministic pass')
+    .description('Project Intelligence Core — canonical manifest, workspace discovery, dependency graph (with cycles), AST parse stats, incremental index, component + navigation graphs, native module registry, and sub-second knowledge retrieval in one deterministic pass; the shared model every agent consumes (fix, review, upgrade, …)')
     .option('--json', 'Print the full report as JSON')
+    .option('--model', 'Print the application digest — screens, navigation, state, native modules, dependencies, architecture')
     .option('--graph <name>', 'Export one graph as JSON: deps, components, navigation, native, manifest')
     .option('--search <query>', 'Run one retrieval query over the indexed project and show ranked results')
     .option('--bench', 'Run the sub-second retrieval benchmark (010 acceptance)')

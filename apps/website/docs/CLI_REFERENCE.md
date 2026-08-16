@@ -1128,8 +1128,16 @@ npx vectalon intel                  # full report → docs/vectalon/intel/report
 npx vectalon intel --bench          # + sub-second retrieval benchmark
 npx vectalon intel --search "nav screen"  # ranked retrieval over the indexed project
 npx vectalon intel --graph deps     # export one graph as JSON
+npx vectalon intel --model          # the application digest — screens, navigation, state, native modules, deps, architecture
 npx vectalon intel --json           # full machine-readable report on stdout
 ```
+
+`intel` is **the foundation of everything**: `docs/vectalon/intel/report.json`
+is the canonical Project Intelligence model, and every agent (`fix`, `upgrade`
+impact, and the rest) consumes it through the shared `readProjectIntel()`
+door — fresh by default (15 min), one incremental re-pass per process when
+stale, direct-read fallback when unavailable — instead of independently
+rediscovering the repository.
 
 **Layers (001-010)**
 

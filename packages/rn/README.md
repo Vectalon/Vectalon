@@ -306,6 +306,30 @@ knowledge retrieval** with a sub-second benchmark:
 npx vectalon intel --bench                 # full report + retrieval benchmark
 npx vectalon intel --search "login screen" # ranked retrieval with timings
 npx vectalon intel --graph deps            # export the dependency graph as JSON
+npx vectalon intel --model                 # the application digest (see below)
+```
+
+### Intel is the foundation of everything
+
+`docs/vectalon/intel/report.json` is the **canonical Project Intelligence
+model**, and `readProjectIntel()` is the one door every agent consumes —
+`fix`, `upgrade` (impact), and the rest read the same model instead of
+independently rediscovering the repository. Fresh by default (15 min), it
+re-runs one incremental pass per process when stale, and never blocks when
+unavailable (consumers fall back to direct reads). That is the moat: a
+generic coding agent sees **files**; Vectalon sees an **application** —
+screens, navigation, state, native modules, dependencies, build config,
+tests, telemetry, architecture, team decisions:
+
+```
+application
+ ├── screens        (18)   Onboarding, Login, Signup, ForgotPassword, Home, Catalog …
+ ├── navigation     (1)  Stack
+ ├── state          (1)  CartContext
+ ├── native modules (0)
+ ├── dependencies   (7, 4 native)
+ ├── source files   (51)
+ └── architecture   (components 27 · cycles 0)
 ```
 
 In a monorepo the scan is repository-wide — every member package's source is
