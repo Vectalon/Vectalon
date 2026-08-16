@@ -1925,6 +1925,35 @@ the entire control-plane surface works fully air-gapped.
 
 ---
 
+## `demo`
+
+**The flagship demonstration — the feature workflow, live.** The most
+impressive thing in the repo, as a hero surface: one command, "Build a Login
+feature.", produces Requirement → Architecture decision → Affected files →
+Implementation plan → Code → Tests → Review → Build verification → PR — and
+the self-healing loop (build failed → diagnose → modify → rebuild → verify)
+runs a failed gate back through implementation until it passes.
+
+Deterministic and offline — zero model calls. When a prior workflow run
+exists under `docs/vectalon/feature-development/`, its real phases, statuses,
+and written files are shown; otherwise the canonical 14-stage pipeline and
+the healing loop are rendered. To run the workflow for real, use
+`vectalon feature "<prompt>"`.
+
+```bash
+npx vectalon demo          # the flagship workflow, from a real prior run when present
+npx vectalon demo --json   # pipeline + healing loop + prior run as JSON
+```
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Demo rendered (prior run or canonical pipeline) |
+| 1 | Fatal error |
+
+---
+
 ## `auth`
 
 Manage your license and trial: activate a license key, authenticate with

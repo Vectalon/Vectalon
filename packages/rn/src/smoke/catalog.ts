@@ -270,6 +270,12 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['mode', '--json'],
   },
   {
+    id: 'demo',
+    name: 'Flagship workflow demo (Requirement → … → PR + self-healing loop)',
+    category: 'cli',
+    args: () => ['demo', '--json'],
+  },
+  {
     id: 'test-repair',
     name: 'Test repair diagnosis (Jest/Detox/Maestro log classification)',
     category: 'analysis',

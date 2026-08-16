@@ -458,6 +458,8 @@ export { runFix, verdictOf, renderFixMarkdown, writeFixReport, fixDocsDir } from
 export type { FixReport, FixFinding, FixEdit, FixOptions, FixVerdict, FixEvidence, FixVerification } from './fix'
 
 export { MODES, MODE_IDS, MODE_PROVIDERS, MODE_DEFAULT_PROVIDER, modeOfProvider, modeAllows, isDeploymentMode, verifyMode, describeProvider } from './model/mode'
+
+export { PIPELINE, HEAL_LOOP, findPriorRun, renderPipeline, renderHealLoop } from './cli/commands/demo'
 export type { DeploymentMode, ModeDefinition, ModeCheckResult } from './model/mode'
 
 export { runScore, aggregateOverall, buildRecommendations, renderScoreMarkdown, writeScoreReport, scoreDocsDir, findingKey, priorityOf, verdictOf as scoreVerdictOf, readHistory, writeHistory, collectSourceAndTests } from './score'

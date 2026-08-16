@@ -39,6 +39,7 @@ import { buildFixCommand, forcedKind } from './commands/buildFix'
 import { fixCommand } from './commands/fix'
 import { scoreCommand } from './commands/score'
 import { modeCommand } from './commands/mode'
+import { demoCommand } from './commands/demo'
 import { testRepairCommand, forcedKind as forcedTestKind } from './commands/testRepair'
 import { refactorCommand } from './commands/refactor'
 import { depsCommand } from './commands/deps'
@@ -481,6 +482,12 @@ export function createProgram(): Command {
     .option('--set <mode>', 'Set the deployment mode: cloud | private | air-gapped (refuses a provider outside the mode)')
     .option('--json', 'Print machine-readable output')
     .action((options: { set?: string; json?: boolean }) => modeCommand(options))
+
+  program
+    .command('demo')
+    .description('The flagship demonstration: the feature workflow, live. "Build a Login feature." → Requirement → Architecture decision → Affected files → Implementation plan → Code → Tests → Review → Build verification → PR, plus the self-healing loop (build failed → diagnose → modify → rebuild → verify). Shows a real prior run when one exists; zero model calls')
+    .option('--json', 'Print machine-readable output')
+    .action((options: { json?: boolean }) => demoCommand(options))
 
   program
     .command('test-repair [directory]')
@@ -1068,6 +1075,7 @@ async function runInteractive(): Promise<void> {
       { value: 'fix', label: 'Fix my React Native issue', hint: 'THE workflow — root cause → fix → verify → diff (killer P0)' },
       { value: 'score', label: 'Show the Engineering Health Score', hint: 'One 0-100 number — 8 dimensions, delta, P0/P1/P2 actions' },
       { value: 'mode', label: 'Show the deployment mode', hint: 'Cloud / Private / Air-gapped — where your source runs' },
+      { value: 'demo', label: 'Run the flagship workflow demo', hint: 'Requirement → … → PR + the self-healing loop (zero model calls)' },
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Force refresh knowledge', hint: refreshHint },
       { value: 'suggestions', label: suggestionCount > 0 ? `View suggestions (${suggestionCount})` : 'View suggestions', hint: 'Improvement suggestions from the knowledge refresh' },
@@ -1665,6 +1673,12 @@ async function runInteractive(): Promise<void> {
   if (action === 'mode') {
     await modeCommand({})
     p.outro('Deployment mode shown above')
+    return
+  }
+
+  if (action === 'demo') {
+    await demoCommand({})
+    p.outro('Flagship workflow demo shown above')
     return
   }
 

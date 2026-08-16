@@ -5,6 +5,7 @@ const FREE: Array<[string, string]> = [
   ['score', 'The Vectalon Engineering Health Score — one 0-100 number from eight dimensions, the delta vs your last run, and P0/P1/P2 actions'],
   ['init', 'The 15-minute proof of value — scan the project, build the knowledge base, and end with the scan summary + Health Score + Top 5 problems. No LLM config asked'],
   ['mode', 'Where your source runs — Cloud (hosted models) / Private (company LLM) / Air-gapped (local model, nothing leaves the machine); enforced, not labeled'],
+  ['demo', 'The flagship demonstration — the feature workflow, live: Requirement → … → PR + the self-healing loop, from a real prior run when present, zero model calls'],
   ['serve', 'Run the MCP server — agents connect from your editor'],
   ['feature "…"', 'Generate components, write tests, run workflows'],
   ['doctor', 'Ecosystem + native toolchain + leaderboard readiness, with numbered fix steps'],
