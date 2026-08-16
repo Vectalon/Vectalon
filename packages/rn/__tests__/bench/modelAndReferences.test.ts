@@ -2,12 +2,15 @@ import {
   SCENARIO_SPEC_VERSION,
   loadReferences,
   defaultReferencesDir,
+  loadScenarios,
+  defaultScenariosDir,
   createModelGenerate,
   runScenario,
   runBenchmark,
   runBenchmarkFromDir,
   formatBenchmarkReport,
 } from '../../src/bench'
+import { parseModelOutput } from '../../src/workflows/phases/implementationPhase'
 import type { BenchScenario, ModelGenerateOptions } from '../../src/bench'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
@@ -38,10 +41,10 @@ function stubRouter(content: string): ModelGenerateOptions['modelRouter'] {
 }
 
 describe('bench reference solutions (M6)', () => {
-  it('loads all 33 shipped references without problems', () => {
+  it('loads all 35 shipped references without problems', () => {
     const { references, problems } = loadReferences(defaultReferencesDir())
     expect(problems).toEqual([])
-    expect(references.size).toBe(33)
+    expect(references.size).toBe(35)
     for (const files of references.values()) {
       expect(files.length).toBeGreaterThan(0)
       for (const file of files) {
@@ -171,6 +174,76 @@ describe('bench model generate seam (M5)', () => {
     await gen(validScenario())
     expect(captured).toBe(onTextChunk)
   })
+
+  it('routes removal scenarios through a remove-dependency intent with fixtures in context', async () => {
+    let captured: { prompt: string; context: string } | undefined
+    const router = {
+      generate: async (req: { prompt: string; context: string }) => {
+        captured = { prompt: req.prompt, context: req.context }
+        return { content: '{}', provider: 'test' }
+      },
+    } as unknown as ModelGenerateOptions['modelRouter']
+    const gen = createModelGenerate({ modelRouter: router })
+    const scenario = validScenario({
+      id: 'rn-11-remove-dependency-native',
+      removedDependencies: ['appcenter'],
+      fixtures: { 'ios/Podfile': "require_relative '../node_modules/react-native/scripts/react_native_pods'\npod 'AppCenter', :path => '../node_modules/appcenter/ios'\n" },
+    })
+    await gen(scenario)
+    expect(captured?.prompt).toContain('Intent: remove-dependency')
+    // The model must see the current fixtures so it can return the changed files.
+    expect(captured?.context).toContain('ios/Podfile')
+    expect(captured?.context).toContain("pod 'AppCenter'")
+  })
+
+  it('parses native removal files (Podfile, xml manifest, pbxproj) from path-fenced output', () => {
+    const parsed = parseModelOutput(
+      [
+        'ios/Podfile',
+        '```',
+        "require_relative '../node_modules/react-native/scripts/react_native_pods'",
+        '',
+        "pod 'React', :path => '../node_modules/react-native/ReactCommon'",
+        '```',
+        'android/app/src/main/AndroidManifest.xml',
+        '```',
+        '<manifest xmlns:android="http://schemas.android.com/apk/res/android">',
+        '  <application android:label="rn-bench-app" />',
+        '</manifest>',
+        '```',
+        'ios/vectalon.xcodeproj/project.pbxproj',
+        '```',
+        '// !$*UTF8*$!',
+        '{',
+        '}',
+        '```',
+      ].join('\n')
+    )
+    expect(parsed?.files.map(f => f.path).sort()).toEqual([
+      'android/app/src/main/AndroidManifest.xml',
+      'ios/Podfile',
+      'ios/vectalon.xcodeproj/project.pbxproj',
+    ])
+  })
+
+  it('scores a removal scenario through the model seam end-to-end', async () => {
+    const refs = loadReferences(defaultReferencesDir())
+    const referenceFiles = refs.references.get('rn-11-remove-dependency-native')
+    expect(referenceFiles).toBeDefined()
+    const gen = createModelGenerate({ modelRouter: stubRouter(JSON.stringify({ files: referenceFiles })) })
+    const scenario = loadScenarios(defaultScenariosDir()).scenarios.find(
+      s => s.id === 'rn-11-remove-dependency-native'
+    ) as BenchScenario
+    const files = await gen(scenario)
+    expect(files.length).toBeGreaterThan(0)
+    const run = await runScenario(scenario, {
+      generate: gen,
+      references: { 'rn-11-remove-dependency-native': referenceFiles as NonNullable<typeof referenceFiles> },
+    })
+    expect(run.axes.adherence).not.toBeNull()
+    expect(run.axes.guardrails).not.toBeNull()
+    expect(run.composite).not.toBeNull()
+  })
 })
 
 describe('bench relative-to-human scoring (M6)', () => {
@@ -229,8 +302,9 @@ describe('bench relative-to-human scoring (M6)', () => {
     const { summary, problems, referenceProblems } = await runBenchmarkFromDir({})
     expect(problems).toEqual([])
     expect(referenceProblems).toEqual([])
-    // Deterministic baseline runs the scaffold-able subset (4) and every run has a reference.
-    expect(summary.runs.length).toBe(6)
+    // Deterministic baseline runs the scaffold-able subset plus the removal
+    // scenarios, and every run has a reference.
+    expect(summary.runs.length).toBe(9)
     expect(summary.runs.every(r => r.reference)).toBe(true)
     expect(summary.overallReferenceComposite).not.toBeNull()
     expect(summary.overallRelativeComposite).not.toBeNull()
@@ -246,7 +320,7 @@ describe('bench relative-to-human scoring (M6)', () => {
     )
     const { summary } = await runBenchmarkFromDir({ modelRouter: router })
     // A model seam runs every scenario (33), not just the scaffold-able subset.
-    expect(summary.runs.length).toBe(33)
+    expect(summary.runs.length).toBe(35)
   })
 
   it('runBenchmarkFromDir runs a custom scenarios dir with custom references', async () => {

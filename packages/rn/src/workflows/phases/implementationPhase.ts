@@ -212,7 +212,9 @@ function extractMarkdownSectionFiles(content: string): GeneratedFile[] | null {
 
 function extractPathFenceFiles(content: string): GeneratedFile[] | null {
   const files: GeneratedFile[] = []
-  const pathRe = /^([A-Za-z0-9_@./-]+\.(?:tsx?|jsx?|ts|js|json|css|scss|swift|kt|java|gradle|plist|podspec|yaml|yml|md))\s*\n+```[a-zA-Z]*\n([\s\S]*?)```/gm
+  // Native config files a dependency-removal must rewrite: Podfile / Podfile.lock
+  // (extensionless), gradle/kts, plist, pbxproj, xml manifests, xcconfig.
+  const pathRe = /^([A-Za-z0-9_@./-]+\.(?:tsx?|jsx?|ts|js|json|css|scss|swift|kt|java|gradle|kts|plist|podspec|pbxproj|xml|properties|xcconfig|yaml|yml|md)|(?:[A-Za-z0-9_@./-]*\/)?Podfile(?:\.lock)?)\s*\n+```[a-zA-Z]*\n([\s\S]*?)```/gm
   let match: RegExpExecArray | null
   while ((match = pathRe.exec(content)) !== null) {
     const path = match[1]

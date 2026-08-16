@@ -8,6 +8,7 @@ import { loadScenarios, defaultScenariosDir } from './loader'
 import { loadReferences, defaultReferencesDir } from './references'
 import { createModelGenerate } from './modelGenerate'
 import { rubricAdherence } from './rubric'
+import { isRemovalScenario, removalGenerate } from './removal'
 import { runCommand } from '../adapters/runCommand'
 import {
   BenchAxisScores,
@@ -105,7 +106,12 @@ function scoreFilesOffline(
 }
 
 export async function runScenario(scenario: BenchScenario, options: BenchRunOptions = {}): Promise<BenchScenarioRun> {
-  const generate = options.generate || deterministicGenerate
+  // Removal scenarios invert the scaffold: the deterministic seam applies
+  // `removedDependencies` to the fixtures and emits the changed files, so
+  // rn-11 scores adherence + guardrails instead of n/a. A provided generate
+  // seam (the real model) still wins — a model pass is never faked with
+  // scaffold output.
+  const generate = options.generate || (isRemovalScenario(scenario) ? removalGenerate : deterministicGenerate)
   const files = await generate(scenario)
   const removedDependencies = scenario.removedDependencies
 
@@ -194,7 +200,13 @@ function relativeToReference(
 export function shouldRunScenario(scenario: BenchScenario, filter: BenchRunOptions['filter']): boolean {
   if (!filter) return true
   if (filter.suite && scenario.suite !== filter.suite) return false
-  if (filter.scaffoldable !== undefined && scenario.scaffoldable !== filter.scaffoldable) return false
+  if (filter.scaffoldable !== undefined && scenario.scaffoldable !== filter.scaffoldable) {
+    // The deterministic baseline runs scaffoldable scenarios AND dependency-
+    // removal scenarios (now deterministic via the removal seam) — but never
+    // non-scaffoldable add-scenarios, which only the model can produce.
+    const removal = isRemovalScenario(scenario)
+    if (!(filter.includeRemovals && removal)) return false
+  }
   if (filter.ids && !filter.ids.includes(scenario.id)) return false
   return true
 }
@@ -257,7 +269,8 @@ export async function runBenchmark(scenarios: BenchScenario[], options: BenchRun
  * Convenience: load + run in one call.
  *
  * - The deterministic baseline (no `generate` seam and no `modelRouter`) scores
- *   only the scaffold-able subset (rn-01/02/05/06).
+ *   the scaffold-able subset (rn-01/02/05/06) plus the dependency-removal
+ *   scenarios (now deterministic via the removal seam).
  * - Passing `modelRouter` (M5) builds a ModelRouter-backed generate seam so all
  *   11 scenarios run through the real model (the leaderboard pass).
  * - Human references (M6) are loaded from `referencesDir` (default
@@ -290,6 +303,9 @@ export async function runBenchmarkFromDir(
   const hasGenerateSeam = Boolean(options.generate) || Boolean(options.modelRouter)
   if (!hasGenerateSeam && filter.scaffoldable === undefined) {
     filter.scaffoldable = true
+    // Removal scenarios are deterministic (removalGenerate) — include them in
+    // the no-model baseline; non-scaffoldable add-scenarios stay excluded.
+    filter.includeRemovals = true
   }
   const generate = options.generate || (options.modelRouter ? createModelGenerate({ modelRouter: options.modelRouter }) : undefined)
   const summary = await runBenchmark(loaded.scenarios, { ...options, filter, generate, references })

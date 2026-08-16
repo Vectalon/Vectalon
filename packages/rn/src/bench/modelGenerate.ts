@@ -39,16 +39,33 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
 
   return async (scenario: BenchScenario): Promise<BenchGeneratedFile[]> => {
     const snapshot = benchmarkSnapshot()
+    // Removal scenarios (rn-11/34/35) invert the scaffold: the model must
+    // DELETE a package and its native traces, so it gets a remove-dependency
+    // intent — and the current fixture files, which it must return changed
+    // with complete new content.
+    const isRemoval = (scenario.removedDependencies?.length ?? 0) > 0
+    const intent = isRemoval
+      ? { type: 'remove-dependency' as const, dependency: (scenario.removedDependencies || []).join(', '), description: scenario.prompt }
+      : { type: 'add-feature' as const, feature: scenario.id, description: scenario.prompt }
     const { systemPrompt, prompt } = buildImplementationPrompt({
       snapshot,
       prompt: scenario.prompt,
-      intent: { type: 'add-feature', feature: scenario.id, description: scenario.prompt },
+      intent,
     })
+
+    const fixtureBlock = isRemoval
+      ? Object.entries(scenario.fixtures || {})
+          .map(([path, content]) => `--- ${path} ---\n${content}`)
+          .join('\n\n')
+      : ''
+    const context =
+      `Project: rn-bench-app, React Native 0.74.0` +
+      (fixtureBlock ? `\n\nCurrent project files (return each changed file with its complete new content):\n${fixtureBlock}` : '')
 
     const response = await modelRouter.generate({
       systemPrompt,
       prompt,
-      context: `Project: rn-bench-app, React Native 0.74.0`,
+      context,
       maxTokens,
       temperature,
       ...(onTextChunk ? { onTextChunk } : {}),

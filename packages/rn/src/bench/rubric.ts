@@ -367,7 +367,7 @@ export const rubricChecks: RubricCheck[] = [
 
 /** True for files that can carry traces of a native dependency: Podfile,
  * gradle files, AndroidManifest, Info.plist, pbxproj, xcconfig. */
-function isNativeConfigFile(filePath: string): boolean {
+export function isNativeConfigFile(filePath: string): boolean {
   const base = filePath.split('/').pop() || filePath
   if (base === 'Podfile' || base === 'Podfile.lock' || base === 'AndroidManifest.xml') return true
   return /\.(?:gradle|kts|pbxproj|plist|xcconfig)$/.test(base)

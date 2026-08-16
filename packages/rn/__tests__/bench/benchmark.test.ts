@@ -81,7 +81,7 @@ describe('bench scenario loader', () => {
     const dir = defaultScenariosDir()
     const loaded = loadScenarios(dir)
     expect(loaded.problems).toEqual([])
-    expect(loaded.scenarios.length).toBe(33)
+    expect(loaded.scenarios.length).toBe(35)
     for (const s of loaded.scenarios) {
       expect(validateScenario(s)).toEqual([])
     }
@@ -312,12 +312,16 @@ describe('bench deterministic baseline runner', () => {
     expect(started).toEqual(['1/2 rn-a', '2/2 rn-c'])
   })
 
-  it('runBenchmarkFromDir runs only the scaffold-able subset by default', async () => {
+  it('runBenchmarkFromDir runs the scaffold-able subset plus removals by default', async () => {
     const { summary, problems } = await runBenchmarkFromDir({})
     expect(problems).toEqual([])
-    // Deterministic baseline (no generate seam) covers the scaffold-able subset.
-    expect(summary.runs.length).toBe(6)
-    expect(summary.runs.every(r => r.scaffoldable)).toBe(true)
+    // Deterministic baseline (no generate seam) covers the scaffold-able subset
+    // plus the dependency-removal scenarios (now deterministic via the removal seam).
+    expect(summary.runs.length).toBe(9)
+    expect(summary.runs.filter(r => r.scaffoldable).length).toBe(6)
+    for (const id of ['rn-11-remove-dependency-native', 'rn-34-remove-sentry-sdk', 'rn-35-remove-firebase-sdk']) {
+      expect(summary.runs.some(r => r.id === id)).toBe(true)
+    }
     expect(summary.overallComposite).not.toBeNull()
     expect(summary.suites.length).toBeGreaterThan(0)
     const report = formatBenchmarkReport(summary)
@@ -363,13 +367,14 @@ describe('bench deterministic baseline runner', () => {
     const { summary } = await runBenchmarkFromDir({
       generate: scenario => [{ path: `src/${scenario.id}.tsx`, content: 'export const x = 1;' }],
     })
-    expect(summary.runs.length).toBe(33)
+    expect(summary.runs.length).toBe(35)
   })
 
   it('runBenchmarkFromDir honors an explicit scaffoldable filter override', async () => {
     const { summary } = await runBenchmarkFromDir({ filter: { scaffoldable: false } })
-    // 33 scenarios − 6 scaffoldable = 27 model-only
-    expect(summary.runs.length).toBe(27)
+    // 35 scenarios − 6 scaffoldable = 29 model-only (the removal scenarios are
+    // included only via includeRemovals, which an explicit filter override drops)
+    expect(summary.runs.length).toBe(29)
     expect(summary.runs.every(r => !r.scaffoldable)).toBe(true)
   })
 

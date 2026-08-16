@@ -115,9 +115,32 @@ describe('benchmarks page data', () => {
       expect(pct(axes.guardrails)).toBe(100)
       expect(axes.correctness).toBeNull()
     }
-    // The page must gate exactly those six scenarios, in order.
+    // The gate also covers the three dependency-removal scenarios, which run
+    // deterministically through the removal seam (adherence 100%, guardrails 98%).
+    for (const id of ['rn-11-remove-dependency-native', 'rn-34-remove-sentry-sdk', 'rn-35-remove-firebase-sdk']) {
+      const removalRun = (baseline.runs as Array<Record<string, unknown>>).find(r => r.id === id)
+      expect(removalRun).toBeDefined()
+      expect(pct((removalRun as Record<string, unknown>).composite as number)).toBe(99)
+      const removalAxes = (removalRun as Record<string, unknown>).axes as Record<string, number | null>
+      expect(pct(removalAxes.adherence)).toBe(100)
+      expect(pct(removalAxes.guardrails)).toBe(98)
+      expect(removalAxes.correctness).toBeNull()
+    }
+    // The page must gate exactly those nine scenarios, in order.
     const gateMatch = page.match(/const BASELINE_GATE = \[([^\]]+)\]/)
-    const gateIds = (gateMatch?.[1].match(/'[^']+'/g) ?? []).map(s => s.slice(1, -1))
-    expect(gateIds).toEqual(scaffoldable)
+    const gateIds = (gateMatch?.[1].match(/id: '([^']+)'/g) ?? []).map(s =>
+      s.replace(/^id: '/, '').replace(/'$/, '')
+    )
+    expect(gateIds).toEqual([
+      'rn-01-login-screen',
+      'rn-02-flatlist-fetch',
+      'rn-05-form-validation',
+      'rn-06-offline-queue',
+      'rn-11-remove-dependency-native',
+      'rn-12-notifications-screen',
+      'rn-13-account-delete-screen',
+      'rn-34-remove-sentry-sdk',
+      'rn-35-remove-firebase-sdk',
+    ])
   })
 })

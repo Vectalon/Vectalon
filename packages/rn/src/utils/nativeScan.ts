@@ -44,21 +44,34 @@ function escapeRegExp(value: string): string {
  * node_modules paths and gradle includes), the lowercased concatenation
  * (`appcenteranalytics`), and PascalCase (`AppCenter`, `AppCenterAnalytics`),
  * plus the scoped name for `@scope/name` path matches.
+ *
+ * For scoped packages (`@sentry/react-native`, `@react-native-firebase/app`)
+ * the last segment is `react-native` or `app` — nearly meaningless — so the
+ * identity lives in the SCOPE: `sentry`, `react-native-firebase` (→ `firebase`).
+ * Tokens are derived from the scope and the full scoped name so native traces
+ * like `RNSentry`, `io.sentry.android`, `:react-native-sentry`, and
+ * `com.google.firebase.provider` are all caught.
  */
 export function nativePackageTokens(pkg: string): string[] {
   const base = pkg.split('/').pop() || pkg
-  const stripped = base.replace(/^react-native-?/i, '') || base
-  const parts = base.split(/[^a-zA-Z0-9]+/).filter(Boolean)
+  const isScoped = pkg.startsWith('@')
+  // Identity-bearing name: the scope for scoped packages, the base otherwise.
+  const identity = isScoped ? pkg.slice(1) : base // 'sentry/react-native' | 'appcenter-analytics'
+  const scope = isScoped ? identity.split('/')[0] : '' // 'sentry' | 'react-native-firebase'
+  const stripped = (isScoped ? scope : base).replace(/^react-native-?/i, '') || (isScoped ? scope : base)
+  const parts = identity.split(/[^a-zA-Z0-9]+/).filter(Boolean)
   const pascal = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join('')
   const strippedPascal = stripped.split(/[^a-zA-Z0-9]+/).filter(Boolean).map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join('')
   const tokens = new Set<string>([
     pkg,                    // full scoped name, e.g. @sentry/react-native
-    base,                   // appcenter-analytics
-    base.replace(/-/g, ''), // appcenteranalytics
+    base,                   // react-native | appcenter-analytics
+    base.replace(/-/g, ''), // reactnative | appcenteranalytics
     parts.join('').toLowerCase(),
-    pascal,                 // AppCenterAnalytics
-    stripped,               // analytics (from react-native-analytics)
-    strippedPascal,         // Analytics
+    pascal,                 // SentryReactNative | AppCenterAnalytics
+    stripped,               // sentry | firebase | appcenter-analytics
+    strippedPascal,         // Sentry | Firebase | AppcenterAnalytics
+    scope,                  // sentry | react-native-firebase
+    scope.replace(/-/g, ''),
   ])
   // A bare `react-native` / `ReactNative` token would false-positive on every
   // unrelated `node_modules/react-native-*` pod/gradle path when removing a

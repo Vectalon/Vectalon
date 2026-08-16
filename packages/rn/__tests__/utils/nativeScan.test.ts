@@ -26,10 +26,26 @@ describe('nativePackageTokens', () => {
   it('handles scoped packages without emitting ambiguous bare react-native tokens', () => {
     const tokens = nativePackageTokens('@sentry/react-native')
     expect(tokens).toContain('@sentry/react-native')
+    // The identity of a scoped package lives in the scope — the Sentry pod,
+    // io.sentry.android manifest provider, and :react-native-sentry gradle
+    // module all reference `sentry`, never the bare package path.
+    expect(tokens).toContain('sentry')
+    expect(tokens).toContain('Sentry')
     // A bare `react-native` token would false-positive on every unrelated
     // node_modules/react-native-* path — it must never be emitted.
     expect(tokens).not.toContain('react-native')
     expect(tokens).not.toContain('ReactNative')
+  })
+
+  it('derives identity tokens from the scope of react-native-scoped packages', () => {
+    const tokens = nativePackageTokens('@react-native-firebase/app')
+    expect(tokens).toContain('@react-native-firebase/app')
+    expect(tokens).toContain('firebase')
+    expect(tokens).toContain('Firebase')
+    expect(tokens).toContain('react-native-firebase')
+    expect(tokens).not.toContain('react-native')
+    // 'app' is too short and ambiguous — never emitted.
+    expect(tokens).not.toContain('app')
   })
 })
 

@@ -1,0 +1,49 @@
+{
+  "id": "rn-35-remove-firebase-sdk",
+  "specVersion": 1,
+  "suite": "refactor",
+  "title": "Remove the Firebase SDK (@react-native-firebase/app + messaging) with full native cleanup",
+  "prompt": "Remove the @react-native-firebase/app and @react-native-firebase/messaging packages from this project safely and completely. Return each changed file with its complete new content: remove both from package.json dependencies, remove the RNFBApp / RNFBMessaging pods and the Firebase/Messaging pod from ios/Podfile, remove their includes and projectDir entries from android/settings.gradle, remove the project and maven dependencies from android/app/build.gradle, and remove the FirebaseInitProvider provider and FirebaseMessagingService service (with its intent filter) from android/app/src/main/AndroidManifest.xml.",
+  "scaffoldable": false,
+  "removedDependencies": [
+    "@react-native-firebase/app",
+    "@react-native-firebase/messaging"
+  ],
+  "fixtures": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.2.0\",\n    \"react-native\": \"0.74.0\",\n    \"@react-native-firebase/app\": \"19.0.0\",\n    \"@react-native-firebase/messaging\": \"19.0.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.4\",\n    \"jest\": \"29.7.0\",\n    \"@babel/core\": \"7.24.9\",\n    \"@babel/preset-env\": \"7.24.8\",\n    \"@babel/preset-typescript\": \"7.24.7\",\n    \"@types/jest\": \"29.5.14\",\n    \"@types/react\": \"18.2.79\",\n    \"@typescript-eslint/eslint-plugin\": \"6.21.0\",\n    \"@typescript-eslint/parser\": \"6.21.0\",\n    \"eslint\": \"8.57.0\"\n  }\n}",
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"jsx\": \"react-native\",\n    \"esModuleInterop\": true,\n    \"skipLibCheck\": true\n  }\n}",
+    "babel.config.js": "module.exports = {\n  presets: ['@babel/preset-env', '@babel/preset-typescript'],\n};\n",
+    ".eslintrc.cjs": "module.exports = {\n  root: true,\n  env: { node: true, jest: true },\n  parser: '@typescript-eslint/parser',\n  parserOptions: { ecmaVersion: 2020, sourceType: 'module', ecmaFeatures: { jsx: true } },\n  plugins: ['@typescript-eslint'],\n  extends: ['plugin:@typescript-eslint/recommended'],\n  rules: { 'no-undef': 'off' },\n};\n",
+    "src/config/app.ts": "export const APP_NAME = 'rn-bench-app';\nexport const APP_VERSION = '1.0.0';\n",
+    "__tests__/smoke.test.ts": "import { APP_NAME, APP_VERSION } from '../src/config/app';\n\ndescribe('project smoke', () => {\n  it('loads the app config', () => {\n    expect(APP_NAME).toBe('rn-bench-app');\n    expect(APP_VERSION).toBe('1.0.0');\n  });\n});\n",
+    "ios/Podfile": "require_relative '../node_modules/react-native/scripts/react_native_pods'\n\npod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app/ios'\npod 'RNFBMessaging', :path => '../node_modules/@react-native-firebase/messaging/ios'\npod 'Firebase/Messaging', '10.24.0'\npod 'React', :path => '../node_modules/react-native/ReactCommon'\n",
+    "android/settings.gradle": "rootProject.name = 'rn-bench-app'\ninclude ':app'\ninclude ':react-native-firebase_app'\nproject(':react-native-firebase_app').projectDir = new File(rootProject.projectDir, '../node_modules/@react-native-firebase/app/android')\ninclude ':react-native-firebase_messaging'\nproject(':react-native-firebase_messaging').projectDir = new File(rootProject.projectDir, '../node_modules/@react-native-firebase/messaging/android')\n",
+    "android/app/build.gradle": "apply plugin: \"com.android.application\"\n\nrepositories {\n  mavenCentral()\n}\n\ndependencies {\n  implementation project(':react-native-firebase_app')\n  implementation project(':react-native-firebase_messaging')\n  implementation 'com.google.firebase:firebase-messaging:23.4.1'\n  implementation 'com.facebook.react:react-native:0.74.0'\n}\n",
+    "android/app/src/main/AndroidManifest.xml": "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">\n  <application android:label=\"rn-bench-app\">\n    <provider\n      android:name=\"com.google.firebase.provider.FirebaseInitProvider\"\n      android:exported=\"false\"\n      android:authorities=\"${applicationId}.firebaseinitprovider\" />\n    <service\n      android:name=\"com.google.firebase.messaging.FirebaseMessagingService\"\n      android:exported=\"false\">\n      <intent-filter>\n        <action android:name=\"com.google.firebase.MESSAGING_EVENT\" />\n      </intent-filter>\n    </service>\n  </application>\n</manifest>\n"
+  },
+  "expect": {
+    "files": [
+      "package.json",
+      "ios/Podfile",
+      "android/settings.gradle",
+      "android/app/build.gradle",
+      "android/app/src/main/AndroidManifest.xml"
+    ],
+    "behaviors": [
+      "@react-native-firebase/app and @react-native-firebase/messaging absent from package.json dependencies",
+      "no RNFBApp / RNFBMessaging / Firebase pods in ios/Podfile",
+      "no react-native-firebase includes or projectDir entries in android/settings.gradle",
+      "no react-native-firebase project or firebase maven dependency in android/app/build.gradle",
+      "no FirebaseInitProvider provider or FirebaseMessagingService service (with intent filter) in AndroidManifest.xml"
+    ]
+  },
+  "correctness": {
+    "tests": false,
+    "typecheck": false,
+    "lint": false
+  },
+  "axes": [
+    "adherence",
+    "guardrails"
+  ]
+}

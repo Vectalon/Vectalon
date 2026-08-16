@@ -35,8 +35,9 @@ const SUITES = [
 
 /**
  * Local model tiers (Week 2 roadmap 2.1/2.2) — fast/balanced ran the
- * original 13 scenarios; quality ran the full 33-scenario pack (the 20 new
- * real-world scenarios rn-14..rn-33 are 7B-only for now), same live-scored
+ * original 13 scenarios; quality ran the 33-scenario pack (the 20 new
+ * real-world scenarios rn-14..rn-33 are 7B-only for now; rn-34/35 are the
+ * deterministic-only removal scenarios), same live-scored
  * harness. Results: packages/rn/bench/results/local.json (fast),
  * local-3b.json (balanced), local-7b.json (quality) — regenerate with
  * `vectalon bench --model local --preset <tier> --live --install -o
@@ -136,14 +137,21 @@ const LOCAL_LOSSES = [
   ['rn-09 accessible form', '100% → 100% (tie)'],
 ]
 
-/** The six scaffold-able scenarios the CI gate runs (no model). */
+/** The nine scenarios the CI gate runs (no model): the six scaffold-able
+ * add-scenarios plus three dependency-removal scenarios (rn-11, rn-34, rn-35),
+ * now deterministic via the removal seam — each package is purged from
+ * package.json and its Podfile/gradle/manifest (and pbxproj/plist for the
+ * scoped SDK) traces. Numbers from the committed bench/baseline.json. */
 const BASELINE_GATE = [
-  'rn-01-login-screen',
-  'rn-02-flatlist-fetch',
-  'rn-05-form-validation',
-  'rn-06-offline-queue',
-  'rn-12-notifications-screen',
-  'rn-13-account-delete-screen',
+  { id: 'rn-01-login-screen', adherence: 100, guardrails: 100 },
+  { id: 'rn-02-flatlist-fetch', adherence: 100, guardrails: 100 },
+  { id: 'rn-05-form-validation', adherence: 100, guardrails: 100 },
+  { id: 'rn-06-offline-queue', adherence: 100, guardrails: 100 },
+  { id: 'rn-11-remove-dependency-native', adherence: 100, guardrails: 98, note: 'removal seam — appcenter purged from package.json + Podfile/gradle/manifest' },
+  { id: 'rn-12-notifications-screen', adherence: 100, guardrails: 100 },
+  { id: 'rn-13-account-delete-screen', adherence: 100, guardrails: 100 },
+  { id: 'rn-34-remove-sentry-sdk', adherence: 100, guardrails: 98, note: 'scoped package — @sentry/react-native purged incl. pbxproj upload phase + Info.plist dsn' },
+  { id: 'rn-35-remove-firebase-sdk', adherence: 100, guardrails: 98, note: 'two scoped packages — firebase purged incl. multi-line manifest provider + service' },
 ]
 
 const AXES = [
@@ -194,7 +202,7 @@ export default function BenchmarksPage() {
       <div className="text-center">
         <div className="mx-auto mb-5 w-fit">
           <span className="chip font-mono">
-            one harness · four benchmarks — spec v1 — <span className="text-brand">3 local tiers + cloud</span> — 33 scenarios · 7B live-scored across all 33
+            one harness · four benchmarks — spec v1 — <span className="text-brand">3 local tiers + cloud</span> — 35-scenario pack · 7B live-scored across the original 33
           </span>
         </div>
         <h1 className="text-4xl font-bold text-slate-50">RN coding tests — the benchmark suite</h1>
@@ -229,7 +237,7 @@ export default function BenchmarksPage() {
         <div className="stat">
           <div className="stat-label">Gate</div>
           <div className="stat-value text-brand">100%</div>
-          <div className="mt-1 text-xs text-slate-500">deterministic floor · 6 scenarios, every PR</div>
+          <div className="mt-1 text-xs text-slate-500">deterministic floor · 9 scenarios, every PR</div>
         </div>
       </div>
 
@@ -534,10 +542,10 @@ export default function BenchmarksPage() {
       <section className="mt-16">
         <SectionLabel>benchmark 4 · every PR</SectionLabel>
         <h2 className="mt-1 text-2xl font-bold text-slate-50">The regression gate — the harness protecting itself</h2>
-        <p className="mt-2 max-w-2xl text-sm text-slate-400">
-          A different kind of benchmark: no model, every pull request. Six scaffold-able scenarios run
-          through the deterministic generator, and the scores are compared against the committed
-          baseline. <span className="text-slate-200">What it&apos;s for:</span> any PR that improves a
+        <p className="mt-2 max-w-2xl text-sm text-slate-400">          A different kind of benchmark: no model, every pull request. Nine scenarios — the six
+          scaffold-able add-scenarios plus three dependency-removal scenarios (rn-11, rn-34, rn-35),
+          now deterministic via the removal seam — run through the deterministic generator, and the
+          scores are compared against the committed baseline. <span className="text-slate-200">What it&apos;s for:</span> any PR that improves a
           guardrail rule or rubric check must move the benchmark up; any PR that silently breaks the
           scaffold, a rule, or score detection fails CI. The harness can&apos;t regress without the
           leaderboard noticing.
@@ -546,15 +554,22 @@ export default function BenchmarksPage() {
           <div className="card">
             <h3 className="font-semibold text-slate-50">Baseline floor (deterministic)</h3>
             <p className="mt-1 text-xs text-slate-400">
-              The committed floor for all six scaffold-able scenarios — a perfect 100% across every
-              axis, with no model in the loop. The scaffold now ships a unit test with every feature, so
-              the gate also proves the generated code passes its own test suite:
+              The committed floor for all nine gate scenarios — a perfect 100% across every axis, with
+              no model in the loop. The scaffold ships a unit test with every feature, so the gate also
+              proves the generated code passes its own test suite. The three dependency-removal
+              scenarios (rn-11, rn-34, rn-35) run through the removal seam: each package is purged from
+              package.json and its Podfile, gradle, and manifest traces — and for rn-34 the pbxproj
+              symbol-upload phase and Info.plist dsn — scoring 99% composite (adherence 100%, guardrails
+              98%) instead of the n/a removals used to produce:
             </p>
             <div className="mt-4 space-y-3">
-              {BASELINE_GATE.map(id => (
-                <div key={id} className="flex items-center justify-between text-xs">
-                  <span className="font-mono text-slate-400">{id.replace('-', ' ')}</span>
-                  <span className="font-mono text-slate-500">adherence 100% · guardrails 100%</span>
+              {BASELINE_GATE.map(({ id, adherence, guardrails, note }) => (
+                <div key={id} className="text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-slate-400">{id.replace('-', ' ')}</span>
+                    <span className="font-mono text-slate-500">adherence {adherence}% · guardrails {guardrails}%</span>
+                  </div>
+                  {note && <p className="mt-0.5 font-mono text-[11px] text-slate-600">{note}</p>}
                 </div>
               ))}
             </div>
@@ -566,9 +581,14 @@ export default function BenchmarksPage() {
               1 when any scored axis drops more than the <span className="font-mono">1%</span> tolerance
               — or a baseline scenario stops running. Baseline and leaderboard answer different
               questions: the gate measures the <em>harness</em>, the leaderboard measures the{' '}
-              <em>model driving it</em>. The two scenarios that joined this release (rn-12
-              notifications, rn-13 account deletion) sit on the 100% floor in the gate and already have
-              their first live model-pass numbers on the leaderboard above — 65% and 67%.
+              <em>model driving it</em>.              Two add-scenarios joined this release — rn-12
+              notifications and rn-13 account deletion sit on the 100% floor in the gate and already have
+              their first live model-pass numbers on the leaderboard above — 65% and 67%. The three
+              dependency-removal scenarios (rn-11, rn-34, rn-35) used to score n/a (removals aren't
+              additions — nothing was generated to score); they now run deterministically through the
+              removal seam and hold 99% composite (adherence 100%, guardrails 98%) on the floor, with
+              the native-cleanup rubric check verifying no pod/gradle/manifest — and for the scoped
+              SDK, no pbxproj or plist — trace of the removed packages remains.
             </p>
             <pre className="term-body mt-4 rounded-[4px] border bg-[rgb(var(--term))] p-3 text-[12px]" style={{ borderColor: 'rgb(var(--term-border))' }}>
               <span className="text-term-brand">$</span> npx vectalon bench --baseline bench/baseline.json{'\\n'}
@@ -590,7 +610,7 @@ export default function BenchmarksPage() {
           </p>
           <pre className="term-body mt-4 rounded-[4px] border bg-[rgb(var(--term))] p-4 text-[13px]" style={{ borderColor: 'rgb(var(--term-border))' }}>
             <span className="text-term-brand">$</span> npx vectalon bench                          <span className="text-slate-500"># 1 · deterministic baseline (offline)</span>{'\\n'}
-            <span className="text-term-brand">$</span> npx vectalon bench --model local --live --install  <span className="text-slate-500"># 1 · model leaderboard, correctness scored (all 33)</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx vectalon bench --model local --live --install  <span className="text-slate-500"># 1 · model leaderboard, correctness scored (all 35)</span>{'\\n'}
             <span className="text-term-brand">$</span> npx vectalon bench --suite forms-security   <span className="text-slate-500"># 2 · one suite</span>{'\\n'}
             <span className="text-term-brand">$</span> npx vectalon bench --live --install         <span className="text-slate-500"># real tests/typecheck/lint → correctness axis</span>{'\\n'}
             <span className="text-term-brand">$</span> npx vectalon leaderboard                    <span className="text-slate-500"># merge model passes → BENCHMARK_RESULTS.md</span>{'\\n'}

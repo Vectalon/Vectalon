@@ -1,0 +1,33 @@
+{
+  "id": "rn-34-remove-sentry-sdk",
+  "files": [
+    {
+      "path": "package.json",
+      "content": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.2.0\",\n    \"react-native\": \"0.74.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.4\",\n    \"jest\": \"29.7.0\",\n    \"@babel/core\": \"7.24.9\",\n    \"@babel/preset-env\": \"7.24.8\",\n    \"@babel/preset-typescript\": \"7.24.7\",\n    \"@types/jest\": \"29.5.14\",\n    \"@types/react\": \"18.2.79\",\n    \"@typescript-eslint/eslint-plugin\": \"6.21.0\",\n    \"@typescript-eslint/parser\": \"6.21.0\",\n    \"eslint\": \"8.57.0\"\n  }\n}\n"
+    },
+    {
+      "path": "ios/Podfile",
+      "content": "require_relative '../node_modules/react-native/scripts/react_native_pods'\n\npod 'React', :path => '../node_modules/react-native/ReactCommon'\n"
+    },
+    {
+      "path": "ios/Info.plist",
+      "content": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n<plist version=\"1.0\">\n<dict>\n\t<key>CFBundleDisplayName</key>\n\t<string>vectalon-bench</string>\n</dict>\n</plist>\n"
+    },
+    {
+      "path": "ios/vectalon.xcodeproj/project.pbxproj",
+      "content": "// !$*UTF8*$!\n{\n\tarchiveVersion = 1;\n\tclasses = {\n\t};\n\tobjectVersion = 54;\n\tobjects = {\n\n/* Begin PBXShellScriptBuildPhase section */\n\t\t13B07F871A680F5B00E75F9A /* Bundle React Native code and images */ = {\n\t\t\tisa = PBXShellScriptBuildPhase;\n\t\t\tbuildActionMask = 2147483647;\n\t\t\tfiles = (\n\t\t\t);\n\t\t\tinputPaths = (\n\t\t\t);\n\t\t\tname = \"Bundle React Native code and images\";\n\t\t\toutputPaths = (\n\t\t\t);\n\t\t\trunOnlyForDeploymentPostprocessing = 0;\n\t\t\tshellPath = /bin/sh;\n\t\t\tshellScript = \"set -e\\nWITH_ENVIRONMENT=\\\"../node_modules/react-native/scripts/xcode/with-environment.sh\\\"\\nif [ -f \\\"$WITH_ENVIRONMENT\\\" ]; then . \\\"$WITH_ENVIRONMENT\\\"; fi\\n\";\n\t\t};\n/* End PBXShellScriptBuildPhase section */\n\t};\n\trootObject = 13B07F861A680F5B00E75F9A /* Project object */;\n}\n"
+    },
+    {
+      "path": "android/settings.gradle",
+      "content": "rootProject.name = 'rn-bench-app'\ninclude ':app'\n"
+    },
+    {
+      "path": "android/app/build.gradle",
+      "content": "apply plugin: \"com.android.application\"\n\nrepositories {\n  mavenCentral()\n}\n\ndependencies {\n  implementation 'com.facebook.react:react-native:0.74.0'\n}\n"
+    },
+    {
+      "path": "android/app/src/main/AndroidManifest.xml",
+      "content": "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">\n  <application android:label=\"rn-bench-app\">\n  </application>\n</manifest>\n"
+    }
+  ]
+}

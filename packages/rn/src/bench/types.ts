@@ -139,7 +139,14 @@ export interface BenchRunOptions {
   /** scenario id → reference files (M6); runScenario uses the entry for its scenario. */
   references?: Record<string, BenchGeneratedFile[]>
   /** Filter which scenarios run. */
-  filter?: { suite?: string; scaffoldable?: boolean; ids?: string[] }
+  filter?: {
+    suite?: string
+    scaffoldable?: boolean
+    ids?: string[]
+    /** Also run dependency-removal scenarios (scaffoldable=false, but
+     * deterministic via the removal seam). Set by the baseline default. */
+    includeRemovals?: boolean
+  }
   /** Executor for live correctness commands (injectable for tests). */
   runCommand?: (cmd: string, args: string[], opts: { cwd: string }) => Promise<{ success: boolean; exitCode: number; stdout: string; stderr: string }>
   /**

@@ -6,7 +6,7 @@ import { reportError } from '../../utils/safe'
 export const VECTALON_PACKAGE_NAME = '@vectalon-dev/rn'
 export const GENERATED_OUTPUT_DIR = '.vectalon/generated'
 
-const FILE_PATH_RE = /^[A-Za-z0-9_@./-]+\.(?:tsx?|jsx?|ts|js|json|css|scss|swift|kt|java|gradle|plist|podspec|yaml|yml|md|sh|bash|mm|m|h|pbxproj|xml|properties|xcconfig)$/
+const FILE_PATH_RE = /^(?:[A-Za-z0-9_@./-]+\.(?:tsx?|jsx?|ts|js|json|css|scss|swift|kt|java|gradle|kts|plist|podspec|yaml|yml|md|sh|bash|mm|m|h|pbxproj|xml|properties|xcconfig)$|(?:[A-Za-z0-9_@./-]*\/)?Podfile(?:\.lock)?$)/
 
 export function isSafeProjectPath(filePath: string): boolean {
   if (!FILE_PATH_RE.test(filePath)) return false
