@@ -264,6 +264,12 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['score', '--json'],
   },
   {
+    id: 'mode',
+    name: 'Deployment mode (Cloud / Private / Air-gapped — where your source runs)',
+    category: 'cli',
+    args: () => ['mode', '--json'],
+  },
+  {
     id: 'test-repair',
     name: 'Test repair diagnosis (Jest/Detox/Maestro log classification)',
     category: 'analysis',

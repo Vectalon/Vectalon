@@ -457,6 +457,9 @@ export type { ProjectIntelAccess, ApplicationModel } from './intel/model'
 export { runFix, verdictOf, renderFixMarkdown, writeFixReport, fixDocsDir } from './fix'
 export type { FixReport, FixFinding, FixEdit, FixOptions, FixVerdict, FixEvidence, FixVerification } from './fix'
 
+export { MODES, MODE_IDS, MODE_PROVIDERS, MODE_DEFAULT_PROVIDER, modeOfProvider, modeAllows, isDeploymentMode, verifyMode, describeProvider } from './model/mode'
+export type { DeploymentMode, ModeDefinition, ModeCheckResult } from './model/mode'
+
 export { runScore, aggregateOverall, buildRecommendations, renderScoreMarkdown, writeScoreReport, scoreDocsDir, findingKey, priorityOf, verdictOf as scoreVerdictOf, readHistory, writeHistory, collectSourceAndTests } from './score'
 export type { ScoreReport, ScoreDimension, ScoreFinding, ScoreOptions, ScorePriority, ScoreRecommendation, ScoreVerdict, ScoreHistory, ScoreHistoryEntry } from './score'
 

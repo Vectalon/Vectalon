@@ -90,7 +90,8 @@ and already has a baseline for its "↓ N points this week" delta.
 | Option | Description |
 |---|---|
 | `[directory]` | Project root to scan (default: cwd) |
-| `--model <provider>` | Default model provider: `local` \| `wasm` \| `openai` \| `anthropic` \| `azure-openai` \| `groq` \| `ollama` \| `vllm` |
+| `--mode <mode>` | Deployment mode (`cloud` \| `private` \| `air-gapped`) — constrains the provider to the mode's privacy ladder and records it in the manifest |
+| `--model <provider>` | Default model provider: `local` \| `wasm` \| `openai` \| `anthropic` \| `azure-openai` \| `groq` \| `ollama` \| `vllm` (refused when outside `--mode`) |
 | `--resume` | Resume an interrupted init from its last completed phase |
 | `--clean-restart` | Roll back an interrupted init (restore originals) and start over |
 | `--force` | Re-initialize even when the project is already initialized |
@@ -1875,6 +1876,52 @@ npx vectalon models
 | Code | When |
 |---|---|
 | 0 | Always (list printed) |
+
+---
+
+## `mode`
+
+**The deployment-mode surface — where your source runs.** The commercial
+differentiator: your source code stays inside your environment. Shows the
+current mode (from `.vectalon/rn-vectalon.json`, default **air-gapped**),
+verifies the configured model provider is inside it, and lays out the whole
+privacy ladder.
+
+```bash
+npx vectalon mode                  # current mode + the full ladder
+npx vectalon mode --json           # machine-readable: mode, provider, compliance
+npx vectalon mode --set air-gapped # declare a mode (refuses an outside provider)
+```
+
+Three explicit modes, mapping the ModelRouter's providers (local / WASM /
+remote with automatic fallback and circuit breaker) onto a privacy ladder:
+
+| Mode | What runs | What leaves | Providers |
+|---|---|---|---|
+| **Cloud** | Vectalon Cloud / hosted model APIs (OpenAI, Anthropic, Azure, Groq) | Prompts and context go to the model provider you chose | `openai` \| `anthropic` \| `azure-openai` \| `groq` (and any) |
+| **Private** | A company-controlled LLM (Ollama / vLLM on your own infrastructure) | Nothing to third parties — requests stay inside your network | `ollama` \| `vllm` \| `local` \| `wasm` |
+| **Air-gapped** | A local GGUF model (Qwen2.5-Coder) or WASM on the developer machine | Nothing — inference runs entirely on the machine | `local` \| `wasm` |
+
+Modes are **enforced, not labeled**: `vc init --mode private --model openai`
+is refused with the allowed set, `vc mode --set air-gapped` refuses a
+provider outside the mode, and `vc mode` (or `--json`) verifies the
+configured provider against the declared mode with the dataflow line. The
+deterministic agents (review, score, fix, sec, …) need no model at all, so
+the entire control-plane surface works fully air-gapped.
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `--set <mode>` | Declare the deployment mode: `cloud` \| `private` \| `air-gapped` (refuses a provider outside the mode) |
+| `--json` | Print machine-readable output: mode, provider, compliance, dataflow, full ladder |
+
+**Exit codes**
+
+| Code | When |
+|---|---|
+| 0 | Mode shown / set successfully |
+| 1 | Fatal error or refused mode/provider mismatch |
 
 ---
 

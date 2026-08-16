@@ -27,6 +27,8 @@ export interface ProjectManifest {
   modelConfig?: ProjectModelConfig
   /** The usage tier (fast|balanced|quality) init auto-selected for this machine. */
   modelPreset?: string
+  /** Deployment mode (cloud | private | air-gapped) — the privacy ladder. */
+  deploymentMode?: string
   autoLearn?: boolean
 }
 
@@ -66,6 +68,7 @@ export function buildProjectManifest(root: string): ProjectManifest {
     dependencies: Object.keys(info.dependencies).length > 0 ? info.dependencies : undefined,
     initializedAt: stored?.initializedAt ?? Date.now(),
     modelProvider: stored?.modelProvider,
+    deploymentMode: stored?.deploymentMode,
     modelConfig: stored?.modelConfig,
     autoLearn: stored?.autoLearn,
   }

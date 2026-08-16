@@ -80,6 +80,10 @@ const FAQ: Array<{ q: string; a: string }> = [
     a: 'One command: npx vectalon init. It scans your project, seeds the knowledge base, and configures the model silently underneath — no LLM setup is ever asked of you — then ends with the payoff: the scan summary (files, components, screens, native modules, dependencies, navigation stacks, tests, architecture risks), the Vectalon Health Score out of 100, and the Top 5 problems it found, each with its P0/P1/P2 severity. Zero model calls, offline, deterministic.',
   },
   {
+    q: 'Does my source code leave my machine?',
+    a: 'Only if you choose it to. Vectalon runs in three explicit, enforced deployment modes: Cloud (hosted models — prompts go to the provider you pick), Private (a company-controlled Ollama or vLLM — nothing leaves your network), and Air-gapped (a local Qwen2.5-Coder model or WASM on the developer machine — nothing leaves the machine at all). The mode is declared in the manifest and enforced: a provider outside your mode is refused. And the 44 deterministic agents need no model whatsoever, so the whole control plane — review, score, fix, security, upgrade — works fully air-gapped.',
+  },
+  {
     q: 'What does it cost, and what’s the license?',
     a: 'The free tier is genuinely useful — init, serve, feature, doctor, and all 44 agents, no card. Pro $19/mo, All-Access $49/mo, Team $99/seat/mo, each with a 14-day trial. Business Source License 1.1: free for personal, education, and OSS use and teams up to three devs; MIT after four years.',
   },

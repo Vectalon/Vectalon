@@ -38,6 +38,7 @@ import { secCommand } from './commands/sec'
 import { buildFixCommand, forcedKind } from './commands/buildFix'
 import { fixCommand } from './commands/fix'
 import { scoreCommand } from './commands/score'
+import { modeCommand } from './commands/mode'
 import { testRepairCommand, forcedKind as forcedTestKind } from './commands/testRepair'
 import { refactorCommand } from './commands/refactor'
 import { depsCommand } from './commands/deps'
@@ -119,6 +120,7 @@ export function createProgram(): Command {
     .command('init')
     .description('Initialize vectalon in your React Native project')
     .argument('[directory]', 'Project root directory')
+    .option('--mode <mode>', 'Deployment mode (cloud | private | air-gapped) — constrains the provider to the mode\'s privacy ladder')
     .option('--model <provider>', 'Default model provider (local|wasm|openai|anthropic|azure-openai|ollama|vllm|groq)')
     .option('--preset <id>', 'Local model preset for the local provider: usage tier (fast|balanced|quality) or model id (qwen2.5-coder-3b|qwen2.5-coder-7b); defaults to the tier auto-selected for this machine\'s RAM')
     .option('--resume', 'Resume an interrupted init from its last completed phase')
@@ -472,6 +474,13 @@ export function createProgram(): Command {
     .option('--json', 'Print machine-readable output')
     .action((options: { audit?: boolean; json?: boolean }) =>
       scoreCommand({ ...options, skipAudit: !options.audit }))
+
+  program
+    .command('mode')
+    .description('The deployment-mode surface (Cloud / Private / Air-gapped): where your source runs. Shows the current mode from .vectalon/rn-vectalon.json, verifies the configured model provider is inside it, and lays out the whole privacy ladder — cloud (hosted models) → private (company-controlled LLM) → air-gapped (local model, nothing leaves the machine)')
+    .option('--set <mode>', 'Set the deployment mode: cloud | private | air-gapped (refuses a provider outside the mode)')
+    .option('--json', 'Print machine-readable output')
+    .action((options: { set?: string; json?: boolean }) => modeCommand(options))
 
   program
     .command('test-repair [directory]')
@@ -1058,6 +1067,7 @@ async function runInteractive(): Promise<void> {
       { value: 'init', label: 'Initialize a project', hint: 'Scan React Native project and create .vectalon/' },
       { value: 'fix', label: 'Fix my React Native issue', hint: 'THE workflow — root cause → fix → verify → diff (killer P0)' },
       { value: 'score', label: 'Show the Engineering Health Score', hint: 'One 0-100 number — 8 dimensions, delta, P0/P1/P2 actions' },
+      { value: 'mode', label: 'Show the deployment mode', hint: 'Cloud / Private / Air-gapped — where your source runs' },
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Force refresh knowledge', hint: refreshHint },
       { value: 'suggestions', label: suggestionCount > 0 ? `View suggestions (${suggestionCount})` : 'View suggestions', hint: 'Improvement suggestions from the knowledge refresh' },
@@ -1649,6 +1659,12 @@ async function runInteractive(): Promise<void> {
   if (action === 'score') {
     await scoreCommand({})
     p.outro('Engineering Health Score complete')
+    return
+  }
+
+  if (action === 'mode') {
+    await modeCommand({})
+    p.outro('Deployment mode shown above')
     return
   }
 

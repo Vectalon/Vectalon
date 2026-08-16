@@ -42,6 +42,7 @@ import { resolveProjectModelProvider, resolveProjectModelConfig, readProjectMani
 import { runScore } from '../../score'
 import { renderPovWindow } from '../../score/pov'
 import { readProjectIntel } from '../../intel/model'
+import { isDeploymentMode, MODE_DEFAULT_PROVIDER, MODE_PROVIDERS, MODES } from '../../model/mode'
 import { warnIfRnVersionAhead } from '../../upgrade/drift'
 import {
   detectInitState,
@@ -55,6 +56,8 @@ import {
 import type { InitPhase, InitStateFile } from './init/transaction'
 
 export interface InitOptions {
+  /** Deployment mode (cloud | private | air-gapped) — constrains the provider. */
+  mode?: string
   /** Default model provider (local|wasm|openai|anthropic|azure-openai|ollama|vllm|groq). */
   model?: string
   /**
@@ -270,6 +273,7 @@ async function runInitPhases(
 
   // --- phase: manifest ---
   if (!resumeFrom.has('manifest')) {
+    const deploymentMode = options.mode && isDeploymentMode(options.mode) ? options.mode : undefined
     writeFileSync(
       join(vectalonDir, 'rn-vectalon.json'),
       JSON.stringify({
@@ -282,6 +286,7 @@ async function runInitPhases(
         modelProvider: model.provider,
         ...(model.modelConfig ? { modelConfig: model.modelConfig } : {}),
         ...(model.modelPreset ? { modelPreset: model.modelPreset } : {}),
+        ...(deploymentMode ? { deploymentMode } : {}),
         autoLearn: true,
       }, null, 2)
     )
@@ -434,6 +439,11 @@ function logModelSetup(model: ResolvedModelSetup): void {
  */
 async function setupModelProvider(options: InitOptions): Promise<ResolvedModelSetup> {
   const requested = typeof options.model === 'string' && options.model.trim() ? options.model.trim() : undefined
+  // --mode constrains the provider to the mode's allowed set (the privacy ladder).
+  const mode = typeof options.mode === 'string' && isDeploymentMode(options.mode) ? options.mode : undefined
+  if (mode && requested && !MODE_PROVIDERS[mode].includes(requested as ModelSetupProvider)) {
+    throw new Error(`Provider ${requested} is not allowed in ${mode} mode — allowed: ${MODE_PROVIDERS[mode].join(', ')} (${MODES[mode].tagline})`)
+  }
 
   if (requested) {
     if (!isModelSetupProvider(requested)) {
@@ -448,9 +458,12 @@ async function setupModelProvider(options: InitOptions): Promise<ResolvedModelSe
 
   const interactive = process.stdin.isTTY === true
   if (!interactive) {
-    // Non-interactive default: local provider with the RAM auto-selected
-    // model tier (enriched to modelConfig.modelName in the model phase).
-    return { provider: 'local', modelConfig: undefined }
+    // Non-interactive default: the mode's recommended provider (local for
+    // air-gapped/private, openai for cloud), enriched in the model phase.
+    if (mode && MODE_DEFAULT_PROVIDER[mode] === 'local') {
+      return { provider: 'local', modelConfig: undefined }
+    }
+    return { provider: mode ? MODE_DEFAULT_PROVIDER[mode] : 'local', modelConfig: undefined }
   }
 
   const p = await dynamicImport<typeof import('@clack/prompts')>('@clack/prompts')
