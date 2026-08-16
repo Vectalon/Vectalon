@@ -7,27 +7,27 @@
       "suite": "forms-security",
       "scaffoldable": true,
       "generatedFiles": [
-        "src/LoginScreenEmailPassword.tsx",
-        "src/AuthContext.tsx",
-        "src/App.tsx"
+        "src/screens/CreateLoginScreenEmailPassword/index.tsx",
+        "src/screens/CreateLoginScreenEmailPassword/hooks/useAuth.tsx",
+        "src/screens/CreateLoginScreenEmailPassword/api.tsx"
       ],
       "guardrail": [
         {
-          "path": "src/LoginScreenEmailPassword.tsx",
+          "path": "src/screens/CreateLoginScreenEmailPassword/index.tsx",
           "passed": 25,
           "failed": 2,
           "skipped": 9,
           "ok": false
         },
         {
-          "path": "src/AuthContext.tsx",
-          "passed": 24,
-          "failed": 1,
+          "path": "src/screens/CreateLoginScreenEmailPassword/hooks/useAuth.tsx",
+          "passed": 23,
+          "failed": 2,
           "skipped": 11,
           "ok": false
         },
         {
-          "path": "src/App.tsx",
+          "path": "src/screens/CreateLoginScreenEmailPassword/api.tsx",
           "passed": 24,
           "failed": 1,
           "skipped": 11,
@@ -35,15 +35,15 @@
         }
       ],
       "axes": {
-        "correctness": 0.5,
-        "adherence": 0.6363636363636364,
-        "guardrails": 0.948051948051948
+        "correctness": 0.75,
+        "adherence": 0.6666666666666666,
+        "guardrails": 0.935064935064935
       },
-      "composite": 0.6753246753246753,
+      "composite": 0.7805194805194805,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "- Lint: passed"
       ],
       "reference": {
         "files": [
@@ -58,9 +58,9 @@
         "composite": 0.841897233201581,
         "relative": {
           "correctness": null,
-          "adherence": 0.875,
-          "guardrails": 0.9911452184179457,
-          "composite": 0.8021462105969148
+          "adherence": 0.9166666666666666,
+          "guardrails": 0.9775678866587957,
+          "composite": 0.9270959087860496
         }
       }
     },
@@ -71,30 +71,30 @@
       "scaffoldable": true,
       "generatedFiles": [
         "src/screens/CreateScreenThatFetchesPaginated.tsx",
-        "src/hooks/useApi.tsx"
+        "src/hooks/useFetchPaginatedData.ts"
       ],
       "guardrail": [
         {
           "path": "src/screens/CreateScreenThatFetchesPaginated.tsx",
-          "passed": 22,
-          "failed": 4,
-          "skipped": 10,
+          "passed": 24,
+          "failed": 1,
+          "skipped": 11,
           "ok": false
         },
         {
-          "path": "src/hooks/useApi.tsx",
-          "passed": 23,
-          "failed": 2,
-          "skipped": 11,
+          "path": "src/hooks/useFetchPaginatedData.ts",
+          "passed": 17,
+          "failed": 1,
+          "skipped": 18,
           "ok": false
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.4,
-        "guardrails": 0.8823529411764706
+        "adherence": 0.6666666666666666,
+        "guardrails": 0.9534883720930233
       },
-      "composite": 0.5847058823529412,
+      "composite": 0.686046511627907,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -112,9 +112,9 @@
         "composite": 0.9093406593406593,
         "relative": {
           "correctness": null,
-          "adherence": 0.46666666666666673,
-          "guardrails": 0.9176470588235294,
-          "composite": 0.6429998222854096
+          "adherence": 0.7777777777777778,
+          "guardrails": 0.9916279069767442,
+          "composite": 0.7544438979835594
         }
       }
     },
@@ -122,6 +122,53 @@
       "id": "rn-03-dark-mode-component",
       "title": "Themed card component honoring dark mode",
       "suite": "core-ui",
+      "scaffoldable": false,
+      "generatedFiles": [
+        "src/components/ReusableCardComponentTha.tsx"
+      ],
+      "guardrail": [
+        {
+          "path": "src/components/ReusableCardComponentTha.tsx",
+          "passed": 25,
+          "failed": 0,
+          "skipped": 11,
+          "ok": true
+        }
+      ],
+      "axes": {
+        "correctness": 0.5,
+        "adherence": 1,
+        "guardrails": 1
+      },
+      "composite": 0.8,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: failed (exit 2)",
+        "- Lint: failed (exit 1)"
+      ],
+      "reference": {
+        "files": [
+          "src/theme/tokens.ts",
+          "src/components/ThemeCard.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1,
+          "composite": 0.8
+        }
+      }
+    },
+    {
+      "id": "rn-04-typed-navigation",
+      "title": "Settings stack with typed route params and deep links",
+      "suite": "navigation",
       "scaffoldable": false,
       "generatedFiles": [],
       "guardrail": [],
@@ -138,8 +185,9 @@
       ],
       "reference": {
         "files": [
-          "src/theme/tokens.ts",
-          "src/components/ThemeCard.tsx"
+          "src/navigation/types.ts",
+          "src/navigation/linking.ts",
+          "src/screens/SettingsScreen.tsx"
         ],
         "axes": {
           "correctness": null,
@@ -156,96 +204,22 @@
       }
     },
     {
-      "id": "rn-04-typed-navigation",
-      "title": "Settings stack with typed route params and deep links",
-      "suite": "navigation",
-      "scaffoldable": false,
-      "generatedFiles": [
-        "src/navigation/SettingsNavigationStackU.tsx",
-        "src/navigation/SettingsNavigationStackU.ts"
-      ],
-      "guardrail": [
-        {
-          "path": "src/navigation/SettingsNavigationStackU.tsx",
-          "passed": 24,
-          "failed": 1,
-          "skipped": 11,
-          "ok": false
-        },
-        {
-          "path": "src/navigation/SettingsNavigationStackU.ts",
-          "passed": 16,
-          "failed": 2,
-          "skipped": 18,
-          "ok": false
-        }
-      ],
-      "axes": {
-        "correctness": 0.5,
-        "adherence": null,
-        "guardrails": 0.9302325581395349
-      },
-      "composite": 0.6843853820598007,
-      "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
-      ],
-      "reference": {
-        "files": [
-          "src/navigation/types.ts",
-          "src/navigation/linking.ts",
-          "src/screens/SettingsScreen.tsx"
-        ],
-        "axes": {
-          "correctness": null,
-          "adherence": 1,
-          "guardrails": 1
-        },
-        "composite": 1,
-        "relative": {
-          "correctness": null,
-          "adherence": null,
-          "guardrails": 0.9302325581395349,
-          "composite": 0.6843853820598007
-        }
-      }
-    },
-    {
       "id": "rn-05-form-validation",
       "title": "Multi-field form with validation and secure persistence",
       "suite": "forms-security",
       "scaffoldable": true,
-      "generatedFiles": [
-        "src/components/CreateMultiFieldFormClient.tsx",
-        "src/components/CreateMultiFieldFormClient.test.tsx"
-      ],
-      "guardrail": [
-        {
-          "path": "src/components/CreateMultiFieldFormClient.tsx",
-          "passed": 25,
-          "failed": 2,
-          "skipped": 9,
-          "ok": false
-        },
-        {
-          "path": "src/components/CreateMultiFieldFormClient.test.tsx",
-          "passed": 25,
-          "failed": 1,
-          "skipped": 10,
-          "ok": false
-        }
-      ],
+      "generatedFiles": [],
+      "guardrail": [],
       "axes": {
-        "correctness": 0,
-        "adherence": 0.4444444444444444,
-        "guardrails": 0.9433962264150944
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
       },
-      "composite": 0.41635220125786165,
+      "composite": 1,
       "correctnessDetails": [
-        "- Tests: failed (exit 1)",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: passed"
       ],
       "reference": {
         "files": [
@@ -260,9 +234,9 @@
         "composite": 0.8565217391304347,
         "relative": {
           "correctness": null,
-          "adherence": 0.5555555555555555,
-          "guardrails": 1.0332434860736748,
-          "composite": 0.48609647862592986
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.1675126903553301
         }
       }
     },
@@ -271,28 +245,18 @@
       "title": "Offline-first action queue with optimistic UI",
       "suite": "data-flow",
       "scaffoldable": true,
-      "generatedFiles": [
-        "src/CreateOfflineFirstActionQueue.ts"
-      ],
-      "guardrail": [
-        {
-          "path": "src/CreateOfflineFirstActionQueue.ts",
-          "passed": 16,
-          "failed": 2,
-          "skipped": 18,
-          "ok": false
-        }
-      ],
+      "generatedFiles": [],
+      "guardrail": [],
       "axes": {
-        "correctness": 0.5,
-        "adherence": 0,
-        "guardrails": 0.8888888888888888
+        "correctness": 1,
+        "adherence": null,
+        "guardrails": null
       },
-      "composite": 0.4666666666666667,
+      "composite": 1,
       "correctnessDetails": [
         "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "- Type check: passed",
+        "- Lint: passed"
       ],
       "reference": {
         "files": [
@@ -307,9 +271,9 @@
         "composite": 0.6772727272727274,
         "relative": {
           "correctness": null,
-          "adherence": 0,
-          "guardrails": 0.9312169312169312,
-          "composite": 0.6890380313199105
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1.4765100671140938
         }
       }
     },
@@ -320,40 +284,32 @@
       "scaffoldable": false,
       "generatedFiles": [
         "src/CreatePerformantImageFeedFlatl.tsx",
-        "src/useImageCache.ts",
-        "src/useAsyncStorage.ts"
+        "src/CreatePerformantImageFeedFlatl.test.tsx"
       ],
       "guardrail": [
         {
           "path": "src/CreatePerformantImageFeedFlatl.tsx",
-          "passed": 23,
-          "failed": 3,
+          "passed": 22,
+          "failed": 4,
           "skipped": 10,
           "ok": false
         },
         {
-          "path": "src/useImageCache.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
-          "ok": true
-        },
-        {
-          "path": "src/useAsyncStorage.ts",
-          "passed": 17,
-          "failed": 1,
-          "skipped": 18,
+          "path": "src/CreatePerformantImageFeedFlatl.test.tsx",
+          "passed": 23,
+          "failed": 2,
+          "skipped": 11,
           "ok": false
         }
       ],
       "axes": {
-        "correctness": 0.5,
+        "correctness": 0,
         "adherence": 0.625,
-        "guardrails": 0.9354838709677419
+        "guardrails": 0.8823529411764706
       },
-      "composite": 0.6681451612903226,
+      "composite": 0.4522058823529412,
       "correctnessDetails": [
-        "- Tests: passed",
+        "- Tests: failed (exit 1)",
         "- Type check: failed (exit 2)",
         "- Lint: failed (exit 1)"
       ],
@@ -371,8 +327,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0.9375,
-          "guardrails": 0.9736668861092823,
-          "composite": 0.8210940536338905
+          "guardrails": 0.9183673469387754,
+          "composite": 0.5557228915662652
         }
       }
     },
@@ -380,62 +336,6 @@
       "id": "rn-08-feature-flags",
       "title": "Feature-flag wrapper component and hook",
       "suite": "core-ui",
-      "scaffoldable": false,
-      "generatedFiles": [
-        "src/components/FeatureFlag.tsx",
-        "src/hooks/useFeatureFlag.ts"
-      ],
-      "guardrail": [
-        {
-          "path": "src/components/FeatureFlag.tsx",
-          "passed": 24,
-          "failed": 1,
-          "skipped": 11,
-          "ok": false
-        },
-        {
-          "path": "src/hooks/useFeatureFlag.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
-          "ok": true
-        }
-      ],
-      "axes": {
-        "correctness": 0.5,
-        "adherence": 1,
-        "guardrails": 0.9767441860465116
-      },
-      "composite": 0.7930232558139534,
-      "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
-      ],
-      "reference": {
-        "files": [
-          "src/config/flags.ts",
-          "src/hooks/useFeatureFlag.ts",
-          "src/components/FeatureGate.tsx"
-        ],
-        "axes": {
-          "correctness": null,
-          "adherence": null,
-          "guardrails": 1
-        },
-        "composite": 1,
-        "relative": {
-          "correctness": null,
-          "adherence": null,
-          "guardrails": 0.9767441860465116,
-          "composite": 0.7930232558139534
-        }
-      }
-    },
-    {
-      "id": "rn-09-accessible-form",
-      "title": "Screen-reader-friendly onboarding form",
-      "suite": "a11y",
       "scaffoldable": false,
       "generatedFiles": [],
       "guardrail": [],
@@ -452,6 +352,54 @@
       ],
       "reference": {
         "files": [
+          "src/config/flags.ts",
+          "src/hooks/useFeatureFlag.ts",
+          "src/components/FeatureGate.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": 1
+        }
+      }
+    },
+    {
+      "id": "rn-09-accessible-form",
+      "title": "Screen-reader-friendly onboarding form",
+      "suite": "a11y",
+      "scaffoldable": false,
+      "generatedFiles": [
+        "src/onboarding/CreateFullyAccessibleOnboarding.tsx"
+      ],
+      "guardrail": [
+        {
+          "path": "src/onboarding/CreateFullyAccessibleOnboarding.tsx",
+          "passed": 24,
+          "failed": 3,
+          "skipped": 9,
+          "ok": false
+        }
+      ],
+      "axes": {
+        "correctness": 0.5,
+        "adherence": 0.75,
+        "guardrails": 0.8888888888888888
+      },
+      "composite": 0.6916666666666667,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: failed (exit 2)",
+        "- Lint: failed (exit 1)"
+      ],
+      "reference": {
+        "files": [
           "src/screens/OnboardingScreen.tsx"
         ],
         "axes": {
@@ -462,9 +410,9 @@
         "composite": 0.9017857142857144,
         "relative": {
           "correctness": null,
-          "adherence": null,
-          "guardrails": null,
-          "composite": 1.1089108910891088
+          "adherence": 0.8571428571428571,
+          "guardrails": 0.9572649572649572,
+          "composite": 0.7669966996699669
         }
       }
     },
@@ -473,27 +421,17 @@
       "title": "Convert class/JS component to typed hooks",
       "suite": "refactor",
       "scaffoldable": false,
-      "generatedFiles": [
-        "src/components/ConvertLegacyProfileComponentC.tsx"
-      ],
-      "guardrail": [
-        {
-          "path": "src/components/ConvertLegacyProfileComponentC.tsx",
-          "passed": 24,
-          "failed": 2,
-          "skipped": 10,
-          "ok": false
-        }
-      ],
+      "generatedFiles": [],
+      "guardrail": [],
       "axes": {
-        "correctness": 0.5,
-        "adherence": 0.3333333333333333,
-        "guardrails": 0.9230769230769231
+        "correctness": 0.75,
+        "adherence": null,
+        "guardrails": null
       },
-      "composite": 0.5769230769230769,
+      "composite": 0.7500000000000001,
       "correctnessDetails": [
         "- Tests: passed",
-        "- Type check: failed (exit 2)",
+        "- Type check: passed",
         "- Lint: failed (exit 1)"
       ],
       "reference": {
@@ -508,9 +446,9 @@
         "composite": 0.8557692307692307,
         "relative": {
           "correctness": null,
-          "adherence": 0.4444444444444444,
-          "guardrails": 0.9600000000000001,
-          "composite": 0.6741573033707865
+          "adherence": null,
+          "guardrails": null,
+          "composite": 0.8764044943820226
         }
       }
     },
@@ -554,25 +492,33 @@
       "suite": "data-flow",
       "scaffoldable": true,
       "generatedFiles": [
-        "src/AddNotificationsScreenThatFetc.tsx"
+        "src/AddNotificationsScreenThatFetc.tsx",
+        "src/AddNotificationsScreenThatFetc.test.tsx"
       ],
       "guardrail": [
         {
           "path": "src/AddNotificationsScreenThatFetc.tsx",
-          "passed": 23,
-          "failed": 3,
+          "passed": 24,
+          "failed": 2,
           "skipped": 10,
+          "ok": false
+        },
+        {
+          "path": "src/AddNotificationsScreenThatFetc.test.tsx",
+          "passed": 24,
+          "failed": 1,
+          "skipped": 11,
           "ok": false
         }
       ],
       "axes": {
-        "correctness": 0.5,
-        "adherence": 0.6,
-        "guardrails": 0.8846153846153846
+        "correctness": 0,
+        "adherence": 0.6666666666666666,
+        "guardrails": 0.9411764705882353
       },
-      "composite": 0.6453846153846154,
+      "composite": 0.48235294117647054,
       "correctnessDetails": [
-        "- Tests: passed",
+        "- Tests: failed (exit 1)",
         "- Type check: failed (exit 2)",
         "- Lint: failed (exit 1)"
       ],
@@ -589,9 +535,9 @@
         "composite": 0.888888888888889,
         "relative": {
           "correctness": null,
-          "adherence": 0.7714285714285714,
-          "guardrails": 0.8846153846153846,
-          "composite": 0.7260576923076923
+          "adherence": 0.8571428571428571,
+          "guardrails": 0.9411764705882353,
+          "composite": 0.5426470588235294
         }
       }
     },
@@ -601,23 +547,23 @@
       "suite": "forms-security",
       "scaffoldable": true,
       "generatedFiles": [
-        "src/components/AddAccountDeletionConfirmation.tsx"
+        "src/AddAccountDeletionConfirmation.tsx"
       ],
       "guardrail": [
         {
-          "path": "src/components/AddAccountDeletionConfirmation.tsx",
-          "passed": 23,
-          "failed": 3,
+          "path": "src/AddAccountDeletionConfirmation.tsx",
+          "passed": 25,
+          "failed": 1,
           "skipped": 10,
           "ok": false
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.6666666666666666,
-        "guardrails": 0.8846153846153846
+        "adherence": 1,
+        "guardrails": 0.9615384615384616
       },
-      "composite": 0.6653846153846155,
+      "composite": 0.7884615384615384,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -636,9 +582,9 @@
         "composite": 0.888888888888889,
         "relative": {
           "correctness": null,
-          "adherence": 0.8571428571428571,
-          "guardrails": 0.8846153846153846,
-          "composite": 0.7485576923076923
+          "adherence": 1.2857142857142856,
+          "guardrails": 0.9615384615384616,
+          "composite": 0.8870192307692307
         }
       }
     }
@@ -651,8 +597,8 @@
         "rn-05-form-validation",
         "rn-13-account-delete-screen"
       ],
-      "composite": 0.5856871639890507,
-      "guardrails": 0.9253545196941424
+      "composite": 0.8563270063270063,
+      "guardrails": 0.9483016983016983
     },
     {
       "suite": "data-flow",
@@ -661,8 +607,8 @@
         "rn-06-offline-queue",
         "rn-12-notifications-screen"
       ],
-      "composite": 0.5655857214680744,
-      "guardrails": 0.8852857382269147
+      "composite": 0.7227998176014592,
+      "guardrails": 0.9473324213406293
     },
     {
       "suite": "core-ui",
@@ -670,32 +616,32 @@
         "rn-03-dark-mode-component",
         "rn-08-feature-flags"
       ],
-      "composite": 0.8965116279069767,
-      "guardrails": 0.9767441860465116
+      "composite": 0.9,
+      "guardrails": 1
     },
     {
       "suite": "navigation",
       "scenarioIds": [
         "rn-04-typed-navigation"
       ],
-      "composite": 0.6843853820598007,
-      "guardrails": 0.9302325581395349
+      "composite": 1,
+      "guardrails": null
     },
     {
       "suite": "perf",
       "scenarioIds": [
         "rn-07-image-feed"
       ],
-      "composite": 0.6681451612903226,
-      "guardrails": 0.9354838709677419
+      "composite": 0.4522058823529412,
+      "guardrails": 0.8823529411764706
     },
     {
       "suite": "a11y",
       "scenarioIds": [
         "rn-09-accessible-form"
       ],
-      "composite": 1,
-      "guardrails": null
+      "composite": 0.6916666666666667,
+      "guardrails": 0.8888888888888888
     },
     {
       "suite": "refactor",
@@ -703,12 +649,12 @@
         "rn-10-refactor-hooks-ts",
         "rn-11-remove-dependency-native"
       ],
-      "composite": 0.5769230769230769,
-      "guardrails": 0.9230769230769231
+      "composite": 0.7500000000000001,
+      "guardrails": null
     }
   ],
-  "overallComposite": 0.6813579610382107,
-  "overallGuardrails": 0.9197458311993885,
+  "overallComposite": 0.7859377517337504,
+  "overallGuardrails": 0.9375014384785736,
   "overallReferenceComposite": 0.8941903990276014,
-  "overallRelativeComposite": 0.7647055677842575
+  "overallRelativeComposite": 0.8961960782875039
 }
