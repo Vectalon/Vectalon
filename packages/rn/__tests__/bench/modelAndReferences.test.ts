@@ -226,6 +226,46 @@ describe('bench model generate seam (M5)', () => {
     ])
   })
 
+  it('salvages complete file objects from a corrupt JSON envelope (the rn-43 failure mode)', () => {
+    // The 7B emitted both required files as valid objects, then appended a
+    // bare Gradle fragment inside the files array — breaking strict JSON.parse
+    // AND the template-literal repair. Every complete file object is still a
+    // real repair, so the parser must collect them and drop the corrupt tail.
+    // Reconstruct the exact rn-43 shape: two complete file objects (content
+    // carries real escaped newlines/quotes) followed by a bare Gradle fragment
+    // the model appended inside the files array.
+    const settingsContent = "rootProject.name = 'rn-bench-app'\ninclude ':app'\n"
+    const gradleContent = 'apply plugin: "com.android.application"\n' + 'def enableProguardInReleaseBuilds = false\n'
+    const settingsObj = JSON.stringify({ path: 'android/settings.gradle', content: settingsContent })
+    const gradleObj = JSON.stringify({ path: 'android/app/build.gradle', content: gradleContent })
+    const corrupt = [
+      '```json',
+      '{',
+      '  "files": [',
+      '    ' + settingsObj + ',',
+      '    ' + gradleObj + ',',
+      '    dependencies {',
+      "      implementation project(':react-native-vector-icons')",
+      '    }',
+      '  ]',
+      '}',
+      '```',
+    ].join('\n')
+    const parsed = parseModelOutput(corrupt)
+    expect(parsed).not.toBeNull()
+    expect(parsed?.files.map(f => f.path).sort()).toEqual([
+      'android/app/build.gradle',
+      'android/settings.gradle',
+    ])
+  })
+
+  it('salvages backtick-quoted file objects from a corrupt envelope too', () => {
+    const corrupt =
+      '```json\n{\n  "files": [\n    { "path": "src/screens/HomeScreen.tsx", "content": `import React from \'react\';` },\n    broken-tail {\n  ]\n}\n```'
+    const parsed = parseModelOutput(corrupt)
+    expect(parsed?.files.map(f => f.path)).toEqual(['src/screens/HomeScreen.tsx'])
+  })
+
   it('scores a removal scenario through the model seam end-to-end', async () => {
     const refs = loadReferences(defaultReferencesDir())
     const referenceFiles = refs.references.get('rn-11-remove-dependency-native')

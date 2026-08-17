@@ -814,7 +814,7 @@ export default function BenchmarksPage() {
           <span className="text-slate-300">  Testing (9) · Performance (10) · Security (4) · Upgrades (4) ·</span>{'\n'}
           <span className="text-slate-300">  Debugging (4)</span>{'\n'}
           <span className="text-slate-300">  Vectalon            100%  100%   99%  100%  100%  100%  100%  100%</span>{'\n'}
-          <span className="text-slate-300">  Generic LLM (7B)     96%  100%    —  100%   98%   90%    —    —</span>{'\n'}
+          <span className="text-slate-300">  Generic LLM (7B)     96%  100%    —  100%   98%   90%   80%   59%</span>{'\n'}
           <span className="text-slate-300">  Generic LLM (3B)     63%    —    —    —    —   72%    —    —</span>{'\n'}
           <span className="text-slate-300">  Generic LLM (1.5B)   89%   88%    —   74%   74%   73%    —    —</span>{'\n'}
           <span className="text-slate-300">  Human                92%   85%   99%   82%   86%   85%  100%  100%</span>{'\n'}

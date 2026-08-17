@@ -7,7 +7,7 @@
  */
 import { execFileSync } from 'child_process'
 import { createHmac, generateKeyPairSync } from 'crypto'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import { processPullRequestWebhook, runGhAppServer, silentLog, type GhAppRuntime, type MirrorOps } from '../../src/ghApp'
@@ -23,7 +23,12 @@ function git(dir: string, ...args: string[]): void {
 /** A real git repo: base on main, a feature branch introducing findings. */
 function makeRepo(): string {
   const root = mkdtempSync(join(tmpdir(), 'vectalon-ghapp-'))
-  git(root, 'init', '-q')
+  // Pin the initial branch to `main` so the diff resolution's `main...HEAD`
+  // base ref resolves identically on every machine — without `-b`, the repo
+  // inherits the runner's `init.defaultBranch` (master on CI Ubuntu), the
+  // merge-base diff silently comes up empty, and the review degrades to
+  // "no diff" (commentPosted stays false).
+  git(root, 'init', '-q', '-b', 'main')
   git(root, 'config', 'user.email', 't@t')
   git(root, 'config', 'user.name', 't')
   git(root, 'remote', 'add', 'origin', 'https://github.com/acme/demo-app.git')
@@ -46,7 +51,7 @@ function makeRepo(): string {
   // Findings: render-phase setState (perf), a live secret (security), untested files (testing).
   write('src/App.tsx', "import { View } from 'react-native'\nexport const App = () => {\n  setLoading(true)\n  return <View />\n}\n")
   write('src/api/client.ts', "export const client = {\n  apiKey: 'sk_live_1234567890abcdef',\n}\n")
-  write('src/hooks/useCart.ts', "export function useCart() {\n  return { items: [] }\n}\n")
+  write('src/hooks/useCart.ts', 'export function useCart() {\n  return { items: [] }\n}\n')
   git(root, 'add', '-A')
   git(root, 'commit', '-qm', 'add cart')
   return root

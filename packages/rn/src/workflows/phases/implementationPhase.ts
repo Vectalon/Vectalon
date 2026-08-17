@@ -184,7 +184,39 @@ function extractJsonFiles(content: string): GeneratedImplementation | null {
     }
   }
 
+  // Third attempt — salvage complete file objects from a corrupt envelope.
+  // Small models sometimes emit the full repair as valid `{"path",
+  // "content"}` objects and then break the envelope (e.g. a bare code
+  // fragment appended inside the files array, or a truncated tail). Every
+  // complete file object is still a real, complete repair — collect the ones
+  // that parse and drop the corrupt remainder, exactly like the backtick
+  // repair above.
+  const salvaged = extractSalvageableFileObjects(jsonText)
+  if (salvaged) return salvaged
+
   return null
+}
+
+/**
+ * Collect every complete `{"path": "...", "content": "..."}` object from a
+ * partially-corrupt JSON envelope. The content value may be a normal JSON
+ * string (with escapes) or a backtick template literal; the surrounding
+ * envelope (broken trailing elements, stray code after the array) is ignored.
+ * Only returns when at least one well-formed file object was found.
+ */
+function extractSalvageableFileObjects(text: string): GeneratedImplementation | null {
+  const fileRe =
+    /\{\s*"path"\s*:\s*"([^"]+)"\s*,\s*"content"\s*:\s*(?:"((?:\\.|[^"\\])*)"|`((?:\\.|[^`\\])*)`)\s*\}/g
+  const files: GeneratedFile[] = []
+  let match: RegExpExecArray | null
+  while ((match = fileRe.exec(text)) !== null) {
+    const path = match[1]
+    const content = match[2] ?? match[3] ?? ''
+    if (isSafeProjectPath(path) && typeof content === 'string') {
+      files.push({ path, content })
+    }
+  }
+  return files.length > 0 ? { files } : null
 }
 
 function normalizeMarkdownPath(raw: string): string {

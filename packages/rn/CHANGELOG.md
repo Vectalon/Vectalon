@@ -60,11 +60,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   broken text gone). The upgrades and debugging dimensions now aggregate
   real tasks: the Vectalon row reads the committed baseline fix-seam runs
   (100/100 both), the Human row reads the reference composites (100/100),
-  and the 7B quality tier scored the new scenarios live (upgrades 100%
-  from rn-36, debugging 63% from rn-40 — a coverage guard renders a
-  dimension pending unless ≥ half its scenarios were scored, so a lucky
-  single scenario can't masquerade as a full score). Baseline gate
-  extends to 17 deterministic runs; 8 new hermetic fix-seam tests.
+  and the 7B quality tier scored the new scenarios live across the full
+  4/4 coverage on both dimensions (upgrades 80%, debugging 59% — a
+  coverage guard renders a dimension pending unless ≥ half its scenarios
+  were scored, so a lucky single scenario can't masquerade as a full
+  score). Baseline gate extends to 17 deterministic runs; 8 new hermetic
+  fix-seam tests.
+- **Local model reliability — multi-scenario runs no longer fail after
+  the first generation.** The shared inference engine leaked a fresh VRAM
+  context per generation, so the 7B tier failed every scenario after the
+  first with "context size … too large for the available VRAM" (the 1.5B
+  just hid it by fitting several leaked contexts). Each inference now
+  disposes its context on the way out; anti-repetition sampling (minP +
+  a wide repeat-penalty window) stops Qwen2.5-Coder's broken-record
+  loops on long fixture-injected replies; and the model-output parser
+  salvages complete file objects from a corrupt envelope — a stray code
+  fragment appended to an otherwise-valid repair no longer loses the
+  whole run. This is what made the 7B full-coverage upgrades/debugging
+  scores possible.
 
 ## [0.13.0] - 2026-08-16
 

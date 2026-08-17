@@ -364,16 +364,52 @@ export async function runInference(modelId: string, options: InferenceOptions): 
       const Grammar = nlc.LlamaJsonSchemaGrammar as unknown as GrammarCtor
       const grammar = options.grammarSchema ? new Grammar(llama, options.grammarSchema) : undefined
 
-      const response = await session.prompt(options.prompt, {
-        temperature: options.temperature ?? 0.2,
-        maxTokens: options.maxTokens ?? 2048,
-        ...(grammar ? { grammar } : {}),
-        ...(options.onTextChunk ? { onTextChunk: options.onTextChunk } : {}),
-      })
+      try {
+        const response = await session.prompt(options.prompt, {
+          temperature: options.temperature ?? 0.2,
+          maxTokens: options.maxTokens ?? 2048,
+          // Anti-repetition sampling: Qwen2.5-Coder's known failure mode on long
+          // outputs (e.g. multi-file benchmark replies) is a broken-record loop
+          // that echoes recent fixture text until maxTokens — the result never
+          // forms valid JSON and the run scores 0 files. minP prunes the
+          // low-probability tail and a wide repeat window with frequency
+          // penalty suppresses verbatim loops (node-llama-cpp's default repeat
+          // window of 64 tokens is far too short to catch whole-block echoes).
+          minP: 0.05,
+          repeatPenalty: {
+            penalty: 1.1,
+            lastTokens: 512,
+            frequencyPenalty: 0.3,
+            presencePenalty: 0.2,
+          },
+          ...(grammar ? { grammar } : {}),
+          ...(options.onTextChunk ? { onTextChunk: options.onTextChunk } : {}),
+        })
 
-      return {
-        content: response,
-        modelId,
+        return {
+          content: response,
+          modelId,
+        }
+      } finally {
+        // Per-inference VRAM hygiene: the shared engine memoizes the llama +
+        // model (never re-loaded), but each generation allocates a fresh
+        // context. Leaking them — the previous behavior — exhausted VRAM
+        // after the first successful generation on larger models (the 7B
+        // failed the SECOND benchmark scenario with "context size ... too
+        // large for the available VRAM"). Dispose the session's sequence and
+        // the context so every inference returns its VRAM before the next
+        // one starts. Both are no-ops if already disposed; a failed prompt
+        // still releases the context on the way out.
+        try {
+          session.dispose({ disposeSequence: true })
+        } catch {
+          // Disposal must never mask the inference result/error.
+        }
+        try {
+          await context.dispose()
+        } catch {
+          // Same — best-effort release only.
+        }
       }
     })
   } catch (err) {

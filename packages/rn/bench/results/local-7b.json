@@ -1284,14 +1284,32 @@
       "title": "Upgrade React Native 0.73 → 0.74: Kotlin, AGP, and Gradle wrapper pair",
       "suite": "upgrades",
       "scaffoldable": false,
-      "generatedFiles": [],
-      "guardrail": [],
+      "generatedFiles": [
+        "android/build.gradle",
+        "android/gradle/wrapper/gradle-wrapper.properties"
+      ],
+      "guardrail": [
+        {
+          "path": "android/build.gradle",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 23,
+          "ok": true
+        },
+        {
+          "path": "android/gradle/wrapper/gradle-wrapper.properties",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 23,
+          "ok": true
+        }
+      ],
       "axes": {
         "correctness": null,
-        "adherence": null,
-        "guardrails": null
+        "adherence": 0.5,
+        "guardrails": 1
       },
-      "composite": null,
+      "composite": 0.75,
       "reference": {
         "files": [
           "android/build.gradle",
@@ -1305,9 +1323,9 @@
         "composite": 1,
         "relative": {
           "correctness": null,
-          "adherence": null,
-          "guardrails": null,
-          "composite": null
+          "adherence": 0.5,
+          "guardrails": 1,
+          "composite": 0.75
         }
       }
     },
@@ -1316,14 +1334,24 @@
       "title": "Upgrade React Native 0.73 → 0.74: enable the New Architecture",
       "suite": "upgrades",
       "scaffoldable": false,
-      "generatedFiles": [],
-      "guardrail": [],
+      "generatedFiles": [
+        "android/gradle.properties"
+      ],
+      "guardrail": [
+        {
+          "path": "android/gradle.properties",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 23,
+          "ok": true
+        }
+      ],
       "axes": {
         "correctness": null,
-        "adherence": null,
-        "guardrails": null
+        "adherence": 1,
+        "guardrails": 1
       },
-      "composite": null,
+      "composite": 1,
       "reference": {
         "files": [
           "android/gradle.properties"
@@ -1336,9 +1364,9 @@
         "composite": 1,
         "relative": {
           "correctness": null,
-          "adherence": null,
-          "guardrails": null,
-          "composite": null
+          "adherence": 1,
+          "guardrails": 1,
+          "composite": 1
         }
       }
     },
@@ -1347,14 +1375,24 @@
       "title": "Upgrade React Native 0.73 → 0.74: deprecated StatusBar props removed",
       "suite": "upgrades",
       "scaffoldable": false,
-      "generatedFiles": [],
-      "guardrail": [],
+      "generatedFiles": [
+        "src/screens/HomeScreen.tsx"
+      ],
+      "guardrail": [
+        {
+          "path": "src/screens/HomeScreen.tsx",
+          "passed": 24,
+          "failed": 2,
+          "skipped": 10,
+          "ok": false
+        }
+      ],
       "axes": {
         "correctness": null,
-        "adherence": null,
-        "guardrails": null
+        "adherence": 0,
+        "guardrails": 0.9230769230769231
       },
-      "composite": null,
+      "composite": 0.46153846153846156,
       "reference": {
         "files": [
           "src/screens/HomeScreen.tsx"
@@ -1367,9 +1405,9 @@
         "composite": 1,
         "relative": {
           "correctness": null,
-          "adherence": null,
-          "guardrails": null,
-          "composite": null
+          "adherence": 0,
+          "guardrails": 0.9230769230769231,
+          "composite": 0.46153846153846156
         }
       }
     },
@@ -1419,14 +1457,32 @@
       "title": "Debug: app crashes at startup — Hermes disabled in release",
       "suite": "debugging",
       "scaffoldable": false,
-      "generatedFiles": [],
-      "guardrail": [],
+      "generatedFiles": [
+        "android/gradle.properties",
+        "babel.config.js"
+      ],
+      "guardrail": [
+        {
+          "path": "android/gradle.properties",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 23,
+          "ok": true
+        },
+        {
+          "path": "babel.config.js",
+          "passed": 16,
+          "failed": 0,
+          "skipped": 20,
+          "ok": true
+        }
+      ],
       "axes": {
         "correctness": null,
-        "adherence": null,
-        "guardrails": null
+        "adherence": 0.5,
+        "guardrails": 1
       },
-      "composite": null,
+      "composite": 0.75,
       "reference": {
         "files": [
           "android/gradle.properties",
@@ -1440,9 +1496,9 @@
         "composite": 1,
         "relative": {
           "correctness": null,
-          "adherence": null,
-          "guardrails": null,
-          "composite": null
+          "adherence": 0.5,
+          "guardrails": 1,
+          "composite": 0.75
         }
       }
     },
@@ -1451,14 +1507,32 @@
       "title": "Debug: TypeScript regression — TS7006 parameter implicitly has an any type",
       "suite": "debugging",
       "scaffoldable": false,
-      "generatedFiles": [],
-      "guardrail": [],
+      "generatedFiles": [
+        "src/services/cart.ts",
+        "src/types.ts"
+      ],
+      "guardrail": [
+        {
+          "path": "src/services/cart.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
+        },
+        {
+          "path": "src/types.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
+        }
+      ],
       "axes": {
         "correctness": null,
-        "adherence": null,
-        "guardrails": null
+        "adherence": 0,
+        "guardrails": 1
       },
-      "composite": null,
+      "composite": 0.5,
       "reference": {
         "files": [
           "src/services/cart.ts"
@@ -1471,9 +1545,9 @@
         "composite": 1,
         "relative": {
           "correctness": null,
-          "adherence": null,
-          "guardrails": null,
-          "composite": null
+          "adherence": 0,
+          "guardrails": 1,
+          "composite": 0.5
         }
       }
     },
@@ -1482,14 +1556,24 @@
       "title": "Debug: native module not linked — settings.gradle missing the include",
       "suite": "debugging",
       "scaffoldable": false,
-      "generatedFiles": [],
-      "guardrail": [],
+      "generatedFiles": [
+        "android/settings.gradle"
+      ],
+      "guardrail": [
+        {
+          "path": "android/settings.gradle",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 23,
+          "ok": true
+        }
+      ],
       "axes": {
         "correctness": null,
-        "adherence": null,
-        "guardrails": null
+        "adherence": 0,
+        "guardrails": 1
       },
-      "composite": null,
+      "composite": 0.5,
       "reference": {
         "files": [
           "android/settings.gradle",
@@ -1503,9 +1587,9 @@
         "composite": 1,
         "relative": {
           "correctness": null,
-          "adherence": null,
-          "guardrails": null,
-          "composite": null
+          "adherence": 0,
+          "guardrails": 1,
+          "composite": 0.5
         }
       }
     }
@@ -1519,7 +1603,8 @@
         "rn-13-account-delete-screen"
       ],
       "composite": 0.8648148148148147,
-      "guardrails": 0.8148148148148148
+      "guardrails": 0.8148148148148148,
+      "referenceComposite": 0.8624359537403016
     },
     {
       "suite": "data-flow",
@@ -1529,7 +1614,8 @@
         "rn-12-notifications-screen"
       ],
       "composite": 0.9420000000000001,
-      "guardrails": 0.92
+      "guardrails": 0.92,
+      "referenceComposite": 0.8251674251674253
     },
     {
       "suite": "core-ui",
@@ -1538,7 +1624,8 @@
         "rn-08-feature-flags"
       ],
       "composite": 1,
-      "guardrails": null
+      "guardrails": null,
+      "referenceComposite": 1
     },
     {
       "suite": "navigation",
@@ -1546,7 +1633,8 @@
         "rn-04-typed-navigation"
       ],
       "composite": 1,
-      "guardrails": null
+      "guardrails": null,
+      "referenceComposite": 1
     },
     {
       "suite": "perf",
@@ -1554,7 +1642,8 @@
         "rn-07-image-feed"
       ],
       "composite": 1,
-      "guardrails": null
+      "guardrails": null,
+      "referenceComposite": 0.8137254901960783
     },
     {
       "suite": "a11y",
@@ -1562,7 +1651,8 @@
         "rn-09-accessible-form"
       ],
       "composite": 1,
-      "guardrails": null
+      "guardrails": null,
+      "referenceComposite": 0.9017857142857144
     },
     {
       "suite": "refactor",
@@ -1571,7 +1661,8 @@
         "rn-11-remove-dependency-native"
       ],
       "composite": 0.7500000000000001,
-      "guardrails": null
+      "guardrails": null,
+      "referenceComposite": 0.9230769230769229
     },
     {
       "suite": "e-commerce",
@@ -1580,7 +1671,8 @@
         "rn-15-product-search"
       ],
       "composite": 1,
-      "guardrails": null
+      "guardrails": null,
+      "referenceComposite": 0.8315217391304346
     },
     {
       "suite": "social-chat",
@@ -1589,7 +1681,8 @@
         "rn-17-social-feed"
       ],
       "composite": 1,
-      "guardrails": null
+      "guardrails": null,
+      "referenceComposite": 0.878567447045708
     },
     {
       "suite": "booking-payments",
@@ -1599,7 +1692,8 @@
         "rn-20-order-tracking"
       ],
       "composite": 1,
-      "guardrails": null
+      "guardrails": null,
+      "referenceComposite": 0.8308812765334505
     },
     {
       "suite": "health-fitness",
@@ -1608,7 +1702,8 @@
         "rn-22-workout-timer"
       ],
       "composite": 1,
-      "guardrails": null
+      "guardrails": null,
+      "referenceComposite": 0.8497474747474747
     },
     {
       "suite": "media",
@@ -1617,7 +1712,8 @@
         "rn-24-video-detail"
       ],
       "composite": 1,
-      "guardrails": null
+      "guardrails": null,
+      "referenceComposite": 0.8611111111111112
     },
     {
       "suite": "profile-onboarding",
@@ -1626,7 +1722,8 @@
         "rn-26-onboarding-wizard"
       ],
       "composite": 1,
-      "guardrails": null
+      "guardrails": null,
+      "referenceComposite": 0.8411396574440053
     },
     {
       "suite": "security",
@@ -1634,7 +1731,8 @@
         "rn-27-biometric-gate"
       ],
       "composite": 1,
-      "guardrails": null
+      "guardrails": null,
+      "referenceComposite": 0.8777777777777778
     },
     {
       "suite": "productivity",
@@ -1643,7 +1741,8 @@
         "rn-29-task-board"
       ],
       "composite": 1,
-      "guardrails": null
+      "guardrails": null,
+      "referenceComposite": 0.8129776021080368
     },
     {
       "suite": "commerce-subscriptions",
@@ -1651,7 +1750,8 @@
         "rn-30-subscription-plans"
       ],
       "composite": 1,
-      "guardrails": null
+      "guardrails": null,
+      "referenceComposite": 0.8055555555555555
     },
     {
       "suite": "travel-weather",
@@ -1660,7 +1760,8 @@
         "rn-32-weather-forecast"
       ],
       "composite": 1,
-      "guardrails": null
+      "guardrails": null,
+      "referenceComposite": 0.8484848484848485
     },
     {
       "suite": "settings",
@@ -1668,11 +1769,36 @@
         "rn-33-privacy-settings"
       ],
       "composite": 1,
-      "guardrails": null
+      "guardrails": null,
+      "referenceComposite": 0.8055555555555555
+    },
+    {
+      "suite": "upgrades",
+      "scenarioIds": [
+        "rn-36-upgrade-compile-sdk",
+        "rn-37-upgrade-kotlin-gradle",
+        "rn-38-upgrade-new-arch",
+        "rn-39-upgrade-deprecated-api"
+      ],
+      "composite": 0.8028846153846154,
+      "guardrails": 0.9807692307692308,
+      "referenceComposite": 1
+    },
+    {
+      "suite": "debugging",
+      "scenarioIds": [
+        "rn-40-debug-metro-resolution",
+        "rn-41-debug-hermes-crash",
+        "rn-42-debug-ts-regression",
+        "rn-43-debug-linking"
+      ],
+      "composite": 0.594551282051282,
+      "guardrails": 0.9807692307692308,
+      "referenceComposite": 1
     }
   ],
-  "overallComposite": 0.9740763888888889,
-  "overallGuardrails": 0.8674074074074074,
-  "overallReferenceComposite": 0.8622153838179182,
+  "overallComposite": 0.9190047008547009,
+  "overallGuardrails": 0.9580968660968662,
+  "overallReferenceComposite": 0.8891001869753975,
   "overallRelativeComposite": 1.1413297425327324
 }
