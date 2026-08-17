@@ -1,0 +1,24 @@
+{
+  "id": "fx-ts-03",
+  "specVersion": 1,
+  "suite": "typescript",
+  "title": "TS2339: Property does not exist after an RN upgrade",
+  "issue": "After upgrading RN, a deprecated prop no longer exists on the type.",
+  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(3,10): error TS2339: Property 'getNativeNode' does not exist on type 'Text'.\n",
+  "broken": {
+    "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nconst c = (el) => el.getNativeNode();\n"
+  },
+  "healthy": {
+    "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nconst c = (el) => el;\n"
+  },
+  "expect": {
+    "diagnosisId": "ts-property-not-exist",
+    "diagnosisKeywords": [],
+    "fixFile": "src/screens/Broken.tsx",
+    "mustContain": [
+      "const c = (el) => el;"
+    ],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

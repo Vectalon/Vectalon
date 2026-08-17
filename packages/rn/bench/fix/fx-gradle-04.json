@@ -1,0 +1,28 @@
+{
+  "id": "fx-gradle-04",
+  "specVersion": 1,
+  "suite": "gradle-conflict",
+  "title": "minSdkVersion 21 clashes with a native module requiring 23",
+  "issue": "Android build fails: the manifest merger says minSdkVersion 21 cannot be smaller than version 23.",
+  "log": "> Task :app:processDebugResources FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:processDebugResources'.\n\nuses-sdk:minSdkVersion 21 cannot be smaller than version 23 declared in library [react-native-webview:13.8.6] /src/android/app/build/intermediates/merged_manifests/debug/processDebugManifest/AndroidManifest.xml as the library might be using APIs not available in 21\n  Suggestion: use a compatible library with a minSdk of at most 21, or increase this project's minSdkVersion to at least 23\n",
+  "broken": {
+    "android/build.gradle": "buildscript {\n    ext {\n        buildToolsVersion = \"34.0.0\"\n        minSdkVersion = 21\n        compileSdkVersion = 34\n        targetSdkVersion = 34\n        ndkVersion = \"26.1.10909125\"\n        kotlinVersion = \"1.9.0\"\n    }\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath(\"com.android.tools.build:gradle:8.4.1\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")\n        classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0\")\n    }\n}\n\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n"
+  },
+  "healthy": {
+    "android/build.gradle": "buildscript {\n    ext {\n        buildToolsVersion = \"34.0.0\"\n        minSdkVersion = 23\n        compileSdkVersion = 34\n        targetSdkVersion = 34\n        ndkVersion = \"26.1.10909125\"\n        kotlinVersion = \"1.9.0\"\n    }\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath(\"com.android.tools.build:gradle:8.4.1\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")\n        classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0\")\n    }\n}\n\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n"
+  },
+  "expect": {
+    "diagnosisId": "min-sdk-version",
+    "diagnosisKeywords": [
+      "minSdkVersion"
+    ],
+    "fixFile": "android/build.gradle",
+    "mustContain": [
+      "minSdkVersion = 23"
+    ],
+    "mustNotContain": [
+      "minSdkVersion = 21"
+    ],
+    "autoFixable": true
+  }
+}

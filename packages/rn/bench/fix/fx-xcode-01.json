@@ -1,0 +1,18 @@
+{
+  "id": "fx-xcode-01",
+  "specVersion": 1,
+  "suite": "xcode",
+  "title": "Code signing: no signing certificate for the bundle id",
+  "issue": "iOS build fails: Signing for \"rn-bench-app\" requires a development team.",
+  "log": "▸ Compiling ViewController.swift\n\n❌  /Users/dev/ios/App/ViewController.swift:42:5: error:\n\nSigning for \"rn-bench-app\" requires a development team.\nSelect a development team in the Signing & Capabilities editor.\n",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "code-signing",
+    "diagnosisKeywords": [],
+    "fixFile": "ios/Podfile",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

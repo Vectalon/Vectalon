@@ -1,0 +1,18 @@
+{
+  "id": "fx-link-06",
+  "specVersion": 1,
+  "suite": "linking",
+  "title": "Duplicate class from two native modules",
+  "issue": "Android build fails: two native modules ship the same class.",
+  "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\nDuplicate class com.rt2zz.reactnativecontacts.ReactNativeContacts found in modules react-native-contacts and react-native-addressbook.",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "duplicate-class",
+    "diagnosisKeywords": [],
+    "fixFile": "android/build.gradle",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

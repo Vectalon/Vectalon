@@ -1,0 +1,24 @@
+{
+  "id": "fx-metro-03",
+  "specVersion": 1,
+  "suite": "metro",
+  "title": "Haste module naming collision",
+  "issue": "Metro fails: haste module naming collision between two files.",
+  "log": "error: Error: Unable to resolve module\n\n Metro has failed to resolve the module.\njest-haste-map: Haste module naming collision: Duplicate module name: App — the following files share their base name:\n  /src/App.tsx\n  /src/components/App.tsx",
+  "broken": {
+    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
+  },
+  "healthy": {
+    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
+  },
+  "expect": {
+    "diagnosisId": "haste-collision",
+    "diagnosisKeywords": [],
+    "fixFile": "src/App.tsx",
+    "mustContain": [
+      "SafeAreaView"
+    ],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

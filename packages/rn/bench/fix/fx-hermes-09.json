@@ -1,0 +1,20 @@
+{
+  "id": "fx-hermes-09",
+  "specVersion": 1,
+  "suite": "hermes",
+  "title": "Hermes engine ABI mismatch",
+  "issue": "Android build fails: no matching variant of hermes-android for arm64.",
+  "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\nNo matching variant of com.facebook.react:hermes-android:0.74.0 was found. The consumer was configured to find a runtime of a component compatible with Java 11.",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "hermes-android",
+    "diagnosisKeywords": [
+      "hermes"
+    ],
+    "fixFile": "ios/Podfile",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

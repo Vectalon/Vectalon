@@ -1,0 +1,18 @@
+{
+  "id": "fx-xcode-09",
+  "specVersion": 1,
+  "suite": "xcode",
+  "title": "Xcode version too old for the RN release",
+  "issue": "iOS build fails: the project requires a newer version of Xcode.",
+  "log": "▸ Compiling ViewController.swift\n\n❌  /Users/dev/ios/App/ViewController.swift:42:5: error:\n\nThe project 'rn-bench-app' requires a newer version of Xcode.\n",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "xcode-version",
+    "diagnosisKeywords": [],
+    "fixFile": "ios/Podfile",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

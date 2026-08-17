@@ -1,0 +1,18 @@
+{
+  "id": "fx-xcode-02",
+  "specVersion": 1,
+  "suite": "xcode",
+  "title": "errSecInternalComponent during codesign",
+  "issue": "iOS build fails at the CodeSign step with errSecInternalComponent.",
+  "log": "▸ Compiling ViewController.swift\n\n❌  /Users/dev/ios/App/ViewController.swift:42:5: error:\n\nCodeSign error: errSecInternalComponent\n",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "code-signing",
+    "diagnosisKeywords": [],
+    "fixFile": "ios/Podfile",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

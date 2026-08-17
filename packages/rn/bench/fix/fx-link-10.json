@@ -1,0 +1,18 @@
+{
+  "id": "fx-link-10",
+  "specVersion": 1,
+  "suite": "linking",
+  "title": "CocoaPods cannot resolve a native pod from the local path",
+  "issue": "pod install fails: the pod path for a local native module is wrong.",
+  "log": "[!] Unable to find a specification for `RNReanimated` — the local path ../node_modules/react-native-reanimated does not contain a podspec.",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "pod-not-found",
+    "diagnosisKeywords": [],
+    "fixFile": "android/build.gradle",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "fx-ts-01",
+  "specVersion": 1,
+  "suite": "typescript",
+  "title": "TS2307: Cannot find module after a refactor",
+  "issue": "Typecheck fails: a module import no longer resolves.",
+  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(3,10): error TS2307: Cannot find module './src/screens/Home'.\n",
+  "broken": {
+    "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nimport { HomeScreen } from './src/screens/Home';\n"
+  },
+  "healthy": {
+    "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nimport { HomeScreen } from './src/screens/HomeScreen';\n"
+  },
+  "expect": {
+    "diagnosisId": "ts-module-not-found",
+    "diagnosisKeywords": [],
+    "fixFile": "src/screens/Broken.tsx",
+    "mustContain": [
+      "import { HomeScreen } from './src/screens/HomeScreen';"
+    ],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

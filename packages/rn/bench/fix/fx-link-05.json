@@ -1,0 +1,18 @@
+{
+  "id": "fx-link-05",
+  "specVersion": 1,
+  "suite": "linking",
+  "title": "MainApplication missing the package import",
+  "issue": "Android build fails: the native module package is not registered in MainApplication.",
+  "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\n* What went wrong:\nExecution failed for task ':app:mergeDebugNativeLibs'.\n> Could not find class com.microsoft.codepush.react.CodePushPackage.",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "pod-install-needed",
+    "diagnosisKeywords": [],
+    "fixFile": "android/build.gradle",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

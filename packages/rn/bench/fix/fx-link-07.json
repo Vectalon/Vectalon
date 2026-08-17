@@ -1,0 +1,18 @@
+{
+  "id": "fx-link-07",
+  "specVersion": 1,
+  "suite": "linking",
+  "title": "Native module needs a Gradle repository it does not declare",
+  "issue": "Android build fails: a native module artifact cannot be resolved from the configured repositories.",
+  "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\nCould not resolve com.github.wix:detox:20.18.1 — the repository is not declared in settings.gradle.",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "network",
+    "diagnosisKeywords": [],
+    "fixFile": "android/build.gradle",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "fx-xcode-10",
+  "specVersion": 1,
+  "suite": "xcode",
+  "title": "Invalid plist from a merge conflict",
+  "issue": "iOS build fails: the Info.plist cannot be read.",
+  "log": "▸ Compiling ViewController.swift\n\n❌  /Users/dev/ios/App/ViewController.swift:42:5: error:\n\nThe Info.plist file is malformed: Data couldn't be read because it isn't in the correct format.\n",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "plist",
+    "diagnosisKeywords": [],
+    "fixFile": "ios/Podfile",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

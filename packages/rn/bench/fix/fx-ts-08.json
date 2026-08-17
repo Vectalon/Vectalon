@@ -1,0 +1,24 @@
+{
+  "id": "fx-ts-08",
+  "specVersion": 1,
+  "suite": "typescript",
+  "title": "TS17004: Cannot use JSX in a .ts file",
+  "issue": "Typecheck fails: JSX is used in a file the tsconfig treats as plain TS.",
+  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(3,10): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\n",
+  "broken": {
+    "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nconst el = <Text>hi</Text>;\n"
+  },
+  "healthy": {
+    "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nconst el = React.createElement(Text, null, 'hi');\n"
+  },
+  "expect": {
+    "diagnosisId": "ts-jsx-not-supported",
+    "diagnosisKeywords": [],
+    "fixFile": "src/screens/Broken.tsx",
+    "mustContain": [
+      "const el = React.createElement(Text, null, 'hi');"
+    ],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

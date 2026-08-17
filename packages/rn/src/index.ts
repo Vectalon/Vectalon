@@ -472,6 +472,11 @@ export { collectOutcomes, hoursSaved, savingsEstimate, blendedRate, OUTCOME_HOUR
 export type { OutcomeCounts } from './outcomes/ledger'
 export { renderOutcomeLines } from './cli/commands/outcomes'
 
+export { runFixScenario, runFixBenchmark, runFixBenchmarkFromDir } from './fixBench/runner'
+export type { FixBenchScenario, FixBenchScenarioRun, FixBenchSummary, FixBenchOptions, FixBenchSuite } from './fixBench/types'
+export { FIX_BENCH_BASE } from './fixBench/base'
+export { loadFixBenchScenarios, defaultFixScenariosDir } from './fixBench/loader'
+
 export { runScore, aggregateOverall, buildRecommendations, renderScoreMarkdown, writeScoreReport, scoreDocsDir, findingKey, priorityOf, verdictOf as scoreVerdictOf, readHistory, writeHistory, collectSourceAndTests } from './score'
 export type { ScoreReport, ScoreDimension, ScoreFinding, ScoreOptions, ScorePriority, ScoreRecommendation, ScoreVerdict, ScoreHistory, ScoreHistoryEntry } from './score'
 

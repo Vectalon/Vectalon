@@ -1,0 +1,24 @@
+{
+  "id": "fx-metro-09",
+  "specVersion": 1,
+  "suite": "metro",
+  "title": "Watchman failure on a large workspace",
+  "issue": "Metro fails to start: watchman recrawl or too many open files.",
+  "log": "error: Error: Unable to resolve module\n\n Metro has failed to resolve the module.\nWatchman error: recrawl triggered. Watchman was unable to crawl the workspace: EMFILE: too many open files.",
+  "broken": {
+    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
+  },
+  "healthy": {
+    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
+  },
+  "expect": {
+    "diagnosisId": "file-watching",
+    "diagnosisKeywords": [],
+    "fixFile": "src/App.tsx",
+    "mustContain": [
+      "SafeAreaView"
+    ],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

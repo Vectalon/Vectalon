@@ -1,0 +1,18 @@
+{
+  "id": "fx-xcode-04",
+  "specVersion": 1,
+  "suite": "xcode",
+  "title": "No provisioning profiles found for the bundle id",
+  "issue": "iOS build fails: no profiles for org.rnbench.app were found.",
+  "log": "▸ Compiling ViewController.swift\n\n❌  /Users/dev/ios/App/ViewController.swift:42:5: error:\n\nNo profiles for 'org.rnbench.app' were found: Xcode couldn't find any iOS App Development provisioning profiles matching 'org.rnbench.app'.\n",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "provisioning",
+    "diagnosisKeywords": [],
+    "fixFile": "ios/Podfile",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

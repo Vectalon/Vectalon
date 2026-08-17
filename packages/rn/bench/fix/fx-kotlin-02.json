@@ -1,0 +1,32 @@
+{
+  "id": "fx-kotlin-02",
+  "specVersion": 1,
+  "suite": "kotlin",
+  "title": "Kotlin 1.8.22 with an RN 0.76 project needing 1.9.24",
+  "issue": "Upgraded to RN 0.76 — Kotlin plugin version is too old.",
+  "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\n* What went wrong:\nExecution failed for task ':app:compileDebugKotlin'.\n> Could not compile Kotlin: the configured Kotlin plugin version 1.8.22 requires Kotlin >= 1.9.24.\n",
+  "broken": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"scripts\": {\n    \"start\": \"react-native start\",\n    \"android\": \"react-native run-android\",\n    \"ios\": \"react-native run-ios\",\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.2.0\",\n    \"react-native\": \"0.76.0\"\n  },\n  \"devDependencies\": {\n    \"@babel/core\": \"7.24.9\",\n    \"@babel/preset-env\": \"7.24.8\",\n    \"@babel/preset-typescript\": \"7.24.7\",\n    \"@types/jest\": \"29.5.14\",\n    \"@types/react\": \"18.2.79\",\n    \"@typescript-eslint/eslint-plugin\": \"6.21.0\",\n    \"@typescript-eslint/parser\": \"6.21.0\",\n    \"babel-jest\": \"29.7.0\",\n    \"eslint\": \"8.57.0\",\n    \"jest\": \"29.7.0\",\n    \"react-test-renderer\": \"18.2.0\",\n    \"typescript\": \"5.5.4\"\n  },\n  \"jest\": {\n    \"preset\": \"react-native\"\n  }\n}",
+    "android/build.gradle": "buildscript {\n    ext {\n        buildToolsVersion = \"34.0.0\"\n        minSdkVersion = 23\n        compileSdkVersion = 35\n        targetSdkVersion = 35\n        ndkVersion = \"26.1.10909125\"\n        kotlinVersion = \"1.8.22\"\n    }\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath(\"com.android.tools.build:gradle:8.6.0\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")\n        classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.22\")\n    }\n}\n\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n",
+    "android/gradle/wrapper/gradle-wrapper.properties": "distributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\ndistributionUrl=https\\://services.gradle.org/distributions/gradle-8.10.2-bin.zip\nnetworkTimeout=10000\nvalidateDistributionUrl=true\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists\n"
+  },
+  "healthy": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"scripts\": {\n    \"start\": \"react-native start\",\n    \"android\": \"react-native run-android\",\n    \"ios\": \"react-native run-ios\",\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.2.0\",\n    \"react-native\": \"0.76.0\"\n  },\n  \"devDependencies\": {\n    \"@babel/core\": \"7.24.9\",\n    \"@babel/preset-env\": \"7.24.8\",\n    \"@babel/preset-typescript\": \"7.24.7\",\n    \"@types/jest\": \"29.5.14\",\n    \"@types/react\": \"18.2.79\",\n    \"@typescript-eslint/eslint-plugin\": \"6.21.0\",\n    \"@typescript-eslint/parser\": \"6.21.0\",\n    \"babel-jest\": \"29.7.0\",\n    \"eslint\": \"8.57.0\",\n    \"jest\": \"29.7.0\",\n    \"react-test-renderer\": \"18.2.0\",\n    \"typescript\": \"5.5.4\"\n  },\n  \"jest\": {\n    \"preset\": \"react-native\"\n  }\n}",
+    "android/build.gradle": "buildscript {\n    ext {\n        buildToolsVersion = \"34.0.0\"\n        minSdkVersion = 23\n        compileSdkVersion = 35\n        targetSdkVersion = 35\n        ndkVersion = \"26.1.10909125\"\n        kotlinVersion = \"1.9.24\"\n    }\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath(\"com.android.tools.build:gradle:8.6.0\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")\n        classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24\")\n    }\n}\n\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n",
+    "android/gradle/wrapper/gradle-wrapper.properties": "distributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\ndistributionUrl=https\\://services.gradle.org/distributions/gradle-8.10.2-bin.zip\nnetworkTimeout=10000\nvalidateDistributionUrl=true\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists\n"
+  },
+  "expect": {
+    "diagnosisId": "kotlin-version",
+    "diagnosisKeywords": [
+      "Kotlin"
+    ],
+    "fixFile": "android/build.gradle",
+    "mustContain": [
+      "kotlinVersion = \"1.9.24\""
+    ],
+    "mustNotContain": [
+      "kotlinVersion = \"1.8.22\""
+    ],
+    "autoFixable": true
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "fx-hermes-07",
+  "specVersion": 1,
+  "suite": "hermes",
+  "title": "hermesc missing from the toolchain",
+  "issue": "The build cannot find hermesc in the toolchain.",
+  "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\n> Task :app:createBundleDebugJsAndAssets FAILED\nCould not find hermesc.",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "hermes-android",
+    "diagnosisKeywords": [
+      "hermes"
+    ],
+    "fixFile": "ios/Podfile",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

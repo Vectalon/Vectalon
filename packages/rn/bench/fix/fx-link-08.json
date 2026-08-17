@@ -1,0 +1,18 @@
+{
+  "id": "fx-link-08",
+  "specVersion": 1,
+  "suite": "linking",
+  "title": "New Architecture mismatch for a native module",
+  "issue": "Android build fails: a native module does not support the new architecture.",
+  "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\nThe module 'react-native-screens' does not support the new architecture. Please set newArchEnabled=false.",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "pod-install-needed",
+    "diagnosisKeywords": [],
+    "fixFile": "android/build.gradle",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

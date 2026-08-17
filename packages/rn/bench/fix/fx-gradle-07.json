@@ -1,0 +1,26 @@
+{
+  "id": "fx-gradle-07",
+  "specVersion": 1,
+  "suite": "gradle-conflict",
+  "title": "Unsupported class file major version 62 (Java 18)",
+  "issue": "Android build fails with \"Unsupported class file major version 62\" — Java version mismatch.",
+  "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\n* What went wrong:\nExecution failed for task ':app:compileDebugKotlin'.\n> Unsupported class file major version 62\n",
+  "broken": {
+    "android/gradle.properties": "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g\nandroid.useAndroidX=true\nandroid.enableJetifier=true\n"
+  },
+  "healthy": {
+    "android/gradle.properties": "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g\nandroid.useAndroidX=true\nandroid.enableJetifier=true\n"
+  },
+  "expect": {
+    "diagnosisId": "java-version",
+    "diagnosisKeywords": [
+      "Unsupported class file major version"
+    ],
+    "fixFile": "android/gradle.properties",
+    "mustContain": [
+      "org.gradle.jvmargs"
+    ],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

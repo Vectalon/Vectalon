@@ -1,0 +1,24 @@
+{
+  "id": "fx-ts-02",
+  "specVersion": 1,
+  "suite": "typescript",
+  "title": "TS2304: Cannot find name (dropped import)",
+  "issue": "Typecheck fails: a name used in a component is not in scope.",
+  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(3,10): error TS2304: Cannot find name 'AppName'.\n",
+  "broken": {
+    "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nexport function Screen() { return <Text>{AppName}</Text>; }\n"
+  },
+  "healthy": {
+    "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nexport function Screen() { return <Text>rn-bench-app</Text>; }\n"
+  },
+  "expect": {
+    "diagnosisId": "ts-cannot-find-name",
+    "diagnosisKeywords": [],
+    "fixFile": "src/screens/Broken.tsx",
+    "mustContain": [
+      "export function Screen() { return <Text>rn-bench-app</Text>; }"
+    ],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

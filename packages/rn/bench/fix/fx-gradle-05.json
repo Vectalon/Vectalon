@@ -1,0 +1,28 @@
+{
+  "id": "fx-gradle-05",
+  "specVersion": 1,
+  "suite": "gradle-conflict",
+  "title": "Duplicate resource between two libraries",
+  "issue": "Android build fails: a duplicate resource is found across two native libraries.",
+  "log": "> Task :app:processDebugResources FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:processDebugResources'.\n\nAAPT2 error: check logs for details\nerror: duplicate resource: drawable/common_google_signin_btn_icon_disabled, in library com.google.android.gms:play-services-base:18.0.0 and com.google.android.gms:play-services-auth:20.4.0\n",
+  "broken": {
+    "android/app/build.gradle": "apply plugin: \"com.android.application\"\napply plugin: \"com.facebook.react\"\n\nreact {\n}\n\nandroid {\n    namespace \"com.rnbenchapp\"\n}\n\ndependencies {\n    implementation(\"com.facebook.react:react-android\")\n    implementation(\"com.google.android.gms:play-services-base:18.0.0\")\n    implementation(\"com.google.android.gms:play-services-auth:20.4.0\")\n}\n"
+  },
+  "healthy": {
+    "android/app/build.gradle": "apply plugin: \"com.android.application\"\napply plugin: \"com.facebook.react\"\n\nreact {\n}\n\nandroid {\n    namespace \"com.rnbenchapp\"\n    packagingOptions {\n        resources {\n            excludes += [\"**/common_google_signin_btn_icon_disabled.xml\"]\n        }\n    }\n}\n\ndependencies {\n    implementation(\"com.facebook.react:react-android\")\n    implementation(\"com.google.android.gms:play-services-auth:20.4.0\")\n}\n"
+  },
+  "expect": {
+    "diagnosisId": "resource-link",
+    "diagnosisKeywords": [
+      "duplicate resource"
+    ],
+    "fixFile": "android/app/build.gradle",
+    "mustContain": [
+      "packagingOptions"
+    ],
+    "mustNotContain": [
+      "play-services-base:18.0.0"
+    ],
+    "autoFixable": false
+  }
+}

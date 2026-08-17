@@ -15,13 +15,14 @@ import { reportError } from '../utils/safe'
 import { analyzeGradleLog } from '../projectDiagnostics/gradle'
 import { analyzeXcodeLog } from '../projectDiagnostics/xcode'
 import { analyzeMetroLog } from '../buildFix/metro'
+import { analyzeTsLog } from './tsLog'
 import { detectBuildKind } from '../buildFix'
 import { readProjectIntel } from '../intel/model'
 import type { IntelReport } from '../intel/types'
 import type { LogAnalysis } from '../projectDiagnostics/types'
 import type { FixEvidence, FixFinding, FixOptions, FixSeverity } from './types'
 
-export type FixKind = 'gradle' | 'xcode' | 'metro' | 'deps' | 'general'
+export type FixKind = 'gradle' | 'xcode' | 'metro' | 'ts' | 'deps' | 'general'
 
 export interface ProjectContext {
   flavor: 'expo' | 'rn-cli' | 'unknown'
@@ -32,10 +33,14 @@ export interface ProjectContext {
   /** Native modules (deps whose package is a native RN/Expo module). */
   nativeModules: string[]
   compileSdk: number | null
+  minSdk: number | null
   kotlinVersion: string | null
   agpVersion: string | null
   gradleVersion: string | null
   jvmArgs: string | null
+  /** The android/app/build.gradle file used for AGP-8 namespace checks. */
+  appGradle: string | null
+  hasNamespace: boolean
 }
 
 /** RN template pins (deterministic knowledge, from the RN upgrade guide). */
@@ -92,10 +97,13 @@ export function readProjectContext(root: string, intel: IntelReport | null = nul
     devDependencies: {},
     nativeModules: [],
     compileSdk: null,
+    minSdk: null,
     kotlinVersion: null,
     agpVersion: null,
     gradleVersion: null,
     jvmArgs: null,
+    appGradle: null,
+    hasNamespace: false,
   }
   // The foundation: consume the intel manifest when it exists.
   if (intel?.manifest) {
@@ -150,10 +158,19 @@ export function readProjectContext(root: string, intel: IntelReport | null = nul
     const content = readFileSync(buildGradle, 'utf-8')
     const sdk = content.match(/compileSdkVersion\s*=\s*(\d+)|compileSdkVersion\s+(\d+)/)
     ctx.compileSdk = sdk ? Number(sdk[1] || sdk[2]) : null
+    const minSdk = content.match(/minSdkVersion\s*=\s*(\d+)|minSdkVersion\s+(\d+)/)
+    ctx.minSdk = minSdk ? Number(minSdk[1] || minSdk[2]) : null
     const kotlin = content.match(/kotlinVersion\s*=\s*['"]?([\d.]+)|ext\.kotlin_version\s*=\s*['"]?([\d.]+)|kotlin\(['"]?plugin['"]?\)\s*version\s*['"]?([\d.]+)|org\.jetbrains\.kotlin(?:\.android)?\s*['"]?\s*([\d.]+)/)
     ctx.kotlinVersion = kotlin ? (kotlin[1] || kotlin[2] || kotlin[3] || kotlin[4]) : null
     const agp = content.match(/com\.android\.tools\.build:gradle['"]?\s*:\s*['"]?([\d.]+)/)
     ctx.agpVersion = agp ? agp[1] : null
+  }
+  // android/app/build.gradle — AGP-8 namespace presence (a top RN upgrade failure).
+  const appGradlePath = join(root, 'android', 'app', 'build.gradle')
+  if (existsSync(appGradlePath)) {
+    ctx.appGradle = 'android/app/build.gradle'
+    const appContent = readFileSync(appGradlePath, 'utf-8')
+    ctx.hasNamespace = /namespace\s+['"][^'"]+['"]/.test(appContent)
   }
   const wrapper = join(root, 'android', 'gradle', 'wrapper', 'gradle-wrapper.properties')
   if (existsSync(wrapper)) {
@@ -219,7 +236,7 @@ function findingFromAnalysis(kind: FixKind, analysis: LogAnalysis | null, rootCa
   const finding: FixFinding = {
     id: root.id,
     severity: 'error',
-    rootCause: rootCauseOnly || root.id === 'sdk-platform-not-found' || root.id === 'compile-sdk-version' || root.id === 'agp-version' || root.id === 'dependency-resolution' || root.id === 'memory' || root.id === 'java-version' || root.id === 'ndk-version',
+    rootCause: rootCauseOnly || root.id === 'sdk-platform-not-found' || root.id === 'compile-sdk-version' || root.id === 'agp-version' || root.id === 'dependency-resolution' || root.id === 'memory' || root.id === 'java-version' || root.id === 'ndk-version' || root.id === 'duplicate-class' || root.id === 'manifest-merger' || root.id === 'agp-namespace' || root.id === 'min-sdk-version' || root.id === 'package-download' || root.id === 'incompatible-types' || root.id === 'gradle-sync' || root.id.startsWith('ts-'),
     title: root.name,
     message: root.name,
     recommendedFix: root.fix,
@@ -270,8 +287,12 @@ export function diagnose(root: string, options: FixOptions): DiagnoseResult {
 
   // 1 — Log classification (the strongest signal).
   if (options.log && logText) {
+    // A tsc/tsc -b output (`error TS2307: ...`) routes to the TypeScript
+    // regression analyzer — a real failure family the directive names.
+    const isTsLog = /error\s+TS\d+\s*:/.test(logText)
     logAnalysis =
-      kind === 'gradle' ? analyzeGradleLog(logText)
+      isTsLog ? analyzeTsLog(logText)
+      : kind === 'gradle' ? analyzeGradleLog(logText)
       : kind === 'xcode' ? analyzeXcodeLog(logText)
       : kind === 'metro' ? analyzeMetroLog(logText)
       : null
@@ -367,6 +388,40 @@ export function diagnose(root: string, options: FixOptions): DiagnoseResult {
     })
   }
 
+  // 4b — AGP-8 namespace requirement (no log needed; a top RN upgrade failure
+  // after moving to AGP 8: "Namespace not specified").
+  if (ctx.appGradle && !ctx.hasNamespace) {
+    findings.push({
+      id: 'agp-namespace',
+      severity: 'error',
+      rootCause: false,
+      title: 'AGP 8 namespace not specified',
+      message: 'android/app/build.gradle has no namespace — AGP 8 requires it and the build fails with "Namespace not specified".',
+      recommendedFix: 'Add `namespace "com.<appid>"` to android/app/build.gradle (AGP 8 removed the old package-name inference).',
+      evidence: [{ file: 'android/app/build.gradle', detail: 'no namespace block' }],
+      impact: [],
+      applied: 'no-change',
+      confidence: 90,
+    })
+  }
+
+  // 4c — minSdkVersion floor (a top native-module linking failure: "cannot be
+  // smaller than version 23").
+  if (ctx.minSdk !== null && ctx.minSdk < 23) {
+    findings.push({
+      id: 'min-sdk-version',
+      severity: 'error',
+      rootCause: false,
+      title: 'minSdkVersion too low for RN native modules',
+      message: `minSdkVersion ${ctx.minSdk} is below the 23 React Native (and most native modules) require — manifest merger fails.`,
+      recommendedFix: `Raise minSdkVersion to 23 in android/build.gradle.`,
+      evidence: [{ file: 'android/build.gradle', detail: `minSdkVersion = ${ctx.minSdk}` }],
+      impact: [],
+      applied: 'no-change',
+      confidence: 88,
+    })
+  }
+
   // 5 — Impact: the native modules this project builds (the blast radius of a
   // native-config root cause).
   for (const f of findings) {
@@ -382,6 +437,7 @@ function mapLogKind(kind: string): FixKind {
   if (kind === 'gradle') return 'gradle'
   if (kind === 'xcode') return 'xcode'
   if (kind === 'metro') return 'metro'
+  if (kind === 'ts') return 'ts'
   return 'general'
 }
 

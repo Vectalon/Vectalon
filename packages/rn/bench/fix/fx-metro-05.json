@@ -1,0 +1,24 @@
+{
+  "id": "fx-metro-05",
+  "specVersion": 1,
+  "suite": "metro",
+  "title": "Babel preset not found",
+  "issue": "Metro fails: babel-preset-expo cannot be found.",
+  "log": "error: Error: Unable to resolve module\n\n Metro has failed to resolve the module.\nCannot find module 'babel-preset-expo' — the babel.config.js references a preset that is not installed.",
+  "broken": {
+    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
+  },
+  "healthy": {
+    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
+  },
+  "expect": {
+    "diagnosisId": "babel-plugin-missing",
+    "diagnosisKeywords": [],
+    "fixFile": "src/App.tsx",
+    "mustContain": [
+      "SafeAreaView"
+    ],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

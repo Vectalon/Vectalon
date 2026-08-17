@@ -556,6 +556,13 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['bench'],
   },
   {
+    id: 'fix-bench',
+    name: 'Fix benchmark (100 real RN failures through the vc fix pipeline)',
+    category: 'e2e',
+    slow: true,
+    args: () => ['fix-bench'],
+  },
+  {
     id: 'selftest',
     name: 'Full self-test',
     category: 'e2e',

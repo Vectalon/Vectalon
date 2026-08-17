@@ -1,0 +1,31 @@
+{
+  "id": "fx-upgrade-05",
+  "specVersion": 1,
+  "suite": "upgrade",
+  "title": "RN 0.73 upgrade: compileSdkVersion still 33 (needs 34)",
+  "issue": "After upgrading to RN 0.73, the Android build fails on the SDK version.",
+  "broken": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"scripts\": {\n    \"start\": \"react-native start\",\n    \"android\": \"react-native run-android\",\n    \"ios\": \"react-native run-ios\",\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.2.0\",\n    \"react-native\": \"0.73.0\"\n  },\n  \"devDependencies\": {\n    \"@babel/core\": \"7.24.9\",\n    \"@babel/preset-env\": \"7.24.8\",\n    \"@babel/preset-typescript\": \"7.24.7\",\n    \"@types/jest\": \"29.5.14\",\n    \"@types/react\": \"18.2.79\",\n    \"@typescript-eslint/eslint-plugin\": \"6.21.0\",\n    \"@typescript-eslint/parser\": \"6.21.0\",\n    \"babel-jest\": \"29.7.0\",\n    \"eslint\": \"8.57.0\",\n    \"jest\": \"29.7.0\",\n    \"react-test-renderer\": \"18.2.0\",\n    \"typescript\": \"5.5.4\"\n  },\n  \"jest\": {\n    \"preset\": \"react-native\"\n  }\n}",
+    "android/build.gradle": "buildscript {\n    ext {\n        buildToolsVersion = \"34.0.0\"\n        minSdkVersion = 23\n        compileSdkVersion = 33\n        targetSdkVersion = 33\n        ndkVersion = \"26.1.10909125\"\n        kotlinVersion = \"1.9.0\"\n    }\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath(\"com.android.tools.build:gradle:8.4.1\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")\n        classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0\")\n    }\n}\n\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n",
+    "android/gradle/wrapper/gradle-wrapper.properties": "distributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\ndistributionUrl=https\\://services.gradle.org/distributions/gradle-8.8-bin.zip\nnetworkTimeout=10000\nvalidateDistributionUrl=true\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists\n",
+    "android/app/build.gradle": "apply plugin: \"com.android.application\"\napply plugin: \"com.facebook.react\"\n\nreact {\n}\n\nandroid {\n    namespace \"com.rnbenchapp\"\n}\n\ndependencies {\n    implementation(\"com.facebook.react:react-android\")\n}\n"
+  },
+  "healthy": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"scripts\": {\n    \"start\": \"react-native start\",\n    \"android\": \"react-native run-android\",\n    \"ios\": \"react-native run-ios\",\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.2.0\",\n    \"react-native\": \"0.73.0\"\n  },\n  \"devDependencies\": {\n    \"@babel/core\": \"7.24.9\",\n    \"@babel/preset-env\": \"7.24.8\",\n    \"@babel/preset-typescript\": \"7.24.7\",\n    \"@types/jest\": \"29.5.14\",\n    \"@types/react\": \"18.2.79\",\n    \"@typescript-eslint/eslint-plugin\": \"6.21.0\",\n    \"@typescript-eslint/parser\": \"6.21.0\",\n    \"babel-jest\": \"29.7.0\",\n    \"eslint\": \"8.57.0\",\n    \"jest\": \"29.7.0\",\n    \"react-test-renderer\": \"18.2.0\",\n    \"typescript\": \"5.5.4\"\n  },\n  \"jest\": {\n    \"preset\": \"react-native\"\n  }\n}",
+    "android/build.gradle": "buildscript {\n    ext {\n        buildToolsVersion = \"34.0.0\"\n        minSdkVersion = 23\n        compileSdkVersion = 34\n        targetSdkVersion = 33\n        ndkVersion = \"26.1.10909125\"\n        kotlinVersion = \"1.9.0\"\n    }\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath(\"com.android.tools.build:gradle:8.4.1\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")\n        classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0\")\n    }\n}\n\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n",
+    "android/gradle/wrapper/gradle-wrapper.properties": "distributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\ndistributionUrl=https\\://services.gradle.org/distributions/gradle-8.8-bin.zip\nnetworkTimeout=10000\nvalidateDistributionUrl=true\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists\n",
+    "android/app/build.gradle": "apply plugin: \"com.android.application\"\napply plugin: \"com.facebook.react\"\n\nreact {\n}\n\nandroid {\n    namespace \"com.rnbenchapp\"\n}\n\ndependencies {\n    implementation(\"com.facebook.react:react-android\")\n}\n"
+  },
+  "expect": {
+    "diagnosisId": "compile-sdk-version",
+    "diagnosisKeywords": [],
+    "fixFile": "android/build.gradle",
+    "mustContain": [
+      "compileSdkVersion = 34"
+    ],
+    "mustNotContain": [
+      "compileSdkVersion = 33"
+    ],
+    "autoFixable": true
+  }
+}

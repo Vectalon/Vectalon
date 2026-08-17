@@ -51,7 +51,7 @@ export const XCODE_PATTERNS: XcodePattern[] = [
   {
     id: 'deployment-target',
     name: 'Deployment target too low',
-    re: /deployment target is \d+\.\d+, but the range of supported deployment target versions is/i,
+    re: /deployment target[^,]*?(?:is|set to)\s*\d+\.\d+.*range of supported deployment target versions is|deployment target is \d+\.\d+, but the range of supported deployment target versions is/i,
     fix: "Raise IPHONEOS_DEPLOYMENT_TARGET in the Podfile (`platform :ios, '15.0'` or the RN-required floor for your version) and re-run `cd ios && pod install`.",
   },
   {

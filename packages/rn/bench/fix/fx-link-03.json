@@ -1,0 +1,18 @@
+{
+  "id": "fx-link-03",
+  "specVersion": 1,
+  "suite": "linking",
+  "title": "Pod not installed after adding a native package",
+  "issue": "iOS build fails: the pod for the new native module is missing.",
+  "log": "[!] The `react-native-vision-camera` pod could not be found — run pod install after adding the package.",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "pod-install-needed",
+    "diagnosisKeywords": [],
+    "fixFile": "android/build.gradle",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

@@ -61,7 +61,7 @@ export interface FixReport {
   root: string
   issue?: string
   logPath?: string
-  kind: 'gradle' | 'xcode' | 'metro' | 'deps' | 'general'
+  kind: 'gradle' | 'xcode' | 'metro' | 'ts' | 'deps' | 'general'
   verdict: FixVerdict
   findings: FixFinding[]
   edits: FixEdit[]

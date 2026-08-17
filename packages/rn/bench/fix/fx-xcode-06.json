@@ -1,0 +1,18 @@
+{
+  "id": "fx-xcode-06",
+  "specVersion": 1,
+  "suite": "xcode",
+  "title": "Duplicate symbol after double import",
+  "issue": "iOS build fails: duplicate symbol for the same class across two frameworks.",
+  "log": "▸ Compiling ViewController.swift\n\n❌  /Users/dev/ios/App/ViewController.swift:42:5: error:\n\nduplicate symbol '_OBJC_CLASS_$_RNGestureHandler' in:\n    /.../libRNGestureHandler.a\n    /.../libRNGestureHandler.a\n",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "linker",
+    "diagnosisKeywords": [],
+    "fixFile": "ios/Podfile",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "fx-link-09",
+  "specVersion": 1,
+  "suite": "linking",
+  "title": "JSI module requires a specific NDK",
+  "issue": "Android build fails: a JSI module requires a newer NDK.",
+  "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\nNDK at /Users/dev/Library/Android/sdk/ndk/25.1.8937393 did not have a source.properties file (required by react-native-reanimated).",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "ndk-version",
+    "diagnosisKeywords": [],
+    "fixFile": "android/build.gradle",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

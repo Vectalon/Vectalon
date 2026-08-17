@@ -38,6 +38,12 @@ export const GRADLE_PATTERNS: GradlePattern[] = [
     fix: 'Bump the Gradle wrapper + AGP together: update gradle/wrapper/gradle-wrapper.properties and the `com.android.tools.build:gradle` version in android/build.gradle to the RN-required pair (see the RN upgrade guide for your version).',
   },
   {
+    id: 'hermes-android',
+    name: 'Hermes build issue (Android)',
+    re: /hermesc|hermes-engine|Could not resolve.*hermes/i,
+    fix: 'Hermes bytecode toolchain failed: clean (`cd android && ./gradlew clean`), delete the Gradle cache (`~/.gradle/caches`) for a corrupted hermes-engine artifact, and confirm hermesEnabled matches your RN version (RN 0.70+ defaults to on).',
+  },
+  {
     id: 'dependency-resolution',
     name: 'Dependency resolution failure',
     re: /Could not resolve|Could not find|Failed to resolve|No matching variant/i,
@@ -74,10 +80,46 @@ export const GRADLE_PATTERNS: GradlePattern[] = [
     fix: 'Raise the Gradle daemon heap in android/gradle.properties: `org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g`, then `cd android && ./gradlew --stop`.',
   },
   {
-    id: 'hermes-android',
-    name: 'Hermes build issue (Android)',
-    re: /hermesc|hermes-engine|Could not resolve.*hermes/i,
-    fix: 'Hermes bytecode toolchain failed: clean (`cd android && ./gradlew clean`), delete the Gradle cache (`~/.gradle/caches`) for a corrupted hermes-engine artifact, and confirm hermesEnabled matches your RN version (RN 0.70+ defaults to on).',
+    id: 'duplicate-class',
+    name: 'Duplicate class conflict',
+    re: /Duplicate class ([\w.]+) found in modules|duplicate class com\./i,
+    fix: 'Two dependencies ship the same class — align their versions or exclude one: find the two modules naming the class (`./gradlew :app:dependencies`), then add `exclude group: "…"` on the older artifact or bump both to the same version. The classic case is two Play Services / support-library versions.',
+  },
+  {
+    id: 'manifest-merger',
+    name: 'Manifest merger failure',
+    re: /Manifest merger failed|Suggestion: add 'tools:replace'/i,
+    fix: 'A native module\'s manifest conflicts with the app\'s (a permission/activity declared twice, or a minSdkVersion clash): apply the merger\'s suggested `tools:replace`/`tools:node` attribute in AndroidManifest.xml, raise minSdkVersion to the highest requirement, or remove the duplicate declaration.',
+  },
+  {
+    id: 'agp-namespace',
+    name: 'Namespace not specified (AGP 8)',
+    re: /Namespace not specified\. Please specify a namespace in the module\'s build file|namespace.*must be specified/i,
+    fix: 'AGP 8 removed package-name inference: add `namespace "com.<appid>"` to android/app/build.gradle (and each library module\'s build.gradle). The exact id should match your applicationId.',
+  },
+  {
+    id: 'min-sdk-version',
+    name: 'minSdkVersion too low',
+    re: /uses-sdk:minSdkVersion \d+ cannot be smaller than version (\d+)|requires a higher minSdkVersion|minSdkVersion.*cannot be smaller/i,
+    fix: 'A native module requires a higher Android minimum: raise minSdkVersion in android/build.gradle to the number the merger names (23 is the RN baseline; many SDKs need 24+).',
+  },
+  {
+    id: 'package-download',
+    name: 'Package download / checksum failure',
+    re: /Could not (?:download|find|HEAD) ['"][^'"]+['"]|java\.io\.IOException|checksum.*failed/i,
+    fix: 'An artifact failed to download or failed its checksum: retry with `cd android && ./gradlew --refresh-dependencies`, clear the corrupted cache entry (`rm -rf ~/.gradle/caches/modules-2/files-2.1/<group>`), and check disk space + proxy.',
+  },
+  {
+    id: 'incompatible-types',
+    name: 'Incompatible class / version conflict',
+    re: /IncompatibleClassChangeError|NoClassDefFoundError|ClassNotFoundException|ClassNotFound|NoSuchMethodError|java\.lang\.LinkageError/i,
+    fix: 'A runtime classpath conflict between transitive dependencies: run `./gradlew :app:dependencies` to find the duplicate versions, align them in a resolutionStrategy, and `cd android && ./gradlew clean` after the change.',
+  },
+  {
+    id: 'gradle-sync',
+    name: 'Gradle sync / configuration failure',
+    re: /Could not (?:determine the dependencies of task|find property|compile the settings)|A problem occurred evaluating (?:root )?project/i,
+    fix: 'The build script itself fails to configure: check for a typo or missing variable in android/build.gradle / settings.gradle (a common cause: an ext property referenced before it is defined), then re-sync in Android Studio or `./gradlew help` to see the exact line.',
   },
 ]
 

@@ -1,0 +1,24 @@
+{
+  "id": "fx-metro-01",
+  "specVersion": 1,
+  "suite": "metro",
+  "title": "Unable to resolve a module import",
+  "issue": "Metro fails: unable to resolve module ./src/screens/Home from App.tsx.",
+  "log": "error: Error: Unable to resolve module\n\n Metro has failed to resolve the module.\nUnable to resolve module ./src/screens/Home from /src/App.tsx: Module `./src/screens/Home` does not exist in the Haste module map.",
+  "broken": {
+    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
+  },
+  "healthy": {
+    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
+  },
+  "expect": {
+    "diagnosisId": "module-resolution",
+    "diagnosisKeywords": [],
+    "fixFile": "src/App.tsx",
+    "mustContain": [
+      "SafeAreaView"
+    ],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

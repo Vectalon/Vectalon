@@ -80,6 +80,7 @@ import { dxCommand } from './commands/dx'
 import { datasetCommand } from './commands/dataset'
 import { loraCommand } from './commands/lora'
 import { benchCommand } from './commands/bench'
+import { fixBenchCommand } from './commands/fixBench'
 import { leaderboardCommand, type LeaderboardCommandOptions } from './commands/leaderboard'
 import { archiveCommand } from './commands/archive'
 import { distributeCommand } from './commands/distribute'
@@ -788,6 +789,16 @@ export function createProgram(): Command {
     .option('--baseline <file>', 'Compare the deterministic run against a stored baseline JSON (CI regression gate; the gate runs only when this flag is passed)')
     .option('--tolerance <fraction>', 'Max allowed axis drop before a regression is flagged (default 0.01)')
     .action(benchCommand)
+
+  program
+    .command('fix-bench')
+    .description('The "make vc fix unbelievably reliable" benchmark (directive #2): runs the REAL vc fix pipeline against 100 real React Native failure scenarios — Gradle conflicts, Kotlin/AGP mismatches, CocoaPods, Xcode, Metro, Hermes, RN upgrade breakages, native module linking, TypeScript regressions — and scores diagnosis accuracy (target ≥ 80%), fix accuracy without human modification (target ≥ 50%), build success, false-positive rate, time saved, and human intervention. Fully hermetic (no builds) and deterministic')
+    .option('--json', 'Print the summary as JSON instead of markdown')
+    .option('-o, --output <path>', 'Write the report to a file instead of stdout')
+    .option('--suite <id>', 'Only run scenarios in the given suite (gradle-conflict|kotlin|agp|cocoapods|xcode|metro|hermes|upgrade|linking|typescript)')
+    .option('--ids <list>', 'Only run scenarios with these comma-separated ids')
+    .option('--scenarios <dir>', 'Override the scenario directory (default: bench/fix)')
+    .action(fixBenchCommand)
 
   program
     .command('impact [directory]')

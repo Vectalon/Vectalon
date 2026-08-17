@@ -1,0 +1,20 @@
+{
+  "id": "fx-metro-06",
+  "specVersion": 1,
+  "suite": "metro",
+  "title": "Metro port 8081 already in use",
+  "issue": "Metro refuses to start: port 8081 is already in use.",
+  "log": "error: listen EADDRINUSE: address already in use :::8081\nMetro Bundler cannot listen on port 8081 — it is already in use by another process.",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "port-in-use",
+    "diagnosisKeywords": [],
+    "fixFile": "src/App.tsx",
+    "mustContain": [
+      "SafeAreaView"
+    ],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "fx-xcode-03",
+  "specVersion": 1,
+  "suite": "xcode",
+  "title": "Provisioning profile does not include the device",
+  "issue": "iOS build fails: provisioning profile does not include the currently selected device.",
+  "log": "▸ Compiling ViewController.swift\n\n❌  /Users/dev/ios/App/ViewController.swift:42:5: error:\n\nProvisioning profile \"iOS Team Provisioning Profile: *\" doesn't include the currently selected device.\n",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "provisioning",
+    "diagnosisKeywords": [],
+    "fixFile": "ios/Podfile",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

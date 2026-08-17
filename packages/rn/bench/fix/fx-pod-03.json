@@ -1,0 +1,29 @@
+{
+  "id": "fx-pod-03",
+  "specVersion": 1,
+  "suite": "cocoapods",
+  "title": "Permissions pod version unpublished",
+  "issue": "pod install fails: RNPermissions pod could not be found on trunk.",
+  "log": "Analyzing dependencies\n[!] CocoaPods could not find compatible versions for pod \"RNPermissions\":\n  In Podfile:\n    RNPermissions (from `../node_modules/react-native-permissions`)\n\nUnable to find a specification for \"RNPermissions\"\n",
+  "broken": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"scripts\": {\n    \"start\": \"react-native start\",\n    \"android\": \"react-native run-android\",\n    \"ios\": \"react-native run-ios\",\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.2.0\",\n    \"react-native\": \"0.74.0\",\n    \"react-native-permissions\": \"^1.0.0\"\n  },\n  \"devDependencies\": {\n    \"@babel/core\": \"7.24.9\",\n    \"@babel/preset-env\": \"7.24.8\",\n    \"@babel/preset-typescript\": \"7.24.7\",\n    \"@types/jest\": \"29.5.14\",\n    \"@types/react\": \"18.2.79\",\n    \"@typescript-eslint/eslint-plugin\": \"6.21.0\",\n    \"@typescript-eslint/parser\": \"6.21.0\",\n    \"babel-jest\": \"29.7.0\",\n    \"eslint\": \"8.57.0\",\n    \"jest\": \"29.7.0\",\n    \"react-test-renderer\": \"18.2.0\",\n    \"typescript\": \"5.5.4\"\n  },\n  \"jest\": {\n    \"preset\": \"react-native\"\n  }\n}",
+    "ios/Podfile": "require_relative '../node_modules/react-native/scripts/react_native_pods'\nrequire_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'\n\nplatform :ios, '13.4'\n\ntarget 'rn-bench-app' do\n  config = use_native_modules!\n  use_react_native!(\n    :path => config[:reactNativePath],\n    :hermes_enabled => true\n  )\nend\n"
+  },
+  "healthy": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"scripts\": {\n    \"start\": \"react-native start\",\n    \"android\": \"react-native run-android\",\n    \"ios\": \"react-native run-ios\",\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.2.0\",\n    \"react-native\": \"0.74.0\",\n    \"react-native-permissions\": \"^1.0.0\"\n  },\n  \"devDependencies\": {\n    \"@babel/core\": \"7.24.9\",\n    \"@babel/preset-env\": \"7.24.8\",\n    \"@babel/preset-typescript\": \"7.24.7\",\n    \"@types/jest\": \"29.5.14\",\n    \"@types/react\": \"18.2.79\",\n    \"@typescript-eslint/eslint-plugin\": \"6.21.0\",\n    \"@typescript-eslint/parser\": \"6.21.0\",\n    \"babel-jest\": \"29.7.0\",\n    \"eslint\": \"8.57.0\",\n    \"jest\": \"29.7.0\",\n    \"react-test-renderer\": \"18.2.0\",\n    \"typescript\": \"5.5.4\"\n  },\n  \"jest\": {\n    \"preset\": \"react-native\"\n  }\n}",
+    "ios/Podfile": "require_relative '../node_modules/react-native/scripts/react_native_pods'\nrequire_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'\n\nplatform :ios, '13.4'\n\ntarget 'rn-bench-app' do\n  config = use_native_modules!\n  use_react_native!(\n    :path => config[:reactNativePath],\n    :hermes_enabled => true\n  )\n  pod 'RNPermissions', :path => '../node_modules/react-native-permissions'\nend\n"
+  },
+  "expect": {
+    "diagnosisId": "pod-not-found",
+    "diagnosisKeywords": [
+      "pod",
+      "CocoaPods"
+    ],
+    "fixFile": "ios/Podfile",
+    "mustContain": [
+      "pod 'RNPermissions'"
+    ],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

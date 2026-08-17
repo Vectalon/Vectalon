@@ -1,0 +1,20 @@
+{
+  "id": "fx-hermes-10",
+  "specVersion": 1,
+  "suite": "hermes",
+  "title": "Hermes flag flipped after an RN upgrade",
+  "issue": "After upgrading RN, the build fails looking for hermes-engine.",
+  "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\nCould not resolve hermes-engine:1.0.0.",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "hermes-android",
+    "diagnosisKeywords": [
+      "hermes"
+    ],
+    "fixFile": "ios/Podfile",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

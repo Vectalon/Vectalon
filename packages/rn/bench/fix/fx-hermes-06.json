@@ -1,0 +1,20 @@
+{
+  "id": "fx-hermes-06",
+  "specVersion": 1,
+  "suite": "hermes",
+  "title": "Hermes engine requested for iOS pods",
+  "issue": "pod install fails: the Hermes pod cannot be found.",
+  "log": "Analyzing dependencies\n[!] Unable to find a specification for \"hermes-engine\".",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "hermes-android",
+    "diagnosisKeywords": [
+      "hermes"
+    ],
+    "fixFile": "ios/Podfile",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

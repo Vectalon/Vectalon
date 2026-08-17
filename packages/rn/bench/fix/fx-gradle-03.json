@@ -1,0 +1,27 @@
+{
+  "id": "fx-gradle-03",
+  "specVersion": 1,
+  "suite": "gradle-conflict",
+  "title": "AAPT2 resource linking failure from a vector asset",
+  "issue": "Android build fails at resource linking with an AAPT2 error on a drawable.",
+  "log": "> Task :app:processDebugResources FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:processDebugResources'.\n\n> AAPT2 aapt2-8.4.1-10909125-linux Daemon #0: Daemon startup failed\n  This should not happen under normal circumstances, please report an issue if this occurs.\nerror: failed to link file resources.\n  /src/android/app/src/main/res/drawable/ic_launcher_foreground.xml:2: AAPT2 error: check logs for details\n",
+  "broken": {
+    "android/app/src/main/res/drawable/ic_launcher_foreground.xml": "<vector xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:width=\"108dp\"\n    android:height=\"108dp\"\n    android:viewportWidth=\"108\"\n    android:viewportHeight=\"108\">\n  <path android:fillColor=\"#FFFFFF\"\n      android:pathData=\"M54,54m-50,0a50,50 0,1 1,100 0a50,50 0,1 1,-100 0\" />\n</vector>\n"
+  },
+  "healthy": {
+    "android/app/src/main/res/drawable/ic_launcher_foreground.xml": "<vector xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:width=\"108dp\"\n    android:height=\"108dp\"\n    android:viewportWidth=\"108\"\n    android:viewportHeight=\"108\">\n  <path android:fillColor=\"#FFFFFF\"\n      android:pathData=\"M54,54m-50,0a50,50 0,1 1,100 0a50,50 0,1 1,-100 0\"\n      android:fillType=\"evenOdd\" />\n</vector>\n"
+  },
+  "expect": {
+    "diagnosisId": "resource-link",
+    "diagnosisKeywords": [
+      "AAPT2",
+      "resource linking"
+    ],
+    "fixFile": "android/app/src/main/res/drawable/ic_launcher_foreground.xml",
+    "mustContain": [
+      "fillType"
+    ],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

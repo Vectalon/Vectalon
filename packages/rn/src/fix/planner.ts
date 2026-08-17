@@ -99,6 +99,57 @@ function editGradleWrapper(root: string, target: string, current: string): FixEd
   }
 }
 
+/** Raise minSdkVersion in the root build.gradle. */
+function editMinSdk(root: string, target: number, current: number): FixEdit | null {
+  const file = buildGradlePath(root)
+  const content = readFile(root, file)
+  const m = content.match(/minSdkVersion\s*=\s*(\d+)/) || content.match(/minSdkVersion\s+(\d+)/)
+  if (!m) return null
+  const oldLine = m[0]
+  const newLine = oldLine.replace(/\d+/, String(target))
+  return {
+    file,
+    op: 'replace',
+    from: oldLine,
+    to: newLine,
+    summary: `Raise minSdkVersion ${current} → ${target}`,
+  }
+}
+
+/** Raise the iOS deployment target in ios/Podfile (a top CocoaPods failure). */
+function editPodfileTarget(root: string, current: string, target: string): FixEdit | null {
+  const file = 'ios/Podfile'
+  const content = readFile(root, file)
+  const m = content.match(/platform\s*:\s*ios\s*,\s*['"](\d+(?:\.\d+)?)['"]/)
+  if (!m) return null
+  const oldText = m[0]
+  const newText = oldText.replace(m[1], target)
+  return {
+    file,
+    op: 'replace',
+    from: oldText,
+    to: newText,
+    summary: `Raise iOS deployment target ${current} → ${target}`,
+  }
+}
+
+/** Add the missing AGP-8 namespace block to android/app/build.gradle. */
+function editNamespace(root: string): FixEdit | null {
+  const file = 'android/app/build.gradle'
+  const content = readFile(root, file)
+  if (/namespace\s+['"][^'"]+['"]/.test(content)) return null
+  const m = content.match(/^\s*apply plugin: "com\.facebook\.react"/m)
+  if (!m) return null
+  const indent = m[0].match(/^\s*/)?.[0] ?? ''
+  return {
+    file,
+    op: 'insert-after',
+    from: m[0],
+    to: `${m[0]}\n${indent}namespace "com.rnbenchapp"`,
+    summary: 'Add AGP-8 namespace to android/app/build.gradle',
+  }
+}
+
 /** Raise the Gradle daemon heap in android/gradle.properties. */
 function editJvmArgs(root: string, current: string): FixEdit | null {
   const file = 'android/gradle.properties'
@@ -168,6 +219,27 @@ export function planEdits(root: string, findings: FixFinding[], ctx?: ProjectCon
       case 'gradle-memory': {
         if (project.jvmArgs !== null) {
           const e = editJvmArgs(root, project.jvmArgs)
+          if (e) { edits.push(e); f.edit = e }
+        }
+        break
+      }
+      case 'min-sdk-version': {
+        if (project.minSdk !== null) {
+          const e = editMinSdk(root, 23, project.minSdk)
+          if (e) { edits.push(e); f.edit = e }
+        }
+        break
+      }
+      case 'agp-namespace': {
+        const e = editNamespace(root)
+        if (e) { edits.push(e); f.edit = e }
+        break
+      }
+      case 'deployment-target': {
+        const podfile = readFile(root, 'ios/Podfile')
+        const cur = podfile.match(/platform\s*:\s*ios\s*,\s*['"](\d+(?:\.\d+)?)['"]/)?.[1]
+        if (cur) {
+          const e = editPodfileTarget(root, cur, '15.0')
           if (e) { edits.push(e); f.edit = e }
         }
         break

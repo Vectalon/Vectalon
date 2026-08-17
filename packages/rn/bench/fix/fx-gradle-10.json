@@ -1,0 +1,29 @@
+{
+  "id": "fx-gradle-10",
+  "specVersion": 1,
+  "suite": "gradle-conflict",
+  "title": "compileSdkVersion below the SDK the RN template requires",
+  "issue": "Android build fails — the log asks to use SDK version 34 or higher.",
+  "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\n* What went wrong:\nExecution failed for task ':app:checkDebugAarMetadata'.\n> A problem occurred configuring project ':app'.\n> Please use SDK version 34 or higher.\n",
+  "broken": {
+    "android/build.gradle": "buildscript {\n    ext {\n        buildToolsVersion = \"34.0.0\"\n        minSdkVersion = 23\n        compileSdkVersion = 33\n        targetSdkVersion = 34\n        ndkVersion = \"26.1.10909125\"\n        kotlinVersion = \"1.9.0\"\n    }\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath(\"com.android.tools.build:gradle:8.4.1\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")\n        classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0\")\n    }\n}\n\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n"
+  },
+  "healthy": {
+    "android/build.gradle": "buildscript {\n    ext {\n        buildToolsVersion = \"34.0.0\"\n        minSdkVersion = 23\n        compileSdkVersion = 34\n        targetSdkVersion = 34\n        ndkVersion = \"26.1.10909125\"\n        kotlinVersion = \"1.9.0\"\n    }\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath(\"com.android.tools.build:gradle:8.4.1\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")\n        classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0\")\n    }\n}\n\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n"
+  },
+  "expect": {
+    "diagnosisId": "compile-sdk-version",
+    "diagnosisKeywords": [
+      "SDK version",
+      "compileSdkVersion"
+    ],
+    "fixFile": "android/build.gradle",
+    "mustContain": [
+      "compileSdkVersion = 34"
+    ],
+    "mustNotContain": [
+      "compileSdkVersion = 33"
+    ],
+    "autoFixable": true
+  }
+}

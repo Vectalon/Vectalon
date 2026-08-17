@@ -1,0 +1,24 @@
+{
+  "id": "fx-metro-10",
+  "specVersion": 1,
+  "suite": "metro",
+  "title": "Monorepo package entry point not found",
+  "issue": "Metro fails: a workspace package main field does not resolve.",
+  "log": "error: Error: Unable to resolve module\n\n Metro has failed to resolve the module.\nThe package \"shared-ui\" could not be found within its \"main\" field — did not resolve to a node_modules path.",
+  "broken": {
+    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
+  },
+  "healthy": {
+    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
+  },
+  "expect": {
+    "diagnosisId": "module-resolution",
+    "diagnosisKeywords": [],
+    "fixFile": "src/App.tsx",
+    "mustContain": [
+      "SafeAreaView"
+    ],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

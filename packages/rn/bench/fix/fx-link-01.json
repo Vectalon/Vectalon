@@ -1,0 +1,18 @@
+{
+  "id": "fx-link-01",
+  "specVersion": 1,
+  "suite": "linking",
+  "title": "Native module not linked: settings.gradle missing the include",
+  "issue": "Android build fails: the native module project is not included in settings.gradle.",
+  "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\n* What went wrong:\nExecution failed for task ':app:processDebugMainManifest'.\n> Could not find module ':react-native-vector-icons'.",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "dependency-resolution",
+    "diagnosisKeywords": [],
+    "fixFile": "android/build.gradle",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

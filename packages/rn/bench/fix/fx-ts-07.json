@@ -1,0 +1,24 @@
+{
+  "id": "fx-ts-07",
+  "specVersion": 1,
+  "suite": "typescript",
+  "title": "TS2300: Duplicate identifier from a merge conflict",
+  "issue": "Typecheck fails: a merge conflict left two declarations.",
+  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(3,10): error TS2300: Duplicate identifier 'total'.\n",
+  "broken": {
+    "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nconst total = 1;\nconst total = 2;\n"
+  },
+  "healthy": {
+    "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nconst total = 2;\n"
+  },
+  "expect": {
+    "diagnosisId": "ts-duplicate-identifier",
+    "diagnosisKeywords": [],
+    "fixFile": "src/screens/Broken.tsx",
+    "mustContain": [
+      "const total = 2;"
+    ],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

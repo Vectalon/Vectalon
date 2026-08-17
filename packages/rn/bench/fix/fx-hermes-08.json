@@ -1,0 +1,20 @@
+{
+  "id": "fx-hermes-08",
+  "specVersion": 1,
+  "suite": "hermes",
+  "title": "Hermes bytecode compile error in a transformed file",
+  "issue": "Build fails while hermesc compiles the JS bundle.",
+  "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\nhermesc: Compilation of the JavaScript bundle failed with a SyntaxError.",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "hermes-android",
+    "diagnosisKeywords": [
+      "hermes"
+    ],
+    "fixFile": "ios/Podfile",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

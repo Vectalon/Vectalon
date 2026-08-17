@@ -1,0 +1,18 @@
+{
+  "id": "fx-xcode-08",
+  "specVersion": 1,
+  "suite": "xcode",
+  "title": "Deployment target below the supported range",
+  "issue": "iOS build fails: deployment target is below the supported range.",
+  "log": "▸ Compiling ViewController.swift\n\n❌  /Users/dev/ios/App/ViewController.swift:42:5: error:\n\nThe iOS deployment target 'IPHONEOS_DEPLOYMENT_TARGET' is set to 12.0, but the range of supported deployment target versions is 13.4 to 17.0.99.\n",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "deployment-target",
+    "diagnosisKeywords": [],
+    "fixFile": "ios/Podfile",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

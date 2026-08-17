@@ -1,0 +1,24 @@
+{
+  "id": "fx-metro-07",
+  "specVersion": 1,
+  "suite": "metro",
+  "title": "Asset not found (missing image)",
+  "issue": "Metro fails: the referenced image asset does not exist.",
+  "log": "error: Error: Unable to resolve module\n\n Metro has failed to resolve the module.\nAsset ./src/assets/logo.png does not exist — the require/import path points to a file that was deleted or renamed.",
+  "broken": {
+    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
+  },
+  "healthy": {
+    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
+  },
+  "expect": {
+    "diagnosisId": "asset-not-found",
+    "diagnosisKeywords": [],
+    "fixFile": "src/App.tsx",
+    "mustContain": [
+      "SafeAreaView"
+    ],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

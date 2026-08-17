@@ -1,0 +1,24 @@
+{
+  "id": "fx-metro-02",
+  "specVersion": 1,
+  "suite": "metro",
+  "title": "Missing package — forgot npm install",
+  "issue": "Metro fails: the package react-native-vector-icons cannot be resolved.",
+  "log": "error: Error: Unable to resolve module\n\n Metro has failed to resolve the module.\nUnable to resolve module react-native-vector-icons from /src/components/Icon.tsx: react-native-vector-icons could not be found within the project.",
+  "broken": {
+    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
+  },
+  "healthy": {
+    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
+  },
+  "expect": {
+    "diagnosisId": "module-resolution",
+    "diagnosisKeywords": [],
+    "fixFile": "src/App.tsx",
+    "mustContain": [
+      "SafeAreaView"
+    ],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

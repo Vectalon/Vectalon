@@ -1,0 +1,18 @@
+{
+  "id": "fx-xcode-05",
+  "specVersion": 1,
+  "suite": "xcode",
+  "title": "Linker: undefined symbols from a native library",
+  "issue": "iOS build fails at the link step with undefined symbols after adding a native module.",
+  "log": "▸ Compiling ViewController.swift\n\n❌  /Users/dev/ios/App/ViewController.swift:42:5: error:\n\nUndefined symbols for architecture arm64:\n  \"_OBJC_CLASS_$_RCTWebView\", referenced from:\n      objc-class-ref in AppDelegate.o\nld: symbol(s) not found for architecture arm64\n",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "linker",
+    "diagnosisKeywords": [],
+    "fixFile": "ios/Podfile",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

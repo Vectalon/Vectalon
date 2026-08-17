@@ -1,0 +1,18 @@
+{
+  "id": "fx-link-02",
+  "specVersion": 1,
+  "suite": "linking",
+  "title": "Autolinking failed for react-native-maps",
+  "issue": "Android build fails: react-native-maps cannot be found by autolinking.",
+  "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\nCould not resolve project :react-native-maps.",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "dependency-resolution",
+    "diagnosisKeywords": [],
+    "fixFile": "android/build.gradle",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

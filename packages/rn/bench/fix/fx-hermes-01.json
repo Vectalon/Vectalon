@@ -1,0 +1,20 @@
+{
+  "id": "fx-hermes-01",
+  "specVersion": 1,
+  "suite": "hermes",
+  "title": "Hermes engine could not be resolved (Android)",
+  "issue": "Android build fails: hermes-engine artifact cannot be resolved.",
+  "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\nCould not resolve com.facebook.react:hermes-android:0.74.0.",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "hermes-android",
+    "diagnosisKeywords": [
+      "hermes"
+    ],
+    "fixFile": "ios/Podfile",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

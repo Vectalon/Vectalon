@@ -1,0 +1,27 @@
+{
+  "id": "fx-gradle-08",
+  "specVersion": 1,
+  "suite": "gradle-conflict",
+  "title": "Network failure fetching a maven artifact",
+  "issue": "Android build fails to download an artifact — connection refused to mavenCentral.",
+  "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\n* What went wrong:\nCould not GET 'https://repo.maven.apache.org/maven2/com/facebook/react/react-android/0.74.0/react-android-0.74.0.pom'.\n> Connection refused (Connection refused)\n",
+  "broken": {
+    "android/build.gradle": "buildscript {\n    ext {\n        buildToolsVersion = \"34.0.0\"\n        minSdkVersion = 23\n        compileSdkVersion = 34\n        targetSdkVersion = 34\n        ndkVersion = \"26.1.10909125\"\n        kotlinVersion = \"1.9.0\"\n    }\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath(\"com.android.tools.build:gradle:8.4.1\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")\n        classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0\")\n    }\n}\n\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n"
+  },
+  "healthy": {
+    "android/build.gradle": "buildscript {\n    ext {\n        buildToolsVersion = \"34.0.0\"\n        minSdkVersion = 23\n        compileSdkVersion = 34\n        targetSdkVersion = 34\n        ndkVersion = \"26.1.10909125\"\n        kotlinVersion = \"1.9.0\"\n    }\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath(\"com.android.tools.build:gradle:8.4.1\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")\n        classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0\")\n    }\n}\n\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n"
+  },
+  "expect": {
+    "diagnosisId": "network",
+    "diagnosisKeywords": [
+      "Could not GET",
+      "Connection refused"
+    ],
+    "fixFile": "android/build.gradle",
+    "mustContain": [
+      "mavenCentral()"
+    ],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}

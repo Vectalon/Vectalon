@@ -1,0 +1,18 @@
+{
+  "id": "fx-xcode-07",
+  "specVersion": 1,
+  "suite": "xcode",
+  "title": "Framework not found",
+  "issue": "iOS build fails: framework not found for a pod.",
+  "log": "▸ Compiling ViewController.swift\n\n❌  /Users/dev/ios/App/ViewController.swift:42:5: error:\n\nld: framework not found DoubleConversion\n",
+  "broken": {},
+  "healthy": {},
+  "expect": {
+    "diagnosisId": "linker",
+    "diagnosisKeywords": [],
+    "fixFile": "ios/Podfile",
+    "mustContain": [],
+    "mustNotContain": [],
+    "autoFixable": false
+  }
+}
