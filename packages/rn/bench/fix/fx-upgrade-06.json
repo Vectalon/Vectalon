@@ -21,10 +21,10 @@
     "diagnosisKeywords": [],
     "fixFile": "android/build.gradle",
     "mustContain": [
-      "kotlinVersion = 1.9.0"
+      "kotlinVersion = \"1.9.0\""
     ],
     "mustNotContain": [
-      "kotlinVersion = 1.8.22"
+      "kotlinVersion = \"1.8.22\""
     ],
     "autoFixable": true
   }

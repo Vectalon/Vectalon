@@ -4,7 +4,7 @@
   "suite": "typescript",
   "title": "TS2739: Missing required props at a call site",
   "issue": "Typecheck fails: a component gained a required prop and a call site missed it.",
-  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(3,10): error TS2739: Type '{}' is missing the following properties from type 'CardProps': title.\n",
+  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(4,10): error TS2739: Type '{}' is missing the following properties from type 'CardProps': title.\n",
   "broken": {
     "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nconst x = <Card />;\n"
   },

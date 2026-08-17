@@ -38,6 +38,7 @@ the same codebase a visitor would clone.
 | 06 | `06-bench.tape` | `bench` — deterministic baseline, 6 RN scenarios |
 | 07 | `07-archive.tape` | `archive --dry-run` — the Expo build plan (zero side effects) |
 | 08 | `08-selftest.tape` | `selftest` — live spinner/progress, per-check pass/fail stream |
+| 09 | `09-plan.tape` + `09-outcomes.tape` | **v0.13.0 side-by-side** — `plan` and `outcomes` rendered at half-width and `hstack`ed into `clips/09-plan-outcomes.mp4` |
 
 ## Regenerate
 
@@ -67,6 +68,19 @@ ffmpeg -y -f concat -safe 0 -i concat.txt -c copy full-demo.mp4
 ffmpeg -y -i full-demo.mp4 -vf "scale=1440:900" -c:v libx264 -preset slow -crf 23 -pix_fmt yuv420p -movflags +faststart -an full-demo-web.mp4
 cp full-demo-web.mp4 ../../public/demo/full-demo.mp4
 ffmpeg -y -ss 27 -i full-demo-web.mp4 -frames:v 1 -vf "scale=1100:688" -q:v 9 ../../public/demo/full-demo-poster.jpg
+```
+
+The **v0.13.0 side-by-side clip** is two half-width tapes rendered separately, then
+joined with `hstack` (pad the shorter to the longer first so both panes hold their
+final frame together):
+
+```bash
+cd clips
+ffmpeg -y -i 09-plan.mp4 -filter_complex "tpad=stop_mode=clone:stop_duration=0.5" -c:v libx264 -preset fast -crf 18 -pix_fmt yuv420p /tmp/09-plan-padded.mp4
+ffmpeg -y -i /tmp/09-plan-padded.mp4 -i 09-outcomes.mp4 -filter_complex "[0:v][1:v]hstack=inputs=2,format=yuv420p" -c:v libx264 -preset medium -crf 20 -movflags +faststart -an 09-plan-outcomes.mp4
+ffmpeg -y -i 09-plan-outcomes.mp4 -vf "scale=1440:900" -c:v libx264 -preset slow -crf 23 -pix_fmt yuv420p -movflags +faststart -an 09-plan-outcomes-web.mp4
+cp 09-plan-outcomes-web.mp4 ../../../public/demo/plan-outcomes.mp4
+ffmpeg -y -ss 4 -i 09-plan-outcomes-web.mp4 -frames:v 1 -vf "scale=1100:688" -q:v 9 ../../../public/demo/plan-outcomes-poster.jpg
 ```
 
 Notes:

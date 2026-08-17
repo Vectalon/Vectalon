@@ -4,7 +4,7 @@
   "suite": "typescript",
   "title": "TS2322: Unknown prop passed to a component",
   "issue": "Typecheck fails: a prop is passed the component does not accept.",
-  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(3,10): error TS2322: Type '{ accessibilityRole: string }' is not assignable to type 'TextProps'.\n",
+  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(4,10): error TS2322: Type '{ accessibilityRole: string }' is not assignable to type 'TextProps'.\n",
   "broken": {
     "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nconst x = <Text accessibilityRole=\"header\">Hi</Text>;\n"
   },
@@ -12,7 +12,7 @@
     "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nconst x = <Text>Hi</Text>;\n"
   },
   "expect": {
-    "diagnosisId": "ts-unknown-property",
+    "diagnosisId": "ts-type-not-assignable",
     "diagnosisKeywords": [],
     "fixFile": "src/screens/Broken.tsx",
     "mustContain": [

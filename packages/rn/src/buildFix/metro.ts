@@ -25,6 +25,12 @@ interface MetroPattern {
 /** The top Metro bundler failures, ordered most-specific first. */
 export const METRO_PATTERNS: MetroPattern[] = [
   {
+    id: 'babel-plugin-missing',
+    name: 'Babel plugin / preset not found',
+    re: /Cannot find module ['"](?:babel|@babel|babel-preset)[^'"]+['"]|Could not find plugin|unknown plugin/i,
+    fix: 'Install the missing Babel package (`npm i -D babel-preset-expo` or the named plugin), keep babel.config.js in sync with the app flavor, and restart Metro with `--reset-cache`.',
+  },
+  {
     id: 'module-resolution',
     name: 'Module resolution failure',
     re: /Unable to resolve module .* from .*|Could not resolve module .* from .*|Cannot find module ['"][^'"]+['"]/i,
@@ -41,12 +47,6 @@ export const METRO_PATTERNS: MetroPattern[] = [
     name: 'Syntax / transform error',
     re: /SyntaxError: |TransformError |Unexpected token|Syntax error/,
     fix: 'The failing file does not parse under Metro\'s Babel pipeline: fix the syntax, or align the transform — check babel.config.js presets (babel-preset-expo / @react-native/babel-preset) and that the file extension matches its syntax (TS in .ts/.tsx, JSX in .jsx/.tsx).',
-  },
-  {
-    id: 'babel-plugin-missing',
-    name: 'Babel plugin / preset not found',
-    re: /Cannot find module ['"](?:babel|@babel|babel-preset)[^'"]+['"]|Could not find plugin|unknown plugin/i,
-    fix: 'Install the missing Babel package (`npm i -D babel-preset-expo` or the named plugin), keep babel.config.js in sync with the app flavor, and restart Metro with `--reset-cache`.',
   },
   {
     id: 'port-in-use',

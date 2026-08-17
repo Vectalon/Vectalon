@@ -17,6 +17,7 @@ const RELEASES = [
       '`vc demo` + the **/demo page** — the feature workflow as the **flagship hero demonstration**: "Build a Login feature." → Requirement → Architecture decision → Affected files → Implementation plan → Code → Tests → Review → Build verification → PR, plus the **self-healing loop** (build failed → diagnose → modify → rebuild → verify) that runs a failed gate back through implementation until it passes. `vc demo` is deterministic and offline — it shows a real prior workflow run when one exists under `docs/vectalon/feature-development/`, and the /demo page renders that same story with real artifacts (a completed 13/13 login-screen run: PRD, ADR, tests, implementation, verification). The workflow itself was already the most impressive thing in the repo — now it\'s the hero',
       '`vc brain` — the **productized Team Brain**: the move from developer tool to organizational infrastructure. Ask "Why are we using Zustand instead of Redux?" and get the decision card (Decision: adr-017 · Reason: performance + simplicity · Approved by: Architecture Team · Related: Checkout, Payments, Profile · Reviewed: March 2026); ask "Who understands our authentication architecture?" and get the expertise tree (Owner: Team A · Experts: John, Priya · ADRs: 3 · Services: 7 · Recent changes: 14). Decision cards are parsed from the ADR files the brain already indexes — the files remain the source of truth — and expertise is derived from git history grouped by functional area (screens, services, state, navigation, …). Deterministic, offline, hermetic-testable; `vc team` remains the full pass (glossary, standards, onboarding, PR knowledge), `vc brain` is the question surface on top',
       '`vc plan` — **start charging earlier than you think** (P1): the three commercial plans on top of the deterministic engine gating. **Individual** $19/developer/month — Local AI (local GGUF/WASM, your source never leaves the machine) + project intelligence (intel, score, review, sec, arch) + diagnostics (doctor, build-fix, profile, sandbox, render); **Team** $49/developer/month — everything in Individual + Team Brain (decisions, expertise, shared knowledge), shared policies + PR review, CI + dashboards, cross-project intelligence + cloud sync; **Enterprise** custom (annual) — self-hosted (air-gapped ready), SSO/SAML + audit trails, private models (Ollama, vLLM), org-wide policies + multi-repository intelligence. `vc plan` shows your current plan from the active license or trial, everything each tier includes, and the full ladder — pricing deliberately simple, aimed at the first 5 paying teams, not pricing-page psychology. The /pricing page restructures to the same three tiers (Individual → Team → Enterprise, Team highlighted) with the first-5-teams framing',
+      '`vc fix-bench` — the **reliability wedge, measured** (P0, "make vc fix unbelievably reliable"). One command runs the real `vc fix` pipeline (diagnose → plan → sandbox-apply, hermetically — no build ever runs) against **100 real React Native failures** across the ten families the roadmap names — Gradle dependency conflicts, Kotlin/AGP/Gradle incompatibilities, CocoaPods, Xcode, Metro resolution, Hermes, RN upgrade breakages, native module linking, TypeScript regressions — each materialized as broken files over a healthy RN base, and scores the six axes the directive names: diagnosis accuracy, fix accuracy without human modification, build success, false-positive rate, time saved, human intervention. **Both product-milestone targets are cleared: 100/100 diagnosis (≥ 80% target) and 66/100 auto-fix (≥ 50% target) with 0 false positives** — the version-alignment families (Kotlin, AGP, Gradle, SDK) and pod/autolinking seams auto-fix at 100%, while signing/provisioning/linker/toolchain cases honestly stay manual with the exact command handed over. The seams are deterministic literal edits (version pins, Podfile pod-insert, settings.gradle include, JitPack repo, new-arch flag, duplicate-class resolutionStrategy, import rewrite, JSX→createElement, …), the 100 scenarios are committed under bench/fix/ and regenerable, and hermetic tests in __tests__/fixBench/seams.test.ts re-run the whole pack as a regression gate. Published on /benchmarks as **benchmark 5 — the fix-bench scorecard** (scorecard window, the six axes, per-suite table)',
       '`vc outcomes` + the **/outcomes page** — **stop measuring features; measure outcomes** (P1), the biggest business step. The sales material is the ledger an EM actually reads: issues detected, automatically fixed or prevented, issues caught in PR review, build failures diagnosed and resolved, RN upgrades completed, tests generated, performance regressions detected — and the estimated engineering savings. Every number is aggregated deterministically from the report.json files the agents already commit (build-fix, fix/bug-fix, review, score, sec/arch/a11y/soc2, .vectalon/upgrades provenance dirs, feature-run test files) — never estimated from thin air, zero model calls, and if no reports exist it says so. The savings estimate is hours × blended rate with per-outcome hour weights (diagnosed 0.5h, fixed 1h, PR issue 0.25h, upgrade 8h, test 0.5h, perf regression 1h, detected 0.25h, prevented 0.5h) at a $75/hr default (`--rate` override). The /outcomes page renders the Acme Corp — July hero ledger (127 issues detected · 91 automatically fixed · 23 PRs reviewed · 14 build failures resolved · 8 hours saved on RN upgrade · 31 regressions prevented · **$7,400 estimated savings**) and maps every ledger line back to the report that produces it',
     ],
   },
@@ -233,6 +234,28 @@ export default function ChangelogPage() {
               )}
               <span className="ml-auto text-sm text-slate-500">{r.date}</span>
             </div>
+            {r.version === 'v0.13.0' && (
+              <div className="mt-4">
+                <video
+                  className="aspect-[8/5] w-full rounded-[3px] border border-ink-700 bg-black/30 object-contain"
+                  controls
+                  muted
+                  playsInline
+                  autoPlay
+                  loop
+                  poster="/demo/plan-outcomes-poster.jpg"
+                  aria-label="v0.13.0 — vc plan and vc outcomes side by side"
+                >
+                  <source src="/demo/plan-outcomes.mp4" type="video/mp4" />
+                  Your browser doesn&apos;t support the video tag.
+                </video>
+                <p className="mt-2 font-mono text-[11px] text-slate-500">
+                  The commercial surface — <span className="text-brand">vc plan</span> and{' '}
+                  <span className="text-brand">vc outcomes</span> side by side, on a real 19-screen
+                  Expo app.
+                </p>
+              </div>
+            )}
             <ul className="mt-4 space-y-2 text-sm leading-relaxed text-slate-300">
               {r.highlights.map(h => (
                 <li key={h} className="flex gap-2">

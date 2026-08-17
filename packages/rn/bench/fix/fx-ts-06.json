@@ -4,7 +4,7 @@
   "suite": "typescript",
   "title": "TS2305: No exported member (renamed export)",
   "issue": "Typecheck fails: a named export was renamed.",
-  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(3,10): error TS2305: Module './services/auth' has no exported member 'authApi'.\n",
+  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(4,10): error TS2305: Module './services/auth' has no exported member 'authApi'.\n",
   "broken": {
     "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nimport { authApi } from './services/auth';\n"
   },

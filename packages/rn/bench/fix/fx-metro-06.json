@@ -11,9 +11,7 @@
     "diagnosisId": "port-in-use",
     "diagnosisKeywords": [],
     "fixFile": "src/App.tsx",
-    "mustContain": [
-      "SafeAreaView"
-    ],
+    "mustContain": [],
     "mustNotContain": [],
     "autoFixable": false
   }

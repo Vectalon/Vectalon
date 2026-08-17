@@ -40,6 +40,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   productivity, travel) each with a typechecking human reference, plus the
   two removal scenarios — the pack now feeds the leaderboard, the CI gate,
   and the LoRA fine-tuning set.
+- **`vc fix-bench` — the reliability wedge, measured** (P0). Runs the real
+  `fix` pipeline (diagnose → plan → sandbox-apply, hermetically — no build
+  ever runs) against **100 real React Native failures** across the ten
+  families the roadmap names (Gradle conflicts, Kotlin/AGP/Gradle,
+  CocoaPods, Xcode, Metro, Hermes, RN upgrade breakages, linking,
+  TypeScript), each materialized as broken files over a healthy RN base, and
+  scores the six axes the directive names: diagnosis accuracy (target ≥
+  80%), fix accuracy without human modification (target ≥ 50%), build
+  success, false-positive rate, time saved, human intervention. Current:
+  **100/100 diagnosis, 66/100 auto-fix, 0 false positives** — both
+  product-milestone targets met. Deterministic edit seams in
+  `src/fix/planner.ts` (version pins, Podfile pod-insert + deployment
+  target, settings.gradle include + JitPack, new-arch flag, daemon heap,
+  duplicate-class resolutionStrategy, import rewrite, babel-preset add,
+  Metro heap script, hermes align/flag, TS import-resolve / drop-property /
+  unquote / dedupe / JSX→createElement / strip-prop) with the seam params
+  parsed from the log in `src/fix/diagnose.ts`. Scenarios committed under
+  `bench/fix/` (regenerate with `scripts/generate-fix-bench.js`); hermetic
+  tests in `__tests__/fixBench/seams.test.ts` re-run the full pack and fail
+  if either target slips.
 
 ### Changed
 

@@ -4,7 +4,7 @@
   "suite": "typescript",
   "title": "TS2322: Type not assignable (state type tightened)",
   "issue": "Typecheck fails: a value no longer matches the declared state type.",
-  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(3,10): error TS2322: Type 'string' is not assignable to type 'number'.\n",
+  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(5,10): error TS2322: Type 'string' is not assignable to type 'number'.\n",
   "broken": {
     "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nconst [count, setCount] = useState<number>(0);\nsetCount('5');\n"
   },

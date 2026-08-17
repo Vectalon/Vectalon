@@ -10,9 +10,11 @@
   "expect": {
     "diagnosisId": "dependency-resolution",
     "diagnosisKeywords": [],
-    "fixFile": "android/build.gradle",
-    "mustContain": [],
+    "fixFile": "android/settings.gradle",
+    "mustContain": [
+      "include ':react-native-vector-icons'"
+    ],
     "mustNotContain": [],
-    "autoFixable": false
+    "autoFixable": true
   }
 }

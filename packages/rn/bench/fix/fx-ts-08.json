@@ -4,7 +4,7 @@
   "suite": "typescript",
   "title": "TS17004: Cannot use JSX in a .ts file",
   "issue": "Typecheck fails: JSX is used in a file the tsconfig treats as plain TS.",
-  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(3,10): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\n",
+  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(4,10): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.\n",
   "broken": {
     "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nconst el = <Text>hi</Text>;\n"
   },

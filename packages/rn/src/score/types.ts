@@ -54,6 +54,21 @@ export interface ScoreHistoryEntry {
   overall: number
   /** Finding ids (dimension:id:file) present in that run. */
   findingIds: string[]
+  /** Per-dimension scores (dimension id → 0-100), for the trend deltas. */
+  dimensions?: Record<string, number>
+}
+
+/** One point on the overall trend series (history + the current run). */
+export interface ScoreTrendPoint {
+  scoredAt: string
+  overall: number
+}
+
+/** How one dimension moved vs the previous run. */
+export interface ScoreDimensionDelta {
+  id: string
+  label: string
+  delta: number
 }
 
 export interface ScoreHistory {
@@ -81,6 +96,14 @@ export interface ScoreReport {
   recommendations: ScoreRecommendation[]
   /** Where the previous-run comparison came from. */
   historyNote: string
+  /** Overall series — the last 12 runs including this one ("make it change over time"). */
+  trend: ScoreTrendPoint[]
+  /** Per-dimension movement vs the previous run ("+6 Architecture"). */
+  dimensionDeltas: ScoreDimensionDelta[]
+  /** Overall movement vs the first run of the current calendar month (null when none). */
+  monthDelta: number | null
+  /** Where the month-over-month comparison came from. */
+  monthNote: string
 }
 
 export interface ScoreOptions {

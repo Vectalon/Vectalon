@@ -4,6 +4,7 @@
   "suite": "upgrade",
   "title": "RN 0.76 upgrade: NDK version still 25.1",
   "issue": "After upgrading to RN 0.76, the Android build fails on the NDK version.",
+  "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\n* What went wrong:\nNDK at /Users/dev/Library/Android/sdk/ndk/25.1.8937393 did not have a source.properties file (React Native 0.76 requires 26.1.10909125).",
   "broken": {
     "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"scripts\": {\n    \"start\": \"react-native start\",\n    \"android\": \"react-native run-android\",\n    \"ios\": \"react-native run-ios\",\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.2.0\",\n    \"react-native\": \"0.76.0\"\n  },\n  \"devDependencies\": {\n    \"@babel/core\": \"7.24.9\",\n    \"@babel/preset-env\": \"7.24.8\",\n    \"@babel/preset-typescript\": \"7.24.7\",\n    \"@types/jest\": \"29.5.14\",\n    \"@types/react\": \"18.2.79\",\n    \"@typescript-eslint/eslint-plugin\": \"6.21.0\",\n    \"@typescript-eslint/parser\": \"6.21.0\",\n    \"babel-jest\": \"29.7.0\",\n    \"eslint\": \"8.57.0\",\n    \"jest\": \"29.7.0\",\n    \"react-test-renderer\": \"18.2.0\",\n    \"typescript\": \"5.5.4\"\n  },\n  \"jest\": {\n    \"preset\": \"react-native\"\n  }\n}",
     "android/build.gradle": "buildscript {\n    ext {\n        buildToolsVersion = \"34.0.0\"\n        minSdkVersion = 23\n        compileSdkVersion = 35\n        targetSdkVersion = 35\n        ndkVersion = \"25.1.8937393\"\n        kotlinVersion = \"1.9.24\"\n    }\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath(\"com.android.tools.build:gradle:8.6.0\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")\n        classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24\")\n    }\n}\n\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n",
@@ -21,10 +22,10 @@
     "diagnosisKeywords": [],
     "fixFile": "android/build.gradle",
     "mustContain": [
-      "ndk = 26.1.10909125"
+      "ndkVersion = \"26.1.10909125\""
     ],
     "mustNotContain": [
-      "ndk = 25.1.8937393"
+      "ndkVersion = \"25.1.8937393\""
     ],
     "autoFixable": false
   }

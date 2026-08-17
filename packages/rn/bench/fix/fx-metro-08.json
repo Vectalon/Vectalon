@@ -6,17 +6,17 @@
   "issue": "Metro crashes with a JavaScript heap out of memory error on a large graph.",
   "log": "FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory",
   "broken": {
-    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"scripts\": {\n    \"start\": \"react-native start\",\n    \"android\": \"react-native run-android\",\n    \"ios\": \"react-native run-ios\",\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.2.0\",\n    \"react-native\": \"0.74.0\"\n  },\n  \"devDependencies\": {\n    \"@babel/core\": \"7.24.9\",\n    \"@babel/preset-env\": \"7.24.8\",\n    \"@babel/preset-typescript\": \"7.24.7\",\n    \"@types/jest\": \"29.5.14\",\n    \"@types/react\": \"18.2.79\",\n    \"@typescript-eslint/eslint-plugin\": \"6.21.0\",\n    \"@typescript-eslint/parser\": \"6.21.0\",\n    \"babel-jest\": \"29.7.0\",\n    \"eslint\": \"8.57.0\",\n    \"jest\": \"29.7.0\",\n    \"react-test-renderer\": \"18.2.0\",\n    \"typescript\": \"5.5.4\"\n  },\n  \"jest\": {\n    \"preset\": \"react-native\"\n  }\n}"
   },
   "healthy": {
-    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"private\": true,\n  \"scripts\": {\n    \"start\": \"NODE_OPTIONS=--max-old-space-size=4096 react-native start\",\n    \"android\": \"react-native run-android\",\n    \"ios\": \"react-native run-ios\",\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.2.0\",\n    \"react-native\": \"0.74.0\"\n  },\n  \"devDependencies\": {\n    \"@babel/core\": \"7.24.9\",\n    \"@babel/preset-env\": \"7.24.8\",\n    \"@babel/preset-typescript\": \"7.24.7\",\n    \"@types/jest\": \"29.5.14\",\n    \"@types/react\": \"18.2.79\",\n    \"@typescript-eslint/eslint-plugin\": \"6.21.0\",\n    \"@typescript-eslint/parser\": \"6.21.0\",\n    \"babel-jest\": \"29.7.0\",\n    \"eslint\": \"8.57.0\",\n    \"jest\": \"29.7.0\",\n    \"react-test-renderer\": \"18.2.0\",\n    \"typescript\": \"5.5.4\"\n  },\n  \"jest\": {\n    \"preset\": \"react-native\"\n  }\n}"
   },
   "expect": {
     "diagnosisId": "out-of-memory",
     "diagnosisKeywords": [],
-    "fixFile": "src/App.tsx",
+    "fixFile": "package.json",
     "mustContain": [
-      "SafeAreaView"
+      "NODE_OPTIONS=--max-old-space-size=4096"
     ],
     "mustNotContain": [],
     "autoFixable": false

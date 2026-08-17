@@ -5,16 +5,24 @@
   "title": "Hermes disabled but engine still required",
   "issue": "Android build fails: hermesEnabled is off but the engine is still requested.",
   "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\nCould not resolve project :hermes-engine. Hermes is disabled but a dependency still requests it.",
-  "broken": {},
-  "healthy": {},
+  "broken": {
+    "android/gradle.properties": "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g\nandroid.useAndroidX=true\nandroid.enableJetifier=true\nhermesEnabled=false\n"
+  },
+  "healthy": {
+    "android/gradle.properties": "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g\nandroid.useAndroidX=true\nandroid.enableJetifier=true\nhermesEnabled=true\n"
+  },
   "expect": {
     "diagnosisId": "hermes-android",
     "diagnosisKeywords": [
       "hermes"
     ],
-    "fixFile": "ios/Podfile",
-    "mustContain": [],
-    "mustNotContain": [],
-    "autoFixable": false
+    "fixFile": "android/gradle.properties",
+    "mustContain": [
+      "hermesEnabled=true"
+    ],
+    "mustNotContain": [
+      "hermesEnabled=false"
+    ],
+    "autoFixable": true
   }
 }

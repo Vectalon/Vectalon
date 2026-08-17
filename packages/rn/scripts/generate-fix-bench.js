@@ -1008,23 +1008,40 @@ ld: symbol(s) not found for architecture arm64`, id_rc: 'linker' },
 ]
 
 for (const v of xcodeScenarios) {
+  const isDeploymentTarget = v.id_rc === 'deployment-target'
   S.push({
     id: v.id,
     suite: 'xcode',
     title: v.title,
     issue: v.issue,
     log: `${xcodePreamble}\n${v.log}\n`,
-    broken: {},
-    healthy: {},
+    broken: isDeploymentTarget ? { 'ios/Podfile': podfileWithPlatform('12.0') } : {},
+    healthy: isDeploymentTarget ? { 'ios/Podfile': podfileWithPlatform('13.4') } : {},
     expect: {
       diagnosisId: v.id_rc,
       diagnosisKeywords: [],
       fixFile: 'ios/Podfile',
-      mustContain: [],
-      mustNotContain: [],
-      autoFixable: v.id_rc === 'deployment-target' ? false : false,
+      mustContain: isDeploymentTarget ? [`platform :ios, '13.4'`] : [],
+      mustNotContain: isDeploymentTarget ? [`platform :ios, '12.0'`] : [],
+      autoFixable: isDeploymentTarget,
     },
   })
+}
+
+function podfileWithPlatform(version) {
+  return `require_relative '../node_modules/react-native/scripts/react_native_pods'
+require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
+
+platform :ios, '${version}'
+
+target 'rn-bench-app' do
+  config = use_native_modules!
+  use_react_native!(
+    :path => config[:reactNativePath],
+    :hermes_enabled => true
+  )
+end
+`
 }
 
 const brokenApp = `import React from 'react';
@@ -1059,16 +1076,16 @@ export default App;
 // ===========================================================================
 
 const metroScenarios = [
-  { id: 'fx-metro-01', title: 'Unable to resolve a module import', issue: 'Metro fails: unable to resolve module ./src/screens/Home from App.tsx.', log: `${metroPreamble}Unable to resolve module ./src/screens/Home from /src/App.tsx: Module \`./src/screens/Home\` does not exist in the Haste module map.` },
-  { id: 'fx-metro-02', title: 'Missing package — forgot npm install', issue: 'Metro fails: the package react-native-vector-icons cannot be resolved.', log: `${metroPreamble}Unable to resolve module react-native-vector-icons from /src/components/Icon.tsx: react-native-vector-icons could not be found within the project.` },
-  { id: 'fx-metro-03', title: 'Haste module naming collision', issue: 'Metro fails: haste module naming collision between two files.', log: `${metroPreamble}jest-haste-map: Haste module naming collision: Duplicate module name: App — the following files share their base name:\n  /src/App.tsx\n  /src/components/App.tsx` },
-  { id: 'fx-metro-04', title: 'Syntax error in a TSX file', issue: 'Metro fails with a syntax error while transforming a screen.', log: `${metroPreamble}SyntaxError: /src/screens/HomeScreen.tsx: Unexpected token. Did you mean to use JSX syntax? (7:8)` },
-  { id: 'fx-metro-05', title: 'Babel preset not found', issue: 'Metro fails: babel-preset-expo cannot be found.', log: `${metroPreamble}Cannot find module 'babel-preset-expo' — the babel.config.js references a preset that is not installed.` },
-  { id: 'fx-metro-06', title: 'Metro port 8081 already in use', issue: 'Metro refuses to start: port 8081 is already in use.', log: `error: listen EADDRINUSE: address already in use :::8081\nMetro Bundler cannot listen on port 8081 — it is already in use by another process.` },
-  { id: 'fx-metro-07', title: 'Asset not found (missing image)', issue: 'Metro fails: the referenced image asset does not exist.', log: `${metroPreamble}Asset ./src/assets/logo.png does not exist — the require/import path points to a file that was deleted or renamed.` },
-  { id: 'fx-metro-08', title: 'JavaScript heap out of memory', issue: 'Metro crashes with a JavaScript heap out of memory error on a large graph.', log: `FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory` },
-  { id: 'fx-metro-09', title: 'Watchman failure on a large workspace', issue: 'Metro fails to start: watchman recrawl or too many open files.', log: `${metroPreamble}Watchman error: recrawl triggered. Watchman was unable to crawl the workspace: EMFILE: too many open files.` },
-  { id: 'fx-metro-10', title: 'Monorepo package entry point not found', issue: 'Metro fails: a workspace package main field does not resolve.', log: `${metroPreamble}The package "shared-ui" could not be found within its "main" field — did not resolve to a node_modules path.` },
+  { id: 'fx-metro-01', title: 'Unable to resolve a module import', issue: 'Metro fails: unable to resolve module ./src/screens/Home from App.tsx.', log: `${metroPreamble}Unable to resolve module ./src/screens/Home from /src/App.tsx: Module \`./src/screens/Home\` does not exist in the Haste module map.`, broken: { 'src/App.tsx': metroAppImporting('./src/screens/Home') }, healthy: { 'src/App.tsx': metroAppImporting('./src/screens/HomeScreen') }, mustContain: ["import HomeScreen from './src/screens/HomeScreen';"], auto: false },
+  { id: 'fx-metro-02', title: 'Missing package — forgot npm install', issue: 'Metro fails: the package react-native-vector-icons cannot be resolved.', log: `${metroPreamble}Unable to resolve module react-native-vector-icons from /src/components/Icon.tsx: react-native-vector-icons could not be found within the project.`, broken: metroPkgWithout('react-native-vector-icons'), healthy: metroPkgWith('react-native-vector-icons', '^10.1.0'), mustContain: ['"react-native-vector-icons"'], auto: false },
+  { id: 'fx-metro-03', title: 'Haste module naming collision', issue: 'Metro fails: haste module naming collision between two files.', log: `${metroPreamble}jest-haste-map: Haste module naming collision: Duplicate module name: App — the following files share their base name:\n  /src/App.tsx\n  /src/components/App.tsx`, broken: {}, healthy: {}, mustContain: [], auto: false },
+  { id: 'fx-metro-04', title: 'Syntax error in a TSX file', issue: 'Metro fails with a syntax error while transforming a screen.', log: `${metroPreamble}SyntaxError: /src/screens/HomeScreen.tsx: Unexpected token. Did you mean to use JSX syntax? (7:8)`, broken: {}, healthy: {}, mustContain: [], auto: false },
+  { id: 'fx-metro-05', title: 'Babel preset not found', issue: 'Metro fails: babel-preset-expo cannot be found.', log: `${metroPreamble}Cannot find module 'babel-preset-expo' — the babel.config.js references a preset that is not installed.`, broken: metroPkgWithoutDev('babel-preset-expo'), healthy: metroPkgWithDev('babel-preset-expo', '^10.0.0'), mustContain: ['"babel-preset-expo"'], auto: false },
+  { id: 'fx-metro-06', title: 'Metro port 8081 already in use', issue: 'Metro refuses to start: port 8081 is already in use.', log: `error: listen EADDRINUSE: address already in use :::8081\nMetro Bundler cannot listen on port 8081 — it is already in use by another process.`, broken: {}, healthy: {}, mustContain: [], auto: false },
+  { id: 'fx-metro-07', title: 'Asset not found (missing image)', issue: 'Metro fails: the referenced image asset does not exist.', log: `${metroPreamble}Asset ./src/assets/logo.png does not exist — the require/import path points to a file that was deleted or renamed.`, broken: {}, healthy: {}, mustContain: [], auto: false },
+  { id: 'fx-metro-08', title: 'JavaScript heap out of memory', issue: 'Metro crashes with a JavaScript heap out of memory error on a large graph.', log: `FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory`, broken: metroPkgStart('react-native start'), healthy: metroPkgStart('NODE_OPTIONS=--max-old-space-size=4096 react-native start'), mustContain: ['NODE_OPTIONS=--max-old-space-size=4096'], auto: false },
+  { id: 'fx-metro-09', title: 'Watchman failure on a large workspace', issue: 'Metro fails to start: watchman recrawl or too many open files.', log: `${metroPreamble}Watchman error: recrawl triggered. Watchman was unable to crawl the workspace: EMFILE: too many open files.`, broken: {}, healthy: {}, mustContain: [], auto: false },
+  { id: 'fx-metro-10', title: 'Monorepo package entry point not found', issue: 'Metro fails: a workspace package main field does not resolve.', log: `${metroPreamble}The package "shared-ui" could not be found within its "main" field — did not resolve to a node_modules path.`, broken: {}, healthy: {}, mustContain: [], auto: false },
 ]
 
 for (const v of metroScenarios) {
@@ -1078,17 +1095,73 @@ for (const v of metroScenarios) {
     title: v.title,
     issue: v.issue,
     log: v.log,
-    broken: v.id === 'fx-metro-06' ? {} : { 'src/App.tsx': brokenApp },
-    healthy: v.id === 'fx-metro-06' ? {} : { 'src/App.tsx': fixedApp },
+    broken: v.id === 'fx-metro-06' ? {} : v.broken,
+    healthy: v.id === 'fx-metro-06' ? {} : v.healthy,
     expect: {
       diagnosisId: metroDiagId(v.id),
       diagnosisKeywords: [],
-      fixFile: 'src/App.tsx',
-      mustContain: ['SafeAreaView'],
+      fixFile: v.id === 'fx-metro-02' || v.id === 'fx-metro-05' || v.id === 'fx-metro-08' ? 'package.json' : 'src/App.tsx',
+      mustContain: v.mustContain,
       mustNotContain: [],
-      autoFixable: false,
+      autoFixable: v.auto,
     },
   })
+}
+
+function metroAppImporting(specifier) {
+  return `import React from 'react';
+import { SafeAreaView, Text } from 'react-native';
+import HomeScreen from '${specifier}';
+
+function App(): React.JSX.Element {
+  return (
+    <SafeAreaView>
+      <Text>rn-bench-app</Text>
+    </SafeAreaView>
+  );
+}
+
+export default App;
+`
+}
+
+function metroPkgWith(pkg, version) {
+  const p = JSON.parse(brokenAppPkg())
+  p.dependencies[pkg] = version
+  return { 'package.json': JSON.stringify(p, null, 2) }
+}
+function metroPkgWithout(pkg) {
+  return { 'package.json': brokenAppPkg() }
+}
+function metroPkgWithDev(pkg, version) {
+  const p = JSON.parse(brokenAppPkg())
+  p.devDependencies[pkg] = version
+  return { 'package.json': JSON.stringify(p, null, 2) }
+}
+function metroPkgWithoutDev(pkg) {
+  return { 'package.json': brokenAppPkg() }
+}
+function metroPkgStart(start) {
+  const p = JSON.parse(brokenAppPkg())
+  p.scripts.start = start
+  return { 'package.json': JSON.stringify(p, null, 2) }
+}
+
+function brokenAppPkg() {
+  return JSON.stringify({
+  name: 'rn-bench-app',
+  version: '1.0.0',
+  private: true,
+  scripts: { start: 'react-native start', android: 'react-native run-android', ios: 'react-native run-ios', test: 'jest', typecheck: 'tsc --noEmit', lint: 'eslint .' },
+  dependencies: { react: '18.2.0', 'react-native': '0.74.0' },
+  devDependencies: {
+    '@babel/core': '7.24.9', '@babel/preset-env': '7.24.8', '@babel/preset-typescript': '7.24.7',
+    '@types/jest': '29.5.14', '@types/react': '18.2.79', '@typescript-eslint/eslint-plugin': '6.21.0',
+    '@typescript-eslint/parser': '6.21.0', 'babel-jest': '29.7.0', eslint: '8.57.0', jest: '29.7.0',
+    'react-test-renderer': '18.2.0', typescript: '5.5.4',
+  },
+  jest: { preset: 'react-native' },
+}, null, 2)
 }
 
 function metroDiagId(id) {
@@ -1115,13 +1188,13 @@ const hermesScenarios = [
   { id: 'fx-hermes-01', title: 'Hermes engine could not be resolved (Android)', issue: 'Android build fails: hermes-engine artifact cannot be resolved.', log: `${gradleDepPreamble}\nCould not resolve com.facebook.react:hermes-android:0.74.0.` },
   { id: 'fx-hermes-02', title: 'hermesc failed during the JS bundle compile', issue: 'Build fails: hermesc returns a non-zero exit while compiling the bundle.', log: `${gradleDepPreamble}\nExecution failed for task ':app:createBundleDebugJsAndAssets'.\n> hermesc failed: Command failed with exit code 1.` },
   { id: 'fx-hermes-03', title: 'Hermes bytecode toolchain mismatch', issue: 'Android build fails: hermes-engine version does not match react-native.', log: `${gradleDepPreamble}\nCould not resolve hermes-engine@0.74.0 — the version does not match the react-native version.` },
-  { id: 'fx-hermes-04', title: 'Hermes disabled but engine still required', issue: 'Android build fails: hermesEnabled is off but the engine is still requested.', log: `${gradleDepPreamble}\nCould not resolve project :hermes-engine. Hermes is disabled but a dependency still requests it.` },
+  { id: 'fx-hermes-04', title: 'Hermes disabled but engine still required', issue: 'Android build fails: hermesEnabled is off but the engine is still requested.', log: `${gradleDepPreamble}\nCould not resolve project :hermes-engine. Hermes is disabled but a dependency still requests it.`, broken: { 'android/gradle.properties': `org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g\nandroid.useAndroidX=true\nandroid.enableJetifier=true\nhermesEnabled=false\n` }, healthy: { 'android/gradle.properties': `org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g\nandroid.useAndroidX=true\nandroid.enableJetifier=true\nhermesEnabled=true\n` }, fixFile: 'android/gradle.properties', mustContain: ['hermesEnabled=true'], mustNotContain: ['hermesEnabled=false'], auto: true },
   { id: 'fx-hermes-05', title: 'Hermes artifact corrupted in the Gradle cache', issue: 'Android build fails after a corrupted hermes-engine download.', log: `${gradleDepPreamble}\nCould not resolve com.facebook.react:hermes-android:0.74.0.\n  Could not HEAD https://repo.maven.apache.org/...: checksum failed.` },
-  { id: 'fx-hermes-06', title: 'Hermes engine requested for iOS pods', issue: 'pod install fails: the Hermes pod cannot be found.', log: `Analyzing dependencies\n[!] Unable to find a specification for "hermes-engine".` },
+  { id: 'fx-hermes-06', title: 'Hermes engine requested for iOS pods', issue: 'pod install fails: the Hermes pod cannot be found.', log: `Analyzing dependencies\n[!] Unable to find a specification for "hermes-engine".`, diag: 'pod-not-found' },
   { id: 'fx-hermes-07', title: 'hermesc missing from the toolchain', issue: 'The build cannot find hermesc in the toolchain.', log: `${gradleDepPreamble}\n> Task :app:createBundleDebugJsAndAssets FAILED\nCould not find hermesc.` },
   { id: 'fx-hermes-08', title: 'Hermes bytecode compile error in a transformed file', issue: 'Build fails while hermesc compiles the JS bundle.', log: `${gradleDepPreamble}\nhermesc: Compilation of the JavaScript bundle failed with a SyntaxError.` },
   { id: 'fx-hermes-09', title: 'Hermes engine ABI mismatch', issue: 'Android build fails: no matching variant of hermes-android for arm64.', log: `${gradleDepPreamble}\nNo matching variant of com.facebook.react:hermes-android:0.74.0 was found. The consumer was configured to find a runtime of a component compatible with Java 11.` },
-  { id: 'fx-hermes-10', title: 'Hermes flag flipped after an RN upgrade', issue: 'After upgrading RN, the build fails looking for hermes-engine.', log: `${gradleDepPreamble}\nCould not resolve hermes-engine:1.0.0.` },
+  { id: 'fx-hermes-10', title: 'Hermes flag flipped after an RN upgrade', issue: 'After upgrading RN, the build fails looking for hermes-engine.', log: `${gradleDepPreamble}\nCould not resolve hermes-engine:1.0.0.`, fixFile: 'package.json', mustContain: ['"hermes-engine": "0.74.0"'], mustNotContain: ['"hermes-engine": "1.0.0"'], auto: true },
 ]
 
 for (const v of hermesScenarios) {
@@ -1131,17 +1204,28 @@ for (const v of hermesScenarios) {
     title: v.title,
     issue: v.issue,
     log: v.log,
-    broken: {},
-    healthy: {},
+    broken: v.id === 'fx-hermes-10' ? { 'package.json': hermesPkgWrong() } : v.broken ?? {},
+    healthy: v.id === 'fx-hermes-10' ? { 'package.json': hermesPkgAligned() } : v.healthy ?? {},
     expect: {
-      diagnosisId: 'hermes-android',
+      diagnosisId: v.diag ?? 'hermes-android',
       diagnosisKeywords: ['hermes'],
-      fixFile: 'ios/Podfile',
-      mustContain: [],
-      mustNotContain: [],
-      autoFixable: false,
+      fixFile: v.fixFile ?? 'ios/Podfile',
+      mustContain: v.mustContain ?? [],
+      mustNotContain: v.mustNotContain ?? [],
+      autoFixable: v.auto ?? false,
     },
   })
+}
+
+function hermesPkgWrong() {
+  const p = JSON.parse(brokenAppPkg())
+  p.dependencies['hermes-engine'] = '1.0.0'
+  return JSON.stringify(p, null, 2)
+}
+function hermesPkgAligned() {
+  const p = JSON.parse(brokenAppPkg())
+  p.dependencies['hermes-engine'] = '0.74.0'
+  return JSON.stringify(p, null, 2)
 }
 
 // ===========================================================================
@@ -1169,22 +1253,29 @@ for (const v of upgradeVariants) {
     suite: 'upgrade',
     title: v.title,
     issue: v.issue,
-    log: v.id_rc === 'agp-namespace'
+    log: v.log ?? (v.id_rc === 'agp-namespace'
       ? `${gradleDepPreamble}\n* What went wrong:\nNamespace not specified. Please specify a namespace in the module's build file.`
       : v.id_rc === 'min-sdk-version'
         ? `${gradleDepPreamble}\nuses-sdk:minSdkVersion 21 cannot be smaller than version 23 declared in library [react-native].`
-        : undefined,
+        : undefined),
     broken,
     healthy,
     expect: {
       diagnosisId: v.id_rc,
       diagnosisKeywords: [],
-      fixFile: 'android/build.gradle',
-      mustContain: v.field === 'namespace' ? ['namespace "com.rnbenchapp"'] : [v.field === 'agp' ? `gradle:${v.fix}` : v.field === 'gradle' ? `gradle-${v.fix}-bin.zip` : `${v.field} = ${v.fix}`],
-      mustNotContain: v.field === 'namespace' ? [] : [v.field === 'agp' ? `gradle:${v.cur}` : v.field === 'gradle' ? `gradle-${v.cur}-bin.zip` : `${v.field} = ${v.cur}`],
+      fixFile: v.field === 'namespace' ? 'android/app/build.gradle' : v.field === 'gradle' ? 'android/gradle/wrapper/gradle-wrapper.properties' : 'android/build.gradle',
+      mustContain: v.field === 'namespace' ? ['namespace "com.rnbenchapp"'] : [v.field === 'agp' ? `gradle:${v.fix}` : v.field === 'gradle' ? `gradle-${v.fix}-bin.zip` : upgradeFieldValue(v.field, v.fix)],
+      mustNotContain: v.field === 'namespace' ? [] : [v.field === 'agp' ? `gradle:${v.cur}` : v.field === 'gradle' ? `gradle-${v.cur}-bin.zip` : upgradeFieldValue(v.field, v.cur)],
       autoFixable: v.auto,
     },
   })
+}
+
+// String-valued gradle ext fields are quoted in the file; numeric ones are not.
+// The generator's 'ndk' shorthand maps to the gradle attribute ndkVersion.
+function upgradeFieldValue(field, value) {
+  const attr = field === 'ndk' ? 'ndkVersion' : field
+  return field === 'kotlinVersion' || field === 'ndk' ? `${attr} = "${value}"` : `${attr} = ${value}`
 }
 
 function upgradeBuildGradle(v) {
@@ -1310,47 +1401,48 @@ zipStorePath=wrapper/dists
 // ===========================================================================
 
 const linkingScenarios = [
-  { id: 'fx-link-01', title: 'Native module not linked: settings.gradle missing the include', issue: 'Android build fails: the native module project is not included in settings.gradle.', log: `${gradleDepPreamble}\n* What went wrong:\nExecution failed for task ':app:processDebugMainManifest'.\n> Could not find module ':react-native-vector-icons'.` },
-  { id: 'fx-link-02', title: 'Autolinking failed for react-native-maps', issue: 'Android build fails: react-native-maps cannot be found by autolinking.', log: `${gradleDepPreamble}\nCould not resolve project :react-native-maps.` },
-  { id: 'fx-link-03', title: 'Pod not installed after adding a native package', issue: 'iOS build fails: the pod for the new native module is missing.', log: `[!] The \`react-native-vision-camera\` pod could not be found — run pod install after adding the package.` },
+  { id: 'fx-link-01', title: 'Native module not linked: settings.gradle missing the include', issue: 'Android build fails: the native module project is not included in settings.gradle.', log: `${gradleDepPreamble}\n* What went wrong:\nExecution failed for task ':app:processDebugMainManifest'.\n> Could not find module ':react-native-vector-icons'.`, diag: 'dependency-resolution', fixFile: 'android/settings.gradle', mustContain: [`include ':react-native-vector-icons'`] },
+  { id: 'fx-link-02', title: 'Autolinking failed for react-native-maps', issue: 'Android build fails: react-native-maps cannot be found by autolinking.', log: `${gradleDepPreamble}\nCould not resolve project :react-native-maps.`, diag: 'dependency-resolution', fixFile: 'android/settings.gradle', mustContain: [`include ':react-native-maps'`] },
+  { id: 'fx-link-03', title: 'Pod not installed after adding a native package', issue: 'iOS build fails: the pod for the new native module is missing.', log: `[!] CocoaPods could not find compatible versions for pod "react-native-vision-camera":\n  In Podfile:\n    react-native-vision-camera (from \`../node_modules/react-native-vision-camera\`)\n\n[!] The Swift pod \`react-native-vision-camera\` could not be found in project ios/Podfile — run pod install after adding the package.`, diag: 'pod-install-needed', fixFile: 'ios/Podfile', mustContain: [`pod 'react-native-vision-camera'`] },
   { id: 'fx-link-04', title: 'Native module requires a higher minSdkVersion', issue: 'Android build fails: the native module requires a higher Android minimum.', log: `${gradlePreamble}\nuses-sdk:minSdkVersion 21 cannot be smaller than version 24 declared in library [react-native-vision-camera].`, minSdk: '21', fix: '24' },
-  { id: 'fx-link-05', title: 'MainApplication missing the package import', issue: 'Android build fails: the native module package is not registered in MainApplication.', log: `${gradleDepPreamble}\n* What went wrong:\nExecution failed for task ':app:mergeDebugNativeLibs'.\n> Could not find class com.microsoft.codepush.react.CodePushPackage.` },
-  { id: 'fx-link-06', title: 'Duplicate class from two native modules', issue: 'Android build fails: two native modules ship the same class.', log: `${gradleDepPreamble}\nDuplicate class com.rt2zz.reactnativecontacts.ReactNativeContacts found in modules react-native-contacts and react-native-addressbook.` },
-  { id: 'fx-link-07', title: 'Native module needs a Gradle repository it does not declare', issue: 'Android build fails: a native module artifact cannot be resolved from the configured repositories.', log: `${gradleDepPreamble}\nCould not resolve com.github.wix:detox:20.18.1 — the repository is not declared in settings.gradle.` },
-  { id: 'fx-link-08', title: 'New Architecture mismatch for a native module', issue: 'Android build fails: a native module does not support the new architecture.', log: `${gradleDepPreamble}\nThe module 'react-native-screens' does not support the new architecture. Please set newArchEnabled=false.` },
-  { id: 'fx-link-09', title: 'JSI module requires a specific NDK', issue: 'Android build fails: a JSI module requires a newer NDK.', log: `${gradleDepPreamble}\nNDK at /Users/dev/Library/Android/sdk/ndk/25.1.8937393 did not have a source.properties file (required by react-native-reanimated).` },
-  { id: 'fx-link-10', title: 'CocoaPods cannot resolve a native pod from the local path', issue: 'pod install fails: the pod path for a local native module is wrong.', log: `[!] Unable to find a specification for \`RNReanimated\` — the local path ../node_modules/react-native-reanimated does not contain a podspec.` },
+  { id: 'fx-link-05', title: 'MainApplication missing the package import', issue: 'Android build fails: the native module package is not registered in MainApplication.', log: `${gradleDepPreamble}\n* What went wrong:\nExecution failed for task ':app:mergeDebugNativeLibs'.\n> Could not find class com.microsoft.codepush.react.CodePushPackage.`, diag: 'dependency-resolution' },
+  { id: 'fx-link-06', title: 'Duplicate class from two native modules', issue: 'Android build fails: two native modules ship the same class.', log: `${gradleDepPreamble}\nDuplicate class com.rt2zz.reactnativecontacts.ReactNativeContacts found in modules react-native-contacts and react-native-addressbook.`, diag: 'duplicate-class' },
+  { id: 'fx-link-07', title: 'Native module needs a Gradle repository it does not declare', issue: 'Android build fails: a native module artifact cannot be resolved from the configured repositories.', log: `${gradleDepPreamble}\nCould not resolve com.github.wix:detox:20.18.1 — the repository is not declared in settings.gradle.`, diag: 'dependency-resolution', fixFile: 'android/settings.gradle', mustContain: ['jitpack.io'] },
+  { id: 'fx-link-08', title: 'New Architecture mismatch for a native module', issue: 'Android build fails: a native module does not support the new architecture.', log: `${gradleDepPreamble}\nThe module 'react-native-screens' does not support the new architecture. Please set newArchEnabled=false.`, diag: 'new-arch-mismatch', fixFile: 'android/gradle.properties', mustContain: ['newArchEnabled=false'] },
+  { id: 'fx-link-09', title: 'JSI module requires a specific NDK', issue: 'Android build fails: a JSI module requires a newer NDK.', log: `${gradleDepPreamble}\nNDK at /Users/dev/Library/Android/sdk/ndk/25.1.8937393 did not have a source.properties file (required by react-native-reanimated).`, diag: 'ndk-version', ndk: '25.1.8937393', fixFile: 'android/build.gradle', mustContain: [`ndkVersion = "26.1.10909125"`], mustNotContain: [`ndkVersion = "25.1.8937393"`] },
+  { id: 'fx-link-10', title: 'CocoaPods cannot resolve a native pod from the local path', issue: 'pod install fails: the pod path for a local native module is wrong.', log: `[!] Unable to find a specification for \`RNReanimated\` — the local path ../node_modules/react-native-reanimated does not contain a podspec.`, diag: 'pod-not-found', fixFile: 'ios/Podfile', mustContain: [`pod 'RNReanimated'`] },
 ]
 
 for (const v of linkingScenarios) {
   const isMinSdk = v.id === 'fx-link-04'
+  const isNdk = v.id === 'fx-link-09'
   S.push({
     id: v.id,
     suite: 'linking',
     title: v.title,
     issue: v.issue,
     log: v.log,
-    broken: isMinSdk ? { 'android/build.gradle': minSdkGradle(v.minSdk) } : {},
-    healthy: isMinSdk ? { 'android/build.gradle': minSdkGradle(v.fix) } : {},
+    broken: isMinSdk ? { 'android/build.gradle': gradleFixture(v.minSdk) } : isNdk ? { 'android/build.gradle': gradleFixture(23, v.ndk) } : {},
+    healthy: isMinSdk ? { 'android/build.gradle': gradleFixture(v.fix) } : isNdk ? { 'android/build.gradle': gradleFixture(23, '26.1.10909125') } : {},
     expect: {
-      diagnosisId: isMinSdk ? 'min-sdk-version' : v.id === 'fx-link-06' ? 'duplicate-class' : v.id === 'fx-link-07' ? 'network' : v.id === 'fx-link-09' ? 'ndk-version' : v.id === 'fx-link-10' ? 'pod-not-found' : /react-native-maps|react-native-vector-icons|detox/.test(v.log || '') ? 'dependency-resolution' : 'pod-install-needed',
+      diagnosisId: v.diag ?? (isMinSdk ? 'min-sdk-version' : 'pod-install-needed'),
       diagnosisKeywords: [],
-      fixFile: 'android/build.gradle',
-      mustContain: isMinSdk ? [`minSdkVersion = ${v.fix}`] : [],
-      mustNotContain: isMinSdk ? [`minSdkVersion = ${v.minSdk}`] : [],
-      autoFixable: isMinSdk,
+      fixFile: v.fixFile ?? 'android/build.gradle',
+      mustContain: v.mustContain ?? (isMinSdk ? [`minSdkVersion = ${v.fix}`] : []),
+      mustNotContain: v.mustNotContain ?? (isMinSdk ? [`minSdkVersion = ${v.minSdk}`] : []),
+      autoFixable: isMinSdk || isNdk || !!v.mustContain,
     },
   })
 }
 
-function minSdkGradle(minSdk) {
+function gradleFixture(minSdk, ndk) {
   return `buildscript {
     ext {
         buildToolsVersion = "34.0.0"
         minSdkVersion = ${minSdk}
         compileSdkVersion = 34
         targetSdkVersion = 34
-        ndkVersion = "26.1.10909125"
+        ndkVersion = "${ndk ?? '26.1.10909125'}"
         kotlinVersion = "1.9.0"
     }
     repositories {
@@ -1381,10 +1473,10 @@ const tsScenarios = [
   { id: 'fx-ts-01', title: 'TS2307: Cannot find module after a refactor', issue: 'Typecheck fails: a module import no longer resolves.', code: `import { HomeScreen } from './src/screens/Home';`, err: 'TS2307: Cannot find module \'./src/screens/Home\'.', fix: `import { HomeScreen } from './src/screens/HomeScreen';` },
   { id: 'fx-ts-02', title: 'TS2304: Cannot find name (dropped import)', issue: 'Typecheck fails: a name used in a component is not in scope.', code: `export function Screen() { return <Text>{AppName}</Text>; }`, err: 'TS2304: Cannot find name \'AppName\'.', fix: `export function Screen() { return <Text>rn-bench-app</Text>; }` },
   { id: 'fx-ts-03', title: 'TS2339: Property does not exist after an RN upgrade', issue: 'After upgrading RN, a deprecated prop no longer exists on the type.', code: `const c = (el) => el.getNativeNode();`, err: 'TS2339: Property \'getNativeNode\' does not exist on type \'Text\'.', fix: `const c = (el) => el;` },
-  { id: 'fx-ts-04', title: 'TS2322: Type not assignable (state type tightened)', issue: 'Typecheck fails: a value no longer matches the declared state type.', code: `const [count, setCount] = useState<number>(0);\nsetCount('5');`, err: 'TS2322: Type \'string\' is not assignable to type \'number\'.', fix: `const [count, setCount] = useState<number>(0);\nsetCount(5);` },
+  { id: 'fx-ts-04', title: 'TS2322: Type not assignable (state type tightened)', issue: 'Typecheck fails: a value no longer matches the declared state type.', code: `const [count, setCount] = useState<number>(0);\nsetCount('5');`, codeLine: 2, err: 'TS2322: Type \'string\' is not assignable to type \'number\'.', fix: `const [count, setCount] = useState<number>(0);\nsetCount(5);` },
   { id: 'fx-ts-05', title: 'TS2739: Missing required props at a call site', issue: 'Typecheck fails: a component gained a required prop and a call site missed it.', code: `const x = <Card />;`, err: 'TS2739: Type \'{}\' is missing the following properties from type \'CardProps\': title.', fix: `const x = <Card title="Hello" />;` },
   { id: 'fx-ts-06', title: 'TS2305: No exported member (renamed export)', issue: 'Typecheck fails: a named export was renamed.', code: `import { authApi } from './services/auth';`, err: 'TS2305: Module \'./services/auth\' has no exported member \'authApi\'.', fix: `import { authService } from './services/auth';` },
-  { id: 'fx-ts-07', title: 'TS2300: Duplicate identifier from a merge conflict', issue: 'Typecheck fails: a merge conflict left two declarations.', code: `const total = 1;\nconst total = 2;`, err: 'TS2300: Duplicate identifier \'total\'.', fix: `const total = 2;` },
+  { id: 'fx-ts-07', title: 'TS2300: Duplicate identifier from a merge conflict', issue: 'Typecheck fails: a merge conflict left two declarations.', code: `const total = 1;\nconst total = 2;`, codeLine: 2, err: 'TS2300: Duplicate identifier \'total\'.', fix: `const total = 2;` },
   { id: 'fx-ts-08', title: 'TS17004: Cannot use JSX in a .ts file', issue: 'Typecheck fails: JSX is used in a file the tsconfig treats as plain TS.', code: `const el = <Text>hi</Text>;`, err: 'TS17004: Cannot use JSX unless the \'--jsx\' flag is provided.', fix: `const el = React.createElement(Text, null, 'hi');` },
   { id: 'fx-ts-09', title: 'TS2322: Unknown prop passed to a component', issue: 'Typecheck fails: a prop is passed the component does not accept.', code: `const x = <Text accessibilityRole="header">Hi</Text>;`, err: 'TS2322: Type \'{ accessibilityRole: string }\' is not assignable to type \'TextProps\'.', fix: `const x = <Text>Hi</Text>;` },
   { id: 'fx-ts-10', title: 'TS7006: Parameter implicitly has an any type', issue: 'Typecheck fails in strict mode: a parameter has no type.', code: `export function handler(e) { return e; }`, err: 'TS7006: Parameter \'e\' implicitly has an \'any\' type.', fix: `export function handler(e: Event) { return e; }` },
@@ -1398,7 +1490,7 @@ for (const v of tsScenarios) {
     issue: v.issue,
     log: `node_modules/.bin/tsc --noEmit
 
-src/screens/Broken.tsx(3,10): error ${v.err}
+src/screens/Broken.tsx(${3 + (v.codeLine ?? 1)},10): error ${v.err}
 `,
     broken: { 'src/screens/Broken.tsx': `import React from 'react';\nimport { Text } from 'react-native';\n\n${v.code}\n` },
     healthy: { 'src/screens/Broken.tsx': `import React from 'react';\nimport { Text } from 'react-native';\n\n${v.fix}\n` },
@@ -1423,7 +1515,7 @@ function tsDiagId(id) {
     case 'fx-ts-06': return 'ts-no-exported-member'
     case 'fx-ts-07': return 'ts-duplicate-identifier'
     case 'fx-ts-08': return 'ts-jsx-not-supported'
-    case 'fx-ts-09': return 'ts-unknown-property'
+    case 'fx-ts-09': return 'ts-type-not-assignable'
     case 'fx-ts-10': return 'ts-this-expression'
     default: return 'ts-module-not-found'
   }

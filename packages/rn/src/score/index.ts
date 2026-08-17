@@ -35,9 +35,10 @@ import { runA11yScan } from '../a11y'
 import { detectVersions } from '../upgrade/detect'
 import { analyzeUpgradeImpact } from '../upgrade/impact'
 import { LATEST_KNOWN_RN } from '../upgrade/catalog'
-import type { ScoreDimension, ScoreFinding, ScoreHistory, ScoreHistoryEntry, ScoreOptions, ScorePriority, ScoreRecommendation, ScoreReport, ScoreVerdict } from './types'
+import type { ScoreDimension, ScoreDimensionDelta, ScoreFinding, ScoreHistory, ScoreHistoryEntry, ScoreOptions, ScorePriority, ScoreRecommendation, ScoreReport, ScoreTrendPoint, ScoreVerdict } from './types'
 
-export type { ScoreDimension, ScoreFinding, ScoreHistory, ScoreHistoryEntry, ScoreOptions, ScorePriority, ScoreRecommendation, ScoreReport, ScoreVerdict } from './types'
+export type { ScoreDimension, ScoreDimensionDelta, ScoreFinding, ScoreHistory, ScoreHistoryEntry, ScoreOptions, ScorePriority, ScoreRecommendation, ScoreReport, ScoreTrendPoint, ScoreVerdict } from './types'
+export { renderTrendChart, shortDate, trendWindow } from './trend'
 
 /** Where vc score reports are written (mirrors other docs/vectalon/* dirs). */
 export const scoreDocsDir = (root: string): string => join(root, 'docs', 'vectalon', 'score')
@@ -496,6 +497,27 @@ export function readHistory(root: string): ScoreHistory {
   }
 }
 
+/**
+ * Overall movement vs the first run of the current calendar month — the
+ * "+9 this month" headline that gives teams a reason to run vc score
+ * continuously. Null when there is no earlier run this month.
+ */
+export function monthDeltaOf(overall: number, scoredAt: number, entries: ScoreHistoryEntry[]): { delta: number; from: string } | null {
+  const now = new Date(scoredAt)
+  const y = now.getUTCFullYear()
+  const m = now.getUTCMonth()
+  let first: ScoreHistoryEntry | null = null
+  for (const e of entries) {
+    const d = new Date(e.scoredAt)
+    if (d.getUTCFullYear() === y && d.getUTCMonth() === m && d.getTime() < scoredAt) {
+      first = e
+      break
+    }
+  }
+  if (!first) return null
+  return { delta: overall - first.overall, from: first.scoredAt.slice(0, 10) }
+}
+
 export function writeHistory(root: string, history: ScoreHistory): void {
   try {
     const dir = scoreDocsDir(root)
@@ -550,13 +572,35 @@ export async function runScore(root: string, options: ScoreOptions = {}): Promis
     historyNote = `vs ${when} (${prev.overall}/100)`
   }
 
-  // Persist this run for the next delta.
+  // Per-dimension movement vs the previous run — "+6 Architecture · +4 Testing".
+  let dimensionDeltas: ScoreDimensionDelta[] = []
+  if (prev?.dimensions) {
+    dimensionDeltas = dimensions
+      .map(d => ({ id: d.id, label: d.label, delta: d.score - (prev.dimensions![d.id] ?? d.score) }))
+      .filter(dd => dd.delta !== 0)
+      .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta) || a.label.localeCompare(b.label))
+  }
+
+  // Month-over-month headline — "+9 this month".
+  const month = monthDeltaOf(overall, scoredAt, history.entries)
+  const monthNote =
+    month === null
+      ? 'First score this month — run monthly to watch the trend'
+      : `since ${month.from} (${overall - month.delta}/100)`
+
+  // Persist this run for the next delta + trend.
+  const dimScores: Record<string, number> = {}
+  for (const d of dimensions) dimScores[d.id] = d.score
   const entry: ScoreHistoryEntry = {
     scoredAt: new Date(scoredAt).toISOString(),
     overall,
     findingIds: [...allIds],
+    dimensions: dimScores,
   }
   writeHistory(root, { entries: [...history.entries, entry] })
+
+  // The trend series — the last 12 runs including this one.
+  const trend: ScoreTrendPoint[] = [...history.entries, { scoredAt: entry.scoredAt, overall }].slice(-12)
 
   return {
     scoredAt,
@@ -569,6 +613,10 @@ export async function runScore(root: string, options: ScoreOptions = {}): Promis
     dimensions,
     recommendations,
     historyNote,
+    trend,
+    dimensionDeltas,
+    monthDelta: month?.delta ?? null,
+    monthNote,
   }
 }
 
@@ -591,6 +639,22 @@ export function renderScoreMarkdown(report: ScoreReport): string {
   lines.push('|---|---|---|')
   for (const d of report.dimensions) {
     lines.push(`| ${d.label} | ${d.score} | ${d.detail} |`)
+  }
+  lines.push('')
+  // Trend — the recurring-product section.
+  lines.push('## Trend')
+  lines.push('')
+  if (report.trend.length > 0) {
+    lines.push(`- Last runs: ${report.trend.map(p => `${p.overall} (${p.scoredAt.slice(0, 10)})`).join(' → ')}`)
+  }
+  if (report.monthDelta !== null) {
+    const arrow = report.monthDelta >= 0 ? '↑' : '↓'
+    lines.push(`- This month: **${arrow} ${Math.abs(report.monthDelta)} points** (${report.monthNote})`)
+  } else {
+    lines.push(`- ${report.monthNote}`)
+  }
+  if (report.dimensionDeltas.length > 0) {
+    lines.push(`- Dimension deltas: ${report.dimensionDeltas.map(d => `${d.delta > 0 ? '+' : ''}${d.delta} ${d.label}`).join(' · ')}`)
   }
   lines.push('')
   if (report.newProblems.length > 0) {

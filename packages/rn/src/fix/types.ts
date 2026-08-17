@@ -48,6 +48,8 @@ export interface FixFinding {
   message: string
   recommendedFix: string
   evidence: FixEvidence[]
+  /** Seam-specific parameters parsed from the log/issue (pod name/path, minSdk floor, module specifier, …). */
+  params?: Record<string, string>
   /** Affected packages / files (the "impact" line). */
   impact: string[]
   /** The deterministic edit that implements the recommended fix, if any. */

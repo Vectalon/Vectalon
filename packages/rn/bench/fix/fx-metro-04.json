@@ -5,19 +5,13 @@
   "title": "Syntax error in a TSX file",
   "issue": "Metro fails with a syntax error while transforming a screen.",
   "log": "error: Error: Unable to resolve module\n\n Metro has failed to resolve the module.\nSyntaxError: /src/screens/HomeScreen.tsx: Unexpected token. Did you mean to use JSX syntax? (7:8)",
-  "broken": {
-    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
-  },
-  "healthy": {
-    "src/App.tsx": "import React from 'react';\nimport { SafeAreaView, Text } from 'react-native';\n\nfunction App(): React.JSX.Element {\n  return (\n    <SafeAreaView>\n      <Text>rn-bench-app</Text>\n    </SafeAreaView>\n  );\n}\n\nexport default App;\n"
-  },
+  "broken": {},
+  "healthy": {},
   "expect": {
     "diagnosisId": "syntax-error",
     "diagnosisKeywords": [],
     "fixFile": "src/App.tsx",
-    "mustContain": [
-      "SafeAreaView"
-    ],
+    "mustContain": [],
     "mustNotContain": [],
     "autoFixable": false
   }

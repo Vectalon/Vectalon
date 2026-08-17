@@ -21,7 +21,7 @@ export const XCODE_PATTERNS: XcodePattern[] = [
   {
     id: 'pod-not-found',
     name: 'CocoaPods pod not found',
-    re: /Unable to find a specification for ['"][^'"]+['"]|pod ['"][^'"]+['"] not found|CDN: trunk URL couldn't be downloaded|Couldn't find pod/i,
+    re: /Unable to find a specification for ['"`][^'"`]+['"`]|pod ['"`][^'"`]+['"`] not found|CDN: trunk URL couldn't be downloaded|Couldn't find pod/i,
     fix: 'The pod is missing from the spec repo or its version is unpublished: `cd ios && pod repo update` then `pod install`; pin an existing version in the Podfile if the package tags lag npm.',
   },
   {

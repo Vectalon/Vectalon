@@ -4,7 +4,7 @@
   "suite": "typescript",
   "title": "TS7006: Parameter implicitly has an any type",
   "issue": "Typecheck fails in strict mode: a parameter has no type.",
-  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(3,10): error TS7006: Parameter 'e' implicitly has an 'any' type.\n",
+  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(4,10): error TS7006: Parameter 'e' implicitly has an 'any' type.\n",
   "broken": {
     "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nexport function handler(e) { return e; }\n"
   },

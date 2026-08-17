@@ -5,14 +5,22 @@
   "title": "JSI module requires a specific NDK",
   "issue": "Android build fails: a JSI module requires a newer NDK.",
   "log": "> Task :app:preDebugBuild FAILED\n\nFAILURE: Build failed with an exception.\n\n* What went wrong:\nExecution failed for task ':app:preDebugBuild'.\n\nNDK at /Users/dev/Library/Android/sdk/ndk/25.1.8937393 did not have a source.properties file (required by react-native-reanimated).",
-  "broken": {},
-  "healthy": {},
+  "broken": {
+    "android/build.gradle": "buildscript {\n    ext {\n        buildToolsVersion = \"34.0.0\"\n        minSdkVersion = 23\n        compileSdkVersion = 34\n        targetSdkVersion = 34\n        ndkVersion = \"25.1.8937393\"\n        kotlinVersion = \"1.9.0\"\n    }\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath(\"com.android.tools.build:gradle:8.4.1\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")\n        classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0\")\n    }\n}\n\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n"
+  },
+  "healthy": {
+    "android/build.gradle": "buildscript {\n    ext {\n        buildToolsVersion = \"34.0.0\"\n        minSdkVersion = 23\n        compileSdkVersion = 34\n        targetSdkVersion = 34\n        ndkVersion = \"26.1.10909125\"\n        kotlinVersion = \"1.9.0\"\n    }\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath(\"com.android.tools.build:gradle:8.4.1\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")\n        classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0\")\n    }\n}\n\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n"
+  },
   "expect": {
     "diagnosisId": "ndk-version",
     "diagnosisKeywords": [],
     "fixFile": "android/build.gradle",
-    "mustContain": [],
-    "mustNotContain": [],
-    "autoFixable": false
+    "mustContain": [
+      "ndkVersion = \"26.1.10909125\""
+    ],
+    "mustNotContain": [
+      "ndkVersion = \"25.1.8937393\""
+    ],
+    "autoFixable": true
   }
 }

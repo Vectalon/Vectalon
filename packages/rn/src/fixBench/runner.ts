@@ -104,7 +104,7 @@ export async function runFixScenario(scenario: FixBenchScenario, options: FixBen
   }
   const ms = Date.now() - started
 
-  const rootFinding = report.findings.find(f => f.rootCause) ?? report.findings.find(f => f.severity === 'error') ?? null
+  const rootFinding = report.findings.find(f => f.rootCause) ?? report.findings.find(f => f.severity === 'error') ?? report.findings.find(f => f.severity === 'warning') ?? report.findings[0] ?? null
   const diagnosisId = rootFinding?.id ?? null
   const diagnosis = diagnosisMatches(scenario, diagnosisId, rootFinding?.message ?? '', rootFinding?.title ?? '')
 
@@ -125,7 +125,10 @@ export async function runFixScenario(scenario: FixBenchScenario, options: FixBen
       contentOk = hasAll && hasNone
     }
     const editedFixFile = applied.applied.some(e => e.file === scenario.expect.fixFile)
-    fix = diagnosis && editedFixFile && contentOk
+    // A scenario that declares no fixed-file expectation (empty mustContain /
+    // empty healthy) is diagnosis-only by definition — a stray edit must never
+    // score as a fix.
+    fix = diagnosis && editedFixFile && contentOk && scenario.expect.mustContain.length > 0
     // 3 — Build-success proxy: after the fix, the expected root cause must no
     // longer fire against the same issue/log.
     const probeLog = (fixProbe as Materialized & { logPath?: string }).logPath

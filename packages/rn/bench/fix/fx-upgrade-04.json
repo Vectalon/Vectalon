@@ -19,7 +19,7 @@
   "expect": {
     "diagnosisId": "gradle-wrapper-version",
     "diagnosisKeywords": [],
-    "fixFile": "android/build.gradle",
+    "fixFile": "android/gradle/wrapper/gradle-wrapper.properties",
     "mustContain": [
       "gradle-8.10.2-bin.zip"
     ],

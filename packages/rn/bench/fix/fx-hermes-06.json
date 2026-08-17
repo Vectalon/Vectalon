@@ -8,7 +8,7 @@
   "broken": {},
   "healthy": {},
   "expect": {
-    "diagnosisId": "hermes-android",
+    "diagnosisId": "pod-not-found",
     "diagnosisKeywords": [
       "hermes"
     ],

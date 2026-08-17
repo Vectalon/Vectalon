@@ -179,6 +179,37 @@ const AXES = [
   },
 ]
 
+/**
+ * Benchmark 5 — the fix-bench reliability scorecard (Roadmap directive #2,
+ * "make vc fix unbelievably reliable"). Numbers from the committed
+ * 100-scenario pack: `packages/rn/bench/fix/` + `vc fix-bench --json`.
+ * Diagnosis/fix are the product-milestone axes the roadmap names (≥ 80%
+ * diagnosis, ≥ 50% fixes without human modification); build-success is the
+ * post-fix probe — the expected root cause no longer fires. Regenerate with
+ * `vectalon fix-bench` — never edit by hand.
+ */
+const FIX_AXES = [
+  { name: 'Diagnosis accuracy', value: '100/100', verdict: 'is the root cause identified correctly?', detail: 'The root finding must match the expected diagnosis for the injected failure — a wrong diagnosis never counts as a fix. Target ≥ 80%: met at 100%.' },
+  { name: 'Fix accuracy', value: '66/100', verdict: 'was the fix applied without human modification?', detail: 'Planned edits must reach the expected file state (asserted by mustContain / mustNotContain) with the correct diagnosis first. Target ≥ 50%: met at 66%.' },
+  { name: 'Build success', value: '27/100', verdict: 'after the fix, does the root cause stop firing?', detail: 'The post-fix probe re-runs the diagnosis against the same log/issue; version-alignment and SDK fixes clear it (Kotlin, AGP, upgrade suites), log-only diagnoses cannot by construction.' },
+  { name: 'False positive rate', value: '0.0%', verdict: 'does the healthy project stay quiet?', detail: 'Every scenario also diagnoses its healthy control — any error there is a false positive. Zero across all 100, so the seams fire only on real failures.' },
+  { name: 'Time', value: '15ms median', verdict: 'how long does the pipeline take per failure?', detail: 'Pure text + fs, no model, no builds — a median 15ms per scenario, 1.6s for the whole pack. The estimate: ~50 hours saved vs a 30-min-per-failure human baseline.' },
+  { name: 'Human intervention', value: '34%', verdict: 'how many cases still need a human?', detail: 'The honest residual: SDK installs, code signing, provisioning, linker config, and judgment calls. The pipeline says "manual" and hands the exact command instead of guessing.' },
+]
+
+const FIX_SUITES = [
+  { suite: 'kotlin', total: 10, diagnosed: 10, fixed: 10, buildOk: 10, fixPct: 100, why: 'version pin edits — Kotlin plugin bumped to the RN-required version' },
+  { suite: 'agp', total: 10, diagnosed: 10, fixed: 10, buildOk: 9, fixPct: 100, why: 'AGP / Gradle wrapper bumped to the RN-required pair' },
+  { suite: 'cocoapods', total: 10, diagnosed: 10, fixed: 10, buildOk: 0, fixPct: 100, why: 'missing pod inserted into ios/Podfile from the log' },
+  { suite: 'upgrade', total: 10, diagnosed: 10, fixed: 10, buildOk: 7, fixPct: 100, why: 'compileSdk / Kotlin / AGP / wrapper / minSdk / NDK / namespace after an RN bump' },
+  { suite: 'linking', total: 10, diagnosed: 10, fixed: 8, buildOk: 0, fixPct: 80, why: 'settings.gradle include, JitPack repo, new-arch flag, minSdk floor, pod path' },
+  { suite: 'typescript', total: 10, diagnosed: 10, fixed: 6, buildOk: 0, fixPct: 60, why: 'import resolve, drop prop, unquote literal, dedupe decl, JSX→createElement, strip prop' },
+  { suite: 'gradle-conflict', total: 10, diagnosed: 10, fixed: 5, buildOk: 0, fixPct: 50, why: 'duplicate-class resolutionStrategy, minSdk, NDK, daemon heap, compileSdk' },
+  { suite: 'metro', total: 10, diagnosed: 10, fixed: 4, buildOk: 1, fixPct: 40, why: 'import rewrite, package add, babel preset add, Metro heap script' },
+  { suite: 'hermes', total: 10, diagnosed: 10, fixed: 2, buildOk: 0, fixPct: 20, why: 'hermesEnabled flag flip, hermes-engine version align' },
+  { suite: 'xcode', total: 10, diagnosed: 10, fixed: 1, buildOk: 0, fixPct: 10, why: 'deployment-target Podfile floor — the rest is signing / provisioning / linker (manual)' },
+]
+
 function Bar({ value, max = 100, barMax = 260 }: { value: number | null; max?: number; barMax?: number }) {
   if (value === null) {
     return <span className="font-mono text-xs text-slate-500">n/a</span>
@@ -202,7 +233,7 @@ export default function BenchmarksPage() {
       <div className="text-center">
         <div className="mx-auto mb-5 w-fit">
           <span className="chip font-mono">
-            one harness · four benchmarks — spec v1 — <span className="text-brand">3 local tiers + cloud</span> — 35-scenario pack · 7B live-scored across the original 33
+            one harness · five benchmarks — spec v1 — <span className="text-brand">3 local tiers + cloud</span> — 35-scenario pack · 7B live-scored across the original 33 · fix-bench 100/100 diagnosis
           </span>
         </div>
         <h1 className="text-4xl font-bold text-slate-50">RN coding tests — the benchmark suite</h1>
@@ -601,10 +632,97 @@ export default function BenchmarksPage() {
         </div>
       </section>
 
+      {/* Benchmark 5 — fix-bench reliability scorecard */}
+      <section className="mt-16">
+        <SectionLabel>benchmark 5 · every fix</SectionLabel>
+        <h2 className="mt-1 text-2xl font-bold text-slate-50">The fix-bench — 100 real failures, auto-fixed</h2>
+        <p className="mt-2 max-w-2xl text-sm text-slate-400">
+          A different kind of reliability number: <span className="font-mono text-brand">vectalon fix-bench</span>{' '}
+          takes the &quot;fix my React Native issue&quot; wedge and measures it against{' '}
+          <span className="text-slate-200">100 real failures</span> across the ten families the roadmap names —
+          Gradle dependency conflicts, Kotlin / AGP / Gradle incompatibilities, CocoaPods, Xcode, Metro resolution,
+          Hermes, RN upgrade breakages, native module linking, and TypeScript regressions. Each scenario
+          materializes a healthy RN 0.74 project, injects one real failure, and runs the{' '}
+          <span className="font-mono">vc fix</span> pipeline end-to-end — diagnose → plan → sandbox-apply —
+          hermetically (no build ever runs, CI-safe).{' '}
+          <span className="text-slate-200">What it&apos;s for:</span> both product-milestone targets are now
+          cleared — <span className="text-brand">100% correct diagnosis</span> (target ≥ 80%) and{' '}
+          <span className="text-brand">66% of fixes applied without human modification</span> (target ≥ 50%) —
+          with <span className="text-brand">zero false positives</span> on the healthy control. The same pack is a
+          regression gate in CI: hermetic tests in <span className="font-mono">__tests__/fixBench/seams.test.ts</span>{' '}
+          re-run all 100 scenarios and fail the build if either target slips.
+        </p>
+        <pre className="term-body mt-6 rounded-[4px] border bg-[rgb(var(--term))] p-4 text-[13px]" style={{ borderColor: 'rgb(var(--term-border))' }}>
+          <span className="text-term-brand">$</span> npx vectalon fix-bench{'\n'}
+          <span className="text-slate-500">┌─ vc fix-bench — 100 real RN failures, measured ──────────────┐</span>{'\n'}
+          <span className="text-slate-300">  Diagnosis accuracy</span>            <span className="text-emerald-500">100.0%</span>   <span className="text-slate-500">target 80.0% ✓</span>{'\n'}
+          <span className="text-slate-300">  Fix accuracy (auto, no human)</span> <span className="text-emerald-500">66.0%</span>    <span className="text-slate-500">target 50.0% ✓</span>{'\n'}
+          <span className="text-slate-300">  Build success (post-fix)</span>     <span className="text-term-brand">27.0%</span>{'\n'}
+          <span className="text-slate-300">  False positive rate</span>          <span className="text-term-brand">0.0%</span>{'\n'}
+          <span className="text-slate-300">  Human intervention</span>           <span className="text-term-brand">34.0%</span>{'\n'}
+          <span className="text-slate-300">  Time: median 15ms/scenario · total 1.6s</span>{'\n'}
+          <span className="text-slate-300">  Estimated time saved:</span> <span className="text-emerald-500">50.0 hours</span> <span className="text-slate-500">vs a 30-min-per-failure human baseline</span>{'\n'}
+          <span className="text-emerald-500">✔ Both product-milestone targets met — 80%+ correct diagnosis and 50%+ fixes applied without human modification.</span>
+        </pre>
+
+        <h3 className="mt-10 font-semibold text-slate-50">The six axes</h3>
+        <div className="mt-4 grid gap-5 md:grid-cols-3">
+          {FIX_AXES.map(a => (
+            <div key={a.name} className="card">
+              <div className="flex items-baseline justify-between">
+                <h4 className="font-semibold text-slate-50">{a.name}</h4>
+                <span className="font-mono text-xs text-slate-500">{a.value}</span>
+              </div>
+              <p className="mt-1 text-xs italic text-brand">{a.verdict}</p>
+              <p className="mt-2 text-[11px] leading-relaxed text-slate-400">{a.detail}</p>
+            </div>
+          ))}
+        </div>
+
+        <h3 className="mt-10 font-semibold text-slate-50">Per suite — where the auto-fix lands</h3>
+        <div className="card !p-0 mt-4 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="tbl min-w-[720px]">
+              <thead>
+                <tr>
+                  <th>Failure suite</th>
+                  <th>Diagnosed</th>
+                  <th>Auto-fixed</th>
+                  <th>Build ok after fix</th>
+                </tr>
+              </thead>
+              <tbody>
+                {FIX_SUITES.map(s => (
+                  <tr key={s.suite}>
+                    <td>
+                      <span className="font-mono text-xs text-slate-400">{s.suite}</span>
+                      <div className="hidden text-[11px] text-slate-600 md:block">{s.why}</div>
+                    </td>
+                    <td className="font-mono text-xs text-emerald-500">{s.diagnosed}/{s.total}</td>
+                    <td>
+                      <Bar value={s.fixPct} barMax={140} />
+                      <span className="font-mono text-xs text-slate-500">{s.fixed}/{s.total}</span>
+                    </td>
+                    <td className="font-mono text-xs text-slate-400">{s.buildOk}/{s.total}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p className="mt-3 text-xs text-slate-500">
+          The gradient is the point: version-alignment families (Kotlin, AGP, Gradle, SDK) and the pod/autolinking
+          seams auto-fix at 100% — the pipeline edits the exact version pin, Podfile, or settings.gradle line. The
+          remaining manual cases are the genuinely judgment-heavy ones: code signing, provisioning, linker
+          configuration, and SDK toolchain installs, where the deterministic edit would be guesswork — the pipeline
+          says so and gives the exact command instead. Honest numbers, not a vanity 100%.
+        </p>
+      </section>
+
       {/* Run it yourself */}
       <section className="mt-16">
         <div className="card">
-          <h2 className="font-semibold text-slate-50">Run all four yourself</h2>
+          <h2 className="font-semibold text-slate-50">Run all five yourself</h2>
           <p className="mt-2 text-sm leading-relaxed text-slate-400">
             One deterministic harness, no secrets, no model required for the gate. Add any model provider
             and publish your own leaderboard row — or author your own eval pack and score it against your
@@ -618,6 +736,7 @@ export default function BenchmarksPage() {
             <span className="text-term-brand">$</span> npx vectalon bench --live --install         <span className="text-slate-500"># real tests/typecheck/lint → correctness axis</span>{'\\n'}
             <span className="text-term-brand">$</span> npx vectalon leaderboard                    <span className="text-slate-500"># merge model passes → BENCHMARK_RESULTS.md</span>{'\\n'}
             <span className="text-term-brand">$</span> npx vectalon bench --baseline bench/baseline.json  <span className="text-slate-500"># 4 · CI regression gate</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx vectalon fix-bench                    <span className="text-slate-500"># 5 · 100 real failures, diagnosed + auto-fixed</span>{'\\n'}
             <span className="text-term-brand">$</span> npx vectalon bench --scenarios ./my-evals --references ./my-refs  <span className="text-slate-500"># your own eval pack</span>
           </pre>
         </div>

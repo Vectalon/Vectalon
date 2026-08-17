@@ -28,7 +28,7 @@ export const GRADLE_PATTERNS: GradlePattern[] = [
   {
     id: 'compile-sdk-version',
     name: 'compileSdkVersion too low for RN',
-    re: /compileSdkVersion|Please use SDK version (3\d|2\d)\d+ or higher/i,
+    re: /compileSdkVersion|Please use SDK version \d+ or higher/i,
     fix: 'Raise compileSdkVersion in android/build.gradle — React Native requires the SDK level its build.gradle pins (e.g. 35 for RN 0.76+, 34 for 0.73+).',
   },
   {
@@ -40,7 +40,7 @@ export const GRADLE_PATTERNS: GradlePattern[] = [
   {
     id: 'hermes-android',
     name: 'Hermes build issue (Android)',
-    re: /hermesc|hermes-engine|Could not resolve.*hermes/i,
+    re: /hermesc|hermes-engine|Could not resolve.*hermes|No matching variant.*hermes/i,
     fix: 'Hermes bytecode toolchain failed: clean (`cd android && ./gradlew clean`), delete the Gradle cache (`~/.gradle/caches`) for a corrupted hermes-engine artifact, and confirm hermesEnabled matches your RN version (RN 0.70+ defaults to on).',
   },
   {
@@ -92,9 +92,15 @@ export const GRADLE_PATTERNS: GradlePattern[] = [
     fix: 'A native module\'s manifest conflicts with the app\'s (a permission/activity declared twice, or a minSdkVersion clash): apply the merger\'s suggested `tools:replace`/`tools:node` attribute in AndroidManifest.xml, raise minSdkVersion to the highest requirement, or remove the duplicate declaration.',
   },
   {
+    id: 'new-arch-mismatch',
+    name: 'New Architecture mismatch',
+    re: /does not support the new architecture|Please set newArchEnabled=false/i,
+    fix: 'A native module does not support the New Architecture: set `newArchEnabled=false` in android/gradle.properties and re-sync, or upgrade the module to a new-arch-compatible version.',
+  },
+  {
     id: 'agp-namespace',
     name: 'Namespace not specified (AGP 8)',
-    re: /Namespace not specified\. Please specify a namespace in the module\'s build file|namespace.*must be specified/i,
+    re: /Namespace not specified\. Please specify a namespace in the module's build file|namespace.*must be specified/i,
     fix: 'AGP 8 removed package-name inference: add `namespace "com.<appid>"` to android/app/build.gradle (and each library module\'s build.gradle). The exact id should match your applicationId.',
   },
   {

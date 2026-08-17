@@ -8,11 +8,13 @@
   "broken": {},
   "healthy": {},
   "expect": {
-    "diagnosisId": "network",
+    "diagnosisId": "dependency-resolution",
     "diagnosisKeywords": [],
-    "fixFile": "android/build.gradle",
-    "mustContain": [],
+    "fixFile": "android/settings.gradle",
+    "mustContain": [
+      "jitpack.io"
+    ],
     "mustNotContain": [],
-    "autoFixable": false
+    "autoFixable": true
   }
 }

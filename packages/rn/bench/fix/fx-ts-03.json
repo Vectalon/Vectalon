@@ -4,7 +4,7 @@
   "suite": "typescript",
   "title": "TS2339: Property does not exist after an RN upgrade",
   "issue": "After upgrading RN, a deprecated prop no longer exists on the type.",
-  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(3,10): error TS2339: Property 'getNativeNode' does not exist on type 'Text'.\n",
+  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(4,10): error TS2339: Property 'getNativeNode' does not exist on type 'Text'.\n",
   "broken": {
     "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nconst c = (el) => el.getNativeNode();\n"
   },

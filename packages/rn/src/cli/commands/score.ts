@@ -11,7 +11,7 @@
 import { resolve } from 'path'
 import pc from 'picocolors'
 import { printCarbonReport, parchment, dim, visibleWidth } from '../carbon'
-import { runScore, writeScoreReport } from '../../score'
+import { runScore, writeScoreReport, renderTrendChart } from '../../score'
 import type { ScoreOptions, ScoreReport } from '../../score'
 
 export interface ScoreCommandOptions extends ScoreOptions {
@@ -50,20 +50,43 @@ export async function scoreCommand(options: ScoreCommandOptions): Promise<void> 
   }
 
   const body: string[] = []
-  // Overall headline.
+  // Headline — "Current: 86 · +9 this month".
   const overall = report.overall
   const overallColor = overall >= 85 ? pc.green : overall >= 60 ? pc.yellow : pc.red
-  body.push(`  ${parchment('Overall')}  ${pc.bold(overallColor(String(overall) + '/100'))}  ${bar(overall, 30)}  ${dim(`grade ${report.grade}`)}`)
-  body.push('')
-  body.push(...renderScoreBody(report))
-  body.push('')
-  // Delta — the "↓ 8 points this week" line.
+  let headline = `  ${parchment('Current')}  ${pc.bold(overallColor(String(overall) + '/100'))}  ${bar(overall, 30)}  ${dim(`grade ${report.grade}`)}`
+  if (report.monthDelta !== null) {
+    const m = report.monthDelta
+    const chip = m > 0 ? pc.green(`+${m} this month`) : m < 0 ? pc.red(`${m} this month`) : dim('0 this month')
+    headline += `  ${chip}`
+  }
+  body.push(headline)
+  // Run-to-run delta — the "↓ 8 points this week" line.
   if (report.delta !== null) {
     const arrow = report.delta >= 0 ? pc.green('↑') : pc.red('↓')
     body.push(`  ${arrow} ${Math.abs(report.delta)} points ${dim(report.historyNote)}`)
   } else {
     body.push(`  ${dim(report.historyNote)}`)
   }
+  // The trend — "make the score change over time".
+  if (report.trend.length >= 2) {
+    body.push('')
+    body.push(`  ${parchment('Overall trend — last ' + report.trend.length + ' runs')}  ${dim('run vc score to add a point')}`)
+    body.push(...renderTrendChart(report.trend).map(l => `  ${l}`))
+  } else {
+    body.push(`  ${dim(report.monthNote)}`)
+  }
+  // Dimension deltas — "+6 Architecture · +4 Testing · -2 Dependencies".
+  if (report.dimensionDeltas.length > 0) {
+    const parts = report.dimensionDeltas.map(dd => {
+      const sign = dd.delta > 0 ? `+${dd.delta}` : String(dd.delta)
+      const color = dd.delta > 0 ? pc.green : dd.delta < 0 ? pc.red : pc.dim
+      return `${color(sign)} ${dd.label}`
+    })
+    body.push(`  ${dim('Dimension deltas:')} ${parts.join(' · ')}`)
+  }
+  body.push('')
+  body.push(...renderScoreBody(report))
+  body.push('')
   // New problems.
   if (report.newProblems.length > 0) {
     body.push('')

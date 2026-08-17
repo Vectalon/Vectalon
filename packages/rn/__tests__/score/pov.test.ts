@@ -54,6 +54,10 @@ function mockScore(over: Partial<ScoreReport> = {}): ScoreReport {
     delta: null,
     newProblems: [],
     historyNote: 'First score — no previous run to compare against',
+    trend: [],
+    dimensionDeltas: [],
+    monthDelta: null,
+    monthNote: 'First score this month',
     dimensions: [],
     recommendations: [
       { priority: 'P0', dimension: 'Dependencies', message: 'Android dependency conflict', action: 'fix it' },

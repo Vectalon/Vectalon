@@ -8,7 +8,7 @@
   "broken": {},
   "healthy": {},
   "expect": {
-    "diagnosisId": "pod-install-needed",
+    "diagnosisId": "dependency-resolution",
     "diagnosisKeywords": [],
     "fixFile": "android/build.gradle",
     "mustContain": [],

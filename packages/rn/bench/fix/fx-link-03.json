@@ -4,15 +4,17 @@
   "suite": "linking",
   "title": "Pod not installed after adding a native package",
   "issue": "iOS build fails: the pod for the new native module is missing.",
-  "log": "[!] The `react-native-vision-camera` pod could not be found — run pod install after adding the package.",
+  "log": "[!] CocoaPods could not find compatible versions for pod \"react-native-vision-camera\":\n  In Podfile:\n    react-native-vision-camera (from `../node_modules/react-native-vision-camera`)\n\n[!] The Swift pod `react-native-vision-camera` could not be found in project ios/Podfile — run pod install after adding the package.",
   "broken": {},
   "healthy": {},
   "expect": {
     "diagnosisId": "pod-install-needed",
     "diagnosisKeywords": [],
-    "fixFile": "android/build.gradle",
-    "mustContain": [],
+    "fixFile": "ios/Podfile",
+    "mustContain": [
+      "pod 'react-native-vision-camera'"
+    ],
     "mustNotContain": [],
-    "autoFixable": false
+    "autoFixable": true
   }
 }

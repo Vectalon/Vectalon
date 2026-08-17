@@ -10,9 +10,11 @@
   "expect": {
     "diagnosisId": "pod-not-found",
     "diagnosisKeywords": [],
-    "fixFile": "android/build.gradle",
-    "mustContain": [],
+    "fixFile": "ios/Podfile",
+    "mustContain": [
+      "pod 'RNReanimated'"
+    ],
     "mustNotContain": [],
-    "autoFixable": false
+    "autoFixable": true
   }
 }

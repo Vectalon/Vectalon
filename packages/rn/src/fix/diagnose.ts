@@ -214,6 +214,133 @@ export function readKotlinRequirement(text: string): string | null {
   return m ? m[1] : null
 }
 
+/**
+ * Enrich root findings with seam-specific parameters parsed from the
+ * log/issue text — the exact values the deterministic edit seams need
+ * (the pod name + node_modules path for the Podfile insert, the minSdk
+ * floor the merger names, the unresolved module specifier + importer for
+ * the import rewrite, the deployment target, the hermes version to align).
+ * The planner reads `finding.params` and turns each into one literal edit.
+ */
+/** Every ts-* finding gets its source file:line + error code + message parsed
+ * from the tsc log line (`src/screens/Broken.tsx(3,10): error TS2307: …`), so
+ * the TS seams edit exactly the failing line. */
+function tsParamsFromLog(text: string): Record<string, string> | null {
+  const m = text.match(/([\w./-]+\.tsx?)\((\d+),(\d+)\):\s*error\s+TS(\d+):\s*(.+)/)
+  if (!m) return null
+  return { file: m[1], line: m[2], tsCode: m[4], tsMsg: m[5].trim() }
+}
+
+/**
+ * Enrich root findings with seam-specific parameters parsed from the
+ * log/issue text — the exact values the deterministic edit seams need
+ * (the pod name + node_modules path for the Podfile insert, the minSdk
+ * floor the merger names, the unresolved module specifier + importer for
+ * the import rewrite, the deployment target, the hermes version to align,
+ * the failing source file:line for the TS code seams, the missing native
+ * project for the settings.gradle include, the NDK version to align).
+ * The planner reads `finding.params` and turns each into one literal edit.
+ */
+export function enrichFindingParams(findings: FixFinding[], text: string): void {
+  if (!text) return
+  const ts = tsParamsFromLog(text)
+  for (const f of findings) {
+    switch (f.id) {
+      case 'pod-not-found':
+      case 'pod-install-needed': {
+        const name =
+          text.match(/for pod ["'`]([^"'`]+)["'`]/)?.[1] ??
+          text.match(/Unable to find a specification for ["'`]([^"'`]+)["'`]/)?.[1] ??
+          text.match(/pod ["'`]([^"'`]+)["'`] could not be found/)?.[1] ??
+          text.match(/The Swift pod [`'"]([^`'"]+)[`'"] could not be found/)?.[1] ??
+          text.match(/In Podfile:\s*\n\s*([A-Za-z0-9_]+)/)?.[1] ??
+          text.match(/[`'"]([A-Za-z0-9_-]+)[`'"] pod could not be found/)?.[1]
+        const pkg =
+          text.match(/from [`'"](?:\.[/\\])?node_modules\/([^`'"]+)[`'"]/)?.[1] ??
+          text.match(/node_modules\/([^`'"\s]+)/)?.[1] ??
+          (name && name.startsWith('react-native') ? name : undefined)
+        if (name) {
+          f.params = { ...f.params, podName: name }
+          if (pkg) f.params.podPath = `../node_modules/${pkg}`
+        }
+        break
+      }
+      case 'min-sdk-version': {
+        const floor = text.match(/cannot be smaller than version (\d+)/)?.[1]
+        if (floor) f.params = { ...f.params, minSdkFloor: floor }
+        break
+      }
+      case 'deployment-target': {
+        const target = text.match(/range of supported deployment target versions is ([\d.]+)/)?.[1]
+        if (target) f.params = { ...f.params, deploymentTarget: target }
+        break
+      }
+      case 'module-resolution': {
+        const specifier = text.match(/Unable to resolve module ([^\s]+)|Cannot find module ['"]([^'"]+)['"]/)?.[1]
+        const importer = text.match(/from (\/src\/[^:\s]+)/)?.[1]
+        if (specifier) {
+          f.params = { ...f.params, specifier }
+          if (importer) f.params.importer = importer.replace(/^\//, '')
+        }
+        break
+      }
+      case 'babel-plugin-missing': {
+        const preset = text.match(/Cannot find module ['"]([^'"]+)['"]/)?.[1]
+        if (preset) f.params = { ...f.params, preset }
+        break
+      }
+      case 'dependency-resolution': {
+        const project = text.match(/Could not find module ['"]:([A-Za-z0-9_-]+)['"]/)?.[1]
+        const project2 = text.match(/Could not resolve project \s*:([A-Za-z0-9_-]+)/)?.[1]
+        const github = text.match(/Could not resolve (com\.github\.[\w.]+):([\w.-]+)/)?.[1]
+        if (project) f.params = { ...f.params, nativeProject: project }
+        if (project2) f.params = { ...f.params, nativeProject: project2 }
+        if (github) f.params = { ...f.params, githubRepo: github }
+        break
+      }
+      case 'new-arch-mismatch': {
+        const flag = text.match(/newArchEnabled=(true|false)/)?.[1]
+        if (flag) f.params = { ...f.params, newArchEnabled: flag }
+        break
+      }
+      case 'duplicate-class': {
+        // The classifier's message is a short label — parse the real
+        // group:artifact:version pairs from the log line itself.
+        const pairs = [...text.matchAll(/\(([\w.]+):([\w.-]+):([\d.]+)\)/g)].map(m => ({ group: `${m[1]}:${m[2]}`, version: m[3] }))
+        if (pairs.length >= 2) f.params = { ...f.params, duplicateModules: JSON.stringify(pairs) }
+        break
+      }
+      case 'ndk-version': {
+        const ndk = text.match(/ndk\/([\d.]+)/)?.[1]
+        if (ndk) f.params = { ...f.params, ndkVersion: ndk }
+        break
+      }
+      case 'hermes-android': {
+        // A version must follow the engine name (hermes-engine:1.0.0) — never
+        // grab the trailing period of "hermes-engine." as a version.
+        const version = text.match(/hermes(?:-engine)?[@:]?(\d+(?:\.\d+)+)/)?.[1]
+        if (version) f.params = { ...f.params, hermesVersion: version }
+        if (/Hermes is disabled|hermesEnabled\s*=\s*false/i.test(text)) {
+          f.params = { ...f.params, hermesDisabled: 'true' }
+        }
+        break
+      }
+      default:
+        break
+    }
+    // TS code seams share the source file:line + error message. The module
+    // specifier is parsed separately — the tsc error names it (TS2307) and the
+    // import-rewrite seam needs it.
+    if (f.id.startsWith('ts-') && ts) {
+      f.params = { ...f.params, ...ts }
+      if (f.id === 'ts-module-not-found') {
+        const specifier = ts.tsMsg.match(/Cannot find module ['"]([^'"]+)['"]/)?.[1]
+        if (specifier) f.params = { ...f.params, specifier }
+      }
+    }
+  }
+}
+
 function compareVersions(a: string, b: string): number {
   const pa = a.split('.').map(Number)
   const pb = b.split('.').map(Number)
@@ -421,6 +548,11 @@ export function diagnose(root: string, options: FixOptions): DiagnoseResult {
       confidence: 88,
     })
   }
+
+  // 4d — Seam parameters: the exact values the deterministic edit seams need,
+  // parsed from the log/issue text into each finding (pod name + path, minSdk
+  // floor, module specifier + importer, hermes version, deployment target).
+  enrichFindingParams(findings, issueText)
 
   // 5 — Impact: the native modules this project builds (the blast radius of a
   // native-config root cause).

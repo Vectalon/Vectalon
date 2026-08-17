@@ -4,7 +4,7 @@
   "suite": "typescript",
   "title": "TS2300: Duplicate identifier from a merge conflict",
   "issue": "Typecheck fails: a merge conflict left two declarations.",
-  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(3,10): error TS2300: Duplicate identifier 'total'.\n",
+  "log": "node_modules/.bin/tsc --noEmit\n\nsrc/screens/Broken.tsx(5,10): error TS2300: Duplicate identifier 'total'.\n",
   "broken": {
     "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nconst total = 1;\nconst total = 2;\n"
   },

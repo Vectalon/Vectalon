@@ -229,10 +229,82 @@ describe('vc score — renderScoreMarkdown', () => {
       dimensions: [dim({ id: 'a', label: 'Architecture', score: 91, weight: 0.15 })],
       recommendations: [{ priority: 'P0', dimension: 'Dependencies', message: 'conflict', action: 'fix it' }],
       historyNote: 'vs 2026-08-01 (90/100)',
+      trend: [{ scoredAt: '2026-08-01T00:00:00.000Z', overall: 90 }],
+      dimensionDeltas: [{ id: 'a', label: 'Architecture', delta: 6 }],
+      monthDelta: 9,
+      monthNote: 'since 2026-08-01 (73/100)',
     })
     expect(md).toContain('**82/100 (B)**')
     expect(md).toContain('↓ 8 points')
     expect(md).toContain('**P0** Dependencies: conflict — fix it')
     expect(md).toContain('New problems (1)')
+    // Recurring-product sections.
+    expect(md).toContain('## Trend')
+    expect(md).toContain('↑ 9 points')
+    expect(md).toContain('+6 Architecture')
+    expect(md).toContain('90 (2026-08-01)')
+  })
+})
+
+describe('vc score — recurring trend', () => {
+  it('grows the trend series and persists per-dimension scores', async () => {
+    const root = cleanFixture()
+    const first = await runScore(root, { skipAudit: true })
+    expect(first.trend.length).toBe(1)
+    expect(first.trend[0].overall).toBe(first.overall)
+
+    const second = await runScore(root, { skipAudit: true })
+    expect(second.trend.length).toBe(2)
+    expect(second.trend[second.trend.length - 1].overall).toBe(second.overall)
+    // Unchanged repo → no per-dimension movement.
+    expect(second.dimensionDeltas).toEqual([])
+
+    const history = readHistory(root)
+    expect(history.entries[1].dimensions).toBeDefined()
+    expect(history.entries[1].dimensions!['build-health']).toBeGreaterThanOrEqual(0)
+    expect(history.entries[1].dimensions!['architecture']).toBeGreaterThanOrEqual(0)
+    rmSync(root, { recursive: true, force: true })
+  })
+
+  it('breaks down dimension deltas when the build regresses', async () => {
+    const root = cleanFixture()
+    await runScore(root, { skipAudit: true })
+    writeFileSync(
+      join(root, 'android', 'build.gradle'),
+      readFileSync(join(root, 'android', 'build.gradle'), 'utf-8').replace('compileSdkVersion = 35', 'compileSdkVersion = 33')
+    )
+    const second = await runScore(root, { skipAudit: true })
+    const build = second.dimensionDeltas.find(dd => dd.id === 'build-health')
+    expect(build).toBeDefined()
+    expect(build!.delta).toBeLessThan(0)
+    // Sorted biggest-movement first.
+    const abs = second.dimensionDeltas.map(dd => Math.abs(dd.delta))
+    expect(abs).toEqual([...abs].sort((a, b) => b - a))
+    rmSync(root, { recursive: true, force: true })
+  })
+
+  it('computes the month-over-month headline', async () => {
+    const root = cleanFixture()
+    // Seed one earlier run in the current calendar month.
+    const now = new Date()
+    const seed = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0))
+    writeHistory(root, {
+      entries: [
+        { scoredAt: seed.toISOString(), overall: 73, findingIds: [], dimensions: {} },
+      ],
+    })
+    const report = await runScore(root, { skipAudit: true })
+    expect(report.monthDelta).not.toBeNull()
+    expect(report.monthNote).toContain('since')
+    expect(report.monthDelta!).toBe(report.overall - 73)
+    rmSync(root, { recursive: true, force: true })
+  })
+
+  it('notes when it is the first run of the month', async () => {
+    const root = cleanFixture()
+    const report = await runScore(root, { skipAudit: true })
+    expect(report.monthDelta).toBeNull()
+    expect(report.monthNote).toContain('First score this month')
+    rmSync(root, { recursive: true, force: true })
   })
 })

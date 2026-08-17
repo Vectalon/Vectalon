@@ -20,7 +20,7 @@
   "expect": {
     "diagnosisId": "agp-namespace",
     "diagnosisKeywords": [],
-    "fixFile": "android/build.gradle",
+    "fixFile": "android/app/build.gradle",
     "mustContain": [
       "namespace \"com.rnbenchapp\""
     ],

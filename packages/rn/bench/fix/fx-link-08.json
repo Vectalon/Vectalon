@@ -8,11 +8,13 @@
   "broken": {},
   "healthy": {},
   "expect": {
-    "diagnosisId": "pod-install-needed",
+    "diagnosisId": "new-arch-mismatch",
     "diagnosisKeywords": [],
-    "fixFile": "android/build.gradle",
-    "mustContain": [],
+    "fixFile": "android/gradle.properties",
+    "mustContain": [
+      "newArchEnabled=false"
+    ],
     "mustNotContain": [],
-    "autoFixable": false
+    "autoFixable": true
   }
 }
