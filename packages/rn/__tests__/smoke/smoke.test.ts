@@ -195,13 +195,16 @@ process.exit(0)
     expect(report.runs[0].status).toBe('pass')
   })
 
+  // Runs the WHOLE default check catalog — every non-slow check spawns its
+  // own subprocess sequentially — so it needs well above jest's 5s default on
+  // a loaded CI runner (it flaked there at exactly the 5000 ms cap).
   it('excludes slow checks unless --full', async () => {
     const bin = writeFakeCli(0, 'ok')
     const fast = await runSmoke(fakeContext(bin), {})
     expect(fast.runs.every(r => r.check.id !== 'bench')).toBe(true)
     const full = await runSmoke(fakeContext(bin), { full: true, only: ['bench'] })
     expect(full.runs.map(r => r.check.id)).toContain('bench')
-  })
+  }, 60_000)
 
   it('honors --only and --skip', async () => {
     const bin = writeFakeCli(0, 'ok')
