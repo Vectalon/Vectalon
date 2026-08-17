@@ -1,0 +1,9 @@
+{
+  "id": "rn-40-debug-metro-resolution",
+  "files": [
+    {
+      "path": "src/screens/HomeScreen.tsx",
+      "content": "import React from 'react';\nimport { Text, StyleSheet, SafeAreaView } from 'react-native';\nimport { colors } from '../theme/tokens';\n\nexport function HomeScreen(): JSX.Element {\n  return (\n    <SafeAreaView style={styles.container}>\n      <Text style={styles.title}>Home</Text>\n    </SafeAreaView>\n  );\n}\n\nconst styles = StyleSheet.create({\n  container: {\n    flex: 1,\n    alignItems: 'center',\n    justifyContent: 'center',\n  },\n  title: {\n    color: colors.primary,\n  },\n});\n"
+    }
+  ]
+}

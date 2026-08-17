@@ -126,7 +126,17 @@ describe('benchmarks page data', () => {
       expect(pct(removalAxes.guardrails)).toBe(98)
       expect(removalAxes.correctness).toBeNull()
     }
-    // The page must gate exactly those nine scenarios, in order.
+    // The gate covers the eight upgrade/debugging fix scenarios through the
+    // fix seam (adherence + guardrails both 100%).
+    for (const id of ['rn-36-upgrade-compile-sdk', 'rn-37-upgrade-kotlin-gradle', 'rn-38-upgrade-new-arch', 'rn-39-upgrade-deprecated-api', 'rn-40-debug-metro-resolution', 'rn-41-debug-hermes-crash', 'rn-42-debug-ts-regression', 'rn-43-debug-linking']) {
+      const fixRun = (baseline.runs as Array<Record<string, unknown>>).find(r => r.id === id)
+      expect(fixRun).toBeDefined()
+      expect(pct((fixRun as Record<string, unknown>).composite as number)).toBe(100)
+      const fixAxes = (fixRun as Record<string, unknown>).axes as Record<string, number | null>
+      expect(pct(fixAxes.adherence)).toBe(100)
+      expect(pct(fixAxes.guardrails)).toBe(100)
+    }
+    // The page must gate exactly those seventeen scenarios, in order.
     const gateMatch = page.match(/const BASELINE_GATE = \[([^\]]+)\]/)
     const gateIds = (gateMatch?.[1].match(/id: '([^']+)'/g) ?? []).map(s =>
       s.replace(/^id: '/, '').replace(/'$/, '')
@@ -141,6 +151,14 @@ describe('benchmarks page data', () => {
       'rn-13-account-delete-screen',
       'rn-34-remove-sentry-sdk',
       'rn-35-remove-firebase-sdk',
+      'rn-36-upgrade-compile-sdk',
+      'rn-37-upgrade-kotlin-gradle',
+      'rn-38-upgrade-new-arch',
+      'rn-39-upgrade-deprecated-api',
+      'rn-40-debug-metro-resolution',
+      'rn-41-debug-hermes-crash',
+      'rn-42-debug-ts-regression',
+      'rn-43-debug-linking',
     ])
   })
 })

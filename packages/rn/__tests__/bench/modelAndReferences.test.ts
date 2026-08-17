@@ -41,10 +41,10 @@ function stubRouter(content: string): ModelGenerateOptions['modelRouter'] {
 }
 
 describe('bench reference solutions (M6)', () => {
-  it('loads all 35 shipped references without problems', () => {
+  it('loads all 43 shipped references without problems', () => {
     const { references, problems } = loadReferences(defaultReferencesDir())
     expect(problems).toEqual([])
-    expect(references.size).toBe(35)
+    expect(references.size).toBe(43)
     for (const files of references.values()) {
       expect(files.length).toBeGreaterThan(0)
       for (const file of files) {
@@ -303,8 +303,8 @@ describe('bench relative-to-human scoring (M6)', () => {
     expect(problems).toEqual([])
     expect(referenceProblems).toEqual([])
     // Deterministic baseline runs the scaffold-able subset plus the removal
-    // scenarios, and every run has a reference.
-    expect(summary.runs.length).toBe(9)
+    // and fix scenarios, and every run has a reference.
+    expect(summary.runs.length).toBe(17)
     expect(summary.runs.every(r => r.reference)).toBe(true)
     expect(summary.overallReferenceComposite).not.toBeNull()
     expect(summary.overallRelativeComposite).not.toBeNull()
@@ -319,8 +319,8 @@ describe('bench relative-to-human scoring (M6)', () => {
       })
     )
     const { summary } = await runBenchmarkFromDir({ modelRouter: router })
-    // A model seam runs every scenario (33), not just the scaffold-able subset.
-    expect(summary.runs.length).toBe(35)
+    // A model seam runs every scenario, not just the scaffold-able subset.
+    expect(summary.runs.length).toBe(43)
   })
 
   it('runBenchmarkFromDir runs a custom scenarios dir with custom references', async () => {

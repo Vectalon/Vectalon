@@ -1,0 +1,29 @@
+{
+  "id": "rn-39-upgrade-deprecated-api",
+  "specVersion": 1,
+  "suite": "upgrades",
+  "title": "Upgrade React Native 0.73 → 0.74: deprecated StatusBar props removed",
+  "prompt": "React Native 0.74 removed the deprecated `barStyle` and `backgroundColor` props from the `StatusBar` component (they now live on `useColorScheme` + the theme). After the upgrade, src/screens/HomeScreen.tsx still passes `barStyle=\"dark-content\"` and `backgroundColor=\"#fff\"` to `<StatusBar>`, which no longer typechecks against RN 0.74 types. Rewrite the component so the StatusBar uses no deprecated props (drop them or use the `useColorScheme`-driven theme), keeping the screen functional. Return each changed file with its complete new content.",
+  "scaffoldable": false,
+  "fixEdits": [
+    { "file": "src/screens/HomeScreen.tsx", "find": "<StatusBar barStyle=\"dark-content\" backgroundColor=\"#fff\" />", "replace": "<StatusBar />" }
+  ],
+  "fixtures": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.2.0\",\n    \"react-native\": \"0.74.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.4\",\n    \"jest\": \"29.7.0\",\n    \"@babel/core\": \"7.24.9\",\n    \"@babel/preset-env\": \"7.24.8\",\n    \"@babel/preset-typescript\": \"7.24.7\",\n    \"@types/jest\": \"29.5.14\",\n    \"@types/react\": \"18.2.79\",\n    \"@typescript-eslint/eslint-plugin\": \"6.21.0\",\n    \"@typescript-eslint/parser\": \"6.21.0\",\n    \"eslint\": \"8.57.0\"\n  }\n}\n",
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"jsx\": \"react-native\",\n    \"esModuleInterop\": true,\n    \"skipLibCheck\": true\n  }\n}\n",
+    "babel.config.js": "module.exports = {\n  presets: ['@babel/preset-env', '@babel/preset-typescript'],\n};\n",
+    ".eslintrc.cjs": "module.exports = {\n  root: true,\n  env: { node: true, jest: true },\n  parser: '@typescript-eslint/parser',\n  parserOptions: { ecmaVersion: 2020, sourceType: 'module', ecmaFeatures: { jsx: true } },\n  plugins: ['@typescript-eslint'],\n  extends: ['plugin:@typescript-eslint/recommended'],\n  rules: { 'no-undef': 'off' },\n};\n",
+    "src/config/app.ts": "export const APP_NAME = 'rn-bench-app';\nexport const APP_VERSION = '1.0.0';\n",
+    "__tests__/smoke.test.ts": "import { APP_NAME, APP_VERSION } from '../src/config/app';\n\ndescribe('project smoke', () => {\n  it('loads the app config', () => {\n    expect(APP_NAME).toBe('rn-bench-app');\n    expect(APP_VERSION).toBe('1.0.0');\n  });\n});\n",
+    "src/screens/HomeScreen.tsx": "import React from 'react';\nimport { Text, StatusBar, StyleSheet, SafeAreaView } from 'react-native';\n\nexport function HomeScreen(): JSX.Element {\n  return (\n    <SafeAreaView style={styles.container}>\n      <StatusBar barStyle=\"dark-content\" backgroundColor=\"#fff\" />\n      <Text>Home</Text>\n    </SafeAreaView>\n  );\n}\n\nconst styles = StyleSheet.create({\n  container: {\n    flex: 1,\n    alignItems: 'center',\n    justifyContent: 'center',\n  },\n});\n"
+  },
+  "expect": {
+    "files": ["src/screens/HomeScreen.tsx"],
+    "behaviors": [
+      "no deprecated StatusBar props",
+      "screen stays functional"
+    ]
+  },
+  "correctness": { "tests": false, "typecheck": false, "lint": false },
+  "axes": ["adherence", "guardrails"]
+}

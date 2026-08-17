@@ -26,7 +26,7 @@ export function renderRnnMarkdown(bench: RnnBenchmark): string {
   lines.push(`- Generated: ${bench.generatedAt} · Root: ${bench.root}`)
   lines.push('')
   lines.push(
-    'Every number is computed from the **committed** artifacts — `bench/results/local*.json` (the live model passes), `bench/baseline.json` (the deterministic gate), and the 35 scenario/reference pairs. Nothing is edited by hand; the scenario→dimension mapping is published so it is auditable.'
+    'Every number is computed from the **committed** artifacts — `bench/results/local*.json` (the live model passes), `bench/baseline.json` (the deterministic gate), and the 43 scenario/reference pairs. Nothing is edited by hand; the scenario→dimension mapping is published so it is auditable.'
   )
   lines.push('', '## The matrix', '')
 

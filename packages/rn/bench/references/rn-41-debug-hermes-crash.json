@@ -1,0 +1,13 @@
+{
+  "id": "rn-41-debug-hermes-crash",
+  "files": [
+    {
+      "path": "android/gradle.properties",
+      "content": "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m\nandroid.useAndroidX=true\nandroid.enableJetifier=true\nhermesEnabled=true\n"
+    },
+    {
+      "path": "babel.config.js",
+      "content": "module.exports = {\n  presets: [\n    ['@babel/preset-env', { targets: { node: 'current' } }],\n    '@babel/preset-typescript',\n    ['react-native', { runtime: 'automatic' }],\n  ],\n};\n"
+    }
+  ]
+}

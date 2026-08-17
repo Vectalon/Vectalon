@@ -35,17 +35,17 @@ const checkById = (id: string): RubricCheck => {
 }
 
 describe('rubric check inventory', () => {
-  it('has exactly 16 checks with unique ids', () => {
-    expect(rubricChecks.length).toBe(16)
+  it('has exactly 17 checks with unique ids', () => {
+    expect(rubricChecks.length).toBe(17)
     const ids = rubricChecks.map(c => c.id)
-    expect(new Set(ids).size).toBe(16)
+    expect(new Set(ids).size).toBe(17)
     for (const c of rubricChecks) {
       expect(c.name).toBeTruthy()
       expect(c.description).toBeTruthy()
     }
   })
 
-  it('covers the plan items 1-16', () => {
+  it('covers the plan items 1-16 plus the fix-applied check', () => {
     const ids = rubricChecks.map(c => c.id).sort()
     expect(ids).toContain('keyboard-avoiding-view')
     expect(ids).toContain('virtualized-lists')

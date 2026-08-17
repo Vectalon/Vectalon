@@ -1,0 +1,9 @@
+{
+  "id": "rn-38-upgrade-new-arch",
+  "files": [
+    {
+      "path": "android/gradle.properties",
+      "content": "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m\nandroid.useAndroidX=true\nandroid.enableJetifier=true\nnewArchEnabled=true\nreactNativeArchitectures=armeabi-v7a,arm64-v8a,x86,x86_64\n"
+    }
+  ]
+}

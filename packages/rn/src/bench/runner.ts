@@ -9,6 +9,7 @@ import { loadReferences, defaultReferencesDir } from './references'
 import { createModelGenerate } from './modelGenerate'
 import { rubricAdherence } from './rubric'
 import { isRemovalScenario, removalGenerate } from './removal'
+import { isFixScenario, fixGenerate } from './fix'
 import { runCommand } from '../adapters/runCommand'
 import {
   BenchAxisScores,
@@ -92,14 +93,15 @@ async function runLiveCorrectness(
 function scoreFilesOffline(
   files: BenchGeneratedFile[],
   options: BenchRunOptions,
-  removedDependencies?: string[]
+  removedDependencies?: string[],
+  fixEdits?: Array<{ file: string; find: string; replace: string }>
 ): { axes: BenchAxisScores; composite: number | null } {
   const guardrails = guardrailPassRate(files)
   let adherence: number | null = null
   if (files.length > 0) {
     adherence = options.rubric
       ? options.rubric(files)
-      : rubricAdherence(files, { removedDependencies })
+      : rubricAdherence(files, { removedDependencies, fixEdits })
   }
   const axes = { correctness: null, adherence, guardrails }
   return { axes, composite: compositeScore(axes) }
@@ -108,10 +110,13 @@ function scoreFilesOffline(
 export async function runScenario(scenario: BenchScenario, options: BenchRunOptions = {}): Promise<BenchScenarioRun> {
   // Removal scenarios invert the scaffold: the deterministic seam applies
   // `removedDependencies` to the fixtures and emits the changed files, so
-  // rn-11 scores adherence + guardrails instead of n/a. A provided generate
+  // rn-11 scores adherence + guardrails instead of n/a. Upgrade/debugging
+  // scenarios do the same via `fixEdits` (the fix seam). A provided generate
   // seam (the real model) still wins — a model pass is never faked with
   // scaffold output.
-  const generate = options.generate || (isRemovalScenario(scenario) ? removalGenerate : deterministicGenerate)
+  const generate =
+    options.generate ||
+    (isRemovalScenario(scenario) ? removalGenerate : isFixScenario(scenario) ? fixGenerate : deterministicGenerate)
   const files = await generate(scenario)
   const removedDependencies = scenario.removedDependencies
 
@@ -144,7 +149,7 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
   if (files.length > 0) {
     adherence = options.rubric
       ? options.rubric(files)
-      : rubricAdherence(files, { removedDependencies })
+      : rubricAdherence(files, { removedDependencies, fixEdits: scenario.fixEdits })
   }
 
   const axes = { correctness, adherence, guardrails }
@@ -154,7 +159,7 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
   const referenceFiles = options.references?.[scenario.id]
   let reference: BenchScenarioRun['reference']
   if (referenceFiles && referenceFiles.length > 0) {
-    const ref = scoreFilesOffline(referenceFiles, options, removedDependencies)
+    const ref = scoreFilesOffline(referenceFiles, options, removedDependencies, scenario.fixEdits)
     const relative = relativeToReference(axes, composite, ref.axes, ref.composite)
     reference = {
       files: referenceFiles.map(f => f.path),
@@ -201,11 +206,13 @@ export function shouldRunScenario(scenario: BenchScenario, filter: BenchRunOptio
   if (!filter) return true
   if (filter.suite && scenario.suite !== filter.suite) return false
   if (filter.scaffoldable !== undefined && scenario.scaffoldable !== filter.scaffoldable) {
-    // The deterministic baseline runs scaffoldable scenarios AND dependency-
-    // removal scenarios (now deterministic via the removal seam) — but never
-    // non-scaffoldable add-scenarios, which only the model can produce.
+    // The deterministic baseline runs scaffoldable scenarios AND the
+    // deterministic-seam scenarios (dependency-removal via the removal seam,
+    // upgrade/debugging via the fix seam) — but never non-scaffoldable
+    // add-scenarios, which only the model can produce.
     const removal = isRemovalScenario(scenario)
-    if (!(filter.includeRemovals && removal)) return false
+    const fix = isFixScenario(scenario)
+    if (!((filter.includeRemovals && removal) || (filter.includeFixes && fix))) return false
   }
   if (filter.ids && !filter.ids.includes(scenario.id)) return false
   return true
@@ -303,9 +310,11 @@ export async function runBenchmarkFromDir(
   const hasGenerateSeam = Boolean(options.generate) || Boolean(options.modelRouter)
   if (!hasGenerateSeam && filter.scaffoldable === undefined) {
     filter.scaffoldable = true
-    // Removal scenarios are deterministic (removalGenerate) — include them in
+    // Removal scenarios are deterministic (removalGenerate) and fix scenarios
+    // (upgrade/debugging) are deterministic (fixGenerate) — include both in
     // the no-model baseline; non-scaffoldable add-scenarios stay excluded.
     filter.includeRemovals = true
+    filter.includeFixes = true
   }
   const generate = options.generate || (options.modelRouter ? createModelGenerate({ modelRouter: options.modelRouter }) : undefined)
   const summary = await runBenchmark(loaded.scenarios, { ...options, filter, generate, references })

@@ -26,21 +26,22 @@ describe('rnbench dimensions', () => {
   })
 
   it('maps every scenario in the pack to exactly one dimension (no orphans, no doubles)', () => {
-    // The pack is rn-01..rn-35 — every short id must map, and only once.
-    for (let i = 1; i <= 35; i++) {
+    // The pack is rn-01..rn-43 — every short id must map, and only once.
+    for (let i = 1; i <= 43; i++) {
       const id = `rn-${String(i).padStart(2, '0')}`
       const dim = SCENARIO_DIMENSION[id]
       expect(dim).toBeTruthy()
     }
-    // Every value is a real dimension id, and the pack covers 35 scenarios.
+    // Every value is a real dimension id, and the pack covers 43 scenarios.
     const valid = new Set(DIMENSIONS.map(d => d.id))
     for (const dim of Object.values(SCENARIO_DIMENSION)) expect(valid.has(dim)).toBe(true)
-    expect(Object.keys(SCENARIO_DIMENSION)).toHaveLength(35)
-    // Honest coverage: upgrades and debugging have no scenarios in the pack yet —
-    // Vectalon still scores them via its deterministic seams (fix-bench).
-    const covered = new Set(Object.values(SCENARIO_DIMENSION))
-    expect(covered.has('upgrades')).toBe(false)
-    expect(covered.has('debugging')).toBe(false)
+    expect(Object.keys(SCENARIO_DIMENSION)).toHaveLength(43)
+    // The upgrade-breakage (rn-36..39) and debugging (rn-40..43) scenarios are
+    // now real pack tasks mapped to their dimensions.
+    expect(SCENARIO_DIMENSION['rn-36']).toBe('upgrades')
+    expect(SCENARIO_DIMENSION['rn-39']).toBe('upgrades')
+    expect(SCENARIO_DIMENSION['rn-40']).toBe('debugging')
+    expect(SCENARIO_DIMENSION['rn-43']).toBe('debugging')
   })
 
   it('parses full scenario ids down to their short dimension key', () => {
@@ -58,7 +59,11 @@ describe('rnbench benchmark build', () => {
 
     // Every dimension has its published scenario list.
     const totalScenarios = bench.dimensions.reduce((a, d) => a + d.scenarios.length, 0)
-    expect(totalScenarios).toBe(35)
+    expect(totalScenarios).toBe(43)
+    // The published counts per dimension.
+    const byId = Object.fromEntries(bench.dimensions.map(d => [d.id, d.scenarios.length]))
+    expect(byId.upgrades).toBe(4)
+    expect(byId.debugging).toBe(4)
 
     // Tools: Vectalon + 3 generic tiers + human + 5 competitors.
     expect(bench.tools.map(t => t.id)).toEqual([
@@ -81,12 +86,16 @@ describe('rnbench benchmark build', () => {
     }
   })
 
-  it('scores the Vectalon row from deterministic seams, not generation', () => {
+  it('scores the Vectalon row from deterministic seams — upgrades/debugging from the real pack tasks', () => {
     const bench = buildRnnBenchmark(PKG)
     const v = bench.matrix.vectalon
-    expect(v.debugging.value).toBe(FIX_BENCH.diagnosis) // 100 diagnosis-rate
-    expect(v.upgrades.value).toBe(100) // 10/10 upgrade scenarios auto-fixed
-    expect(FIX_BENCH.upgradeSuiteFix).toBe(10) // the raw count behind the percentage
+    // Upgrades/debugging now score the REAL pack tasks (rn-36..43) through the
+    // committed baseline fix seam — 100 composite, metric fix-rate, not the
+    // fix-bench constants.
+    expect(v.upgrades.value).toBe(100)
+    expect(v.upgrades.metric).toBe('fix-rate')
+    expect(v.debugging.value).toBe(100)
+    expect(v.debugging.metric).toBe('fix-rate')
     expect(v['dependency-management'].value).toBe(99)
     for (const d of DIMENSIONS) {
       const cell = v[d.id]

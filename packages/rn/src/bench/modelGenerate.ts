@@ -11,6 +11,7 @@
 
 import type { ModelRouter } from '../model'
 import { buildImplementationPrompt, parseModelOutput } from '../workflows/phases/implementationPhase'
+import { isFixScenario } from './fix'
 import { benchmarkSnapshot } from './snapshot'
 import type { BenchGeneratedFile, BenchScenario } from './types'
 
@@ -42,18 +43,24 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
     // Removal scenarios (rn-11/34/35) invert the scaffold: the model must
     // DELETE a package and its native traces, so it gets a remove-dependency
     // intent — and the current fixture files, which it must return changed
-    // with complete new content.
+    // with complete new content. Upgrade/debugging fix scenarios (rn-36..43)
+    // do the same: the model gets the broken fixtures and must return them
+    // repaired.
     const isRemoval = (scenario.removedDependencies?.length ?? 0) > 0
+    const isFix = isFixScenario(scenario)
+    const needsFixtures = isRemoval || isFix
     const intent = isRemoval
       ? { type: 'remove-dependency' as const, dependency: (scenario.removedDependencies || []).join(', '), description: scenario.prompt }
-      : { type: 'add-feature' as const, feature: scenario.id, description: scenario.prompt }
+      : isFix
+        ? { type: 'fix' as const, area: scenario.suite, description: scenario.prompt }
+        : { type: 'add-feature' as const, feature: scenario.id, description: scenario.prompt }
     const { systemPrompt, prompt } = buildImplementationPrompt({
       snapshot,
       prompt: scenario.prompt,
       intent,
     })
 
-    const fixtureBlock = isRemoval
+    const fixtureBlock = needsFixtures
       ? Object.entries(scenario.fixtures || {})
           .map(([path, content]) => `--- ${path} ---\n${content}`)
           .join('\n\n')

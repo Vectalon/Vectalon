@@ -1237,6 +1237,277 @@
           "composite": 1.2413793103448276
         }
       }
+    },
+    {
+      "id": "rn-36-upgrade-compile-sdk",
+      "title": "Upgrade React Native 0.73 → 0.74: compileSdk 34 → 35",
+      "suite": "upgrades",
+      "scaffoldable": false,
+      "generatedFiles": [
+        "android/build.gradle"
+      ],
+      "guardrail": [
+        {
+          "path": "android/build.gradle",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 23,
+          "ok": true
+        }
+      ],
+      "axes": {
+        "correctness": null,
+        "adherence": 1,
+        "guardrails": 1
+      },
+      "composite": 1,
+      "reference": {
+        "files": [
+          "android/build.gradle"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1,
+          "composite": 1
+        }
+      }
+    },
+    {
+      "id": "rn-37-upgrade-kotlin-gradle",
+      "title": "Upgrade React Native 0.73 → 0.74: Kotlin, AGP, and Gradle wrapper pair",
+      "suite": "upgrades",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": null,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": null,
+      "reference": {
+        "files": [
+          "android/build.gradle",
+          "android/gradle/wrapper/gradle-wrapper.properties"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": null
+        }
+      }
+    },
+    {
+      "id": "rn-38-upgrade-new-arch",
+      "title": "Upgrade React Native 0.73 → 0.74: enable the New Architecture",
+      "suite": "upgrades",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": null,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": null,
+      "reference": {
+        "files": [
+          "android/gradle.properties"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": null
+        }
+      }
+    },
+    {
+      "id": "rn-39-upgrade-deprecated-api",
+      "title": "Upgrade React Native 0.73 → 0.74: deprecated StatusBar props removed",
+      "suite": "upgrades",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": null,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": null,
+      "reference": {
+        "files": [
+          "src/screens/HomeScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": null
+        }
+      }
+    },
+    {
+      "id": "rn-40-debug-metro-resolution",
+      "title": "Debug: Metro cannot resolve ./theme — module was renamed",
+      "suite": "debugging",
+      "scaffoldable": false,
+      "generatedFiles": [
+        "src/screens/HomeScreen.tsx"
+      ],
+      "guardrail": [
+        {
+          "path": "src/screens/HomeScreen.tsx",
+          "passed": 24,
+          "failed": 2,
+          "skipped": 10,
+          "ok": false
+        }
+      ],
+      "axes": {
+        "correctness": null,
+        "adherence": 0.3333333333333333,
+        "guardrails": 0.9230769230769231
+      },
+      "composite": 0.6282051282051282,
+      "reference": {
+        "files": [
+          "src/screens/HomeScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": 0.3333333333333333,
+          "guardrails": 0.9230769230769231,
+          "composite": 0.6282051282051282
+        }
+      }
+    },
+    {
+      "id": "rn-41-debug-hermes-crash",
+      "title": "Debug: app crashes at startup — Hermes disabled in release",
+      "suite": "debugging",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": null,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": null,
+      "reference": {
+        "files": [
+          "android/gradle.properties",
+          "babel.config.js"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": null
+        }
+      }
+    },
+    {
+      "id": "rn-42-debug-ts-regression",
+      "title": "Debug: TypeScript regression — TS7006 parameter implicitly has an any type",
+      "suite": "debugging",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": null,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": null,
+      "reference": {
+        "files": [
+          "src/services/cart.ts"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": null
+        }
+      }
+    },
+    {
+      "id": "rn-43-debug-linking",
+      "title": "Debug: native module not linked — settings.gradle missing the include",
+      "suite": "debugging",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "guardrail": [],
+      "axes": {
+        "correctness": null,
+        "adherence": null,
+        "guardrails": null
+      },
+      "composite": null,
+      "reference": {
+        "files": [
+          "android/settings.gradle",
+          "android/app/build.gradle"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": null,
+          "composite": null
+        }
+      }
     }
   ],
   "suites": [

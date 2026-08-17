@@ -1,0 +1,13 @@
+{
+  "id": "rn-37-upgrade-kotlin-gradle",
+  "files": [
+    {
+      "path": "android/build.gradle",
+      "content": "buildscript {\n    ext {\n        buildToolsVersion = \"34.0.0\"\n        minSdkVersion = 23\n        compileSdkVersion = 34\n        targetSdkVersion = 34\n        ndkVersion = \"26.1.10909125\"\n        kotlinVersion = \"1.9.24\"\n    }\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath(\"com.android.tools.build:gradle:8.6.0\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")\n        classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24\")\n    }\n}\n\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n"
+    },
+    {
+      "path": "android/gradle/wrapper/gradle-wrapper.properties",
+      "content": "distributionBase=GRADLE_USER_HOME\ndistributionPath=wrapper/dists\ndistributionUrl=https\\://services.gradle.org/distributions/gradle-8.8-all.zip\nnetworkTimeout=10000\nvalidateDistributionUrl=true\nzipStoreBase=GRADLE_USER_HOME\nzipStorePath=wrapper/dists\n"
+    }
+  ]
+}

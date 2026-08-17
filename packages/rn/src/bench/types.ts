@@ -42,6 +42,11 @@ export interface BenchScenario {
    * `no-removed-native-traces` rubric check scores generated native config
    * against these. */
   removedDependencies?: string[]
+  /** Deterministic literal edits this scenario's fix seam applies to the
+   * fixture files (upgrade-breakage and debugging evals). The `fix-applied`
+   * rubric check scores generated files against these: each edit's `replace`
+   * must be present and its `find` must not (unless identical). */
+  fixEdits?: Array<{ file: string; find: string; replace: string }>
   /** Files written into the throwaway temp project before generation. */
   fixtures: Record<string, string>
   expect: BenchScenarioExpect
@@ -146,6 +151,10 @@ export interface BenchRunOptions {
     /** Also run dependency-removal scenarios (scaffoldable=false, but
      * deterministic via the removal seam). Set by the baseline default. */
     includeRemovals?: boolean
+    /** Also run fix scenarios (scaffoldable=false with `fixEdits`, but
+     * deterministic via the fix seam — upgrade/debugging evals). Set by the
+     * baseline default. */
+    includeFixes?: boolean
   }
   /** Executor for live correctness commands (injectable for tests). */
   runCommand?: (cmd: string, args: string[], opts: { cwd: string }) => Promise<{ success: boolean; exitCode: number; stdout: string; stderr: string }>
@@ -178,6 +187,18 @@ export function validateScenario(raw: unknown): string[] {
   } else {
     for (const [path, content] of Object.entries(s.fixtures as Record<string, unknown>)) {
       if (typeof content !== 'string') problems.push(`fixture "${path}" must be a string`)
+    }
+  }
+
+  if (s.fixEdits !== undefined) {
+    if (!Array.isArray(s.fixEdits) || s.fixEdits.length === 0) {
+      problems.push('fixEdits must be a non-empty array when present')
+    } else {
+      for (const edit of s.fixEdits as Array<Record<string, unknown>>) {
+        if (typeof edit.file !== 'string' || !edit.file.trim()) problems.push('fixEdits entry missing string field: file')
+        if (typeof edit.find !== 'string') problems.push(`fixEdits ${String(edit.file)} missing string field: find`)
+        if (typeof edit.replace !== 'string') problems.push(`fixEdits ${String(edit.file)} missing string field: replace`)
+      }
     }
   }
 

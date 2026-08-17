@@ -81,7 +81,7 @@ describe('bench scenario loader', () => {
     const dir = defaultScenariosDir()
     const loaded = loadScenarios(dir)
     expect(loaded.problems).toEqual([])
-    expect(loaded.scenarios.length).toBe(35)
+    expect(loaded.scenarios.length).toBe(43)
     for (const s of loaded.scenarios) {
       expect(validateScenario(s)).toEqual([])
     }
@@ -316,10 +316,11 @@ describe('bench deterministic baseline runner', () => {
     const { summary, problems } = await runBenchmarkFromDir({})
     expect(problems).toEqual([])
     // Deterministic baseline (no generate seam) covers the scaffold-able subset
-    // plus the dependency-removal scenarios (now deterministic via the removal seam).
-    expect(summary.runs.length).toBe(9)
+    // plus the dependency-removal scenarios (removal seam) and the
+    // upgrade/debugging fix scenarios (fix seam).
+    expect(summary.runs.length).toBe(17)
     expect(summary.runs.filter(r => r.scaffoldable).length).toBe(6)
-    for (const id of ['rn-11-remove-dependency-native', 'rn-34-remove-sentry-sdk', 'rn-35-remove-firebase-sdk']) {
+    for (const id of ['rn-11-remove-dependency-native', 'rn-34-remove-sentry-sdk', 'rn-35-remove-firebase-sdk', 'rn-36-upgrade-compile-sdk', 'rn-40-debug-metro-resolution', 'rn-43-debug-linking']) {
       expect(summary.runs.some(r => r.id === id)).toBe(true)
     }
     expect(summary.overallComposite).not.toBeNull()
@@ -367,14 +368,15 @@ describe('bench deterministic baseline runner', () => {
     const { summary } = await runBenchmarkFromDir({
       generate: scenario => [{ path: `src/${scenario.id}.tsx`, content: 'export const x = 1;' }],
     })
-    expect(summary.runs.length).toBe(35)
+    expect(summary.runs.length).toBe(43)
   })
 
   it('runBenchmarkFromDir honors an explicit scaffoldable filter override', async () => {
     const { summary } = await runBenchmarkFromDir({ filter: { scaffoldable: false } })
-    // 35 scenarios − 6 scaffoldable = 29 model-only (the removal scenarios are
-    // included only via includeRemovals, which an explicit filter override drops)
-    expect(summary.runs.length).toBe(29)
+    // 43 scenarios − 6 scaffoldable = 37 model-only (the removal and fix
+    // scenarios are included only via includeRemovals/includeFixes, which an
+    // explicit filter override drops)
+    expect(summary.runs.length).toBe(37)
     expect(summary.runs.every(r => !r.scaffoldable)).toBe(true)
   })
 

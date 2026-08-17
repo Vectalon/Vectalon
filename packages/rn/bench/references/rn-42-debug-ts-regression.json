@@ -1,0 +1,9 @@
+{
+  "id": "rn-42-debug-ts-regression",
+  "files": [
+    {
+      "path": "src/services/cart.ts",
+      "content": "export interface CartItem {\n  id: string;\n  qty: number;\n}\n\nexport function addItem(item: { id: string; qty: number }) {\n  return { ...item, qty: item.qty + 1 };\n}\n"
+    }
+  ]
+}

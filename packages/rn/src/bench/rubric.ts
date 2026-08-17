@@ -26,6 +26,8 @@ export interface RubricCheckOptions {
   content: string
   /** Package names this scenario removed; only the native-traces check reads it. */
   removedDependencies?: string[]
+  /** Deterministic edits this scenario's fix seam must apply (upgrade/debugging). */
+  fixEdits?: Array<{ file: string; find: string; replace: string }>
 }
 
 export interface RubricCheck {
@@ -38,6 +40,7 @@ export interface RubricCheck {
 
 export interface RubricRunOptions {
   removedDependencies?: string[]
+  fixEdits?: Array<{ file: string; find: string; replace: string }>
 }
 
 export interface RubricCheckResult {
@@ -328,6 +331,30 @@ export const rubricChecks: RubricCheck[] = [
     },
   },
   {
+    id: 'fix-applied',
+    name: 'Declared fix edits are applied',
+    description: 'Upgrade/debugging scenarios declare the deterministic repair (`fixEdits`). The generated file must contain each declared `replace` and must not retain its `find` (when they differ). Scenarios without `fixEdits` are N/A.',
+    applicable: ({ filePath, fixEdits }) => (fixEdits?.length ?? 0) > 0 && fixEdits!.some(e => e.file === filePath),
+    check: ({ content, fixEdits, filePath }) => {
+      const editsForFile = (fixEdits || []).filter(e => e.file === filePath)
+      for (const edit of editsForFile) {
+        if (edit.find === edit.replace) continue
+        if (!content.includes(edit.replace)) {
+          return { passed: false, message: `Expected fix '${edit.replace.slice(0, 60)}…' missing from ${edit.file}`, line: findLine(content, 0) }
+        }
+        // For pure replacements, the old text must be gone. When `replace`
+        // itself contains `find` (a multi-line insertion whose prefix is the
+        // anchor — e.g. appending lines after `include ':app'`), the anchor
+        // legitimately survives inside the fix, so only the replace-must-exist
+        // assertion applies.
+        if (!edit.replace.includes(edit.find) && content.includes(edit.find)) {
+          return { passed: false, message: `Broken '${edit.find.slice(0, 60)}…' still present in ${edit.file}`, line: findLine(content, content.indexOf(edit.find)) }
+        }
+      }
+      return { passed: true }
+    },
+  },
+  {
     id: 'no-removed-native-traces',
     name: 'Removed dependencies leave no pod/gradle/manifest traces',
     description: 'After a dependency removal, native config must not retain the package: Podfile pods, gradle includes/deps, AndroidManifest providers, Info.plist keys, or pbxproj entries. Scenarios declare the removed packages via `removedDependencies`; the check is N/A otherwise.',
@@ -387,6 +414,7 @@ export function runRubric(files: BenchGeneratedFile[], opts?: RubricRunOptions):
       filePath: file.path,
       content: file.content,
       removedDependencies: opts?.removedDependencies,
+      fixEdits: opts?.fixEdits,
     }
     for (const check of rubricChecks) {
       if (check.applicable && !check.applicable(checkOptions)) continue

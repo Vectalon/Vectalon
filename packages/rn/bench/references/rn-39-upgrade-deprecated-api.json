@@ -1,0 +1,9 @@
+{
+  "id": "rn-39-upgrade-deprecated-api",
+  "files": [
+    {
+      "path": "src/screens/HomeScreen.tsx",
+      "content": "import React from 'react';\nimport { Text, StatusBar, StyleSheet, SafeAreaView } from 'react-native';\n\nexport function HomeScreen(): JSX.Element {\n  return (\n    <SafeAreaView style={styles.container}>\n      <StatusBar />\n      <Text>Home</Text>\n    </SafeAreaView>\n  );\n}\n\nconst styles = StyleSheet.create({\n  container: {\n    flex: 1,\n    alignItems: 'center',\n    justifyContent: 'center',\n  },\n});\n"
+    }
+  ]
+}

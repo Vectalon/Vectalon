@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   easily copy (P0).** `vc rnbench` computes the published, auditable
   leaderboard across eight engineering dimensions (architecture, native
   integration, dependency management, testing, performance, security,
-  upgrades, debugging) from the committed artifacts — 35 scenarios, 35
+  upgrades, debugging) from the committed artifacts — 43 scenarios, 43
   human references, and the RN-specific rubric (correctness / adherence /
   guardrails) — compared row by row: Vectalon (deterministic seams),
   Generic LLM 7B/3B/1.5B (scored live), Human (the references, same
@@ -47,6 +47,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   competitor bundle (scenarios + fixtures + references + rubric protocol)
   anyone can run; a committed competitor result renders in the
   leaderboard. Report + methodology to `docs/vectalon/rnbench/`.
+- **Upgrade-breakage + debugging scenarios score their own dimensions
+  from real pack tasks (P0).** The pack grew 35 → 43 with 4
+  upgrade-breakage repairs (rn-36..39 — compileSdk 34→35, Kotlin/AGP/
+  wrapper pair, New Architecture flag, deprecated StatusBar props) and 4
+  debugging repairs (rn-40..43 — Metro module resolution, Hermes crash,
+  TS7006 regression, native-module linking). Each ships a broken fixture
+  project + a human reference repair, and a new deterministic **fix seam**
+  (`src/bench/fix.ts`, mirroring the removal seam) applies the declared
+  `fixEdits` to the fixtures and emits the changed files — scored by the
+  same rubric via a new **fix-applied** adherence check (replace present,
+  broken text gone). The upgrades and debugging dimensions now aggregate
+  real tasks: the Vectalon row reads the committed baseline fix-seam runs
+  (100/100 both), the Human row reads the reference composites (100/100),
+  and the 7B quality tier scored the new scenarios live (upgrades 100%
+  from rn-36, debugging 63% from rn-40 — a coverage guard renders a
+  dimension pending unless ≥ half its scenarios were scored, so a lucky
+  single scenario can't masquerade as a full score). Baseline gate
+  extends to 17 deterministic runs; 8 new hermetic fix-seam tests.
 
 ## [0.13.0] - 2026-08-16
 
@@ -86,7 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   fast/balanced/quality leaderboard columns; output parsing now accepts
   `.kts` and extensionless `Podfile`/`Podfile.lock`.
 - **LoRA fine-tuning dataset export.** `scripts/export-bench-dataset.js`
-  turns the 35 scenario + human-reference pairs into a chat-format JSONL
+  turns the 43 scenario + human-reference pairs into a chat-format JSONL
   under `.vectalon/dataset/` (validated `approved` by `vectalon dataset`).
 - **Benchmark pack grew 13 → 35.** Twenty real-world app scenarios
   (rn-14..rn-33: checkout, chat, booking, health, media, security,

@@ -3424,14 +3424,22 @@ benchmark across the eight engineering dimensions a team actually cares
 about — architecture, native integration, dependency management, testing,
 performance, security, upgrades, and debugging — compared row by row:
 Vectalon (the deterministic engine), generic LLM tiers (7B / 3B / 1.5B,
-scored live), Human (the 35 references, scored by the same rubric — not
+scored live), Human (the 43 references, scored by the same rubric — not
 100%), and the competitor tools (Claude Code, Cursor, Cline, Windsurf,
 Aider) pending until run through the protocol.
 
-No cherry-picking: all **35 scenarios** (`bench/scenarios/`) and their
-**35 human references** (`bench/references/`) are committed, the
-scenario→dimension mapping is published, every number is computed from the
-committed artifacts, and pending rows render as pending. `--export` writes
+No cherry-picking: all **43 scenarios** (`bench/scenarios/`) and their
+**43 human references** (`bench/references/`) are committed — 35 build
+tasks plus 4 upgrade-breakage repairs (rn-36..39 — compileSdk,
+Kotlin/AGP/wrapper, New Architecture, deprecated API) and 4 debugging
+repairs (rn-40..43 — Metro resolution, Hermes crash, TS regression,
+native linking) — the scenario→dimension mapping is published, every
+number is computed from the committed artifacts, and pending rows render
+as pending. The upgrade/debugging scenarios run deterministically through
+the fix seam (`fixEdits` applied to the broken fixtures, scored by the
+`fix-applied` rubric check), so those dimensions score from real pack
+tasks — Vectalon and the Human row both at 100/100 on the committed
+baseline, with the 7B quality tier scored live. `--export` writes
 the exact bundle anyone runs a competitor through — same prompts, same
 fixtures, same rubric (`src/bench/rubric.ts`: correctness = typecheck +
 lint + tests actually run; adherence = the RN craft checklist; guardrails =

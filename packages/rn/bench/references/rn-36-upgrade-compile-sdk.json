@@ -1,0 +1,9 @@
+{
+  "id": "rn-36-upgrade-compile-sdk",
+  "files": [
+    {
+      "path": "android/build.gradle",
+      "content": "buildscript {\n    ext {\n        buildToolsVersion = \"35.0.0\"\n        minSdkVersion = 23\n        compileSdkVersion = 35\n        targetSdkVersion = 34\n        ndkVersion = \"26.1.10909125\"\n        kotlinVersion = \"1.9.24\"\n    }\n    repositories {\n        google()\n        mavenCentral()\n    }\n    dependencies {\n        classpath(\"com.android.tools.build:gradle:8.6.0\")\n        classpath(\"com.facebook.react:react-native-gradle-plugin\")\n        classpath(\"org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24\")\n    }\n}\n\nallprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n"
+    }
+  ]
+}

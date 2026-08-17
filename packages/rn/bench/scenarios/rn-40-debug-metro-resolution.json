@@ -1,0 +1,30 @@
+{
+  "id": "rn-40-debug-metro-resolution",
+  "specVersion": 1,
+  "suite": "debugging",
+  "title": "Debug: Metro cannot resolve ./theme — module was renamed",
+  "prompt": "Metro fails to bundle with: `Unable to resolve module ./theme from /app/src/screens/HomeScreen.tsx`. The file src/theme/index.ts was renamed to src/theme/tokens.ts, but HomeScreen still imports './theme'. Fix the import in src/screens/HomeScreen.tsx so it resolves to the actual module (import { colors } from '../theme/tokens'), keeping the rest of the file intact. Return each changed file with its complete new content.",
+  "scaffoldable": false,
+  "fixEdits": [
+    { "file": "src/screens/HomeScreen.tsx", "find": "import { colors } from '../theme';", "replace": "import { colors } from '../theme/tokens';" }
+  ],
+  "fixtures": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.2.0\",\n    \"react-native\": \"0.74.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.4\",\n    \"jest\": \"29.7.0\",\n    \"@babel/core\": \"7.24.9\",\n    \"@babel/preset-env\": \"7.24.8\",\n    \"@babel/preset-typescript\": \"7.24.7\",\n    \"@types/jest\": \"29.5.14\",\n    \"@types/react\": \"18.2.79\",\n    \"@typescript-eslint/eslint-plugin\": \"6.21.0\",\n    \"@typescript-eslint/parser\": \"6.21.0\",\n    \"eslint\": \"8.57.0\"\n  }\n}\n",
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"jsx\": \"react-native\",\n    \"esModuleInterop\": true,\n    \"skipLibCheck\": true\n  }\n}\n",
+    "babel.config.js": "module.exports = {\n  presets: ['@babel/preset-env', '@babel/preset-typescript'],\n};\n",
+    ".eslintrc.cjs": "module.exports = {\n  root: true,\n  env: { node: true, jest: true },\n  parser: '@typescript-eslint/parser',\n  parserOptions: { ecmaVersion: 2020, sourceType: 'module', ecmaFeatures: { jsx: true } },\n  plugins: ['@typescript-eslint'],\n  extends: ['plugin:@typescript-eslint/recommended'],\n  rules: { 'no-undef': 'off' },\n};\n",
+    "src/config/app.ts": "export const APP_NAME = 'rn-bench-app';\nexport const APP_VERSION = '1.0.0';\n",
+    "__tests__/smoke.test.ts": "import { APP_NAME, APP_VERSION } from '../src/config/app';\n\ndescribe('project smoke', () => {\n  it('loads the app config', () => {\n    expect(APP_NAME).toBe('rn-bench-app');\n    expect(APP_VERSION).toBe('1.0.0');\n  });\n});\n",
+    "src/theme/tokens.ts": "export const colors = {\n  primary: '#0a7ea4',\n  background: '#f8fafc',\n};\n",
+    "src/screens/HomeScreen.tsx": "import React from 'react';\nimport { Text, StyleSheet, SafeAreaView } from 'react-native';\nimport { colors } from '../theme';\n\nexport function HomeScreen(): JSX.Element {\n  return (\n    <SafeAreaView style={styles.container}>\n      <Text style={styles.title}>Home</Text>\n    </SafeAreaView>\n  );\n}\n\nconst styles = StyleSheet.create({\n  container: {\n    flex: 1,\n    alignItems: 'center',\n    justifyContent: 'center',\n  },\n  title: {\n    color: colors.primary,\n  },\n});\n"
+  },
+  "expect": {
+    "files": ["src/screens/HomeScreen.tsx"],
+    "behaviors": [
+      "import resolves to src/theme/tokens",
+      "no import of the missing ../theme module"
+    ]
+  },
+  "correctness": { "tests": false, "typecheck": false, "lint": false },
+  "axes": ["adherence", "guardrails"]
+}

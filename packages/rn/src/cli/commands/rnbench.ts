@@ -2,7 +2,7 @@
  * vectalon rnbench — the Vectalon RN Engineering Benchmark (P0 roadmap item 8).
  * Business Source License 1.1 (BSL-1.1)
  *
- * A benchmark competitors can't easily copy: 35 published scenarios, human
+ * A benchmark competitors can't easily copy: 43 published scenarios, human
  * references, and an RN-specific rubric, scored live across eight engineering
  * dimensions — and compared row by row (Vectalon, generic LLMs, Human,
  * Claude Code, Cursor, Cline, Windsurf, Aider). Every number is computed from
@@ -34,9 +34,13 @@ would judge it, not the way a generic coding benchmark does.
 
 ## The material (the moat)
 
-- **35 scenarios** (\`bench/scenarios/\`) — real RN tasks with a fixture
-  project (package.json, tsconfig, entry, tests) and an exact prompt.
-- **35 human references** (\`bench/references/\`) — human-authored solutions
+- **43 scenarios** (\`bench/scenarios/\`) — real RN tasks with a fixture
+  project (package.json, tsconfig, entry, tests) and an exact prompt: 35
+  build tasks plus 4 upgrade-breakage repairs (rn-36..39 — compileSdk,
+  Kotlin/AGP/wrapper, New Architecture, deprecated API) and 4 debugging
+  repairs (rn-40..43 — Metro resolution, Hermes crash, TS regression,
+  native linking).
+- **43 human references** (\`bench/references/\`) — human-authored solutions
   to the same tasks, scored by the same rubric (they are not 100%).
 - **The rubric** (\`src/bench/rubric.ts\`) — correctness (typecheck + lint +
   tests actually run), adherence (the RN craft checklist: tokens, hooks,
@@ -47,7 +51,7 @@ anyone runs a competitor through — same prompts, same fixtures, same rubric.
 
 ## How rows are scored
 
-- **Human** — the 35 references, scored by the rubric (per-scenario
+- **Human** — the 43 references, scored by the rubric (per-scenario
   reference composites carried in the committed result files).
 - **Generic LLM (7B / 3B / 1.5B)** — qwen2.5-coder tiers, scored live
   (typecheck + lint + tests run against generated code), committed in

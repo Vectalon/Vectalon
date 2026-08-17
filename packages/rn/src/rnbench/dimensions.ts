@@ -3,9 +3,10 @@
  * Business Source License 1.1 (BSL-1.1)
  *
  * Eight engineering dimensions a React Native team actually cares about.
- * Every scenario in the 35-scenario pack maps to exactly ONE dimension (the
+ * Every scenario in the 43-scenario pack maps to exactly ONE dimension (the
  * mapping below is published, so it is auditable — no cherry-picking which
- * scenario counts for which dimension).
+ * scenario counts for which dimension). The pack is 35 build tasks plus 4
+ * upgrade-breakage repairs (rn-36..39) and 4 debugging repairs (rn-40..43).
  */
 export const DIMENSIONS = [
   { id: 'architecture', label: 'Architecture', what: 'layering, navigation, typed structure, refactors' },
@@ -57,6 +58,14 @@ export const SCENARIO_DIMENSION: Record<string, RnnDimensionId> = {
   'rn-33': 'security',
   'rn-34': 'dependency-management',
   'rn-35': 'dependency-management',
+  'rn-36': 'upgrades',
+  'rn-37': 'upgrades',
+  'rn-38': 'upgrades',
+  'rn-39': 'upgrades',
+  'rn-40': 'debugging',
+  'rn-41': 'debugging',
+  'rn-42': 'debugging',
+  'rn-43': 'debugging',
 }
 
 /** Short id from a full scenario id (rn-01-login-screen → rn-01). */

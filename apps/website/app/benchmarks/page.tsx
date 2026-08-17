@@ -185,6 +185,14 @@ const BASELINE_GATE = [
   { id: 'rn-13-account-delete-screen', adherence: 100, guardrails: 100 },
   { id: 'rn-34-remove-sentry-sdk', adherence: 100, guardrails: 98, note: 'scoped package — @sentry/react-native purged incl. pbxproj upload phase + Info.plist dsn' },
   { id: 'rn-35-remove-firebase-sdk', adherence: 100, guardrails: 98, note: 'two scoped packages — firebase purged incl. multi-line manifest provider + service' },
+  { id: 'rn-36-upgrade-compile-sdk', adherence: 100, guardrails: 100, note: 'fix seam — compileSdk 34 → 35 after the RN 0.73 → 0.74 bump' },
+  { id: 'rn-37-upgrade-kotlin-gradle', adherence: 100, guardrails: 100, note: 'fix seam — Kotlin 1.9.24 + AGP 8.6.0 + Gradle wrapper 8.8' },
+  { id: 'rn-38-upgrade-new-arch', adherence: 100, guardrails: 100, note: 'fix seam — newArchEnabled + architectures in gradle.properties' },
+  { id: 'rn-39-upgrade-deprecated-api', adherence: 100, guardrails: 100, note: 'fix seam — deprecated StatusBar props removed' },
+  { id: 'rn-40-debug-metro-resolution', adherence: 100, guardrails: 100, note: 'fix seam — import rewritten to the renamed theme module' },
+  { id: 'rn-41-debug-hermes-crash', adherence: 100, guardrails: 100, note: 'fix seam — hermesEnabled + babel react-native preset' },
+  { id: 'rn-42-debug-ts-regression', adherence: 100, guardrails: 100, note: 'fix seam — TS7006 parameter annotated' },
+  { id: 'rn-43-debug-linking', adherence: 100, guardrails: 100, note: 'fix seam — settings.gradle include + build.gradle dependency' },
 ]
 
 const AXES = [
@@ -233,9 +241,10 @@ const FIX_AXES = [
 /**
  * Benchmark 6 — the Vectalon RN Engineering Benchmark (Roadmap directive #8,
  * "a benchmark competitors can't easily copy"). Numbers computed by
- * `vectalon rnbench` from the committed artifacts — the 35 scenarios, the 35
+ * `vectalon rnbench` from the committed artifacts — the 43 scenarios, the 43
  * human references (scored by the same rubric, not 100%), the local model
- * tiers (scored live), and the deterministic Vectalon seams. The
+ * tiers (scored live), and the deterministic Vectalon seams (upgrades and
+ * debugging now score the real pack tasks via the fix seam). The
  * scenario→dimension mapping is published in
  * `packages/rn/src/rnbench/dimensions.ts`; competitor rows stay pending until
  * run through `vectalon rnbench --export`. Regenerate with `vectalon rnbench`
@@ -248,8 +257,8 @@ const RNBENCH_DIMENSIONS = [
   { id: 'testing', label: 'Testing', scenarios: 9, what: 'multi-step flows, forms, validation, edge cases' },
   { id: 'performance', label: 'Performance', scenarios: 10, what: 'lists, feeds, rendering, timers, search' },
   { id: 'security', label: 'Security', scenarios: 4, what: 'auth, secure persistence, privacy controls' },
-  { id: 'upgrades', label: 'Upgrades', scenarios: 0, what: 'RN/Expo upgrade breakages — scored via the fix-bench upgrade suite (10/10 auto-fix)' },
-  { id: 'debugging', label: 'Debugging', scenarios: 0, what: 'diagnosing real build/runtime failures — scored via fix-bench diagnosis (100/100)' },
+  { id: 'upgrades', label: 'Upgrades', scenarios: 4, what: 'RN 0.73 → 0.74 breakage repairs: compileSdk, Kotlin/AGP/wrapper, New Architecture, deprecated StatusBar props' },
+  { id: 'debugging', label: 'Debugging', scenarios: 4, what: 'real failure repairs: Metro module resolution, Hermes crash, TS7006 regression, native-module linking' },
 ]
 
 const FIX_SUITES = [
@@ -288,7 +297,7 @@ export default function BenchmarksPage() {
       <div className="text-center">
         <div className="mx-auto mb-5 w-fit">
           <span className="chip font-mono">
-            one harness · six benchmarks — spec v1 — <span className="text-brand">3 local tiers + cloud</span> — 35-scenario pack · 7B live-scored across the original 33 · fix-bench 100/100 diagnosis · rnbench 8 dimensions
+            one harness · six benchmarks — spec v1 — <span className="text-brand">3 local tiers + cloud</span> — 43-scenario pack · 7B live-scored across the original 33 + 8 repair scenarios · fix-bench 100/100 diagnosis · rnbench 8 dimensions
           </span>
         </div>
         <h1 className="text-4xl font-bold text-slate-50">RN coding tests — the benchmark suite</h1>
@@ -643,13 +652,16 @@ export default function BenchmarksPage() {
           <div className="card">
             <h3 className="font-semibold text-slate-50">Baseline floor (deterministic)</h3>
             <p className="mt-1 text-xs text-slate-400">
-              The committed floor for all nine gate scenarios — a perfect 100% across every axis, with
-              no model in the loop. The scaffold ships a unit test with every feature, so the gate also
-              proves the generated code passes its own test suite. The three dependency-removal
+              The committed floor for all seventeen gate scenarios — a perfect 100% across every axis,
+              with no model in the loop. The scaffold ships a unit test with every feature, so the gate
+              also proves the generated code passes its own test suite. The three dependency-removal
               scenarios (rn-11, rn-34, rn-35) run through the removal seam: each package is purged from
               package.json and its Podfile, gradle, and manifest traces — and for rn-34 the pbxproj
               symbol-upload phase and Info.plist dsn — scoring 99% composite (adherence 100%, guardrails
-              98%) instead of the n/a removals used to produce:
+              98%) instead of the n/a removals used to produce. The eight upgrade/debugging scenarios
+              (rn-36..43) run through the fix seam: each declared repair (version pins, New Architecture
+              flag, deprecated-API removal, Metro import, Hermes flag, TS annotation, native linking)
+              is applied to the broken fixture and scored by the fix-applied adherence check at 100%:
             </p>
             <div className="mt-4 space-y-3">
               {BASELINE_GATE.map(({ id, adherence, guardrails, note }) => (
@@ -780,28 +792,32 @@ export default function BenchmarksPage() {
         <h2 className="mt-1 text-2xl font-bold text-slate-50">The Vectalon RN Engineering Benchmark — competitors can&apos;t copy this</h2>
         <p className="mt-2 max-w-2xl text-sm text-slate-400">
           A benchmark no generic coding eval can replicate: <span className="font-mono text-brand">vectalon rnbench</span>{' '}
-          scores the committed 35-scenario pack across{' '}
+          scores the committed 43-scenario pack across{' '}
           <span className="text-slate-200">eight engineering dimensions a team actually cares about</span> —
           architecture, native integration, dependency management, testing, performance, security, upgrades,
           debugging — with every scenario mapped to exactly one dimension.{' '}
-          <span className="text-slate-200">What it&apos;s for:</span> the material is the moat. The 35 scenarios, the
-          35 human references, and the RN-specific rubric (correctness = typecheck + lint + tests actually run;
+          <span className="text-slate-200">What it&apos;s for:</span> the material is the moat. The 43 scenarios, the
+          43 human references, and the RN-specific rubric (correctness = typecheck + lint + tests actually run;
           adherence = the craft checklist; guardrails = the bans) are all committed and exported — anyone,
-          including a competitor, can run the same task set and be scored by the same rubric. Rows that haven&apos;t
-          run yet render as pending; a committed competitor result renders in the leaderboard. Never a
+          including a competitor, can run the same task set and be scored by the same rubric. The pack is 35
+          build tasks plus 4 upgrade-breakage repairs (rn-36..39) and 4 debugging repairs (rn-40..43), so the
+          upgrades and debugging dimensions now score from real pack tasks — the deterministic fix seam applies
+          the declared repair to the broken fixtures (scored by a `fix-applied` adherence check), the Human row
+          reads the reference composites (100/100 both), and the 7B tier is scored live. Rows that haven&apos;t run
+          yet render as pending; a committed competitor result renders in the leaderboard. Never a
           cherry-picked number.
         </p>
         <pre className="term-body mt-6 rounded-[4px] border bg-[rgb(var(--term))] p-4 text-[13px]" style={{ borderColor: 'rgb(var(--term-border))' }}>
           <span className="text-term-brand">$</span> npx vectalon rnbench{'\n'}
           <span className="text-slate-500">┌─ vectalon rnbench — Vectalon RN Engineering Benchmark ─────┐</span>{'\n'}
           <span className="text-slate-300">  Architecture (6) · Native integration (3) · Dependency mgmt (3) ·</span>{'\n'}
-          <span className="text-slate-300">  Testing (9) · Performance (10) · Security (4) · Upgrades (0) ·</span>{'\n'}
-          <span className="text-slate-300">  Debugging (0)</span>{'\n'}
+          <span className="text-slate-300">  Testing (9) · Performance (10) · Security (4) · Upgrades (4) ·</span>{'\n'}
+          <span className="text-slate-300">  Debugging (4)</span>{'\n'}
           <span className="text-slate-300">  Vectalon            100%  100%   99%  100%  100%  100%  100%  100%</span>{'\n'}
           <span className="text-slate-300">  Generic LLM (7B)     96%  100%    —  100%   98%   90%    —    —</span>{'\n'}
-          <span className="text-slate-300">  Generic LLM (3B)     63%    —    —   54%   76%   72%    —    —</span>{'\n'}
-          <span className="text-slate-300">  Generic LLM (1.5B)   89%   88%   94%   74%   74%   73%    —    —</span>{'\n'}
-          <span className="text-slate-300">  Human                92%   85%   99%   82%   86%   85%    —    —</span>{'\n'}
+          <span className="text-slate-300">  Generic LLM (3B)     63%    —    —    —    —   72%    —    —</span>{'\n'}
+          <span className="text-slate-300">  Generic LLM (1.5B)   89%   88%    —   74%   74%   73%    —    —</span>{'\n'}
+          <span className="text-slate-300">  Human                92%   85%   99%   82%   86%   85%  100%  100%</span>{'\n'}
           <span className="text-slate-300">  Claude Code / Cursor / Cline / Windsurf / Aider — pending — run the protocol</span>{'\n'}
           <span className="text-emerald-500">✔ Computed from committed artifacts — publish the methodology, export the bundle, run competitors.</span>
         </pre>

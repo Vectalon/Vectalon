@@ -1,0 +1,30 @@
+{
+  "id": "rn-41-debug-hermes-crash",
+  "specVersion": 1,
+  "suite": "debugging",
+  "title": "Debug: app crashes at startup — Hermes disabled in release",
+  "prompt": "A release build crashes at startup with a Hermes-related native error (`com.facebook.jni.CppException: Failed to initialize Hermes VM`). The project upgraded to RN 0.74 but android/gradle.properties still has `hermesEnabled=false` from the old setup — RN 0.74 requires Hermes enabled (`hermesEnabled=true`) and the Babel hermes-strip-flow-types preset must be active in babel.config.js. Fix both files so Hermes is enabled and the preset is configured. Return each changed file with its complete new content.",
+  "scaffoldable": false,
+  "fixEdits": [
+    { "file": "android/gradle.properties", "find": "hermesEnabled=false", "replace": "hermesEnabled=true" },
+    { "file": "babel.config.js", "find": "module.exports = {\n  presets: ['@babel/preset-env', '@babel/preset-typescript'],\n};\n", "replace": "module.exports = {\n  presets: [\n    ['@babel/preset-env', { targets: { node: 'current' } }],\n    '@babel/preset-typescript',\n    ['react-native', { runtime: 'automatic' }],\n  ],\n};\n" }
+  ],
+  "fixtures": {
+    "package.json": "{\n  \"name\": \"rn-bench-app\",\n  \"version\": \"1.0.0\",\n  \"scripts\": {\n    \"test\": \"jest\",\n    \"typecheck\": \"tsc --noEmit\",\n    \"lint\": \"eslint .\"\n  },\n  \"dependencies\": {\n    \"react\": \"18.2.0\",\n    \"react-native\": \"0.74.0\"\n  },\n  \"devDependencies\": {\n    \"typescript\": \"5.5.4\",\n    \"jest\": \"29.7.0\",\n    \"@babel/core\": \"7.24.9\",\n    \"@babel/preset-env\": \"7.24.8\",\n    \"@babel/preset-typescript\": \"7.24.7\",\n    \"@types/jest\": \"29.5.14\",\n    \"@types/react\": \"18.2.79\",\n    \"@typescript-eslint/eslint-plugin\": \"6.21.0\",\n    \"@typescript-eslint/parser\": \"6.21.0\",\n    \"eslint\": \"8.57.0\"\n  }\n}\n",
+    "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"jsx\": \"react-native\",\n    \"esModuleInterop\": true,\n    \"skipLibCheck\": true\n  }\n}\n",
+    "babel.config.js": "module.exports = {\n  presets: ['@babel/preset-env', '@babel/preset-typescript'],\n};\n",
+    ".eslintrc.cjs": "module.exports = {\n  root: true,\n  env: { node: true, jest: true },\n  parser: '@typescript-eslint/parser',\n  parserOptions: { ecmaVersion: 2020, sourceType: 'module', ecmaFeatures: { jsx: true } },\n  plugins: ['@typescript-eslint'],\n  extends: ['plugin:@typescript-eslint/recommended'],\n  rules: { 'no-undef': 'off' },\n};\n",
+    "src/config/app.ts": "export const APP_NAME = 'rn-bench-app';\nexport const APP_VERSION = '1.0.0';\n",
+    "__tests__/smoke.test.ts": "import { APP_NAME, APP_VERSION } from '../src/config/app';\n\ndescribe('project smoke', () => {\n  it('loads the app config', () => {\n    expect(APP_NAME).toBe('rn-bench-app');\n    expect(APP_VERSION).toBe('1.0.0');\n  });\n});\n",
+    "android/gradle.properties": "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m\nandroid.useAndroidX=true\nandroid.enableJetifier=true\nhermesEnabled=false\n"
+  },
+  "expect": {
+    "files": ["android/gradle.properties", "babel.config.js"],
+    "behaviors": [
+      "hermesEnabled=true",
+      "babel react-native preset active"
+    ]
+  },
+  "correctness": { "tests": false, "typecheck": false, "lint": false },
+  "axes": ["adherence", "guardrails"]
+}

@@ -4,15 +4,16 @@
  * Business Source License 1.1 (BSL-1.1)
  *
  * One harness, published fixtures, published references, published rubric —
- * scored live and continuously. The moat is the material: the 35 scenarios,
- * their human references, and the RN-specific rubric are all committed and
- * exported, so anyone (including a competitor) can run the same task set and
- * be scored by the same rubric. No cherry-picking: the scenario→dimension
- * mapping is published, and every number below is computed from the committed
- * artifacts — never edited by hand.
+ * scored live and continuously. The moat is the material: the 43 scenarios
+ * (35 build tasks + 4 upgrade-breakage + 4 debugging repairs), their human
+ * references, and the RN-specific rubric are all committed and exported, so
+ * anyone (including a competitor) can run the same task set and be scored by
+ * the same rubric. No cherry-picking: the scenario→dimension mapping is
+ * published, and every number below is computed from the committed artifacts
+ * — never edited by hand.
  *
  * Rows:
- *   Human            — the 35 human-authored references, scored by the same rubric.
+ *   Human            — the 43 human-authored references, scored by the same rubric.
  *   Generic LLM (7B) — qwen2.5-coder-7b quality tier (local-7b.json), scored live.
  *   Generic LLM (3B) — qwen2.5-coder-3b balanced tier (local-3b.json).
  *   Generic LLM (1.5B) — qwen2.5-coder-1.5b fast tier (local.json), the nightly row.
@@ -84,7 +85,18 @@ function readResult(root: string, file: string): ResultFile | null {
   }
 }
 
-/** Mean composite across a tier's runs in one dimension (null when none). */
+/** The number of pack scenarios mapped to a dimension. */
+function dimensionScenarioCount(dim: RnnDimensionId): number {
+  return Object.values(SCENARIO_DIMENSION).filter(d => d === dim).length
+}
+
+/**
+ * Mean composite across a tier's runs in one dimension (null when none).
+ * A coverage guard keeps the number honest: a tier's cell only reports when
+ * at least half the dimension's pack scenarios were scored — a 7B pass that
+ * produced files for 1 of 4 upgrade scenarios must render as pending, not as
+ * a 100% that only counts the lucky one.
+ */
 function dimensionAggregate(runs: ResultFile['runs'], dim: RnnDimensionId, field: 'model' | 'human'): number | null {
   const values: number[] = []
   for (const run of runs) {
@@ -92,19 +104,29 @@ function dimensionAggregate(runs: ResultFile['runs'], dim: RnnDimensionId, field
     const v = field === 'model' ? run.composite : (run.reference?.composite ?? null)
     if (typeof v === 'number') values.push(v)
   }
-  if (values.length === 0) return null
+  const total = dimensionScenarioCount(dim)
+  if (values.length === 0 || total === 0 || values.length < Math.ceil(total / 2)) return null
   return Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 100)
 }
 
-/** The Vectalon (deterministic) cell for a dimension. */
-function vectalonCell(dim: RnnDimensionId): RnnCell {
+/** The Vectalon (deterministic) cell for a dimension. Upgrade/debugging now
+ * score from the REAL tasks in the pack — the committed baseline runs the fix
+ * seam over the upgrade/debugging scenarios (rn-36..rn-43), so those cells are
+ * the seam's live aggregate, not the fix-bench constants. */
+function vectalonCell(dim: RnnDimensionId, baselineRuns: ResultFile['runs']): RnnCell {
   switch (dim) {
     case 'dependency-management':
       return { value: 99, metric: 'removal-composite' }
     case 'upgrades':
-      return { value: 100, metric: 'fix-rate' }
-    case 'debugging':
-      return { value: FIX_BENCH.diagnosis, metric: 'diagnosis-rate' }
+    case 'debugging': {
+      const aggregate = dimensionAggregate(baselineRuns, dim, 'model')
+      if (aggregate !== null) return { value: aggregate, metric: 'fix-rate' }
+      // No committed baseline runs yet — fall back to the fix-bench constants
+      // rather than invent a number.
+      return dim === 'upgrades'
+        ? { value: 100, metric: 'fix-rate' }
+        : { value: FIX_BENCH.diagnosis, metric: 'diagnosis-rate' }
+    }
     default:
       // The deterministic scaffold floor — the committed baseline gate locks
       // 100% adherence on the scaffoldable scenarios, every PR.
@@ -126,13 +148,16 @@ export function buildRnnBenchmark(root: string): RnnBenchmark {
   const quality = readResult(root, 'local-7b.json')
   const balanced = readResult(root, 'local-3b.json')
   const fast = readResult(root, 'local.json')
+  // The deterministic baseline — the fix seam's real-task scores for the
+  // upgrade/debugging dimensions (rn-36..rn-43), committed every release.
+  const baseline = readResult(root, 'baseline.json')
 
   const tools: RnnTool[] = [
     { id: 'vectalon', label: 'Vectalon', kind: 'vectalon', status: 'measured', note: 'deterministic engine — no generation, seams scored from the committed gate' },
     { id: 'generic-7b', label: 'Generic LLM (7B)', kind: 'generic-llm', model: 'qwen2.5-coder-7b', status: 'measured', note: 'quality tier — scored live on the pack' },
     { id: 'generic-3b', label: 'Generic LLM (3B)', kind: 'generic-llm', model: 'qwen2.5-coder-3b', status: 'measured', note: 'balanced tier — 13-scenario pass' },
     { id: 'generic-15b', label: 'Generic LLM (1.5B)', kind: 'generic-llm', model: 'qwen2.5-coder-1.5b', status: 'measured', note: 'fast tier — nightly full-pack re-score' },
-    { id: 'human', label: 'Human', kind: 'human', status: 'measured', note: 'the 35 references, scored by the same rubric' },
+    { id: 'human', label: 'Human', kind: 'human', status: 'measured', note: 'the 43 references, scored by the same rubric' },
     ...COMPETITORS.map(c => ({ id: c.id, label: c.label, kind: 'competitor' as const, status: 'pending' as const, note: 'run the published protocol (vc rnbench --export) to score' })),
   ]
 
@@ -140,9 +165,11 @@ export function buildRnnBenchmark(root: string): RnnBenchmark {
   const empty = (): Record<string, RnnCell> =>
     Object.fromEntries(DIMENSIONS.map(d => [d.id, { value: null, metric: 'pending' as const }]))
 
-  // Vectalon — the deterministic row (every dimension has a seam or a floor).
+  // Vectalon — the deterministic row (every dimension has a seam or a floor;
+  // upgrades/debugging score the real pack tasks via the baseline fix seam).
   matrix.vectalon = empty()
-  for (const d of DIMENSIONS) matrix.vectalon[d.id] = vectalonCell(d.id)
+  const baselineRuns = baseline?.runs ?? []
+  for (const d of DIMENSIONS) matrix.vectalon[d.id] = vectalonCell(d.id, baselineRuns)
 
   // Generic LLM tiers + human — rubric composite per dimension.
   for (const [toolId, file] of [
@@ -158,14 +185,21 @@ export function buildRnnBenchmark(root: string): RnnBenchmark {
     }
   }
 
-  // Human — from the same run files' reference composites (never a separate run).
+  // Human — from the reference composites carried in the committed run files
+  // (never a separate run). Baseline + the model files together cover the
+  // whole pack: the scaffoldable scenarios appear in both, while the removal
+  // (rn-34/35) and fix (rn-36..43) scenarios carry references only in
+  // baseline (deterministic seams) and the quality file. Dedupe by id,
+  // baseline first (it always has the reference scored).
   matrix.human = empty()
-  const humanSource = quality ?? fast
-  if (humanSource) {
-    for (const d of DIMENSIONS) {
-      const human = dimensionAggregate(humanSource.runs, d.id, 'human')
-      matrix.human[d.id] = human === null ? { value: null, metric: 'pending' } : { value: human, metric: 'rubric-composite' }
-    }
+  const humanRuns = new Map<string, ResultFile['runs'][number]>()
+  for (const source of [baseline, quality, fast]) {
+    if (!source) continue
+    for (const run of source.runs) if (!humanRuns.has(run.id)) humanRuns.set(run.id, run)
+  }
+  for (const d of DIMENSIONS) {
+    const human = dimensionAggregate([...humanRuns.values()], d.id, 'human')
+    matrix.human[d.id] = human === null ? { value: null, metric: 'pending' } : { value: human, metric: 'rubric-composite' }
   }
 
   // Competitor tools — pending until the protocol is run.
