@@ -3416,6 +3416,46 @@ the ack so GitHub never sees a slow webhook), `GET /health`.
 
 ---
 
+## `rnbench`
+
+**Vectalon RN Engineering Benchmark** (P0 — "Establish a React Native
+benchmark that competitors can't easily copy"): a published, auditable
+benchmark across the eight engineering dimensions a team actually cares
+about — architecture, native integration, dependency management, testing,
+performance, security, upgrades, and debugging — compared row by row:
+Vectalon (the deterministic engine), generic LLM tiers (7B / 3B / 1.5B,
+scored live), Human (the 35 references, scored by the same rubric — not
+100%), and the competitor tools (Claude Code, Cursor, Cline, Windsurf,
+Aider) pending until run through the protocol.
+
+No cherry-picking: all **35 scenarios** (`bench/scenarios/`) and their
+**35 human references** (`bench/references/`) are committed, the
+scenario→dimension mapping is published, every number is computed from the
+committed artifacts, and pending rows render as pending. `--export` writes
+the exact bundle anyone runs a competitor through — same prompts, same
+fixtures, same rubric (`src/bench/rubric.ts`: correctness = typecheck +
+lint + tests actually run; adherence = the RN craft checklist; guardrails =
+the bans) — and a competitor's committed result renders in the leaderboard.
+
+```bash
+npx vectalon rnbench                       # the leaderboard window
+npx vectalon rnbench --export ./bundle     # the competitor-run bundle
+npx vectalon rnbench --json                # machine-readable matrix
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `[directory]` | Project root (default: cwd) |
+| `--export <dir>` | Write the full competitor bundle (scenarios + fixtures + references + rubric protocol + manifest) |
+| `--json` | Print the benchmark matrix as JSON |
+
+The methodology + anti-cherry-picking rules are written to
+`docs/vectalon/rnbench/METHODOLOGY.md` with the report.
+
+---
+
 ## `gh-issue`
 
 **GitHub Issue Intelligence Agent** (Roadmap 091): triage signal from the

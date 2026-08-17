@@ -179,7 +179,7 @@ export default function SavingsPage() {
               href="/agents"
               className="rounded-md border border-ink-600 px-4 py-2 text-sm font-semibold text-slate-300 transition hover:border-brand hover:text-brand"
             >
-              Browse the 44 agents
+              Browse the 48 agents
             </Link>
           </div>
         </div>

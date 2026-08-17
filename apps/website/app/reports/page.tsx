@@ -73,7 +73,7 @@ export default function ReportsPage() {
 
       <div className="mt-12 flex flex-col items-center gap-3">
         <Link href="/agents" className="text-sm text-brand transition hover:text-brand-strong hover:underline">
-          The 44 agents that produce these documents →
+          The 48 agents that produce these documents →
         </Link>
         <p className="font-mono text-xs text-slate-500">
           all {REPORT_SAMPLES.length} verified end-to-end — each one writes a report like these to

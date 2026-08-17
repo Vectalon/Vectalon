@@ -230,6 +230,28 @@ const FIX_AXES = [
   { name: 'Human intervention', value: '34%', verdict: 'how many cases still need a human?', detail: 'The honest residual: SDK installs, code signing, provisioning, linker config, and judgment calls. The pipeline says "manual" and hands the exact command instead of guessing.' },
 ]
 
+/**
+ * Benchmark 6 — the Vectalon RN Engineering Benchmark (Roadmap directive #8,
+ * "a benchmark competitors can't easily copy"). Numbers computed by
+ * `vectalon rnbench` from the committed artifacts — the 35 scenarios, the 35
+ * human references (scored by the same rubric, not 100%), the local model
+ * tiers (scored live), and the deterministic Vectalon seams. The
+ * scenario→dimension mapping is published in
+ * `packages/rn/src/rnbench/dimensions.ts`; competitor rows stay pending until
+ * run through `vectalon rnbench --export`. Regenerate with `vectalon rnbench`
+ * — never edit by hand.
+ */
+const RNBENCH_DIMENSIONS = [
+  { id: 'architecture', label: 'Architecture', scenarios: 6, what: 'layering, navigation, typed structure, refactors' },
+  { id: 'native-integration', label: 'Native integration', scenarios: 3, what: 'native APIs, biometrics, media, device surfaces' },
+  { id: 'dependency-management', label: 'Dependency management', scenarios: 3, what: 'adding and removing dependencies with full native cleanup' },
+  { id: 'testing', label: 'Testing', scenarios: 9, what: 'multi-step flows, forms, validation, edge cases' },
+  { id: 'performance', label: 'Performance', scenarios: 10, what: 'lists, feeds, rendering, timers, search' },
+  { id: 'security', label: 'Security', scenarios: 4, what: 'auth, secure persistence, privacy controls' },
+  { id: 'upgrades', label: 'Upgrades', scenarios: 0, what: 'RN/Expo upgrade breakages — scored via the fix-bench upgrade suite (10/10 auto-fix)' },
+  { id: 'debugging', label: 'Debugging', scenarios: 0, what: 'diagnosing real build/runtime failures — scored via fix-bench diagnosis (100/100)' },
+]
+
 const FIX_SUITES = [
   { suite: 'kotlin', total: 10, diagnosed: 10, fixed: 10, buildOk: 10, fixPct: 100, why: 'version pin edits — Kotlin plugin bumped to the RN-required version' },
   { suite: 'agp', total: 10, diagnosed: 10, fixed: 10, buildOk: 9, fixPct: 100, why: 'AGP / Gradle wrapper bumped to the RN-required pair' },
@@ -266,7 +288,7 @@ export default function BenchmarksPage() {
       <div className="text-center">
         <div className="mx-auto mb-5 w-fit">
           <span className="chip font-mono">
-            one harness · five benchmarks — spec v1 — <span className="text-brand">3 local tiers + cloud</span> — 35-scenario pack · 7B live-scored across the original 33 · fix-bench 100/100 diagnosis
+            one harness · six benchmarks — spec v1 — <span className="text-brand">3 local tiers + cloud</span> — 35-scenario pack · 7B live-scored across the original 33 · fix-bench 100/100 diagnosis · rnbench 8 dimensions
           </span>
         </div>
         <h1 className="text-4xl font-bold text-slate-50">RN coding tests — the benchmark suite</h1>
@@ -752,10 +774,67 @@ export default function BenchmarksPage() {
         </p>
       </section>
 
+      {/* Benchmark 6 — the RN engineering leaderboard */}
+      <section className="mt-16">
+        <SectionLabel>benchmark 6 · the engineering benchmark</SectionLabel>
+        <h2 className="mt-1 text-2xl font-bold text-slate-50">The Vectalon RN Engineering Benchmark — competitors can&apos;t copy this</h2>
+        <p className="mt-2 max-w-2xl text-sm text-slate-400">
+          A benchmark no generic coding eval can replicate: <span className="font-mono text-brand">vectalon rnbench</span>{' '}
+          scores the committed 35-scenario pack across{' '}
+          <span className="text-slate-200">eight engineering dimensions a team actually cares about</span> —
+          architecture, native integration, dependency management, testing, performance, security, upgrades,
+          debugging — with every scenario mapped to exactly one dimension.{' '}
+          <span className="text-slate-200">What it&apos;s for:</span> the material is the moat. The 35 scenarios, the
+          35 human references, and the RN-specific rubric (correctness = typecheck + lint + tests actually run;
+          adherence = the craft checklist; guardrails = the bans) are all committed and exported — anyone,
+          including a competitor, can run the same task set and be scored by the same rubric. Rows that haven&apos;t
+          run yet render as pending; a committed competitor result renders in the leaderboard. Never a
+          cherry-picked number.
+        </p>
+        <pre className="term-body mt-6 rounded-[4px] border bg-[rgb(var(--term))] p-4 text-[13px]" style={{ borderColor: 'rgb(var(--term-border))' }}>
+          <span className="text-term-brand">$</span> npx vectalon rnbench{'\n'}
+          <span className="text-slate-500">┌─ vectalon rnbench — Vectalon RN Engineering Benchmark ─────┐</span>{'\n'}
+          <span className="text-slate-300">  Architecture (6) · Native integration (3) · Dependency mgmt (3) ·</span>{'\n'}
+          <span className="text-slate-300">  Testing (9) · Performance (10) · Security (4) · Upgrades (0) ·</span>{'\n'}
+          <span className="text-slate-300">  Debugging (0)</span>{'\n'}
+          <span className="text-slate-300">  Vectalon            100%  100%   99%  100%  100%  100%  100%  100%</span>{'\n'}
+          <span className="text-slate-300">  Generic LLM (7B)     96%  100%    —  100%   98%   90%    —    —</span>{'\n'}
+          <span className="text-slate-300">  Generic LLM (3B)     63%    —    —   54%   76%   72%    —    —</span>{'\n'}
+          <span className="text-slate-300">  Generic LLM (1.5B)   89%   88%   94%   74%   74%   73%    —    —</span>{'\n'}
+          <span className="text-slate-300">  Human                92%   85%   99%   82%   86%   85%    —    —</span>{'\n'}
+          <span className="text-slate-300">  Claude Code / Cursor / Cline / Windsurf / Aider — pending — run the protocol</span>{'\n'}
+          <span className="text-emerald-500">✔ Computed from committed artifacts — publish the methodology, export the bundle, run competitors.</span>
+        </pre>
+
+        <h3 className="mt-10 font-semibold text-slate-50">The eight dimensions</h3>
+        <div className="mt-4 grid gap-5 md:grid-cols-3">
+          {RNBENCH_DIMENSIONS.map(d => (
+            <div key={d.id} className="card">
+              <div className="flex items-baseline justify-between">
+                <h4 className="font-semibold text-slate-50">{d.label}</h4>
+                <span className="font-mono text-xs text-slate-500">{d.scenarios} scenarios</span>
+              </div>
+              <p className="mt-1 text-xs italic text-brand">{d.what}</p>
+            </div>
+          ))}
+        </div>
+
+        <h3 className="mt-10 font-semibold text-slate-50">The anti-cherry-picking rules</h3>
+        <div className="card">
+          <ul className="list-inside list-disc space-y-1.5 text-xs leading-relaxed text-slate-400">
+            <li>The scenario→dimension mapping is fixed and published — no scenario moves after the fact.</li>
+            <li>Every row is scored by the same rubric on the same fixtures against the same references.</li>
+            <li>Model rows are scored live — correctness is never assumed; the human row is scored by the same rubric and is not automatically 100%.</li>
+            <li>Pending cells render as pending — a benchmark that has not run a tool does not invent a score.</li>
+            <li><span className="font-mono">vc rnbench --export</span> writes the exact bundle anyone runs a competitor through; a committed result renders in the leaderboard.</li>
+          </ul>
+        </div>
+      </section>
+
       {/* Run it yourself */}
       <section className="mt-16">
         <div className="card">
-          <h2 className="font-semibold text-slate-50">Run all five yourself</h2>
+          <h2 className="font-semibold text-slate-50">Run all six yourself</h2>
           <p className="mt-2 text-sm leading-relaxed text-slate-400">
             One deterministic harness, no secrets, no model required for the gate. Add any model provider
             and publish your own leaderboard row — or author your own eval pack and score it against your
@@ -770,6 +849,8 @@ export default function BenchmarksPage() {
             <span className="text-term-brand">$</span> npx vectalon leaderboard                    <span className="text-slate-500"># merge model passes → BENCHMARK_RESULTS.md</span>{'\\n'}
             <span className="text-term-brand">$</span> npx vectalon bench --baseline bench/baseline.json  <span className="text-slate-500"># 4 · CI regression gate</span>{'\\n'}
             <span className="text-term-brand">$</span> npx vectalon fix-bench                    <span className="text-slate-500"># 5 · 100 real failures, diagnosed + auto-fixed</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx vectalon rnbench                      <span className="text-slate-500"># 6 · the RN engineering benchmark, 8 dimensions</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx vectalon rnbench --export ./bundle  <span className="text-slate-500"># 6 · run a competitor through the same protocol</span>{'\\n'}
             <span className="text-term-brand">$</span> npx vectalon bench --scenarios ./my-evals --references ./my-refs  <span className="text-slate-500"># your own eval pack</span>
           </pre>
         </div>

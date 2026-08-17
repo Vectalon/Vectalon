@@ -32,6 +32,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   itself — no `gh` CLI, no PAT, no model calls. `--process` replays one
   webhook payload for CI/one-shot use. Config via `GITHUB_APP_ID` /
   `GITHUB_APP_PRIVATE_KEY` / `GITHUB_WEBHOOK_SECRET`.
+- **Vectalon RN Engineering Benchmark — a benchmark competitors can't
+  easily copy (P0).** `vc rnbench` computes the published, auditable
+  leaderboard across eight engineering dimensions (architecture, native
+  integration, dependency management, testing, performance, security,
+  upgrades, debugging) from the committed artifacts — 35 scenarios, 35
+  human references, and the RN-specific rubric (correctness / adherence /
+  guardrails) — compared row by row: Vectalon (deterministic seams),
+  Generic LLM 7B/3B/1.5B (scored live), Human (the references, same
+  rubric, not 100%), and Claude Code / Cursor / Cline / Windsurf / Aider
+  (pending until run). No cherry-picking: the scenario→dimension mapping
+  is published and fixed, every cell is computed — never hand-edited —
+  and pending rows render as pending. `--export` writes the exact
+  competitor bundle (scenarios + fixtures + references + rubric protocol)
+  anyone can run; a committed competitor result renders in the
+  leaderboard. Report + methodology to `docs/vectalon/rnbench/`.
 
 ## [0.13.0] - 2026-08-16
 

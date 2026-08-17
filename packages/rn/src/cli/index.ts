@@ -41,6 +41,7 @@ import { scoreCommand } from './commands/score'
 import { modeCommand } from './commands/mode'
 import { demoCommand } from './commands/demo'
 import { salesDemoCommand } from './commands/salesDemo'
+import { rnnBenchCommand } from './commands/rnbench'
 import { brainCommand } from './commands/brain'
 import { planCommand } from './commands/plan'
 import { outcomesCommand } from './commands/outcomes'
@@ -712,6 +713,13 @@ export function createProgram(): Command {
     .action(salesDemoCommand)
 
   program
+    .command('rnbench [directory]')
+    .description('Vectalon RN Engineering Benchmark (P0 — "Establish a React Native benchmark that competitors can\'t easily copy"): the published, auditable benchmark — 35 committed scenarios + human references + an RN-specific rubric scored live across eight engineering dimensions (architecture, native integration, dependency management, testing, performance, security, upgrades, debugging), compared row by row (Vectalon deterministic engine, generic LLM tiers 7B/3B/1.5B, Human, and the competitor tools pending the protocol). Every number is computed from committed artifacts; the scenario→dimension mapping is published; --export writes the exact bundle (scenarios + fixtures + references + rubric protocol) to run any competitor; report to docs/vectalon/rnbench/')
+    .option('--json', 'Print machine-readable output')
+    .option('--export <dir>', 'Write the full competitor-run bundle (scenarios + fixtures + references + protocol)')
+    .action(rnnBenchCommand)
+
+  program
     .command('gh-app [directory]')
     .description('Vectalon GitHub App (P0 — "Build the Vectalon GitHub App", the distribution mechanism): an install-once webhook server that turns every pull_request (opened/synchronize/reopened/ready_for_review) into the deterministic `vc pr` review — HMAC-verified webhook → app JWT → installation token → PR head fetched into a local mirror → the five-check review → the 🤖 comment marker-upserted back on the PR by the app itself (no gh CLI, no PAT, zero model calls). Config via GITHUB_APP_ID / GITHUB_APP_PRIVATE_KEY / GITHUB_WEBHOOK_SECRET / GITHUB_APP_INSTALLATION_ID; `--process` replays one webhook JSON and exits')
     .option('--listen', 'Run the webhook server (default)')
@@ -1206,6 +1214,7 @@ async function runInteractive(): Promise<void> {
       { value: 'pr', label: 'PR review bot', hint: 'Five-check deterministic review + auto-comment (P0)' },
       { value: 'gh-app', label: 'GitHub App (install once)', hint: 'Webhook server → every PR reviewed + commented (P0)' },
       { value: 'sales-demo', label: '30-minute sales demo', hint: 'init → intel → fix → brain → outcomes, live (P0)' },
+      { value: 'rnbench', label: 'RN Engineering Benchmark', hint: '8 dimensions × tools, published fixtures (P0)' },
       { value: 'gh-issue', label: 'GitHub issue triage', hint: 'Staleness, unassigned gaps, labels (091)' },
       { value: 'gh-ci', label: 'GitHub workflow health', hint: 'Flake + duration from run history (092)' },
       { value: 'gh-sec', label: 'GitHub security posture', hint: 'Dependabot, secrets, branch protection (093)' },
