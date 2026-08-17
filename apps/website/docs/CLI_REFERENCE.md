@@ -3318,6 +3318,58 @@ Report to `docs/vectalon/pr/`.
 
 ---
 
+## `gh-app`
+
+**Vectalon GitHub App** (P0 — "Build the Vectalon GitHub App", the
+distribution mechanism): an install-once webhook server that turns every
+pull request into a deterministic `vc pr` review, posted back by the app
+itself — no `gh` CLI, no personal token, no model calls. The pipeline is
+the roadmap's adoption loop:
+
+```
+GitHub → Vectalon App → Repository Intelligence → PR analysis → Review → Fix → Verification
+```
+
+A team administrator registers the app once (app id + private key + webhook
+secret), points GitHub's webhook at `POST /webhook`, and every
+`pull_request` event (`opened`, `synchronize`, `reopened`, `ready_for_review`)
+is HMAC-verified (constant-time `X-Hub-Signature-256` check), the PR head is
+fetched into a local mirror, the real `runPrReview` pipeline runs over the
+added lines, and the 🤖 review is marker-upserted back on the PR through the
+app's own installation token. The only runtime is Node ≥ 20 — built-in
+`crypto` (RS256 app JWT + HMAC), `fetch`, and `http`; zero new
+dependencies.
+
+```bash
+npx vectalon gh-app --listen           # run the webhook server (default)
+npx vectalon gh-app --process webhook.json   # replay one webhook payload and exit
+npx vectalon gh-app --listen --port 4567 --dir .vectalon/ghapp
+```
+
+**Configuration (env)** — `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY` (path to
+the app's `.pem`), `GITHUB_WEBHOOK_SECRET`, `GITHUB_APP_INSTALLATION_ID`
+(optional fallback when a payload omits `installation`),
+`GITHUB_WEBHOOK_PORT` (default 4567). Repo mirrors + per-PR reports live
+under the workspace (`docs/vectalon/pr/` inside each mirror). The app
+signs a short-lived RS256 JWT (`iss` = app id) and exchanges it for an
+installation access token per event, so a team can install Vectalon once and
+never touch a CLI again — every PR is an opportunity to demonstrate value.
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `--listen` | Run the webhook server (default) |
+| `--process <file>` | Process one webhook payload JSON file and exit |
+| `--port <n>` | Webhook port (default 4567 or `$GITHUB_WEBHOOK_PORT`) |
+| `--dir <path>` | Workspace for repo mirrors + reports (default `.vectalon/ghapp`) |
+| `--json` | Print machine-readable output |
+
+Endpoints: `POST /webhook` (acknowledged immediately; the review runs after
+the ack so GitHub never sees a slow webhook), `GET /health`.
+
+---
+
 ## `gh-issue`
 
 **GitHub Issue Intelligence Agent** (Roadmap 091): triage signal from the

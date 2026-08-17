@@ -2,9 +2,16 @@ import Link from 'next/link'
 
 const RELEASES = [
   {
+    version: 'v0.14.0',
+    date: '2026-08-17',
+    tag: 'latest',
+    highlights: [
+      '`vc gh-app` — the **Vectalon GitHub App**, the distribution mechanism (P0): install once, every PR reviewed. A small webhook server (Node ≥ 20, zero new dependencies — built-in crypto/fetch/http) turns every `pull_request` event (opened / synchronize / reopened / ready_for_review) into the deterministic `vc pr` review and posts it back **by the app itself**: constant-time `X-Hub-Signature-256` webhook verification, an RS256 app JWT (`iss` = app id) exchanged for the installation access token, the PR head fetched into a local mirror, the five-check review over the added lines, and the 🤖 comment marker-upserted on the PR — no `gh` CLI, no personal token, no model calls. A team administrator registers the app once and every PR thereafter demonstrates value: GitHub → Vectalon App → Repository Intelligence → PR analysis → Review → Fix → Verification. `--process` replays one webhook payload for CI/one-shot use; config via `GITHUB_APP_ID` / `GITHUB_APP_PRIVATE_KEY` / `GITHUB_WEBHOOK_SECRET`; endpoints `POST /webhook` + `GET /health`',
+    ],
+  },
+  {
     version: 'v0.13.0',
     date: '2026-08-16',
-    tag: 'latest',
     highlights: [
       '`vc pr` — the **PR Review Agent** (P0, "Build GitHub PR integration"): the natural workflow is GitHub → Vectalon → developer. One command reviews a pull request deterministically over the added lines only — five checks (Architecture shared→feature imports, Dependencies added + installed + manifest/lockfile sync, Security secrets + plain-HTTP fetches, Performance re-render/startup/bridge hazards attributed to changed lines, Testing coverage per changed source file) — each finding with P0/P1/P2 priority and file:line attribution (provider secrets and uninstalled deps are the only P0s; static hints like render-phase setState read as P1), a ✓/⚠/✗ scorecard, and the **health impact** (last known Health Score → projected after the PR\'s findings, e.g. 82 → 79). `--comment` posts — or marker-upserts, so re-runs update the same comment — the 🤖 review as a bot comment, no CLI required for the developer. Zero model calls; report to `docs/vectalon/pr/`',
       'Benchmark pack expanded 13 → 33 scenarios — twenty new real-world app scenarios (rn-14..rn-33) span e-commerce (multi-step checkout, debounced catalog search, order tracking), social & chat (optimistic-send threads, social feed), booking & payments (availability slots, card formatting, live tracking), health & fitness (activity rings, interval timer), media (player with seek bar, video detail), profile & onboarding, security (biometric gate with PIN fallback), productivity, subscriptions, travel & weather, and settings — each with a scenario spec and a full human reference solution that typechecks, feeding the LoRA fine-tuning dataset',

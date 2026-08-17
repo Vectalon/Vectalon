@@ -9,7 +9,7 @@
 
 ## What is Vectalon?
 
-Vectalon is an open-core developer tool that embeds AI intelligence directly into your codebase. It scans your project, understands its architecture, and provides project-aware assistance across the full SDLC — through a local MCP-native agent (feature workflows, codegen, upgrades, device control) and a fleet of 45 deterministic agent commands (review, security, SOC 2, release prediction, dashboard, fix, fix-bench, pr, …) that run offline with a report and a verdict every time.
+Vectalon is an open-core developer tool that embeds AI intelligence directly into your codebase. It scans your project, understands its architecture, and provides project-aware assistance across the full SDLC — through a local MCP-native agent (feature workflows, codegen, upgrades, device control) and a fleet of 46 deterministic agent commands (review, security, SOC 2, release prediction, dashboard, fix, fix-bench, pr, gh-app, …) that run offline with a report and a verdict every time.
 
 > **📌 This is a public repository.** The source code is available under the Business Source License 1.1 (BSL-1.1). Commercial use by teams with >3 developers requires a paid license. The admin dashboard and internal operations tools are maintained in a separate private repository.
 
@@ -126,7 +126,7 @@ npx vectalon serve   # Start MCP server for agents
 ### Free — $0
 - Project scanning and context building
 - 60+ MCP project-aware tools
-- **All deterministic agent commands** — code review, architecture, security, build/test repair, refactoring, SOC 2, CI/CD, store readiness, team analytics, and enterprise intelligence (figma, sentry, governance, release-predict, dataset, lora, …), each with a report and a verdict — no model required. `fix` diagnoses and auto-fixes real RN failures; `fix-bench` proves it against 100 committed failure scenarios (100/100 diagnosis, 70/100 auto-fix, 0 false positives); `pr` reviews a pull request — five checks over the added lines, the health impact, and a one-command bot comment
+- **All deterministic agent commands** — code review, architecture, security, build/test repair, refactoring, SOC 2, CI/CD, store readiness, team analytics, and enterprise intelligence (figma, sentry, governance, release-predict, dataset, lora, …), each with a report and a verdict — no model required. `fix` diagnoses and auto-fixes real RN failures; `fix-bench` proves it against 100 committed failure scenarios (100/100 diagnosis, 70/100 auto-fix, 0 false positives); `pr` reviews a pull request — five checks over the added lines, the health impact, and a one-command bot comment; `gh-app` runs the install-once webhook server that turns every pull request into that review, posted back by the app itself
 - Component generation
 - Test writing
 - Ecosystem doctor

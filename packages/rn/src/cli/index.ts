@@ -68,6 +68,7 @@ import { releasePredictCommand } from './commands/releasePredict'
 import { playStoreCommand } from './commands/playStore'
 import { ghPrCommand } from './commands/ghPr'
 import { prCommand } from './commands/pr'
+import { ghAppCommand } from './commands/ghApp'
 import { ghIssueCommand } from './commands/ghIssue'
 import { ghCiCommand } from './commands/ghCi'
 import { ghSecCommand } from './commands/ghSec'
@@ -701,6 +702,16 @@ export function createProgram(): Command {
     .action(prCommand)
 
   program
+    .command('gh-app [directory]')
+    .description('Vectalon GitHub App (P0 — "Build the Vectalon GitHub App", the distribution mechanism): an install-once webhook server that turns every pull_request (opened/synchronize/reopened/ready_for_review) into the deterministic `vc pr` review — HMAC-verified webhook → app JWT → installation token → PR head fetched into a local mirror → the five-check review → the 🤖 comment marker-upserted back on the PR by the app itself (no gh CLI, no PAT, zero model calls). Config via GITHUB_APP_ID / GITHUB_APP_PRIVATE_KEY / GITHUB_WEBHOOK_SECRET / GITHUB_APP_INSTALLATION_ID; `--process` replays one webhook JSON and exits')
+    .option('--listen', 'Run the webhook server (default)')
+    .option('--process <file>', 'Process one webhook payload JSON file and exit')
+    .option('--port <n>', 'Webhook port (default 4567 or $GITHUB_WEBHOOK_PORT)', Number)
+    .option('--dir <path>', 'Workspace for repo mirrors + reports (default .vectalon/ghapp)')
+    .option('--json', 'Print machine-readable output')
+    .action(ghAppCommand)
+
+  program
     .command('gh-issue [directory]')
     .description('GitHub Issue Intelligence Agent (Roadmap 091): triage signal from the open-issue backlog — staleness, unassigned triage gaps, label hygiene — from `gh issue list` or a --file export; degrades to an explicit no-data verdict; report to docs/vectalon/gh-issue/')
     .option('--file <path>', 'Read issue JSON from an export file instead of the gh CLI')
@@ -1183,6 +1194,7 @@ async function runInteractive(): Promise<void> {
       { value: 'lora', label: 'LoRA readiness', hint: 'Training prerequisites + VRAM (089)' },
       { value: 'gh-pr', label: 'GitHub PR triage', hint: 'PR age, size, review, CI, mergeability (090)' },
       { value: 'pr', label: 'PR review bot', hint: 'Five-check deterministic review + auto-comment (P0)' },
+      { value: 'gh-app', label: 'GitHub App (install once)', hint: 'Webhook server → every PR reviewed + commented (P0)' },
       { value: 'gh-issue', label: 'GitHub issue triage', hint: 'Staleness, unassigned gaps, labels (091)' },
       { value: 'gh-ci', label: 'GitHub workflow health', hint: 'Flake + duration from run history (092)' },
       { value: 'gh-sec', label: 'GitHub security posture', hint: 'Dependabot, secrets, branch protection (093)' },

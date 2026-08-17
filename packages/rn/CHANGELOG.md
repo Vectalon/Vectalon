@@ -5,6 +5,22 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.0] - 2026-08-17
+
+### Added
+
+- **Vectalon GitHub App — install once, every PR reviewed (P0 distribution
+  mechanism).** `vc gh-app` runs a small webhook server (Node ≥ 20, zero new
+  deps — built-in `crypto`/`fetch`/`http`) that turns every `pull_request`
+  event (opened / synchronize / reopened / ready_for_review) into a
+  deterministic `vc pr` review: constant-time `X-Hub-Signature-256`
+  verification, an RS256 app JWT exchanged for the installation token, the
+  PR head fetched into a local mirror, the five-check review run over the
+  added lines, and the 🤖 comment marker-upserted back on the PR by the app
+  itself — no `gh` CLI, no PAT, no model calls. `--process` replays one
+  webhook payload for CI/one-shot use. Config via `GITHUB_APP_ID` /
+  `GITHUB_APP_PRIVATE_KEY` / `GITHUB_WEBHOOK_SECRET`.
+
 ## [0.13.0] - 2026-08-16
 
 ### Added
