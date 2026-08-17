@@ -40,6 +40,7 @@ import { fixCommand } from './commands/fix'
 import { scoreCommand } from './commands/score'
 import { modeCommand } from './commands/mode'
 import { demoCommand } from './commands/demo'
+import { salesDemoCommand } from './commands/salesDemo'
 import { brainCommand } from './commands/brain'
 import { planCommand } from './commands/plan'
 import { outcomesCommand } from './commands/outcomes'
@@ -702,6 +703,15 @@ export function createProgram(): Command {
     .action(prCommand)
 
   program
+    .command('sales-demo [directory]')
+    .description('The 30-minute sales demo that requires no explanation (P0 — "Create a 30-minute sales demo"): the five-act narrative, run LIVE against the real project — minute 0-5 `vectalon init` (the scan summary + Health Score), 5-10 `vc intel` (the application model: screens, navigation, state, native modules, dependency cycles), 10-20 `vc fix` (diagnose → fix → verify, run live against a real injected failure — or your own via --log/--issue), 20-25 `vc brain` ("Why did we choose Zustand?" — the decision card), 25-30 `vc outcomes` ("This is what Vectalon saved your team" — the savings ledger). Every number is the real repository, zero model calls, and the fix act edits only a sandbox copy. Writes the narration script to docs/vectalon/sales-demo/SCRIPT.md')
+    .option('--log <path>', 'Fix act: path to a real failure log (default: one committed fix-bench failure, run live)')
+    .option('--issue <text>', 'Fix act: a described failure, e.g. "Android build started failing after upgrading RN"')
+    .option('--question <text>', 'Brain act: the question (default "Why did we choose Zustand?")')
+    .option('--json', 'Print machine-readable output')
+    .action(salesDemoCommand)
+
+  program
     .command('gh-app [directory]')
     .description('Vectalon GitHub App (P0 — "Build the Vectalon GitHub App", the distribution mechanism): an install-once webhook server that turns every pull_request (opened/synchronize/reopened/ready_for_review) into the deterministic `vc pr` review — HMAC-verified webhook → app JWT → installation token → PR head fetched into a local mirror → the five-check review → the 🤖 comment marker-upserted back on the PR by the app itself (no gh CLI, no PAT, zero model calls). Config via GITHUB_APP_ID / GITHUB_APP_PRIVATE_KEY / GITHUB_WEBHOOK_SECRET / GITHUB_APP_INSTALLATION_ID; `--process` replays one webhook JSON and exits')
     .option('--listen', 'Run the webhook server (default)')
@@ -1195,6 +1205,7 @@ async function runInteractive(): Promise<void> {
       { value: 'gh-pr', label: 'GitHub PR triage', hint: 'PR age, size, review, CI, mergeability (090)' },
       { value: 'pr', label: 'PR review bot', hint: 'Five-check deterministic review + auto-comment (P0)' },
       { value: 'gh-app', label: 'GitHub App (install once)', hint: 'Webhook server → every PR reviewed + commented (P0)' },
+      { value: 'sales-demo', label: '30-minute sales demo', hint: 'init → intel → fix → brain → outcomes, live (P0)' },
       { value: 'gh-issue', label: 'GitHub issue triage', hint: 'Staleness, unassigned gaps, labels (091)' },
       { value: 'gh-ci', label: 'GitHub workflow health', hint: 'Flake + duration from run history (092)' },
       { value: 'gh-sec', label: 'GitHub security posture', hint: 'Dependabot, secrets, branch protection (093)' },

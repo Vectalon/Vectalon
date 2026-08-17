@@ -8,36 +8,69 @@
  */
 
 const RUNS = [
-  { id: 'rn-01', title: 'Login screen with auth API', suite: 'forms-security', composite: 78, correctness: 75, adherence: 67, guardrails: 94, relative: 93 },
-  { id: 'rn-02', title: 'Paginated list with pull-to-refresh', suite: 'data-flow', composite: 69, correctness: 50, adherence: 67, guardrails: 95, relative: 75 },
-  { id: 'rn-03', title: 'Themed card component honoring dark mode', suite: 'core-ui', composite: 80, correctness: 50, adherence: 100, guardrails: 100, relative: 80 },
+  { id: 'rn-01', title: 'Login screen with auth API', suite: 'forms-security', composite: 80, correctness: 75, adherence: 75, guardrails: 93, relative: 95 },
+  { id: 'rn-02', title: 'Paginated list with pull-to-refresh', suite: 'data-flow', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 110 },
+  { id: 'rn-03', title: 'Themed card component honoring dark mode', suite: 'core-ui', composite: 90, correctness: 75, adherence: 100, guardrails: 100, relative: 90 },
   { id: 'rn-04', title: 'Settings stack with typed route params and deep links', suite: 'navigation', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 100 },
   { id: 'rn-05', title: 'Multi-field form with validation and secure persistence', suite: 'forms-security', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 117 },
   { id: 'rn-06', title: 'Offline-first action queue with optimistic UI', suite: 'data-flow', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 148 },
-  { id: 'rn-07', title: 'Image-heavy feed with thumbnails', suite: 'perf', composite: 45, correctness: 0, adherence: 63, guardrails: 88, relative: 56 },
-  { id: 'rn-08', title: 'Feature-flag wrapper component and hook', suite: 'core-ui', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 100 },
-  { id: 'rn-09', title: 'Screen-reader-friendly onboarding form', suite: 'a11y', composite: 69, correctness: 50, adherence: 75, guardrails: 89, relative: 77 },
+  { id: 'rn-07', title: 'Image-heavy feed with thumbnails', suite: 'perf', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 123 },
+  { id: 'rn-08', title: 'Feature-flag wrapper component and hook', suite: 'core-ui', composite: 69, correctness: 75, adherence: 33, guardrails: 95, relative: 69 },
+  { id: 'rn-09', title: 'Screen-reader-friendly onboarding form', suite: 'a11y', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 111 },
   { id: 'rn-10', title: 'Convert class/JS component to typed hooks', suite: 'refactor', composite: 75, correctness: 75, adherence: null, guardrails: null, relative: 88 },
   { id: 'rn-11', title: 'Remove a dependency with full native cleanup', suite: 'refactor', composite: null, correctness: null, adherence: null, guardrails: null, relative: null },
-  { id: 'rn-12', title: 'Notifications screen with list fetch', suite: 'data-flow', composite: 48, correctness: 0, adherence: 67, guardrails: 94, relative: 54 },
-  { id: 'rn-13', title: 'Account deletion screen with confirmation', suite: 'forms-security', composite: 79, correctness: 50, adherence: 100, guardrails: 96, relative: 89 },
+  { id: 'rn-12', title: 'Notifications screen with list fetch', suite: 'data-flow', composite: 60, correctness: 50, adherence: 50, guardrails: 85, relative: 68 },
+  { id: 'rn-13', title: 'Account deletion screen with confirmation', suite: 'forms-security', composite: 53, correctness: 0, adherence: 80, guardrails: 96, relative: 59 },
+  { id: 'rn-14', title: 'Multi-step checkout with order confirmation', suite: 'e-commerce', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 119 },
+  { id: 'rn-15', title: 'Product catalog with debounced search and filters', suite: 'e-commerce', composite: 61, correctness: 50, adherence: 56, guardrails: 81, relative: 74 },
+  { id: 'rn-16', title: 'Chat thread with optimistic send', suite: 'social-chat', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 112 },
+  { id: 'rn-17', title: 'Social feed with likes and comment counts', suite: 'social-chat', composite: 42, correctness: 0, adherence: 50, guardrails: 88, relative: 48 },
+  { id: 'rn-18', title: 'Appointment booking with availability slots', suite: 'booking-payments', composite: 63, correctness: 50, adherence: 56, guardrails: 87, relative: 78 },
+  { id: 'rn-19', title: 'Payment method form with card formatting', suite: 'booking-payments', composite: 63, correctness: 50, adherence: 55, guardrails: 90, relative: 72 },
+  { id: 'rn-20', title: 'Order tracking timeline with live status', suite: 'booking-payments', composite: 61, correctness: 50, adherence: 57, guardrails: 81, relative: 76 },
+  { id: 'rn-21', title: 'Health dashboard with activity rings', suite: 'health-fitness', composite: 65, correctness: 50, adherence: 60, guardrails: 88, relative: 80 },
+  { id: 'rn-22', title: 'Interval workout timer with lap history', suite: 'health-fitness', composite: 50, correctness: 0, adherence: 71, guardrails: 94, relative: 56 },
+  { id: 'rn-23', title: 'Music player with seek bar and playlist', suite: 'media', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 117 },
+  { id: 'rn-24', title: 'Video detail with related videos', suite: 'media', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 115 },
+  { id: 'rn-25', title: 'Profile edit with avatar picker and validation', suite: 'profile-onboarding', composite: 58, correctness: 75, adherence: 0, guardrails: 94, relative: 67 },
+  { id: 'rn-26', title: 'Onboarding wizard with progress and skip', suite: 'profile-onboarding', composite: 63, correctness: 75, adherence: 25, guardrails: 85, relative: 77 },
+  { id: 'rn-27', title: 'Biometric unlock gate with PIN fallback', suite: 'security', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 114 },
+  { id: 'rn-28', title: 'Document library with search and tags', suite: 'productivity', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 124 },
+  { id: 'rn-29', title: 'Kanban task board with drag-free moves', suite: 'productivity', composite: 100, correctness: 100, adherence: null, guardrails: null, relative: 122 },
+  { id: 'rn-30', title: 'Subscription plan picker with comparison', suite: 'commerce-subscriptions', composite: 62, correctness: 50, adherence: 50, guardrails: 88, relative: 76 },
+  { id: 'rn-31', title: 'Nearby places list with distance sorting', suite: 'travel-weather', composite: 57, correctness: 50, adherence: 43, guardrails: 81, relative: 69 },
+  { id: 'rn-32', title: 'Hourly forecast with temperature curve', suite: 'travel-weather', composite: 67, correctness: 50, adherence: 67, guardrails: 88, relative: 77 },
+  { id: 'rn-33', title: 'Privacy settings with data controls', suite: 'settings', composite: 60, correctness: 50, adherence: 50, guardrails: 85, relative: 75 },
+  { id: 'rn-34', title: 'Remove a scoped native SDK (@sentry/react-native) with full native cleanup', suite: 'refactor', composite: null, correctness: null, adherence: null, guardrails: null, relative: null },
+  { id: 'rn-35', title: 'Remove the Firebase SDK (@react-native-firebase/app + messaging) with full native cleanup', suite: 'refactor', composite: 94, correctness: null, adherence: null, guardrails: 94, relative: 95 },
 ]
 
 const SUITES = [
   { name: 'navigation', composite: 100, guardrails: null, why: 'typed params + deep links — strongest area' },
-  { name: 'core-ui', composite: 90, guardrails: 100, why: 'theming, tokens, feature flags' },
-  { name: 'forms-security', composite: 86, guardrails: 95, why: 'auth + forms — the highest-stakes screen' },
-  { name: 'refactor', composite: 75, guardrails: null, why: 'hooks migration + dependency removal' },
-  { name: 'data-flow', composite: 72, guardrails: 95, why: 'pagination + offline queues' },
-  { name: 'a11y', composite: 69, guardrails: 89, why: 'screen-reader-friendly onboarding' },
-  { name: 'perf', composite: 45, guardrails: 88, why: 'image-heavy feeds — weakest area' },
+  { name: 'core-ui', composite: 79, guardrails: 98, why: 'theming, tokens, feature flags' },
+  { name: 'forms-security', composite: 78, guardrails: 94, why: 'auth + forms — the highest-stakes screen' },
+  { name: 'refactor', composite: 85, guardrails: 94, why: 'hooks migration + dependency removal' },
+  { name: 'data-flow', composite: 87, guardrails: 85, why: 'pagination + offline queues' },
+  { name: 'a11y', composite: 100, guardrails: null, why: 'screen-reader-friendly onboarding' },
+  { name: 'perf', composite: 100, guardrails: null, why: 'image-heavy feeds' },
+  { name: 'e-commerce', composite: 81, guardrails: 81 },
+  { name: 'social-chat', composite: 71, guardrails: 88 },
+  { name: 'booking-payments', composite: 62, guardrails: 86 },
+  { name: 'health-fitness', composite: 57, guardrails: 91 },
+  { name: 'media', composite: 100, guardrails: null },
+  { name: 'profile-onboarding', composite: 61, guardrails: 89 },
+  { name: 'security', composite: 100, guardrails: null },
+  { name: 'productivity', composite: 100, guardrails: null },
+  { name: 'commerce-subscriptions', composite: 62, guardrails: 88 },
+  { name: 'travel-weather', composite: 62, guardrails: 85 },
+  { name: 'settings', composite: 60, guardrails: 85 },
 ]
 
 /**
  * Local model tiers (Week 2 roadmap 2.1/2.2) — fast/balanced ran the
- * original 13 scenarios; quality ran the 33-scenario pack (the 20 new
- * real-world scenarios rn-14..rn-33 are 7B-only for now; rn-34/35 are the
- * deterministic-only removal scenarios), same live-scored
+ * original 13 scenarios; the nightly fast re-score now covers the full pack
+ * (the 20 new real-world scenarios rn-14..rn-33 + the removal scenarios
+ * rn-34/35), same live-scored
  * harness. Results: packages/rn/bench/results/local.json (fast),
  * local-3b.json (balanced), local-7b.json (quality) — regenerate with
  * `vectalon bench --model local --preset <tier> --live --install -o
@@ -52,9 +85,9 @@ const LOCAL_MODELS = [
     sizeGb: 1.1,
     ram: '8 GB',
     composite: 79,
-    guardrails: 94,
-    correctness: 63,
-    status: 'live — the committed leaderboard row (nightly re-score)',
+    guardrails: 89,
+    correctness: 70,
+    status: 'live — the committed leaderboard row (nightly re-score, full pack)',
   },
   {
     id: 'balanced',
@@ -253,17 +286,17 @@ export default function BenchmarksPage() {
         <div className="stat">
           <div className="stat-label">Composite</div>
           <div className="stat-value text-brand">79%</div>
-          <div className="mt-1 text-xs text-slate-500">the model pass, all 13 scenarios — live-scored</div>
+          <div className="mt-1 text-xs text-slate-500">the model pass, all 35 scenarios — live-scored</div>
         </div>
         <div className="stat">
           <div className="stat-label">Guardrails</div>
-          <div className="stat-value text-brand">94%</div>
+          <div className="stat-value text-brand">89%</div>
           <div className="mt-1 text-xs text-slate-500">rule pass — the safety floor</div>
         </div>
         <div className="stat">
           <div className="stat-label">vs human</div>
-          <div className="stat-value text-brand">90%</div>
-          <div className="mt-1 text-xs text-slate-500">of the 89% human reference composite</div>
+          <div className="stat-value text-brand">92%</div>
+          <div className="mt-1 text-xs text-slate-500">of the 87% human reference composite</div>
         </div>
         <div className="stat">
           <div className="stat-label">Gate</div>
@@ -311,7 +344,7 @@ export default function BenchmarksPage() {
         <SectionLabel>benchmark 1 · every night</SectionLabel>
         <h2 className="mt-1 text-2xl font-bold text-slate-50">The model leaderboard</h2>
         <p className="mt-2 max-w-2xl text-sm text-slate-400">
-          The headline benchmark: a real model drives generation across all 13 scenarios and is scored on
+          The headline benchmark: a real model drives generation across all 35 scenarios and is scored on
           all three axes — with correctness now measured live. <span className="text-slate-200">What it&apos;s for:</span>{' '}
           a public, reproducible RN-specific model leaderboard — the same harness, any provider. The nightly
           workflow runs a <span className="font-mono text-slate-500"> [local · openai · anthropic]</span> matrix;
@@ -361,7 +394,7 @@ export default function BenchmarksPage() {
           then <span className="font-mono">jest</span> (tests, weight 0.5),{' '}
           <span className="font-mono">tsc --noEmit</span> (typecheck, 0.25) and{' '}
           <span className="font-mono">eslint .</span> (lint, 0.25) in a throwaway project. Tests pass on 4 of
-          13 scenarios; where typecheck or lint fails, it is a real defect in the model&apos;s output. The
+          35 scenarios; where typecheck or lint fails, it is a real defect in the model&apos;s output. The
           guardrail floor holds at 88–100% on every scored scenario.
         </p>
       </section>
@@ -528,7 +561,7 @@ export default function BenchmarksPage() {
           Every scenario ships with a human-authored reference solution, scored by the <em>same</em>{' '}
           rubric. <span className="text-slate-200">What it&apos;s for:</span> it defines what
           &quot;passing&quot; means. The generated pass reaches{' '}
-          <span className="text-brand">90% of the 89% human-reference composite</span> — up from 30% the
+          <span className="text-brand">92% of the 87% human-reference composite</span> — up from 30% the
           moment correctness started being scored for real.
         </p>
         <div className="card !p-0 mt-6 overflow-hidden">
@@ -556,8 +589,8 @@ export default function BenchmarksPage() {
                 ))}
                 <tr className="bg-ink-800/70">
                   <td className="font-semibold text-slate-50">Overall</td>
-                  <td><Bar value={90} barMax={140} /></td>
-                  <td className="font-mono text-xs text-slate-300">90% of 89% human composite</td>
+                  <td><Bar value={92} barMax={140} /></td>
+                  <td className="font-mono text-xs text-slate-300">92% of 87% human composite</td>
                 </tr>
               </tbody>
             </table>

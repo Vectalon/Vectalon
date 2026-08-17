@@ -46,10 +46,54 @@ const REAL_RUN_FILES = [
   '.maestro/CreateLoginScreenEmailPassword.yaml',
 ]
 
+/** The 30-minute sales demo — five live acts against a real repository. */
+const SALES_ACTS = [
+  {
+    act: '1 · init',
+    minutes: '0–5',
+    command: 'vectalon init',
+    narration: 'Here&rsquo;s a real React Native repository.',
+    stats: ['51 files', '27 components', '18 screens', '7 dependencies'],
+    result: 'Health Score 73/100',
+  },
+  {
+    act: '2 · intel',
+    minutes: '5–10',
+    command: 'vc intel',
+    narration: 'Vectalon understands the application, not just files.',
+    stats: ['18 screens', '1 navigation stack', 'CartContext state', '7 dependencies'],
+    result: 'Dependency graph: no cycles',
+  },
+  {
+    act: '3 · fix',
+    minutes: '10–20',
+    command: 'vc fix',
+    narration: 'Take a real failure.',
+    stats: ['Kotlin 1.7.22 below the 1.9.0 pin', 'Root cause + evidence at android/build.gradle'],
+    result: '✓ 2 edits applied in sandbox · confidence 72%',
+  },
+  {
+    act: '4 · brain',
+    minutes: '20–25',
+    command: 'vc brain',
+    narration: 'Why did we choose Zustand?',
+    stats: ['adr-017 · Performance + simplicity', 'Approved by Architecture Team · March 2026'],
+    result: 'Related: Cart, Checkout, Profile',
+  },
+  {
+    act: '5 · outcomes',
+    minutes: '25–30',
+    command: 'vc outcomes',
+    narration: 'This is what Vectalon saved your team.',
+    stats: ['24 issues detected', '4 issues prevented', '44.5 engineer-hours'],
+    result: 'Estimated savings: $3,338',
+  },
+]
+
 export const metadata = {
   title: 'Vectalon — the feature workflow, live',
   description:
-    'One command. "vectalon feature \'Build a Login feature.\'" produces Requirement → Architecture decision → Affected files → Implementation plan → Code → Tests → Review → Build verification → PR — and self-heals when a gate fails.',
+    'One command. "vectalon feature \'Build a Login feature.\'" produces Requirement → Architecture decision → Affected files → Implementation plan → Code → Tests → Review → Build verification → PR — and self-heals when a gate fails. Plus the 30-minute sales demo: init → intel → fix → brain → outcomes, live against a real repository.',
 }
 
 function TerminalLine({ children }: { children: React.ReactNode }) {
@@ -205,6 +249,67 @@ export default function DemoPage() {
         ))}
       </div>
 
+      {/* The 30-minute sales demo */}
+      <div className="mt-16">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="text-2xl font-bold text-slate-50">The 30-minute sales demo</h2>
+          <span className="badge badge-ok">● no explanation required</span>
+        </div>
+        <p className="mt-2 max-w-2xl text-slate-400">
+          The feature workflow is the hero. The <span className="font-mono text-slate-300">vc sales-demo</span>{' '}
+          command is the meeting — five acts, run <em className="text-slate-300">live</em> against a real
+          React Native repository, every number real, zero model calls, and the fix act touches only a
+          sandbox. These are the real numbers from the demo app:
+        </p>
+        <div className="mt-6 space-y-3">
+          {SALES_ACTS.map(act => (
+            <div
+              key={act.act}
+              className="grid gap-3 rounded-lg border border-ink-700/60 bg-ink-900/50 p-5 sm:grid-cols-[120px_1fr_auto]"
+            >
+              <div className="flex items-start gap-3">
+                <span className="badge font-mono">{act.minutes}</span>
+              </div>
+              <div>
+                <div className="font-mono text-sm font-semibold text-brand">
+                  {act.act} — <span className="text-slate-200">{act.command}</span>
+                </div>
+                <div className="mt-1 text-slate-200">
+                  &ldquo;{act.narration}&rdquo;
+                </div>
+                <div className="mt-2 space-y-0.5 font-mono text-[12.5px] text-term-ink/70">
+                  {act.stats.map(s => (
+                    <div key={s}>· {s}</div>
+                  ))}
+                </div>
+              </div>
+              <div className="self-center font-mono text-[12.5px] text-emerald-400 sm:text-right">
+                {act.result}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 overflow-hidden rounded-lg border border-ink-700/60 bg-ink-900/80">
+          <div className="border-t border-term-frame/60 px-5 py-5">
+            <TerminalLine>
+              <span className="text-term-ink/50">$</span>{' '}
+              <span className="text-term-ink">vc sales-demo</span>{' '}
+              <span className="text-term-ink/40"># the whole meeting, one command</span>
+            </TerminalLine>
+            <TerminalLine>
+              <span className="text-term-ink/50">$</span>{' '}
+              <span className="text-term-ink">vc sales-demo --log build.log</span>{' '}
+              <span className="text-term-ink/40"># bring your own real failure</span>
+            </TerminalLine>
+            <div className="mt-3 text-sm text-slate-400">
+              Every act prints a carbon window with the minute marker, the narration line, and the real
+              output; the full 30-minute script is written to{' '}
+              <span className="font-mono text-slate-300">docs/vectalon/sales-demo/SCRIPT.md</span>.
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* CTA */}
       <div className="mt-14 text-center">
         <div className="mx-auto max-w-xl rounded-lg border border-ink-700/60 bg-ink-900/50 p-6">
@@ -214,6 +319,9 @@ export default function DemoPage() {
           <div className="mt-3 font-mono text-sm text-slate-400">
             <span className="text-brand">$</span> npx vectalon feature &quot;Build a Login
             feature.&quot;
+          </div>
+          <div className="mt-1 font-mono text-sm text-slate-400">
+            <span className="text-brand">$</span> npx vectalon sales-demo
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
             <Link
@@ -226,7 +334,7 @@ export default function DemoPage() {
               href="/agents"
               className="rounded-md border border-ink-600 px-4 py-2 text-sm font-semibold text-slate-300 transition hover:border-brand hover:text-brand"
             >
-              See the 44 agents
+              See the 46 agents
             </Link>
           </div>
         </div>

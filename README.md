@@ -9,7 +9,7 @@
 
 ## What is Vectalon?
 
-Vectalon is an open-core developer tool that embeds AI intelligence directly into your codebase. It scans your project, understands its architecture, and provides project-aware assistance across the full SDLC — through a local MCP-native agent (feature workflows, codegen, upgrades, device control) and a fleet of 46 deterministic agent commands (review, security, SOC 2, release prediction, dashboard, fix, fix-bench, pr, gh-app, …) that run offline with a report and a verdict every time.
+Vectalon is an open-core developer tool that embeds AI intelligence directly into your codebase. It scans your project, understands its architecture, and provides project-aware assistance across the full SDLC — through a local MCP-native agent (feature workflows, codegen, upgrades, device control) and a fleet of 47 deterministic agent commands (review, security, SOC 2, release prediction, dashboard, fix, fix-bench, pr, gh-app, sales-demo, …) that run offline with a report and a verdict every time.
 
 > **📌 This is a public repository.** The source code is available under the Business Source License 1.1 (BSL-1.1). Commercial use by teams with >3 developers requires a paid license. The admin dashboard and internal operations tools are maintained in a separate private repository.
 

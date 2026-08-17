@@ -2045,6 +2045,52 @@ npx vectalon demo --json   # pipeline + healing loop + prior run as JSON
 
 ---
 
+## `sales-demo`
+
+**The 30-minute sales demo that requires no explanation** (P0 — "Create a
+30-minute sales demo"): the five-act narrative, run **live** against the
+real project. Nothing is canned — every number is the repository you run it
+on, and the fix act edits only a sandbox copy.
+
+| Minute | Command | The beat |
+|---|---|---|
+| 0–5 | `vectalon init` | "Here's a real React Native repository." — the scan census (files, components, screens, native modules, dependencies) + the Health Score |
+| 5–10 | `vc intel` | "Vectalon understands the application, not just files." — the application model: screens, navigation, state stores, native modules, dependency cycles |
+| 10–20 | `vc fix` | "Take a real failure." — diagnose → fix → verify, run live on a real injected failure (or your own via `--log`/`--issue`) |
+| 20–25 | `vc brain` | "Why did we choose Zustand?" — the decision card: reason, approved by, related, reviewed |
+| 25–30 | `vc outcomes` | "This is what Vectalon saved your team." — the engineering-outcomes ledger and the savings estimate |
+
+Each act prints a carbon window with the minute marker, the narration line,
+and the real output; the internal command logs (npx tsc, git log, …) are
+silenced so the meeting stays clean. The full narration script the
+salesperson follows is written to
+`docs/vectalon/sales-demo/SCRIPT.md`, and the combined report to
+`docs/vectalon/sales-demo/report.md`.
+
+By default the fix act materializes one **committed fix-bench failure**
+(Kotlin version pin) into a temp sandbox and runs the real `vc fix` pipeline
+against it — root cause, evidence, impact, the applied edits, confidence —
+so the money shot works with zero setup and no network. With `--log` or
+`--issue`, it runs against the salesperson's own real failure instead.
+
+```bash
+npx vectalon sales-demo                          # the whole meeting, one command
+npx vectalon sales-demo --log build.log          # bring your own real failure
+npx vectalon sales-demo --question "Why Redux?"  # your own brain question
+npx vectalon sales-demo --json                   # the five acts as JSON
+```
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `--log <path>` | Fix act: path to a real failure log (default: a committed fix-bench failure, run live) |
+| `--issue <text>` | Fix act: a described failure, e.g. "Android build started failing after upgrading RN" |
+| `--question <text>` | Brain act: the question (default "Why did we choose Zustand?") |
+| `--json` | Print the five acts as machine-readable output |
+
+---
+
 ## `brain`
 
 **The productized Team Brain** — the move from developer tool to

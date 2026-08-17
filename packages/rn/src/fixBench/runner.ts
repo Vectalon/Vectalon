@@ -32,6 +32,16 @@ interface Materialized {
   cleanup: () => void
 }
 
+/**
+ * Materialize one scenario's broken project (healthy base + broken overlay +
+ * the failing log) into a fresh temp dir — the live-demo seam: `vc sales-demo`
+ * runs the REAL fix pipeline against a real injected failure.
+ */
+export function materializeBrokenScenario(scenario: FixBenchScenario): { dir: string; logPath?: string; cleanup: () => void } {
+  const m = materialize(FIX_BENCH_BASE, scenario.broken, scenario.log) as Materialized & { logPath?: string }
+  return { dir: m.dir, logPath: m.logPath, cleanup: m.cleanup }
+}
+
 function materialize(base: Record<string, string>, overrides: Record<string, string>, logText?: string): Materialized {
   const dir = mkdtempSync(join(tmpdir(), 'vectalon-fixbench-'))
   const files: Record<string, string> = { ...base }

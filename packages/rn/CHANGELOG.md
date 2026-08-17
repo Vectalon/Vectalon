@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **The 30-minute sales demo that requires no explanation (P0).** `vc
+  sales-demo` runs the five-act narrative LIVE against the real project —
+  minute 0–5 `vectalon init` (the scan census: files, components, screens,
+  native modules, dependencies + the Health Score), 5–10 `vc intel` (the
+  application model: screens, navigation, state, dependency cycles), 10–20
+  `vc fix` (diagnose → fix → verify, run live on a committed fix-bench
+  failure by default, or your own via `--log`/`--issue`), 20–25 `vc brain`
+  ("Why did we choose Zustand?" → the decision card from the real ADRs),
+  25–30 `vc outcomes` ("This is what Vectalon saved your team" → the
+  savings ledger). Nothing is canned; the fix act touches only a sandbox;
+  internal command logs are silenced so the meeting stays clean; the
+  narration script is written to `docs/vectalon/sales-demo/SCRIPT.md`.
 - **Vectalon GitHub App — install once, every PR reviewed (P0 distribution
   mechanism).** `vc gh-app` runs a small webhook server (Node ≥ 20, zero new
   deps — built-in `crypto`/`fetch`/`http`) that turns every `pull_request`

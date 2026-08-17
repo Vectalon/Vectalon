@@ -64,7 +64,7 @@ describe('benchmarks page data', () => {
 
   it('shows every scenario with the exact committed per-axis scores', () => {
     const runs = pageRuns(page)
-    expect(Object.keys(runs).length).toBe(13)
+    expect(Object.keys(runs).length).toBe(35)
     for (const run of local.runs as Array<Record<string, unknown>>) {
       // local.json keys runs by full id (rn-01-login-screen); the page uses
       // the short scenario id (rn-01) — map one to the other.
@@ -82,7 +82,7 @@ describe('benchmarks page data', () => {
 
   it('shows the suite aggregates from the same run', () => {
     const suites = pageSuites(page)
-    expect(Object.keys(suites).length).toBe(7)
+    expect(Object.keys(suites).length).toBe(18)
     for (const s of local.suites as Array<Record<string, unknown>>) {
       const name = s.suite as string
       expect(suites[name].composite).toBe(pct(s.composite as number | null))
@@ -93,14 +93,14 @@ describe('benchmarks page data', () => {
   it('shows the committed overall numbers (composite / guardrails / relative-to-human)', () => {
     // Hero stats rendered as literal percentages in the stat cards.
     expect(page).toContain('stat-value text-brand">79%')
-    expect(page).toContain('stat-value text-brand">94%')
-    expect(page).toContain('stat-value text-brand">90%')
-    // And the human reference composite that 90% is relative to.
-    expect(page).toContain('89% human reference composite')
+    expect(page).toContain('stat-value text-brand">89%')
+    expect(page).toContain('stat-value text-brand">92%')
+    // And the human reference composite that 92% is relative to.
+    expect(page).toContain('87% human reference composite')
     expect(pct(local.overallComposite)).toBe(79)
-    expect(pct(local.overallGuardrails)).toBe(94)
-    expect(pct(local.overallReferenceComposite)).toBe(89)
-    expect(pct(local.overallRelativeComposite)).toBe(90)
+    expect(pct(local.overallGuardrails)).toBe(89)
+    expect(pct(local.overallReferenceComposite)).toBe(87)
+    expect(pct(local.overallRelativeComposite)).toBe(92)
   })
 
   it('matches the CI regression gate to the committed baseline', () => {
