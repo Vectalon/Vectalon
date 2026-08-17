@@ -2369,9 +2369,10 @@ percentages, estimated hours saved vs a 30-min-per-failure human baseline,
 and a per-suite table (`total · diagnosed · fixed · build ok`). Missed
 diagnoses are listed by scenario id with the expected vs actual diagnosis,
 so the next seam to close is always visible. The pack currently scores
-**100/100 diagnosis** (the 80% target is cleared) and **66/100 auto-fix**
+**100/100 diagnosis** (the 80% target is cleared) and **70/100 auto-fix**
 (the 50% target is cleared) with **0 false positives** on the healthy
-control.
+control. The TypeScript suite alone is at **10/10** — every TS regression
+family auto-fixes.
 
 The deterministic edit seams that drive the fix accuracy live in the
 planner (`src/fix/planner.ts`): version alignment (compileSdk/Kotlin/AGP/
@@ -2380,7 +2381,10 @@ flag edits, Podfile pod-insert + deployment-target, settings.gradle include +
 JitPack repo, duplicate-class resolutionStrategy, module-resolution import
 rewrite + package-dependency add, babel-preset add, Metro heap script, and
 the TypeScript code seams (import resolve, drop property, unquote literal,
-dedupe declaration, JSX→createElement, strip unknown prop). Hermetic tests in
+dedupe declaration, JSX→createElement, strip unknown prop, TS7006
+parameter→`unknown` annotation, missing-JSX-prop insert from the compiler's
+prop list, unknown-identifier fill from the app manifest, and TS2305
+renamed-export from tsc's own "Did you mean" suggestion). Hermetic tests in
 `packages/rn/__tests__/fixBench/seams.test.ts` lock both targets — the
 benchmark is a regression gate, not just a scorecard.
 
@@ -3260,6 +3264,57 @@ npx vectalon gh-pr --json
 |---|---|
 | 0 | Scan completed |
 | 1 | Fatal error |
+
+---
+
+## `pr`
+
+**PR Review Agent** (P0 — "Build GitHub PR integration"): reviews one pull
+request deterministically — the GitHub → Vectalon → developer workflow.
+Five checks run over the **added lines only** (so pre-existing debt in an
+untouched line is never re-flagged), reusing the committed scanners:
+Architecture (shared→feature imports introduced), Dependencies (added deps
+installed? manifest/lockfile in sync?), Security (secrets on added lines +
+plain-HTTP fetches), Performance (re-render / startup / bridge hazards
+attributed to changed lines), and Testing (every changed source file has a
+test). Each finding gets a P0/P1/P2 priority (provider secrets and
+uninstalled deps are the only P0s; static hints like render-phase setState
+read as P1, matching the roadmap example), the scorecard rows ✓/⚠/✗ by
+priority, and the overall verdict by priority too.
+
+The **health impact** pairs the last known Health Score with the projected
+score after the PR's findings (`82 → 79`): base comes from
+`docs/vectalon/score/report.json` (fallback: a fresh `vc score`), projected
+is base minus the deterministic penalty (error −10, warning −5, info −2).
+
+```bash
+npx vectalon pr                    # review the current branch's PR (gh) or origin/main…HEAD
+npx vectalon pr 482                # review PR #482 via `gh pr diff`
+npx vectalon pr --diff-file pr.diff # review an offline unified diff
+npx vectalon pr 482 --comment      # post (or marker-upsert) the 🤖 review as a bot comment
+npx vectalon pr --diff-file pr.diff --json
+```
+
+`--comment` posts the review through `upsertPullRequestComment` (marker
+`vectalon-pr-review`), so re-running on a push **updates the same comment**
+instead of spamming the thread — set `GITHUB_TOKEN` or auth the `gh` CLI.
+The comment renders the five-check table, the issues with file:line
+attribution, the health impact, and the `[Fix automatically]` affordance
+(how to run `vc fix` on the branch).
+
+**Options**
+
+| Option | Description |
+|---|---|
+| `--number <n>` | PR number (default: detected from the current branch via `gh pr view`) |
+| `--base <ref>` | Base ref for the git fallback diff (default `origin/main`) |
+| `--diff <text>` | Review a raw unified diff instead of fetching one |
+| `--diff-file <path>` | Review a unified diff from a file |
+| `--comment` | Post (or upsert) the review as a bot comment on the PR |
+| `--push` | Allow the git write (PR comment) |
+| `--json` | Print machine-readable output |
+
+Report to `docs/vectalon/pr/`.
 
 ---
 

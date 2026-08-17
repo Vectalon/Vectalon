@@ -4,7 +4,7 @@
  * Business Source License 1.1 (BSL-1.1)
  */
 import { existsSync, readdirSync, readFileSync } from 'fs'
-import { join } from 'path'
+import { dirname, join } from 'path'
 import { reportError } from '../utils/safe'
 import type { FixEdit, FixFinding } from './types'
 import { readProjectContext, requirementsForRn, type ProjectContext } from './diagnose'
@@ -336,6 +336,65 @@ function escapeRe(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
+/** Extract the named exports of a module from its source text. */
+function moduleExportedNames(content: string): string[] {
+  const names = new Set<string>()
+  const decl = /export\s+(?:declare\s+)?(?:const|let|var|function|class|interface|type|enum|abstract\s+class)\s+([A-Za-z_$][\w$]*)/g
+  for (const m of content.matchAll(decl)) names.add(m[1])
+  const list = /export\s*\{([^}]+)\}/g
+  for (const m of content.matchAll(list)) {
+    for (const part of m[1].split(',')) {
+      const n = part.trim().match(/^(?:type\s+)?([A-Za-z_$][\w$]*)/)?.[1]
+      if (n) names.add(n)
+    }
+  }
+  const dflt = /export\s+default\s+([A-Za-z_$][\w$]*)/g
+  for (const m of content.matchAll(dflt)) names.add(m[1])
+  return [...names]
+}
+
+/** Longest shared prefix — the honest deterministic match for a renamed export. */
+function longestSharedPrefix(a: string, b: string): string {
+  let i = 0
+  const max = Math.min(a.length, b.length)
+  while (i < max && a[i].toLowerCase() === b[i].toLowerCase()) i++
+  return a.slice(0, i)
+}
+
+/** Read the source of a relative-specifier module ('' .ts .tsx .js .jsx /index.*). */
+function readModuleSource(root: string, importer: string, specifier: string): string {
+  if (!specifier.startsWith('.')) return ''
+  const base = join(dirname(importer), specifier)
+  for (const ext of ['', '.ts', '.tsx', '.js', '.jsx', '/index.ts', '/index.tsx', '/index.js', '/index.jsx']) {
+    const content = readFile(root, `${base}${ext}`)
+    if (content) return content
+  }
+  return ''
+}
+
+/**
+ * Rewrite a named import binding (TS2305): the missing name → the tsc
+ * "Did you mean" suggestion (or the module-export match). Only the brace
+ * list is touched — the specifier is never rewritten.
+ */
+function editRenameImportBinding(root: string, file: string, line: number, missing: string, replacement: string): FixEdit | null {
+  const content = readFile(root, file)
+  const lines = content.split('\n')
+  const idx = line - 1
+  if (idx < 0 || idx >= lines.length) return null
+  const oldLine = lines[idx]
+  const listMatch = oldLine.match(/\{\s*([^}]+)\}/)
+  if (!listMatch) return null
+  const entries = listMatch[1].split(',').map(s => s.trim())
+  const hit = entries.findIndex(e => e === missing || e === `type ${missing}` || e.startsWith(`${missing} as `) || e.endsWith(` as ${missing}`))
+  if (hit < 0) return null
+  entries[hit] = replacement
+  const at = listMatch.index ?? 0
+  const newLine = oldLine.slice(0, at) + '{ ' + entries.join(', ') + ' }' + oldLine.slice(at + listMatch[0].length)
+  if (newLine === oldLine) return null
+  return { file, op: 'replace', from: oldLine, to: newLine, summary: `Rename import binding ${missing} → ${replacement} (TS2305)` }
+}
+
 /** Drop a chained property call named by a TS2339 error (`el.getNativeNode()` → `el`). */
 function editDropProperty(root: string, file: string, line: number, prop: string): FixEdit | null {
   const content = readFile(root, file)
@@ -485,6 +544,76 @@ function editJsxToCreateElement(root: string, file: string, line: number): FixEd
     const newLine = oldLine.replace(selfClosing[0], `React.createElement(${el}, null, null)`)
     if (newLine === oldLine) return null
     return { file, op: 'replace', from: oldLine, to: newLine, summary: `Rewrite JSX <${el}/> to React.createElement (TS17004 in a .ts file)` }
+  }
+  return null
+}
+
+/** Annotate a bare parameter named by TS7006 with `unknown` (the honest conservative default). */
+function editAnnotateParamUnknown(root: string, file: string, line: number, param: string): FixEdit | null {
+  const content = readFile(root, file)
+  const lines = content.split('\n')
+  const idx = line - 1
+  if (idx < 0 || idx >= lines.length) return null
+  const oldLine = lines[idx]
+  const re = escapeRe(param)
+  // Only touch the parameter list, never the usages (return e; stays bare).
+  const withParens = oldLine.replace(
+    /(function\s+[\w$]+\s*\([^)]*\)|\([^)]*\)\s*=>)/,
+    m => m.replace(new RegExp(`\\b${re}\\b`), `${param}: unknown`)
+  )
+  if (withParens !== oldLine) {
+    return { file, op: 'replace', from: oldLine, to: withParens, summary: `Annotate parameter ${param} with : unknown (TS7006)` }
+  }
+  // Bare arrow param without parens: `e => ...`.
+  const arrow = oldLine.replace(new RegExp(`\\b${re}\\b(?=\\s*=>)`), `${param}: unknown`)
+  if (arrow !== oldLine) {
+    return { file, op: 'replace', from: oldLine, to: arrow, summary: `Annotate parameter ${param} with : unknown (TS7006)` }
+  }
+  return null
+}
+
+/** Insert the compiler-listed missing props into a JSX opening tag as `name=""` placeholders. */
+function editAddMissingProps(root: string, file: string, line: number, props: string[]): FixEdit | null {
+  const content = readFile(root, file)
+  const lines = content.split('\n')
+  const idx = line - 1
+  if (idx < 0 || idx >= lines.length || props.length === 0) return null
+  const oldLine = lines[idx]
+  const insert = props.map(p => `${p}=""`).join(' ')
+  // Lazy [^>]*? so the self-closing slash stays with `/>`, never the attrs.
+  const newLine = oldLine.replace(/<(\w+)([^>]*?)(\/?>)/, (_m, el: string, rest: string, close: string) =>
+    `<${el}${rest.replace(/\s+$/, '')} ${insert}${close === '/>' ? ' ' : ''}${close}`
+  )
+  if (newLine === oldLine) return null
+  return { file, op: 'replace', from: oldLine, to: newLine, summary: `Add missing prop${props.length > 1 ? 's' : ''} ${props.join(', ')} to <${oldLine.match(/<(\w+)/)?.[1] ?? 'component'}> (TS2739)` }
+}
+
+/** Fill an unknown identifier (TS2304) from the app manifest when it looks like an app-name constant. */
+function editFillIdentifierFromManifest(root: string, file: string, line: number, identifier: string): FixEdit | null {
+  if (!/app|name|display|title/i.test(identifier)) return null
+  const value = manifestAppName(root)
+  if (!value) return null
+  const content = readFile(root, file)
+  const lines = content.split('\n')
+  const idx = line - 1
+  if (idx < 0 || idx >= lines.length) return null
+  const oldLine = lines[idx]
+  const re = escapeRe(identifier)
+  // JSX text braces first: `{AppName}` → the raw name; then any bare usage → a quoted literal.
+  const newLine = oldLine
+    .replace(new RegExp(`\\{${re}\\}`, 'g'), value)
+    .replace(new RegExp(`\\b${re}\\b`, 'g'), `'${value}'`)
+  if (newLine === oldLine) return null
+  return { file, op: 'replace', from: oldLine, to: newLine, summary: `Fill unknown identifier ${identifier} from the app manifest (${value})` }
+}
+
+/** The app's display name: app.json displayName → app.json name → package.json name. */
+function manifestAppName(root: string): string | null {
+  for (const rel of ['app.json', 'package.json']) {
+    const content = readFile(root, rel)
+    if (!content) continue
+    const m = rel === 'app.json' ? content.match(/"displayName"\s*:\s*"([^"]+)"/) ?? content.match(/"name"\s*:\s*"([^"]+)"/) : content.match(/"name"\s*:\s*"([^"]+)"/)
+    if (m?.[1]) return m[1]
   }
   return null
 }
@@ -650,6 +779,35 @@ export function planEdits(root: string, findings: FixFinding[], ctx?: ProjectCon
         }
         break
       }
+      case 'ts-no-exported-member': {
+        // tsc names the missing export and, when a close match exists, suggests
+        // the rename itself ("Did you mean to use 'X'?") — compiler-authoritative.
+        // Without a suggestion, read the module's exports and pick the unique
+        // longest-prefix match (the deterministic version of "open the file");
+        // ambiguity or no match → manual fix, never a guess.
+        if (f.params?.file && f.params?.line && f.params?.tsMsg) {
+          const missing = f.params.tsMsg.match(/has no exported member ['"]([^'"]+)['"]/)?.[1]
+          let replacement = f.params.tsMsg.match(/Did you mean(?: to use)? ['"]([^'"]+)['"]/)?.[1]
+          if (!replacement && missing) {
+            const spec = f.params.tsMsg.match(/Module ['"]([^'"]+)['"]/)?.[1]
+            if (spec) {
+              const candidates = moduleExportedNames(readModuleSource(root, f.params.file, spec))
+                .filter(n => n.toLowerCase() !== missing.toLowerCase())
+              const scored = candidates
+                .map(n => ({ n, p: longestSharedPrefix(missing, n).length }))
+                .filter(s => s.p >= 2)
+                .sort((a, b) => b.p - a.p)
+              const best = scored[0]
+              if (best && scored.filter(s => s.p === best.p).length === 1) replacement = best.n
+            }
+          }
+          if (missing && replacement) {
+            const e = editRenameImportBinding(root, f.params.file, Number(f.params.line), missing, replacement)
+            if (e) { edits.push(e); f.edit = e }
+          }
+        }
+        break
+      }
       case 'ts-type-not-assignable': {
         // string → number literal unquote (setCount('5') → setCount(5))
         if (/Type ['"]string['"] is not assignable to type ['"]number['"]/.test(f.params?.tsMsg ?? '')) {
@@ -690,6 +848,35 @@ export function planEdits(root: string, findings: FixFinding[], ctx?: ProjectCon
       case 'ts-jsx-not-supported': {
         if (f.params?.file && f.params?.line) {
           const e = editJsxToCreateElement(root, f.params.file, Number(f.params.line))
+          if (e) { edits.push(e); f.edit = e }
+        }
+        break
+      }
+      case 'ts-this-expression': {
+        // TS7006 names the bare parameter — annotate it with unknown.
+        const param = f.params?.tsMsg?.match(/Parameter ['"]([^'"]+)['"]/)?.[1]
+        if (param && f.params?.file && f.params?.line) {
+          const e = editAnnotateParamUnknown(root, f.params.file, Number(f.params.line), param)
+          if (e) { edits.push(e); f.edit = e }
+        }
+        break
+      }
+      case 'ts-missing-props': {
+        // TS2739 lists the missing props — insert each as a `prop=""` placeholder.
+        const list = f.params?.tsMsg?.match(/missing the following properties from type ['"][^'"]*['"]:\s*([^.\n]+)/)?.[1]
+        const props = (list ?? '').split(',').map(s => s.trim()).filter(s => /^[A-Za-z][\w-]*$/.test(s))
+        if (props.length > 0 && f.params?.file && f.params?.line) {
+          const e = editAddMissingProps(root, f.params.file, Number(f.params.line), props)
+          if (e) { edits.push(e); f.edit = e }
+        }
+        break
+      }
+      case 'ts-cannot-find-name': {
+        // TS2304 names an unknown identifier — fill it from the app manifest
+        // when it looks like an app-name constant (AppName, …).
+        const identifier = f.params?.tsMsg?.match(/Cannot find name ['"]([^'"]+)['"]/)?.[1]
+        if (identifier && f.params?.file && f.params?.line) {
+          const e = editFillIdentifierFromManifest(root, f.params.file, Number(f.params.line), identifier)
           if (e) { edits.push(e); f.edit = e }
         }
         break

@@ -67,6 +67,7 @@ import { reposCommand } from './commands/repos'
 import { releasePredictCommand } from './commands/releasePredict'
 import { playStoreCommand } from './commands/playStore'
 import { ghPrCommand } from './commands/ghPr'
+import { prCommand } from './commands/pr'
 import { ghIssueCommand } from './commands/ghIssue'
 import { ghCiCommand } from './commands/ghCi'
 import { ghSecCommand } from './commands/ghSec'
@@ -688,6 +689,18 @@ export function createProgram(): Command {
     .action(ghPrCommand)
 
   program
+    .command('pr [directory]')
+    .description('PR Review Agent (P0 — "Build GitHub PR integration"): reviews one pull request deterministically — five checks (Architecture, Dependencies, Security, Performance, Testing) over the added lines only, the issues found, and the health impact (last score → projected) — from `gh pr diff`, a git merge-base diff, or a --diff/--diff-file; --comment posts (or marker-upserts) the 🤖 review as a bot comment so GitHub → Vectalon → developer needs no CLI; report to docs/vectalon/pr/')
+    .option('--number <n>', 'PR number (default: detected from the current branch via gh)', Number)
+    .option('--base <ref>', 'Base ref for the git fallback diff (default origin/main)')
+    .option('--diff <text>', 'Review a raw unified diff instead of fetching one')
+    .option('--diff-file <path>', 'Review a unified diff from a file')
+    .option('--comment', 'Post (or upsert) the review as a bot comment on the PR')
+    .option('--push', 'Allow the git write (PR comment)')
+    .option('--json', 'Print machine-readable output')
+    .action(prCommand)
+
+  program
     .command('gh-issue [directory]')
     .description('GitHub Issue Intelligence Agent (Roadmap 091): triage signal from the open-issue backlog — staleness, unassigned triage gaps, label hygiene — from `gh issue list` or a --file export; degrades to an explicit no-data verdict; report to docs/vectalon/gh-issue/')
     .option('--file <path>', 'Read issue JSON from an export file instead of the gh CLI')
@@ -1169,6 +1182,7 @@ async function runInteractive(): Promise<void> {
       { value: 'dataset', label: 'Fine-tuning dataset', hint: 'Validate JSONL training data (088)' },
       { value: 'lora', label: 'LoRA readiness', hint: 'Training prerequisites + VRAM (089)' },
       { value: 'gh-pr', label: 'GitHub PR triage', hint: 'PR age, size, review, CI, mergeability (090)' },
+      { value: 'pr', label: 'PR review bot', hint: 'Five-check deterministic review + auto-comment (P0)' },
       { value: 'gh-issue', label: 'GitHub issue triage', hint: 'Staleness, unassigned gaps, labels (091)' },
       { value: 'gh-ci', label: 'GitHub workflow health', hint: 'Flake + duration from run history (092)' },
       { value: 'gh-sec', label: 'GitHub security posture', hint: 'Dependabot, secrets, branch protection (093)' },

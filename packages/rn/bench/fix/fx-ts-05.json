@@ -9,14 +9,14 @@
     "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nconst x = <Card />;\n"
   },
   "healthy": {
-    "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nconst x = <Card title=\"Hello\" />;\n"
+    "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nconst x = <Card title=\"\" />;\n"
   },
   "expect": {
     "diagnosisId": "ts-missing-props",
     "diagnosisKeywords": [],
     "fixFile": "src/screens/Broken.tsx",
     "mustContain": [
-      "const x = <Card title=\"Hello\" />;"
+      "const x = <Card title=\"\" />;"
     ],
     "mustNotContain": [],
     "autoFixable": false

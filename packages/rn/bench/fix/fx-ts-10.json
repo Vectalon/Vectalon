@@ -9,14 +9,14 @@
     "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nexport function handler(e) { return e; }\n"
   },
   "healthy": {
-    "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nexport function handler(e: Event) { return e; }\n"
+    "src/screens/Broken.tsx": "import React from 'react';\nimport { Text } from 'react-native';\n\nexport function handler(e: unknown) { return e; }\n"
   },
   "expect": {
     "diagnosisId": "ts-this-expression",
     "diagnosisKeywords": [],
     "fixFile": "src/screens/Broken.tsx",
     "mustContain": [
-      "export function handler(e: Event) { return e; }"
+      "export function handler(e: unknown) { return e; }"
     ],
     "mustNotContain": [],
     "autoFixable": false

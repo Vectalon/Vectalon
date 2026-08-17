@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **PR Review Agent — GitHub → Vectalon → developer (P0).** `vc pr`
+  reviews one pull request deterministically over the added lines only:
+  five checks (Architecture shared→feature imports, Dependencies added+
+  installed + manifest/lockfile sync, Security secrets + plain-HTTP,
+  Performance re-render/startup/bridge hazards attributed to changed
+  lines, Testing coverage per changed source file) with P0/P1/P2
+  priorities, a ✓/⚠/✗ scorecard, the **health impact** (last known
+  Health Score → projected after the PR's findings), and
+  `--comment` to post (or marker-upsert) the 🤖 review as a bot comment.
+  Zero model calls; report to `docs/vectalon/pr/`.
 - **Dependency-removal scenarios are now benchmarked, not skipped.** The
   removal seam applies a scenario's `removedDependencies` to the fixtures and
   emits the changed files — JSON-aware package.json stripping (including
@@ -49,7 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   scores the six axes the directive names: diagnosis accuracy (target ≥
   80%), fix accuracy without human modification (target ≥ 50%), build
   success, false-positive rate, time saved, human intervention. Current:
-  **100/100 diagnosis, 66/100 auto-fix, 0 false positives** — both
+  **100/100 diagnosis, 70/100 auto-fix, 0 false positives** — both
   product-milestone targets met. Deterministic edit seams in
   `src/fix/planner.ts` (version pins, Podfile pod-insert + deployment
   target, settings.gradle include + JitPack, new-arch flag, daemon heap,

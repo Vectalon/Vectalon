@@ -190,7 +190,7 @@ const AXES = [
  */
 const FIX_AXES = [
   { name: 'Diagnosis accuracy', value: '100/100', verdict: 'is the root cause identified correctly?', detail: 'The root finding must match the expected diagnosis for the injected failure — a wrong diagnosis never counts as a fix. Target ≥ 80%: met at 100%.' },
-  { name: 'Fix accuracy', value: '66/100', verdict: 'was the fix applied without human modification?', detail: 'Planned edits must reach the expected file state (asserted by mustContain / mustNotContain) with the correct diagnosis first. Target ≥ 50%: met at 66%.' },
+  { name: 'Fix accuracy', value: '70/100', verdict: 'was the fix applied without human modification?', detail: 'Planned edits must reach the expected file state (asserted by mustContain / mustNotContain) with the correct diagnosis first. Target ≥ 50%: met at 70%.' },
   { name: 'Build success', value: '27/100', verdict: 'after the fix, does the root cause stop firing?', detail: 'The post-fix probe re-runs the diagnosis against the same log/issue; version-alignment and SDK fixes clear it (Kotlin, AGP, upgrade suites), log-only diagnoses cannot by construction.' },
   { name: 'False positive rate', value: '0.0%', verdict: 'does the healthy project stay quiet?', detail: 'Every scenario also diagnoses its healthy control — any error there is a false positive. Zero across all 100, so the seams fire only on real failures.' },
   { name: 'Time', value: '15ms median', verdict: 'how long does the pipeline take per failure?', detail: 'Pure text + fs, no model, no builds — a median 15ms per scenario, 1.6s for the whole pack. The estimate: ~50 hours saved vs a 30-min-per-failure human baseline.' },
@@ -203,7 +203,7 @@ const FIX_SUITES = [
   { suite: 'cocoapods', total: 10, diagnosed: 10, fixed: 10, buildOk: 0, fixPct: 100, why: 'missing pod inserted into ios/Podfile from the log' },
   { suite: 'upgrade', total: 10, diagnosed: 10, fixed: 10, buildOk: 7, fixPct: 100, why: 'compileSdk / Kotlin / AGP / wrapper / minSdk / NDK / namespace after an RN bump' },
   { suite: 'linking', total: 10, diagnosed: 10, fixed: 8, buildOk: 0, fixPct: 80, why: 'settings.gradle include, JitPack repo, new-arch flag, minSdk floor, pod path' },
-  { suite: 'typescript', total: 10, diagnosed: 10, fixed: 6, buildOk: 0, fixPct: 60, why: 'import resolve, drop prop, unquote literal, dedupe decl, JSX→createElement, strip prop' },
+  { suite: 'typescript', total: 10, diagnosed: 10, fixed: 10, buildOk: 0, fixPct: 100, why: 'import resolve, drop prop, unquote literal, dedupe decl, JSX→createElement, strip prop, TS7006 → :unknown, missing props from the compiler list, manifest identifier fill, TS2305 rename from tsc\'s "Did you mean" suggestion' },
   { suite: 'gradle-conflict', total: 10, diagnosed: 10, fixed: 5, buildOk: 0, fixPct: 50, why: 'duplicate-class resolutionStrategy, minSdk, NDK, daemon heap, compileSdk' },
   { suite: 'metro', total: 10, diagnosed: 10, fixed: 4, buildOk: 1, fixPct: 40, why: 'import rewrite, package add, babel preset add, Metro heap script' },
   { suite: 'hermes', total: 10, diagnosed: 10, fixed: 2, buildOk: 0, fixPct: 20, why: 'hermesEnabled flag flip, hermes-engine version align' },
@@ -647,7 +647,7 @@ export default function BenchmarksPage() {
           hermetically (no build ever runs, CI-safe).{' '}
           <span className="text-slate-200">What it&apos;s for:</span> both product-milestone targets are now
           cleared — <span className="text-brand">100% correct diagnosis</span> (target ≥ 80%) and{' '}
-          <span className="text-brand">66% of fixes applied without human modification</span> (target ≥ 50%) —
+          <span className="text-brand">69% of fixes applied without human modification</span> (target ≥ 50%) —
           with <span className="text-brand">zero false positives</span> on the healthy control. The same pack is a
           regression gate in CI: hermetic tests in <span className="font-mono">__tests__/fixBench/seams.test.ts</span>{' '}
           re-run all 100 scenarios and fail the build if either target slips.
@@ -656,7 +656,7 @@ export default function BenchmarksPage() {
           <span className="text-term-brand">$</span> npx vectalon fix-bench{'\n'}
           <span className="text-slate-500">┌─ vc fix-bench — 100 real RN failures, measured ──────────────┐</span>{'\n'}
           <span className="text-slate-300">  Diagnosis accuracy</span>            <span className="text-emerald-500">100.0%</span>   <span className="text-slate-500">target 80.0% ✓</span>{'\n'}
-          <span className="text-slate-300">  Fix accuracy (auto, no human)</span> <span className="text-emerald-500">66.0%</span>    <span className="text-slate-500">target 50.0% ✓</span>{'\n'}
+          <span className="text-slate-300">  Fix accuracy (auto, no human)</span> <span className="text-emerald-500">70.0%</span>    <span className="text-slate-500">target 50.0% ✓</span>{'\n'}
           <span className="text-slate-300">  Build success (post-fix)</span>     <span className="text-term-brand">27.0%</span>{'\n'}
           <span className="text-slate-300">  False positive rate</span>          <span className="text-term-brand">0.0%</span>{'\n'}
           <span className="text-slate-300">  Human intervention</span>           <span className="text-term-brand">34.0%</span>{'\n'}
