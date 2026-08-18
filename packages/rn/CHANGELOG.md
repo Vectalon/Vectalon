@@ -5,6 +5,32 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.2] - 2026-08-18
+
+### Added
+
+- **Canonical product-truth release gate.** A versioned root manifest now
+  owns package versions, availability, capability counts, pricing, and license
+  facts. CI and the RN publish workflow fail before build or publication when
+  packages, benchmark fixtures, generated pricing, license text, or marked
+  public documentation drift from it.
+- **Generated commercial plan projection.** The published RN package consumes
+  a generated projection of the canonical plan catalog, while the website
+  consumes the same manifest directly.
+
+### Changed
+
+- Public website, README, SDK, documentation, and benchmark claims now reflect
+  RN 0.14.2, 43 benchmark scenarios, 44 deterministic commands, and 64 MCP
+  tools from their authoritative sources.
+- Jest no longer depends on Watchman, improving repeatability in CI and
+  restricted development environments.
+
+### Fixed
+
+- The product-truth CI job disables setup-node's implicit package-manager
+  cache so its dependency-free validator can run before pnpm is installed.
+
 ## [0.14.1] - 2026-08-18
 
 ### Changed
