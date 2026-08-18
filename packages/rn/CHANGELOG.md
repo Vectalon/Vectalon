@@ -5,6 +5,25 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.1] - 2026-08-18
+
+### Changed
+
+- **RN releases now build against the latest private core `main`.** The
+  guarded release workflow requires `CORE_REPO_PAT`, checks out
+  `Vectalon/core` at an explicit `main` ref before both the benchmark and
+  publish jobs, records the resolved commit, and bundles that revision into
+  the npm artifact. The committed core distribution was refreshed from
+  `1d930df8b215cb45623159132c2e47db89d46a7a`, adding the model-provider,
+  repair-loop, violation, and engineering-profile foundations.
+
+### Fixed
+
+- **Core refreshes now replace the runtime distribution instead of nesting it
+  under `dist/dist`.** The public wrapper build clears and recreates
+  `packages/core/dist`, ensuring the RN bundle actually resolves the newly
+  compiled core entry point.
+
 ## [0.14.0] - 2026-08-17
 
 ### Added

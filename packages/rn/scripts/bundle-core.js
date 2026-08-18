@@ -34,6 +34,14 @@ if (existsSync(publicKeyPath)) {
   cpSync(publicKeyPath, join(VENDOR_DIR, 'public-key.pem'), { force: true })
 }
 
+// Preserve the exact private-core commit used for this artifact. The release
+// workflow writes this file immediately after checking out Vectalon/core main;
+// local builds use the committed revision that produced packages/core/dist.
+const revisionPath = join(CORE_ROOT, 'core-source-revision.txt')
+if (existsSync(revisionPath)) {
+  cpSync(revisionPath, join(VENDOR_DIR, 'core-source-revision.txt'), { force: true })
+}
+
 // 4. Create a synthetic package.json so Node resolution treats this as a package
 writeFileSync(
   join(VENDOR_DIR, 'package.json'),

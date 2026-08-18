@@ -14,14 +14,11 @@
     "test": "turbo run test",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "publish:core": "turbo run publish --filter=@vectalon-dev/core",
-    "publish:rn": "turbo run publish --filter=@vectalon-dev/rn",
-    "publish:all": "turbo run publish --filter=@vectalon-dev/*"
+    "publish:rn": "pnpm --filter @vectalon-dev/rn release"
   },
   "devDependencies": {
     "turbo": "^2.0.0"
   },
-  "packageManager": "pnpm@9.0.0",
   "engines": {
     "node": ">=20.12.0",
     "npm": ">=10.9.0"

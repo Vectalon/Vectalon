@@ -52,10 +52,14 @@ pnpm typecheck
 # Dev mode (watch)
 pnpm dev
 
-# Publish packages
-pnpm publish:core    # Publish @vectalon-dev/core
-pnpm publish:rn      # Publish @vectalon-dev/rn
+# Emergency local publish (the guarded GitHub Actions workflow is preferred)
+pnpm publish:rn      # Build and publish @vectalon-dev/rn
 ```
+
+`@vectalon-dev/core` is not an independently published package. The RN build
+vendors its private runtime into the npm artifact. A `[publish-rn]` release
+also packages the VS Code extension at the same version; its committed
+manifest stays at the `0.1.0` baseline intentionally.
 
 ## License
 

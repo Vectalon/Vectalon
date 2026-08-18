@@ -34,6 +34,10 @@ Vectalon is licensed under the **Business Source License 1.1 (BSL-1.1)**.
 
 See [LICENSE](LICENSE) for full terms.
 
+The VS Code extension under `packages/rn/extension` is a separate, thin client
+licensed under MIT. The React Native CLI, its bundled core runtime, and the
+remainder of this repository stay under BSL-1.1.
+
 ---
 
 ## Monorepo Structure
@@ -76,40 +80,40 @@ Go to **Settings → Secrets and variables → Actions** and add:
 
 **⚠️ IMPORTANT: npm never allows republishing the same version. Always bump first.**
 
-Add one of these tags to your commit message when pushing to `main`:
-
-| Tag | What gets published |
-|---|---|
-| `[publish-core]` | `@vectalon-dev/core` only |
-| `[publish-rn]` | `@vectalon-dev/rn` only |
-| `[publish-both]` | Both packages |
+`@vectalon-dev/rn` is the only independently published npm package. Its build
+bundles the private `@vectalon-dev/core` runtime into the package, so core is
+not published separately. Add `[publish-rn]` to the release commit message to
+start the guarded npm + VS Code Marketplace release.
 
 ```bash
-# 1. Bump versions (pick one or both)
-cd packages/core && npm version prerelease --preid=beta   # 1.0.0-beta.2 → 1.0.0-beta.3
-cd packages/rn && npm version prerelease --preid=beta     # 0.6.0-beta.3 → 0.6.0-beta.4
+# 1. Bump the RN package version and add its CHANGELOG entry
+cd packages/rn && npm version patch --no-git-tag-version
 
 # 2. Commit with the publish tag
-git add -A && git commit -m "chore: bump versions [publish-rn]" && git push
+git add package.json CHANGELOG.md ../../pnpm-lock.yaml
+git commit -m "chore(release): publish rn [publish-rn]" && git push
 
-# 3. CI runs tests automatically
-# 4. Publish workflow auto-triggers and publishes the tagged package(s)
-# 5. A Git tag is created: rn-vX.X.X-core-vX.X.X
+# 3. The release workflow runs the benchmark, build, test, lint, and typecheck gates
+# 4. It publishes @vectalon-dev/rn and the matching-version VS Code extension
+# 5. It creates a Git tag and GitHub Release: rn-vX.X.X-core-vX.X.X
 ```
+
+The committed VS Code extension manifest remains at its `0.1.0` baseline by
+design. During a release, `scripts/publish-vsce.js` rewrites the packaged
+extension to the RN package version without dirtying the checkout.
 
 ### Manual Publish (Fallback)
 
 If you forget the commit tag, use the GitHub UI:
 
 1. Go to **Actions → Publish Packages → Run workflow**
-2. Select the package from the dropdown
+2. Select `@vectalon-dev/rn`
 3. Click **Run workflow**
 
-Or publish locally:
+For an emergency local npm publish (CI is preferred):
 
 ```bash
-cd packages/core && npm publish --access public
-cd packages/rn && npm publish --access public
+pnpm publish:rn
 ```
 
 ---

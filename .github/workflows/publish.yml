@@ -8,7 +8,7 @@ on:
       package:
         description: 'Package to publish'
         required: true
-        default: 'both'
+        default: '@vectalon-dev/rn'
         type: choice
         options:
           - '@vectalon-dev/rn'
@@ -31,8 +31,6 @@ jobs:
        github.event.inputs.package == '@vectalon-dev/rn')
       ||
       (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-rn]'))
-      ||
-      (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-both]'))
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -45,7 +43,8 @@ jobs:
           if [ -n "$PAT" ]; then
             echo "has_pat=true" >> $GITHUB_OUTPUT
           else
-            echo "has_pat=false" >> $GITHUB_OUTPUT
+            echo "::error::CORE_REPO_PAT is required for RN releases so the package is always built from the latest Vectalon/core main."
+            exit 1
           fi
 
       - name: Checkout core source (private)
@@ -53,6 +52,8 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: Vectalon/core
+          ref: main
+          fetch-depth: 1
           path: packages/core/src
           token: ${{ secrets.CORE_REPO_PAT }}
 
@@ -81,8 +82,6 @@ jobs:
        github.event.inputs.package == '@vectalon-dev/rn')
       ||
       (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-rn]'))
-      ||
-      (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-both]'))
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -95,8 +94,8 @@ jobs:
           if [ -n "$PAT" ]; then
             echo "has_pat=true" >> $GITHUB_OUTPUT
           else
-            echo "has_pat=false" >> $GITHUB_OUTPUT
-            echo "::warning::CORE_REPO_PAT not set. Cannot build core from private repo."
+            echo "::error::CORE_REPO_PAT is required for RN releases so the package is always built from the latest Vectalon/core main."
+            exit 1
           fi
 
       - name: Checkout core source (private)
@@ -104,8 +103,14 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: Vectalon/core
+          ref: main
+          fetch-depth: 1
           path: packages/core/src
           token: ${{ secrets.CORE_REPO_PAT }}
+
+      - name: Record core revision
+        if: steps.pat.outputs.has_pat == 'true'
+        run: git -C packages/core/src rev-parse HEAD | tee packages/core/core-source-revision.txt
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5

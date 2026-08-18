@@ -17,7 +17,12 @@ npx vsce package --out vectalon-local.vsix
 code --install-extension vectalon-local.vsix
 ```
 
-**Auto-update** — every `semantic-release` bumps the extension version to match the npm release and publishes a new `.vsix` to the Marketplace, so VS Code's built-in extension auto-update (on by default) keeps you current. Install from the Marketplace (not a local `.vsix`) to receive updates.
+**Auto-update** — every `[publish-rn]` release packages the extension at the
+same version as `@vectalon-dev/rn` and publishes the `.vsix` to the
+Marketplace, so VS Code's built-in extension auto-update (on by default) keeps
+you current. The committed manifest remains at the `0.1.0` packaging baseline;
+the release script rewrites only the packaged artifact. Install from the
+Marketplace (not a local `.vsix`) to receive updates.
 
 ## Requirements
 
@@ -79,5 +84,11 @@ Before the first publish can succeed:
 1. **Register the publisher** — `npx vsce create-publisher vectalon-dev` (or reuse an existing publisher you own) and accept the Marketplace agreement.
 2. **Create a Marketplace PAT** — a VS Code Marketplace personal access token (from `dev.azure.com` — *not* a GitHub token), stored as the **`VSCE_PAT`** GitHub secret on the `publish.yml` workflow (and the `vsce-publish` workflow).
 3. Trigger a `[publish-rn]` release — or run the **Publish VS Code extension (manual)** workflow (`workflow_dispatch`) to publish a specific version, which also serves as the retry path if an automated upload ever fails.
+
+### License boundary
+
+The thin VS Code client in this directory is MIT-licensed. The separately
+installed `@vectalon-dev/rn` CLI and its bundled core runtime remain licensed
+under BSL-1.1. Installing the extension does not relicense the CLI.
 
 Note: the committed `extension/package.json` version is the baseline only — published `.vsix` files always carry the release version. To test a real upload locally: `export VSCE_PAT=… && node scripts/publish-vsce.js 0.1.0` (compiles, packages to `/tmp`, and uploads).
