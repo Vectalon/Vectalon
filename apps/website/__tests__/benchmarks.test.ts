@@ -1,61 +1,22 @@
 /**
- * Data-drift guard for the /benchmarks page: every number on the page must
- * match the committed benchmark artifacts in the RN package —
+ * Data-drift guard for the /benchmarks page: its derived view data must match
+ * the committed benchmark artifacts in the RN package —
  *   packages/rn/bench/results/local.json   (nightly model pass)
  *   packages/rn/bench/baseline.json        (CI regression gate)
- * If a nightly leaderboard updates local.json / BENCHMARK_RESULTS.md and the
- * page is not regenerated, this test fails in CI — the page's header comment
- * says "never edit by hand", and this is the enforcement.
+ * The page consumes local.json directly, so nightly leaderboard updates do not
+ * require a second hand-maintained snapshot.
  *
  * Parses both sources directly (plain fs, no cross-package imports).
  */
 import * as fs from 'fs'
 import * as path from 'path'
+import { OVERALL, RUNS, SUITES } from '../lib/benchmarkData'
 
 const PAGE = path.resolve(__dirname, '../app/benchmarks/page.tsx')
-// apps/website/__tests__ → repo root is three levels up
 const LOCAL = path.resolve(__dirname, '../../../packages/rn/bench/results/local.json')
 const BASELINE = path.resolve(__dirname, '../../../packages/rn/bench/baseline.json')
 
 const pct = (v: number | null | undefined): number | null => (typeof v === 'number' ? Math.round(v * 100) : null)
-
-interface PageRun {
-  composite: number | null
-  correctness: number | null
-  adherence: number | null
-  guardrails: number | null
-  relative: number | null
-}
-
-/** Extract the RUNS array from the page source, keyed by scenario id. */
-function pageRuns(source: string): Record<string, PageRun> {
-  const out: Record<string, PageRun> = {}
-  const re =
-    /id:\s*'(rn-\d+)'.*?composite:\s*(\d+|null),\s*correctness:\s*(\d+|null),\s*adherence:\s*(\d+|null),\s*guardrails:\s*(\d+|null),\s*relative:\s*(\d+|null)/g
-  let m: RegExpExecArray | null
-  while ((m = re.exec(source)) !== null) {
-    const num = (i: number): number | null => (m![i] === 'null' ? null : Number(m![i]))
-    out[m[1]] = {
-      composite: num(2),
-      correctness: num(3),
-      adherence: num(4),
-      guardrails: num(5),
-      relative: num(6),
-    }
-  }
-  return out
-}
-
-/** Extract the SUITES array: name → { composite, guardrails }. */
-function pageSuites(source: string): Record<string, { composite: number | null; guardrails: number | null }> {
-  const out: Record<string, { composite: number | null; guardrails: number | null }> = {}
-  const re = /name:\s*'([a-z0-9-]+)',\s*composite:\s*(\d+|null),\s*guardrails:\s*(\d+|null)/g
-  let m: RegExpExecArray | null
-  while ((m = re.exec(source)) !== null) {
-    out[m[1]] = { composite: m[2] === 'null' ? null : Number(m[2]), guardrails: m[3] === 'null' ? null : Number(m[3]) }
-  }
-  return out
-}
 
 describe('benchmarks page data', () => {
   const page = fs.readFileSync(PAGE, 'utf-8')
@@ -63,8 +24,8 @@ describe('benchmarks page data', () => {
   const baseline = JSON.parse(fs.readFileSync(BASELINE, 'utf-8'))
 
   it('shows every scenario with the exact committed per-axis scores', () => {
-    const runs = pageRuns(page)
-    expect(Object.keys(runs).length).toBe(35)
+    const runs = Object.fromEntries(RUNS.map(run => [run.id, run]))
+    expect(Object.keys(runs).length).toBe(local.runs.length)
     for (const run of local.runs as Array<Record<string, unknown>>) {
       // local.json keys runs by full id (rn-01-login-screen); the page uses
       // the short scenario id (rn-01) — map one to the other.
@@ -81,8 +42,8 @@ describe('benchmarks page data', () => {
   })
 
   it('shows the suite aggregates from the same run', () => {
-    const suites = pageSuites(page)
-    expect(Object.keys(suites).length).toBe(18)
+    const suites = Object.fromEntries(SUITES.map(suite => [suite.name, suite]))
+    expect(Object.keys(suites).length).toBe(local.suites.length)
     for (const s of local.suites as Array<Record<string, unknown>>) {
       const name = s.suite as string
       expect(suites[name].composite).toBe(pct(s.composite as number | null))
@@ -91,16 +52,10 @@ describe('benchmarks page data', () => {
   })
 
   it('shows the committed overall numbers (composite / guardrails / relative-to-human)', () => {
-    // Hero stats rendered as literal percentages in the stat cards.
-    expect(page).toContain('stat-value text-brand">79%')
-    expect(page).toContain('stat-value text-brand">89%')
-    expect(page).toContain('stat-value text-brand">92%')
-    // And the human reference composite that 92% is relative to.
-    expect(page).toContain('87% human reference composite')
-    expect(pct(local.overallComposite)).toBe(79)
-    expect(pct(local.overallGuardrails)).toBe(89)
-    expect(pct(local.overallReferenceComposite)).toBe(87)
-    expect(pct(local.overallRelativeComposite)).toBe(92)
+    expect(OVERALL.composite).toBe(pct(local.overallComposite))
+    expect(OVERALL.guardrails).toBe(pct(local.overallGuardrails))
+    expect(OVERALL.referenceComposite).toBe(pct(local.overallReferenceComposite))
+    expect(OVERALL.relativeComposite).toBe(pct(local.overallRelativeComposite))
   })
 
   it('matches the CI regression gate to the committed baseline', () => {
