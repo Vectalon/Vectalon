@@ -62,7 +62,7 @@ exports.iosDefinition = {
             severity: 'error',
             category: 'correctness',
             appliesTo: ['*.swift', '*.m', '*.mm'],
-            detection: { type: 'regex', pattern: '\{\s*self\s+in', matchMeaning: 'violate' },
+            detection: { type: 'regex', pattern: String.raw `\{\s*self\s+in`, matchMeaning: 'violate' },
             check: () => [],
         },
         {

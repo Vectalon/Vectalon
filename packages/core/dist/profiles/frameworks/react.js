@@ -49,7 +49,7 @@ exports.reactDefinition = {
             severity: 'warning',
             category: 'correctness',
             appliesTo: ['*.tsx', '*.jsx'],
-            detection: { type: 'regex', pattern: '\.map\(.*=>.*key=\{index\}', flags: 's', matchMeaning: 'violate' },
+            detection: { type: 'regex', pattern: String.raw `\.map\(.*=>.*key=\{index\}`, flags: 's', matchMeaning: 'violate' },
             check: () => [],
         },
         {

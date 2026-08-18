@@ -37,7 +37,7 @@ exports.reactNativeDefinition = {
             severity: 'warning',
             category: 'performance',
             appliesTo: ['*.tsx', '*.jsx'],
-            detection: { type: 'regex', pattern: 'style=\{\{', matchMeaning: 'violate' },
+            detection: { type: 'regex', pattern: String.raw `style=\{\{`, matchMeaning: 'violate' },
             check: () => [],
         },
         {
