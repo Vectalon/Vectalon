@@ -20,7 +20,7 @@
     "publish:rn": "pnpm --filter @vectalon-dev/rn release"
   },
   "devDependencies": {
-    "turbo": "^2.0.0"
+    "turbo": "^2.10.10"
   },
   "engines": {
     "node": ">=20.12.0",
