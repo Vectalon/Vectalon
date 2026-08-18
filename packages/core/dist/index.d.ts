@@ -52,3 +52,4 @@ export { iosDefinition } from './profiles/platforms/ios';
 export { androidDefinition } from './profiles/platforms/android';
 export { CompositionEngine, composeProfiles, LAYER_ORDER, DEFAULT_PRECEDENCE } from './profiles/CompositionEngine';
 export type { CompositionLayer, PrecedenceMap, CompositionInput, CompositionConflict, RuleProvenance, CompositionOptions, CompositionResult, } from './profiles/CompositionEngine';
+export { reactNativeEngineeringProfile, rnGuardrails, rnTools } from './profiles/examples/react-native';

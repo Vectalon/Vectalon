@@ -282,6 +282,139 @@ class EngineeringProfile {
         }
         return result;
     }
+    // ─── Schema validation
+    // ─── Schema validation ──────────────────────────────────────────────────
+    /**
+     * Validate a serialized EngineeringProfile JSON object against the
+     * canonical JSON Schema (engineering-profile.schema.json).
+     *
+     * Lightweight structural validator that checks shape and required fields.
+     * For full JSON Schema validation, use a dedicated validator (ajv, etc.).
+     */
+    static validateSchema(json) {
+        const errors = [];
+        // Required top-level fields
+        const requiredTopLevel = [
+            'id', 'version', 'schemaVersion', 'language', 'rules', 'guardrails', 'tools',
+        ];
+        for (const field of requiredTopLevel) {
+            if (json[field] === undefined || json[field] === null) {
+                errors.push({ path: field, message: `Missing required field: ${field}`, severity: 'error' });
+            }
+        }
+        // Validate language profile structure
+        if (json.language) {
+            if (!json.language.id || typeof json.language.id !== 'string') {
+                errors.push({ path: 'language.id', message: 'LanguageProfile.id is required', severity: 'error' });
+            }
+            if (!json.language.name || typeof json.language.name !== 'string') {
+                errors.push({ path: 'language.name', message: 'LanguageProfile.name is required', severity: 'error' });
+            }
+            if (!json.language.features) {
+                errors.push({ path: 'language.features', message: 'LanguageProfile.features is required', severity: 'error' });
+            }
+            else {
+                const validTyping = ['static', 'dynamic', 'gradual', 'inferred'];
+                const validConcurrency = ['async-await', 'threads', 'actors', 'goroutines', 'event-loop', 'none'];
+                const validErrorHandling = ['exceptions', 'result-type', 'error-codes', 'option-type', 'mixed'];
+                const validModuleSystem = ['esm', 'commonjs', 'importmap', 'mixed'];
+                if (!validTyping.includes(json.language.features.typing)) {
+                    errors.push({ path: 'language.features.typing', message: `Invalid typing: ${json.language.features.typing}`, severity: 'error' });
+                }
+                if (!validConcurrency.includes(json.language.features.concurrency)) {
+                    errors.push({ path: 'language.features.concurrency', message: `Invalid concurrency: ${json.language.features.concurrency}`, severity: 'error' });
+                }
+                if (!validErrorHandling.includes(json.language.features.errorHandling)) {
+                    errors.push({ path: 'language.features.errorHandling', message: `Invalid errorHandling: ${json.language.features.errorHandling}`, severity: 'error' });
+                }
+                if (!validModuleSystem.includes(json.language.features.moduleSystem)) {
+                    errors.push({ path: 'language.features.moduleSystem', message: `Invalid moduleSystem: ${json.language.features.moduleSystem}`, severity: 'error' });
+                }
+            }
+        }
+        // Validate schemaVersion
+        if (typeof json.schemaVersion !== 'number' || json.schemaVersion < 1) {
+            errors.push({ path: 'schemaVersion', message: 'schemaVersion must be a positive integer', severity: 'error' });
+        }
+        // Validate rules array
+        if (!Array.isArray(json.rules)) {
+            errors.push({ path: 'rules', message: 'rules must be an array', severity: 'error' });
+        }
+        else {
+            for (let i = 0; i < json.rules.length; i++) {
+                const rule = json.rules[i];
+                if (!rule.id)
+                    errors.push({ path: `rules[${i}].id`, message: 'Rule id is required', severity: 'error' });
+                if (!rule.name)
+                    errors.push({ path: `rules[${i}].name`, message: 'Rule name is required', severity: 'error' });
+                if (!rule.severity)
+                    errors.push({ path: `rules[${i}].severity`, message: 'Rule severity is required', severity: 'error' });
+            }
+        }
+        // Validate guardrails
+        if (json.guardrails) {
+            if (!Array.isArray(json.guardrails.rules)) {
+                errors.push({ path: 'guardrails.rules', message: 'guardrails.rules must be an array', severity: 'error' });
+            }
+            if (json.guardrails.onViolation && !['block', 'warn', 'log'].includes(json.guardrails.onViolation)) {
+                errors.push({ path: 'guardrails.onViolation', message: `Invalid onViolation: ${json.guardrails.onViolation}`, severity: 'error' });
+            }
+        }
+        // Validate tools array
+        if (!Array.isArray(json.tools)) {
+            errors.push({ path: 'tools', message: 'tools must be an array', severity: 'error' });
+        }
+        else {
+            for (let i = 0; i < json.tools.length; i++) {
+                const tool = json.tools[i];
+                if (!tool.id)
+                    errors.push({ path: `tools[${i}].id`, message: 'Tool id is required', severity: 'error' });
+                if (!tool.name)
+                    errors.push({ path: `tools[${i}].name`, message: 'Tool name is required', severity: 'error' });
+                if (!tool.inputSchema)
+                    errors.push({ path: `tools[${i}].inputSchema`, message: 'Tool inputSchema is required', severity: 'error' });
+            }
+        }
+        // Validate optional sub-profiles
+        if (json.framework) {
+            if (!json.framework.id)
+                errors.push({ path: 'framework.id', message: 'FrameworkProfile.id is required', severity: 'error' });
+            if (!json.framework.name)
+                errors.push({ path: 'framework.name', message: 'FrameworkProfile.name is required', severity: 'error' });
+        }
+        if (json.platforms) {
+            if (!Array.isArray(json.platforms)) {
+                errors.push({ path: 'platforms', message: 'platforms must be an array', severity: 'error' });
+            }
+            else {
+                for (let i = 0; i < json.platforms.length; i++) {
+                    const p = json.platforms[i];
+                    if (!p.id)
+                        errors.push({ path: `platforms[${i}].id`, message: 'PlatformProfile.id is required', severity: 'error' });
+                    if (!p.name)
+                        errors.push({ path: `platforms[${i}].name`, message: 'PlatformProfile.name is required', severity: 'error' });
+                }
+            }
+        }
+        if (json.project) {
+            if (!json.project.name)
+                errors.push({ path: 'project.name', message: 'ProjectProfile.name is required', severity: 'error' });
+            if (!json.project.language)
+                errors.push({ path: 'project.language', message: 'ProjectProfile.language is required', severity: 'error' });
+            if (!json.project.dependencies)
+                errors.push({ path: 'project.dependencies', message: 'ProjectProfile.dependencies is required', severity: 'error' });
+        }
+        if (json.organization) {
+            if (!json.organization.id)
+                errors.push({ path: 'organization.id', message: 'OrganizationProfile.id is required', severity: 'error' });
+            if (!Array.isArray(json.organization.policies))
+                errors.push({ path: 'organization.policies', message: 'OrganizationProfile.policies must be an array', severity: 'error' });
+        }
+        return {
+            valid: errors.filter(e => e.severity === 'error').length === 0,
+            errors,
+        };
+    }
 }
 exports.EngineeringProfile = EngineeringProfile;
 // ─── Internal helpers ─────────────────────────────────────────────────────

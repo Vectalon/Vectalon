@@ -7,6 +7,17 @@ import { newArchitectureLabel } from '../utils/newArchitecture'
 import { reactCompilerLabel } from '../utils/reactCompiler'
 import type { ContextSnapshot } from './types'
 import type { PatternStore } from '../memory/PatternLearner'
+import {
+  EngineeringProfile as ProfileClass,
+  reactNativeEngineeringProfile,
+  rnRules,
+  rnGuardrails,
+  rnTools,
+} from '@vectalon-dev/core'
+import type {
+  EngineeringProfileInterface as IEngineeringProfile,
+  ProjectProfile,
+} from '@vectalon-dev/core'
 
 export class ContextEngine {
   private scanner: Scanner
@@ -45,6 +56,47 @@ export class ContextEngine {
 
   attachPatternStore(store: PatternStore): void {
     this.patternStore = store
+  }
+
+  /**
+   * Build a structured EngineeringProfile from the current project snapshot.
+   *
+   * Bridges the Scanner-derived ProjectInfo into Core's ProjectProfile,
+   * then composes it onto the base React Native EngineeringProfile.
+   *
+   * This is the primary integration point between the RN product adapter
+   * and Core's composable profile system.
+   */
+  buildEngineeringProfile(): IEngineeringProfile {
+    if (!this.snapshot) {
+      this.init()
+    }
+    const snapshot = this.snapshot!
+    const projectProfile = snapshotProjectToProfile(snapshot)
+
+    return ProfileClass.merge(reactNativeEngineeringProfile as unknown as IEngineeringProfile, {
+      project: projectProfile,
+      metadata: {
+        ...reactNativeEngineeringProfile.metadata,
+        updatedAt: new Date().toISOString(),
+        description: `React Native profile for ${snapshot.project.name} v${snapshot.project.version}`,
+      },
+    })
+  }
+
+  /**
+   * Persist the EngineeringProfile alongside the existing snapshot artifacts.
+   */
+  persistEngineeringProfile(): IEngineeringProfile {
+    const profile = this.buildEngineeringProfile()
+    if (!this.contextDir) return profile
+
+    mkdirSync(this.contextDir, { recursive: true })
+    writeFileSync(
+      join(this.contextDir, 'engineering-profile.json'),
+      ProfileClass.serialize(profile as any),
+    )
+    return profile
   }
 
   buildContextPrompt(): string {
@@ -225,5 +277,35 @@ export class ContextEngine {
         JSON.stringify(this.snapshot.knowledgeGraph, null, 2)
       )
     }
+  }
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────
+
+/**
+ * Convert a scanner-derived ContextSnapshot into Core's ProjectProfile.
+ *
+ * This is the bridge between the RN-specific Scanner output and the
+ * language-neutral Core abstraction. The Core ProjectProfile is consumed
+ * by CompositionEngine and downstream consumers.
+ */
+function snapshotProjectToProfile(snapshot: ContextSnapshot): ProjectProfile {
+  const { project } = snapshot
+  return {
+    name: project.name,
+    version: project.version,
+    language: project.hasTypeScript ? 'typescript' : 'javascript',
+    framework: 'react-native',
+    platform: project.platforms.join(',') || undefined,
+    dependencies: project.dependencies,
+    devDependencies: project.devDependencies,
+    features: [
+      ...(project.hasTypeScript ? ['typescript'] : []),
+      ...(project.hasMetro ? ['metro'] : []),
+      ...(project.hasExpo ? ['expo'] : []),
+      ...(project.newArchitecture?.enabled ? ['new-architecture'] : []),
+      ...(project.reactCompiler?.enabled ? ['react-compiler'] : []),
+    ],
+    constraints: [],
   }
 }

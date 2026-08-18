@@ -60,6 +60,14 @@ export declare class EngineeringProfile {
      * Later entries win. The first entry must supply `id` and `language`.
      */
     static compose(...layers: (Partial<IEngineeringProfile> & PlatformCompat)[]): IEngineeringProfile;
+    /**
+     * Validate a serialized EngineeringProfile JSON object against the
+     * canonical JSON Schema (engineering-profile.schema.json).
+     *
+     * Lightweight structural validator that checks shape and required fields.
+     * For full JSON Schema validation, use a dedicated validator (ajv, etc.).
+     */
+    static validateSchema(json: IEngineeringProfileJSON): ValidationResult;
 }
 /**
  * JSON-safe version of EngineeringProfile (no functions).
