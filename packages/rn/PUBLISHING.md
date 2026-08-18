@@ -1,42 +1,64 @@
 # Publishing
 
-`@vectalon/rn-vectalon` is published automatically with [semantic-release](https://semantic-release.gitbook.io/).
+Current release inputs: RN <!-- product-fact:rn-version -->0.14.1<!-- /product-fact --> ·
+core <!-- product-fact:core-version -->0.1.0<!-- /product-fact -->
 
-## How it works
+`@vectalon-dev/rn` is the only independently published npm package. Its build
+bundles the private core runtime, including the exact core Git revision, into
+the RN tarball.
 
-1. Every push to `main` triggers the [Release workflow](.github/workflows/release.yml).
-2. The workflow runs tests, lint, type check, and build.
-3. `semantic-release` analyzes commits using the [Conventional Commits](https://www.conventionalcommits.org/) standard.
-4. If a release is warranted, it:
-   - Bumps `package.json` version
-   - Updates `CHANGELOG.md`
-   - Publishes to npm
-   - Creates a GitHub release with notes
+## Release workflow
 
-## Commit message format
+The guarded [Publish Packages workflow](../../.github/workflows/publish.yml)
+runs only for a manual RN dispatch or a push whose commit message contains
+`[publish-rn]`. Every release:
 
-| Commit | Result |
-|---|---|
-| `fix: ...` | Patch release (e.g. `0.1.1`) |
-| `feat: ...` | Minor release (e.g. `0.2.0`) |
-| `feat!: ...` or `BREAKING CHANGE:` in body | Major release |
-| `chore: ...`, `docs: ...`, `ci: ...` | No release |
+1. Requires `CORE_REPO_PAT` and checks out the latest `Vectalon/core` `main`.
+2. Records the fetched core SHA in `packages/core/core-source-revision.txt`.
+3. Installs with the frozen pnpm lockfile.
+4. Runs the deterministic benchmark regression gate.
+5. Builds, tests, lints, and typechecks the RN package.
+6. Publishes `@vectalon-dev/rn` to npm.
+7. Attempts the matching VS Code Marketplace release without allowing a
+   Marketplace outage to invalidate an npm publication.
+8. Creates the annotated Git tag and GitHub release notes.
 
-## First-time npm setup
+## Preparing a release
 
-1. Create the `@vectalon` organization on [npmjs.org](https://www.npmjs.com/org/create).
-2. Generate an **Automation** npm access token at [npmjs.com/settings/tokens](https://www.npmjs.com/settings/tokens).
-3. Add the token as a repository secret named `NPM_TOKEN` at:
-   `GitHub repo → Settings → Secrets and variables → Actions → New repository secret`.
-4. `GITHUB_TOKEN` is provided by GitHub Actions automatically.
-
-## Manual publish
-
-Only needed in emergencies. Prefer semantic-release.
+npm does not allow republishing an existing version. Before triggering the
+workflow:
 
 ```bash
-npm login
-npm run build
-npm run test
-npm publish --access public
+cd packages/rn
+npm version patch --no-git-tag-version
+# Add the matching CHANGELOG.md entry and update the root product manifest.
+cd ../..
+pnpm product:check
+git add packages/rn/package.json packages/rn/CHANGELOG.md pnpm-lock.yaml product-manifest.json
+git commit -m "chore(release): publish rn [publish-rn]"
+git push origin main
+```
+
+Use `minor` or `major` instead of `patch` when the release contract requires
+it. The release commit is explicit; ordinary conventional commits never
+publish automatically.
+
+## Required secrets
+
+- `CORE_REPO_PAT` — read access to the private core repository.
+- `NPM_TOKEN` — npm automation token for `@vectalon-dev/rn`.
+- `VSCE_PAT` — optional until Marketplace publication is unparked.
+
+## Emergency fallback
+
+CI is the preferred release path. For a recovery publish after all gates have
+been reproduced locally:
+
+```bash
+pnpm product:check
+pnpm --filter @vectalon-dev/rn run build
+pnpm --filter @vectalon-dev/rn run test
+pnpm --filter @vectalon-dev/rn run lint
+pnpm --filter @vectalon-dev/rn run typecheck
+pnpm publish:rn
 ```

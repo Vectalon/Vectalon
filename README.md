@@ -2,6 +2,11 @@
 
 **The adaptive AI harness for developers — React Native, iOS, Android, Python, and beyond.**
 
+Current RN release: <!-- product-fact:rn-version -->0.14.1<!-- /product-fact --> ·
+benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
+deterministic agents: <!-- product-fact:deterministic-commands -->44<!-- /product-fact --> ·
+MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact -->
+
 [![BSL License](https://img.shields.io/badge/license-BSL--1.1-blue.svg)](LICENSE)
 [![npm version](https://img.shields.io/npm/v/@vectalon-dev/rn)](https://www.npmjs.com/package/@vectalon-dev/rn)
 
@@ -9,7 +14,7 @@
 
 ## What is Vectalon?
 
-Vectalon is an open-core developer tool that embeds AI intelligence directly into your codebase. It scans your project, understands its architecture, and provides project-aware assistance across the full SDLC — through a local MCP-native agent (feature workflows, codegen, upgrades, device control) and a fleet of 48 deterministic agent commands (review, security, SOC 2, release prediction, dashboard, fix, fix-bench, pr, gh-app, sales-demo, rnbench, …) that run offline with a report and a verdict every time.
+Vectalon is an open-core developer tool that embeds AI intelligence directly into your codebase. It scans your project, understands its architecture, and provides project-aware assistance across the full SDLC — through a local MCP-native agent (feature workflows, codegen, upgrades, device control) and a fleet of 44 deterministic agent commands (review, security, SOC 2, release prediction, dashboard, fix, pr, archive, …) that run offline with a report and a verdict every time.
 
 > **📌 This is a public repository.** The source code is available under the Business Source License 1.1 (BSL-1.1). Commercial use by teams with >3 developers requires a paid license. The admin dashboard and internal operations tools are maintained in a separate private repository.
 
@@ -30,7 +35,7 @@ Vectalon is licensed under the **Business Source License 1.1 (BSL-1.1)**.
 
 - **Free for:** Personal use, education, open source, and commercial teams with ≤3 developers
 - **Paid for:** Commercial teams with >3 developers (starting at $19/dev/mo)
-- **Becomes MIT:** On August 6, 2030, this version will automatically convert to MIT license
+- **Becomes MIT:** On <!-- product-fact:license-change-date -->2030-08-06<!-- /product-fact -->, this version will automatically convert to the MIT license
 
 See [LICENSE](LICENSE) for full terms.
 
@@ -129,21 +134,21 @@ npx vectalon serve   # Start MCP server for agents
 
 ### Free — $0
 - Project scanning and context building
-- 60+ MCP project-aware tools
+- 64 MCP project-aware tools
 - **All deterministic agent commands** — code review, architecture, security, build/test repair, refactoring, SOC 2, CI/CD, store readiness, team analytics, and enterprise intelligence (figma, sentry, governance, release-predict, dataset, lora, …), each with a report and a verdict — no model required. `fix` diagnoses and auto-fixes real RN failures; `fix-bench` proves it against 100 committed failure scenarios (100/100 diagnosis, 70/100 auto-fix, 0 false positives); `pr` reviews a pull request — five checks over the added lines, the health impact, and a one-command bot comment; `gh-app` runs the install-once webhook server that turns every pull request into that review, posted back by the app itself
 - Component generation
 - Test writing
 - Ecosystem doctor
 - Benchmark suite
 
-### Individual — $19/developer/month
+### Individual — <!-- product-fact:individual-price -->$19<!-- /product-fact -->/developer/month
 - **Local AI** — local GGUF/WASM models, your source never leaves the machine
 - **Project intelligence** — intel, score, review, sec, arch
 - **Diagnostics** — doctor, build-fix, profile, sandbox, render
 - **Upgrade Copilot** — Automated React Native/Expo upgrades with codemods
 - **Self-healing CI** — Auto-generate and fix CI workflows
 
-### Team — $49/developer/month
+### Team — <!-- product-fact:team-price -->$49<!-- /product-fact -->/developer/month
 - **Team Brain** — decisions, expertise, shared knowledge across projects
 - **Shared policies + PR review**
 - **CI + dashboards** — coverage, score trends

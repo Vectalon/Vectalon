@@ -6,6 +6,7 @@ import { TypePrompt, type TypePromptHeadline } from '../components/TypePrompt'
 import { FeedAge } from '../components/FeedAge'
 import HeroHeadline from '../components/HeroHeadline'
 import { fetchIntelFeed, type IntelItem } from '../lib/intel'
+import { PRODUCT_MANIFEST } from '../lib/product-manifest'
 
 const SDK_CHIPS = [
   { slug: 'react-native', name: 'react-native', status: 'live' },
@@ -17,7 +18,7 @@ const SDK_CHIPS = [
 const FEATURES: Array<{ title: string; body: string; icon: FeatureIconName }> = [
   {
     title: 'MCP-native agent',
-    body: 'A local model runs as an agent over 58 project-aware tools — feature workflows, code review, upgrades, E2E generation, device control — all through the MCP protocol your editor already speaks. On top of the model sits a fleet of 44 deterministic agents (review, security, SOC 2, GitHub PR triage, DX scoring, build archive) that need no model at all.',
+    body: `A local model runs as an agent over ${PRODUCT_MANIFEST.capabilities.mcpTools} project-aware tools — feature workflows, code review, upgrades, E2E generation, device control — all through the MCP protocol your editor already speaks. On top of the model sits a fleet of ${PRODUCT_MANIFEST.capabilities.deterministicCommands} deterministic agents (review, security, SOC 2, GitHub PR triage, DX scoring, build archive) that need no model at all.`,
     icon: 'robot',
   },
   {
@@ -69,11 +70,11 @@ const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'Which platforms are supported?',
-    a: 'React Native is live at v0.12.0. iOS, Android, and Flutter harnesses are in development — join the waitlist and we’ll email the moment a beta opens.',
+    a: `React Native is live at v${PRODUCT_MANIFEST.packages.reactNative.version}. iOS, Android, and Python harnesses are in development — join the waitlist and we’ll email the moment a beta opens.`,
   },
   {
     q: 'How is it different from other AI coding tools?',
-    a: 'It isn’t an AI coding assistant — it’s an engineering control plane. Give Vectalon a React Native repository and it continuously understands, reviews, diagnoses, upgrades, and validates it. Deterministic and compile-checked: agents produce the same result on any machine, every fix is typechecked before it lands and reverted if it doesn’t reduce errors, and the benchmark suite measures 35 scenarios against human references (94% guardrail pass rate).',
+    a: `It isn’t an AI coding assistant — it’s an engineering control plane. Give Vectalon a React Native repository and it continuously understands, reviews, diagnoses, upgrades, and validates it. Deterministic and compile-checked: agents produce the same result on any machine, every fix is typechecked before it lands and reverted if it doesn’t reduce errors, and the benchmark suite measures ${PRODUCT_MANIFEST.capabilities.benchmarkScenarios} scenarios against human references.`,
   },
   {
     q: 'What does the 15-minute proof of value look like?',
@@ -109,7 +110,7 @@ const STEPS = [
   {
     cmd: 'vectalon serve',
     title: 'The agent loop',
-    body: 'A local MCP-aware model works your codebase with 58 project-aware tools, re-seeding ecosystem intel every hour so it never works from stale knowledge.',
+    body: `A local MCP-aware model works your codebase with ${PRODUCT_MANIFEST.capabilities.mcpTools} project-aware tools, re-seeding ecosystem intel every hour so it never works from stale knowledge.`,
   },
   {
     cmd: 'vectalon feature "…"',
@@ -576,7 +577,7 @@ export default async function Home() {
                 read is the feed the model sees. If the ecosystem ships it, the model knows it.
               </p>
               <Link href="/changelog" className="mt-6 inline-block text-sm text-brand hover:underline">
-                See what shipped in v0.12.0 →
+                See what shipped in v{PRODUCT_MANIFEST.packages.reactNative.version} →
               </Link>
             </div>
             <div className="reveal card !p-0" style={{ '--reveal-delay': '120ms' } as CSSProperties}>

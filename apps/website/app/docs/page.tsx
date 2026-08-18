@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PRODUCT_MANIFEST } from '../../lib/product-manifest'
 
 const FREE: Array<[string, string]> = [
   ['fix "issue"', 'THE workflow — tell it what\'s broken (or pass --log) and get root cause → evidence → impact → recommended fix → applied → verification → confidence in one structured verdict, applied in a sandbox by default'],
@@ -89,7 +90,7 @@ const STEPS = [
     n: '02',
     title: 'Serve the agent',
     code: 'npx vectalon serve',
-    body: 'Boots the MCP server. Your editor or any MCP client connects and gets 58+ project-aware tools — plus 44 deterministic agent commands that need no model at all. The VS Code extension (vectalon-dev, free) connects here: one-click workflows, inline guardrail status, and the team knowledge base. Web intel and the knowledge base auto-refresh hourly.',
+    body: `Boots the MCP server. Your editor or any MCP client connects and gets ${PRODUCT_MANIFEST.capabilities.mcpTools} project-aware tools — plus ${PRODUCT_MANIFEST.capabilities.deterministicCommands} deterministic agent commands that need no model at all. The VS Code extension (vectalon-dev, free) connects here: one-click workflows, inline guardrail status, and the team knowledge base. Web intel and the knowledge base auto-refresh hourly.`,
   },
   {
     n: '03',
@@ -150,7 +151,7 @@ export default function DocsPage() {
           </div>
           <span className="flex shrink-0 items-center gap-1.5 font-mono text-[11px] text-term-ink/45">
             <span className="live-dot" aria-hidden />
-            v0.12.0
+            v{PRODUCT_MANIFEST.packages.reactNative.version}
           </span>
         </div>
 

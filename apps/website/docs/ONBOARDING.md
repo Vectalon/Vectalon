@@ -135,7 +135,7 @@ and `--push` (commit, push, and open a PR).
 ### 3.3 The agent interface (MCP server + VS Code)
 
 **Next action:** run `npx vectalon serve`, then point Claude Code / Cursor /
-Windsurf / Codex at it. It exposes **58 project-aware MCP tools** in 4
+Windsurf / Codex at it. It exposes **64 project-aware MCP tools** in 4
 categories:
 
 - **CoreTools** — project context, learned patterns, `generate_component`,
@@ -292,7 +292,7 @@ it says so instead of inventing numbers.
 
 | Plan | Price | Features |
 |---|---|---|
-| **Free** | $0 | Project scanning, 60+ MCP tools, component generation, test writing, ecosystem doctor, benchmark suite, all 44 deterministic agents |
+| **Free** | $0 | Project scanning, 64 MCP tools, component generation, test writing, ecosystem doctor, benchmark suite, all 44 deterministic agents |
 | **Individual** | $19/developer/month | + Local AI (local GGUF / WASM models — your source never leaves the machine), project intelligence, diagnostics (doctor, build-fix, profile, sandbox, render), upgrade copilot, self-healing CI |
 | **Team** | $49/developer/month | + Team Brain (decisions, expertise, shared knowledge), shared policies + PR review, CI + dashboards, cross-project intelligence + cloud sync |
 | **Enterprise** | Custom | + Self-hosted (air-gapped ready), SSO / SAML + audit trails, private models (Ollama, vLLM), organization-wide policies, multi-repo intelligence |

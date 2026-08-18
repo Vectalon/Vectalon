@@ -1,0 +1,50 @@
+[
+  {
+    "id": "individual",
+    "name": "Individual",
+    "engineTier": "pro",
+    "price": "$19",
+    "cadence": "/developer/month",
+    "checkout": "checkout",
+    "trialEligible": true,
+    "features": [
+      "Local AI — your source never leaves your machine",
+      "Project intelligence (intel, score, review, sec, arch)",
+      "Diagnostics (doctor, build-fix, profile, sandbox, render)",
+      "Upgrade copilot + self-healing CI",
+      "All deterministic agents, zero model calls"
+    ]
+  },
+  {
+    "id": "team",
+    "name": "Team",
+    "engineTier": "team",
+    "price": "$49",
+    "cadence": "/developer/month",
+    "checkout": "checkout",
+    "trialEligible": true,
+    "features": [
+      "Everything in Individual",
+      "Team Brain — decisions, expertise, shared knowledge across projects",
+      "Shared policies + PR review (team-policy, review)",
+      "CI + dashboards (ci, coverage, score trends)",
+      "Cross-project intelligence + cloud sync (sync)"
+    ]
+  },
+  {
+    "id": "enterprise",
+    "name": "Enterprise",
+    "engineTier": "enterprise",
+    "price": "Custom",
+    "cadence": "annual",
+    "checkout": "sales",
+    "trialEligible": false,
+    "features": [
+      "Everything in Team",
+      "Self-hosted deployment (air-gapped ready)",
+      "SSO / SAML + audit trails",
+      "Private / company-controlled models (Ollama, vLLM)",
+      "Organization-wide policies + multi-repository intelligence"
+    ]
+  }
+]

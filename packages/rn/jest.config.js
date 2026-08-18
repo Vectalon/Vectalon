@@ -9,6 +9,7 @@ module.exports = {
   setupFiles: ['<rootDir>/jest.setup.js'],
   clearMocks: true,
   restoreMocks: true,
+  watchman: false,
   // Coverage gate: `npm run test:coverage` fails CI when a PR drops overall
   // coverage below these thresholds (measured on the full suite, July 2026).
   collectCoverageFrom: ['src/**/*.ts', '!src/**/index.ts'],

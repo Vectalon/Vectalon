@@ -4,6 +4,11 @@
 
 Project-aware SDLC intelligence for any agent — CLI, MCP server, VS Code extension, benchmark suite, and fine-tuning pipeline in one package.
 
+Current release: <!-- product-fact:rn-version -->0.14.1<!-- /product-fact --> ·
+benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
+deterministic agents: <!-- product-fact:deterministic-commands -->44<!-- /product-fact --> ·
+MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact -->
+
 [Website](https://vectalon.in) · [Docs](https://vectalon.in/docs) · [Pricing](https://vectalon.in/pricing)
 
 > **New here?** Read the [**Onboarding Guide**](../apps/website/docs/ONBOARDING.md) — a step-by-step tour of every feature, from first `init` to shipping — or watch the [**Daily Loop video script**](../apps/website/docs/VIDEO_SCRIPT.md) (13-min walkthrough: init → selftest → feature → review → release), or the [**recorded feature demo**](../apps/website/demo/recording/clips/full-demo.mp4) — a ~1.5-min scripted terminal walkthrough of every CLI command, re-recordable anytime via the [**recording guide**](../apps/website/demo/recording/README.md). For the full command reference, see [**CLI Reference**](../apps/website/docs/CLI_REFERENCE.md).
@@ -796,7 +801,7 @@ to see your current plan and what each tier includes.
 
 | Plan | Price | Features |
 |------|-------|----------|
-| **Free** | $0 | Project scanning, 60+ MCP tools, component generation, test writing, ecosystem doctor, benchmark suite, all 45 deterministic agents |
+| **Free** | $0 | Project scanning, 64 MCP tools, component generation, test writing, ecosystem doctor, benchmark suite, all 44 deterministic agents |
 | **Individual** | $19/developer/month | Local AI (local GGUF / WASM models — your source never leaves the machine) + project intelligence (intel, score, review, sec, arch) + diagnostics (doctor, build-fix, profile, sandbox, render) + upgrade copilot + self-healing CI |
 | **Team** | $49/developer/month | Everything in Individual + Team Brain (decisions, expertise, shared knowledge), shared policies + PR review, CI + dashboards (coverage, score trends), cross-project intelligence + cloud sync |
 | **Enterprise** | Custom (annual) | Everything in Team + self-hosted deployment (air-gapped ready), SSO / SAML + audit trails, private / company-controlled models (Ollama, vLLM), organization-wide policies + multi-repository intelligence |

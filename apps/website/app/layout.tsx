@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { SiteNav } from '../components/SiteNav'
 import { MobileMenu } from '../components/MobileMenu'
 import { ThemeToggle } from '../components/ThemeToggle'
+import { PRODUCT_MANIFEST } from '../lib/product-manifest'
 
 const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' })
 
@@ -233,7 +234,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="flex items-stretch">
                 <div className="seg hidden text-xs text-slate-500 md:flex">
                   <span className="text-emerald-600 dark:text-emerald-400">●</span>
-                  main · v0.12.0
+                  main · v{PRODUCT_MANIFEST.packages.reactNative.version}
                 </div>
                 <MobileMenu />
                 <ThemeToggle />

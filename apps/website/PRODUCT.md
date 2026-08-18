@@ -2,6 +2,13 @@
 
 <!-- impeccable:product-schema 1 -->
 
+Current RN release: <!-- product-fact:rn-version -->0.14.1<!-- /product-fact --> ·
+benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
+deterministic agents: <!-- product-fact:deterministic-commands -->44<!-- /product-fact --> ·
+MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact --> ·
+Individual: <!-- product-fact:individual-price -->$19<!-- /product-fact --> ·
+Team: <!-- product-fact:team-price -->$49<!-- /product-fact -->
+
 ## Platform
 
 web
@@ -22,17 +29,17 @@ Vectalon is deliberately **not** "an AI coding assistant". The product definitio
 - **reviews** — guardrails on save, `review` / `arch` / `sec` / SOC 2 / GitHub PR triage,
 - **diagnoses** — `diagnostics`, `build-fix`, `test-repair`, `crash`, `incident`,
 - **upgrades** — rn-diff-purge diffs, AST-grade impact analysis, codemods,
-- **validates** — `bench` (the 35-scenario pack + CI regression gate), `smoke`, E2E generation.
+- **validates** — `bench` (the 43-scenario pack + CI regression gate), `smoke`, E2E generation.
 
 The mechanism a competitor could not copy-paste: the agent never works from a generic guess — it works from the versioned knowledge graph, and every generated fix is compile-checked before it lands. Tagline: "The AI harness that lives in your terminal."
 
 ## Operating Context
 
-The product is a CLI (`npx vectalon init / serve / feature / doctor / diagnostics / generate / upgrade / bench / smoke …`) plus 44 deterministic agent commands (review, arch, sec, soc2, dashboard, figma, gh-pr, monitor, evals, dx, archive, share, … — phases 8-12, roadmap items 061-104) that run on the free tier with a report and a verdict and no model calls. The website's demo is a real recorded terminal session (85 s, no cuts, on a 19-screen Expo app) and real benchmark numbers (13 scenarios, guardrail pass rate 92%). Pricing: Free $0 (init, serve, feature, doctor, + all 44 agents; no card), Individual $19/dev/mo (Local AI + project intelligence + diagnostics), Team $49/dev/mo (Team Brain, shared policies, PR review, CI, dashboards), Enterprise custom (self-hosted, SSO, audit, private models). `vectalon plan` shows the current plan; `vectalon outcomes` shows the engineering-outcome ledger and savings estimate. Business Source License 1.1 — free for personal/education/OSS and commercial teams ≤3 devs; becomes MIT after 4 years. React Native product live (current release 0.12.0); iOS, Android, Flutter in development.
+The product is a CLI (`npx vectalon init / serve / feature / doctor / diagnostics / generate / upgrade / bench / smoke …`) plus 44 deterministic agent commands (review, arch, sec, soc2, dashboard, figma, gh-pr, monitor, evals, dx, archive, share, … — phases 8-12, roadmap items 061-104) that run on the free tier with a report and a verdict and no model calls. The website's demo is a real recorded terminal session (85 s, no cuts, on a 19-screen Expo app), while current benchmark results are derived from all 43 committed scenarios. Pricing: Free $0 (init, serve, feature, doctor, + all 44 agents; no card), Individual $19/dev/mo (Local AI + project intelligence + diagnostics), Team $49/dev/mo (Team Brain, shared policies, PR review, CI, dashboards), Enterprise custom (self-hosted, SSO, audit, private models). `vectalon plan` shows the current plan; `vectalon outcomes` shows the engineering-outcome ledger and savings estimate. Business Source License 1.1 — free for personal/education/OSS and commercial teams ≤3 devs; becomes MIT after 4 years. React Native 0.14.1 is available; iOS, Android, and Python are in development.
 
 ## Strategy — Capability Freeze (P0)
 
-The initial product is defined and closed: Vectalon = the AI engineering control plane for React Native teams. **P0: stop adding major capabilities.** No new agents, diagnostics, models, or workflows unless the user explicitly overrides. The existing surface is the product: the 44 deterministic agents, the 13-phase workflow (PRD → Scope → Impact → Design → Architecture → Tasks → Tests → Implementation → Review → Verification → Readiness → PR → Documentation → Close, with self-healing from verification/readiness back into implementation), the fast/balanced/quality model presets, and the 35-scenario benchmark pack. New work goes into depth, reliability, and validation of what already exists.
+The initial product is defined and closed: Vectalon = the AI engineering control plane for React Native teams. **P0: stop adding major capabilities.** No new agents, diagnostics, models, or workflows unless the user explicitly overrides. The existing surface is the product: the 44 deterministic agents, the 13-phase workflow (PRD → Scope → Impact → Design → Architecture → Tasks → Tests → Implementation → Review → Verification → Readiness → PR → Documentation → Close, with self-healing from verification/readiness back into implementation), the fast/balanced/quality model presets, and the 43-scenario benchmark pack. New work goes into depth, reliability, and validation of what already exists.
 
 ## Capabilities and Constraints
 

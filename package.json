@@ -12,6 +12,9 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "test": "turbo run test",
+    "product:check": "node scripts/product-manifest.mjs",
+    "product:generate": "node scripts/generate-product-projections.mjs",
+    "product:test": "node --test scripts/product-manifest.test.mjs",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "publish:rn": "pnpm --filter @vectalon-dev/rn release"

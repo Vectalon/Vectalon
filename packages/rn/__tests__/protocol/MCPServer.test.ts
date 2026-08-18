@@ -1,4 +1,5 @@
 import { MCPServer } from '../../src/protocol/MCPServer'
+import productManifest from '../../../../product-manifest.json'
 import { ContextEngine } from '../../src/harness/ContextEngine'
 import { ModelRouter } from '../../src/model/ModelRouter'
 
@@ -77,7 +78,7 @@ describe('MCPServer', () => {
     const names = createServer().getToolList().map(t => t.name)
     // 58 base tools + 6 Archive & Share tools (archive_build, list_builds,
     // detect_flavors, distribute_build, share_build_locally, generate_portal).
-    expect(names).toHaveLength(64)
+    expect(names).toHaveLength(productManifest.capabilities.mcpTools)
     expect(names).toEqual(
       expect.arrayContaining([
         'get_project_context',

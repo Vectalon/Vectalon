@@ -35,6 +35,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      - name: Validate product manifest
+        run: node scripts/product-manifest.mjs
+
       - name: Check for core PAT
         id: pat
         env:

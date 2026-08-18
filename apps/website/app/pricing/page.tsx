@@ -1,7 +1,35 @@
 import Link from 'next/link'
 import { checkoutUrlFor, type LsTier } from '../../lib/lemon-squeezy'
+import { PRODUCT_MANIFEST, PRODUCT_PLANS, type ProductPlanId } from '../../lib/product-manifest'
+
+const PLAN_PRESENTATION: Record<ProductPlanId, {
+  blurb: string
+  cta: string
+  fallback: string
+  href?: string
+  highlight?: boolean
+}> = {
+  individual: {
+    blurb: 'Local AI + project intelligence + diagnostics. Your source never leaves your machine.',
+    cta: 'Buy Individual',
+    fallback: 'Launching soon',
+  },
+  team: {
+    blurb: 'Team Brain, shared policies, PR review, CI, shared knowledge, dashboards.',
+    cta: 'Buy Team',
+    fallback: 'Contact us',
+    highlight: true,
+  },
+  enterprise: {
+    blurb: 'Self-hosted, SSO, audit, private models, organization-wide policies, multi-repository intelligence.',
+    cta: 'Talk to us',
+    fallback: 'Talk to us',
+    href: 'mailto:sales@vectalon.in',
+  },
+}
 
 const PLANS: Array<{
+  id: ProductPlanId
   name: string
   price: string
   cadence: string
@@ -12,62 +40,16 @@ const PLANS: Array<{
   fallback: string
   href?: string
   highlight?: boolean
-}> = [
-  {
-    name: 'Individual',
-    price: '$19',
-    cadence: '/developer/month',
-    blurb: 'Local AI + project intelligence + diagnostics. Your source never leaves your machine.',
-    features: [
-      'Local AI — local GGUF / WASM models',
-      'Project intelligence (intel, score, review, sec, arch)',
-      'Diagnostics (doctor, build-fix, profile, sandbox, render)',
-      'Upgrade copilot + self-healing CI',
-      'All 44 deterministic agents, zero model calls',
-    ],
-    tier: 'pro',
-    cta: 'Buy Individual',
-    fallback: 'Launching soon',
-  },
-  {
-    name: 'Team',
-    price: '$49',
-    cadence: '/developer/month',
-    blurb: 'Team Brain, shared policies, PR review, CI, shared knowledge, dashboards.',
-    features: [
-      'Everything in Individual',
-      'Team Brain — decisions, expertise, shared knowledge',
-      'Shared policies + PR review',
-      'CI + dashboards (coverage, score trends)',
-      'Cross-project intelligence + cloud sync',
-    ],
-    tier: 'team',
-    cta: 'Buy Team',
-    fallback: 'Contact us',
-    highlight: true,
-  },
-  {
-    name: 'Enterprise',
-    price: 'Custom',
-    cadence: 'annual',
-    blurb: 'Self-hosted, SSO, audit, private models, organization-wide policies, multi-repository intelligence.',
-    features: [
-      'Everything in Team',
-      'Self-hosted deployment (air-gapped ready)',
-      'SSO / SAML + audit trails',
-      'Private / company-controlled models (Ollama, vLLM)',
-      'Organization-wide policies + multi-repo intelligence',
-    ],
-    cta: 'Talk to us',
-    fallback: 'Talk to us',
-    href: 'mailto:sales@vectalon.in',
-  },
-]
+}> = PRODUCT_PLANS.map(plan => ({
+  ...plan,
+  ...PLAN_PRESENTATION[plan.id],
+  tier: plan.checkout === 'checkout' ? plan.engineTier as LsTier : undefined,
+}))
 
 const FAQ = [
   {
     q: 'Is there still a free tier?',
-    a: 'Yes. init, serve, feature, doctor, and all 44 deterministic agents work fully offline and cover the daily loop for an individual project. Free means free — no card, no trial countdown.',
+    a: `Yes. init, serve, feature, doctor, and all ${PRODUCT_MANIFEST.capabilities.deterministicCommands} deterministic agents work fully offline and cover the daily loop for an individual project. Free means free — no card, no trial countdown.`,
   },
   {
     q: 'How does the 14-day trial work?',
@@ -75,7 +57,7 @@ const FAQ = [
   },
   {
     q: 'What do the tiers cover, platform-wise?',
-    a: 'One license covers every Vectalon SDK: the React Native harness today, and iOS, Android, and Flutter harnesses as they ship — on Individual, Team, and Enterprise alike. `vectalon plan` shows your current plan and what it unlocks.',
+    a: 'One license covers every Vectalon SDK: the React Native harness today, and iOS, Android, Flutter, and Python harnesses as they ship — on Individual, Team, and Enterprise alike. `vectalon plan` shows your current plan and what it unlocks.',
   },
   {
     q: 'Why Business Source License?',

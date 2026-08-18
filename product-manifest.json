@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "product": {
+    "name": "Vectalon",
+    "releaseStatus": "available",
+    "flagship": "react-native"
+  },
+  "packages": {
+    "reactNative": {
+      "name": "@vectalon-dev/rn",
+      "version": "0.14.1",
+      "status": "available"
+    },
+    "core": {
+      "name": "@vectalon-dev/core",
+      "version": "0.1.0",
+      "distribution": "bundled-private-runtime"
+    }
+  },
+  "platforms": {
+    "reactNative": "available",
+    "ios": "coming-soon",
+    "android": "coming-soon",
+    "flutter": "coming-soon",
+    "python": "coming-soon"
+  },
+  "capabilities": {
+    "benchmarkScenarios": 43,
+    "deterministicCommands": 44,
+    "mcpTools": 64
+  },
+  "plans": [
+    {
+      "id": "individual",
+      "name": "Individual",
+      "engineTier": "pro",
+      "price": "$19",
+      "cadence": "/developer/month",
+      "checkout": "checkout",
+      "trialEligible": true,
+      "features": [
+        "Local AI — your source never leaves your machine",
+        "Project intelligence (intel, score, review, sec, arch)",
+        "Diagnostics (doctor, build-fix, profile, sandbox, render)",
+        "Upgrade copilot + self-healing CI",
+        "All deterministic agents, zero model calls"
+      ]
+    },
+    {
+      "id": "team",
+      "name": "Team",
+      "engineTier": "team",
+      "price": "$49",
+      "cadence": "/developer/month",
+      "checkout": "checkout",
+      "trialEligible": true,
+      "features": [
+        "Everything in Individual",
+        "Team Brain — decisions, expertise, shared knowledge across projects",
+        "Shared policies + PR review (team-policy, review)",
+        "CI + dashboards (ci, coverage, score trends)",
+        "Cross-project intelligence + cloud sync (sync)"
+      ]
+    },
+    {
+      "id": "enterprise",
+      "name": "Enterprise",
+      "engineTier": "enterprise",
+      "price": "Custom",
+      "cadence": "annual",
+      "checkout": "sales",
+      "trialEligible": false,
+      "features": [
+        "Everything in Team",
+        "Self-hosted deployment (air-gapped ready)",
+        "SSO / SAML + audit trails",
+        "Private / company-controlled models (Ollama, vLLM)",
+        "Organization-wide policies + multi-repository intelligence"
+      ]
+    }
+  ],
+  "license": {
+    "id": "BSL-1.1",
+    "freeCommercialDevelopers": 3,
+    "changeDate": "2030-08-06",
+    "changeLicense": "MIT",
+    "vscodeExtension": "MIT"
+  },
+  "validation": {
+    "documents": [
+      {
+        "path": "README.md",
+        "facts": [
+          "rn-version",
+          "benchmark-scenarios",
+          "deterministic-commands",
+          "mcp-tools",
+          "individual-price",
+          "team-price",
+          "license-change-date"
+        ]
+      },
+      {
+        "path": "apps/website/PRODUCT.md",
+        "facts": [
+          "rn-version",
+          "benchmark-scenarios",
+          "deterministic-commands",
+          "mcp-tools",
+          "individual-price",
+          "team-price"
+        ]
+      },
+      {
+        "path": "packages/rn/README.md",
+        "facts": [
+          "rn-version",
+          "benchmark-scenarios",
+          "deterministic-commands",
+          "mcp-tools"
+        ]
+      },
+      {
+        "path": "packages/rn/PUBLISHING.md",
+        "facts": ["rn-version", "core-version"]
+      },
+      {
+        "path": "apps/website/docs/ENHANCEMENT_PLAN.md",
+        "facts": ["rn-version", "benchmark-scenarios"]
+      }
+    ]
+  }
+}

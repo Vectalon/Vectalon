@@ -11,6 +11,7 @@
  */
 import * as fs from 'fs'
 import * as path from 'path'
+import { PRODUCT_MANIFEST } from '../lib/product-manifest'
 
 const LIB_DIR = path.resolve(__dirname, '../lib')
 const AGENTS = path.join(LIB_DIR, 'agents.ts')
@@ -43,8 +44,8 @@ describe('catalog agents vs the /reports documents', () => {
   const agents = catalogAgents(fs.readFileSync(AGENTS, 'utf8'))
   const samples = sampleCommands(fs.readFileSync(REPORT_SAMPLES, 'utf8'))
 
-  it('parses exactly 44 catalog agents (sanity check on the parser)', () => {
-    expect(agents).toHaveLength(44)
+  it('matches the authoritative deterministic-agent count', () => {
+    expect(agents).toHaveLength(PRODUCT_MANIFEST.capabilities.deterministicCommands)
   })
 
   it('shows a document for every catalog agent — nothing missing', () => {

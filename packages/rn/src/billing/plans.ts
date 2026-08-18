@@ -15,6 +15,7 @@
  *                              models, org-wide policies, multi-repo intel
  */
 import type { Tier } from '@vectalon-dev/core'
+import productPlans from './product-plans.generated.json'
 
 export type PlanId = 'individual' | 'team' | 'enterprise'
 
@@ -30,58 +31,22 @@ export interface PlanDef {
   features: string[]
   /** Checkout / contact surface. */
   checkout: 'checkout' | 'sales'
+  trialEligible: boolean
 }
 
-export const PLANS: PlanDef[] = [
-  {
-    id: 'individual',
-    name: 'Individual',
-    price: '$19',
-    cadence: '/developer/month',
-    tagline: 'Local AI + project intelligence + diagnostics.',
-    engineTier: 'pro',
-    features: [
-      'Local AI — your source never leaves your machine',
-      'Project intelligence (intel, score, review, sec, arch)',
-      'Diagnostics (doctor, build-fix, profile, sandbox, render)',
-      'Upgrade copilot + self-healing CI',
-      'All 44 deterministic agents, zero model calls',
-    ],
-    checkout: 'checkout',
-  },
-  {
-    id: 'team',
-    name: 'Team',
-    price: '$49',
-    cadence: '/developer/month',
-    tagline: 'Team Brain, shared policies, PR review, CI, shared knowledge, dashboards.',
-    engineTier: 'team',
-    features: [
-      'Everything in Individual',
-      'Team Brain — decisions, expertise, shared knowledge across projects',
-      'Shared policies + PR review (team-policy, review)',
-      'CI + dashboards (ci, coverage, score trends)',
-      'Cross-project intelligence + cloud sync (sync)',
-    ],
-    checkout: 'checkout',
-  },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    price: 'Custom',
-    cadence: 'annual',
-    tagline: 'Self-hosted, SSO, audit, private models, organization-wide policies, multi-repository intelligence.',
-    engineTier: 'enterprise',
-    features: [
-      'Everything in Team',
-      'Self-hosted deployment (air-gapped ready)',
-      'SSO / SAML + audit trails',
-      'Private / company-controlled models (Ollama, vLLM)',
-      'Organization-wide policies + multi-repository intelligence',
-    ],
-    checkout: 'sales',
-  },
-]
+const TAGLINES: Record<PlanId, string> = {
+  individual: 'Local AI + project intelligence + diagnostics.',
+  team: 'Team Brain, shared policies, PR review, CI, shared knowledge, dashboards.',
+  enterprise: 'Self-hosted, SSO, audit, private models, organization-wide policies, multi-repository intelligence.',
+}
+
+export const PLANS: PlanDef[] = productPlans.map(plan => ({
+  ...plan,
+  id: plan.id as PlanId,
+  engineTier: plan.engineTier as Tier,
+  checkout: plan.checkout as PlanDef['checkout'],
+  tagline: TAGLINES[plan.id as PlanId],
+}))
 
 export const PLAN_BY_ID: Record<PlanId, PlanDef> = Object.fromEntries(
   PLANS.map(p => [p.id, p])

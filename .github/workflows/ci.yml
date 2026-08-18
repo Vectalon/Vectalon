@@ -11,7 +11,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  product-truth:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Validate product manifest
+        run: node scripts/product-manifest.mjs
+
   test:
+    needs: [product-truth]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -68,6 +83,7 @@ jobs:
         run: pnpm --filter @vectalon-dev/rn run lint:ext
 
   coverage:
+    needs: [product-truth]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -120,6 +136,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   bench:
+    needs: [product-truth]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
