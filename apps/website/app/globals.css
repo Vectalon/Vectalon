@@ -14,54 +14,123 @@
 :root[data-theme='light'] {
   color-scheme: light;
 
-  /* surfaces */
-  --ink: 242 244 247; /* Off White page ground */
+  /* surfaces — stronger contrast for readability */
+  --ink: 245 247 250; /* Off White page ground */
   --ink-900: 255 255 255; /* deepest: inputs */
-  --ink-800: 248 249 251; /* pane surface */
-  --ink-700: 218 222 230; /* frame borders */
+  --ink-800: 240 243 247; /* pane surface */
+  --ink-700: 180 190 208; /* frame borders — much stronger */
 
-  /* brand family */
-  --brand: 0 230 195; /* Electric Teal — primary accent, CTAs */
-  --brand-dim: 0 200 170; /* darker teal */
-  --brand-strong: 0 180 155; /* hover fill */
-  --on-brand: 11 15 20; /* dark text on teal */
+  /* brand family — more saturated in light mode */
+  --brand: 0 210 180; /* Electric Teal — slightly deeper for contrast on white */
+  --brand-dim: 0 185 155;
+  --brand-strong: 0 165 140;
+  --on-brand: 11 15 20;
 
-  --accent: 55 182 255; /* Cyan Blue — secondary accent */
-  --accent-dim: 40 150 220;
+  --accent: 35 160 240; /* Cyan Blue — deeper for light bg */
+  --accent-dim: 25 135 210;
   --on-accent: 255 255 255;
 
-  --violet: 139 92 246; /* Vivid Violet — tertiary */
-  --violet-dim: 120 75 220;
+  --violet: 120 75 230; /* Vivid Violet */
+  --violet-dim: 100 60 210;
 
-  /* neutral text scale */
-  --slate-50: 11 15 20; /* near-black */
-  --slate-100: 21 27 38;
-  --slate-200: 40 48 65;
-  --slate-300: 70 80 100;
-  --slate-400: 100 110 130;
-  --slate-500: 130 140 160;
-  --slate-600: 160 170 185;
-  --slate-700: 190 198 210;
-  --slate-800: 215 220 228;
-  --slate-900: 235 238 242;
-  --slate-950: 245 247 250;
+  /* neutral text scale — darker for light bg contrast */
+  --slate-50: 8 11 16; /* near-black */
+  --slate-100: 18 22 30;
+  --slate-200: 30 38 52;
+  --slate-300: 55 65 85;
+  --slate-400: 70 80 100;
+  --slate-500: 100 110 130;
+  --slate-600: 140 150 170;
+  --slate-700: 175 185 200;
+  --slate-800: 208 214 224;
+  --slate-900: 232 236 242;
+  --slate-950: 242 245 248;
 
-  /* decorative */
-  --grid-line: rgba(0, 230, 195, 0.06);
-  --glow-brand: rgba(0, 230, 195, 0.15);
-  --glow-accent: rgba(55, 182, 255, 0.12);
-  --glow-violet: rgba(139, 92, 246, 0.12);
+  /* decorative — more vibrant brand glow */
+  --grid-line: rgba(0, 210, 180, 0.08);
+  --glow-brand: rgba(0, 210, 180, 0.12);
+  --glow-accent: rgba(35, 160, 240, 0.10);
+  --glow-violet: rgba(120, 75, 230, 0.10);
   --term: 11 15 20; /* terminal — stays dark */
   --term-border: 30 38 52;
-  --term-ink: 200 210 225;
+  --term-ink: 210 220 235;
   --term-brand: 0 230 195;
-  --term-meta: 100 115 135;
+  --term-meta: 110 125 150;
 }
 
 :focus-visible {
   outline: 2px solid rgb(var(--brand));
   outline-offset: 2px;
 }
+
+/* Light mode terminal and component overrides */
+:root[data-theme='light'] .console {
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.8) inset,
+    0 20px 60px -25px rgb(0 0 0 / 0.2);
+}
+
+:root[data-theme='light'] .term {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.15) inset,
+    0 24px 70px -32px rgb(0 0 0 / 0.3);
+}
+
+:root[data-theme='light'] .card {
+  border-color: rgb(180 190 208 / 0.8);
+}
+
+:root[data-theme='light'] .report-window {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.1) inset,
+    0 30px 90px -42px rgb(0 0 0 / 0.3);
+}
+
+:root[data-theme='light'] .statusline {
+  border-color: rgb(180 190 208 / 0.7);
+  background: rgb(255 255 255 / 0.85);
+}
+
+:root[data-theme='light'] .seg:hover {
+  background: rgb(0 210 180 / 0.08);
+}
+
+:root[data-theme='light'] .badge-ok {
+  border-color: rgb(0 180 150 / 0.3);
+  background: rgb(0 180 150 / 0.08);
+  color: rgb(0 150 125);
+}
+
+:root[data-theme='light'] .badge-warn {
+  border-color: rgb(217 119 6 / 0.3);
+  background: rgb(217 119 6 / 0.08);
+  color: rgb(180 100 0);
+}
+
+:root[data-theme='light'] .badge-danger {
+  border-color: rgb(220 38 38 / 0.3);
+  background: rgb(220 38 38 / 0.08);
+  color: rgb(190 30 30);
+}
+
+:root[data-theme='light'] .badge-muted {
+  border-color: rgb(180 190 208 / 0.6);
+  background: rgb(180 190 208 / 0.15);
+  color: rgb(55 65 85);
+}
+
+:root[data-theme='light'] .report-body .tk-h1 {
+  color: rgb(0 160 200);
+}
+
+:root[data-theme='light'] .report-body .tk-h2 {
+  color: rgb(0 180 155);
+}
+
+:root[data-theme='light'] .report-body .tk-kw {
+  color: rgb(0 180 155);
+}
+
 
 :root {
   color-scheme: dark;
@@ -176,13 +245,13 @@
     @apply inline-flex items-center gap-1 rounded-lg border px-2.5 py-0.5 font-sans text-xs font-medium;
   }
   .badge-ok {
-    @apply border-emerald-500/30 bg-emerald-500/10 text-emerald-400 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-300;
+    @apply border-brand/30 bg-brand/10 text-brand dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-300;
   }
   .badge-warn {
     @apply border-amber-500/30 bg-amber-500/10 text-amber-400 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-300;
   }
   .badge-danger {
-    @apply border-red-500/30 bg-red-500/10 text-red-400 dark:border-red-400/30 dark:bg-red-400/10 dark:text-red-300;
+    @apply border-red-500/30 bg-red-500/10 text-red-500 dark:border-red-400/30 dark:bg-red-400/10 dark:text-red-300;
   }
   .badge-muted {
     @apply border-ink-700 bg-ink-800 text-slate-300;
@@ -194,7 +263,7 @@
     @apply font-sans text-xs font-semibold uppercase tracking-wider text-slate-500;
   }
   .stat-value {
-    @apply mt-1.5 font-display text-2xl font-bold text-slate-50;
+    @apply mt-1.5 font-display text-2xl font-bold text-brand;
   }
   .input {
     @apply w-full rounded-lg border border-ink-700 bg-ink-900 px-3 py-2 font-sans text-sm text-slate-50 placeholder-slate-500 focus:border-brand focus:outline-none;
@@ -208,7 +277,7 @@
   }
 
   .console {
-    @apply overflow-hidden rounded-xl border border-ink-700 bg-ink-900/60 font-sans;
+    @apply overflow-hidden rounded-xl border border-ink-700 bg-ink-900 font-sans;
     box-shadow:
       0 1px 0 0 rgb(255 255 255 / 0.03) inset,
       0 24px 70px -30px rgb(0 0 0 / 0.55);

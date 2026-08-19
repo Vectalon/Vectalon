@@ -88,41 +88,7 @@ const motionBudget = `
 
 const revealObserver = `
   (function () {
-    function inViewport(el) {
-      var r = el.getBoundingClientRect();
-      var vh = window.innerHeight || document.documentElement.clientHeight;
-      return r.top < vh && r.bottom > 0;
-    }
-    function init() {
-      try {
-        var els = document.querySelectorAll('.reveal');
-        if (!els.length) return;
-        if (!('IntersectionObserver' in window)) return;
-        document.documentElement.classList.add('js-reveal');
-        var io = new IntersectionObserver(function (entries) {
-          for (var i = 0; i < entries.length; i++) {
-            if (entries[i].isIntersecting) {
-              reveal(entries[i].target);
-              io.unobserve(entries[i].target);
-            }
-          }
-        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.02 });
-        for (var i = 0; i < els.length; i++) io.observe(els[i]);
-        var maxDelay = 0;
-        for (var i = 0; i < els.length; i++) {
-          var d = parseFloat(window.getComputedStyle(els[i]).transitionDelay) || 0;
-          if (d > maxDelay) maxDelay = d;
-        }
-        window.setTimeout(function () {
-          for (var i = 0; i < els.length; i++) {
-            if (inViewport(els[i]) && parseFloat(window.getComputedStyle(els[i]).opacity) <= 0.05) {
-              document.documentElement.classList.add('anim-frozen');
-              return;
-            }
-          }
-        }, maxDelay * 1000 + 900);
-      } catch (e) {}
-    }
+    var io = null;
     function reveal(el) {
       el.classList.add('is-revealed');
       var delay = 0;
@@ -133,6 +99,50 @@ const revealObserver = `
         el.classList.remove('reveal');
         el.classList.remove('is-revealed');
       }, delay * 1000 + 600);
+    }
+    function isInViewport(el) {
+      var r = el.getBoundingClientRect();
+      return r.top < window.innerHeight + 100 && r.bottom > -100;
+    }
+    function observeNew() {
+      if (!io) return;
+      var els = document.querySelectorAll('.reveal:not(.is-revealed)');
+      for (var i = 0; i < els.length; i++) {
+        /* If the element is already in the viewport (e.g. after client-side
+           navigation), reveal it immediately instead of waiting for the
+           IntersectionObserver callback which may never fire for
+           elements already intersecting at observe time. */
+        if (isInViewport(els[i])) {
+          reveal(els[i]);
+        } else {
+          io.observe(els[i]);
+        }
+      }
+    }
+    function init() {
+      try {
+        if (!('IntersectionObserver' in window)) {
+          /* Fallback: reveal everything */
+          var all = document.querySelectorAll('.reveal');
+          for (var i = 0; i < all.length; i++) all[i].classList.add('is-revealed');
+          return;
+        }
+        document.documentElement.classList.add('js-reveal');
+        io = new IntersectionObserver(function (entries) {
+          for (var i = 0; i < entries.length; i++) {
+            if (entries[i].isIntersecting) {
+              reveal(entries[i].target);
+              io.unobserve(entries[i].target);
+            }
+          }
+        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.02 });
+        observeNew();
+        /* Watch for new .reveal elements added after client-side navigation */
+        var mo = new MutationObserver(function () {
+          observeNew();
+        });
+        mo.observe(document.body, { childList: true, subtree: true });
+      } catch (e) {}
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
     else init();
