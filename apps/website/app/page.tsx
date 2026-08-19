@@ -208,7 +208,7 @@ export default async function Home() {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden" style={{ background: 'linear-gradient(180deg, rgb(11 15 20) 0%, rgb(15 22 35) 40%, rgb(21 27 38) 70%, rgb(11 15 20) 100%)' }}>
         <div className="scanlines pointer-events-none absolute inset-0" aria-hidden />
         <div className="beam js-loop" aria-hidden />
         <div className="relative mx-auto max-w-6xl px-5 pb-20 pt-12 sm:pt-16">
@@ -238,7 +238,7 @@ export default async function Home() {
             </div>
 
             {/* Wordmark */}
-            <h1 className="animate-fade-up font-display text-5xl font-bold tracking-tight text-slate-50 sm:text-6xl lg:text-7xl" style={{ animationDelay: '120ms' }}>
+            <h1 className="animate-fade-up font-display text-5xl font-bold tracking-tight text-slate-50 sm:text-6xl lg:text-7xl bg-gradient-to-r from-teal-300 via-cyan-300 to-violet-400 bg-clip-text text-transparent" style={{ WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', animationDelay: '120ms' }}>
               Vectalon
             </h1>
 
@@ -250,10 +250,10 @@ export default async function Home() {
             {/* Value props */}
             <div className="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-3 animate-fade-up" style={{ animationDelay: '240ms' }}>
               {[
-                { icon: '◈', label: 'Local-first' },
-                { icon: '◎', label: 'Project-aware' },
-                { icon: '◆', label: 'Deterministic' },
-                { icon: '▣', label: 'Control plane' },
+                { icon: '◈', label: 'Local-first', color: 'text-teal-300' },
+                { icon: '◎', label: 'Project-aware', color: 'text-cyan-300' },
+                { icon: '◆', label: 'Deterministic', color: 'text-teal-400' },
+                { icon: '▣', label: 'Control plane', color: 'text-violet-400' },
               ].map(v => (
                 <span key={v.label} className="flex items-center gap-2 rounded-xl border border-ink-700 bg-ink-800/60 px-4 py-2.5 text-sm text-slate-300">
                   <span className="text-brand">{v.icon}</span>
@@ -487,7 +487,7 @@ export default async function Home() {
       </section>
 
       {/* Stats */}
-      <section className="border-t border-ink-700/70">
+      <section className="border-t border-ink-700/70 bg-gradient-to-b from-transparent via-brand/[0.02] to-transparent">
         <div className="mx-auto max-w-6xl px-5 py-12">
           <div className="statusline !border-0 !bg-transparent">
             {STATS.map((s, i) => (
@@ -658,7 +658,7 @@ export default async function Home() {
       </section>
 
       {/* CTA */}
-      <section className="border-t border-ink-700/70 py-24">
+      <section className="border-t border-ink-700/70 py-24 bg-gradient-to-b from-transparent via-accent/[0.02] to-transparent">
         <div className="mx-auto max-w-3xl px-5 text-center">
           <div className="reveal console">
             <div className="console-head justify-center">
