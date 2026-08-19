@@ -51,7 +51,7 @@ export default function HeroHeadline() {
         data-ab-bucket={variant}
       >
         {variant === 'b'
-          ? 'Give Vectalon a React Native repository. It continuously understands, reviews, diagnoses, upgrades, and validates it.'
+          ? 'Point it at your repo. Vectalon understands, reviews, and validates your code.'
           : 'The AI engineering control plane for React Native teams'}
         <span className="caret" />
       </h1>
@@ -61,8 +61,8 @@ export default function HeroHeadline() {
         data-ab-bucket={variant}
       >
         {variant === 'b'
-          ? 'Point it at your repository. Vectalon builds a living knowledge graph, then runs 44 deterministic agents and a local MCP agent that review, diagnose, upgrade, and validate your app — compile-checked and fully offline, no source leaves your machine.'
-          : 'Point it at your repository. Vectalon builds a living knowledge graph, then continuously reviews, diagnoses, upgrades, and validates your app — with 44 deterministic agents that need no model and no cloud.'}
+          ? 'Local MCP agent plus 44 deterministic agents. Compile-checked, fully offline. No source leaves your machine.'
+          : 'A living knowledge graph, 44 deterministic agents. No model needed, no cloud required.'}
       </p>
     </>
   )
