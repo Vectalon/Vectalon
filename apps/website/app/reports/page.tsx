@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { REPORT_SAMPLES, type ReportSample } from '../../lib/reportSamples'
 import { ReportWindow } from '../../components/ReportWindow'
+import { AgentOrb } from '../../components/AgentOrb'
 
 export const metadata = {
   title: 'Vectalon — generated documents, real reports',
@@ -25,6 +26,7 @@ export default function ReportsPage() {
             vectalon<span className="text-brand">/</span>docs
           </span>
           <span className="badge badge-ok">● real output</span>
+          <AgentOrb state="composing" size={20} label="Reports generated" />
         </div>
         <h1 className="text-4xl font-bold text-slate-50 sm:text-5xl">
           Generated documents — <span className="text-brand">no filler</span>
