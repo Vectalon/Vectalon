@@ -41,6 +41,7 @@ Entitlement is commercial security. The CLI may operate offline, but offline ope
 ## Risks and dependencies
 
 - Depends on Steps 03 and 05.
+- Core and packaged-client enforcement can precede Step 10; production Admin grants and override operations depend on the authenticated, audited control-plane foundation in Step 10.
 - Requires a documented migration for existing internal development workflows.
 
 ## Implementation sequence

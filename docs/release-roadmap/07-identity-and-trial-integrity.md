@@ -41,6 +41,7 @@ The trial is the first commercial trust transaction. It must be understandable, 
 ## Risks and dependencies
 
 - Depends on Steps 03 and 06.
+- Identity/trial contracts and client UX can proceed first; production trial creation depends on Steps 10–11 for authenticated operations, transactions, uniqueness constraints, and durable audit history.
 - OAuth provider outage and account renames require explicit customer-safe behavior.
 
 ## Implementation sequence

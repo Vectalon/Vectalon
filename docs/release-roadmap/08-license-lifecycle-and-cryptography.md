@@ -41,6 +41,7 @@ Offline verification and online lifecycle controls must complement each other. A
 ## Risks and dependencies
 
 - Depends on Steps 03, 06, and 07.
+- Core verification and lifecycle design can proceed first; production signing, custody, and lifecycle mutations depend on Steps 10–11.
 - Legal/product decisions are required for offline grace duration and seat enforcement.
 
 ## Implementation sequence

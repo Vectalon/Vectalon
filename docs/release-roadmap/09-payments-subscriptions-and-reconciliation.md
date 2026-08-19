@@ -40,7 +40,7 @@ The payment provider is an event source, not the product database. Entitlements 
 
 ## Risks and dependencies
 
-- Depends on Steps 05 and 08.
+- Offer/state design depends on Steps 05 and 08. Production ingestion, entitlement mutation, and reconciliation also depend on Steps 10–11.
 - Provider sandbox and production event differences require captured contract fixtures.
 
 ## Implementation sequence

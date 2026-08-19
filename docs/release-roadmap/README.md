@@ -43,8 +43,8 @@ Legal, tax, accounting, and privacy claims require qualified professional review
 
 - Step 03 starts first. Step 04 can proceed after its contract subset stabilizes.
 - Step 05 may inventory surfaces in parallel with Step 03, but plan/claim enforcement waits for capability contracts.
-- Steps 06 and 07 follow the relevant Step 03 schemas; Step 08 follows both.
-- Step 10 foundation can begin after Step 03 while Step 09 offer/state design proceeds, but production payment mutations require Steps 08, 10, and 11 controls.
+- Steps 06 and 07 follow the relevant Step 03 schemas; Step 08 follows both. Their Core/client work may proceed before Admin is production-ready, but server-side grants, trials, signing, and mutations wait for Steps 10–11.
+- Step 10 foundation can begin after Step 03 while Step 09 offer/state design proceeds, but production payment ingestion and entitlement mutations require Steps 08, 10, and 11 controls.
 - Step 12 inventory begins immediately; enforcement and deletion drills require the Step 11 data model.
 
 ## Technical-lead review protocol
