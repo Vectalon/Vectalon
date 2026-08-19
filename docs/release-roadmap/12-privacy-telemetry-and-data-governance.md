@@ -42,3 +42,36 @@ Trust is part of Vectalon's local/private value proposition. Observability must 
 
 - Depends on Steps 03 and 11.
 - Support diagnostics must not become an ungoverned telemetry backdoor.
+
+## Implementation sequence
+
+1. **Inventory every data flow.** Enumerate CLI/RN telemetry, website analytics, Admin audit, payment webhooks, OAuth, support bundles, logs, traces, crash reports, backups, and third-party processors. Record fields, purpose, owner, consent/legal basis, region, retention, access, and deletion behavior.
+2. **Classify and minimise.** Define public, operational, customer-confidential, personal, authentication, financial, source-code, and secret classes. Generic telemetry rejects source, prompts, file contents, raw paths, tokens, emails, stable device fingerprints, and arbitrary exception payloads.
+3. **Define separate contracts.** Core owns a bounded product-telemetry envelope and redaction rules. Website analytics, Admin audit, payment events, and opt-in support bundles remain distinct schemas/policies; they cannot be tunneled through a generic event field.
+4. **Implement consent and transparency.** Vectalon defaults match public promises, provides inspectable status, explicit opt-in/out, local queue visibility, export/delete controls, endpoint documentation, and no dark patterns. Consent changes affect future collection immediately.
+5. **Enforce at collection and ingestion.** Allowlisted fields, size/cardinality budgets, secret scanners, path/source detectors, bounded queues, TLS, authentication, tenant isolation, and fail-open-for-product/fail-closed-for-collection behavior apply at both ends.
+6. **Govern Admin access and retention.** Least-privilege aggregate views, audited raw access exceptions, automated retention/deletion, data-subject export/delete orchestration, backup tombstone strategy, and processor inventory are production requirements.
+7. **Red-team support diagnostics.** Treat bundles as deliberate customer uploads with preview, explicit scope, one-time authorization, short retention, malware/secret scanning, and a separate access trail.
+
+## Promise reconciliation
+
+- Public copy currently says “telemetry is opt-in and errors-only”; retain it only if payload inventory and default behavior prove both claims across shipped packages.
+- “Your source never leaves your machine” must cover model providers, telemetry, support, logs, crash reporting, and future cloud sync, with clearly disclosed opt-in exceptions.
+- Define measurable deletion and consent-propagation SLAs before publishing them; legal/privacy review is required for global launch.
+
+## Required evidence
+
+- Machine-readable data inventory and field allowlists tied to schemas and retention jobs.
+- Adversarial property/fuzz tests with secrets, code fragments, paths, prompts, PII, oversized payloads, nested objects, and encoding tricks.
+- Network-capture tests of a clean install, opted-in session, opted-out session, crash, and support upload.
+- End-to-end export/deletion drill across primary stores, telemetry, support, and backups, with audited exceptions.
+- Reviewer compares actual packets/storage/access logs against privacy copy and rejects any undocumented field or processor.
+
+## Exit and rollback
+
+Exit requires demonstrated data minimisation and deletion/consent propagation. If a prohibited-data path is found, collection is remotely disabled or ingestion rejected while the product remains functional.
+
+## Non-goals
+
+- Capturing raw customer activity for speculative analytics.
+- Treating security audit events as optional telemetry.
