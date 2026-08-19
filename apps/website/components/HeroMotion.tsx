@@ -1,17 +1,28 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 /**
  * Ambient particle canvas for the hero section.
  *
  * Floating brand-colored dots drift upward with slight horizontal oscillation.
- * In dark mode they glow brightly; in light mode they're softer and smaller.
+ * In dark mode they glow brightly with screen blending;
+ * in light mode they use normal blending with higher alpha so they're visible.
  * The canvas is purely decorative (aria-hidden, pointer-events-none) and
  * pauses when offscreen via IntersectionObserver.
  */
 export function HeroParticles() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [isDarkMode, setIsDarkMode] = useState(true)
+
+  // React to theme changes
+  useEffect(() => {
+    const check = () => setIsDarkMode(document.documentElement.getAttribute('data-theme') !== 'light')
+    check()
+    const mo = new MutationObserver(check)
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => mo.disconnect()
+  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -33,10 +44,6 @@ export function HeroParticles() {
       '0, 210, 180',   // teal-dim
     ]
 
-    function isDark() {
-      return document.documentElement.getAttribute('data-theme') !== 'light'
-    }
-
     function resize() {
       const dpr = window.devicePixelRatio || 1
       const rect = canvas!.getBoundingClientRect()
@@ -46,16 +53,16 @@ export function HeroParticles() {
     }
 
     function createParticle() {
-      const dark = isDark()
+      const dark = isDarkMode
       const color = BRAND_COLORS[Math.floor(Math.random() * BRAND_COLORS.length)]
       return {
         x: Math.random() * (canvas!.getBoundingClientRect().width || 800),
         y: (canvas!.getBoundingClientRect().height || 500) + Math.random() * 40,
         vx: (Math.random() - 0.5) * 0.3,
         vy: -(0.15 + Math.random() * 0.35),
-        r: dark ? 1.2 + Math.random() * 1.8 : 0.8 + Math.random() * 1.2,
+        r: dark ? 1.2 + Math.random() * 1.8 : 1.5 + Math.random() * 2,
         color,
-        alpha: dark ? 0.15 + Math.random() * 0.35 : 0.08 + Math.random() * 0.15,
+        alpha: dark ? 0.15 + Math.random() * 0.35 : 0.2 + Math.random() * 0.3,
         phase: Math.random() * Math.PI * 2,
       }
     }
@@ -67,7 +74,7 @@ export function HeroParticles() {
       ctx!.clearRect(0, 0, w, h)
 
       // Spawn new particles to maintain count
-      const targetCount = isDark() ? 35 : 20
+      const targetCount = isDarkMode ? 35 : 25
       while (particles.length < targetCount) {
         particles.push(createParticle())
       }
@@ -98,7 +105,8 @@ export function HeroParticles() {
     resize()
     window.addEventListener('resize', resize)
 
-    // Start
+    // Clear old particles on theme change and restart
+    particles.length = 0
     raf = requestAnimationFrame(draw)
 
     // Pause when offscreen
@@ -117,14 +125,14 @@ export function HeroParticles() {
       window.removeEventListener('resize', resize)
       io.disconnect()
     }
-  }, [])
+  }, [isDarkMode])
 
   return (
     <canvas
       ref={canvasRef}
       aria-hidden
       className="pointer-events-none absolute inset-0 h-full w-full"
-      style={{ mixBlendMode: 'screen' }}
+      style={{ mixBlendMode: isDarkMode ? 'screen' : 'normal' }}
     />
   )
 }
