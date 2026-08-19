@@ -99,6 +99,35 @@ function registerCommands(context, getClient, guardrails, knowledgeTree) {
             return;
         const result = await client.callTool('generate_component', { name });
         webview_1.PreviewPanel.show(name, result.content);
+    })), vscode.commands.registerCommand('vectalon.archiveBuild', () => withClient(async (client) => {
+        const flavor = await vscode.window.showInputBox({
+            prompt: 'Build flavor (leave empty for auto-detect)',
+            placeHolder: 'e.g. staging',
+        });
+        if (flavor === undefined)
+            return;
+        await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Vectalon: archiving build…' }, async () => {
+            const result = await client.callTool('archive_build', { flavor: flavor || undefined });
+            webview_1.PreviewPanel.show('Archive Build', result.content);
+        });
+    })), vscode.commands.registerCommand('vectalon.distributeBuild', () => withClient(async (client) => {
+        const target = await vscode.window.showQuickPick(['testflight', 'play-store', 'saas', 'portal'], {
+            placeHolder: 'Distribution target (dry-run plan by default)',
+        });
+        if (!target)
+            return;
+        const result = await client.callTool('distribute_build', { target });
+        webview_1.PreviewPanel.show(`Distribute → ${target}`, result.content);
+    })), vscode.commands.registerCommand('vectalon.shareBuild', () => withClient(async (client) => {
+        const result = await client.callTool('share_build_locally', {});
+        webview_1.PreviewPanel.show('Share Build', result.content);
+    })), vscode.commands.registerCommand('vectalon.generatePortal', () => withClient(async (client) => {
+        const branding = await vscode.window.showInputBox({
+            prompt: 'Portal branding (title)',
+            placeHolder: 'e.g. Acme Builds',
+        });
+        const result = await client.callTool('generate_portal', { branding: branding || undefined });
+        webview_1.PreviewPanel.show('Build Portal', result.content);
     })), vscode.commands.registerCommand('vectalon.projectContext', () => withClient(async (client) => {
         const result = await client.callTool('get_project_context');
         webview_1.PreviewPanel.show('Project Context', result.content);
