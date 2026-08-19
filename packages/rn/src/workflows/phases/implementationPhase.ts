@@ -117,6 +117,14 @@ function formatGuardrailSummary(results: GuardrailResult[]): string {
   return lines.join('\n')
 }
 
+function blockedReportArtifact(reason: string): WorkflowArtifact {
+  return {
+    type: 'engineering',
+    title: 'Generated code blocked by validation',
+    content: `Core validation blocked generated code (${reason}). No candidate path or source was retained.`,
+  }
+}
+
 
 function findDependency(snapshot: ContextSnapshot | null, dependency: string): DependencyMatch[] {
   if (!snapshot) return []
@@ -550,12 +558,12 @@ async function generateModelImplementation(
   return {
     implementation: {
       output,
-      artifacts: generatedFiles.map(f => ({
+      artifacts: writable ? generatedFiles.map(f => ({
         type: 'engineering',
         title: f.path,
         content: f.content,
         path: f.path,
-      })),
+      })) : [blockedReportArtifact(harnessFailureReason ?? 'GUARDRAIL_BLOCKED')],
     },
   }
 }
@@ -694,7 +702,7 @@ async function generateFixImplementation(
       `Captured ${check.name} violations and asked the model to repair the affected files.`,
       ...(parsed.notes ? [parsed.notes, ''] : []),
       ...(writtenFiles.length > 0 ? ['Files written to disk:', ...writtenFiles.map(f => `- \`${f}\``), ''] : []),
-      ...(!writable ? ['Validation failed safely (GUARDRAIL_BLOCKED); no generated files were written.', ''] : []),
+      ...(!writable ? [`Validation failed safely (${harnessOutcome?.run.safe.reason ?? 'GUARDRAIL_BLOCKED'}); no generated files were written.`, ''] : []),
       ...redirectNote,
       ...parsed.files.map(f => [`### ${f.path}`, '```typescript', f.content, '```'].join('\n')),
       '',
@@ -703,12 +711,12 @@ async function generateFixImplementation(
 
     return {
       output,
-      artifacts: parsed.files.map(f => ({
+      artifacts: writable ? parsed.files.map(f => ({
         type: 'engineering',
         title: f.path,
         content: f.content,
         path: f.path,
-      })),
+      })) : [blockedReportArtifact(harnessOutcome?.run.safe.reason ?? 'GUARDRAIL_BLOCKED')],
     }
   }
 
@@ -941,8 +949,8 @@ async function generateAddFeatureWithHarness(
   projectRoot: string | undefined,
   ctx: { snapshot: ContextSnapshot | null; prompt: string },
 ): Promise<{ output: string; artifacts: WorkflowArtifact[] }> {
+  if (!projectRoot) return generateAddFeatureImplementation(projectRoot, ctx)
   const draft = generateAddFeatureImplementation(projectRoot, ctx, { deferValidationAndWrites: true })
-  if (!projectRoot) return draft
   const files = draft.artifacts
     .filter((artifact): artifact is WorkflowArtifact & { path: string } => typeof artifact.path === 'string')
     .map(artifact => ({ path: artifact.path, content: artifact.content }))
@@ -959,11 +967,15 @@ async function generateAddFeatureWithHarness(
   }
   const evidence = [
     ...(writtenFiles.length > 0 ? ['', 'Files written to disk:', ...writtenFiles.map(file => `- \`${file}\``)] : []),
-    ...(!writable ? ['', 'Validation failed safely (GUARDRAIL_BLOCKED); no generated files were written.'] : []),
+    ...(!writable ? ['', `Validation failed safely (${harnessOutcome.run.safe.reason}); no generated files were written.`] : []),
     '',
     formatGuardrailSummary(results),
   ].join('\n')
-  return { ...draft, output: `${draft.output}\n${evidence}` }
+  return {
+    ...draft,
+    output: `${draft.output}\n${evidence}`,
+    artifacts: writable ? draft.artifacts : [blockedReportArtifact(harnessOutcome.run.safe.reason)],
+  }
 }
 
 function escapeRegExpToken(value: string): string {

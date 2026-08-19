@@ -2,6 +2,8 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync
 import { join } from 'path'
 import { tmpdir } from 'os'
 import { implementationPhase } from '../../src/workflows/phases/implementationPhase'
+import { codeReviewPhase } from '../../src/workflows/phases/codeReviewPhase'
+import { verificationPhase } from '../../src/workflows/phases/verificationPhase'
 import { ModelRouter } from '../../src/model/ModelRouter'
 import type { WorkflowContext } from '../../src/adapters/types'
 
@@ -176,11 +178,21 @@ describe('implementationPhase', () => {
       invalid,
     ])
 
-    const result = await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
+    const context = createContext(router, 'Add a login screen', projectRoot)
+    const result = await implementationPhase.run(context)
 
     expect(existsSync(join(projectRoot, 'src/screens/InvalidLogin.tsx'))).toBe(false)
     expect(result.output).toContain('Validation failed safely (REPAIR_EXHAUSTED)')
     expect(result.output).not.toContain('Files written to disk')
+    expect(result.artifacts).toHaveLength(1)
+    expect(result.artifacts[0].path).toBeUndefined()
+    expect(result.artifacts[0].content).not.toContain(invalid)
+
+    context.state.phases.push(result)
+    const review = await codeReviewPhase.run(context)
+    context.state.phases.push(review)
+    await verificationPhase.run(context)
+    expect(existsSync(join(projectRoot, 'src/screens/InvalidLogin.tsx'))).toBe(false)
   })
 
   it('routes the deterministic fallback through Core and blocks invalid writes', async () => {
@@ -199,6 +211,19 @@ describe('implementationPhase', () => {
     expect(existsSync(join(projectRoot, 'src/services/AddLoginScreenApi.ts'))).toBe(false)
     expect(result.output).toContain('Validation failed safely (GUARDRAIL_BLOCKED)')
     expect(result.output).not.toContain('Files written to disk')
+    expect(result.artifacts.every(artifact => artifact.path === undefined)).toBe(true)
+    expect(result.artifacts.every(artifact => !artifact.content.includes('export class'))).toBe(true)
+  })
+
+  it('preserves the legacy guardrail summary for a no-project fallback', async () => {
+    const router = createMockModelRouter('not parseable as generated files')
+    const context = createContext(router, 'Add a login screen', projectRoot)
+    context.projectRoot = undefined as never
+
+    const result = await implementationPhase.run(context)
+
+    expect(result.output).toContain('## Guardrail summary')
+    expect(result.output).toContain('All guardrails passed')
   })
 
   it('parses markdown sections with ### paths and fenced code into files on disk', async () => {
