@@ -45,7 +45,7 @@ const TRENDING_URL =
 
 /** Static seed rows — one per source — used when a fetch fails or is empty. */
 export const INTEL_SEEDS: Record<'rn' | 'expo' | 'hn' | 'trending', IntelItem[]> = {
-  rn: [{ label: 'RN 0.87-rc', source: 'RN releases' }],
+  rn: [{ label: 'RN 0.80-rc.2', source: 'RN releases' }],
   expo: [{ label: 'Expo SDK 57', source: 'Expo changelog' }],
   hn: [{ label: 'HN "React Native"', source: 'Algolia API' }],
   trending: [{ label: 'trending RN repos', source: 'GitHub Search' }],
