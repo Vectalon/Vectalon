@@ -41,4 +41,38 @@ Entitlement is commercial security. The CLI may operate offline, but offline ope
 ## Risks and dependencies
 
 - Depends on Steps 03 and 05.
+- Core and packaged-client enforcement can precede Step 10; production Admin grants and override operations depend on the authenticated, audited control-plane foundation in Step 10.
 - Requires a documented migration for existing internal development workflows.
+
+## Implementation sequence
+
+1. **Threat-model the decision seam.** Cover forged/edited local state, environment-variable bypasses, clock rollback, replay, wrong audience/product, downgrade races, stale revocation, package tampering, and execution before authorization.
+2. **Specify the decision table.** Core takes verified identity/trial/license claims, capability ID, product/version, requested seats, trusted clock input, and revocation freshness. It returns `allow`, `deny`, or narrowly defined `degraded` with stable reason codes and no secret-bearing errors.
+3. **Separate verification from policy.** Cryptographic verification yields trusted claims; entitlement evaluation consumes only trusted claims. Neither module reads process environment, CLI flags, or mutable product code directly.
+4. **Remove production bypasses.** Inventory `VECTALON_DEV_MODE`, tier overrides, test keys, public flags, and unsigned files. Replace them with dependency-injected test evaluators excluded by package/export/build checks.
+5. **Enforce before side effects.** Vectalon wraps every paid CLI command, MCP tool, extension action, remote call, file mutation, and model invocation at a single dispatch boundary. Batch operations re-check scope without charging or mutating on denial.
+6. **Make Admin operationally safe.** Admin displays reason codes and policy versions, supports audited time-bounded grants via normal signed claims, and cannot mint a universal override.
+7. **Attack the packaged artifact.** Install the tarball in hostile fixtures, edit caches, alter time, set legacy variables, replay claims, and attempt direct imports/internal calls.
+
+## Commercial policy decisions
+
+- Define grace windows for payment failure, offline use, cancellation, and provider outage separately.
+- Define whether the BSL small-team grant bypasses product entitlements or receives a signed Free/small-team entitlement. Prefer one auditable evaluator path.
+- Decide when seat overage denies execution versus enters a remediation/grace state.
+- Customer messages must state what happened, what remains usable, and how to recover without exposing fraud controls.
+
+## Required evidence
+
+- Core decision-table tests and mutation/fuzz tests.
+- Vectalon dispatch coverage report proving every paid surface is gated before side effects; tarball scan proves bypass code and private keys are absent.
+- Admin authorization/audit tests for every grant or override action.
+- Reviewer performs an adversarial package review and independently attempts the documented bypass inventory.
+
+## Exit and rollback
+
+Exit requires a single production evaluator and zero known distributed bypasses. Rollback may pin the prior evaluator only if it is still fail-closed; it may not re-enable environment bypasses.
+
+## Non-goals
+
+- License issuance or payment reconciliation, which remain Steps 08–09.
+- Obscurity-based DRM or invasive device surveillance.

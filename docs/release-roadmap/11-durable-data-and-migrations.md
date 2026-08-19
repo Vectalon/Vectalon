@@ -42,3 +42,35 @@ Commercial correctness depends on durable history. Mutable current-state tables 
 
 - Depends on Steps 03 and 10.
 - Data residency, retention, and deletion requirements must be settled before GA.
+
+## Implementation sequence
+
+1. **Select the production store and tenancy model.** Record region, availability, encryption, connection management, cost envelope, tenant isolation, and operational ownership in an ADR. Local SQLite remains an explicit development adapter only if production cannot select it.
+2. **Model durable history.** Design customers, provider identities, organisations/memberships, trials, provider events, subscriptions, invoices/refunds references, licenses, key metadata, revocations, idempotency records, audit events, and reconciliation runs. Separate immutable events from current projections.
+3. **Encode invariants in the database.** Unique provider subjects/event IDs, one eligible trial policy, foreign keys, state checks, nonnegative seat quantities, currency consistency, version columns, and append-only audit/event protections belong in constraints where possible.
+4. **Create migration discipline.** Numbered reviewed migrations, expand/migrate/contract sequencing, transactional boundaries, lock/time budgets, production-data sampling, compatibility windows, and roll-forward-first recovery are mandatory.
+5. **Build repository adapters.** Admin domain modules depend on transaction-aware ports; Core remains persistence-neutral; Vectalon public APIs use stable idempotent contracts and never connect to the database.
+6. **Create backup and restore operations.** Encrypted automated backups, point-in-time recovery, access controls, retention/deletion exceptions, restore environments, integrity checks, RPO/RTO targets, and alerting are documented and automated.
+7. **Rehearse failure.** Run migrations and restore drills against production-shaped scale, simulate partial deploys, corrupt projections, reconcile from immutable events, and measure downtime/data loss.
+
+## Data-governance decisions
+
+- Define retention for customer, identity, webhook, audit, telemetry, support, and financial records; legal holds override deletion only through audited policy.
+- Store money as currency plus integer minor units. Provider IDs are external references, not primary business identities.
+- Decide single-tenant versus organisation tenancy before adding Team subscriptions; row filters alone are insufficient without authorization tests.
+
+## Required evidence
+
+- Reviewed ERD/data dictionary, constraints, query/index plans, migration policy, and seed-data policy.
+- Fresh-create, upgrade-from-each-supported-version, mixed-version deploy, rollback/roll-forward, backup, restore, and reconciliation test reports.
+- Measured RPO/RTO and restore checksum evidence from production-shaped data.
+- Reviewer introduces constraint violations and interrupted migrations, confirms safe failure, and traces a customer/license decision back to immutable source events.
+
+## Exit and rollback
+
+Exit requires a successful independent restore drill and zero production code paths to ephemeral commercial storage. Schema rollback is used only when demonstrably safe; otherwise roll forward while compatible binaries remain deployable.
+
+## Non-goals
+
+- Storing source code, prompts, or unnecessary provider payload fields.
+- Using dashboards as a substitute for backup/restore evidence.

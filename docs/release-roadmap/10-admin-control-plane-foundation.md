@@ -42,3 +42,36 @@ Admin is a privileged operational system, not a second marketing dashboard. Its 
 
 - Depends on Steps 02–03.
 - Avoid porting the website's embedded admin implementation wholesale without ownership review.
+
+## Implementation sequence
+
+1. **Write the deployment/threat model.** Identify administrators, support agents, service identities, attackers, trust zones, environments, secrets, data classes, and privileged operations. Choose an explicit production deployment and identity provider.
+2. **Establish secure configuration.** Validate all environment variables at startup, separate dev/staging/prod, prohibit production fallback stores/auth, centralize secret references, and expose non-sensitive health/readiness checks.
+3. **Implement authentication and sessions.** Use provider-backed admin identity, allowlisting/group membership, secure cookies, rotation, idle/absolute expiry, CSRF protection, logout/revocation, and reauthentication for high-risk actions.
+4. **Implement authorization as policy.** Define roles such as viewer, support, billing, license operator, security admin, and platform admin. Enforce permissions in server/domain commands, not only pages; default deny and test every mutation.
+5. **Make audit unavoidable.** A command bus/middleware records actor, role, action, target, request correlation, reason, before/after references, result, timestamp, and policy version. Audit writes are append-only and cannot be bypassed by UI/API routes.
+6. **Build domain modules.** Customers, identities, trials, subscriptions, licenses, support, and operations expose small command/query interfaces independent of Next.js pages and database implementation.
+7. **Create the operator shell.** Accessible navigation, search, pagination, confirmation/reason capture, loading/empty/error/degraded states, correlation IDs, and safe redaction precede dashboard ornamentation.
+8. **Move one authoritative workflow.** Migrate a bounded operation (for example read-only license lookup, then audited revocation) from Vectalon’s embedded admin surface. Delete the duplicate only after parity/security tests pass.
+
+## Repository acceptance
+
+- **Core:** only provider-neutral contracts/decisions; no Admin database, OAuth, or UI concerns.
+- **Vectalon:** public gateway uses service authentication and contains no Admin session logic or operational write model; duplicate embedded admin routes have a migration/deletion ledger.
+- **Admin:** all routes and commands are authenticated, authorized, audited, rate-limited where needed, and environment-safe.
+
+## Required evidence
+
+- Threat model, role-permission matrix, architecture ADR, route/command inventory, and deployment topology.
+- Automated anonymous, wrong-role, CSRF, session-expiry, audit-failure, secret-missing, and production-fallback tests.
+- Accessibility and keyboard review of critical workflows; dependency/security scan; production build from a clean checkout.
+- Reviewer attempts direct API calls and domain-command invocation for every role, verifies audit atomicity, and confirms no sensitive fields appear in logs/errors.
+
+## Exit and rollback
+
+Exit requires one safely migrated authoritative workflow and proof that no mutation bypasses policy/audit. Rollback disables the new mutation path and preserves append-only evidence; it must not reactivate an unauthenticated Vectalon admin route.
+
+## Non-goals
+
+- Broad analytics, polished executive dashboards, or bulk destructive operations.
+- Copying current website admin code without threat-model review.
