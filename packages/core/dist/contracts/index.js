@@ -69,6 +69,13 @@ function findBreakingSchemaChanges(previous, candidate, path = '') {
     const location = path || '/';
     const tightenedMinimums = ['minimum', 'exclusiveMinimum', 'minLength', 'minItems', 'minProperties'];
     const tightenedMaximums = ['maximum', 'exclusiveMaximum', 'maxLength', 'maxItems', 'maxProperties'];
+    const annotations = new Set(['$id', '$schema', '$comment', 'title', 'description', 'default', 'examples', 'deprecated', 'readOnly', 'writeOnly']);
+    const explicitlyHandled = new Set([
+        'type', 'const', 'enum', 'required', 'properties', 'items', 'additionalProperties', 'uniqueItems',
+        ...tightenedMinimums,
+        ...tightenedMaximums,
+        'pattern', 'format', 'multipleOf',
+    ]);
     if (JSON.stringify(previous.type) !== JSON.stringify(candidate.type))
         changes.push(`${location} changed type`);
     if (candidate.const !== undefined && previous.const !== candidate.const)
@@ -98,16 +105,19 @@ function findBreakingSchemaChanges(previous, candidate, path = '') {
             changes.push(`${location} changed ${keyword}`);
         }
     }
-    if (previous.additionalProperties !== false && candidate.additionalProperties === false) {
-        changes.push(`${location} stopped accepting additional properties`);
+    const previousAdditional = previous.additionalProperties ?? true;
+    const candidateAdditional = candidate.additionalProperties ?? true;
+    if (JSON.stringify(previousAdditional) !== JSON.stringify(candidateAdditional) && candidateAdditional !== true) {
+        changes.push(`${location} restricted additional properties`);
     }
     if (previous.uniqueItems !== true && candidate.uniqueItems === true) {
         changes.push(`${location} now requires unique items`);
     }
-    for (const keyword of ['allOf', 'anyOf', 'oneOf', 'not', 'contains', 'if', 'then', 'else']) {
-        if (JSON.stringify(previous[keyword]) !== JSON.stringify(candidate[keyword]) && candidate[keyword] !== undefined) {
+    for (const [keyword, value] of Object.entries(candidate)) {
+        if (annotations.has(keyword) || explicitlyHandled.has(keyword) || keyword.startsWith('x-'))
+            continue;
+        if (JSON.stringify(previous[keyword]) !== JSON.stringify(value))
             changes.push(`${location} changed ${keyword}`);
-        }
     }
     const previousRequired = new Set(previous.required ?? []);
     const candidateRequired = new Set(candidate.required ?? []);
