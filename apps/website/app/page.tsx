@@ -212,7 +212,69 @@ export default async function Home() {
         <div className="scanlines pointer-events-none absolute inset-0" aria-hidden />
         <div className="beam js-loop" aria-hidden />
         <div className="relative mx-auto max-w-6xl px-5 pb-20 pt-12 sm:pt-16">
-          <div className="console animate-fade-up">
+          {/* Brand hero */}
+          <div className="animate-fade-up text-center">
+            {/* Logo mark */}
+            <div className="mx-auto mb-6 flex justify-center" style={{ animationDelay: '60ms' }}>
+              <svg width="80" height="88" viewBox="0 0 220 240" fill="none" className="drop-shadow-[0_0_40px_rgba(0,230,195,0.3)]">
+                <path d="M25 48L70 70L110 195" stroke="url(#hero-lg-teal)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M195 48L150 70L110 195" stroke="url(#hero-lg-violet)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M55 112L110 195L165 112" stroke="#4DAEFF" strokeOpacity="0.9" strokeWidth="4" strokeLinecap="round"/>
+                <path d="M110 84V195" stroke="#39BFFF" strokeWidth="4" strokeLinecap="round"/>
+                <circle cx="55" cy="112" r="9" fill="#00E6C3"/>
+                <circle cx="165" cy="112" r="9" fill="#8B5CF6"/>
+                <circle cx="110" cy="84" r="8" fill="#37B6FF"/>
+                <circle cx="110" cy="195" r="11" fill="#37B6FF" stroke="#B8E8FF" strokeWidth="3"/>
+                <path d="M110 28L122 52H98L110 28Z" fill="#66E8FF"/>
+                <defs>
+                  <linearGradient id="hero-lg-teal" x1="20" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#00E6C3"/><stop offset="1" stopColor="#37B6FF"/>
+                  </linearGradient>
+                  <linearGradient id="hero-lg-violet" x1="200" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#8B5CF6"/><stop offset="1" stopColor="#37B6FF"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+
+            {/* Wordmark */}
+            <h1 className="animate-fade-up font-display text-5xl font-bold tracking-tight text-slate-50 sm:text-6xl lg:text-7xl" style={{ animationDelay: '120ms' }}>
+              Vectalon
+            </h1>
+
+            {/* Tagline */}
+            <p className="mx-auto mt-4 max-w-xl animate-fade-up text-lg text-slate-400 sm:text-xl" style={{ animationDelay: '180ms' }}>
+              Adaptive AI harness for developers
+            </p>
+
+            {/* Value props */}
+            <div className="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-3 animate-fade-up" style={{ animationDelay: '240ms' }}>
+              {[
+                { icon: '◈', label: 'Local-first' },
+                { icon: '◎', label: 'Project-aware' },
+                { icon: '◆', label: 'Deterministic' },
+                { icon: '▣', label: 'Control plane' },
+              ].map(v => (
+                <span key={v.label} className="flex items-center gap-2 rounded-xl border border-ink-700 bg-ink-800/60 px-4 py-2.5 text-sm text-slate-300">
+                  <span className="text-brand">{v.icon}</span>
+                  {v.label}
+                </span>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <div className="mt-10 flex animate-fade-up justify-center gap-4" style={{ animationDelay: '300ms' }}>
+              <a href="#demo" className="btn-primary">
+                See it run
+              </a>
+              <Link href="/pricing" className="btn-ghost">
+                Compare plans
+              </Link>
+            </div>
+          </div>
+
+          {/* Terminal console */}
+          <div className="console mt-14 animate-fade-up" style={{ animationDelay: '360ms' }}>
             <div className="flex items-center justify-between border-b border-ink-700/70 bg-ink-900/90 px-4 py-2.5 font-mono text-[11px] text-slate-500">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1.5 text-slate-300">
@@ -234,7 +296,7 @@ export default async function Home() {
             <div className="px-6 py-10 sm:px-10 sm:py-14">
               <HeroHeadline />
 
-              <div className="mt-10 grid animate-fade-up gap-4 md:grid-cols-3" style={{ animationDelay: '180ms' }}>
+              <div className="mt-10 grid animate-fade-up gap-4 md:grid-cols-3" style={{ animationDelay: '420ms' }}>
                 {/* Intel feed */}
                 <div className="card !p-4">
                   <div className="pane-head">
