@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { SiteNav } from '../components/SiteNav'
 import { MobileMenu } from '../components/MobileMenu'
 import { ThemeToggle } from '../components/ThemeToggle'
+import { GlobalParticles } from '../components/GlobalParticles'
 import { PRODUCT_MANIFEST } from '../lib/product-manifest'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans', display: 'swap', weight: ['400', '500', '600', '700'] })
@@ -160,6 +161,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: revealObserver }} />
       </head>
       <body className="flex min-h-screen flex-col">
+        <GlobalParticles />
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-on-brand"
