@@ -77,6 +77,12 @@ jobs:
       - name: Build
         run: pnpm turbo run build
 
+      - name: Verify Core checkout provenance
+        if: steps.pat.outputs.has_pat == 'true'
+        run: pnpm contracts:check
+        env:
+          CORE_REPO_DIR: packages/core/src
+
       - name: Lint
         run: pnpm turbo run lint
 

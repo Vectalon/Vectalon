@@ -66,6 +66,49 @@ function generateRegistryManifest() {
 }
 function findBreakingSchemaChanges(previous, candidate, path = '') {
     const changes = [];
+    const location = path || '/';
+    const tightenedMinimums = ['minimum', 'exclusiveMinimum', 'minLength', 'minItems', 'minProperties'];
+    const tightenedMaximums = ['maximum', 'exclusiveMaximum', 'maxLength', 'maxItems', 'maxProperties'];
+    if (JSON.stringify(previous.type) !== JSON.stringify(candidate.type))
+        changes.push(`${location} changed type`);
+    if (candidate.const !== undefined && previous.const !== candidate.const)
+        changes.push(`${location} changed its constant value`);
+    if (candidate.enum) {
+        const candidateValues = new Set(candidate.enum);
+        if (!previous.enum)
+            changes.push(`${location} introduced an enum restriction`);
+        else
+            for (const value of previous.enum) {
+                if (!candidateValues.has(value))
+                    changes.push(`${location} removed enum value ${JSON.stringify(value)}`);
+            }
+    }
+    for (const keyword of tightenedMinimums) {
+        if (candidate[keyword] !== undefined && (previous[keyword] === undefined || candidate[keyword] > previous[keyword])) {
+            changes.push(`${location} tightened ${keyword}`);
+        }
+    }
+    for (const keyword of tightenedMaximums) {
+        if (candidate[keyword] !== undefined && (previous[keyword] === undefined || candidate[keyword] < previous[keyword])) {
+            changes.push(`${location} tightened ${keyword}`);
+        }
+    }
+    for (const keyword of ['pattern', 'format', 'multipleOf']) {
+        if (candidate[keyword] !== undefined && candidate[keyword] !== previous[keyword]) {
+            changes.push(`${location} changed ${keyword}`);
+        }
+    }
+    if (previous.additionalProperties !== false && candidate.additionalProperties === false) {
+        changes.push(`${location} stopped accepting additional properties`);
+    }
+    if (previous.uniqueItems !== true && candidate.uniqueItems === true) {
+        changes.push(`${location} now requires unique items`);
+    }
+    for (const keyword of ['allOf', 'anyOf', 'oneOf', 'not', 'contains', 'if', 'then', 'else']) {
+        if (JSON.stringify(previous[keyword]) !== JSON.stringify(candidate[keyword]) && candidate[keyword] !== undefined) {
+            changes.push(`${location} changed ${keyword}`);
+        }
+    }
     const previousRequired = new Set(previous.required ?? []);
     const candidateRequired = new Set(candidate.required ?? []);
     for (const field of candidateRequired) {
@@ -81,31 +124,42 @@ function findBreakingSchemaChanges(previous, candidate, path = '') {
             changes.push(`${fieldPath} was removed`);
             continue;
         }
-        if (JSON.stringify(oldProperty.type) !== JSON.stringify(newProperty.type)) {
-            changes.push(`${fieldPath} changed type`);
-        }
-        if (oldProperty.const !== undefined && oldProperty.const !== newProperty.const) {
-            changes.push(`${fieldPath} changed its constant value`);
-        }
-        if (oldProperty.enum) {
-            const candidateValues = new Set(newProperty.enum ?? []);
-            for (const value of oldProperty.enum) {
-                if (!candidateValues.has(value))
-                    changes.push(`${fieldPath} removed enum value ${JSON.stringify(value)}`);
-            }
-        }
         changes.push(...findBreakingSchemaChanges(oldProperty, newProperty, fieldPath));
-        if (oldProperty.items && newProperty.items) {
-            changes.push(...findBreakingSchemaChanges(oldProperty.items, newProperty.items, `${fieldPath}/*`));
-        }
     }
+    if (candidate.items && !previous.items)
+        changes.push(`${location} added item constraints`);
+    if (previous.items && candidate.items)
+        changes.push(...findBreakingSchemaChanges(previous.items, candidate.items, `${path}/*`));
     return changes;
 }
 const ajv = new _2020_1.default({ allErrors: true, strict: true });
 ajv.addFormat('date-time', /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/);
 ajv.addFormat('date', /^\d{4}-\d{2}-\d{2}$/);
 const validators = Object.fromEntries(exports.CONTRACT_NAMES.map(name => [name, ajv.compile(exports.CONTRACT_SCHEMAS[name])]));
-const sensitiveFields = new Set(['email', 'licenseKey', 'accessToken', 'refreshToken', 'password']);
+const sensitiveFields = new Set([
+    'email',
+    'licensekey',
+    'accesstoken',
+    'refreshtoken',
+    'password',
+    'authorization',
+    'token',
+    'apikey',
+    'secret',
+    'cookie',
+]);
+function sensitiveMetadataErrors(value, path = '/metadata') {
+    if (!value || typeof value !== 'object')
+        return [];
+    if (Array.isArray(value))
+        return value.flatMap((entry, index) => sensitiveMetadataErrors(entry, `${path}/${index}`));
+    return Object.entries(value).flatMap(([key, entry]) => {
+        const normalized = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const keyPath = `${path}/${key.replaceAll('~', '~0').replaceAll('/', '~1')}`;
+        const ownError = sensitiveFields.has(normalized) ? [{ path: keyPath, code: 'sensitive-field' }] : [];
+        return [...ownError, ...sensitiveMetadataErrors(entry, keyPath)];
+    });
+}
 function schemaError(error) {
     const missing = error.keyword === 'required' ? `/${String(error.params.missingProperty)}` : '';
     const path = `${error.instancePath}${missing}` || '/';
@@ -130,10 +184,7 @@ function semanticErrors(name, value) {
         }
     }
     if (name === 'TelemetryEvent' && payload.metadata && typeof payload.metadata === 'object') {
-        for (const key of Object.keys(payload.metadata)) {
-            if (sensitiveFields.has(key))
-                errors.push({ path: `/metadata/${key}`, code: 'sensitive-field' });
-        }
+        errors.push(...sensitiveMetadataErrors(payload.metadata));
     }
     return errors;
 }

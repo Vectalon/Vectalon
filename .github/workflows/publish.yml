@@ -24,6 +24,8 @@ jobs:
   # adherence down > 5%). The release job below depends on this one.
   bench-gate:
     runs-on: ubuntu-latest
+    outputs:
+      core-sha: ${{ steps.core-revision.outputs.sha }}
     # Only run for release-triggering pushes / dispatches (same condition as
     # publish-rn) so routine main pushes don't duplicate ci.yml's bench job.
     if: >
@@ -57,6 +59,13 @@ jobs:
           path: packages/core/src
           token: ${{ secrets.CORE_REPO_PAT }}
 
+      - name: Freeze Core release revision
+        id: core-revision
+        run: |
+          CORE_SHA=$(git -C packages/core/src rev-parse HEAD)
+          echo "sha=$CORE_SHA" >> "$GITHUB_OUTPUT"
+          echo "$CORE_SHA" > packages/core/core-source-revision.txt
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
 
@@ -70,6 +79,8 @@ jobs:
 
       - name: Validate product and pinned Core contracts
         run: pnpm product:check && pnpm contracts:check
+        env:
+          CORE_REPO_DIR: packages/core/src
 
       - name: Build
         run: pnpm turbo run build --filter=@vectalon-dev/rn
@@ -106,14 +117,14 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: Vectalon/core
-          ref: main
+          ref: ${{ needs.bench-gate.outputs.core-sha }}
           fetch-depth: 1
           path: packages/core/src
           token: ${{ secrets.CORE_REPO_PAT }}
 
       - name: Record core revision
         if: steps.pat.outputs.has_pat == 'true'
-        run: git -C packages/core/src rev-parse HEAD | tee packages/core/core-source-revision.txt
+        run: echo "${{ needs.bench-gate.outputs.core-sha }}" > packages/core/core-source-revision.txt
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
@@ -138,6 +149,8 @@ jobs:
 
       - name: Validate product and pinned Core contracts
         run: pnpm product:check && pnpm contracts:check
+        env:
+          CORE_REPO_DIR: packages/core/src
 
       - name: Test
         run: pnpm turbo run test --filter=@vectalon-dev/rn

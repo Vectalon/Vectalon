@@ -1,9 +1,12 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { execFile } from 'node:child_process'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { promisify } from 'node:util'
 
 const require = createRequire(import.meta.url)
+const execFileAsync = promisify(execFile)
 const { CONTRACT_REVISION, generateContractTypes } = require('../packages/core/dist/index.js')
 const targets = [
   'packages/rn/src/contracts/core.generated.ts',
@@ -33,6 +36,16 @@ export async function checkCoreContractProjections(root) {
   }
   const sourceRevision = (await readFile(path.join(root, 'packages/core/core-source-revision.txt'), 'utf8')).trim()
   if (!/^[a-f0-9]{40}$/.test(sourceRevision)) errors.push('packages/core/core-source-revision.txt is not a full commit SHA')
+  if (process.env.CORE_REPO_DIR) {
+    const coreRoot = path.resolve(root, process.env.CORE_REPO_DIR)
+    const { stdout } = await execFileAsync('git', ['-C', coreRoot, 'rev-parse', 'HEAD'])
+    if (stdout.trim() !== sourceRevision) errors.push('Bundled Core checkout does not match core-source-revision.txt')
+    const [sourceManifest, bundledManifest] = await Promise.all([
+      readFile(path.join(coreRoot, 'contracts/registry-manifest.json')),
+      readFile(path.join(root, 'packages/core/dist/contracts/registry-manifest.json')),
+    ])
+    if (!sourceManifest.equals(bundledManifest)) errors.push('Bundled Core contracts differ from the pinned Core commit')
+  }
   return { valid: errors.length === 0, errors }
 }
 
