@@ -4,6 +4,7 @@ import { useState, type CSSProperties } from 'react'
 import { renderMarkdown } from '../lib/renderMarkdown'
 import { VERDICT_BADGE } from '../lib/agents'
 import type { ReportSample } from '../lib/reportSamples'
+import { ThinkingOrb } from 'thinking-orbs'
 
 /**
  * Carbon.now.sh-style window: traffic-light chrome, dark terminal surface
@@ -38,6 +39,12 @@ export function ReportWindow({ sample, index }: { sample: ReportSample; index: n
           <span className="term-dot bg-[#27c93f]" />
         </div>
         <div className="flex min-w-0 items-center gap-2 font-mono text-[11px] text-term-ink/70">
+          <ThinkingOrb
+            state={sample.verdict === 'approved' ? 'solving' : 'searching'}
+            size={20}
+            theme="dark"
+            aria-label={`${sample.cmd} report`}
+          />
           <span className="truncate">
             <span className="text-term-ink">vectalon</span>{' '}
             <span className="text-[rgb(var(--brand))]">{sample.cmd}</span>

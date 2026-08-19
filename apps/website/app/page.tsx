@@ -5,6 +5,7 @@ import { DemoPlayer } from '../components/DemoPlayer'
 import { TypePrompt, type TypePromptHeadline } from '../components/TypePrompt'
 import { FeedAge } from '../components/FeedAge'
 import HeroHeadline from '../components/HeroHeadline'
+import { AgentOrb } from '../components/AgentOrb'
 import { fetchIntelFeed, type IntelItem } from '../lib/intel'
 import { PRODUCT_MANIFEST } from '../lib/product-manifest'
 
@@ -257,7 +258,10 @@ export default async function Home() {
                 {/* Guardrails */}
                 <div className="card !p-4">
                   <div className="pane-head">
-                    <span>guardrails</span>
+                    <span className="flex items-center gap-2">
+                      <AgentOrb state="solving" size={20} label="Guardrails checking" />
+                      guardrails
+                    </span>
                   </div>
                   <ul className="mt-3 space-y-2.5 font-mono text-[12px]">
                     {GUARDRAILS.map(g => (
@@ -279,7 +283,10 @@ export default async function Home() {
                 {/* Healing log */}
                 <div className="card !p-4">
                   <div className="pane-head">
-                    <span>healing log</span>
+                    <span className="flex items-center gap-2">
+                      <AgentOrb state="working" size={20} label="Healing in progress" />
+                      healing log
+                    </span>
                     <span className="!normal-case tracking-normal text-slate-500">vectalon feature</span>
                   </div>
                   <ul className="mt-3 space-y-2.5 font-mono text-[11px] leading-relaxed">
@@ -388,7 +395,8 @@ export default async function Home() {
                   style={{ '--reveal-delay': `${i * 90}ms` } as CSSProperties}
                 >
                   <div>
-                    <div className="font-mono text-sm text-brand">
+                    <div className="flex items-center gap-2 font-mono text-sm text-brand">
+                      <AgentOrb state={i === 0 ? 'searching' : i === 1 ? 'connecting' : 'solving'} size={20} label={s.title} />
                       <span>$</span> {s.cmd}
                     </div>
                     <div className="mt-1 font-mono text-[11px] text-slate-600">

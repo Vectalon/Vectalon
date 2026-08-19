@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { ThinkingOrb } from 'thinking-orbs'
 
 /**
  * The demo console. While demo/full-demo.mp4 buffers, the frame runs a
@@ -117,6 +118,8 @@ export function DemoPlayer() {
             aria-hidden={stage === 'booting'}
           >
             {stage === 'booting' ? (
+              <div className="flex flex-col items-center gap-4">
+                <ThinkingOrb state="working" size={64} theme="dark" aria-label="Loading demo video" />
               <ul className="space-y-2">
                 {BOOT_LINES.map((l, i) => (
                   <li
@@ -136,6 +139,7 @@ export function DemoPlayer() {
                   <span className="caret" />
                 </li>
               </ul>
+              </div>
             ) : (
               <p className="flex flex-col gap-1.5">
                 <span className="text-red-400">✘ failed to load demo/full-demo.mp4</span>
