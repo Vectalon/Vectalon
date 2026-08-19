@@ -5,6 +5,33 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] - 2026-08-19
+
+### Added
+
+- **Versioned Core contracts.** The shipped RN artifact now includes Core's
+  JSON Schema 2020-12 registry, compatibility fixtures, generated TypeScript
+  projections, semantic validators, registry digest, and exact Core source
+  revision. Package tests execute the validator from the bundled artifact.
+- **Explicit Free plan.** Free is a first-class product entitlement with a
+  zero-minor-unit price and bounded seat, scope, trial, and grace policy.
+
+### Changed
+
+- ProductDefinition now owns ISO currency/minor units, seat quantity, billing
+  cadence, tax treatment, trial eligibility, grace policy, and product scope.
+  RN and website presentation models are generated from that contract.
+- Public lifecycle status is beta until checkout, issuance, support, and
+  revocation pass their later release gates. Future SDK coverage and
+  Enterprise controls are no longer advertised as unconditional entitlements.
+- Core is synchronized to 0.3.0 and AJV 8.18.0 is declared in both the
+  workspace wrapper and published RN runtime dependency graph.
+
+### Fixed
+
+- Unknown contract majors fail closed, additive v1 fields remain compatible,
+  and malformed validation responses never echo sensitive payload values.
+
 ## [0.14.2] - 2026-08-18
 
 ### Added

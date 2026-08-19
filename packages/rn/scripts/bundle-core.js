@@ -51,6 +51,9 @@ writeFileSync(
     main: 'index.js',
     types: 'index.d.ts',
     private: true,
+    dependencies: {
+      ajv: '^8.18.0',
+    },
   }, null, 2)
 )
 

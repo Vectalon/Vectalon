@@ -64,7 +64,8 @@ function AgentCard({ agent, index }: { agent: AgentInfo; index: number }) {
   )
 }
 
-export default function AgentsPage({ searchParams }: { searchParams: { repo?: string } }) {
+export default async function AgentsPage(props: { searchParams: Promise<{ repo?: string }> }) {
+  const searchParams = await props.searchParams
   const slug = searchParams.repo ?? DEFAULT_REPO
   const repo = agentRepo(slug)
   if (!repo) notFound()

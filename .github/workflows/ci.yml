@@ -23,8 +23,17 @@ jobs:
           node-version: 22
           package-manager-cache: false
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+
+      - name: Install contract validator dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Validate product manifest
-        run: node scripts/product-manifest.mjs
+        run: pnpm product:check
+
+      - name: Check generated contract projections
+        run: pnpm contracts:check
 
   test:
     needs: [product-truth]

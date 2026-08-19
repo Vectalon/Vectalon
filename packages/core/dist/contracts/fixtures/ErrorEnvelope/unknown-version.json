@@ -1,0 +1,10 @@
+{
+  "contractVersion": "2.0.0",
+  "ok": false,
+  "error": {
+    "code": "invalid_request",
+    "message": "The request is invalid",
+    "retryable": false,
+    "requestId": "request_01"
+  }
+}

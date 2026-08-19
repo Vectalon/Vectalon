@@ -15,16 +15,30 @@ async function fixture(overrides = {}) {
   await mkdir(path.join(root, 'docs'), { recursive: true })
 
   const manifest = {
+    contractVersion: '1.0.0',
     schemaVersion: 1,
-    product: { name: 'Vectalon', releaseStatus: 'available', flagship: 'react-native' },
+    product: { id: 'vectalon', name: 'Vectalon', releaseStatus: 'beta', flagship: 'react-native' },
     packages: {
       reactNative: { name: '@vectalon-dev/rn', version: '1.2.3', status: 'available' },
-      core: { name: '@vectalon-dev/core', version: '0.4.5', distribution: 'bundled-private-runtime' },
+      core: { name: '@vectalon-dev/core', version: '0.4.5', distribution: 'bundled-private-runtime', contractRevision: `1.0.0+${'a'.repeat(64)}` },
     },
-    platforms: { reactNative: 'available', ios: 'coming-soon', android: 'coming-soon', python: 'coming-soon' },
+    platforms: { reactNative: 'beta', ios: 'coming-soon', android: 'coming-soon', flutter: 'coming-soon', python: 'coming-soon' },
     capabilities: { benchmarkScenarios: 2, deterministicCommands: 3, mcpTools: 4 },
     plans: [
-      { id: 'individual', name: 'Individual', engineTier: 'pro', price: '$19', cadence: '/developer/month', checkout: 'checkout', trialEligible: true, features: ['Local AI'] },
+      {
+        id: 'individual',
+        name: 'Individual',
+        engineTier: 'pro',
+        price: { currency: 'USD', minorUnits: 1900 },
+        seatQuantity: { minimum: 1, maximum: 1, unit: 'developer' },
+        billingCadence: 'monthly',
+        taxTreatment: 'exclusive',
+        trialEligibility: { eligible: true, durationDays: 14 },
+        gracePolicy: { offlineDays: 7, paymentFailureDays: 3 },
+        productScope: ['rn'],
+        checkout: 'checkout',
+        features: ['Local AI'],
+      },
     ],
     license: { id: 'BSL-1.1', freeCommercialDevelopers: 3, changeDate: '2030-08-06', changeLicense: 'MIT', vscodeExtension: 'MIT' },
     validation: {
@@ -36,7 +50,10 @@ async function fixture(overrides = {}) {
   }
 
   await writeFile(path.join(root, 'product-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`)
-  await writeFile(path.join(root, 'packages/rn/src/billing/product-plans.generated.json'), `${JSON.stringify(manifest.plans, null, 2)}\n`)
+  const projection = manifest.plans.every(plan => plan.price && plan.seatQuantity && plan.trialEligibility)
+    ? renderRnPlanProjection(manifest)
+    : '[]\n'
+  await writeFile(path.join(root, 'packages/rn/src/billing/product-plans.generated.json'), projection)
   await writeFile(path.join(root, 'packages/rn/package.json'), '{"name":"@vectalon-dev/rn","version":"1.2.3"}\n')
   await writeFile(path.join(root, 'packages/core/package.json'), '{"name":"@vectalon-dev/core","version":"0.4.5"}\n')
   await writeFile(path.join(root, 'packages/rn/extension/package.json'), '{"license":"MIT"}\n')
@@ -92,12 +109,45 @@ test('is read-only even when validation fails', async () => {
 })
 
 test('fails closed for an unknown schema version', async () => {
-  const root = await fixture({ schemaVersion: 2 })
+  const root = await fixture({ contractVersion: '2.0.0' })
 
   const result = await validateProductManifest(root, { actualCounts: { deterministicCommands: 3, mcpTools: 4 } })
 
   assert.equal(result.valid, false)
-  assert.deepEqual(result.errors.map(error => error.code), ['schema-version'])
+  assert.deepEqual(result.errors.map(error => error.code), ['unsupported-version'])
+})
+
+test('requires explicit money, seats, billing, tax, trial, grace, and product scope', async () => {
+  const root = await fixture({
+    plans: [{
+      id: 'individual',
+      name: 'Individual',
+      engineTier: 'pro',
+      checkout: 'checkout',
+      features: ['Local AI'],
+    }],
+  })
+
+  const result = await validateProductManifest(root)
+
+  assert.equal(result.valid, false)
+  assert.deepEqual(result.errors.map(issue => issue.path), [
+    '/plans/0/price',
+    '/plans/0/seatQuantity',
+    '/plans/0/billingCadence',
+    '/plans/0/taxTreatment',
+    '/plans/0/trialEligibility',
+    '/plans/0/gracePolicy',
+    '/plans/0/productScope',
+  ])
+})
+
+test('accepts additive product fields for forward-compatible v1 payloads', async () => {
+  const root = await fixture({ additiveField: { safelyIgnored: true } })
+
+  const result = await validateProductManifest(root, { actualCounts: { deterministicCommands: 3, mcpTools: 4 } })
+
+  assert.equal(result.valid, true)
 })
 
 test('rejects license identifier, change date, grant, and extension-license drift', async () => {
@@ -136,22 +186,38 @@ test('rejects malformed plan and license fields with precise paths', async () =>
   const result = await validateProductManifest(root)
 
   assert.equal(result.valid, false)
-  assert.deepEqual(result.errors.map(issue => issue.message), [
-    'missing required field: plans[0].id',
-    'missing required field: plans[0].engineTier',
-    'missing required field: plans[0].price',
-    'missing required field: plans[0].cadence',
-    'missing required field: plans[0].checkout',
-    'plans[0].trialEligible must be a boolean',
-    'plans[0].features must be a non-empty array',
-    'missing required field: license.freeCommercialDevelopers',
-    'missing required field: license.changeDate',
-    'missing required field: license.changeLicense',
-    'missing required field: license.vscodeExtension',
+  assert.deepEqual(result.errors.map(issue => issue.path), [
+    '/plans/0/engineTier',
+    '/plans/0/price',
+    '/plans/0/seatQuantity',
+    '/plans/0/billingCadence',
+    '/plans/0/taxTreatment',
+    '/plans/0/trialEligibility',
+    '/plans/0/gracePolicy',
+    '/plans/0/productScope',
+    '/plans/0/checkout',
+    '/plans/0/id',
+    '/plans/0/features',
+    '/license/freeCommercialDevelopers',
+    '/license/changeDate',
+    '/license/changeLicense',
+    '/license/vscodeExtension',
   ])
 })
 
 test('renders the RN plan projection deterministically', () => {
-  const plans = [{ id: 'individual', name: 'Individual', features: ['Local AI'] }]
-  assert.equal(renderRnPlanProjection({ plans }), `${JSON.stringify(plans, null, 2)}\n`)
+  const manifest = {
+    plans: [{
+      id: 'individual', name: 'Individual', engineTier: 'pro',
+      price: { currency: 'USD', minorUnits: 1900 },
+      seatQuantity: { minimum: 1, maximum: 1, unit: 'developer' },
+      billingCadence: 'monthly', checkout: 'checkout',
+      trialEligibility: { eligible: true }, features: ['Local AI'],
+    }],
+  }
+  assert.equal(renderRnPlanProjection(manifest), `${JSON.stringify([{
+    id: 'individual', name: 'Individual', engineTier: 'pro', price: '$19',
+    cadence: '/developer/month', checkout: 'checkout', trialEligible: true,
+    features: ['Local AI'],
+  }], null, 2)}\n`)
 })

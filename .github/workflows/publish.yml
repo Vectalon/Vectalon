@@ -35,9 +35,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Validate product manifest
-        run: node scripts/product-manifest.mjs
-
       - name: Check for core PAT
         id: pat
         env:
@@ -70,6 +67,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Validate product and pinned Core contracts
+        run: pnpm product:check && pnpm contracts:check
 
       - name: Build
         run: pnpm turbo run build --filter=@vectalon-dev/rn
@@ -135,6 +135,9 @@ jobs:
 
       - name: Build
         run: pnpm turbo run build --filter=@vectalon-dev/rn
+
+      - name: Validate product and pinned Core contracts
+        run: pnpm product:check && pnpm contracts:check
 
       - name: Test
         run: pnpm turbo run test --filter=@vectalon-dev/rn

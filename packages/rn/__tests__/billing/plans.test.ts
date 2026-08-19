@@ -6,17 +6,19 @@ import { PLANS, PLAN_BY_ID, planForTier, planCovers } from '../../src/billing/pl
 import { renderPlanLadder, priceWithCadence } from '../../src/cli/commands/plan'
 
 describe('commercial plans', () => {
-  it('exposes exactly the three tiers, Individual → Team → Enterprise', () => {
-    expect(PLANS.map(p => p.id)).toEqual(['individual', 'team', 'enterprise'])
+  it('exposes Free explicitly before the three paid plans', () => {
+    expect(PLANS.map(p => p.id)).toEqual(['free', 'individual', 'team', 'enterprise'])
   })
 
-  it('ships the roadmap prices: Individual $19, Team $49, Enterprise custom', () => {
+  it('ships the roadmap prices: Free $0, Individual $19, Team $49, Enterprise custom', () => {
+    expect(PLAN_BY_ID.free.price).toBe('$0')
     expect(PLAN_BY_ID.individual.price).toBe('$19')
     expect(PLAN_BY_ID.team.price).toBe('$49')
     expect(PLAN_BY_ID.enterprise.price).toBe('Custom')
   })
 
   it('maps each tier to the right engine gate', () => {
+    expect(PLAN_BY_ID.free.engineTier).toBe('free')
     expect(PLAN_BY_ID.individual.engineTier).toBe('pro')
     expect(PLAN_BY_ID.team.engineTier).toBe('team')
     expect(PLAN_BY_ID.enterprise.engineTier).toBe('enterprise')
@@ -39,23 +41,24 @@ describe('commercial plans', () => {
     expect(features).toContain('shared knowledge')
   })
 
-  it('Enterprise carries self-hosted, SSO, audit, private models, org-wide policies, multi-repo', () => {
+  it('qualifies Enterprise deployment and governance capabilities as contracted scope', () => {
     const features = PLAN_BY_ID.enterprise.features.join(' ').toLowerCase()
-    expect(features).toContain('self-hosted')
+    expect(features).toContain('self-hosting')
     expect(features).toContain('sso')
     expect(features).toContain('audit')
-    expect(features).toContain('private')
-    expect(features).toContain('organization-wide policies')
+    expect(features).toContain('only when contracted')
+    expect(features).toContain('organization policy')
     expect(features).toContain('multi-repository')
+    expect(features).not.toContain('air-gapped ready')
   })
 
-  it('planForTier: free/pro → Individual, team → Team, enterprise → Enterprise', () => {
-    expect(planForTier('free').id).toBe('individual')
+  it('maps each engine tier to its named product plan', () => {
+    expect(planForTier('free').id).toBe('free')
     expect(planForTier('pro').id).toBe('individual')
     expect(planForTier('team').id).toBe('team')
     expect(planForTier('enterprise').id).toBe('enterprise')
-    expect(planForTier(undefined).id).toBe('individual')
-    expect(planForTier(null).id).toBe('individual')
+    expect(planForTier(undefined).id).toBe('free')
+    expect(planForTier(null).id).toBe('free')
   })
 
   it('planCovers: a plan covers its own tier and below, not above', () => {
@@ -66,6 +69,8 @@ describe('commercial plans', () => {
     expect(planCovers('team', 'team')).toBe(true)
     expect(planCovers('team', 'enterprise')).toBe(false)
     expect(planCovers('enterprise', 'enterprise')).toBe(true)
+    expect(planCovers('free', 'free')).toBe(true)
+    expect(planCovers('free', 'pro')).toBe(false)
   })
 })
 
@@ -73,7 +78,8 @@ describe('renderPlanLadder', () => {
   it('marks the current plan with ▶ and shows price + cadence + features', () => {
     const lines = renderPlanLadder('team')
     const joined = lines.join('\n')
-    expect(lines[0]).toContain('Individual')
+    expect(lines[0]).toContain('Free')
+    expect(joined).toContain('$0 none')
     expect(joined).toContain('$19/developer/month')
     expect(joined).toContain('$49/developer/month')
     expect(joined).toContain('Custom annual')

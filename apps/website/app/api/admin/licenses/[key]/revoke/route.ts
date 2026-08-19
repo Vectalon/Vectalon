@@ -5,7 +5,8 @@ import { defaultAdminStore } from '../../../../../../lib/admin-store'
 export const runtime = 'nodejs'
 
 /** Revoke a license instantly — POST /api/admin/licenses/[key]/revoke. */
-export async function POST(_request: Request, { params }: { params: { key: string } }) {
+export async function POST(_request: Request, props: { params: Promise<{ key: string }> }) {
+  const params = await props.params
   if (!(await isAdmin())) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
   }

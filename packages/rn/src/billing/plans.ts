@@ -1,5 +1,5 @@
 /**
- * vc plan — the commercial plan layer (Individual / Team / Enterprise).
+ * vc plan — the product plan layer (Free / Individual / Team / Enterprise).
  * Business Source License 1.1 (BSL-1.1)
  *
  * Directive #9: start charging earlier than you think. The engine already
@@ -17,7 +17,7 @@
 import type { Tier } from '@vectalon-dev/core'
 import productPlans from './product-plans.generated.json'
 
-export type PlanId = 'individual' | 'team' | 'enterprise'
+export type PlanId = 'free' | 'individual' | 'team' | 'enterprise'
 
 export interface PlanDef {
   id: PlanId
@@ -30,11 +30,12 @@ export interface PlanDef {
   /** Commercial feature list — exactly the roadmap's split. */
   features: string[]
   /** Checkout / contact surface. */
-  checkout: 'checkout' | 'sales'
+  checkout: 'none' | 'checkout' | 'sales'
   trialEligible: boolean
 }
 
 const TAGLINES: Record<PlanId, string> = {
+  free: 'Local project setup, diagnostics, and basic React Native guardrails.',
   individual: 'Local AI + project intelligence + diagnostics.',
   team: 'Team Brain, shared policies, PR review, CI, shared knowledge, dashboards.',
   enterprise: 'Self-hosted, SSO, audit, private models, organization-wide policies, multi-repository intelligence.',
@@ -53,9 +54,7 @@ export const PLAN_BY_ID: Record<PlanId, PlanDef> = Object.fromEntries(
 ) as Record<PlanId, PlanDef>
 
 /**
- * The commercial plan a license tier unlocks. Engine tiers below `pro`
- * (the free tier) map to Individual's feature set — free users get the
- * deterministic agents but not the paid surface.
+ * The named product plan an engine tier unlocks.
  */
 export function planForTier(tier: Tier | undefined | null): PlanDef {
   switch (tier) {
@@ -63,8 +62,10 @@ export function planForTier(tier: Tier | undefined | null): PlanDef {
       return PLAN_BY_ID.team
     case 'enterprise':
       return PLAN_BY_ID.enterprise
-    default:
+    case 'pro':
       return PLAN_BY_ID.individual
+    default:
+      return PLAN_BY_ID.free
   }
 }
 
