@@ -1,5 +1,19 @@
 [
   {
+    "id": "free",
+    "name": "Free",
+    "engineTier": "free",
+    "price": "$0",
+    "cadence": "none",
+    "checkout": "none",
+    "trialEligible": false,
+    "features": [
+      "Local project setup and diagnostics",
+      "Basic React Native guardrails",
+      "No payment method required"
+    ]
+  },
+  {
     "id": "individual",
     "name": "Individual",
     "engineTier": "pro",
@@ -41,10 +55,9 @@
     "trialEligible": false,
     "features": [
       "Everything in Team",
-      "Self-hosted deployment (air-gapped ready)",
-      "SSO / SAML + audit trails",
-      "Private / company-controlled models (Ollama, vLLM)",
-      "Organization-wide policies + multi-repository intelligence"
+      "Deployment and governance scope confirmed during sales qualification",
+      "Self-hosting, SSO / SAML, audit, and model controls only when contracted",
+      "Organization policy and multi-repository scope only when contracted"
     ]
   }
 ]

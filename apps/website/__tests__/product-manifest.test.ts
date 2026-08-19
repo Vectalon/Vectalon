@@ -4,6 +4,7 @@ import { AGENT_REPOS } from '../lib/agents'
 describe('product manifest projections', () => {
   it('drives the public pricing plans from the root product truth', () => {
     expect(PRODUCT_PLANS.map(plan => [plan.id, plan.price, plan.engineTier])).toEqual([
+      ['free', '$0', 'free'],
       ['individual', '$19', 'pro'],
       ['team', '$49', 'team'],
       ['enterprise', 'Custom', 'enterprise'],

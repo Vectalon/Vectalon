@@ -97,7 +97,8 @@ export function generateStaticParams() {
   return Object.keys(SDK_DATA).map(slug => ({ slug }))
 }
 
-export default function SdkPage({ params }: { params: { slug: string } }) {
+export default async function SdkPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params
   const sdk = SDK_DATA[params.slug]
   if (!sdk) notFound()
 

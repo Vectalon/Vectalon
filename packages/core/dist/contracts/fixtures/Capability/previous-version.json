@@ -1,0 +1,6 @@
+{
+  "contractVersion": "0.9.0",
+  "id": "rn.doctor",
+  "status": "available",
+  "description": "Diagnose a React Native project"
+}

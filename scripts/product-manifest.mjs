@@ -1,6 +1,10 @@
 import { readdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
+import { createRequire } from 'node:module'
 import { pathToFileURL } from 'node:url'
+
+const require = createRequire(import.meta.url)
+const { validateContract } = require('../packages/core/dist/index.js')
 
 const error = (code, file, message) => ({ code, file, message })
 
@@ -8,50 +12,29 @@ async function json(file) {
   return JSON.parse(await readFile(file, 'utf8'))
 }
 
-function required(value, field, errors, file) {
-  if (value === undefined || value === null || value === '') {
-    errors.push(error('schema', file, `missing required field: ${field}`))
-  }
-}
-
 function validateSchema(manifest, file) {
-  const errors = []
-  if (manifest.schemaVersion !== 1) {
-    errors.push(error('schema-version', file, `expected schemaVersion 1, found ${String(manifest.schemaVersion)}`))
-  }
-  required(manifest.product?.name, 'product.name', errors, file)
-  required(manifest.packages?.reactNative?.version, 'packages.reactNative.version', errors, file)
-  required(manifest.packages?.core?.version, 'packages.core.version', errors, file)
-  required(manifest.capabilities?.benchmarkScenarios, 'capabilities.benchmarkScenarios', errors, file)
-  if (!Array.isArray(manifest.plans) || manifest.plans.length === 0) {
-    errors.push(error('schema', file, 'plans must contain at least one plan'))
-  } else {
-    manifest.plans.forEach((plan, index) => {
-      const prefix = `plans[${index}]`
-      for (const field of ['id', 'name', 'engineTier', 'price', 'cadence', 'checkout']) {
-        required(plan?.[field], `${prefix}.${field}`, errors, file)
-      }
-      if (typeof plan?.trialEligible !== 'boolean') {
-        errors.push(error('schema', file, `${prefix}.trialEligible must be a boolean`))
-      }
-      if (!Array.isArray(plan?.features) || plan.features.length === 0) {
-        errors.push(error('schema', file, `${prefix}.features must be a non-empty array`))
-      }
-    })
-  }
-  required(manifest.license?.id, 'license.id', errors, file)
-  required(manifest.license?.freeCommercialDevelopers, 'license.freeCommercialDevelopers', errors, file)
-  required(manifest.license?.changeDate, 'license.changeDate', errors, file)
-  required(manifest.license?.changeLicense, 'license.changeLicense', errors, file)
-  required(manifest.license?.vscodeExtension, 'license.vscodeExtension', errors, file)
-  if (!Array.isArray(manifest.validation?.documents)) {
-    errors.push(error('schema', file, 'validation.documents must be an array'))
-  }
-  return errors
+  return validateContract('ProductDefinition', manifest).errors.map(issue => ({
+    ...error(issue.code, file, `${issue.path}: ${issue.code}`),
+    path: issue.path,
+  }))
 }
 
 export function renderRnPlanProjection(manifest) {
-  return `${JSON.stringify(manifest.plans, null, 2)}\n`
+  const plans = manifest.plans.map(plan => ({
+    id: plan.id,
+    name: plan.name,
+    engineTier: plan.engineTier,
+    price: plan.checkout === 'sales'
+      ? 'Custom'
+      : `${plan.price.currency === 'USD' ? '$' : `${plan.price.currency} `}${plan.price.minorUnits / 100}`,
+    cadence: plan.billingCadence === 'monthly' && plan.seatQuantity.unit === 'developer'
+      ? '/developer/month'
+      : plan.billingCadence,
+    checkout: plan.checkout,
+    trialEligible: plan.trialEligibility.eligible,
+    features: plan.features,
+  }))
+  return `${JSON.stringify(plans, null, 2)}\n`
 }
 
 function factValue(manifest, name) {
@@ -63,7 +46,11 @@ function factValue(manifest, name) {
   if (name === 'license-id') return manifest.license.id
   if (name === 'license-change-date') return manifest.license.changeDate
   if (name.endsWith('-price')) {
-    return manifest.plans.find(plan => plan.id === name.slice(0, -'-price'.length))?.price
+    const plan = manifest.plans.find(plan => plan.id === name.slice(0, -'-price'.length))
+    if (!plan) return undefined
+    return plan.checkout === 'sales'
+      ? 'Custom'
+      : `${plan.price.currency === 'USD' ? '$' : `${plan.price.currency} `}${plan.price.minorUnits / 100}`
   }
   return undefined
 }
@@ -154,7 +141,7 @@ export async function validateProductManifest(root, options = {}) {
   }
 
   const rnPlanProjection = await json(path.join(root, 'packages/rn/src/billing/product-plans.generated.json'))
-  if (JSON.stringify(rnPlanProjection) !== JSON.stringify(manifest.plans)) {
+  if (JSON.stringify(rnPlanProjection) !== JSON.stringify(JSON.parse(renderRnPlanProjection(manifest)))) {
     errors.push(error('rn-plan-projection', 'packages/rn/src/billing/product-plans.generated.json', 'published RN pricing projection differs from product-manifest.json'))
   }
 

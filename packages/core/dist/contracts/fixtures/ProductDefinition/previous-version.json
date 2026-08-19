@@ -1,0 +1,77 @@
+{
+  "contractVersion": "0.9.0",
+  "schemaVersion": 1,
+  "product": {
+    "id": "vectalon",
+    "name": "Vectalon",
+    "releaseStatus": "beta",
+    "flagship": "react-native"
+  },
+  "packages": {
+    "reactNative": {
+      "name": "@vectalon-dev/rn",
+      "version": "0.14.2",
+      "status": "beta"
+    },
+    "core": {
+      "name": "@vectalon-dev/core",
+      "version": "0.1.0",
+      "distribution": "bundled-private-runtime",
+      "contractRevision": "1.0.0+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  "platforms": {
+    "reactNative": "beta",
+    "ios": "coming-soon",
+    "android": "coming-soon",
+    "flutter": "coming-soon",
+    "python": "coming-soon"
+  },
+  "capabilities": {
+    "benchmarkScenarios": 43,
+    "deterministicCommands": 44,
+    "mcpTools": 64
+  },
+  "plans": [
+    {
+      "id": "free",
+      "name": "Free",
+      "engineTier": "free",
+      "price": {
+        "currency": "USD",
+        "minorUnits": 0
+      },
+      "seatQuantity": {
+        "minimum": 1,
+        "maximum": 3,
+        "unit": "developer"
+      },
+      "billingCadence": "none",
+      "taxTreatment": "not-applicable",
+      "trialEligibility": {
+        "eligible": false
+      },
+      "gracePolicy": {
+        "offlineDays": 30,
+        "paymentFailureDays": 0
+      },
+      "productScope": [
+        "rn"
+      ],
+      "checkout": "none",
+      "features": [
+        "Local project intelligence"
+      ]
+    }
+  ],
+  "license": {
+    "id": "BSL-1.1",
+    "freeCommercialDevelopers": 3,
+    "changeDate": "2030-08-06",
+    "changeLicense": "MIT",
+    "vscodeExtension": "MIT"
+  },
+  "validation": {
+    "documents": []
+  }
+}

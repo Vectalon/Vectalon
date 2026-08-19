@@ -1,0 +1,11 @@
+{
+  "contractVersion": "1.0.0",
+  "eventId": "event_01",
+  "event": "command.completed",
+  "product": "rn",
+  "occurredAt": "2026-08-19T08:00:00Z",
+  "sessionId": "session_01",
+  "metadata": {
+    "command": "doctor"
+  }
+}

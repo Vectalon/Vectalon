@@ -1,0 +1,88 @@
+{
+  "contractVersion": "1.0.0",
+  "revision": "1.0.0+2e0c787b4c8955ec7f66796dea6b7abffddd82609b93decdd51f57721ad63e63",
+  "generator": {
+    "name": "vectalon-core",
+    "version": "1.0.0"
+  },
+  "typeProjectionDigest": "9dad9d0dc7aa764876839686e7f98f6632a761aa5df06688fae733e325095a84",
+  "compatibility": {
+    "unknownFields": "accept",
+    "unknownMajorVersions": "reject",
+    "previousMajorVersions": "reject"
+  },
+  "schemas": [
+    {
+      "name": "Capability",
+      "owner": "core",
+      "id": "https://contracts.vectalon.dev/v1/Capability.schema.json",
+      "version": "1.0.0",
+      "digest": "5c96731f7795e7f9b8e73c8b155d109f703bd0b3a2aa44a6632f3493a42779ac",
+      "status": "current"
+    },
+    {
+      "name": "DiagnosticResult",
+      "owner": "core",
+      "id": "https://contracts.vectalon.dev/v1/DiagnosticResult.schema.json",
+      "version": "1.0.0",
+      "digest": "e1293e9c922490bbf4000a240236686408b1c6e74bcbcfbec402ee26a7e5919e",
+      "status": "current"
+    },
+    {
+      "name": "EntitlementDecision",
+      "owner": "core",
+      "id": "https://contracts.vectalon.dev/v1/EntitlementDecision.schema.json",
+      "version": "1.0.0",
+      "digest": "317e890cf5ea16dab33b9447512d072e1de7e6cd212f6d2791ffaae69dec4246",
+      "status": "current"
+    },
+    {
+      "name": "ErrorEnvelope",
+      "owner": "core",
+      "id": "https://contracts.vectalon.dev/v1/ErrorEnvelope.schema.json",
+      "version": "1.0.0",
+      "digest": "bb26edac2d26a7e66fc23182e18dab529418f78b2d15d90b3805f7c421a20006",
+      "status": "current"
+    },
+    {
+      "name": "IdentityReference",
+      "owner": "core",
+      "id": "https://contracts.vectalon.dev/v1/IdentityReference.schema.json",
+      "version": "1.0.0",
+      "digest": "9aec3fb9f2ff03b82bd489eb38736de96f1dce3464d4928caca7d337fbd641b6",
+      "status": "current"
+    },
+    {
+      "name": "LicenseClaims",
+      "owner": "core",
+      "id": "https://contracts.vectalon.dev/v1/LicenseClaims.schema.json",
+      "version": "1.0.0",
+      "digest": "ffab68f74b661c0fe695efa75bb0fd03ee5870a6594445f6a3c9a59d82b70e82",
+      "status": "current"
+    },
+    {
+      "name": "ProductDefinition",
+      "owner": "core",
+      "id": "https://contracts.vectalon.dev/v1/ProductDefinition.schema.json",
+      "version": "1.0.0",
+      "digest": "0bc3c48bf6b53360a8cbdd5f6da48298d33fc9e5ed553748ab317afb55c329a1",
+      "status": "current"
+    },
+    {
+      "name": "TelemetryEvent",
+      "owner": "core",
+      "id": "https://contracts.vectalon.dev/v1/TelemetryEvent.schema.json",
+      "version": "1.0.0",
+      "digest": "9eefffe459ad64515a430ba482f1a8dffa9e03d635a65cb1862274e64a9c1877",
+      "status": "current"
+    },
+    {
+      "name": "TrialCredential",
+      "owner": "core",
+      "id": "https://contracts.vectalon.dev/v1/TrialCredential.schema.json",
+      "version": "1.0.0",
+      "digest": "49c330dda713d545538a8d51057aa3cbd5e789f66d877d9c2e8fe0bac423b93f",
+      "status": "current"
+    }
+  ]
+}

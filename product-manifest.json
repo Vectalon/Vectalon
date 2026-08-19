@@ -1,24 +1,27 @@
 {
+  "contractVersion": "1.0.0",
   "schemaVersion": 1,
   "product": {
+    "id": "vectalon",
     "name": "Vectalon",
-    "releaseStatus": "available",
+    "releaseStatus": "beta",
     "flagship": "react-native"
   },
   "packages": {
     "reactNative": {
       "name": "@vectalon-dev/rn",
-      "version": "0.14.2",
-      "status": "available"
+      "version": "0.15.0",
+      "status": "beta"
     },
     "core": {
       "name": "@vectalon-dev/core",
-      "version": "0.1.0",
-      "distribution": "bundled-private-runtime"
+      "version": "0.3.0",
+      "distribution": "bundled-private-runtime",
+      "contractRevision": "1.0.0+2e0c787b4c8955ec7f66796dea6b7abffddd82609b93decdd51f57721ad63e63"
     }
   },
   "platforms": {
-    "reactNative": "available",
+    "reactNative": "beta",
     "ios": "coming-soon",
     "android": "coming-soon",
     "flutter": "coming-soon",
@@ -31,13 +34,35 @@
   },
   "plans": [
     {
+      "id": "free",
+      "name": "Free",
+      "engineTier": "free",
+      "price": { "currency": "USD", "minorUnits": 0 },
+      "seatQuantity": { "minimum": 1, "maximum": 3, "unit": "developer" },
+      "billingCadence": "none",
+      "taxTreatment": "not-applicable",
+      "trialEligibility": { "eligible": false },
+      "gracePolicy": { "offlineDays": 30, "paymentFailureDays": 0 },
+      "productScope": ["rn"],
+      "checkout": "none",
+      "features": [
+        "Local project setup and diagnostics",
+        "Basic React Native guardrails",
+        "No payment method required"
+      ]
+    },
+    {
       "id": "individual",
       "name": "Individual",
       "engineTier": "pro",
-      "price": "$19",
-      "cadence": "/developer/month",
+      "price": { "currency": "USD", "minorUnits": 1900 },
+      "seatQuantity": { "minimum": 1, "maximum": 1, "unit": "developer" },
+      "billingCadence": "monthly",
+      "taxTreatment": "exclusive",
+      "trialEligibility": { "eligible": true, "durationDays": 14 },
+      "gracePolicy": { "offlineDays": 14, "paymentFailureDays": 7 },
+      "productScope": ["rn"],
       "checkout": "checkout",
-      "trialEligible": true,
       "features": [
         "Local AI — your source never leaves your machine",
         "Project intelligence (intel, score, review, sec, arch)",
@@ -50,10 +75,14 @@
       "id": "team",
       "name": "Team",
       "engineTier": "team",
-      "price": "$49",
-      "cadence": "/developer/month",
+      "price": { "currency": "USD", "minorUnits": 4900 },
+      "seatQuantity": { "minimum": 2, "maximum": null, "unit": "developer" },
+      "billingCadence": "monthly",
+      "taxTreatment": "exclusive",
+      "trialEligibility": { "eligible": true, "durationDays": 14 },
+      "gracePolicy": { "offlineDays": 14, "paymentFailureDays": 7 },
+      "productScope": ["rn"],
       "checkout": "checkout",
-      "trialEligible": true,
       "features": [
         "Everything in Individual",
         "Team Brain — decisions, expertise, shared knowledge across projects",
@@ -66,16 +95,19 @@
       "id": "enterprise",
       "name": "Enterprise",
       "engineTier": "enterprise",
-      "price": "Custom",
-      "cadence": "annual",
+      "price": { "currency": "USD", "minorUnits": 0 },
+      "seatQuantity": { "minimum": 1, "maximum": null, "unit": "developer" },
+      "billingCadence": "annual",
+      "taxTreatment": "quoted",
+      "trialEligibility": { "eligible": false },
+      "gracePolicy": { "offlineDays": 30, "paymentFailureDays": 30 },
+      "productScope": ["rn"],
       "checkout": "sales",
-      "trialEligible": false,
       "features": [
         "Everything in Team",
-        "Self-hosted deployment (air-gapped ready)",
-        "SSO / SAML + audit trails",
-        "Private / company-controlled models (Ollama, vLLM)",
-        "Organization-wide policies + multi-repository intelligence"
+        "Deployment and governance scope confirmed during sales qualification",
+        "Self-hosting, SSO / SAML, audit, and model controls only when contracted",
+        "Organization policy and multi-repository scope only when contracted"
       ]
     }
   ],

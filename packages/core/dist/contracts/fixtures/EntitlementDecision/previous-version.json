@@ -1,0 +1,9 @@
+{
+  "contractVersion": "0.9.0",
+  "decisionId": "decision_01",
+  "subjectId": "subject_01",
+  "capabilityId": "rn.doctor",
+  "allowed": true,
+  "decidedAt": "2026-08-19T08:00:00Z",
+  "reason": "included-in-plan"
+}

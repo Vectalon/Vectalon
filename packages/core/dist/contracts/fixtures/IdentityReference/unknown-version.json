@@ -1,0 +1,7 @@
+{
+  "contractVersion": "2.0.0",
+  "subjectId": "subject_01",
+  "provider": "github",
+  "providerSubjectId": "12345",
+  "displayName": "redacted"
+}

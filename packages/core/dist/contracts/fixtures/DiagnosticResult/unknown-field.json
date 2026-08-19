@@ -1,0 +1,10 @@
+{
+  "contractVersion": "1.0.0",
+  "id": "diag_01",
+  "createdAt": "2026-08-19T08:00:00Z",
+  "status": "pass",
+  "diagnostics": [],
+  "additiveField": {
+    "safelyIgnored": true
+  }
+}

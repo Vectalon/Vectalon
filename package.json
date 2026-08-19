@@ -14,7 +14,9 @@
     "test": "turbo run test",
     "product:check": "node scripts/product-manifest.mjs",
     "product:generate": "node scripts/generate-product-projections.mjs",
-    "product:test": "node --test scripts/product-manifest.test.mjs",
+    "product:test": "node --test scripts/product-manifest.test.mjs scripts/core-contracts.test.mjs",
+    "contracts:generate": "node scripts/core-contracts.mjs generate",
+    "contracts:check": "node scripts/core-contracts.mjs check",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "publish:rn": "pnpm --filter @vectalon-dev/rn release"
@@ -25,6 +27,12 @@
   "engines": {
     "node": ">=20.12.0",
     "npm": ">=10.9.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "adm-zip": "^0.6.0",
+      "sharp": "^0.35.0"
+    }
   },
   "packageManager": "pnpm@9.0.0+sha512.b4106707c7225b1748b61595953ccbebff97b54ad05d002aa3635f633b9c53cd666f7ce9b8bc44704f1fa048b9a49b55371ab2d9e9d667d1efe2ef1514bcd513"
 }

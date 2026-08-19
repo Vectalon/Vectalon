@@ -9,6 +9,12 @@ const PLAN_PRESENTATION: Record<ProductPlanId, {
   href?: string
   highlight?: boolean
 }> = {
+  free: {
+    blurb: 'Local project setup, diagnostics, and basic React Native guardrails. No card or trial countdown.',
+    cta: 'Get started free',
+    fallback: 'Get started free',
+    href: '/sdk/react-native',
+  },
   individual: {
     blurb: 'Local AI + project intelligence + diagnostics. Your source never leaves your machine.',
     cta: 'Buy Individual',
@@ -21,7 +27,7 @@ const PLAN_PRESENTATION: Record<ProductPlanId, {
     highlight: true,
   },
   enterprise: {
-    blurb: 'Self-hosted, SSO, audit, private models, organization-wide policies, multi-repository intelligence.',
+    blurb: 'Qualified deployments with scope, controls, support, and availability confirmed in writing before purchase.',
     cta: 'Talk to us',
     fallback: 'Talk to us',
     href: 'mailto:sales@vectalon.in',
@@ -57,7 +63,7 @@ const FAQ = [
   },
   {
     q: 'What do the tiers cover, platform-wise?',
-    a: 'One license covers every Vectalon SDK: the React Native harness today, and iOS, Android, Flutter, and Python harnesses as they ship — on Individual, Team, and Enterprise alike. `vectalon plan` shows your current plan and what it unlocks.',
+    a: 'Current plans cover the React Native harness only. Future SDKs will publish their scope and commercial terms when they are actually available; they are not silently included today.',
   },
   {
     q: 'Why Business Source License?',
@@ -65,7 +71,7 @@ const FAQ = [
   },
   {
     q: 'What happens when a license is revoked?',
-    a: 'The CLI validates locally with a cached key and re-checks online periodically — a revoked key stops working within days. Refunds revoke instantly; the admin revocation center makes manual revokes instant too.',
+    a: 'Online checks observe revocation immediately. Offline clients may continue only for the signed grace period shown in the plan contract, then must refresh. Refund and manual-revocation copy never promises impossible instant offline enforcement.',
   },
   {
     q: 'Do you store my code?',
@@ -104,7 +110,7 @@ export default function PricingPage() {
       <div className="text-center">
         <div className="mx-auto mb-5 w-fit">
           <span className="chip font-mono">
-            vectalon pricing — <span className="text-brand">three tiers</span> — no card
+            vectalon pricing — <span className="text-brand">four plans</span> — free means free
           </span>
         </div>
         <h1 className="text-4xl font-bold text-slate-50">Pricing</h1>
@@ -119,7 +125,7 @@ export default function PricingPage() {
         </p>
       </div>
 
-      <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {PLANS.map(p => (
           <div
             key={p.name}
