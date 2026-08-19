@@ -19,37 +19,37 @@ const SDK_CHIPS = [
 const FEATURES: Array<{ title: string; body: string; icon: FeatureIconName }> = [
   {
     title: 'MCP-native agent',
-    body: `A local model runs as an agent over ${PRODUCT_MANIFEST.capabilities.mcpTools} project-aware tools — feature workflows, code review, upgrades, E2E generation, device control — all through the MCP protocol your editor already speaks. On top of the model sits a fleet of ${PRODUCT_MANIFEST.capabilities.deterministicCommands} deterministic agents (review, security, SOC 2, GitHub PR triage, DX scoring, build archive) that need no model at all.`,
+    body: `A local model runs as an agent over ${PRODUCT_MANIFEST.capabilities.mcpTools} project-aware tools: feature workflows, code review, upgrades, E2E generation, device control. All through the MCP protocol your editor already speaks. On top: ${PRODUCT_MANIFEST.capabilities.deterministicCommands} deterministic agents that need no model.`,
     icon: 'robot',
   },
   {
     title: 'Self-maintaining knowledge',
-    body: 'Init scans your repo and builds a living knowledge graph; serve re-seeds it hourly. Every run is distilled into L0→L3 project memory — the project teaches the model, and the model never works from a generic guess.',
+    body: 'Init scans your repo and builds a living knowledge graph; serve re-seeds it hourly. Every run is distilled into L0→L3 project memory. The project teaches the model, and the model never works from a generic guess.',
     icon: 'brain',
   },
   {
     title: 'Always-current model',
-    body: 'Web intel pipelines (RN releases, Expo changelog, Hacker News, GitHub trending, Callstack) feed the model\'s system prompt, so it knows 0.87-rc before the release notes do.',
+    body: 'Web intel pipelines (RN releases, Expo changelog, Hacker News, GitHub trending, Callstack) feed the model\'s system prompt. It knows 0.87-rc before the release notes do.',
     icon: 'broadcast',
   },
   {
     title: 'Upgrade Copilot',
-    body: 'rn-diff-purge diffs, AST-grade impact analysis, and codemods — plan and apply React Native upgrades with every native and JS/TS change mapped out.',
+    body: 'rn-diff-purge diffs, AST-grade impact analysis, and codemods. Plan and apply React Native upgrades with every native and JS/TS change mapped out.',
     icon: 'wrench',
   },
   {
     title: 'Guardrails on save',
-    body: 'Platform best-practices rules (Pressable, no leaked renders, New Architecture hazards) run in your editor and in code review — with hallucination-verified findings.',
+    body: 'Platform best-practices rules (Pressable, no leaked renders, New Architecture hazards) run in your editor and in code review. Hallucination-verified findings.',
     icon: 'shield',
   },
   {
     title: 'Compile-checked healing',
-    body: 'Every agent fix is typechecked before it lands. A fix that doesn\'t reduce errors is reverted. Generated code renders headlessly in a sandbox before you see it.',
+    body: 'Every agent fix is typechecked before it lands. A fix that does not reduce errors is reverted. Generated code renders headlessly in a sandbox before you see it.',
     icon: 'check',
   },
   {
     title: 'Impact regression coverage',
-    body: 'Changed files map to affected screens (AST-driven, no model calls), each one gets a Maestro regression flow — with accessibility variants for screens covered by a11y criteria.',
+    body: 'Changed files map to affected screens (AST-driven, no model calls), each one gets a Maestro regression flow with accessibility variants for screens covered by a11y criteria.',
     icon: 'shield',
   },
 ]
@@ -63,19 +63,19 @@ const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'Does it need a model?',
-    a: 'The optional model-driven agent does — but the 44 deterministic commands (review, security, SOC 2, GitHub PR triage, incident command, build archive, …) need no model at all. They run offline with a report and a verdict, zero model calls, free on every tier.',
+    a: 'The optional model-driven agent does, but the 44 deterministic commands (review, security, SOC 2, GitHub PR triage, incident command, build archive, …) need no model at all. They run offline with a report and a verdict, zero model calls, free on every tier.',
   },
   {
     q: 'Do the deterministic agents go stale?',
-    a: 'No — every run reads the project as it is right now. Source files, git history, CI config, and telemetry exports are scanned at run time. The ecosystem knowledge auto-refreshes hourly under vectalon serve.',
+    a: 'No. Every run reads the project as it is right now. Source files, git history, CI config, and telemetry exports are scanned at run time. The ecosystem knowledge auto-refreshes hourly under vectalon serve.',
   },
   {
     q: 'Which platforms are supported?',
-    a: `React Native is live at v${PRODUCT_MANIFEST.packages.reactNative.version}. iOS, Android, and Python harnesses are in development — join the waitlist and we'll email the moment a beta opens.`,
+    a: `React Native is live at v${PRODUCT_MANIFEST.packages.reactNative.version}. iOS, Android, and Python harnesses are in development. Join the waitlist and we'll email the moment a beta opens.`,
   },
   {
     q: 'How is it different from other AI coding tools?',
-    a: `It isn't an AI coding assistant — it's an engineering control plane. Give Vectalon a React Native repository and it continuously understands, reviews, diagnoses, upgrades, and validates it. Deterministic and compile-checked.`,
+    a: `It isn't an AI coding assistant. It is an engineering control plane. Give Vectalon a React Native repository and it continuously understands, reviews, diagnoses, upgrades, and validates it. Deterministic and compile-checked.`,
   },
   {
     q: 'What does it cost?',
@@ -104,7 +104,7 @@ const STEPS = [
   {
     cmd: 'vectalon feature "…"',
     title: 'Generate & heal',
-    body: 'Describe a task. You get compile-checked code, tests, and a code review — fixes are typechecked and reverted if they don\'t reduce errors.',
+    body: 'Describe a task. You get compile-checked code, tests, and a code review. Fixes are typechecked and reverted if they don\'t reduce errors.',
   },
 ]
 
@@ -118,7 +118,7 @@ const GUARDRAILS = [
 const HEALING_LOG = [
   '◆ [5/13] Implementation ▸ yarn test   ✓ (2.1s)',
   '✔ Compile-checked: 0 errors after 2 healing passes',
-  '✦ 13/13 phases — index.md · 3 lessons distilled',
+  '✦ 13/13 phases. index.md: 3 lessons distilled',
   '◆ rn-diff-purge diff fetched: 0.85.3 → 0.86.2',
   '✔ 42 template changes mapped (14 native · 28 JS/TS)',
 ]
@@ -132,7 +132,7 @@ const AGENT_PHASES: Array<{
   {
     phase: 'Phase 8',
     title: 'Autonomous engineering',
-    body: 'Review the diff, audit the architecture, scan for secrets, diagnose a broken build or test run, propose safe refactors — and, for provably-safe fixes, apply them.',
+    body: 'Review the diff, audit the architecture, scan for secrets, diagnose a broken build or test run, propose safe refactors. For provably-safe fixes, apply them.',
     cmds: ['review', 'arch', 'sec', 'build-fix', 'test-repair', 'refactor', 'deps', 'a11y', 'release-ready', 'bug-fix'],
   },
   {
@@ -318,9 +318,6 @@ export default async function Home() {
                   <a href="#demo" className="btn-primary">
                     See it run
                   </a>
-                  <Link href="/outcomes" className="btn-ghost">
-                    See the outcomes
-                  </Link>
                 </div>
               </div>
             </div>
@@ -358,7 +355,7 @@ export default async function Home() {
       {/* MCP clients */}
       <section className="border-t border-ink-700/70">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-6 font-sans md:flex-row md:items-center md:justify-between">
-          <span className="micro shrink-0">one mcp server — every client</span>
+          <span className="micro shrink-0">one mcp server, every client</span>
           <div className="flex flex-wrap justify-center gap-2 md:justify-end">
             {MCP_CLIENTS.map(c => (
               <code key={c} className="chip transition hover:border-brand/50 hover:text-brand">
@@ -375,13 +372,13 @@ export default async function Home() {
           <div className="max-w-2xl">
             <h2 className="text-3xl font-bold text-slate-50 sm:text-4xl">One loop, three commands</h2>
             <p className="mt-4 text-lg text-slate-400">
-              The whole workflow — context, generation, verification — is a CLI loop. No IDE
+              The whole workflow (context, generation, verification) is a CLI loop. No IDE
               plugin, no dashboard, no state to sync.
             </p>
           </div>
           <div className="console mt-14">
             <div className="console-head">
-              <span>vectalon — session</span>
+              <span>vectalon - session</span>
               <span className="hidden items-center gap-1.5 sm:flex">
                 <span className="live-dot" aria-hidden />
                 live
@@ -418,9 +415,9 @@ export default async function Home() {
       <section id="demo" className="border-t border-ink-700/70 py-24">
         <div className="mx-auto max-w-4xl px-5">
           <div className="mb-12 text-center">
-            <h2 className="text-3xl font-bold text-slate-50 sm:text-4xl">Watch it run — 85 seconds, no cuts</h2>
+            <h2 className="text-3xl font-bold text-slate-50 sm:text-4xl">Watch it run: 85 seconds, no cuts</h2>
             <p className="mt-4 text-slate-400">
-              The real CLI on a real 19-screen Expo app — init, arch, sec, feature, bench.
+              The real CLI on a real 19-screen Expo app: init, arch, sec, feature, bench.
             </p>
           </div>
           <DemoPlayer />
@@ -446,7 +443,7 @@ export default async function Home() {
           </div>
           <div className="mt-8 text-center">
             <Link href="/benchmarks" className="text-sm text-brand transition hover:text-brand-strong hover:underline">
-              Full leaderboard — benchmark scenarios, measured against human references →
+              Full leaderboard: benchmark scenarios, measured against human references →
             </Link>
           </div>
         </div>
@@ -458,7 +455,7 @@ export default async function Home() {
           <div className="max-w-2xl">
             <h2 className="text-3xl font-bold text-slate-50 sm:text-4xl">What it does for you</h2>
             <p className="mt-4 text-lg text-slate-400">
-              One harness for the whole loop — context, generation, verification, and upgrade —
+              One harness for the whole loop (context, generation, verification, upgrade)
               with the model and knowledge base maintained by Vectalon, not you.
             </p>
           </div>
@@ -500,18 +497,18 @@ export default async function Home() {
         <div className="mx-auto max-w-6xl px-5">
           <div className="max-w-2xl">
             <h2 className="text-3xl font-bold text-slate-50 sm:text-4xl">
-              44 deterministic agents — <span className="text-brand">zero model calls</span>
+              44 deterministic agents. <span className="text-brand">Zero model calls</span>
             </h2>
             <p className="mt-4 text-lg text-slate-400">
               Same result every run, on any machine, with a report and a verdict. They run on the
               free tier, offline, and they feed the dashboard.
             </p>
           </div>
-          <div className="mt-14 grid gap-4 lg:grid-cols-3">
+          <div className="mt-14 grid gap-4 lg:grid-cols-[1.5fr_1fr_1fr]">
             {AGENT_PHASES.map((p, i) => (
               <div
                 key={p.phase}
-                className="reveal card flex flex-col"
+                className={`reveal card flex flex-col ${i === 0 ? 'lg:row-span-2' : ''}`}
                 style={{ '--reveal-delay': `${i * 90}ms` } as CSSProperties}
               >
                 <div className="flex items-center gap-2">
@@ -531,7 +528,7 @@ export default async function Home() {
           </div>
           <div className="mt-8 text-center">
             <Link href="/agents" className="text-sm text-brand transition hover:text-brand-strong hover:underline">
-              Full agent catalog — every command, every verdict, every report →
+              Full agent catalog: every command, every verdict, every report →
             </Link>
           </div>
         </div>
@@ -544,7 +541,7 @@ export default async function Home() {
             <div className="reveal">
               <h2 className="text-3xl font-bold text-slate-50 sm:text-4xl">The model is never stale</h2>
               <p className="mt-5 text-lg leading-relaxed text-slate-400">
-                Vectalon refreshes its own web intel — every hour under serve — and inlines the
+                Vectalon refreshes its own web intel every hour under serve and inlines the
                 headlines into every model system prompt. If the ecosystem ships it, the model knows it.
               </p>
               <Link href="/changelog" className="mt-7 inline-block text-sm text-brand hover:underline">
@@ -603,12 +600,12 @@ export default async function Home() {
         <div className="mx-auto max-w-3xl px-5 text-center">
           <div className="reveal console">
             <div className="console-head justify-center">
-              <span>vectalon — install</span>
+              <span>vectalon - install</span>
             </div>
             <div className="px-8 py-12">
               <h2 className="text-3xl font-bold text-slate-50 sm:text-4xl">Try it. Free, no signup.</h2>
               <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-slate-400">
-                The free tier is genuinely useful — init, serve, feature, doctor. Premium commands
+                The free tier is genuinely useful: init, serve, feature, doctor. Premium commands
                 offer a 14-day trial with one GitHub login.
               </p>
               <p className="mx-auto mt-8 w-fit rounded-xl border border-ink-700 bg-ink-900 px-5 py-3.5 font-mono text-sm text-slate-300">
