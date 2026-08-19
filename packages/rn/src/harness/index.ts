@@ -14,7 +14,6 @@ export { coverageDocsDir, coverageGapsDocPath, appendCoverageGapEntry, readCover
 export type { CoverageGapEntry, ScreenCoverageSummary } from './coverageDashboard'
 export type { WorkspaceInfo, WorkspaceManager } from './workspace'
 export type { ProjectInfo, FileNode, ComponentInfo, ContextSnapshot } from './types'
-export type { EngineeringProfile as EngineeringProfileType } from '@vectalon-dev/core'
 export type {
   PlatformSuffix,
   ImportInfo,

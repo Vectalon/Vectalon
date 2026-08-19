@@ -1,88 +1,67 @@
-# Vectalon Engineering Harness — Architecture Map
+# Vectalon product architecture and repository boundary
 
-This document maps the existing codebase to the target **Engineering Harness** architecture defined in `Vectalon_Engineering_Harness_Architecture.md`.
+Status: Ratified for Step 02
+Date: 2026-08-19
+Owner: Bhishak Sanyal
+Canonical cross-repository decision: Core `ARCHITECTURE_OWNERSHIP.md`
 
-## 1. Mapping Existing Modules
+## Vectalon's role
 
-### Model Provider
-*   **Target**: `ModelProvider` abstraction (Model-agnostic).
-*   **Existing**:
-    *   `packages/rn/src/model/ModelRouter.ts`: Routes requests to providers.
-    *   `packages/rn/src/model/providers/`: Contains `RemoteProvider`, `LocalProvider`, `WasmProvider`.
-    *   `packages/core/src/model/mode.ts`: Defines deployment modes.
-*   **Gap**: The `ModelProvider` interface is currently RN-specific. It needs to be extracted to Core.
+Vectalon is the public product and delivery repository. It owns the RN SDK, CLI, native adapters, website, documentation, customer-facing API gateway and public release evidence. The root product manifest is the canonical public projection of product identity, package coordinates, capabilities, pricing and licensing claims.
 
-### Context Engine
-*   **Target**: Assemble language/framework/platform/project context.
-*   **Existing**:
-    *   `packages/core/src/platform/ContextEngine.ts`: Abstract interface.
-    *   `packages/rn/src/harness/ContextEngine.ts`: **Concrete implementation**. Builds rich context (React version, New Architecture, Expo SDK, etc.).
-    *   `packages/rn/src/harness/Scanner.ts`: Scans project structure and dependencies.
-*   **Gap**: The RN implementation is strong. Core should formalize the `ProjectProfile` part of the `EngineeringProfile`.
+Vectalon does not own entitlement policy, license cryptography or private customer operations. Those boundaries belong to Core and Admin respectively.
 
-### Rules & Guardrails
-*   **Target**: Executable, machine-readable rules.
-*   **Existing**:
-    *   `packages/core/src/platform/GuardrailEngine.ts`: Abstract interface.
-    *   `packages/rn/src/guardrails/engine.ts`: Guardrail engine.
-    *   `packages/rn/src/guardrails/rules.ts`: RN-specific rules (e.g., deprecated APIs).
-    *   `packages/rn/src/guardrails/PolicyEngine.ts`: Likely for organization-specific policies.
-*   **Gap**: Rules are currently split. Core should define a standard `RuleSet` format.
+## Dependency direction
 
-### Engineering Profile (New Abstraction)
-*   **Target**: `EngineeringProfile { language, framework, platform, project, organization }`.
-*   **Existing**:
-    *   `packages/rn/src/harness/ContextEngine.ts`: Dynamically builds this info but doesn't export it as a structured `Profile` object.
-    *   `packages/core/src/config/VectalonConfig.ts`: Configuration, but not a "Profile".
-*   **Gap**: **Major**. We need a structured `EngineeringProfile` that composes `LanguageProfile`, `FrameworkProfile`, etc.
+```text
+RN / CLI / native adapters ---> vendored Core public surface
+Website / public API gateway ---> authenticated Admin-backed HTTP service
 
-### Tools
-*   **Target**: Orchestrate tools for the model.
-*   **Existing**:
-    *   `packages/rn/src/protocol/`: MCP Server and tool definitions.
-    *   `packages/rn/src/sdlc/`: Various "Writers" and "Analyzers" acting as tools.
-*   **Gap**: Tool interfaces should be defined in Core to allow cross-platform tool orchestration.
+No Vectalon source imports Admin. No database is shared with Admin.
+```
 
-### Memory & Evaluation
-*   **Target**: Learning from interactions and validating changes.
-*   **Existing**:
-    *   `packages/rn/src/memory/`: `ProjectMemory`, `PatternLearner`.
-    *   `packages/rn/src/bench/`: Benchmarking suite.
-    *   `packages/rn/src/evals/`: Evaluation runner.
-*   **Gap**: Memory abstractions should be product-agnostic in Core.
+Core is currently copied into the RN package by release automation. The release records the fetched Core commit and verifies that it came from the expected upstream main/tag. An independently published Core package is a future option, not a present dependency.
 
----
+## Existing module map
 
-## 2. Recommendations
+| Vectalon module | Owner / boundary | Disposition |
+|---|---|---|
+| `packages/rn/src/harness/ContextEngine.ts` and scanner | RN product adapter | Keep RN-specific discovery; conform to Core contracts after Step 03 |
+| `packages/rn/src/model/` | RN product adapter | Keep routing/provider implementations; consume Core provider interface |
+| `packages/rn/src/guardrails/` | RN-specific rules and execution adapter | Keep product rules; remove duplicated generic policy when Core replacement is proven |
+| `packages/rn/src/memory/`, `bench/`, `evals/` | RN product capabilities | Keep until a product-agnostic Core abstraction is accepted |
+| `packages/core/` | Generated/vendored release input | Never hand-edit; refresh from Core main/tag through release workflow |
+| root product manifest | Public product source of truth | Generate/validate package and website projections from it |
+| website licensing/admin-store routes | Boundary debt | Move authoritative customer, purchase, trial, issuance and revocation writes to Admin; retain a thin public gateway |
 
-### Reuse
-*   **RN `ContextEngine`**: Keep as the gold standard for RN context discovery.
-*   **RN `Guardrails`**: Keep the executable rule engine and RN-specific rules.
-*   **RN `ModelRouter`**: Keep the routing logic, but abstract the provider interface.
+## Data flow
 
-### Rename / Move
-*   **Move `ModelProvider` interface to Core**: Define `interface ModelProvider { generate(req): res }` in Core.
-*   **Move `Tool` interface to Core**: Standardize tool contracts.
-*   **Move `Memory` abstractions to Core**: `PatternStore`, `ProjectMemory` interfaces.
+1. Website/CLI/RN surfaces read public product facts from the manifest or its generated projection.
+2. Checkout and activation enter through a customer-facing Vectalon route.
+3. Signed payment events and operational writes are handled by Admin.
+4. Admin issues a signed license projection.
+5. Vectalon delivers the projection; embedded Core verifies it and evaluates entitlements offline.
+6. Refresh and revocation checks use a versioned public endpoint backed by Admin, without importing Admin code.
 
-### Delete / Refactor
-*   **Core `Scanner` interface**: Rename to `ProjectScanner` to avoid confusion with file-system scanners.
-*   **RN `ContextEngine`**: Refactor to output a structured `EngineeringProfile` instead of just a string prompt.
+## Failure ownership
 
-### New Abstractions (Core)
-1.  **`EngineeringProfile`**: The central composable profile.
-2.  **`LanguageProfile`**: TypeScript, Swift, etc.
-3.  **`FrameworkProfile`**: React Native, SwiftUI, etc.
-4.  **`PlatformProfile`**: iOS, Android, Web.
-5.  **`OrganizationProfile`**: Enforceable policies.
+| Failure | Owner |
+|---|---|
+| RN, CLI, native adapter, website or gateway behavior | Vectalon |
+| Release manifest or package projection mismatch | Vectalon |
+| Core refresh provenance or stale vendored Core | Vectalon release workflow |
+| Verification, entitlement or generic guardrail policy | Core |
+| Customer, purchase, trial, issuance, revocation or audit state | Admin |
 
----
+## Deletion test
 
-## 3. Implementation Plan (Phase 1)
+| Candidate | Required change | Completion evidence |
+|---|---|---|
+| Inline entitlement decisions in product adapters | Replace with Core policy | Conformance tests against the Core decision API |
+| Generic guardrail/profile logic duplicated in RN | Delete only after Core parity | Migration test plus deleted duplicate |
+| Operational writes in website licensing routes | Move to Admin | Vectalon retains no operational DB credentials or write model |
+| Hand-edited `packages/core` output | Eliminate | Provenance check and clean generated-tree diff after fetch |
 
-1.  **Define `EngineeringProfile` in Core**: Create `packages/core/src/profile/EngineeringProfile.ts`.
-2.  **Abstract `ModelProvider` in Core**: Create `packages/core/src/model/ModelProvider.ts`.
-3.  **Refactor RN `ContextEngine`**: Return `EngineeringProfile` from `buildProfile()`.
-4.  **Document Contracts**: Use JSON Schema for cross-language contracts (starting with `EngineeringProfile`).
+## Step boundary
 
-This audit confirms that while Core provides the abstract contracts, the RN package contains the heavy lifting for context and guardrails. The primary task now is to promote these implementations into a structured, composable architecture in Core.
+This document records ownership and migration decisions only. EngineeringProfile schemas, generated Swift/Kotlin bindings and RN implementation changes belong to Step 03. They must not be introduced by this Step 02 PR.
