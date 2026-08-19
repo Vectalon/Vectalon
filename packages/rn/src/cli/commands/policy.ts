@@ -8,7 +8,7 @@ interface PolicyOptions {
   check?: string
 }
 
-export function policyCommand(directory: string, options: PolicyOptions): void {
+export async function policyCommand(directory: string, options: PolicyOptions): Promise<void> {
   const root = resolve(directory || process.cwd())
   const vectalonDir = join(root, '.vectalon')
 
@@ -33,7 +33,7 @@ export function policyCommand(directory: string, options: PolicyOptions): void {
     }
     const engine = new PolicyEngine(root)
     const content = readFileSync(fullPath, 'utf-8')
-    const result = engine.runPolicy({ filePath, content })
+    const result = await engine.runPolicyWithHarness({ filePath, content })
     logger.info(`Policy check for ${filePath}`)
     logger.info(`Passed: ${result.passed} | Failed: ${result.failed} | Skipped: ${result.skipped}`)
     for (const finding of result.findings) {

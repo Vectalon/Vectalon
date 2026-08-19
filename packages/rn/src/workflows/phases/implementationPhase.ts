@@ -12,6 +12,7 @@ import { summarizeImpactReport, impactReportFromContext, renderBlastRadiusContex
 import { detectConventions, phaseResult, sanitizeFileName, fileExtension, jsxExtension } from './helpers'
 import { getIntent, intentTitle, isRemoveDependency, isRefactor, isFix, type WorkflowIntent } from './intent'
 import { runGuardrails, formatGuardrailResult, GuardrailResult, PolicyEngine } from '../../guardrails'
+import { createRnHarness, discoverRnProject } from '../../coreHarness/createRnHarness'
 import { newArchitectureLabel } from '../../utils/newArchitecture'
 import { isReact19 } from '../../utils/reactCompiler'
 
@@ -52,6 +53,37 @@ function checkGuardrails(
     }
     return policy ? policy.runPolicy(options) : runGuardrails(options)
   })
+}
+
+export async function checkGeneratedFilesWithHarness(
+  files: GeneratedFile[],
+  conventions: ReturnType<typeof detectConventions>,
+  projectRoot: string,
+): Promise<GuardrailResult[]> {
+  const policy = new PolicyEngine(projectRoot)
+  const harness = createRnHarness({
+    projectRoot,
+    project: discoverRnProject(projectRoot),
+    rules: policy.getEffectiveRules(),
+  })
+  const outcome = await harness.validate(files)
+  return outcome.results
+}
+
+export async function repairGeneratedFilesWithHarness(
+  files: GeneratedFile[],
+  projectRoot: string,
+  modelRouter: Pick<ModelRouter, 'generate'>,
+  maxAttempts: number,
+) {
+  const policy = new PolicyEngine(projectRoot)
+  const harness = createRnHarness({
+    projectRoot,
+    project: discoverRnProject(projectRoot),
+    rules: policy.getEffectiveRules(),
+    modelRouter,
+  })
+  return harness.validate(files, { maxAttempts })
 }
 
 function formatGuardrailSummary(results: GuardrailResult[]): string {
@@ -452,11 +484,24 @@ async function generateModelImplementation(
   }
 
   const conventions = detectConventions(ctx.snapshot)
-  const guardrailResults = checkGuardrails(parsed.files, conventions, projectRoot)
+  let generatedFiles = parsed.files
+  let guardrailResults: GuardrailResult[]
+  if (projectRoot) {
+    const repair = await repairGeneratedFilesWithHarness(
+      parsed.files,
+      projectRoot,
+      modelRouter,
+      new PolicyEngine(projectRoot).getCodeReviewPolicy().maxAttempts,
+    )
+    generatedFiles = repair.files
+    guardrailResults = repair.results
+  } else {
+    guardrailResults = checkGuardrails(parsed.files, conventions)
+  }
   const writtenFiles: string[] = []
   const redirected = projectRoot ? isSelfPackageRepo(projectRoot) : false
   if (projectRoot) {
-    for (const file of parsed.files) {
+    for (const file of generatedFiles) {
       const writtenPath = writeProjectFile(projectRoot, file.path, file.content)
       if (writtenPath) {
         writtenFiles.push(writtenPath)
@@ -464,7 +509,7 @@ async function generateModelImplementation(
     }
   }
 
-  const fileSections = parsed.files.map(f => [
+  const fileSections = generatedFiles.map(f => [
     `### ${f.path}`,
     '```typescript',
     f.content,
@@ -489,7 +534,7 @@ async function generateModelImplementation(
   return {
     implementation: {
       output,
-      artifacts: parsed.files.map(f => ({
+      artifacts: generatedFiles.map(f => ({
         type: 'engineering',
         title: f.path,
         content: f.content,
@@ -607,7 +652,9 @@ async function generateFixImplementation(
   const parsed = raw && !isFallbackResponse(raw) ? parseModelOutput(raw) : null
 
   if (parsed && parsed.files.length > 0) {
-    const guardrailResults = checkGuardrails(parsed.files, conventions, projectRoot)
+    const guardrailResults = projectRoot
+      ? await checkGeneratedFilesWithHarness(parsed.files, conventions, projectRoot)
+      : checkGuardrails(parsed.files, conventions)
     const writtenFiles: string[] = []
     const redirected = projectRoot ? isSelfPackageRepo(projectRoot) : false
     if (projectRoot) {

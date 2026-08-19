@@ -154,6 +154,20 @@ describe('implementationPhase', () => {
     expect(readFileSync(screenPath, 'utf-8')).toContain('export function LoginScreen')
   })
 
+  it('repairs a generated guardrail violation through Core before writing it', async () => {
+    const router = createMockModelRouterSequence([
+      JSON.stringify({ intents: [{ type: 'add-feature', feature: 'login', confidence: 1, reasoning: 'new feature' }] }),
+      JSON.stringify({ files: [{ path: 'src/screens/Login.tsx', content: 'console.log("secret")\nexport function Login() { return null }' }] }),
+      'export function Login() { return null }\n',
+    ])
+
+    const result = await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
+
+    expect(readFileSync(join(projectRoot, 'src/screens/Login.tsx'), 'utf-8')).toBe('export function Login() { return null }\n')
+    expect(result.artifacts[0].content).toBe('export function Login() { return null }\n')
+    expect(jest.mocked(router.generate)).toHaveBeenCalledTimes(3)
+  })
+
   it('parses markdown sections with ### paths and fenced code into files on disk', async () => {
     const response = [
       'Here are the files:',

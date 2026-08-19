@@ -26,6 +26,20 @@ describe('PolicyEngine', () => {
     expect(result.findings.some(f => f.rule === 'No hardcoded API URLs' && !f.passed)).toBe(true)
   })
 
+  it('runs policy checks through the composed Core harness', async () => {
+    const engine = new PolicyEngine(tmpDir)
+    const result = await engine.runPolicyWithHarness({
+      filePath: 'src/api/client.ts',
+      content: 'const BASE_URL = "https://api.example.com/v1";',
+    })
+
+    expect(result.ok).toBe(false)
+    expect(result.harness.safe.status).toBe('blocked')
+    expect(result.harness.safe.selectedRules.some(rule => rule.id === 'no-hardcoded-urls')).toBe(true)
+    expect(JSON.stringify(result.harness.safe)).not.toContain(tmpDir)
+    expect(JSON.stringify(result.harness.safe)).not.toContain('api.example.com')
+  })
+
   it('loads and applies project-specific overrides', () => {
     const engine = new PolicyEngine(tmpDir)
     engine.updatePolicy({

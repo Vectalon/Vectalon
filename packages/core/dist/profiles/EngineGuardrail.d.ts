@@ -33,7 +33,7 @@
  * const engine = new EngineGuardrail({
  *   detectors: [new RegexDetector(), new FileMatchDetector()],
  * })
- * engine.registerRules(rnRules)
+ * engine.registerRules(productRules)
  *
  * const result = await engine.validate({
  *   path: 'src/api.ts',
