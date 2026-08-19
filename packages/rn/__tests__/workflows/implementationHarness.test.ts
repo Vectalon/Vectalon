@@ -46,4 +46,21 @@ describe('implementation generated-file harness', () => {
       rmSync(root, { recursive: true, force: true })
     }
   })
+
+  it('does not return an unchanged invalid repair as writable', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'vectalon-implementation-repair-fail-'))
+    writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'mobile', dependencies: { 'react-native': '0.81.0' } }))
+    try {
+      const outcome = await repairGeneratedFilesWithHarness(
+        [{ path: 'src/Invalid.ts', content: 'console.log("still invalid")' }],
+        root,
+        { generate: async () => ({ content: 'console.log("still invalid")', provider: 'scripted' }) },
+        2,
+      )
+      expect(outcome.writable).toBe(false)
+      expect(outcome.run.safe.reason).toBe('REPAIR_EXHAUSTED')
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
 })

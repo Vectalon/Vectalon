@@ -168,6 +168,39 @@ describe('implementationPhase', () => {
     expect(jest.mocked(router.generate)).toHaveBeenCalledTimes(3)
   })
 
+  it('does not write a generated file when Core exhausts repair', async () => {
+    const invalid = 'console.log("still invalid")\nexport function Login() { return null }'
+    const router = createMockModelRouterSequence([
+      JSON.stringify({ intents: [{ type: 'add-feature', feature: 'login', confidence: 1, reasoning: 'new feature' }] }),
+      JSON.stringify({ files: [{ path: 'src/screens/InvalidLogin.tsx', content: invalid }] }),
+      invalid,
+    ])
+
+    const result = await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
+
+    expect(existsSync(join(projectRoot, 'src/screens/InvalidLogin.tsx'))).toBe(false)
+    expect(result.output).toContain('Validation failed safely (REPAIR_EXHAUSTED)')
+    expect(result.output).not.toContain('Files written to disk')
+  })
+
+  it('routes the deterministic fallback through Core and blocks invalid writes', async () => {
+    mkdirSync(join(projectRoot, '.vectalon'), { recursive: true })
+    writeFileSync(join(projectRoot, '.vectalon', 'policy.json'), JSON.stringify({
+      version: 1,
+      customRules: [{
+        id: 'block-scaffold', name: 'Block scaffold', description: 'fixture rule',
+        severity: 'error', pattern: 'export', message: 'blocked by project policy',
+      }],
+    }))
+    const router = createMockModelRouter('not parseable as generated files')
+
+    const result = await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
+
+    expect(existsSync(join(projectRoot, 'src/services/AddLoginScreenApi.ts'))).toBe(false)
+    expect(result.output).toContain('Validation failed safely (GUARDRAIL_BLOCKED)')
+    expect(result.output).not.toContain('Files written to disk')
+  })
+
   it('parses markdown sections with ### paths and fenced code into files on disk', async () => {
     const response = [
       'Here are the files:',

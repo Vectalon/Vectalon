@@ -6,9 +6,10 @@ import {
   type ProjectProfile,
 } from '@vectalon-dev/core'
 import type { ProjectInfo } from '../harness/types'
-import type { GuardrailFinding, GuardrailResult, GuardrailRule } from '../guardrails/types'
+import type { GuardrailConventions, GuardrailFinding, GuardrailResult, GuardrailRule } from '../guardrails/types'
 import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
+import { createHash } from 'crypto'
 
 const CORE_REVISION = '309707259c7c12db08c77fd3b5ebaa5a3343c2c4'
 const PROFILE_SCHEMA_VERSION = '1.0.0'
@@ -23,6 +24,7 @@ export interface RnHarnessOptions {
   rules: readonly GuardrailRule[]
   modelRouter?: RouterPort
   clock?: () => string
+  conventions?: GuardrailConventions
 }
 
 export interface RnHarnessFile {
@@ -34,6 +36,7 @@ export interface RnHarnessOutcome {
   files: RnHarnessFile[]
   results: GuardrailResult[]
   run: HarnessRun
+  writable: boolean
 }
 
 interface RuleRecord {
@@ -137,6 +140,13 @@ export function createRnHarness(options: RnHarnessOptions) {
   const activeRules = options.rules.filter(rule => rule.enabled !== false)
   const disabledCount = options.rules.length - activeRules.length
   const rulesById = new Map(activeRules.map(rule => [rule.id, rule]))
+  const conventions: GuardrailConventions = {
+    hasTypeScript: options.project.hasTypeScript,
+    newArchitecture: options.project.newArchitecture,
+    reactVersion: options.project.reactVersion,
+    reactCompiler: options.project.reactCompiler,
+    ...options.conventions,
+  }
 
   return {
     async validate(files: readonly RnHarnessFile[], repair?: { maxAttempts: number }): Promise<RnHarnessOutcome> {
@@ -157,11 +167,12 @@ export function createRnHarness(options: RnHarnessOptions) {
               const rnRule = rulesById.get(rule.id)
               if (!rnRule) throw new Error('Unsupported RN rule')
               const key = `${rule.id}\0${change.relativePath}`
-              if (rnRule.applicable && !rnRule.applicable({ filePath: change.relativePath, content: change.content })) {
+              const context = { filePath: change.relativePath, content: change.content, conventions }
+              if (rnRule.applicable && !rnRule.applicable(context)) {
                 records.set(key, { skipped: true })
                 return []
               }
-              const checked = rnRule.check({ filePath: change.relativePath, content: change.content })
+              const checked = rnRule.check(context)
               const finding: GuardrailFinding = {
                 rule: rnRule.name,
                 severity: rnRule.severity,
@@ -179,7 +190,7 @@ export function createRnHarness(options: RnHarnessOptions) {
       )
 
       const run = await harness.run({
-        runId: `rn-${files.map(file => file.path).sort().join(',')}`,
+        runId: `rn-${createHash('sha256').update(files.map(file => file.path).sort().join('\0')).digest('hex').slice(0, 20)}`,
         capabilityId: repair ? 'rn.generated-file.repair' : 'rn.policy.check',
         projectLocator: options.projectRoot,
         profileInputs: [
@@ -206,12 +217,21 @@ export function createRnHarness(options: RnHarnessOptions) {
       const results = outputFiles.map(file => {
         const fileRecords = activeRules.map(rule => records.get(`${rule.id}\0${file.path}`))
         const findings = fileRecords.flatMap(record => record?.finding ? [record.finding] : [])
+        if (run.safe.status === 'failed' && findings.every(finding => finding.passed)) {
+          findings.push({
+            rule: 'Core harness execution',
+            severity: 'error',
+            passed: false,
+            message: `Validation failed safely (${run.safe.reason})`,
+          })
+        }
         const skipped = disabledCount + fileRecords.filter(record => record?.skipped).length
         const passed = findings.filter(finding => finding.passed).length
         const failed = findings.length - passed
         return { filePath: file.path, passed, failed, skipped, findings, ok: failed === 0 }
       })
-      return { files: outputFiles, results, run }
+      const writable = run.safe.status === 'passed' || run.safe.status === 'repaired'
+      return { files: outputFiles, results, run, writable }
     },
   }
 }

@@ -65,4 +65,50 @@ describe('React Native Core harness adapter', () => {
     expect(outcome.results[0]).toMatchObject({ failed: 0, ok: true })
     expect(generate).toHaveBeenCalledTimes(1)
   })
+
+  it('fails closed when an RN rule crashes', async () => {
+    const crashing: GuardrailRule = {
+      ...noSecrets,
+      id: 'rn-crash',
+      name: 'Crashing rule',
+      check: () => { throw new Error('customer source leaked here') },
+    }
+    const harness = createRnHarness({
+      projectRoot: '/project', rules: [crashing],
+      project: {
+        name: 'mobile', version: '1.0.0', reactNativeVersion: '0.81.0', dependencies: {},
+        devDependencies: {}, scripts: {}, platforms: [], hasTypeScript: true, hasMetro: false,
+        hasExpo: false, tooling: 'rn-cli', expoSdkVersion: '', reactVersion: '', root: '/project',
+      },
+      clock: () => '2026-08-19T00:00:00.000Z',
+    })
+
+    const outcome = await harness.validate([{ path: 'src/Private.ts', content: 'private source' }])
+    expect(outcome.run.safe.reason).toBe('RULE_EXECUTION_FAILED')
+    expect(outcome.results[0]).toMatchObject({ failed: 1, ok: false })
+    expect(JSON.stringify(outcome)).not.toContain('customer source leaked here')
+  })
+
+  it('threads conventions to RN rules and keeps filenames out of safe evidence', async () => {
+    const typedOnly: GuardrailRule = {
+      ...noSecrets,
+      id: 'rn-typed-only',
+      applicable: ({ conventions }) => conventions?.hasTypeScript === true,
+      check: () => ({ passed: false, message: 'typed finding' }),
+    }
+    const harness = createRnHarness({
+      projectRoot: '/project', rules: [typedOnly],
+      conventions: { hasTypeScript: true },
+      project: {
+        name: 'mobile', version: '1.0.0', reactNativeVersion: '', dependencies: {}, devDependencies: {},
+        scripts: {}, platforms: [], hasTypeScript: true, hasMetro: false, hasExpo: false,
+        tooling: 'rn-cli', expoSdkVersion: '', reactVersion: '', root: '/project',
+      },
+      clock: () => '2026-08-19T00:00:00.000Z',
+    })
+    const outcome = await harness.validate([{ path: 'src/CustomerLogin.tsx', content: 'safe' }])
+    expect(outcome.results[0].failed).toBe(1)
+    expect(JSON.stringify(outcome.run.safe)).not.toContain('CustomerLogin')
+    expect(outcome.run.safe.runId).not.toContain('CustomerLogin')
+  })
 })

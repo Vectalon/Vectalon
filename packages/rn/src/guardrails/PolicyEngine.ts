@@ -186,6 +186,7 @@ export class PolicyEngine {
       projectRoot: this.projectRoot,
       project: discoverRnProject(this.projectRoot),
       rules: this.getEffectiveRules(),
+      conventions: options.conventions,
     })
     const outcome = await harness.validate([{ path: options.filePath, content: options.content }])
     return {

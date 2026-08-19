@@ -60,14 +60,22 @@ export async function checkGeneratedFilesWithHarness(
   conventions: ReturnType<typeof detectConventions>,
   projectRoot: string,
 ): Promise<GuardrailResult[]> {
+  return (await validateGeneratedFilesWithHarness(files, conventions, projectRoot)).results
+}
+
+async function validateGeneratedFilesWithHarness(
+  files: GeneratedFile[],
+  conventions: ReturnType<typeof detectConventions>,
+  projectRoot: string,
+) {
   const policy = new PolicyEngine(projectRoot)
   const harness = createRnHarness({
     projectRoot,
     project: discoverRnProject(projectRoot),
     rules: policy.getEffectiveRules(),
+    conventions,
   })
-  const outcome = await harness.validate(files)
-  return outcome.results
+  return harness.validate(files)
 }
 
 export async function repairGeneratedFilesWithHarness(
@@ -75,6 +83,7 @@ export async function repairGeneratedFilesWithHarness(
   projectRoot: string,
   modelRouter: Pick<ModelRouter, 'generate'>,
   maxAttempts: number,
+  conventions?: ReturnType<typeof detectConventions>,
 ) {
   const policy = new PolicyEngine(projectRoot)
   const harness = createRnHarness({
@@ -82,6 +91,7 @@ export async function repairGeneratedFilesWithHarness(
     project: discoverRnProject(projectRoot),
     rules: policy.getEffectiveRules(),
     modelRouter,
+    conventions,
   })
   return harness.validate(files, { maxAttempts })
 }
@@ -486,21 +496,26 @@ async function generateModelImplementation(
   const conventions = detectConventions(ctx.snapshot)
   let generatedFiles = parsed.files
   let guardrailResults: GuardrailResult[]
+  let writable = true
+  let harnessFailureReason: string | undefined
   if (projectRoot) {
     const repair = await repairGeneratedFilesWithHarness(
       parsed.files,
       projectRoot,
       modelRouter,
       new PolicyEngine(projectRoot).getCodeReviewPolicy().maxAttempts,
+      conventions,
     )
     generatedFiles = repair.files
     guardrailResults = repair.results
+    writable = repair.writable
+    harnessFailureReason = repair.writable ? undefined : repair.run.safe.reason
   } else {
     guardrailResults = checkGuardrails(parsed.files, conventions)
   }
   const writtenFiles: string[] = []
   const redirected = projectRoot ? isSelfPackageRepo(projectRoot) : false
-  if (projectRoot) {
+  if (projectRoot && writable) {
     for (const file of generatedFiles) {
       const writtenPath = writeProjectFile(projectRoot, file.path, file.content)
       if (writtenPath) {
@@ -525,6 +540,7 @@ async function generateModelImplementation(
     '',
     ...(parsed.notes ? [parsed.notes, ''] : []),
     ...(writtenFiles.length > 0 ? ['Files written to disk:', ...writtenFiles.map(f => `- \`${f}\``), ''] : []),
+    ...(harnessFailureReason ? [`Validation failed safely (${harnessFailureReason}); no generated files were written.`, ''] : []),
     ...redirectNote,
     ...fileSections,
     '',
@@ -652,12 +668,14 @@ async function generateFixImplementation(
   const parsed = raw && !isFallbackResponse(raw) ? parseModelOutput(raw) : null
 
   if (parsed && parsed.files.length > 0) {
-    const guardrailResults = projectRoot
-      ? await checkGeneratedFilesWithHarness(parsed.files, conventions, projectRoot)
-      : checkGuardrails(parsed.files, conventions)
+    const harnessOutcome = projectRoot
+      ? await validateGeneratedFilesWithHarness(parsed.files, conventions, projectRoot)
+      : undefined
+    const guardrailResults = harnessOutcome?.results ?? checkGuardrails(parsed.files, conventions)
     const writtenFiles: string[] = []
+    const writable = harnessOutcome?.writable ?? guardrailResults.every(result => result.ok)
     const redirected = projectRoot ? isSelfPackageRepo(projectRoot) : false
-    if (projectRoot) {
+    if (projectRoot && writable) {
       for (const file of parsed.files) {
         const writtenPath = writeProjectFile(projectRoot, file.path, file.content)
         if (writtenPath) {
@@ -676,6 +694,7 @@ async function generateFixImplementation(
       `Captured ${check.name} violations and asked the model to repair the affected files.`,
       ...(parsed.notes ? [parsed.notes, ''] : []),
       ...(writtenFiles.length > 0 ? ['Files written to disk:', ...writtenFiles.map(f => `- \`${f}\``), ''] : []),
+      ...(!writable ? ['Validation failed safely (GUARDRAIL_BLOCKED); no generated files were written.', ''] : []),
       ...redirectNote,
       ...parsed.files.map(f => [`### ${f.path}`, '```typescript', f.content, '```'].join('\n')),
       '',
@@ -726,7 +745,8 @@ export function generateAddFeatureImplementation(
   ctx: {
     snapshot: ContextSnapshot | null
     prompt: string
-  }
+  },
+  options: { deferValidationAndWrites?: boolean } = {},
 ): { output: string; artifacts: WorkflowArtifact[] } {
   const conventions = detectConventions(ctx.snapshot)
   const ext = fileExtension(conventions.hasTypeScript)
@@ -868,11 +888,11 @@ export function generateAddFeatureImplementation(
     { path: testFile, content: testContent },
   ]
 
-  const guardrailResults = checkGuardrails(files, conventions, projectRoot)
+  const guardrailResults = options.deferValidationAndWrites ? [] : checkGuardrails(files, conventions, projectRoot)
 
   const writtenFiles: string[] = []
   const redirected = projectRoot ? isSelfPackageRepo(projectRoot) : false
-  if (projectRoot) {
+  if (projectRoot && !options.deferValidationAndWrites) {
     for (const file of files) {
       const writtenPath = writeProjectFile(projectRoot, file.path, file.content)
       if (writtenPath) {
@@ -898,8 +918,7 @@ export function generateAddFeatureImplementation(
       f.content,
       '```',
     ].join('\n')),
-    '',
-    formatGuardrailSummary(guardrailResults),
+    ...(!options.deferValidationAndWrites ? ['', formatGuardrailSummary(guardrailResults)] : []),
     '',
     '## Next steps',
     '- Replace the placeholder API logic with your domain code',
@@ -916,6 +935,35 @@ export function generateAddFeatureImplementation(
       path: f.path,
     })),
   }
+}
+
+async function generateAddFeatureWithHarness(
+  projectRoot: string | undefined,
+  ctx: { snapshot: ContextSnapshot | null; prompt: string },
+): Promise<{ output: string; artifacts: WorkflowArtifact[] }> {
+  const draft = generateAddFeatureImplementation(projectRoot, ctx, { deferValidationAndWrites: true })
+  if (!projectRoot) return draft
+  const files = draft.artifacts
+    .filter((artifact): artifact is WorkflowArtifact & { path: string } => typeof artifact.path === 'string')
+    .map(artifact => ({ path: artifact.path, content: artifact.content }))
+  const conventions = detectConventions(ctx.snapshot)
+  const harnessOutcome = await validateGeneratedFilesWithHarness(files, conventions, projectRoot)
+  const results = harnessOutcome.results
+  const writable = harnessOutcome.writable
+  const writtenFiles: string[] = []
+  if (writable) {
+    for (const file of files) {
+      const written = writeProjectFile(projectRoot, file.path, file.content)
+      if (written) writtenFiles.push(written)
+    }
+  }
+  const evidence = [
+    ...(writtenFiles.length > 0 ? ['', 'Files written to disk:', ...writtenFiles.map(file => `- \`${file}\``)] : []),
+    ...(!writable ? ['', 'Validation failed safely (GUARDRAIL_BLOCKED); no generated files were written.'] : []),
+    '',
+    formatGuardrailSummary(results),
+  ].join('\n')
+  return { ...draft, output: `${draft.output}\n${evidence}` }
 }
 
 function escapeRegExpToken(value: string): string {
@@ -1624,7 +1672,7 @@ export const implementationPhase: WorkflowPhase = {
       if (modelResult.implementation) {
         result = modelResult.implementation
       } else {
-        result = generateAddFeatureImplementation(projectRoot, {
+        result = await generateAddFeatureWithHarness(projectRoot, {
           snapshot: ctx.snapshot,
           prompt: ctx.prompt,
         })
