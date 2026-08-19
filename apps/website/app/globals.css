@@ -702,6 +702,164 @@ details[open] .faq-a {
 
 /* content-visibility removed: caused invisible content after client-side navigation */
 
+
+/* ─── Hero motion ─── */
+
+/* Aurora blobs — slow drifting gradient washes behind the hero */
+.hero-aurora {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+  animation: aurora-drift 12s ease-in-out infinite alternate;
+}
+.hero-aurora--primary {
+  width: 600px;
+  height: 400px;
+  top: -10%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgb(0 230 195 / 0.3) 0%, rgb(55 182 255 / 0.15) 50%, transparent 70%);
+}
+.hero-aurora--secondary {
+  width: 500px;
+  height: 350px;
+  top: 5%;
+  left: 55%;
+  transform: translateX(-40%);
+  background: radial-gradient(ellipse, rgb(139 92 246 / 0.25) 0%, rgb(55 182 255 / 0.1) 50%, transparent 70%);
+  animation-delay: -4s;
+  animation-duration: 15s;
+}
+
+/* Light mode aurora — softer, less saturated */
+:root[data-theme='light'] .hero-aurora {
+  opacity: 0.2;
+  filter: blur(100px);
+}
+:root[data-theme='light'] .hero-aurora--primary {
+  background: radial-gradient(ellipse, rgb(0 210 180 / 0.2) 0%, rgb(35 160 240 / 0.1) 50%, transparent 70%);
+}
+:root[data-theme='light'] .hero-aurora--secondary {
+  background: radial-gradient(ellipse, rgb(120 75 230 / 0.15) 0%, rgb(35 160 240 / 0.08) 50%, transparent 70%);
+}
+
+@keyframes aurora-drift {
+  0% { transform: translateX(-50%) scale(1) rotate(0deg); }
+  50% { transform: translateX(-45%) scale(1.1) rotate(3deg); }
+  100% { transform: translateX(-55%) scale(0.95) rotate(-2deg); }
+}
+
+/* Logo node breathing — the SVG circles pulse gently */
+.hero-logo-node {
+  animation: node-breathe 3s ease-in-out infinite;
+  transform-origin: center;
+}
+.hero-logo-node--teal { animation-delay: 0s; }
+.hero-logo-node--cyan { animation-delay: 0.8s; }
+.hero-logo-node--violet { animation-delay: 1.6s; }
+.hero-logo-node--base { animation-delay: 0.4s; }
+
+@keyframes node-breathe {
+  0%, 100% { opacity: 0.8; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+/* Hero staggered entrance — each layer arrives with different depth */
+.hero-stagger > * {
+  opacity: 0;
+  animation: hero-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.hero-stagger > *:nth-child(1) { animation-delay: 0.1s; } /* logo */
+.hero-stagger > *:nth-child(2) { animation-delay: 0.25s; } /* wordmark */
+.hero-stagger > *:nth-child(3) { animation-delay: 0.4s; } /* tagline */
+.hero-stagger > *:nth-child(4) { animation-delay: 0.55s; } /* value props */
+.hero-stagger > *:nth-child(5) { animation-delay: 0.7s; } /* CTAs */
+
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* Logo entrance — drops in with a slight rotation */
+.hero-logo-enter {
+  animation: logo-drop 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.05s forwards;
+  opacity: 0;
+}
+
+@keyframes logo-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.85) rotate(-5deg);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+    filter: blur(0);
+  }
+}
+
+/* Glow ring around logo — appears after logo lands */
+.hero-glow-ring {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  opacity: 0;
+  animation: glow-ring-in 1s ease-out 0.6s forwards;
+  background: radial-gradient(circle, rgb(0 230 195 / 0.15) 0%, transparent 70%);
+}
+:root[data-theme='light'] .hero-glow-ring {
+  background: radial-gradient(circle, rgb(0 210 180 / 0.1) 0%, transparent 70%);
+}
+
+@keyframes glow-ring-in {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Reduced motion — kill all hero motion, keep opacity transitions */
+@media (prefers-reduced-motion: reduce) {
+  .hero-aurora,
+  .hero-logo-node,
+  .hero-stagger > *,
+  .hero-logo-enter,
+  .hero-glow-ring {
+    animation: none !important;
+  }
+  .hero-stagger > *,
+  .hero-logo-enter {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  .hero-glow-ring {
+    opacity: 0.5 !important;
+  }
+}
+
+html.anim-frozen .hero-aurora,
+html.anim-frozen .hero-logo-node,
+html.anim-frozen .hero-stagger > *,
+html.anim-frozen .hero-logo-enter,
+html.anim-frozen .hero-glow-ring {
+  animation: none !important;
+}
+html.anim-frozen .hero-stagger > *,
+html.anim-frozen .hero-logo-enter {
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .caret, .animate-fade-up, .ticker-inner, .live-dot, .boot-line, .menu-pop,
   .console:target, .report-window:target, details[open] .faq-a, .copy-pop {
