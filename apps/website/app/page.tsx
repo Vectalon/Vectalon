@@ -29,7 +29,7 @@ const FEATURES: Array<{ title: string; body: string; icon: FeatureIconName }> = 
   },
   {
     title: 'Always-current model',
-    body: 'Web intel pipelines (RN releases, Expo changelog, Hacker News, GitHub trending, Callstack) feed the model\'s system prompt. It knows 0.87-rc before the release notes do.',
+    body: 'Web intel pipelines (RN releases, Expo changelog, Hacker News, GitHub trending, Callstack) feed the model\'s system prompt. It knows the next release before the changelog is published.',
     icon: 'broadcast',
   },
   {
@@ -116,11 +116,11 @@ const GUARDRAILS = [
 ]
 
 const HEALING_LOG = [
-  '◆ [5/13] Implementation ▸ yarn test   ✓ (2.1s)',
-  '✔ Compile-checked: 0 errors after 2 healing passes',
-  '✦ 13/13 phases. index.md: 3 lessons distilled',
-  '◆ rn-diff-purge diff fetched: 0.85.3 → 0.86.2',
-  '✔ 42 template changes mapped (14 native · 28 JS/TS)',
+  '◆ [8/14] Implementation ▸ yarn test   ✓ (1.8s)',
+  '✔ Compile-checked: 0 errors after 3 healing passes',
+  '✦ 14/14 phases. index.md: 5 lessons distilled',
+  '◆ product-manifest.json: contract v1.0.0 pinned',
+  '✔ 44 agents · 64 tools · 43 scenarios verified',
 ]
 
 const AGENT_PHASES: Array<{
@@ -289,7 +289,7 @@ export default async function Home() {
                   <span className="live-dot" aria-hidden />
                   guardrails on
                 </span>
-                <span className="text-slate-600">[ 0.87-rc ]</span>
+                <span className="text-slate-600">[ v0.15.0 ]</span>
               </div>
             </div>
 

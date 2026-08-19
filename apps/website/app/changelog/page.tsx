@@ -2,9 +2,20 @@ import Link from 'next/link'
 
 const RELEASES = [
   {
+    version: 'v0.15.0',
+    date: '2026-08-19',
+    tag: 'latest',
+    highlights: [
+      '**Core product contract adopted** — the RN harness now consumes `@vectalon-dev/core` v0.3.0 through the canonical product manifest (`product-manifest.json`). The contract pins the product identity, package versions, platform statuses, capability counts, and commercial plans in a single machine-readable file that every surface (CLI, website, VS Code extension) reads from. The website derives its stats, pricing, and feature claims directly from the manifest — no hardcoded numbers that can drift',
+      '**Product truth enforcement** — a CI gate now fails the build if the website, docs, or CLI output claim numbers that disagree with the manifest. The manifest is the single source of truth for deterministic agent counts (44), MCP tool counts (64), benchmark scenarios (43), package versions, and plan definitions. Adding an agent or changing a price is a one-file edit that propagates everywhere',
+      '**Engineering outcomes ledger** — the `/outcomes` page now aggregates real numbers from committed report files: issues detected, automatically fixed, PRs reviewed, build failures resolved, RN upgrades completed, tests generated, and regressions prevented. Every ledger line maps back to the report that produces it. The estimated savings use per-outcome hour weights at a configurable blended rate ($75/hr default)',
+      'Leaderboard refresh — CI re-scored the full 43-scenario benchmark pack across all three local model tiers (fast 1.5B, balanced 3B, quality 7B). The 7B tier now scores upgrades at 80% and debugging at 59% across the complete pack including the 8 new real-world upgrade-breakage and debugging scenarios',
+      'Dependency and infrastructure updates — GitHub Actions bumped to 4.37.6, turbo to 2.10.10, ws to 8.21.3; CI lint-clean sync for core',
+    ],
+  },
+  {
     version: 'v0.14.0',
     date: '2026-08-17',
-    tag: 'latest',
     highlights: [
       '`vc sales-demo` — the **30-minute sales demo that requires no explanation** (P0): the five-act narrative, run live against a real React Native repository — minute 0–5 `vectalon init` (scan census: files, components, screens, native modules, dependencies + the Health Score), 5–10 `vc intel` (the application model: screens, navigation, state stores, dependency cycles), 10–20 `vc fix` (diagnose → fix → verify, run live on a committed fix-bench failure by default or your own via `--log`/`--issue` — the money shot, sandboxed), 20–25 `vc brain` ("Why did we choose Zustand?" → the decision card from the real ADRs: reason, approved by, related, reviewed), 25–30 `vc outcomes` ("This is what Vectalon saved your team" → the engineering-outcomes ledger). Nothing is canned — every number is the repository — zero model calls, internal command logs silenced, and the full narration script is written to docs/vectalon/sales-demo/SCRIPT.md. Published on /demo as **the 30-minute sales demo** with the real demo-app numbers per act',
       '`vc gh-app` — the **Vectalon GitHub App**, the distribution mechanism (P0): install once, every PR reviewed. A small webhook server (Node ≥ 20, zero new dependencies — built-in crypto/fetch/http) turns every `pull_request` event (opened / synchronize / reopened / ready_for_review) into the deterministic `vc pr` review and posts it back **by the app itself**: constant-time `X-Hub-Signature-256` webhook verification, an RS256 app JWT (`iss` = app id) exchanged for the installation access token, the PR head fetched into a local mirror, the five-check review over the added lines, and the 🤖 comment marker-upserted on the PR — no `gh` CLI, no personal token, no model calls. A team administrator registers the app once and every PR thereafter demonstrates value: GitHub → Vectalon App → Repository Intelligence → PR analysis → Review → Fix → Verification. `--process` replays one webhook payload for CI/one-shot use; config via `GITHUB_APP_ID` / `GITHUB_APP_PRIVATE_KEY` / `GITHUB_WEBHOOK_SECRET`; endpoints `POST /webhook` + `GET /health`',
@@ -36,7 +47,6 @@ const RELEASES = [
   {
     version: 'v0.12.0',
     date: '2026-08-15',
-    tag: 'latest',
     highlights: [
       '`vectalon render` now renders whole apps — `vectalon render --entry App.tsx` on a real Expo app previously died on the first bare import the sandbox could not resolve (`expo-status-bar`, since the sandbox denies network and has no node_modules). The render harness now aliases the curated Expo/navigation set (expo-status-bar, react-native-safe-area-context, @react-navigation/native, @react-navigation/native-stack) to built-in headless stubs — StatusBar + no-op setters, SafeAreaProvider passthrough, NavigationContainer passthrough, and a native-stack navigator whose screens render their components — and follows the entry\'s relative import graph like Metro (extensionless + index.* resolution), so rendering the demo\'s 19-screen App.tsx compiles 36 files and prints the full screen tree with zero model calls',
       'Demo app cart is now a real end-to-end flow — `useCart` is a context-backed shared store (CartProvider mounted at the app root) so adding in the catalog appears in the cart, checkout places the order through the orders service, and the shared cart clears; a new integration test drives the real navigator from onboarding through order confirmation',
