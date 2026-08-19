@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { JetBrains_Mono } from 'next/font/google'
+import { Inter, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import Link from 'next/link'
 import { SiteNav } from '../components/SiteNav'
@@ -7,12 +7,13 @@ import { MobileMenu } from '../components/MobileMenu'
 import { ThemeToggle } from '../components/ThemeToggle'
 import { PRODUCT_MANIFEST } from '../lib/product-manifest'
 
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans', display: 'swap' })
 const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' })
 
 export const metadata: Metadata = {
-  title: 'Vectalon — the AI engineering control plane for React Native',
+  title: 'Vectalon — Adaptive AI harness for developers',
   description:
-    'Give Vectalon a React Native repository and it continuously understands, reviews, diagnoses, upgrades, and validates the application — 44 deterministic agents, zero model calls, no source leaves your machine.',
+    'An engineering control plane that understands, reviews, diagnoses, upgrades, and validates code. 44 deterministic agents, zero model calls, no source leaves your machine.',
 }
 
 const themeScript = `
@@ -27,12 +28,6 @@ const themeScript = `
   })();
 `
 
-// Watchdog for entrance animations (animate-fade-up): those start at
-// opacity 0 with fill-mode both, so if the compositor never advances
-// the animation (throttled/non-composited webviews, energy saver,
-// screenshots), the hero content — including the console text — stays
-// invisible against the dark page. Detect that and add html.anim-frozen
-// so globals.css strips the animations and content is always visible.
 const animWatchdog = `
   (function () {
     function init() {
@@ -41,17 +36,8 @@ const animWatchdog = `
         if (!els.length) return;
         var done = false;
         function freeze() {
-          if (!done) {
-            done = true;
-            document.documentElement.classList.add('anim-frozen');
-          }
+          if (!done) { done = true; document.documentElement.classList.add('anim-frozen'); }
         }
-        // Entrance animations use fill-mode both, so every element parks at
-        // the opacity-0 start frame until its own delay elapses. The first
-        // element (no delay) finishing is NOT proof the rest are fine: when
-        // the compositor stalls (screenshot capture, energy saver, throttled
-        // webview), the delayed elements — subtext, CTA buttons — stay
-        // invisible forever. Sample ALL of them.
         var maxDelay = 0;
         for (var i = 0; i < els.length; i++) {
           var d = parseFloat(window.getComputedStyle(els[i]).animationDelay) || 0;
@@ -65,10 +51,7 @@ const animWatchdog = `
         }
         function sample() {
           if (done) return;
-          if (!anyStillHidden()) {
-            done = true; // animations are advancing normally
-            return;
-          }
+          if (!anyStillHidden()) { done = true; return; }
           window.requestAnimationFrame(sample);
         }
         window.setTimeout(function () {
@@ -84,9 +67,6 @@ const animWatchdog = `
   })();
 `
 
-// Motion budget: pause decorative loops (the hero beam) while they are
-// offscreen. A transform-only loop is cheap, but an infinite animation the
-// user cannot see should not keep running — pause on exit, resume on return.
 const motionBudget = `
   (function () {
     if (!('IntersectionObserver' in window)) return;
@@ -105,16 +85,6 @@ const motionBudget = `
   })();
 `
 
-// Scroll reveals (.reveal): below-fold surfaces (agents cards, report
-// windows, homepage sections) enter as they scroll into view instead of
-// playing their entrance off-screen at load. The hidden state only exists
-// under html.js-reveal — added here, so a no-JS client sees everything
-// immediately. Each element is revealed once (unobserved after); the
-// classes are stripped after the transition so the element returns to its
-// natural styles (hover lifts, theme crossfades). A stalled-compositor
-// safety net mirrors the fade-up watchdog, but checks only reveal
-// elements that are actually in the viewport — below-fold ones are
-// legitimately hidden until scrolled to.
 const revealObserver = `
   (function () {
     function inViewport(el) {
@@ -137,9 +107,6 @@ const revealObserver = `
           }
         }, { rootMargin: '0px 0px -8% 0px', threshold: 0.02 });
         for (var i = 0; i < els.length; i++) io.observe(els[i]);
-        // Stalled-compositor net: if any in-viewport reveal never became
-        // visible after its max delay plus margin, freeze — globals.css
-        // strips the hidden state under html.anim-frozen.
         var maxDelay = 0;
         for (var i = 0; i < els.length; i++) {
           var d = parseFloat(window.getComputedStyle(els[i]).transitionDelay) || 0;
@@ -171,36 +138,9 @@ const revealObserver = `
   })();
 `
 
-// The direction contract for this build — emitted into the HTML so a
-// production build can be audited against it (grep the built output).
-const directionContract = `<!--
-  THE CONSOLE — vectalon.in
-  THESIS: The site is a terminal. The audience runs Vectalon in a terminal,
-  so the site speaks that language: statuslines, framed panes, mono type,
-  prompt-driven actions. It refuses the dark-hero-with-glow category default
-  by making the darkness itself the product's own console.
-  OWN-WORLD: phosphor console (dark) / paper console (light) ground; vermilion
-  prompt + primary action, phosphor-green guardrail pass; JetBrains Mono
-  everywhere; every content block is a bordered pane; the header is a tmux
-  statusline; the product's own terminal frames stay dark in both modes.
-  STORY: A first-time visitor reads a running session of their own workflow —
-  intel feed reranking, guardrails passing, the healing log — then types the
-  one command that starts it, and believes the harness is real because it
-  looks and reads like the tool it will actually use.
-  FIRST VIEWPORT: A full-bleed console. Statusline: "vectalon main · bench
-  90% · intel 26 live". Headline in mono display type. Three panes (intel
-  feed, guardrails, healing log). Prompt line with a blinking caret is the
-  primary action, with "See it run" beside it.
-  FORM: THE CONSOLE, the model-pick grounded direction (TUI dashboard
-  culture), chosen by the user over the assigned roll (THE DIFF); seed key
-  392023ca.
-  FINISH: unreviewed and undocumented is unfinished; this build ends with the
-  finish review, the verdict, and DESIGN.md
--->`
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={mono.variable} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <script dangerouslySetInnerHTML={{ __html: animWatchdog }} />
@@ -208,39 +148,57 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script dangerouslySetInnerHTML={{ __html: revealObserver }} />
       </head>
       <body className="flex min-h-screen flex-col">
-        <div dangerouslySetInnerHTML={{ __html: directionContract }} />
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-[3px] focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-on-brand"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-brand focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-on-brand"
         >
           Skip to content
         </a>
-        {/* Statusline header */}
+        {/* Header */}
         <header className="sticky top-0 z-40">
           <div className="statusline">
-            <div className="mx-auto flex h-12 w-full max-w-6xl items-stretch justify-between">
+            <div className="mx-auto flex h-14 w-full max-w-6xl items-stretch justify-between">
               <div className="flex items-stretch">
                 <Link
                   href="/"
-                  className="seg !px-4 font-bold tracking-tight text-slate-50 hover:!text-brand"
+                  className="seg !px-5 font-bold tracking-tight text-slate-50 hover:!text-brand"
                 >
-                  <span className="grid h-6 w-6 place-items-center rounded-[3px] bg-brand text-xs font-black text-on-brand">
-                    ▣
-                  </span>
-                  vectalon<span className="text-brand">.in</span>
+                  {/* Vectalon logo mark */}
+                  <svg width="22" height="24" viewBox="0 0 220 240" fill="none" className="shrink-0">
+                    <path d="M25 48L70 70L110 195" stroke="url(#lg-teal)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M195 48L150 70L110 195" stroke="url(#lg-violet)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M55 112L110 195L165 112" stroke="#4DAEFF" strokeOpacity="0.9" strokeWidth="4" strokeLinecap="round"/>
+                    <path d="M110 84V195" stroke="#39BFFF" strokeWidth="4" strokeLinecap="round"/>
+                    <circle cx="55" cy="112" r="9" fill="#00E6C3"/>
+                    <circle cx="165" cy="112" r="9" fill="#8B5CF6"/>
+                    <circle cx="110" cy="84" r="8" fill="#37B6FF"/>
+                    <circle cx="110" cy="195" r="11" fill="#37B6FF" stroke="#B8E8FF" strokeWidth="3"/>
+                    <path d="M110 28L122 52H98L110 28Z" fill="#66E8FF"/>
+                    <defs>
+                      <linearGradient id="lg-teal" x1="20" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#00E6C3"/>
+                        <stop offset="1" stopColor="#37B6FF"/>
+                      </linearGradient>
+                      <linearGradient id="lg-violet" x1="200" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#8B5CF6"/>
+                        <stop offset="1" stopColor="#37B6FF"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  Vectalon
                 </Link>
                 <SiteNav />
               </div>
               <div className="flex items-stretch">
-                <div className="seg hidden text-xs text-slate-500 md:flex">
-                  <span className="text-emerald-600 dark:text-emerald-400">●</span>
-                  main · v{PRODUCT_MANIFEST.packages.reactNative.version}
+                <div className="seg hidden items-center gap-1.5 text-xs text-slate-500 md:flex">
+                  <span className="text-brand">●</span>
+                  <span className="hidden lg:inline">v{PRODUCT_MANIFEST.packages.reactNative.version}</span>
                 </div>
                 <MobileMenu />
                 <ThemeToggle />
                 <Link
                   href="/trial"
-                  className="flex items-center bg-brand px-4 text-[13px] font-semibold text-on-brand transition hover:bg-brand-strong"
+                  className="flex items-center bg-brand px-5 text-[13px] font-semibold text-on-brand transition hover:bg-brand-strong"
                 >
                   Get started
                 </Link>
@@ -249,42 +207,40 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
         <main id="main" className="flex-1">{children}</main>
-        {/* Console footer */}
-        <footer className="border-t border-ink-700/70 font-mono">
-          <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-[13px] text-slate-400 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              vectalon<span className="text-brand">.in</span>
-              <span className="text-slate-500"> — Business Source License</span>
+        {/* Footer */}
+        <footer className="border-t border-ink-700/70 font-sans">
+          <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-10 text-[13px] text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <svg width="18" height="20" viewBox="0 0 220 240" fill="none" className="shrink-0 opacity-60">
+                <path d="M25 48L70 70L110 195" stroke="url(#fl-teal)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M195 48L150 70L110 195" stroke="url(#fl-violet)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="110" cy="84" r="8" fill="#37B6FF"/>
+                <defs>
+                  <linearGradient id="fl-teal" x1="20" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#00E6C3"/><stop offset="1" stopColor="#37B6FF"/>
+                  </linearGradient>
+                  <linearGradient id="fl-violet" x1="200" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#8B5CF6"/><stop offset="1" stopColor="#37B6FF"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span>Vectalon — Adaptive AI harness for developers</span>
             </div>
             <div className="flex flex-wrap gap-x-6 gap-y-2">
-              <Link href="/sdk/react-native" className="transition hover:text-brand">
-                react-native
-              </Link>
-              <Link href="/sdk/ios" className="transition hover:text-brand">
-                ios
-              </Link>
-              <Link href="/sdk/android" className="transition hover:text-brand">
-                android
-              </Link>
-              <Link href="/sdk/flutter" className="transition hover:text-brand">
-                flutter
-              </Link>
+              <Link href="/sdk/react-native" className="transition hover:text-brand">react-native</Link>
+              <Link href="/sdk/ios" className="transition hover:text-brand">ios</Link>
+              <Link href="/sdk/android" className="transition hover:text-brand">android</Link>
+              <Link href="/sdk/flutter" className="transition hover:text-brand">flutter</Link>
             </div>
             <div className="flex gap-6">
-              <a href="mailto:support@vectalon.in" className="transition hover:text-brand">
-                support@vectalon.in
-              </a>
-              <Link href="/pricing" className="transition hover:text-brand">
-                pricing
-              </Link>
-              <Link href="/docs" className="transition hover:text-brand">
-                docs
-              </Link>
+              <a href="mailto:support@vectalon.in" className="transition hover:text-brand">support@vectalon.in</a>
+              <Link href="/pricing" className="transition hover:text-brand">pricing</Link>
+              <Link href="/docs" className="transition hover:text-brand">docs</Link>
             </div>
           </div>
           <div className="border-t border-ink-700/50">
-            <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 font-mono text-[11px] text-slate-600">
-              <span>vectalon — a local agent that never works from a guess</span>
+            <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 font-mono text-[11px] text-slate-600">
+              <span>vectalon — an engineering control plane that understands, upgrades, and validates your code</span>
               <span className="hidden sm:inline">[ exit ]</span>
             </div>
           </div>

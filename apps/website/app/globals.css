@@ -3,182 +3,164 @@
 @tailwind utilities;
 
 /* ─────────────────────────────────────────────────────────────
-   THE CONSOLE — visual world for vectalon.in
-   Set on <html data-theme="…"> by the bootstrap script in
-   layout.tsx (defaults to the system preference).
-
-   The site is a terminal: statuslines, framed panes, mono type,
-   prompt-driven actions. Dark = phosphor console; light = paper
-   console (a terminal in daylight). The product's own terminal
-   frames stay dark in both modes — a terminal inside a terminal.
-
-   Brand: vermilion #E35336 (prompt, primary action) · sand
-   #F4A460 (hover) · phosphor green (guardrail pass / go).
+   VECTALON — Brand redesign
+   
+   Graphite #0B0F14 · Slate #151B26 · Electric Teal #00E6C3 ·
+   Cyan Blue #37B6FF · Vivid Violet #8B5CF6 · Off White #F2F4F7
+   
+   Inter (UI/body) · JetBrains Mono (code/terminal)
    ───────────────────────────────────────────────────────────── */
 
 :root[data-theme='light'] {
   color-scheme: light;
 
-  /* surfaces — paper console */
-  --ink: 245 243 234; /* page ground */
-  --ink-900: 253 251 244; /* deepest: prompt line, inputs */
-  --ink-800: 250 248 239; /* pane surface */
-  --ink-700: 214 209 192; /* frame borders */
+  /* surfaces */
+  --ink: 242 244 247; /* Off White page ground */
+  --ink-900: 255 255 255; /* deepest: inputs */
+  --ink-800: 248 249 251; /* pane surface */
+  --ink-700: 218 222 230; /* frame borders */
 
-  /* action family (darkened for WCAG AA on paper) */
-  --brand: 196 62 30; /* vermilion — prompt, CTAs */
-  --brand-dim: 219 94 56; /* brighter vermilion */
-  --brand-strong: 160 78 28; /* sand-dark — hover fills */
-  --on-brand: 255 255 255;
-  --accent: 30 120 68; /* phosphor green — go / guardrail pass */
-  --accent-dim: 24 98 54;
+  /* brand family */
+  --brand: 0 230 195; /* Electric Teal — primary accent, CTAs */
+  --brand-dim: 0 200 170; /* darker teal */
+  --brand-strong: 0 180 155; /* hover fill */
+  --on-brand: 11 15 20; /* dark text on teal */
+
+  --accent: 55 182 255; /* Cyan Blue — secondary accent */
+  --accent-dim: 40 150 220;
   --on-accent: 255 255 255;
 
-  /* green-tinted neutral text scale (paper ink) — all pass WCAG AA on paper */
-  --slate-50: 27 30 24;
-  --slate-100: 41 44 37;
-  --slate-200: 58 62 53;
-  --slate-300: 86 91 80;
-  --slate-400: 104 109 92;
-  --slate-500: 90 95 79;
-  --slate-600: 118 124 106;
-  --slate-700: 145 150 132;
-  --slate-800: 176 180 164;
-  --slate-900: 208 211 199;
-  --slate-950: 233 235 227;
+  --violet: 139 92 246; /* Vivid Violet — tertiary */
+  --violet-dim: 120 75 220;
+
+  /* neutral text scale */
+  --slate-50: 11 15 20; /* near-black */
+  --slate-100: 21 27 38;
+  --slate-200: 40 48 65;
+  --slate-300: 70 80 100;
+  --slate-400: 100 110 130;
+  --slate-500: 130 140 160;
+  --slate-600: 160 170 185;
+  --slate-700: 190 198 210;
+  --slate-800: 215 220 228;
+  --slate-900: 235 238 242;
+  --slate-950: 245 247 250;
 
   /* decorative */
-  --grid-line: rgba(86, 91, 80, 0.12);
-  --glow-brand: rgba(196, 62, 30, 0.22);
-  --glow-sand: rgba(160, 78, 28, 0.18);
-  --glow-accent: rgba(30, 120, 68, 0.22);
-  --term: 20 23 18; /* the product terminal — stays dark in both modes */
-  --term-border: 58 64 50;
-  --term-ink: 232 224 200; /* terminal text */
-  --term-brand: 227 83 54; /* terminal brand — prompt $, command highlights (constant across themes) */
-  --term-meta: 156 143 116; /* terminal dim meta text */
+  --grid-line: rgba(0, 230, 195, 0.06);
+  --glow-brand: rgba(0, 230, 195, 0.15);
+  --glow-accent: rgba(55, 182, 255, 0.12);
+  --glow-violet: rgba(139, 92, 246, 0.12);
+  --term: 11 15 20; /* terminal — stays dark */
+  --term-border: 30 38 52;
+  --term-ink: 200 210 225;
+  --term-brand: 0 230 195;
+  --term-meta: 100 115 135;
 }
 
-/* Consistent keyboard focus — the theme's brand token in both modes, so
-   every focusable element shows the same high-contrast indicator. */
 :focus-visible {
   outline: 2px solid rgb(var(--brand));
   outline-offset: 2px;
 }
 
-/* No-theme fallback = dark console. The bootstrap script in layout.tsx
-   sets data-theme before first paint; this default catches CSP-blocked or
-   JS-disabled edge cases so the page never renders with undefined tokens. */
 :root {
   color-scheme: dark;
 
-  /* surfaces — phosphor console */
-  --ink: 13 15 12; /* page ground */
-  --ink-900: 19 22 17; /* deepest: prompt line, inputs */
-  --ink-800: 25 29 23; /* pane surface */
-  --ink-700: 45 51 41; /* frame borders */
+  /* surfaces — Graphite/Slate */
+  --ink: 11 15 20; /* Graphite page ground */
+  --ink-900: 8 11 16; /* deepest */
+  --ink-800: 21 27 38; /* Slate pane surface */
+  --ink-700: 35 44 60; /* frame borders */
 
-  /* action family */
-  --brand: 227 83 54; /* vermilion — prompt, CTAs */
-  --brand-dim: 240 158 74; /* sand — hovers */
-  --brand-strong: 199 64 31; /* darker vermilion — hover fills */
-  --on-brand: 22 17 12; /* dark ink on vermilion */
-  --accent: 74 222 128; /* phosphor green — go / guardrail pass */
-  --accent-dim: 52 168 96;
-  --on-accent: 8 12 9; /* dark ink on green */
+  /* brand family */
+  --brand: 0 230 195; /* Electric Teal */
+  --brand-dim: 0 200 170;
+  --brand-strong: 0 210 180;
+  --on-brand: 11 15 20;
 
-  /* green-tinted neutral text scale — meta passes AA on the console ground */
-  --slate-50: 241 239 229;
-  --slate-100: 236 234 220;
-  --slate-200: 226 224 210; /* body */
-  --slate-300: 198 200 184;
-  --slate-400: 156 163 141; /* secondary */
-  --slate-500: 124 134 113; /* meta */
-  --slate-600: 104 116 92; /* decorative */
-  --slate-700: 68 75 60;
-  --slate-800: 50 56 45;
-  --slate-900: 34 38 30;
-  --slate-950: 22 25 20;
+  --accent: 55 182 255; /* Cyan Blue */
+  --accent-dim: 40 150 220;
+  --on-accent: 255 255 255;
+
+  --violet: 139 92 246;
+  --violet-dim: 120 75 220;
+
+  /* neutral text scale */
+  --slate-50: 242 244 247; /* Off White */
+  --slate-100: 225 230 238;
+  --slate-200: 200 210 225;
+  --slate-300: 170 180 200;
+  --slate-400: 130 145 170;
+  --slate-500: 100 115 140;
+  --slate-600: 75 88 110;
+  --slate-700: 50 60 78;
+  --slate-800: 35 44 58;
+  --slate-900: 22 28 38;
+  --slate-950: 14 18 24;
 
   /* decorative */
-  --grid-line: rgba(156, 163, 141, 0.07);
-  --glow-brand: rgba(227, 83, 54, 0.2);
-  --glow-sand: rgba(240, 158, 74, 0.16);
-  --glow-accent: rgba(74, 222, 128, 0.16);
-  --term: 20 23 18; /* the product terminal — stays dark in both modes */
-  --term-border: 58 64 50;
-  --term-ink: 232 224 200; /* terminal text */
-  --term-brand: 227 83 54; /* terminal brand — prompt $, command highlights (constant across themes) */
-  --term-meta: 156 143 116; /* terminal dim meta text */
+  --grid-line: rgba(0, 230, 195, 0.04);
+  --glow-brand: rgba(0, 230, 195, 0.18);
+  --glow-accent: rgba(55, 182, 255, 0.14);
+  --glow-violet: rgba(139, 92, 246, 0.14);
+  --term: 11 15 20;
+  --term-border: 30 38 52;
+  --term-ink: 200 210 225;
+  --term-brand: 0 230 195;
+  --term-meta: 100 115 135;
 }
 
-/* Display type is the terminal face: JetBrains Mono everywhere. */
+/* Display type: Inter for UI, JetBrains Mono for code */
 :root {
-  --font-display: var(--font-mono);
+  --font-display: var(--font-sans);
 }
 
 @layer base {
   body {
-    @apply bg-ink font-mono text-slate-200 antialiased;
+    @apply bg-ink font-sans text-slate-200 antialiased;
     transition: background-color 0.2s ease, color 0.2s ease;
   }
-  h1,
-  h2,
-  h3,
-  h4 {
+  h1, h2, h3, h4 {
     @apply font-display tracking-tight;
   }
 }
 
 ::selection {
-  @apply bg-brand/40 text-slate-50;
+  @apply bg-brand/30 text-slate-50;
 }
 
 @layer components {
-  /* Buttons read as console actions: flat blocks, sharp corners. Press
-     feedback (active:scale) acknowledges the click at ~100ms — feedback
-     must be faster than the eye's attention, never slower than 150ms. */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-[3px] bg-brand px-5 py-2.5 font-mono text-sm font-semibold text-on-brand transition hover:bg-brand-strong hover:shadow-[0_0_26px_-10px_var(--glow-brand)] focus:outline-none focus:ring-2 focus:ring-brand/50 active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-6 py-3 font-sans text-sm font-semibold text-on-brand transition hover:bg-brand-strong hover:shadow-[0_0_30px_-8px_var(--glow-brand)] focus:outline-none focus:ring-2 focus:ring-brand/40 active:scale-[0.97];
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-[3px] border border-ink-700 bg-ink-900/40 px-5 py-2.5 font-mono text-sm font-medium text-slate-200 transition hover:border-brand/60 hover:text-brand focus:outline-none active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-ink-700 bg-ink-900/40 px-6 py-3 font-sans text-sm font-medium text-slate-200 transition hover:border-brand/50 hover:text-brand focus:outline-none active:scale-[0.97];
   }
   .btn-accent {
-    @apply inline-flex items-center justify-center gap-2 rounded-[3px] bg-accent px-5 py-2.5 font-mono text-sm font-semibold text-on-accent transition hover:bg-accent-dim hover:shadow-[0_0_26px_-10px_var(--glow-accent)] focus:outline-none focus:ring-2 focus:ring-accent/50 active:scale-[0.98];
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 font-sans text-sm font-semibold text-on-accent transition hover:bg-accent-dim hover:shadow-[0_0_30px_-8px_var(--glow-accent)] focus:outline-none focus:ring-2 focus:ring-accent/40 active:scale-[0.97];
   }
 
-  /* Theme flips feel composed: the sticky surfaces crossfade their fills,
-     frames, and text instead of snapping. Color-only — no layout cost.
-     (Elements that carry an inline `transition` utility for hover lifts
-     keep their own, fuller property list — utilities beat this layer.) */
-  body,
-  .statusline,
-  .console,
-  .console-head,
-  .card {
+  body, .statusline, .console, .console-head, .card {
     transition-property: background-color, border-color, color;
     transition-duration: 0.2s;
     transition-timing-function: ease;
   }
 
-  /* A framed pane — the site's card. Sharp border, inner surface. */
   .card {
-    @apply rounded-[3px] border border-ink-700 bg-ink-800 p-6;
+    @apply rounded-xl border border-ink-700 bg-ink-800 p-6;
   }
 
-  /* Bracketed console segment */
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-[3px] border border-ink-700 bg-ink-800/80 px-2.5 py-1 font-mono text-xs text-slate-300;
+    @apply inline-flex items-center gap-1.5 rounded-lg border border-ink-700 bg-ink-800/80 px-3 py-1.5 font-mono text-xs text-slate-300;
   }
   .kbd {
-    @apply rounded-[3px] border border-ink-700 bg-ink-900 px-1.5 py-0.5 font-mono text-xs text-slate-300;
+    @apply rounded-lg border border-ink-700 bg-ink-900 px-2 py-1 font-mono text-xs text-slate-300;
   }
   .micro {
-    @apply font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500;
+    @apply font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500;
   }
   .tbl {
-    @apply w-full border-collapse text-left font-mono text-sm;
+    @apply w-full border-collapse text-left font-sans text-sm;
   }
   .tbl th {
     @apply border-b border-ink-700 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-slate-500;
@@ -190,84 +172,66 @@
     @apply transition hover:bg-ink-800/60;
   }
   .badge {
-    @apply inline-flex items-center gap-1 rounded-[3px] border px-2 py-0.5 font-mono text-xs font-medium;
+    @apply inline-flex items-center gap-1 rounded-lg border px-2.5 py-0.5 font-sans text-xs font-medium;
   }
   .badge-ok {
-    @apply border-emerald-600/40 bg-emerald-600/10 text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-400/10 dark:text-emerald-300;
+    @apply border-emerald-500/30 bg-emerald-500/10 text-emerald-400 dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-300;
   }
   .badge-warn {
-    @apply border-amber-600/40 bg-amber-600/10 text-amber-700 dark:border-amber-400/40 dark:bg-amber-400/10 dark:text-amber-300;
+    @apply border-amber-500/30 bg-amber-500/10 text-amber-400 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-300;
   }
   .badge-danger {
-    @apply border-red-600/40 bg-red-600/10 text-red-700 dark:border-red-400/40 dark:bg-red-400/10 dark:text-red-300;
+    @apply border-red-500/30 bg-red-500/10 text-red-400 dark:border-red-400/30 dark:bg-red-400/10 dark:text-red-300;
   }
   .badge-muted {
     @apply border-ink-700 bg-ink-800 text-slate-300;
   }
   .stat {
-    @apply rounded-[3px] border border-ink-700 bg-ink-800 p-5;
+    @apply rounded-xl border border-ink-700 bg-ink-800 p-5;
   }
   .stat-label {
-    @apply font-mono text-xs font-semibold uppercase tracking-wider text-slate-500;
+    @apply font-sans text-xs font-semibold uppercase tracking-wider text-slate-500;
   }
   .stat-value {
     @apply mt-1.5 font-display text-2xl font-bold text-slate-50;
   }
   .input {
-    @apply w-full rounded-[3px] border border-ink-700 bg-ink-900 px-3 py-2 font-mono text-sm text-slate-50 placeholder-slate-500 focus:border-brand focus:outline-none;
+    @apply w-full rounded-lg border border-ink-700 bg-ink-900 px-3 py-2 font-sans text-sm text-slate-50 placeholder-slate-500 focus:border-brand focus:outline-none;
   }
 
-  /* Blinking terminal cursor */
   .caret {
     @apply ml-1 inline-block h-[1em] w-[0.55em] animate-blink bg-brand align-text-bottom;
   }
-
-  /* Solid caret while the prompt types itself out — hands off to the
-     blinking .caret once the command lands. */
   .caret-solid {
     @apply ml-1 inline-block h-[1em] w-[0.55em] bg-brand align-text-bottom;
   }
 
-  /* The console frame — used for the hero and big product surfaces. */
   .console {
-    @apply overflow-hidden rounded-[4px] border border-ink-700 bg-ink-900/60 font-mono;
+    @apply overflow-hidden rounded-xl border border-ink-700 bg-ink-900/60 font-sans;
     box-shadow:
       0 1px 0 0 rgb(255 255 255 / 0.03) inset,
       0 24px 70px -30px rgb(0 0 0 / 0.55);
   }
   .console-head {
-    @apply flex items-center justify-between border-b border-ink-700/70 bg-ink-900/90 px-3 py-2 font-mono text-[11px] text-slate-500;
+    @apply flex items-center justify-between border-b border-ink-700/70 bg-ink-900/90 px-4 py-2.5 font-mono text-[11px] text-slate-500;
   }
 
-  /* Statusline — tmux-style segmented bar. Opaque: the header is sticky,
-     and content scrolling under a translucent bar would bleed through the
-     mono text. Ink-900 is the deepest surface in both themes. */
   .statusline {
-    @apply flex items-stretch divide-x divide-ink-700/70 border-b border-ink-700/70 bg-ink-900 font-mono;
+    @apply flex items-stretch divide-x divide-ink-700/70 border-b border-ink-700/70 bg-ink-900 font-sans;
   }
 
-  /* Bracketed console segment — the tmux segmented control. Global so the
-     same segment language works inside any frame (header statusline, agents
-     repo switcher, stat strips), not just .statusline. */
   .seg {
-    @apply flex items-center gap-2 px-3.5 py-2 text-[12px] text-slate-400 transition hover:text-slate-200;
+    @apply flex items-center gap-2 px-4 py-2 text-[13px] text-slate-400 transition hover:text-slate-200;
   }
   .seg-active {
     @apply bg-brand/15 text-brand;
   }
 
-  /* Dropdown / popover entrance — quick and decisive so the panel feels like
-     it unfolds from its trigger. Origin top keeps the unfold anchored to the
-     trigger instead of growing from the center. */
   .menu-pop {
     transform-origin: top;
     animation: menu-pop 0.14s ease-out both;
   }
 
-  /* Nav segments get a hairline sweep on hover/active — the tmux way of
-     saying "this segment is live". Underline is transform-only (scaleX from
-     the left edge), so it stays on the compositor. Desktop nav only: SiteNav
-     is hidden below lg. */
   .site-nav .seg {
     position: relative;
   }
@@ -277,45 +241,41 @@
     right: 0.5rem;
     bottom: 1px;
     left: 0.5rem;
-    height: 1px;
+    height: 2px;
     background: rgb(var(--brand) / 0.85);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.15s ease-out;
+    border-radius: 1px;
   }
   .site-nav .seg:hover::after,
   .site-nav .seg-active::after {
     transform: scaleX(1);
   }
 
-  /* Theme-toggle icon swap: the glyph rotates in as the mode flips — fast,
-     decisive feedback for a one-click action. */
   .icon-swap {
     animation: icon-swap 0.2s ease-out both;
   }
 
-  /* The hero's authored focal moment: a soft phosphor band periodically
-     sweeps down the console like a CRT refresh. Transform-only; the
-     motionBudget script in layout.tsx pauses it while the hero is offscreen
-     so the loop never burns cycles the user can't see. */
+  /* Hero ambient glow */
   .beam {
     position: absolute;
     top: 0;
     right: 0;
     left: 0;
-    height: 6rem;
+    height: 8rem;
     pointer-events: none;
     background: linear-gradient(
       to bottom,
       transparent,
-      rgb(74 222 128 / 0.05) 35%,
-      rgb(227 83 54 / 0.06) 55%,
+      rgb(0 230 195 / 0.06) 30%,
+      rgb(55 182 255 / 0.05) 50%,
+      rgb(139 92 246 / 0.04) 70%,
       transparent
     );
-    animation: beam-sweep 7s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+    animation: beam-sweep 8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
   }
 
-  /* Pane header — ─── title ─── rule inside a framed pane */
   .pane-head {
     @apply flex items-center justify-between gap-3 border-b border-ink-700/60 pb-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500;
   }
@@ -328,10 +288,8 @@
     @apply shrink-0;
   }
 
-  /* The product terminal — stays dark in BOTH modes (a terminal inside
-     a terminal). Colours come from the fixed --term triplets. */
   .term {
-    @apply overflow-hidden rounded-[4px] border font-mono;
+    @apply overflow-hidden rounded-xl border font-mono;
     border-color: rgb(var(--term-border) / 1);
     background: rgb(var(--term) / 1);
     box-shadow: 0 24px 70px -32px rgb(0 0 0 / 0.6);
@@ -348,8 +306,6 @@
     @apply h-2.5 w-2.5 rounded-full;
   }
 
-  /* Carbon.now.sh report windows (/reports). Built on .term so the surface
-     stays dark in both themes — a terminal inside a terminal. */
   .report-window {
     border-radius: 12px;
     box-shadow:
@@ -360,18 +316,15 @@
     @apply rounded-t-[12px] px-4 py-2.5;
   }
 
-  /* Rendered markdown inside a report window. Text reads as warm phosphor
-     parchment on the fixed dark terminal; token colors stay in the world
-     (vermilion keywords, sand strings, phosphor-green calls). */
   .report-body {
-    color: rgb(232 224 200 / 0.92);
+    color: rgb(200 210 225 / 0.92);
     font-size: 12.5px;
     line-height: 1.75;
   }
   .report-body .tk-h1 {
     font-size: 15px;
     font-weight: 700;
-    color: #ffd9a0;
+    color: #7dd3fc;
     margin: 0 0 0.6rem;
     letter-spacing: -0.01em;
   }
@@ -396,17 +349,17 @@
     margin: 1.1rem 0 0.4rem;
     font-size: 13px;
     font-weight: 600;
-    color: #f0e9d5;
+    color: #e2e8f0;
   }
   .report-body .tk-p {
     margin: 0 0 0.65rem;
   }
   .report-body strong {
-    color: #f0e9d5;
+    color: #e2e8f0;
     font-weight: 700;
   }
   .report-body em {
-    color: rgb(232 224 200 / 0.75);
+    color: rgb(200 210 225 / 0.75);
   }
   .report-body .tk-ul,
   .report-body .tk-ol {
@@ -443,7 +396,7 @@
     margin: 0 0 0.7rem;
     padding: 0.3rem 0 0.3rem 0.8rem;
     border-left: 2px solid rgb(var(--brand) / 0.8);
-    color: rgb(232 224 200 / 0.6);
+    color: rgb(200 210 225 / 0.6);
     font-style: italic;
   }
   .report-body .tk-hr {
@@ -454,11 +407,11 @@
   }
   .report-body .tk-code {
     padding: 0.08rem 0.35rem;
-    border-radius: 4px;
+    border-radius: 6px;
     border: 1px solid rgb(var(--term-border) / 0.8);
     background: rgb(255 255 255 / 0.05);
     font-size: 11.5px;
-    color: #ffd9a0;
+    color: #7dd3fc;
   }
   .report-body .tk-pre {
     margin: 0.5rem 0 0.9rem;
@@ -473,23 +426,22 @@
   .report-body .tk-pre .tk-block {
     font-family: inherit;
   }
-  /* syntax tokens — single-pass spans, never nested */
   .report-body .tk-com {
-    color: #8b949e;
+    color: #64748b;
     font-style: italic;
   }
   .report-body .tk-str {
-    color: #f4a460;
+    color: #fbbf24;
   }
   .report-body .tk-num {
-    color: #ffd9a0;
+    color: #7dd3fc;
   }
   .report-body .tk-kw {
     color: rgb(var(--brand));
     font-weight: 600;
   }
   .report-body .tk-fn {
-    color: #a8d8b9;
+    color: #86efac;
   }
   .report-body .tk-table-wrap {
     margin: 0.5rem 0 0.9rem;
@@ -504,7 +456,7 @@
     text-align: left;
     padding: 0.35rem 0.6rem;
     border-bottom: 1px solid rgb(var(--term-border));
-    color: #ffd9a0;
+    color: #7dd3fc;
     font-weight: 600;
     white-space: nowrap;
   }
@@ -517,37 +469,31 @@
     border-bottom: 0;
   }
   .report-body td.tk-first {
-    color: #f0e9d5;
+    color: #e2e8f0;
     font-weight: 500;
   }
 
-  /* The /docs man page is a carbon window too. Its markup uses the theme
-     tokens (slate/ink utilities), so inside the fixed-dark term surface we
-     remap those triplets to the warm parchment scale — the same reading
-     palette as the report windows, in both themes. */
   .man-term {
-    --ink: 13 15 12;
+    --ink: 11 15 20;
     --ink-900: 0 0 0;
-    --ink-800: 25 29 23;
-    --ink-700: 58 64 50;
-    --slate-50: 240 233 213;
-    --slate-100: 236 228 205;
-    --slate-200: 232 224 200;
-    --slate-300: 232 224 200;
-    --slate-400: 215 206 182;
-    --slate-500: 194 185 161;
-    --slate-600: 160 152 132;
-    --slate-700: 122 116 101;
-    --slate-800: 88 84 74;
-    --slate-900: 60 58 51;
-    --slate-950: 40 39 35;
+    --ink-800: 21 27 38;
+    --ink-700: 30 38 52;
+    --slate-50: 242 244 247;
+    --slate-100: 225 230 238;
+    --slate-200: 200 210 225;
+    --slate-300: 200 210 225;
+    --slate-400: 180 190 210;
+    --slate-500: 150 162 180;
+    --slate-600: 120 132 150;
+    --slate-700: 90 100 118;
+    --slate-800: 65 74 90;
+    --slate-900: 45 52 65;
+    --slate-950: 30 36 48;
   }
   .man-term .man-body {
-    color: rgb(232 224 200 / 0.92);
+    color: rgb(200 210 225 / 0.92);
   }
 
-  /* Live ticker: a vertical feed that reranks by cycling. The list is
-     duplicated; the animation translates it up in an endless loop. */
   .ticker {
     overflow: hidden;
   }
@@ -558,117 +504,78 @@
     animation-play-state: paused;
   }
 
-  /* Highlighted pane — the featured plan / product (soft vermilion bloom) */
   .terminal-glow {
     box-shadow: 0 0 46px -14px var(--glow-brand);
   }
 
-  /* Live indicator — blinking phosphor dot */
   .live-dot {
-    @apply inline-block h-1.5 w-1.5 rounded-full bg-accent;
+    @apply inline-block h-1.5 w-1.5 rounded-full bg-brand;
     animation: live-dot 1.6s ease-in-out infinite;
   }
 
-  /* Phosphor scanlines over the hero console (subtle; decoration only). */
   .scanlines {
     background-image: repeating-linear-gradient(
       to bottom,
-      rgb(255 255 255 / 0.025) 0px,
-      rgb(255 255 255 / 0.025) 1px,
+      rgb(255 255 255 / 0.02) 0px,
+      rgb(255 255 255 / 0.02) 1px,
       transparent 1px,
       transparent 3px
     );
   }
 }
 
-/* Terminal boot log — the demo frame's lines step in while the video loads */
 .boot-line {
   animation: boot-line 0.35s ease-out both;
 }
 
 @keyframes boot-line {
-  from {
-    opacity: 0;
-    transform: translateY(3px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes ticker {
-  from {
-    transform: translateY(0);
-  }
-  to {
-    transform: translateY(-50%);
-  }
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
 }
 
 @keyframes live-dot {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.3;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
 }
 
 @keyframes menu-pop {
-  from {
-    opacity: 0;
-    transform: translateY(-3px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(-3px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes beam-sweep {
-  0%,
-  74% {
-    transform: translateY(-105%);
-    opacity: 0;
-  }
-  78% {
-    opacity: 1;
-  }
-  94% {
-    transform: translateY(680%);
-  }
-  98%,
-  100% {
-    transform: translateY(680%);
-    opacity: 0;
-  }
+  0%, 74% { transform: translateY(-105%); opacity: 0; }
+  78% { opacity: 1; }
+  94% { transform: translateY(680%); }
+  98%, 100% { transform: translateY(680%); opacity: 0; }
 }
 
 @keyframes icon-swap {
-  from {
-    opacity: 0;
-    transform: rotate(-90deg) scale(0.6);
-  }
-  to {
-    opacity: 1;
-    transform: rotate(0) scale(1);
-  }
+  from { opacity: 0; transform: rotate(-90deg) scale(0.6); }
+  to { opacity: 1; transform: rotate(0) scale(1); }
 }
 
-/* Deep link from the agents catalog: when a report frame is the anchor
-   target (…/reports#report-<cmd>), flash its border so the jump lands
-   visibly among 40 stacked documents. */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.6s ease-out both;
+}
+
 @keyframes console-target {
   0% {
     box-shadow:
-      0 0 0 1px rgb(24 191 122 / 0.55),
-      0 0 32px -6px rgb(24 191 122 / 0.45);
+      0 0 0 1px rgb(0 230 195 / 0.55),
+      0 0 32px -6px rgb(0 230 195 / 0.45);
   }
   100% {
-    /* the console frame's resting shadow — end state matches so the flash
-       resolves to the element's natural look in either theme. */
     box-shadow:
       0 1px 0 0 rgb(255 255 255 / 0.03) inset,
       0 24px 70px -30px rgb(0 0 0 / 0.55);
@@ -678,13 +585,11 @@
   animation: console-target 2.2s ease-out both;
 }
 
-/* Same flash for the carbon report windows (/reports), ending at the
-   report window's own resting shadow. */
 @keyframes report-target {
   0% {
     box-shadow:
-      0 0 0 1px rgb(24 191 122 / 0.55),
-      0 0 40px -8px rgb(24 191 122 / 0.5);
+      0 0 0 1px rgb(0 230 195 / 0.55),
+      0 0 40px -8px rgb(0 230 195 / 0.5);
   }
   100% {
     box-shadow:
@@ -696,14 +601,6 @@
   animation: report-target 2.2s ease-out both;
 }
 
-/* Scroll reveals — below-fold surfaces (agents cards, report windows,
-   homepage sections) enter as they scroll into view instead of playing
-   their entrance off-screen at load. The hidden state exists only under
-   html.js-reveal (set by layout.tsx), so a no-JS client — the site's
-   zero-JS ethos — still sees everything. Per-item stagger rides the
-   --reveal-delay custom property set inline. The observer removes the
-   .reveal class after the transition completes so the element returns to
-   its natural styles (hover lifts, theme crossfades) untouched. */
 html.js-reveal .reveal {
   opacity: 0;
   transform: translateY(12px);
@@ -716,95 +613,47 @@ html.js-reveal .reveal.is-revealed {
     transform 0.5s cubic-bezier(0.25, 1, 0.5, 1) var(--reveal-delay, 0ms);
 }
 
-/* FAQ answer — rises in as its <details> opens. Zero-JS: pure CSS on the
-   [open] state; closing snaps, which is fine (exits should be faster). */
 details[open] .faq-a {
   animation: faq-open 0.25s ease-out both;
 }
 @keyframes faq-open {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Copy button — a quick pop acknowledges the copied state. */
 .copy-pop {
   animation: copy-pop 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 @keyframes copy-pop {
-  0% {
-    transform: scale(1);
-  }
-  45% {
-    transform: scale(1.35);
-  }
-  100% {
-    transform: scale(1);
-  }
+  0% { transform: scale(1); }
+  45% { transform: scale(1.35); }
+  100% { transform: scale(1); }
 }
 
-/* Long surfaces render lazily off-screen (Chrome/Edge/Safari): the /reports
-   page holds all 44 full documents and /agents holds 44 cards, so layout
-   and paint of everything below the fold is skipped until scrolled into
-   view. contain-intrinsic-size reserves the height so the scrollbar never
-   jumps. Unsupported browsers ignore both properties harmlessly. */
-.report-window,
-.card {
+.report-window, .card {
   content-visibility: auto;
   contain-intrinsic-size: auto 400px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .caret,
-  .animate-fade-up,
-  .ticker-inner,
-  .live-dot,
-  .boot-line,
-  .menu-pop,
-  .console:target,
-  .report-window:target,
-  details[open] .faq-a,
-  .copy-pop {
+  .caret, .animate-fade-up, .ticker-inner, .live-dot, .boot-line, .menu-pop,
+  .console:target, .report-window:target, details[open] .faq-a, .copy-pop {
     animation: none;
   }
-  /* Scroll reveals: content shows immediately, no spatial movement. */
   html.js-reveal .reveal {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
   }
-  /* Reduced motion keeps meaningful feedback but drops spatial movement:
-     the beam sweep, the underline sweep, and the icon's rotation all go
-     static; color/opacity state changes remain. */
-  .beam {
-    animation: none;
-  }
-  .site-nav .seg::after {
-    display: none;
-  }
-  .icon-swap {
-    animation: none;
-  }
+  .beam { animation: none; }
+  .site-nav .seg::after { display: none; }
+  .icon-swap { animation: none; }
 }
 
-/* Safety net: if the compositor never advances entrance animations
-   (throttled or non-composited webviews, energy saver, screenshot
-   capture), the fade-up animation parks elements at their opacity-0
-   start frame and the console text is invisible against the dark
-   page. The animWatchdog script in layout.tsx detects this and adds
-   html.anim-frozen, which strips the animations so content shows. */
 html.anim-frozen .animate-fade-up,
 html.anim-frozen .caret {
   animation: none;
 }
-/* Frozen-compositor safety net applies to scroll reveals too: a stalled
-   compositor never advances the reveal transition, so without this the
-   below-fold content would stay invisible. */
 html.anim-frozen .reveal {
   opacity: 1 !important;
   transform: none !important;
