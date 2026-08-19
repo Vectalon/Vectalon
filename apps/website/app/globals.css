@@ -110,9 +110,9 @@
   --term-meta: 100 115 135;
 }
 
-/* Display type: Inter for UI, JetBrains Mono for code */
+/* Display type: Satoshi for headings, Inter for UI, JetBrains Mono for code */
 :root {
-  --font-display: var(--font-sans);
+  --font-display: 'Satoshi', var(--font-sans), system-ui, sans-serif;
 }
 
 @layer base {
@@ -121,7 +121,8 @@
     transition: background-color 0.2s ease, color 0.2s ease;
   }
   h1, h2, h3, h4 {
-    @apply font-display tracking-tight;
+    font-family: 'Satoshi', var(--font-sans), system-ui, sans-serif;
+    @apply tracking-tight;
   }
 }
 
@@ -131,13 +132,13 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-6 py-3 font-sans text-sm font-semibold text-on-brand transition hover:bg-brand-strong hover:shadow-[0_0_30px_-8px_var(--glow-brand)] focus:outline-none focus:ring-2 focus:ring-brand/40 active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-6 py-3 text-sm font-semibold text-on-brand transition hover:bg-brand-strong hover:shadow-[0_0_30px_-8px_var(--glow-brand)] focus:outline-none focus:ring-2 focus:ring-brand/40 active:scale-[0.97];
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-ink-700 bg-ink-900/40 px-6 py-3 font-sans text-sm font-medium text-slate-200 transition hover:border-brand/50 hover:text-brand focus:outline-none active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-ink-700 bg-ink-900/40 px-6 py-3 text-sm font-medium text-slate-200 transition hover:border-brand/50 hover:text-brand focus:outline-none active:scale-[0.97];
   }
   .btn-accent {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 font-sans text-sm font-semibold text-on-accent transition hover:bg-accent-dim hover:shadow-[0_0_30px_-8px_var(--glow-accent)] focus:outline-none focus:ring-2 focus:ring-accent/40 active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-on-accent transition hover:bg-accent-dim hover:shadow-[0_0_30px_-8px_var(--glow-accent)] focus:outline-none focus:ring-2 focus:ring-accent/40 active:scale-[0.97];
   }
 
   body, .statusline, .console, .console-head, .card {
@@ -630,10 +631,7 @@ details[open] .faq-a {
   100% { transform: scale(1); }
 }
 
-.report-window, .card {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 400px;
-}
+/* content-visibility removed: caused invisible content after client-side navigation */
 
 @media (prefers-reduced-motion: reduce) {
   .caret, .animate-fade-up, .ticker-inner, .live-dot, .boot-line, .menu-pop,
