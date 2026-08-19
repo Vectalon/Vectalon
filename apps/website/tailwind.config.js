@@ -1,13 +1,9 @@
 /**
- * Vectalon brand palette — dual-mode tokens (source of truth: DESIGN_TOKENS.md).
+ * Vectalon brand palette — redesigned with:
+ * Graphite #0B0F14 · Slate #151B26 · Electric Teal #00E6C3 ·
+ * Cyan Blue #37B6FF · Vivid Violet #8B5CF6 · Off White #F2F4F7
  *
- * Every color is a CSS variable triplet resolved per theme (see globals.css):
- *   light (data-theme="light") — white page, warm-dark text, vermilion accents
- *   dark  (data-theme="dark")  — near-black page, cream text, cream/sand accents
- *
- * Brand family:  #E35336 vermilion · #F5F5DC cream · #F4A460 sand · #A0522D sienna
- * Semantic status colors (emerald/amber/red) are exempt — they signal state and
- * are paired with `dark:` variants so they hold contrast in both modes.
+ * Inter (UI/body) · JetBrains Mono (code/terminal)
  */
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -30,6 +26,10 @@ module.exports = {
         accent: {
           DEFAULT: 'rgb(var(--accent) / <alpha-value>)',
           dim: 'rgb(var(--accent-dim) / <alpha-value>)',
+        },
+        violet: {
+          DEFAULT: 'rgb(var(--violet) / <alpha-value>)',
+          dim: 'rgb(var(--violet-dim) / <alpha-value>)',
         },
         'on-brand': 'rgb(var(--on-brand) / <alpha-value>)',
         'on-accent': 'rgb(var(--on-accent) / <alpha-value>)',
@@ -54,9 +54,11 @@ module.exports = {
         },
       },
       fontFamily: {
-        display: ['var(--font-display)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', 'Inter', 'system-ui', 'sans-serif'],
+        display: ['var(--font-sans)', 'Inter', 'system-ui', 'sans-serif'],
         mono: [
           'var(--font-mono)',
+          'JetBrains Mono',
           'ui-monospace',
           'SFMono-Regular',
           'Menlo',
@@ -64,13 +66,17 @@ module.exports = {
           'monospace',
         ],
       },
+      borderRadius: {
+        'xl': '0.75rem',
+        '2xl': '1rem',
+      },
       keyframes: {
         blink: {
           '0%, 49%': { opacity: '1' },
           '50%, 100%': { opacity: '0' },
         },
         'fade-up': {
-          from: { opacity: '0', transform: 'translateY(10px)' },
+          from: { opacity: '0', transform: 'translateY(12px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
         },
       },
