@@ -57,9 +57,9 @@ export function GlobalParticles() {
         y: window.innerHeight + Math.random() * 20,
         vx: (Math.random() - 0.5) * 0.2,
         vy: -(0.08 + Math.random() * 0.2),
-        r: dark ? 0.8 + Math.random() * 1.2 : 1 + Math.random() * 1.5,
+        r: dark ? 0.8 + Math.random() * 1.2 : 1.2 + Math.random() * 1.8,
         color,
-        alpha: dark ? 0.06 + Math.random() * 0.14 : 0.1 + Math.random() * 0.18,
+        alpha: dark ? 0.06 + Math.random() * 0.14 : 0.25 + Math.random() * 0.35,
         phase: Math.random() * Math.PI * 2,
       }
     }
@@ -70,7 +70,7 @@ export function GlobalParticles() {
       const h = window.innerHeight
       ctx!.clearRect(0, 0, w, h)
 
-      const target = isDark ? 18 : 14
+      const target = isDark ? 30 : 24
       while (particles.length < target) particles.push(spawn())
 
       for (let i = particles.length - 1; i >= 0; i--) {

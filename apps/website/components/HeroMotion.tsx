@@ -62,7 +62,7 @@ export function HeroParticles() {
         vy: -(0.15 + Math.random() * 0.35),
         r: dark ? 1.2 + Math.random() * 1.8 : 1.5 + Math.random() * 2,
         color,
-        alpha: dark ? 0.15 + Math.random() * 0.35 : 0.2 + Math.random() * 0.3,
+        alpha: dark ? 0.15 + Math.random() * 0.35 : 0.35 + Math.random() * 0.4,
         phase: Math.random() * Math.PI * 2,
       }
     }
@@ -74,7 +74,7 @@ export function HeroParticles() {
       ctx!.clearRect(0, 0, w, h)
 
       // Spawn new particles to maintain count
-      const targetCount = isDarkMode ? 35 : 25
+      const targetCount = isDarkMode ? 45 : 35
       while (particles.length < targetCount) {
         particles.push(createParticle())
       }
