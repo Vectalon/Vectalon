@@ -6,14 +6,14 @@ import { Sun, Moon } from '@phosphor-icons/react'
 type Theme = 'light' | 'dark'
 
 function currentTheme(): Theme {
-  return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'
+  return document.documentElement.classList.contains('dark') ? 'dark' : 'light'
 }
 
 /**
  * Light/dark override for the statusline header. The bootstrap script in
- * layout.tsx already honours localStorage['vectalon-theme'] and sets
- * data-theme before paint — this button just writes that key and flips the
- * attribute live. Initial state stays 'dark' for SSR/hydration parity; the
+ * layout.tsx already honours localStorage['vectalon-theme'] and adds .dark
+ * class before paint — this button just writes that key and toggles the
+ * class live. Initial state stays 'dark' for SSR/hydration parity; the
  * real theme is read in an effect after mount so server and client render
  * identically.
  */
@@ -29,9 +29,13 @@ export function ThemeToggle() {
     try {
       localStorage.setItem('vectalon-theme', next)
     } catch {
-      /* private mode / storage disabled — the attribute flip still works */
+      /* private mode / storage disabled — the class flip still works */
     }
-    document.documentElement.dataset.theme = next
+    if (next === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
     setTheme(next)
   }
 

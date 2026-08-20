@@ -17,10 +17,10 @@ export function HeroParticles() {
 
   // React to theme changes
   useEffect(() => {
-    const check = () => setIsDarkMode(document.documentElement.getAttribute('data-theme') !== 'light')
+    const check = () => setIsDarkMode(document.documentElement.classList.contains('dark'))
     check()
     const mo = new MutationObserver(check)
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
     return () => mo.disconnect()
   }, [])
 

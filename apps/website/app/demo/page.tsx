@@ -130,7 +130,7 @@ export default function DemoPage() {
       </div>
 
       {/* The pipeline — the hero block */}
-      <div className="mt-12 overflow-hidden rounded-lg border border-ink-700/60 bg-ink-900/80 shadow-2xl">
+      <div className="mt-12 overflow-hidden rounded-lg border border-ink-700/60 code-bg/80 shadow-2xl">
         <div className="term-head">
           <div className="flex items-center gap-1.5" aria-hidden>
             <span className="term-dot bg-[#ff5f56]" />
@@ -199,7 +199,7 @@ export default function DemoPage() {
           check fails, the workflow doesn&apos;t stop and hand you an error: it extracts the failing
           facts, sends them back to implementation, regenerates, and retries the gate.
         </p>
-        <div className="mt-5 overflow-hidden rounded-lg border border-ink-700/60 bg-ink-900/80">
+        <div className="mt-5 overflow-hidden rounded-lg border border-ink-700/60 code-bg/80">
           <div className="border-t border-term-frame/60 px-5 py-5">
             <TerminalLine>
               <span className="text-slate-300">
@@ -242,7 +242,7 @@ export default function DemoPage() {
             body: 'Intel first, score to measure, fix to repair, mode to control where it runs — this workflow is the whole system in motion.',
           },
         ].map(card => (
-          <div key={card.title} className="rounded-lg border border-ink-700/60 bg-ink-900/50 p-5">
+          <div key={card.title} className="rounded-lg border border-ink-700/60 code-bg/50 p-5">
             <div className="font-mono text-sm font-semibold text-brand">{card.title}</div>
             <p className="mt-2 text-sm leading-relaxed text-slate-400">{card.body}</p>
           </div>
@@ -265,7 +265,7 @@ export default function DemoPage() {
           {SALES_ACTS.map(act => (
             <div
               key={act.act}
-              className="grid gap-3 rounded-lg border border-ink-700/60 bg-ink-900/50 p-5 sm:grid-cols-[120px_1fr_auto]"
+              className="grid gap-3 rounded-lg border border-ink-700/60 code-bg/50 p-5 sm:grid-cols-[120px_1fr_auto]"
             >
               <div className="flex items-start gap-3">
                 <span className="badge font-mono">{act.minutes}</span>
@@ -289,7 +289,7 @@ export default function DemoPage() {
             </div>
           ))}
         </div>
-        <div className="mt-6 overflow-hidden rounded-lg border border-ink-700/60 bg-ink-900/80">
+        <div className="mt-6 overflow-hidden rounded-lg border border-ink-700/60 code-bg/80">
           <div className="border-t border-term-frame/60 px-5 py-5">
             <TerminalLine>
               <span className="text-term-ink/50">$</span>{' '}
@@ -312,7 +312,7 @@ export default function DemoPage() {
 
       {/* CTA */}
       <div className="mt-14 text-center">
-        <div className="mx-auto max-w-xl rounded-lg border border-ink-700/60 bg-ink-900/50 p-6">
+        <div className="mx-auto max-w-xl rounded-lg border border-ink-700/60 code-bg/50 p-6">
           <p className="font-mono text-sm text-slate-300">
             Run it on your own repo — the workflow, the docs, and the healing loop are yours:
           </p>
@@ -326,7 +326,7 @@ export default function DemoPage() {
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/docs"
-              className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+              className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-on-brand transition hover:opacity-90"
             >
               Read the docs
             </Link>

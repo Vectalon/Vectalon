@@ -4,14 +4,35 @@
  * Cyan Blue #37B6FF · Vivid Violet #8B5CF6 · Off White #F2F4F7
  *
  * Inter (UI/body) · JetBrains Mono (code/terminal)
+ * Light-first semantic tokens: fg*, surface*, border*
  */
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: ['selector', '[data-theme="dark"]'],
+  darkMode: 'class',
   content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}', './lib/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
+        /* ── Semantic text tokens ── */
+        fg: {
+          DEFAULT: 'rgb(var(--fg) / <alpha-value>)',
+          secondary: 'rgb(var(--fg-secondary) / <alpha-value>)',
+          muted: 'rgb(var(--fg-muted) / <alpha-value>)',
+          dim: 'rgb(var(--fg-dim) / <alpha-value>)',
+        },
+        /* ── Semantic surface tokens ── */
+        surface: {
+          DEFAULT: 'rgb(var(--surface) / <alpha-value>)',
+          elevated: 'rgb(var(--surface-elevated) / <alpha-value>)',
+          deep: 'rgb(var(--surface-deep) / <alpha-value>)',
+        },
+        /* ── Semantic border tokens ── */
+        frame: {
+          DEFAULT: 'rgb(var(--border) / <alpha-value>)',
+          strong: 'rgb(var(--border-strong) / <alpha-value>)',
+        },
+
+        /* ── Legacy ink tokens (kept for backward compat) ── */
         ink: {
           DEFAULT: 'rgb(var(--ink) / <alpha-value>)',
           700: 'rgb(var(--ink-700) / <alpha-value>)',
@@ -39,6 +60,7 @@ module.exports = {
           meta: 'rgb(var(--term-meta) / <alpha-value>)',
           frame: 'rgb(var(--term-border) / <alpha-value>)',
         },
+        /* ── Legacy slate tokens (kept for backward compat) ── */
         slate: {
           50: 'rgb(var(--slate-50) / <alpha-value>)',
           100: 'rgb(var(--slate-100) / <alpha-value>)',

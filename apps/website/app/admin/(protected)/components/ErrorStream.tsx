@@ -141,7 +141,7 @@ export function ErrorStream({ errors }: { errors: TelemetryError[] }) {
                   <li key={id} className={`px-5 py-3 ${hidden ? 'opacity-40' : ''}`}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="font-mono text-[13px] leading-snug text-red-700 dark:text-red-300">{e.message}</div>
+                        <div className="font-mono text-[13px] leading-snug text-red-500">{e.message}</div>
                         {e.context && (
                           <div className="mt-1 text-xs text-slate-500">context: {e.context}</div>
                         )}
@@ -168,7 +168,7 @@ export function ErrorStream({ errors }: { errors: TelemetryError[] }) {
                         <summary className="cursor-pointer text-xs text-slate-500 transition hover:text-brand">
                           stack trace
                         </summary>
-                        <pre className="mt-2 overflow-x-auto rounded-md bg-ink-900 p-3 font-mono text-[11px] leading-relaxed text-slate-400">
+                        <pre className="mt-2 overflow-x-auto rounded-md code-bg p-3 font-mono text-[11px] leading-relaxed text-slate-400">
                           {e.stack}
                         </pre>
                       </details>

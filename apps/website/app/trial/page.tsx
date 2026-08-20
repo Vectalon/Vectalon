@@ -62,7 +62,7 @@ export default function TrialPage() {
               Pro is unlocked until <span className="font-mono text-brand">{expires}</span>. In
               your project:
             </p>
-            <code className="mt-4 block rounded-lg bg-ink-900 px-4 py-3 font-mono text-xs text-emerald-700 dark:text-emerald-300">
+            <code className="mt-4 block rounded-lg code-bg px-4 py-3 font-mono text-xs text-emerald-600">
               npx vectalon upgrade --diff
             </code>
             <p className="mt-4 text-xs text-slate-500">
@@ -87,7 +87,7 @@ export default function TrialPage() {
               </p>
             </div>
             {result && !result.ok && (
-              <p className="rounded-lg border border-red-600/30 bg-red-600/10 px-4 py-2.5 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+              <p className="rounded-lg border border-red-600/30 bg-red-600/10 px-4 py-2.5 text-sm text-red-500">
                 {result.reason}
               </p>
             )}

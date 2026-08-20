@@ -3,198 +3,127 @@
 @tailwind utilities;
 
 /* ─────────────────────────────────────────────────────────────
-   VECTALON — Brand redesign
+   VECTALON — Design system tokens
    
-   Graphite #0B0F14 · Slate #151B26 · Electric Teal #00E6C3 ·
-   Cyan Blue #37B6FF · Vivid Violet #8B5CF6 · Off White #F2F4F7
+   Light mode is the default (CSS :root).
+   Dark mode overrides via .dark class on <html>.
    
-   Inter (UI/body) · JetBrains Mono (code/terminal)
+   Semantic tokens: --fg*, --surface*, --border*, --term-*
+   Brand tokens: --brand, --accent, --violet
    ───────────────────────────────────────────────────────────── */
 
-:root[data-theme='light'] {
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE (default)
+   ═══════════════════════════════════════════════════════════════ */
+:root {
   color-scheme: light;
 
-  /* surfaces — stronger contrast for readability */
-  --ink: 245 247 250; /* Off White page ground */
-  --ink-900: 255 255 255; /* deepest: inputs */
-  --ink-800: 240 243 247; /* pane surface */
-  --ink-700: 180 190 208; /* frame borders — much stronger */
-
-  /* brand family — more saturated in light mode */
-  --brand: 0 210 180; /* Electric Teal — slightly deeper for contrast on white */
+  /* ── Brand ── */
+  --brand: 0 210 180;
   --brand-dim: 0 185 155;
   --brand-strong: 0 165 140;
-  --on-brand: 11 15 20;
+  --accent: 55 182 255;
+  --accent-dim: 40 150 220;
+  --violet: 139 92 246;
+  --violet-dim: 120 75 220;
 
-  --accent: 35 160 240; /* Cyan Blue — deeper for light bg */
-  --accent-dim: 25 135 210;
-  --on-accent: 255 255 255;
+  /* ── Text (semantic) ── */
+  --fg: 8 11 16;
+  --fg-secondary: 40 50 68;
+  --fg-muted: 70 82 100;
+  --fg-dim: 100 112 130;
 
-  --violet: 120 75 230; /* Vivid Violet */
-  --violet-dim: 100 60 210;
+  /* ── Surfaces ── */
+  --surface: 245 247 250;
+  --surface-elevated: 255 255 255;
+  --surface-deep: 240 243 247;
 
-  /* neutral text scale — darker for light bg contrast */
-  --slate-50: 8 11 16; /* near-black */
+  /* ── Borders ── */
+  --border: 200 210 224;
+  --border-strong: 180 192 210;
+
+  /* ── Terminal ── */
+  --term: 6 8 12;
+  --term-border: 35 44 60;
+  --term-ink: 200 210 225;
+  --term-brand: 0 230 195;
+  --term-meta: 100 115 135;
+
+  /* ── Legacy ink tokens (for bg-ink-* utilities) ── */
+  --ink: 245 247 250;
+  --ink-900: 255 255 255;
+  --ink-800: 240 243 247;
+  --ink-700: 200 210 224;
+
+  /* ── Legacy slate tokens (for text-slate-* utilities) ── */
+  --slate-50: 8 11 16;
   --slate-100: 18 22 30;
   --slate-200: 30 38 52;
   --slate-300: 55 65 85;
-  --slate-400: 70 80 100;
-  --slate-500: 100 110 130;
+  --slate-400: 70 82 100;
+  --slate-500: 100 112 130;
   --slate-600: 140 150 170;
   --slate-700: 175 185 200;
   --slate-800: 208 214 224;
   --slate-900: 232 236 242;
   --slate-950: 242 245 248;
 
-  /* decorative — more vibrant brand glow */
-  --grid-line: rgba(0, 210, 180, 0.08);
-  --glow-brand: rgba(0, 210, 180, 0.12);
-  --glow-accent: rgba(35, 160, 240, 0.10);
-  --glow-violet: rgba(120, 75, 230, 0.10);
-  --term: 6 8 12; /* terminal — deeper dark in light mode */
-  --term-border: 35 45 65;
-  --term-ink: 225 232 242; /* brighter text for contrast */
-  --term-brand: 0 240 210; /* more vivid teal */
-  --term-meta: 130 148 175; /* more visible meta text */
-}
-
-:focus-visible {
-  outline: 2px solid rgb(var(--brand));
-  outline-offset: 2px;
-}
-
-/* Light mode terminal and component overrides */
-:root[data-theme='light'] .console {
-  background: rgb(6 8 12);
-  border-color: rgb(45 58 80);
-  box-shadow:
-    0 1px 0 0 rgb(255 255 255 / 0.1) inset,
-    0 20px 60px -18px rgb(0 0 0 / 0.4);
-}
-
-:root[data-theme='light'] .term {
-  box-shadow:
-    0 1px 0 rgb(255 255 255 / 0.15) inset,
-    0 24px 70px -20px rgb(0 0 0 / 0.45);
-  border-color: rgb(45 58 80);
-}
-
-:root[data-theme='light'] .card {
-  border-color: rgb(180 190 208 / 0.8);
-}
-
-:root[data-theme='light'] .report-window {
-  border-color: rgb(45 58 80);
-  box-shadow:
-    0 1px 0 rgb(255 255 255 / 0.1) inset,
-    0 30px 90px -28px rgb(0 0 0 / 0.45);
-}
-
-:root[data-theme='light'] .statusline {
-  border-color: rgb(45 58 80 / 0.7);
-  background: rgb(14 18 25);
-  color: rgb(180 190 210);
-}
-
-:root[data-theme='light'] .seg:hover {
-  background: rgb(0 210 180 / 0.08);
-}
-
-:root[data-theme='light'] .badge-ok {
-  border-color: rgb(0 180 150 / 0.3);
-  background: rgb(0 180 150 / 0.08);
-  color: rgb(0 150 125);
-}
-
-:root[data-theme='light'] .badge-warn {
-  border-color: rgb(217 119 6 / 0.3);
-  background: rgb(217 119 6 / 0.08);
-  color: rgb(180 100 0);
-}
-
-:root[data-theme='light'] .badge-danger {
-  border-color: rgb(220 38 38 / 0.3);
-  background: rgb(220 38 38 / 0.08);
-  color: rgb(190 30 30);
-}
-
-:root[data-theme='light'] .badge-muted {
-  border-color: rgb(180 190 208 / 0.6);
-  background: rgb(180 190 208 / 0.15);
-  color: rgb(55 65 85);
-}
-
-:root[data-theme='light'] .report-body .tk-h1 {
-  color: rgb(100 200 240);
-}
-
-:root[data-theme='light'] .report-body .tk-h2 {
-  color: rgb(0 230 195);
-}
-
-:root[data-theme='light'] .report-body .tk-kw {
-  color: rgb(0 230 195);
-}
-
-:root[data-theme='light'] .term-head {
-  background: rgb(12 16 22);
-  border-color: rgb(45 58 80 / 0.7);
-}
-
-:root[data-theme='light'] .report-body {
-  color: rgb(220 230 245);
-}
-
-:root[data-theme='light'] .report-body strong {
-  color: rgb(240 245 252);
-}
-
-/* Light mode button boost */
-:root[data-theme='light'] .btn-ghost {
-  border-color: rgb(180 190 208 / 0.9);
-  background: rgb(255 255 255 / 0.7);
-  color: rgb(30 38 52);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.06);
-}
-:root[data-theme='light'] .btn-ghost:hover {
-  border-color: rgb(0 180 155 / 0.6);
-  background: rgb(0 180 155 / 0.06);
-  color: rgb(0 150 125);
-  box-shadow: 0 2px 8px rgb(0 180 155 / 0.12);
-}
-:root[data-theme='light'] .btn-primary {
-  box-shadow: 0 2px 12px rgb(0 180 155 / 0.25);
-}
-:root[data-theme='light'] .btn-primary:hover {
-  box-shadow: 0 4px 20px rgb(0 180 155 / 0.35);
-}
-
-
-
-:root {
-  color-scheme: dark;
-
-  /* surfaces — Graphite/Slate */
-  --ink: 11 15 20; /* Graphite page ground */
-  --ink-900: 8 11 16; /* deepest */
-  --ink-800: 21 27 38; /* Slate pane surface */
-  --ink-700: 35 44 60; /* frame borders */
-
-  /* brand family */
-  --brand: 0 230 195; /* Electric Teal */
-  --brand-dim: 0 200 170;
-  --brand-strong: 0 210 180;
+  /* ── On-color (text on brand/accent fills) ── */
   --on-brand: 11 15 20;
-
-  --accent: 55 182 255; /* Cyan Blue */
-  --accent-dim: 40 150 220;
   --on-accent: 255 255 255;
 
+  /* ── Decorative ── */
+  --grid-line: rgba(0, 210, 180, 0.06);
+  --glow-brand: rgba(0, 210, 180, 0.12);
+  --glow-accent: rgba(55, 182, 255, 0.10);
+  --glow-violet: rgba(139, 92, 246, 0.10);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DARK MODE (.dark class on <html>)
+   ═══════════════════════════════════════════════════════════════ */
+.dark {
+  color-scheme: dark;
+
+  /* ── Brand ── */
+  --brand: 0 230 195;
+  --brand-dim: 0 200 170;
+  --brand-strong: 0 210 180;
+  --accent: 55 182 255;
+  --accent-dim: 40 150 220;
   --violet: 139 92 246;
   --violet-dim: 120 75 220;
 
-  /* neutral text scale */
-  --slate-50: 242 244 247; /* Off White */
+  /* ── Text (semantic) ── */
+  --fg: 242 244 247;
+  --fg-secondary: 225 230 238;
+  --fg-muted: 200 210 225;
+  --fg-dim: 130 145 170;
+
+  /* ── Surfaces ── */
+  --surface: 11 15 20;
+  --surface-elevated: 21 27 38;
+  --surface-deep: 8 11 16;
+
+  /* ── Borders ── */
+  --border: 35 44 60;
+  --border-strong: 50 62 82;
+
+  /* ── Terminal ── */
+  --term: 11 15 20;
+  --term-border: 30 38 52;
+  --term-ink: 200 210 225;
+  --term-brand: 0 230 195;
+  --term-meta: 100 115 135;
+
+  /* ── Legacy ink tokens (for bg-ink-* utilities) ── */
+  --ink: 11 15 20;
+  --ink-900: 8 11 16;
+  --ink-800: 21 27 38;
+  --ink-700: 35 44 60;
+
+  /* ── Legacy slate tokens (for text-slate-* utilities) ── */
+  --slate-50: 242 244 247;
   --slate-100: 225 230 238;
   --slate-200: 200 210 225;
   --slate-300: 170 180 200;
@@ -206,47 +135,93 @@
   --slate-900: 22 28 38;
   --slate-950: 14 18 24;
 
-  /* decorative */
+  /* ── On-color ── */
+  --on-brand: 11 15 20;
+  --on-accent: 255 255 255;
+
+  /* ── Decorative ── */
   --grid-line: rgba(0, 230, 195, 0.04);
   --glow-brand: rgba(0, 230, 195, 0.18);
   --glow-accent: rgba(55, 182, 255, 0.14);
   --glow-violet: rgba(139, 92, 246, 0.14);
-  --term: 11 15 20;
-  --term-border: 30 38 52;
-  --term-ink: 200 210 225;
-  --term-brand: 0 230 195;
-  --term-meta: 100 115 135;
 }
 
-/* Display type: Satoshi for headings, Inter for UI, JetBrains Mono for code */
-:root {
-  --font-display: 'Satoshi', var(--font-sans), system-ui, sans-serif;
+/* ═══════════════════════════════════════════════════════════════
+   FOCUS
+   ═══════════════════════════════════════════════════════════════ */
+:focus-visible {
+  outline: 2px solid rgb(var(--brand));
+  outline-offset: 2px;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   BASE STYLES (light mode default)
+   ═══════════════════════════════════════════════════════════════ */
 @layer base {
   body {
-    @apply bg-ink font-sans text-slate-200 antialiased;
+    @apply bg-ink font-sans antialiased;
+    color: rgb(var(--fg-secondary));
     transition: background-color 0.2s ease, color 0.2s ease;
   }
   h1, h2, h3, h4 {
     font-family: 'Satoshi', var(--font-sans), system-ui, sans-serif;
     @apply tracking-tight;
+    color: rgb(var(--fg));
   }
 }
 
 ::selection {
-  @apply bg-brand/30 text-slate-50;
+  background: rgb(var(--brand) / 0.25);
+  color: rgb(var(--fg));
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   COMPONENT CLASSES — light mode default
+   ═══════════════════════════════════════════════════════════════ */
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand px-6 py-3 text-sm font-semibold text-on-brand transition hover:bg-brand-strong hover:shadow-[0_0_30px_-8px_var(--glow-brand)] focus:outline-none focus:ring-2 focus:ring-brand/40 active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold transition active:scale-[0.97];
+    background: rgb(var(--brand));
+    color: rgb(var(--on-brand));
+    box-shadow: 0 2px 12px rgb(var(--brand) / 0.20);
   }
+  .btn-primary:hover {
+    background: rgb(var(--brand-strong));
+    box-shadow: 0 4px 20px rgb(var(--brand) / 0.30);
+  }
+  .btn-primary:focus {
+    @apply outline-none ring-2;
+    --tw-ring-color: rgb(var(--brand) / 0.40);
+  }
+
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-ink-700 bg-ink-900/40 px-6 py-3 text-sm font-medium text-slate-200 transition hover:border-brand/50 hover:text-brand focus:outline-none active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border px-6 py-3 text-sm font-medium transition active:scale-[0.97];
+    border-color: rgb(var(--border));
+    background: rgb(var(--surface-elevated) / 0.8);
+    color: rgb(var(--fg-secondary));
   }
+  .btn-ghost:hover {
+    border-color: rgb(var(--brand) / 0.5);
+    color: rgb(var(--brand-dim));
+    background: rgb(var(--brand) / 0.05);
+  }
+  .btn-ghost:focus {
+    @apply outline-none;
+  }
+
   .btn-accent {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 text-sm font-semibold text-on-accent transition hover:bg-accent-dim hover:shadow-[0_0_30px_-8px_var(--glow-accent)] focus:outline-none focus:ring-2 focus:ring-accent/40 active:scale-[0.97];
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold transition active:scale-[0.97];
+    background: rgb(var(--accent));
+    color: rgb(var(--on-accent));
+    box-shadow: 0 2px 12px rgb(var(--accent) / 0.18);
+  }
+  .btn-accent:hover {
+    background: rgb(var(--accent-dim));
+    box-shadow: 0 4px 20px rgb(var(--accent) / 0.28);
+  }
+  .btn-accent:focus {
+    @apply outline-none ring-2;
+    --tw-ring-color: rgb(var(--accent) / 0.40);
   }
 
   body, .statusline, .console, .console-head, .card {
@@ -256,84 +231,140 @@
   }
 
   .card {
-    @apply rounded-xl border border-ink-700 bg-ink-800 p-6;
+    @apply rounded-xl p-6;
+    border: 1px solid rgb(var(--border));
+    background: rgb(var(--surface-elevated));
   }
 
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-lg border border-ink-700 bg-ink-800/80 px-3 py-1.5 font-mono text-xs text-slate-300;
+    @apply inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-xs;
+    border: 1px solid rgb(var(--border));
+    background: rgb(var(--surface-deep) / 0.6);
+    color: rgb(var(--fg-muted));
   }
   .kbd {
-    @apply rounded-lg border border-ink-700 bg-ink-900 px-2 py-1 font-mono text-xs text-slate-300;
+    @apply rounded-lg px-2 py-1 font-mono text-xs;
+    border: 1px solid rgb(var(--border));
+    background: rgb(var(--surface-elevated));
+    color: rgb(var(--fg-muted));
   }
   .micro {
-    @apply font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500;
+    @apply font-sans text-[11px] font-semibold uppercase tracking-[0.14em];
+    color: rgb(var(--fg-dim));
   }
   .tbl {
     @apply w-full border-collapse text-left font-sans text-sm;
   }
   .tbl th {
-    @apply border-b border-ink-700 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-slate-500;
+    border-bottom: 1px solid rgb(var(--border));
+    @apply px-4 py-2.5 text-xs font-semibold uppercase tracking-wider;
+    color: rgb(var(--fg-dim));
   }
   .tbl td {
-    @apply border-b border-ink-700/50 px-4 py-3 text-slate-300;
+    border-bottom: 1px solid rgb(var(--border) / 0.5);
+    @apply px-4 py-3;
+    color: rgb(var(--fg-muted));
   }
   .tbl tbody tr {
-    @apply transition hover:bg-ink-800/60;
+    @apply transition;
+  }
+  .tbl tbody tr:hover {
+    background: rgb(var(--surface-deep) / 0.6);
   }
   .badge {
     @apply inline-flex items-center gap-1 rounded-lg border px-2.5 py-0.5 font-sans text-xs font-medium;
   }
   .badge-ok {
-    @apply border-brand/30 bg-brand/10 text-brand dark:border-emerald-400/30 dark:bg-emerald-400/10 dark:text-emerald-300;
+    border-color: rgb(var(--brand) / 0.3);
+    background: rgb(var(--brand) / 0.08);
+    color: rgb(var(--brand));
   }
   .badge-warn {
-    @apply border-amber-500/30 bg-amber-500/10 text-amber-400 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-300;
+    @apply border-amber-500/30 bg-amber-500/10 text-amber-600;
   }
   .badge-danger {
-    @apply border-red-500/30 bg-red-500/10 text-red-500 dark:border-red-400/30 dark:bg-red-400/10 dark:text-red-300;
+    @apply border-red-500/30 bg-red-500/10 text-red-600;
   }
   .badge-muted {
-    @apply border-ink-700 bg-ink-800 text-slate-300;
+    border-color: rgb(var(--border));
+    background: rgb(var(--surface-deep));
+    color: rgb(var(--fg-muted));
   }
   .stat {
-    @apply rounded-xl border border-ink-700 bg-ink-800 p-5;
+    @apply rounded-xl p-5;
+    border: 1px solid rgb(var(--border));
+    background: rgb(var(--surface-elevated));
   }
   .stat-label {
-    @apply font-sans text-xs font-semibold uppercase tracking-wider text-slate-500;
+    @apply font-sans text-xs font-semibold uppercase tracking-wider;
+    color: rgb(var(--fg-dim));
   }
   .stat-value {
-    @apply mt-1.5 font-display text-2xl font-bold text-brand;
+    @apply mt-1.5 font-display text-2xl font-bold;
+    color: rgb(var(--brand));
   }
   .input {
-    @apply w-full rounded-lg border border-ink-700 bg-ink-900 px-3 py-2 font-sans text-sm text-slate-50 placeholder-slate-500 focus:border-brand focus:outline-none;
+    @apply w-full rounded-lg px-3 py-2 font-sans text-sm;
+    border: 1px solid rgb(var(--border));
+    background: rgb(var(--surface-elevated));
+    color: rgb(var(--fg));
+  }
+  .input::placeholder {
+    color: rgb(var(--fg-dim));
+  }
+  .input:focus {
+    border-color: rgb(var(--brand));
+    @apply outline-none;
   }
 
   .caret {
-    @apply ml-1 inline-block h-[1em] w-[0.55em] animate-blink bg-brand align-text-bottom;
+    @apply ml-1 inline-block h-[1em] w-[0.55em] animate-blink align-text-bottom;
+    background: rgb(var(--brand));
   }
   .caret-solid {
-    @apply ml-1 inline-block h-[1em] w-[0.55em] bg-brand align-text-bottom;
+    @apply ml-1 inline-block h-[1em] w-[0.55em] align-text-bottom;
+    background: rgb(var(--brand));
+  }
+
+  .code-bg {
+    background: rgb(var(--surface-elevated));
   }
 
   .console {
-    @apply overflow-hidden rounded-xl border border-ink-700 bg-ink-900 font-sans;
+    @apply overflow-hidden rounded-xl font-sans;
+    border: 1px solid rgb(var(--border));
+    background: rgb(var(--surface-elevated));
     box-shadow:
       0 1px 0 0 rgb(255 255 255 / 0.03) inset,
       0 24px 70px -30px rgb(0 0 0 / 0.55);
   }
   .console-head {
-    @apply flex items-center justify-between border-b border-ink-700/70 bg-ink-900/90 px-4 py-2.5 font-mono text-[11px] text-slate-500;
+    @apply flex items-center justify-between px-4 py-2.5 font-mono text-[11px];
+    border-bottom: 1px solid rgb(var(--border) / 0.7);
+    background: rgb(var(--surface-elevated) / 0.9);
+    color: rgb(var(--fg-dim));
   }
 
   .statusline {
-    @apply flex items-stretch divide-x divide-ink-700/70 border-b border-ink-700/70 bg-ink-900 font-sans;
+    @apply flex items-stretch divide-x font-sans;
+    border-bottom: 1px solid rgb(var(--border) / 0.7);
+    background: rgb(var(--surface-elevated));
+    --tw-divide-opacity: 0.7;
+  }
+  .statusline > * + * {
+    border-left-color: rgb(var(--border) / 0.7);
   }
 
   .seg {
-    @apply flex items-center gap-2 px-4 py-2 text-[13px] text-slate-400 transition hover:text-slate-200;
+    @apply flex items-center gap-2 px-4 py-2 text-[13px] transition;
+    color: rgb(var(--fg-dim));
+  }
+  .seg:hover {
+    color: rgb(var(--fg));
   }
   .seg-active {
-    @apply bg-brand/15 text-brand;
+    background: rgb(var(--brand) / 0.12);
+    color: rgb(var(--brand));
   }
 
   .menu-pop {
@@ -377,21 +408,24 @@
     background: linear-gradient(
       to bottom,
       transparent,
-      rgb(0 230 195 / 0.06) 30%,
-      rgb(55 182 255 / 0.05) 50%,
-      rgb(139 92 246 / 0.04) 70%,
+      rgb(0 210 180 / 0.05) 30%,
+      rgb(35 160 240 / 0.04) 50%,
+      rgb(120 75 230 / 0.03) 70%,
       transparent
     );
     animation: beam-sweep 8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
   }
 
   .pane-head {
-    @apply flex items-center justify-between gap-3 border-b border-ink-700/60 pb-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500;
+    @apply flex items-center justify-between gap-3 pb-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.12em];
+    border-bottom: 1px solid rgb(var(--border) / 0.6);
+    color: rgb(var(--fg-dim));
   }
   .pane-head::before,
   .pane-head::after {
     content: '';
-    @apply h-px flex-1 bg-ink-700/60;
+    @apply h-px flex-1;
+    background: rgb(var(--border) / 0.6);
   }
   .pane-head > span {
     @apply shrink-0;
@@ -405,8 +439,8 @@
   }
   .term-head {
     @apply flex items-center justify-between border-b px-4 py-2.5;
-    border-color: rgb(var(--term-border) / 0.7);
-    background: rgb(255 255 255 / 0.04);
+    border-color: rgb(var(--border) / 0.5);
+    background: rgb(var(--surface-deep));
   }
   .term-body {
     @apply overflow-x-auto p-4 text-[13px] leading-relaxed text-term-ink;
@@ -598,6 +632,14 @@
     --slate-800: 65 74 90;
     --slate-900: 45 52 65;
     --slate-950: 30 36 48;
+    --surface: 11 15 20;
+    --surface-elevated: 21 27 38;
+    --surface-deep: 8 11 16;
+    --border: 30 38 52;
+    --fg: 242 244 247;
+    --fg-secondary: 200 210 225;
+    --fg-muted: 180 190 210;
+    --fg-dim: 150 162 180;
   }
   .man-term .man-body {
     color: rgb(200 210 225 / 0.92);
@@ -618,7 +660,8 @@
   }
 
   .live-dot {
-    @apply inline-block h-1.5 w-1.5 rounded-full bg-brand;
+    @apply inline-block h-1.5 w-1.5 rounded-full;
+    background: rgb(var(--brand));
     animation: live-dot 1.6s ease-in-out infinite;
   }
 
@@ -632,6 +675,154 @@
     );
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE — component class overrides (default)
+   ═══════════════════════════════════════════════════════════════ */
+.console {
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.1) inset,
+    0 20px 60px -18px rgb(0 0 0 / 0.35);
+}
+.term {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.15) inset,
+    0 24px 70px -20px rgb(0 0 0 / 0.40);
+  border-color: rgb(45 58 80);
+}
+.report-window {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.1) inset,
+    0 30px 90px -28px rgb(0 0 0 / 0.40);
+}
+.term-head {
+  background: rgb(var(--surface-deep));
+  border-color: rgb(var(--border) / 0.5);
+}
+.term-body {
+  color: rgb(var(--term-ink));
+}
+.btn-primary {
+  box-shadow: 0 2px 12px rgb(var(--brand) / 0.20);
+}
+.btn-primary:hover {
+  box-shadow: 0 4px 20px rgb(var(--brand) / 0.30);
+}
+.seg:hover {
+  background: rgb(var(--brand) / 0.06);
+}
+.hero-bg {
+  background: linear-gradient(180deg, rgb(232 236 242) 0%, rgb(240 243 247) 30%, rgb(245 247 250) 60%, rgb(232 236 242) 100%);
+}
+.hero-pill {
+  border-color: rgb(180 190 208 / 0.6);
+  background: rgb(255 255 255 / 0.7);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.04);
+}
+.scanlines {
+  display: none;
+}
+.beam {
+  display: none;
+}
+.hero-gradient-text {
+  background: linear-gradient(135deg, rgb(0 175 150) 0%, rgb(25 135 210) 50%, rgb(100 60 200) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-console {
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.03) inset,
+    0 24px 70px -30px rgb(0 0 0 / 0.25);
+}
+.hero-aurora {
+  opacity: 0.3;
+  filter: blur(90px);
+}
+.hero-aurora--primary {
+  background: radial-gradient(ellipse, rgb(0 210 180 / 0.2) 0%, rgb(35 160 240 / 0.1) 50%, transparent 70%);
+}
+.hero-aurora--secondary {
+  background: radial-gradient(ellipse, rgb(120 75 230 / 0.15) 0%, rgb(35 160 240 / 0.08) 50%, transparent 70%);
+}
+.hero-glow-ring {
+  background: radial-gradient(circle, rgb(0 210 180 / 0.1) 0%, transparent 70%);
+}
+/* ═══════════════════════════════════════════════════════════════
+   DARK MODE — component class overrides
+   Only what needs to change from the light-mode defaults above.
+   ═══════════════════════════════════════════════════════════════ */
+.dark .console {
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.03) inset,
+    0 24px 70px -30px rgb(0 0 0 / 0.55);
+}
+.dark .term {
+  box-shadow: 0 24px 70px -32px rgb(0 0 0 / 0.6);
+  border-color: rgb(30 38 52 / 1);
+}
+.dark .report-window {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.05) inset,
+    0 30px 90px -42px rgb(0 0 0 / 0.85);
+}
+.dark .term-head {
+  background: rgb(255 255 255 / 0.04);
+  border-color: rgb(var(--term-border) / 0.7);
+}
+.dark .btn-primary {
+  box-shadow: none;
+}
+.dark .btn-primary:hover {
+  box-shadow: 0 0 30px -8px var(--glow-brand);
+}
+.dark .seg:hover {
+  background: transparent;
+}
+.dark .hero-bg {
+  background: linear-gradient(180deg, rgb(11 15 20) 0%, rgb(15 22 35) 40%, rgb(21 27 38) 70%, rgb(11 15 20) 100%);
+}
+.dark .hero-pill {
+  border-color: rgb(35 44 60);
+  background: rgb(21 27 38 / 0.6);
+  box-shadow: none;
+}
+.dark .scanlines {
+  display: block;
+}
+.dark .beam {
+  display: block;
+}
+.dark .hero-gradient-text {
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+  background-clip: unset;
+  color: rgb(var(--fg));
+}
+.dark .hero-console {
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.03) inset,
+    0 24px 70px -30px rgb(0 0 0 / 0.55);
+}
+.dark .hero-aurora {
+  opacity: 0.4;
+  filter: blur(80px);
+}
+.dark .hero-aurora--primary {
+  background: radial-gradient(ellipse, rgb(0 230 195 / 0.3) 0%, rgb(55 182 255 / 0.15) 50%, transparent 70%);
+}
+.dark .hero-aurora--secondary {
+  background: radial-gradient(ellipse, rgb(139 92 246 / 0.25) 0%, rgb(55 182 255 / 0.1) 50%, transparent 70%);
+}
+.dark .hero-glow-ring {
+  background: radial-gradient(circle, rgb(0 230 195 / 0.15) 0%, transparent 70%);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   KEYFRAMES
+   ═══════════════════════════════════════════════════════════════ */
 
 .boot-line {
   animation: boot-line 0.35s ease-out both;
@@ -739,53 +930,6 @@ details[open] .faq-a {
   100% { transform: scale(1); }
 }
 
-/* content-visibility removed: caused invisible content after client-side navigation */
-
-/* Hero section theme-aware background */
-.hero-bg {
-  background: linear-gradient(180deg, rgb(11 15 20) 0%, rgb(15 22 35) 40%, rgb(21 27 38) 70%, rgb(11 15 20) 100%);
-}
-:root[data-theme='light'] .hero-bg {
-  background: linear-gradient(180deg, rgb(232 236 242) 0%, rgb(240 243 247) 30%, rgb(245 247 250) 60%, rgb(232 236 242) 100%);
-}
-
-/* Value prop pills — theme-aware */
-.hero-pill {
-  border-color: rgb(35 44 60);
-  background: rgb(21 27 38 / 0.6);
-}
-:root[data-theme='light'] .hero-pill {
-  border-color: rgb(180 190 208 / 0.6);
-  background: rgb(255 255 255 / 0.7);
-  box-shadow: 0 1px 4px rgb(0 0 0 / 0.04);
-}
-
-/* Scanlines — suppressed in light mode */
-:root[data-theme='light'] .scanlines {
-  display: none;
-}
-
-/* Beam — suppressed in light mode */
-:root[data-theme='light'] .beam {
-  display: none;
-}
-
-/* Light mode hero headline gradient text boost */
-:root[data-theme='light'] .hero-gradient-text {
-  background: linear-gradient(135deg, rgb(0 175 150) 0%, rgb(25 135 210) 50%, rgb(100 60 200) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Light mode console inside hero — keep it dark */
-:root[data-theme='light'] .hero-console {
-  box-shadow:
-    0 1px 0 0 rgb(255 255 255 / 0.03) inset,
-    0 24px 70px -30px rgb(0 0 0 / 0.25);
-}
-
-
 /* ─── Hero motion ─── */
 
 /* Aurora blobs — slow drifting gradient washes behind the hero */
@@ -813,18 +957,6 @@ details[open] .faq-a {
   background: radial-gradient(ellipse, rgb(139 92 246 / 0.25) 0%, rgb(55 182 255 / 0.1) 50%, transparent 70%);
   animation-delay: -4s;
   animation-duration: 15s;
-}
-
-/* Light mode aurora — softer, less saturated */
-:root[data-theme='light'] .hero-aurora {
-  opacity: 0.3;
-  filter: blur(90px);
-}
-:root[data-theme='light'] .hero-aurora--primary {
-  background: radial-gradient(ellipse, rgb(0 210 180 / 0.2) 0%, rgb(35 160 240 / 0.1) 50%, transparent 70%);
-}
-:root[data-theme='light'] .hero-aurora--secondary {
-  background: radial-gradient(ellipse, rgb(120 75 230 / 0.15) 0%, rgb(35 160 240 / 0.08) 50%, transparent 70%);
 }
 
 @keyframes aurora-drift {
@@ -900,9 +1032,6 @@ details[open] .faq-a {
   animation: glow-ring-in 1s ease-out 0.6s forwards;
   background: radial-gradient(circle, rgb(0 230 195 / 0.15) 0%, transparent 70%);
 }
-:root[data-theme='light'] .hero-glow-ring {
-  background: radial-gradient(circle, rgb(0 210 180 / 0.1) 0%, transparent 70%);
-}
 
 @keyframes glow-ring-in {
   from { opacity: 0; transform: scale(0.5); }
@@ -918,8 +1047,7 @@ details[open] .faq-a {
   .hero-glow-ring {
     animation: none !important;
   }
-  .hero-stagger > *,
-  .hero-logo-enter {
+  .hero-stagger > *, .hero-logo-enter {
     opacity: 1 !important;
     transform: none !important;
     filter: none !important;
@@ -966,4 +1094,11 @@ html.anim-frozen .reveal {
   opacity: 1 !important;
   transform: none !important;
   transition: none !important;
+}
+
+/* ─── Print ─── */
+@media print {
+  .statusline, .footer, footer, .hero-aurora, .hero-particles, .beam, .scanlines {
+    display: none !important;
+  }
 }

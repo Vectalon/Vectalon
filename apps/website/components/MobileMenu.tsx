@@ -90,7 +90,7 @@ export function MobileMenu() {
               className="flex items-center justify-between rounded-[3px] px-2.5 py-2 transition hover:bg-ink-700/60 [touch-action:manipulation]"
             >
               <span className="font-mono text-sm text-slate-50">{p.name}</span>
-              <span className={p.status === 'live' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-600'}>
+              <span className={p.status === 'live' ? 'text-emerald-500' : 'text-slate-600'}>
                 {p.status === 'live' ? '● live' : '○ soon'}
               </span>
             </Link>

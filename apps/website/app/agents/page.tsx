@@ -128,7 +128,7 @@ export default async function AgentsPage(props: { searchParams: Promise<{ repo?:
                     active
                       ? 'text-brand'
                       : r.status === 'live'
-                        ? 'text-emerald-600 dark:text-emerald-400'
+                        ? 'text-emerald-500'
                         : 'text-slate-600'
                   }
                 >
@@ -163,7 +163,7 @@ export default async function AgentsPage(props: { searchParams: Promise<{ repo?:
               <p className="mt-3 text-sm leading-relaxed text-slate-400">{repo.tagline}</p>
               <div className="mt-5 flex flex-wrap justify-center gap-1.5">
                 {repo.planned.map(p => (
-                  <code key={p} className="rounded-[3px] border border-ink-700 bg-ink-900 px-1.5 py-0.5 font-mono text-[11px] text-slate-400">
+                  <code key={p} className="rounded-[3px] border border-ink-700 code-bg px-1.5 py-0.5 font-mono text-[11px] text-slate-400">
                     {p}
                   </code>
                 ))}
