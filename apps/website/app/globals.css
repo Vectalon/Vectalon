@@ -51,11 +51,11 @@
   --glow-brand: rgba(0, 210, 180, 0.12);
   --glow-accent: rgba(35, 160, 240, 0.10);
   --glow-violet: rgba(120, 75, 230, 0.10);
-  --term: 11 15 20; /* terminal — stays dark */
-  --term-border: 30 38 52;
-  --term-ink: 210 220 235;
-  --term-brand: 0 230 195;
-  --term-meta: 110 125 150;
+  --term: 6 8 12; /* terminal — deeper dark in light mode */
+  --term-border: 35 45 65;
+  --term-ink: 225 232 242; /* brighter text for contrast */
+  --term-brand: 0 240 210; /* more vivid teal */
+  --term-meta: 130 148 175; /* more visible meta text */
 }
 
 :focus-visible {
@@ -65,15 +65,18 @@
 
 /* Light mode terminal and component overrides */
 :root[data-theme='light'] .console {
+  background: rgb(6 8 12);
+  border-color: rgb(45 58 80);
   box-shadow:
-    0 1px 0 0 rgb(255 255 255 / 0.8) inset,
-    0 20px 60px -25px rgb(0 0 0 / 0.2);
+    0 1px 0 0 rgb(255 255 255 / 0.1) inset,
+    0 20px 60px -18px rgb(0 0 0 / 0.4);
 }
 
 :root[data-theme='light'] .term {
   box-shadow:
     0 1px 0 rgb(255 255 255 / 0.15) inset,
-    0 24px 70px -32px rgb(0 0 0 / 0.3);
+    0 24px 70px -20px rgb(0 0 0 / 0.45);
+  border-color: rgb(45 58 80);
 }
 
 :root[data-theme='light'] .card {
@@ -81,14 +84,16 @@
 }
 
 :root[data-theme='light'] .report-window {
+  border-color: rgb(45 58 80);
   box-shadow:
     0 1px 0 rgb(255 255 255 / 0.1) inset,
-    0 30px 90px -42px rgb(0 0 0 / 0.3);
+    0 30px 90px -28px rgb(0 0 0 / 0.45);
 }
 
 :root[data-theme='light'] .statusline {
-  border-color: rgb(180 190 208 / 0.7);
-  background: rgb(255 255 255 / 0.85);
+  border-color: rgb(45 58 80 / 0.7);
+  background: rgb(14 18 25);
+  color: rgb(180 190 210);
 }
 
 :root[data-theme='light'] .seg:hover {
@@ -120,15 +125,28 @@
 }
 
 :root[data-theme='light'] .report-body .tk-h1 {
-  color: rgb(0 160 200);
+  color: rgb(100 200 240);
 }
 
 :root[data-theme='light'] .report-body .tk-h2 {
-  color: rgb(0 180 155);
+  color: rgb(0 230 195);
 }
 
 :root[data-theme='light'] .report-body .tk-kw {
-  color: rgb(0 180 155);
+  color: rgb(0 230 195);
+}
+
+:root[data-theme='light'] .term-head {
+  background: rgb(12 16 22);
+  border-color: rgb(45 58 80 / 0.7);
+}
+
+:root[data-theme='light'] .report-body {
+  color: rgb(220 230 245);
+}
+
+:root[data-theme='light'] .report-body strong {
+  color: rgb(240 245 252);
 }
 
 /* Light mode button boost */
