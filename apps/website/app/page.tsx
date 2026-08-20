@@ -247,7 +247,7 @@ export default async function Home() {
             </div>
 
             {/* Wordmark — arrives from below with blur-to-sharp */}
-            <h1 className="hero-gradient-text font-display text-5xl font-bold tracking-tight text-slate-50 sm:text-6xl lg:text-7xl bg-gradient-to-r from-teal-300 via-cyan-300 to-violet-400 bg-clip-text text-transparent" style={{ WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <h1 className="hero-gradient-text font-display text-5xl font-bold tracking-tight text-slate-50 sm:text-6xl lg:text-7xl">
               Vectalon
             </h1>
 

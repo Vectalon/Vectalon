@@ -327,7 +327,14 @@
   }
 
   .code-bg {
-    background: rgb(var(--surface-elevated));
+    background: rgb(11 15 20);
+  }
+  /* Ensure slate text colors read properly on dark code backgrounds in light mode */
+  .code-bg .text-slate-200, .code-bg .text-slate-300, .code-bg .text-slate-400 {
+    color: rgb(var(--term-ink));
+  }
+  .code-bg .text-slate-500, .code-bg .text-slate-600 {
+    color: rgb(var(--term-meta));
   }
 
   .console {

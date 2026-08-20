@@ -110,7 +110,7 @@ export default function SavingsPage() {
             <span className="text-term-ink">vectalon outcomes</span>
           </TermLine>
           <TermLine>
-            <span className="text-slate-500">Acme Corp — July</span>
+            <span className="text-term-meta">Acme Corp — July</span>
           </TermLine>
           <div className="mt-3 space-y-0.5">
             {ACME.map(item => (
