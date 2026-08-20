@@ -209,7 +209,7 @@ export default async function Home() {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden" style={{ background: 'linear-gradient(180deg, rgb(11 15 20) 0%, rgb(15 22 35) 40%, rgb(21 27 38) 70%, rgb(11 15 20) 100%)' }}>
+      <section className="hero-bg relative overflow-hidden">
         {/* Motion layers */}
         <HeroAurora />
         <HeroParticles />
@@ -247,7 +247,7 @@ export default async function Home() {
             </div>
 
             {/* Wordmark — arrives from below with blur-to-sharp */}
-            <h1 className="font-display text-5xl font-bold tracking-tight text-slate-50 sm:text-6xl lg:text-7xl bg-gradient-to-r from-teal-300 via-cyan-300 to-violet-400 bg-clip-text text-transparent" style={{ WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <h1 className="hero-gradient-text font-display text-5xl font-bold tracking-tight text-slate-50 sm:text-6xl lg:text-7xl bg-gradient-to-r from-teal-300 via-cyan-300 to-violet-400 bg-clip-text text-transparent" style={{ WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Vectalon
             </h1>
 
@@ -264,7 +264,7 @@ export default async function Home() {
                 { icon: '◆', label: 'Deterministic', color: 'text-teal-400' },
                 { icon: '▣', label: 'Control plane', color: 'text-violet-400' },
               ].map(v => (
-                <span key={v.label} className="flex items-center gap-2 rounded-xl border border-ink-700 bg-ink-800/60 px-4 py-2.5 text-sm text-slate-300">
+                <span key={v.label} className="hero-pill flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm text-slate-300">
                   <span className="text-brand">{v.icon}</span>
                   {v.label}
                 </span>
@@ -283,7 +283,7 @@ export default async function Home() {
           </div>
 
           {/* Terminal console */}
-          <div className="console mt-14 animate-fade-up" style={{ animationDelay: '360ms' }}>
+          <div className="console hero-console mt-14 animate-fade-up" style={{ animationDelay: '360ms' }}>
             <div className="flex items-center justify-between border-b border-ink-700/70 bg-ink-900/90 px-4 py-2.5 font-mono text-[11px] text-slate-500">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1.5 text-slate-300">

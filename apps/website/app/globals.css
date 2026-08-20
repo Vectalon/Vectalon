@@ -723,6 +723,50 @@ details[open] .faq-a {
 
 /* content-visibility removed: caused invisible content after client-side navigation */
 
+/* Hero section theme-aware background */
+.hero-bg {
+  background: linear-gradient(180deg, rgb(11 15 20) 0%, rgb(15 22 35) 40%, rgb(21 27 38) 70%, rgb(11 15 20) 100%);
+}
+:root[data-theme='light'] .hero-bg {
+  background: linear-gradient(180deg, rgb(232 236 242) 0%, rgb(240 243 247) 30%, rgb(245 247 250) 60%, rgb(232 236 242) 100%);
+}
+
+/* Value prop pills — theme-aware */
+.hero-pill {
+  border-color: rgb(35 44 60);
+  background: rgb(21 27 38 / 0.6);
+}
+:root[data-theme='light'] .hero-pill {
+  border-color: rgb(180 190 208 / 0.6);
+  background: rgb(255 255 255 / 0.7);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.04);
+}
+
+/* Scanlines — suppressed in light mode */
+:root[data-theme='light'] .scanlines {
+  display: none;
+}
+
+/* Beam — suppressed in light mode */
+:root[data-theme='light'] .beam {
+  display: none;
+}
+
+/* Light mode hero headline gradient text boost */
+:root[data-theme='light'] .hero-gradient-text {
+  background: linear-gradient(135deg, rgb(0 175 150) 0%, rgb(25 135 210) 50%, rgb(100 60 200) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Light mode console inside hero — keep it dark */
+:root[data-theme='light'] .hero-console {
+  box-shadow:
+    0 1px 0 0 rgb(255 255 255 / 0.03) inset,
+    0 24px 70px -30px rgb(0 0 0 / 0.25);
+}
+
 
 /* ─── Hero motion ─── */
 
