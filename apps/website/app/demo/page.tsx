@@ -167,7 +167,7 @@ export default function DemoPage() {
           </div>
           <div className="mt-4 border-t border-term-frame/40 pt-3">
             <TerminalLine>
-              <span className="text-slate-500">
+              <span className="text-term-meta">
                 From a real run: &quot;create a login screen with email password&quot; —{' '}
                 <span className="text-emerald-400">13/13 stages completed</span> ·{' '}
                 <span className="text-term-ink/80">7 files written</span>
