@@ -328,13 +328,29 @@
 
   .code-bg {
     background: rgb(11 15 20);
-  }
-  /* Ensure slate text colors read properly on dark code backgrounds in light mode */
-  .code-bg .text-slate-200, .code-bg .text-slate-300, .code-bg .text-slate-400 {
-    color: rgb(var(--term-ink));
-  }
-  .code-bg .text-slate-500, .code-bg .text-slate-600 {
-    color: rgb(var(--term-meta));
+    /* Force all children into dark mode — terminal/carbon UI never changes with theme */
+    --fg: 242 244 247;
+    --fg-secondary: 225 230 238;
+    --fg-muted: 200 210 225;
+    --fg-dim: 130 145 170;
+    --surface: 11 15 20;
+    --surface-elevated: 21 27 38;
+    --surface-deep: 8 11 16;
+    --border: 35 44 60;
+    --border-strong: 50 62 82;
+    --ink: 11 15 20;
+    --ink-900: 8 11 16;
+    --ink-800: 21 27 38;
+    --ink-700: 35 44 60;
+    --slate-50: 242 244 247;
+    --slate-100: 225 230 238;
+    --slate-200: 200 210 225;
+    --slate-300: 170 180 200;
+    --slate-400: 130 145 170;
+    --slate-500: 100 115 140;
+    --slate-600: 75 88 110;
+    --on-brand: 11 15 20;
+    --glow-brand: rgba(0, 230, 195, 0.18);
   }
 
   .console {
