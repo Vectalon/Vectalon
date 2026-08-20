@@ -89,7 +89,7 @@ export default function SavingsPage() {
       </div>
 
       {/* The Acme Corp ledger — the hero block */}
-      <div className="mt-12 overflow-hidden rounded-lg border border-ink-700/60 bg-ink-900/80 shadow-2xl">
+      <div className="mt-12 overflow-hidden rounded-lg border border-ink-700/60 code-bg/80 shadow-2xl">
         <div className="term-head">
           <div className="flex items-center gap-1.5" aria-hidden>
             <span className="term-dot bg-[#ff5f56]" />
@@ -150,7 +150,7 @@ export default function SavingsPage() {
         </p>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           {SIGNALS.map(s => (
-            <div key={s.agent} className="rounded-lg border border-ink-700/60 bg-ink-900/50 p-5">
+            <div key={s.agent} className="rounded-lg border border-ink-700/60 code-bg/50 p-5">
               <div className="font-mono text-sm font-semibold text-brand">{s.agent}</div>
               <div className="mt-1 font-mono text-[12px] text-slate-300">→ {s.outcome}</div>
               <p className="mt-2 text-sm leading-relaxed text-slate-400">{s.detail}</p>
@@ -161,7 +161,7 @@ export default function SavingsPage() {
 
       {/* CTA */}
       <div className="mt-14 text-center">
-        <div className="mx-auto max-w-xl rounded-lg border border-ink-700/60 bg-ink-900/50 p-6">
+        <div className="mx-auto max-w-xl rounded-lg border border-ink-700/60 code-bg/50 p-6">
           <p className="font-mono text-sm text-slate-300">
             See your own ledger — it takes as long as the agents you&apos;ve already run:
           </p>
@@ -171,7 +171,7 @@ export default function SavingsPage() {
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/demo"
-              className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+              className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-on-brand transition hover:opacity-90"
             >
               See the flagship demo
             </Link>

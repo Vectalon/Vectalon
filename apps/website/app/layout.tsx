@@ -25,7 +25,7 @@ const themeScript = `
       if (t !== 'light' && t !== 'dark') {
         t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
-      document.documentElement.setAttribute('data-theme', t);
+      if (t === 'dark') document.documentElement.classList.add('dark');
     } catch (e) {}
   })();
 `
@@ -109,10 +109,6 @@ const revealObserver = `
       if (!io) return;
       var els = document.querySelectorAll('.reveal:not(.is-revealed)');
       for (var i = 0; i < els.length; i++) {
-        /* If the element is already in the viewport (e.g. after client-side
-           navigation), reveal it immediately instead of waiting for the
-           IntersectionObserver callback which may never fire for
-           elements already intersecting at observe time. */
         if (isInViewport(els[i])) {
           reveal(els[i]);
         } else {
@@ -123,7 +119,6 @@ const revealObserver = `
     function init() {
       try {
         if (!('IntersectionObserver' in window)) {
-          /* Fallback: reveal everything */
           var all = document.querySelectorAll('.reveal');
           for (var i = 0; i < all.length; i++) all[i].classList.add('is-revealed');
           return;
@@ -138,7 +133,6 @@ const revealObserver = `
           }
         }, { rootMargin: '0px 0px -8% 0px', threshold: 0.02 });
         observeNew();
-        /* Watch for new .reveal elements added after client-side navigation */
         var mo = new MutationObserver(function () {
           observeNew();
         });
@@ -175,7 +169,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="flex items-stretch">
                 <Link
                   href="/"
-                  className="seg !px-5 font-bold tracking-tight text-slate-50 hover:!text-brand"
+                  className="seg !px-5 font-bold tracking-tight text-fg hover:!text-brand"
                 >
                   {/* Vectalon logo mark */}
                   <svg width="22" height="24" viewBox="0 0 220 240" fill="none" className="shrink-0">
@@ -190,12 +184,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     <path d="M110 28L122 52H98L110 28Z" fill="#66E8FF"/>
                     <defs>
                       <linearGradient id="lg-teal" x1="20" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
-                        <stop stopColor="#00E6C3"/>
-                        <stop offset="1" stopColor="#37B6FF"/>
+                        <stop stopColor="#00E6C3"/><stop offset="1" stopColor="#37B6FF"/>
                       </linearGradient>
                       <linearGradient id="lg-violet" x1="200" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
-                        <stop stopColor="#8B5CF6"/>
-                        <stop offset="1" stopColor="#37B6FF"/>
+                        <stop stopColor="#8B5CF6"/><stop offset="1" stopColor="#37B6FF"/>
                       </linearGradient>
                     </defs>
                   </svg>
@@ -204,7 +196,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <SiteNav />
               </div>
               <div className="flex items-stretch">
-                <div className="seg hidden items-center gap-1.5 text-xs text-slate-500 md:flex">
+                <div className="seg hidden items-center gap-1.5 text-xs text-fg-dim md:flex">
                   <span className="text-brand">●</span>
                   <span className="hidden lg:inline">v{PRODUCT_MANIFEST.packages.reactNative.version}</span>
                 </div>
@@ -222,8 +214,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
         <main id="main" className="flex-1">{children}</main>
         {/* Footer */}
-        <footer className="border-t border-ink-700/70 font-sans">
-          <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-10 text-[13px] text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+        <footer className="border-t border-frame/70 font-sans">
+          <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-10 text-[13px] text-fg-muted sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <svg width="18" height="20" viewBox="0 0 220 240" fill="none" className="shrink-0 opacity-60">
                 <path d="M25 48L70 70L110 195" stroke="url(#fl-teal)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
@@ -252,8 +244,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/docs" className="transition hover:text-brand">docs</Link>
             </div>
           </div>
-          <div className="border-t border-ink-700/50">
-            <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 font-mono text-[11px] text-slate-600">
+          <div className="border-t border-frame/50">
+            <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 font-mono text-[11px] text-fg-dim">
               <span>vectalon — an engineering control plane that understands, upgrades, and validates your code</span>
               <span className="hidden sm:inline">[ exit ]</span>
             </div>

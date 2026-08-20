@@ -284,7 +284,7 @@ export default async function Home() {
 
           {/* Terminal console */}
           <div className="console hero-console mt-14 animate-fade-up" style={{ animationDelay: '360ms' }}>
-            <div className="flex items-center justify-between border-b border-ink-700/70 bg-ink-900/90 px-4 py-2.5 font-mono text-[11px] text-slate-500">
+            <div className="flex items-center justify-between border-b border-ink-700/70 code-bg/90 px-4 py-2.5 font-mono text-[11px] text-slate-500">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1.5 text-slate-300">
                   <span className="text-brand">▣</span>
@@ -379,7 +379,7 @@ export default async function Home() {
 
               {/* Prompt */}
               <div
-                className="mt-10 flex animate-fade-up flex-col gap-4 rounded-xl border border-ink-700 bg-ink-900 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+                className="mt-10 flex animate-fade-up flex-col gap-4 rounded-xl border border-ink-700 code-bg px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
                 style={{ animationDelay: '240ms' }}
               >
                 <p className="font-mono text-sm text-slate-300">
@@ -589,7 +589,7 @@ export default async function Home() {
                 <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-400">{p.body}</p>
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {p.cmds.map(c => (
-                    <code key={c} className="rounded-lg border border-ink-700 bg-ink-900 px-2 py-0.5 font-mono text-[11px] text-brand">
+                    <code key={c} className="rounded-lg border border-ink-700 code-bg px-2 py-0.5 font-mono text-[11px] text-brand">
                       {c}
                     </code>
                   ))}
@@ -679,7 +679,7 @@ export default async function Home() {
                 The free tier is genuinely useful: init, serve, feature, doctor. Premium commands
                 offer a 14-day trial with one GitHub login.
               </p>
-              <p className="mx-auto mt-8 w-fit rounded-xl border border-ink-700 bg-ink-900 px-5 py-3.5 font-mono text-sm text-slate-300">
+              <p className="mx-auto mt-8 w-fit rounded-xl border border-ink-700 code-bg px-5 py-3.5 font-mono text-sm text-slate-300">
                 <span className="text-brand">$</span> npx vectalon@latest init
                 <span className="caret" />
               </p>

@@ -436,7 +436,7 @@ export default function BenchmarksPage() {
               {LOCAL_WINS.map(([s, d]) => (
                 <li key={s} className="flex items-baseline justify-between gap-3 text-xs">
                   <span className="font-mono text-slate-400">{s}</span>
-                  <span className="font-mono text-emerald-500 dark:text-emerald-400">{d}</span>
+                  <span className="font-mono text-emerald-500">{d}</span>
                 </li>
               ))}
             </ul>
@@ -447,7 +447,7 @@ export default function BenchmarksPage() {
               {LOCAL_LOSSES.map(([s, d]) => (
                 <li key={s} className="flex items-baseline justify-between gap-3 text-xs">
                   <span className="font-mono text-slate-400">{s}</span>
-                  <span className="font-mono text-amber-600 dark:text-amber-400">{d}</span>
+                  <span className="font-mono text-amber-500">{d}</span>
                 </li>
               ))}
             </ul>
@@ -464,7 +464,7 @@ export default function BenchmarksPage() {
             {LOCAL_NEW.map(([s, d]) => (
               <li key={s} className="flex items-baseline justify-between gap-3 text-xs">
                 <span className="font-mono text-slate-400">{s}</span>
-                <span className="font-mono text-emerald-500 dark:text-emerald-400">{d}</span>
+                <span className="font-mono text-emerald-500">{d}</span>
               </li>
             ))}
           </ul>

@@ -58,7 +58,7 @@ export default async function AdminOverviewPage() {
             {stats.topFeatures.map((f, i) => (
               <div key={f.feature} className="flex items-center gap-3">
                 <span className="w-20 font-mono text-xs text-slate-400">{f.feature}</span>
-                <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-ink-900">
+                <div className="h-2.5 flex-1 overflow-hidden rounded-full code-bg">
                   <div
                     className="h-full rounded-full bg-brand"
                     style={{ width: `${(f.count / stats.topFeatures[0].count) * 100}%` }}
@@ -75,9 +75,9 @@ export default async function AdminOverviewPage() {
 
       <div className="card flex flex-wrap items-center justify-between gap-3 text-sm">
         <span className="text-slate-400">
-          API: <code className="rounded bg-ink-900 px-1.5 py-0.5 font-mono text-xs text-emerald-700 dark:text-emerald-300">POST /v1/validate</code>{' '}
-          — <code className="rounded bg-ink-900 px-1.5 py-0.5 font-mono text-xs text-emerald-700 dark:text-emerald-300">POST /v1/trial</code>{' '}
-          — <code className="rounded bg-ink-900 px-1.5 py-0.5 font-mono text-xs text-emerald-700 dark:text-emerald-300">GET /v1/health</code>
+          API: <code className="rounded code-bg px-1.5 py-0.5 font-mono text-xs text-emerald-600">POST /v1/validate</code>{' '}
+          — <code className="rounded code-bg px-1.5 py-0.5 font-mono text-xs text-emerald-600">POST /v1/trial</code>{' '}
+          — <code className="rounded code-bg px-1.5 py-0.5 font-mono text-xs text-emerald-600">GET /v1/health</code>
         </span>
         <span className="text-xs text-slate-500">registry: {data.licenses.length} licenses — {data.trials.length} trials</span>
       </div>
