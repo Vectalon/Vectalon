@@ -23,7 +23,7 @@
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^20.14.0",
-    "@types/pg": "^8.11.10",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "autoprefixer": "^10.4.20",
