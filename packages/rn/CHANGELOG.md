@@ -5,6 +5,19 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.16.0] - 2026-08-26
+
+### Changed
+
+- Policy checks and generated-file validation/repair now use Core 0.4.0's
+  shared execution harness. RN owns discovery, rules, and provider adapters.
+- Reuse the project scanner for bare RN, Expo, monorepo, New Architecture,
+  and partially broken projects; report the exact bundled Core revision.
+- Failed candidates are quarantined without source or file paths, preventing
+  downstream phases from writing rejected code. Repair attempts are bounded.
+- Remaining scope: the separate code-review retry loop stays RN-owned;
+  Admin compatibility is demonstration data only, with no report collection.
+
 ## [0.15.0] - 2026-08-19
 
 ### Added

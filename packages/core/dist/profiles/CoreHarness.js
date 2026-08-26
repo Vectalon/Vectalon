@@ -96,11 +96,24 @@ function createCoreHarness(config, adapters) {
             const rules = [...composed.profile.rules].sort((left, right) => compareText(left.id, right.id) || compareText(left.version, right.version));
             const ruleEvidence = selectedRules(rules, composed.provenance);
             const validate = async (changes) => {
-                const diagnostics = discovery.diagnostics.slice(0, MAX_DIAGNOSTICS).map(item => ({
-                    code: 'DISCOVERY_DIAGNOSTIC',
-                    severity: item.severity === 'info' || item.severity === 'warning' || item.severity === 'error' ? item.severity : 'error',
-                }));
-                let blocked = diagnostics.some(item => blocks(item.severity));
+                const diagnostics = [];
+                let blocked = false;
+                const record = (diagnostic) => {
+                    const isBlocking = blocks(diagnostic.severity);
+                    blocked ||= isBlocking;
+                    if (diagnostics.length < MAX_DIAGNOSTICS)
+                        diagnostics.push(diagnostic);
+                    else if (isBlocking && !diagnostics.some(item => item.pathToken === diagnostic.pathToken && blocks(item.severity))) {
+                        const replaceIndex = diagnostics.findIndex(item => !blocks(item.severity));
+                        if (replaceIndex >= 0)
+                            diagnostics[replaceIndex] = diagnostic;
+                    }
+                };
+                for (const item of discovery.diagnostics)
+                    record({
+                        code: 'DISCOVERY_DIAGNOSTIC',
+                        severity: safeSeverity(item.severity),
+                    });
                 for (const rule of rules) {
                     try {
                         if (adapters.ruleExecution.supports && !adapters.ruleExecution.supports(rule)) {
@@ -121,25 +134,15 @@ function createCoreHarness(config, adapters) {
                     for (const change of [...changes].sort((left, right) => compareText(left.relativePath, right.relativePath) || compareText(left.id, right.id))) {
                         try {
                             const violations = await adapters.ruleExecution.execute({ rule, change, project: discovery.project });
-                            const safeViolations = violations.slice(0, MAX_DIAGNOSTICS).map(item => ({
-                                code: 'RULE_VIOLATION',
-                                severity: safeSeverity(item.severity),
-                                ruleId: safeId(rule.id),
-                                pathToken: pathToken(change.relativePath),
-                                ...(safePosition(item.line) !== undefined ? { line: safePosition(item.line) } : {}),
-                                ...(safePosition(item.column) !== undefined ? { column: safePosition(item.column) } : {}),
-                            }));
-                            for (const diagnostic of safeViolations) {
-                                const isBlocking = blocks(diagnostic.severity);
-                                blocked ||= isBlocking;
-                                if (diagnostics.length < MAX_DIAGNOSTICS)
-                                    diagnostics.push(diagnostic);
-                                else if (isBlocking && !diagnostics.some(item => item.pathToken === diagnostic.pathToken && blocks(item.severity))) {
-                                    const replaceIndex = diagnostics.findIndex(item => !blocks(item.severity));
-                                    if (replaceIndex >= 0)
-                                        diagnostics[replaceIndex] = diagnostic;
-                                }
-                            }
+                            for (const item of violations)
+                                record({
+                                    code: 'RULE_VIOLATION',
+                                    severity: safeSeverity(item.severity),
+                                    ruleId: safeId(rule.id),
+                                    pathToken: pathToken(change.relativePath),
+                                    ...(safePosition(item.line) !== undefined ? { line: safePosition(item.line) } : {}),
+                                    ...(safePosition(item.column) !== undefined ? { column: safePosition(item.column) } : {}),
+                                });
                         }
                         catch {
                             return {
@@ -171,7 +174,7 @@ function createCoreHarness(config, adapters) {
             if (!selected)
                 return finish('failed', 'PROVIDER_UNAVAILABLE', validation.diagnostics, ruleEvidence);
             providerEvidence = { id: safeId(selected.provider.id), selectionReason: selected.selectionReason };
-            const seen = new Set(currentChanges.map(change => change.content));
+            const seen = currentChanges.map(change => new Set([change.content]));
             for (let attempt = 0; attempt < request.repair.maxAttempts; attempt += 1) {
                 const targetIndex = currentChanges.findIndex(change => validation.diagnostics.some(item => item.pathToken === pathToken(change.relativePath) && blocks(item.severity)));
                 if (targetIndex < 0)
@@ -180,7 +183,17 @@ function createCoreHarness(config, adapters) {
                 let response;
                 try {
                     response = await selected.provider.generate({
-                        messages: [{ role: 'user', content: target.content }],
+                        messages: [
+                            {
+                                role: 'system',
+                                content: JSON.stringify({
+                                    instruction: 'Repair the supplied file. Return only the complete corrected file contents.',
+                                    rules: rules.map(rule => ({ id: rule.id, description: rule.description })),
+                                    violations: validation.diagnostics.filter(item => item.pathToken === pathToken(target.relativePath)),
+                                }),
+                            },
+                            { role: 'user', content: target.content },
+                        ],
                         temperature: 0,
                         metadata: { capabilityId: request.capabilityId, ruleIds: rules.map(rule => rule.id) },
                     });
@@ -191,9 +204,9 @@ function createCoreHarness(config, adapters) {
                 const candidate = response.message.content;
                 repairCount += 1;
                 providerEvidence = { ...providerEvidence, ...(response.model ? { model: safeId(response.model) } : {}) };
-                if (seen.has(candidate))
+                if (seen[targetIndex].has(candidate))
                     break;
-                seen.add(candidate);
+                seen[targetIndex].add(candidate);
                 currentChanges = currentChanges.map((change, index) => index === targetIndex ? { ...change, content: candidate } : change);
                 validation = await validate(currentChanges);
                 if (validation.reason)
