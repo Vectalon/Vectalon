@@ -25,7 +25,7 @@ describe('React Native Core harness adapter', () => {
     let create = createRnHarness
     try {
       jest.isolateModules(() => {
-        create = require('../../src/coreHarness/createRnHarness').createRnHarness
+        create = jest.requireActual<typeof import('../../src/coreHarness/createRnHarness')>('../../src/coreHarness/createRnHarness').createRnHarness
       })
       const outcome = await create({
         projectRoot: '/missing', project: discoverRnProject('/missing'), rules: [],
