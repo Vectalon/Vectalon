@@ -22,19 +22,19 @@ describe('policyCommand', () => {
     cleanup(dir)
   })
 
-  it('exits when the project has not been initialized', () => {
+  it('exits when the project has not been initialized', async () => {
     const exit = jest.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('exit')
     })
 
-    expect(() => policyCommand(dir, {})).toThrow('exit')
+    await expect(policyCommand(dir, {})).rejects.toThrow('exit')
     expect(exit).toHaveBeenCalledWith(1)
   })
 
-  it('creates a default policy with --init', () => {
+  it('creates a default policy with --init', async () => {
     mkdirSync(join(dir, '.vectalon'), { recursive: true })
 
-    policyCommand(dir, { init: true })
+    await policyCommand(dir, { init: true })
 
     const policyPath = join(dir, '.vectalon', 'policy.json')
     expect(existsSync(policyPath)).toBe(true)
@@ -43,7 +43,7 @@ describe('policyCommand', () => {
     expect(policy.customRules).toEqual([])
   })
 
-  it('checks a file against the policy with --check', () => {
+  it('checks a file against the policy with --check', async () => {
     mkdirSync(join(dir, '.vectalon'), { recursive: true })
     const filePath = join(dir, 'src', 'bad.ts')
     mkdirSync(join(dir, 'src'), { recursive: true })
@@ -53,7 +53,7 @@ describe('policyCommand', () => {
       throw new Error('exit')
     })
 
-    expect(() => policyCommand(dir, { check: filePath })).toThrow('exit')
+    await expect(policyCommand(dir, { check: filePath })).rejects.toThrow('exit')
     expect(exit).toHaveBeenCalledWith(1)
   })
 })

@@ -5,6 +5,8 @@ import { runGuardrails } from './engine'
 import type { GuardrailRule, GuardrailResult, GuardrailSeverity, GuardrailConventions } from './types'
 import { reportError } from '../utils/safe'
 import { readOrgPolicyCache, mergeOrgPolicy } from '../knowledge/orgPolicy'
+import { createRnHarness, discoverRnProject } from '../coreHarness/createRnHarness'
+import type { HarnessRun } from '@vectalon-dev/core'
 
 export interface PolicyRuleOverride {
   enabled?: boolean
@@ -58,6 +60,10 @@ export interface PolicyRunResult {
   findings: GuardrailResult['findings']
   ok: boolean
   policyPath?: string
+}
+
+export interface HarnessPolicyRunResult extends PolicyRunResult {
+  harness: HarnessRun
 }
 
 const POLICY_FILE = 'policy.json'
@@ -172,6 +178,21 @@ export class PolicyEngine {
     return {
       ...result,
       policyPath: this.policyPath,
+    }
+  }
+
+  async runPolicyWithHarness(options: PolicyOptions): Promise<HarnessPolicyRunResult> {
+    const harness = createRnHarness({
+      projectRoot: this.projectRoot,
+      project: discoverRnProject(this.projectRoot),
+      rules: this.getEffectiveRules(),
+      conventions: options.conventions,
+    })
+    const outcome = await harness.validate([{ path: options.filePath, content: options.content }])
+    return {
+      ...outcome.results[0],
+      policyPath: this.policyPath,
+      harness: outcome.run,
     }
   }
 

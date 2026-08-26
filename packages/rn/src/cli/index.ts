@@ -1956,10 +1956,10 @@ async function runInteractive(): Promise<void> {
       return
     }
     if (policyAction === 'init') {
-      policyCommand('', { init: true })
+      await policyCommand('', { init: true })
       p.outro('Policy initialized')
     } else {
-      policyCommand('', {})
+      await policyCommand('', {})
     }
     return
   }

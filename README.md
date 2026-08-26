@@ -2,7 +2,7 @@
 
 **The adaptive AI harness for developers — React Native, iOS, Android, Python, and beyond.**
 
-Current RN release: <!-- product-fact:rn-version -->0.15.0<!-- /product-fact --> ·
+Current RN release: <!-- product-fact:rn-version -->0.16.0<!-- /product-fact --> ·
 benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
 deterministic agents: <!-- product-fact:deterministic-commands -->44<!-- /product-fact --> ·
 MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact -->
