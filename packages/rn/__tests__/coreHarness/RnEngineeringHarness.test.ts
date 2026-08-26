@@ -1,5 +1,8 @@
-import { createRnHarness } from '../../src/coreHarness/createRnHarness'
+import { createRnHarness, discoverRnProject } from '../../src/coreHarness/createRnHarness'
 import type { GuardrailRule } from '../../src/guardrails'
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'fs'
+import { tmpdir } from 'os'
+import { dirname, join } from 'path'
 
 const noSecrets: GuardrailRule = {
   id: 'rn-no-secret',
@@ -12,6 +15,62 @@ const noSecrets: GuardrailRule = {
 }
 
 describe('React Native Core harness adapter', () => {
+  it.each([
+    {
+      name: 'bare RN', app: '.',
+      files: { 'package.json': '{"name":"mobile","dependencies":{"react-native":"0.75.0"}}', 'tsconfig.json': '{}' },
+      expected: { reactNativeVersion: '0.75.0', platforms: ['ios', 'android'], hasTypeScript: true },
+      features: ['rn-cli'],
+    },
+    {
+      name: 'Expo managed', app: '.',
+      files: { 'package.json': '{"name":"mobile","dependencies":{"expo":"53.0.0","react-native":"0.79.0"}}' },
+      expected: { hasExpo: true, platforms: ['ios', 'android'], newArchitecture: { enabled: true } },
+      features: ['expo', 'new-architecture'],
+    },
+    {
+      name: 'monorepo app', app: 'apps/mobile',
+      files: {
+        'package.json': '{"private":true,"workspaces":["apps/*"],"dependencies":{"react-native":"0.81.0"}}',
+        'tsconfig.json': '{}', 'apps/mobile/package.json': '{"name":"mobile"}',
+      },
+      expected: { reactNativeVersion: '0.81.0', hasTypeScript: true, workspace: { isMonorepo: true } },
+      features: ['rn-cli', 'monorepo'],
+    },
+    {
+      name: 'New Architecture opt-in', app: '.',
+      files: { 'package.json': '{"name":"mobile","dependencies":{"react-native":"0.75.0"}}', 'android/gradle.properties': 'newArchEnabled=true' },
+      expected: { newArchitecture: { enabled: true } },
+      features: ['rn-cli', 'new-architecture'],
+    },
+    {
+      name: 'partially broken', app: '.',
+      files: { 'package.json': '{broken' },
+      expected: { name: 'react-native-project', reactNativeVersion: '', platforms: [] },
+      features: ['rn-cli'],
+    },
+  ])('discovers and validates a $name project through Core', async ({ app, files, expected, features }) => {
+    const root = mkdtempSync(join(tmpdir(), 'rn-core-project-'))
+    try {
+      for (const [file, content] of Object.entries(files)) {
+        const target = join(root, file)
+        mkdirSync(dirname(target), { recursive: true })
+        writeFileSync(target, content!)
+      }
+      const projectRoot = join(root, app)
+      const project = discoverRnProject(projectRoot)
+      expect(project).toMatchObject(expected)
+      const harness = createRnHarness({ projectRoot, project, rules: [noSecrets], clock: () => '2026-08-19T00:00:00.000Z' })
+      const outcome = await harness.validate([{ path: 'src/App.tsx', content: 'SECRET' }])
+      expect(outcome.run.local.project?.features).toEqual(expect.arrayContaining(features))
+      expect(outcome.run.safe.status).toBe('blocked')
+      expect(outcome.writable).toBe(false)
+      expect(JSON.stringify(outcome.run.safe)).not.toContain(root)
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
   it('composes and executes RN-owned policy through the public Core harness', async () => {
     const harness = createRnHarness({
       projectRoot: '/customers/acme/mobile',

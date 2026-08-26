@@ -6,8 +6,9 @@ import {
   type ProjectProfile,
 } from '@vectalon-dev/core'
 import type { ProjectInfo } from '../harness/types'
+import { Scanner } from '../harness/Scanner'
 import type { GuardrailConventions, GuardrailFinding, GuardrailResult, GuardrailRule } from '../guardrails/types'
-import { existsSync, readFileSync } from 'fs'
+import { existsSync } from 'fs'
 import { join } from 'path'
 import { createHash } from 'crypto'
 
@@ -45,32 +46,17 @@ interface RuleRecord {
 }
 
 export function discoverRnProject(projectRoot: string): ProjectInfo {
-  let manifest: { name?: string; version?: string; dependencies?: Record<string, string>; devDependencies?: Record<string, string>; scripts?: Record<string, string> } = {}
   try {
-    manifest = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf-8'))
+    return new Scanner(projectRoot).scanProject()
   } catch {
-    // Core receives a normalized partial profile for damaged projects; the RN
-    // adapter remains responsible for filesystem error detail.
-  }
-  const dependencies = manifest.dependencies ?? {}
-  const devDependencies = manifest.devDependencies ?? {}
-  const expoVersion = dependencies.expo ?? devDependencies.expo ?? ''
-  const platforms = ['ios', 'android'].filter(platform => existsSync(join(projectRoot, platform)))
-  return {
-    root: projectRoot,
-    name: manifest.name ?? 'react-native-project',
-    version: manifest.version ?? '0.0.0',
-    reactNativeVersion: dependencies['react-native'] ?? devDependencies['react-native'] ?? '',
-    dependencies,
-    devDependencies,
-    scripts: manifest.scripts ?? {},
-    platforms,
-    hasTypeScript: existsSync(join(projectRoot, 'tsconfig.json')) || Boolean(devDependencies.typescript),
-    hasMetro: existsSync(join(projectRoot, 'metro.config.js')) || existsSync(join(projectRoot, 'metro.config.ts')),
-    hasExpo: Boolean(expoVersion),
-    tooling: expoVersion ? 'expo' : 'rn-cli',
-    expoSdkVersion: expoVersion,
-    reactVersion: dependencies.react ?? devDependencies.react ?? '',
+    // Preserve validation on incomplete projects without inventing detected capabilities.
+    return {
+      root: projectRoot,
+      name: 'react-native-project', version: '0.0.0', reactNativeVersion: '',
+      dependencies: {}, devDependencies: {}, scripts: {}, platforms: [],
+      hasTypeScript: existsSync(join(projectRoot, 'tsconfig.json')),
+      hasMetro: false, hasExpo: false, tooling: 'rn-cli', expoSdkVersion: '', reactVersion: '',
+    }
   }
 }
 
