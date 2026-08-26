@@ -304,7 +304,7 @@ export default function DocsPage() {
           </ul>
 
           {/* TRIAL CTA — the prompt line */}
-          <div className="mt-10 rounded-[3px] border border-ink-700 bg-ink-900 px-4 py-3.5">
+          <div className="mt-10 rounded-[3px] border border-ink-700 code-bg px-4 py-3.5">
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-sm text-slate-300">
               <span className="text-brand">vectalon@main:~$</span> npx vectalon trial --14-days
               <span className="caret" />

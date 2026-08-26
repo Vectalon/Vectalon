@@ -22,7 +22,7 @@ export default async function AdminUsagePage() {
           {featureUsage.map(f => (
             <div key={f.feature} className="flex items-center gap-4">
               <span className="w-28 font-mono text-sm text-slate-50">{f.feature}</span>
-              <div className="h-3 flex-1 overflow-hidden rounded-full bg-ink-900">
+              <div className="h-3 flex-1 overflow-hidden rounded-full code-bg">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-brand/80 to-brand"
                   style={{ width: `${(f.count / maxCount) * 100}%` }}

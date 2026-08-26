@@ -5,6 +5,8 @@ import { DemoPlayer } from '../components/DemoPlayer'
 import { TypePrompt, type TypePromptHeadline } from '../components/TypePrompt'
 import { FeedAge } from '../components/FeedAge'
 import HeroHeadline from '../components/HeroHeadline'
+import { AgentOrb } from '../components/AgentOrb'
+import { HeroParticles, HeroAurora } from '../components/HeroMotion'
 import { fetchIntelFeed, type IntelItem } from '../lib/intel'
 import { PRODUCT_MANIFEST } from '../lib/product-manifest'
 
@@ -18,37 +20,37 @@ const SDK_CHIPS = [
 const FEATURES: Array<{ title: string; body: string; icon: FeatureIconName }> = [
   {
     title: 'MCP-native agent',
-    body: `A local model runs as an agent over ${PRODUCT_MANIFEST.capabilities.mcpTools} project-aware tools — feature workflows, code review, upgrades, E2E generation, device control — all through the MCP protocol your editor already speaks. On top of the model sits a fleet of ${PRODUCT_MANIFEST.capabilities.deterministicCommands} deterministic agents (review, security, SOC 2, GitHub PR triage, DX scoring, build archive) that need no model at all.`,
+    body: `A local model runs as an agent over ${PRODUCT_MANIFEST.capabilities.mcpTools} project-aware tools: feature workflows, code review, upgrades, E2E generation, device control. All through the MCP protocol your editor already speaks. On top: ${PRODUCT_MANIFEST.capabilities.deterministicCommands} deterministic agents that need no model.`,
     icon: 'robot',
   },
   {
     title: 'Self-maintaining knowledge',
-    body: 'Init scans your repo and builds a living knowledge graph; serve re-seeds it hourly. Every run is distilled into L0→L3 project memory — the project teaches the model, and the model never works from a generic guess.',
+    body: 'Init scans your repo and builds a living knowledge graph; serve re-seeds it hourly. Every run is distilled into L0→L3 project memory. The project teaches the model, and the model never works from a generic guess.',
     icon: 'brain',
   },
   {
     title: 'Always-current model',
-    body: 'Web intel pipelines (RN releases, Expo changelog, Hacker News, GitHub trending, Callstack) feed the model’s system prompt, so it knows 0.87-rc before the release notes do.',
+    body: 'Web intel pipelines (RN releases, Expo changelog, Hacker News, GitHub trending, Callstack) feed the model\'s system prompt. It knows the next release before the changelog is published.',
     icon: 'broadcast',
   },
   {
     title: 'Upgrade Copilot',
-    body: 'rn-diff-purge diffs, AST-grade impact analysis, and codemods — plan and apply React Native upgrades with every native and JS/TS change mapped out.',
+    body: 'rn-diff-purge diffs, AST-grade impact analysis, and codemods. Plan and apply React Native upgrades with every native and JS/TS change mapped out.',
     icon: 'wrench',
   },
   {
     title: 'Guardrails on save',
-    body: 'Platform best-practices rules (Pressable, no leaked renders, New Architecture hazards) run in your editor and in code review — with hallucination-verified findings.',
+    body: 'Platform best-practices rules (Pressable, no leaked renders, New Architecture hazards) run in your editor and in code review. Hallucination-verified findings.',
     icon: 'shield',
   },
   {
     title: 'Compile-checked healing',
-    body: 'Every agent fix is typechecked before it lands. A fix that doesn’t reduce errors is reverted. Generated code renders headlessly in a sandbox before you see it.',
+    body: 'Every agent fix is typechecked before it lands. A fix that does not reduce errors is reverted. Generated code renders headlessly in a sandbox before you see it.',
     icon: 'check',
   },
   {
     title: 'Impact regression coverage',
-    body: 'Changed files map to affected screens (AST-driven, no model calls), each one gets a Maestro regression flow — with accessibility variants for screens covered by a11y criteria. Screens with no deterministic route are flagged, followed up, and tracked in a coverage dashboard (`vectalon coverage`).',
+    body: 'Changed files map to affected screens (AST-driven, no model calls), each one gets a Maestro regression flow with accessibility variants for screens covered by a11y criteria.',
     icon: 'shield',
   },
 ]
@@ -62,60 +64,48 @@ const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'Does it need a model?',
-    a: 'The optional model-driven agent does — but the 44 deterministic commands (review, security, SOC 2, GitHub PR triage, incident command, build archive, …) need no model at all. They run offline with a report and a verdict, zero model calls, free on every tier. Deterministic means reproducible, not static: every run re-scans your project’s current state, so the results are as fresh as your last command.',
+    a: 'The optional model-driven agent does, but the 44 deterministic commands (review, security, SOC 2, GitHub PR triage, incident command, build archive, …) need no model at all. They run offline with a report and a verdict, zero model calls, free on every tier.',
   },
   {
     q: 'Do the deterministic agents go stale?',
-    a: 'No — every run reads the project as it is right now: source files, git history, CI config, and telemetry exports are scanned at run time, and the GitHub family (gh-pr, gh-issue, gh-ci, gh-sec) queries the live gh CLI, so a report always reflects now, not a cached snapshot. The one cyclical input — ecosystem knowledge and web intel — auto-refreshes hourly under vectalon serve, or on demand with vectalon refresh; and when a data source is missing, an agent returns an explicit no-data verdict rather than guessing.',
+    a: 'No. Every run reads the project as it is right now. Source files, git history, CI config, and telemetry exports are scanned at run time. The ecosystem knowledge auto-refreshes hourly under vectalon serve.',
   },
   {
     q: 'Which platforms are supported?',
-    a: `React Native is live at v${PRODUCT_MANIFEST.packages.reactNative.version}. iOS, Android, and Python harnesses are in development — join the waitlist and we’ll email the moment a beta opens.`,
+    a: `React Native is live at v${PRODUCT_MANIFEST.packages.reactNative.version}. iOS, Android, and Python harnesses are in development. Join the waitlist and we'll email the moment a beta opens.`,
   },
   {
     q: 'How is it different from other AI coding tools?',
-    a: `It isn’t an AI coding assistant — it’s an engineering control plane. Give Vectalon a React Native repository and it continuously understands, reviews, diagnoses, upgrades, and validates it. Deterministic and compile-checked: agents produce the same result on any machine, every fix is typechecked before it lands and reverted if it doesn’t reduce errors, and the benchmark suite measures ${PRODUCT_MANIFEST.capabilities.benchmarkScenarios} scenarios against human references.`,
+    a: `It isn't an AI coding assistant. It is an engineering control plane. Give Vectalon a React Native repository and it continuously understands, reviews, diagnoses, upgrades, and validates it. Deterministic and compile-checked.`,
   },
   {
-    q: 'What does the 15-minute proof of value look like?',
-    a: 'One command: npx vectalon init. It scans your project, seeds the knowledge base, and configures the model silently underneath — no LLM setup is ever asked of you — then ends with the payoff: the scan summary (files, components, screens, native modules, dependencies, navigation stacks, tests, architecture risks), the Vectalon Health Score out of 100, and the Top 5 problems it found, each with its P0/P1/P2 severity. Zero model calls, offline, deterministic.',
-  },
-  {
-    q: 'Does my source code leave my machine?',
-    a: 'Only if you choose it to. Vectalon runs in three explicit, enforced deployment modes: Cloud (hosted models — prompts go to the provider you pick), Private (a company-controlled Ollama or vLLM — nothing leaves your network), and Air-gapped (a local Qwen2.5-Coder model or WASM on the developer machine — nothing leaves the machine at all). The mode is declared in the manifest and enforced: a provider outside your mode is refused. And the 44 deterministic agents need no model whatsoever, so the whole control plane — review, score, fix, security, upgrade — works fully air-gapped.',
-  },
-  {
-    q: 'What does it cost, and what’s the license?',
-    a: 'The free tier is genuinely useful — init, serve, feature, doctor, and all 48 agents, no card. Individual $19/dev/mo (local AI + project intelligence + diagnostics), Team $49/dev/mo (Team Brain, shared policies, PR review, CI, dashboards), Enterprise custom (self-hosted, SSO, audit, private models) — each with a 14-day trial. `vectalon plan` shows your current plan. Business Source License 1.1: free for personal, education, and OSS use and teams up to three devs; MIT after four years.',
-  },
-  {
-    q: 'What outcomes does it actually produce?',
-    a: 'The sales material is outcomes, not agent counts: `vectalon outcomes` aggregates every committed report into the ledger an engineering manager reads — issues detected and automatically fixed, issues caught in PR review, build failures diagnosed and resolved, RN upgrades completed, tests generated, performance regressions detected — and estimates the developer hours + dollars saved (hours × a $75/hr blended rate, `--rate` to change it). Every number comes from real report.json files in your repo, deterministically, zero model calls. See the /outcomes page for the shape of it.',
+    q: 'What does it cost?',
+    a: 'Free tier: init, serve, feature, doctor, and all 48 agents, no card. Individual $19/dev/mo, Team $49/dev/mo, Enterprise custom. Business Source License 1.1.',
   },
 ]
 
 const STATS = [
   { value: '94%', label: 'guardrail pass rate' },
-  { value: '13', label: 'benchmark scenarios' },
-  { value: '58', label: 'project-aware tools' },
-  { value: '13', label: 'workflow phases' },
+  { value: '44', label: 'deterministic agents' },
+  { value: '64', label: 'project-aware tools' },
+  { value: '43', label: 'benchmark scenarios' },
 ]
 
 const STEPS = [
   {
     cmd: 'vectalon init',
     title: 'Scan & seed',
-    body: 'Point it at your repo. Vectalon scans structure, dependencies, and conventions, then builds the project knowledge graph — L0→L3 memory the model works from.',
+    body: 'Point it at your repo. Vectalon scans structure, dependencies, and conventions, then builds the project knowledge graph.',
   },
   {
     cmd: 'vectalon serve',
     title: 'The agent loop',
-    body: `A local MCP-aware model works your codebase with ${PRODUCT_MANIFEST.capabilities.mcpTools} project-aware tools, re-seeding ecosystem intel every hour so it never works from stale knowledge.`,
+    body: `A local MCP-aware model works your codebase with ${PRODUCT_MANIFEST.capabilities.mcpTools} project-aware tools, re-seeding ecosystem intel every hour.`,
   },
   {
     cmd: 'vectalon feature "…"',
     title: 'Generate & heal',
-    body: 'Describe a task. You get compile-checked code, tests, and a code review — fixes are typechecked and reverted if they don’t reduce errors.',
+    body: 'Describe a task. You get compile-checked code, tests, and a code review. Fixes are typechecked and reverted if they don\'t reduce errors.',
   },
 ]
 
@@ -127,11 +117,11 @@ const GUARDRAILS = [
 ]
 
 const HEALING_LOG = [
-  '◆ [5/13] Implementation ▸ yarn test   ✓ (2.1s)',
-  '✔ Compile-checked: 0 errors after 2 healing passes',
-  '✦ 13/13 phases — index.md · 3 lessons distilled',
-  '◆ rn-diff-purge diff fetched: 0.85.3 → 0.86.2',
-  '✔ 42 template changes mapped (14 native · 28 JS/TS)',
+  '◆ [8/14] Implementation ▸ yarn test   ✓ (1.8s)',
+  '✔ Compile-checked: 0 errors after 3 healing passes',
+  '✦ 14/14 phases. index.md: 5 lessons distilled',
+  '◆ product-manifest.json: contract v1.0.0 pinned',
+  '✔ 44 agents · 64 tools · 43 scenarios verified',
 ]
 
 const AGENT_PHASES: Array<{
@@ -143,7 +133,7 @@ const AGENT_PHASES: Array<{
   {
     phase: 'Phase 8',
     title: 'Autonomous engineering',
-    body: 'Review the diff, audit the architecture, scan for secrets, diagnose a broken build or test run, propose safe refactors — and, for provably-safe fixes, apply them.',
+    body: 'Review the diff, audit the architecture, scan for secrets, diagnose a broken build or test run, propose safe refactors. For provably-safe fixes, apply them.',
     cmds: ['review', 'arch', 'sec', 'build-fix', 'test-repair', 'refactor', 'deps', 'a11y', 'release-ready', 'bug-fix'],
   },
   {
@@ -159,20 +149,6 @@ const AGENT_PHASES: Array<{
     cmds: ['figma', 'sentry', 'observability', 'governance', 'audit', 'repos', 'release-predict', 'play-store', 'dataset', 'lora'],
   },
 ]
-
-const TERMINAL_SESSION = `$ npx vectalon init
-✔ rn-vectalon initialized — knowledge base seeded (5 artifacts)
-ℹ Detected React Native CLI (bare) · 26 ecosystem items enabled
-
-$ npx vectalon feature "login screen with auth API"
-◆ [5/13] Implementation ▸ yarn test   ✓ (2.1s)
-✔ Compile-checked: 0 errors after 2 healing passes
-✦ 13/13 phases — index.md · 3 lessons distilled
-
-$ npx vectalon upgrade --diff
-◆ rn-diff-purge diff fetched: 0.85.3 → 0.86.2
-✔ 42 template changes mapped (14 native · 28 JS/TS)
-$`
 
 function IntelRow({
   item,
@@ -225,8 +201,6 @@ export default async function Home() {
   const intel = await fetchIntelFeed()
   const intelFetchedAt = Date.now()
 
-  // Real headlines for the hero prompt rotation — Expo changelog and HN
-  // titles read like news; release versions and repo names don't.
   const heroHeadlines: TypePromptHeadline[] = intel
     .filter(i => i.source === 'Expo changelog' || i.source === 'Hacker News')
     .map(i => ({ label: i.label, tag: i.source === 'Hacker News' ? 'HN' : 'Expo' }))
@@ -234,14 +208,83 @@ export default async function Home() {
 
   return (
     <>
-      {/* Hero — the console: statusline, three live panes, one prompt */}
-      <section className="relative overflow-hidden">
+      {/* Hero */}
+      <section className="hero-bg relative overflow-hidden">
+        {/* Motion layers */}
+        <HeroAurora />
+        <HeroParticles />
         <div className="scanlines pointer-events-none absolute inset-0" aria-hidden />
-        {/* Phosphor beam — the console's authored focal moment (see globals.css) */}
         <div className="beam js-loop" aria-hidden />
-        <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-10 sm:pt-14">
-          <div className="console animate-fade-up">
-            <div className="flex items-center justify-between border-b border-ink-700/70 bg-ink-900/90 px-3.5 py-2 font-mono text-[11px] text-slate-500">
+
+        <div className="relative mx-auto max-w-6xl px-5 pb-20 pt-12 sm:pt-16">
+          {/* Brand hero — staggered entrance */}
+          <div className="hero-stagger text-center">
+            {/* Logo mark — drops in with rotation + glow ring */}
+            <div className="mx-auto mb-6 flex justify-center">
+              <div className="hero-logo-enter relative">
+                <div className="hero-glow-ring" />
+                <svg width="80" height="88" viewBox="0 0 220 240" fill="none" className="relative drop-shadow-[0_0_40px_rgba(0,230,195,0.3)]">
+                  <path d="M25 48L70 70L110 195" stroke="url(#hero-lg-teal)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M195 48L150 70L110 195" stroke="url(#hero-lg-violet)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M55 112L110 195L165 112" stroke="#4DAEFF" strokeOpacity="0.9" strokeWidth="4" strokeLinecap="round"/>
+                  <path d="M110 84V195" stroke="#39BFFF" strokeWidth="4" strokeLinecap="round"/>
+                  {/* Breathing nodes */}
+                  <circle cx="55" cy="112" r="9" fill="#00E6C3" className="hero-logo-node hero-logo-node--teal"/>
+                  <circle cx="165" cy="112" r="9" fill="#8B5CF6" className="hero-logo-node hero-logo-node--violet"/>
+                  <circle cx="110" cy="84" r="8" fill="#37B6FF" className="hero-logo-node hero-logo-node--cyan"/>
+                  <circle cx="110" cy="195" r="11" fill="#37B6FF" stroke="#B8E8FF" strokeWidth="3" className="hero-logo-node hero-logo-node--base"/>
+                  <path d="M110 28L122 52H98L110 28Z" fill="#66E8FF"/>
+                  <defs>
+                    <linearGradient id="hero-lg-teal" x1="20" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#00E6C3"/><stop offset="1" stopColor="#37B6FF"/>
+                    </linearGradient>
+                    <linearGradient id="hero-lg-violet" x1="200" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#8B5CF6"/><stop offset="1" stopColor="#37B6FF"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+
+            {/* Wordmark — arrives from below with blur-to-sharp */}
+            <h1 className="hero-gradient-text font-display text-5xl font-bold tracking-tight text-slate-50 sm:text-6xl lg:text-7xl">
+              Vectalon
+            </h1>
+
+            {/* Tagline — lighter, arrives after wordmark */}
+            <p className="mx-auto mt-4 max-w-xl text-lg text-slate-400 sm:text-xl">
+              Adaptive AI harness for developers
+            </p>
+
+            {/* Value props — staggered within the stagger */}
+            <div className="mx-auto mt-8 flex max-w-2xl flex-wrap justify-center gap-3">
+              {[
+                { icon: '◈', label: 'Local-first', color: 'text-teal-300' },
+                { icon: '◎', label: 'Project-aware', color: 'text-cyan-300' },
+                { icon: '◆', label: 'Deterministic', color: 'text-teal-400' },
+                { icon: '▣', label: 'Control plane', color: 'text-violet-400' },
+              ].map(v => (
+                <span key={v.label} className="hero-pill flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm text-slate-300">
+                  <span className="text-brand">{v.icon}</span>
+                  {v.label}
+                </span>
+              ))}
+            </div>
+
+            {/* CTA — arrives last */}
+            <div className="mt-10 flex justify-center gap-4">
+              <a href="#demo" className="btn-primary">
+                See it run
+              </a>
+              <Link href="/pricing" className="btn-ghost">
+                Compare plans
+              </Link>
+            </div>
+          </div>
+
+          {/* Terminal console */}
+          <div className="console hero-console mt-14 animate-fade-up" style={{ animationDelay: '360ms' }}>
+            <div className="flex items-center justify-between border-b border-ink-700/70 code-bg/90 px-4 py-2.5 font-mono text-[11px] text-slate-500">
               <div className="flex items-center gap-4">
                 <span className="flex items-center gap-1.5 text-slate-300">
                   <span className="text-brand">▣</span>
@@ -255,16 +298,15 @@ export default async function Home() {
                   <span className="live-dot" aria-hidden />
                   guardrails on
                 </span>
-                <span className="text-slate-600">[ 0.87-rc ]</span>
+                <span className="text-slate-600">[ v0.15.0 ]</span>
               </div>
             </div>
 
-            <div className="px-5 py-9 sm:px-9 sm:py-12">
-              {/* Hero headline A/B — variant B is the works-offline positioning (see HeroHeadline) */}
+            <div className="px-6 py-10 sm:px-10 sm:py-14">
               <HeroHeadline />
 
-              <div className="mt-9 grid animate-fade-up gap-3 md:grid-cols-3" style={{ animationDelay: '180ms' }}>
-                {/* Pane 1 — intel feed (live) */}
+              <div className="mt-10 grid animate-fade-up gap-4 md:grid-cols-3" style={{ animationDelay: '420ms' }}>
+                {/* Intel feed */}
                 <div className="card !p-4">
                   <div className="pane-head">
                     <span>intel feed</span>
@@ -284,19 +326,22 @@ export default async function Home() {
                   </div>
                 </div>
 
-                {/* Pane 2 — guardrails */}
+                {/* Guardrails */}
                 <div className="card !p-4">
                   <div className="pane-head">
-                    <span>guardrails</span>
+                    <span className="flex items-center gap-2">
+                      <AgentOrb state="solving" size={20} label="Guardrails checking" />
+                      guardrails
+                    </span>
                   </div>
                   <ul className="mt-3 space-y-2.5 font-mono text-[12px]">
                     {GUARDRAILS.map(g => (
                       <li key={g.name} className="flex items-center justify-between gap-3">
                         <span className="text-slate-300">{g.name}</span>
                         {g.state === 'pass' ? (
-                          <span className="text-emerald-500 dark:text-emerald-400">✓ pass</span>
+                          <span className="text-emerald-400">✓ pass</span>
                         ) : (
-                          <span className="text-amber-600 dark:text-amber-400">◈ watch</span>
+                          <span className="text-amber-400">◈ watch</span>
                         )}
                       </li>
                     ))}
@@ -306,17 +351,20 @@ export default async function Home() {
                   </div>
                 </div>
 
-                {/* Pane 3 — healing log */}
+                {/* Healing log */}
                 <div className="card !p-4">
                   <div className="pane-head">
-                    <span>healing log</span>
+                    <span className="flex items-center gap-2">
+                      <AgentOrb state="working" size={20} label="Healing in progress" />
+                      healing log
+                    </span>
                     <span className="!normal-case tracking-normal text-slate-500">vectalon feature</span>
                   </div>
                   <ul className="mt-3 space-y-2.5 font-mono text-[11px] leading-relaxed">
                     {HEALING_LOG.map((l, i) => (
                       <li key={i} className="text-slate-400">
                         {l.startsWith('✔') ? (
-                          <span className="text-emerald-500 dark:text-emerald-400">✔</span>
+                          <span className="text-emerald-400">✔</span>
                         ) : l.startsWith('◆') ? (
                           <span className="text-slate-500">◆</span>
                         ) : (
@@ -329,9 +377,9 @@ export default async function Home() {
                 </div>
               </div>
 
-              {/* Prompt — the primary action */}
+              {/* Prompt */}
               <div
-                className="mt-9 flex animate-fade-up flex-col gap-4 rounded-[3px] border border-ink-700 bg-ink-900 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between"
+                className="mt-10 flex animate-fade-up flex-col gap-4 rounded-xl border border-ink-700 code-bg px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
                 style={{ animationDelay: '240ms' }}
               >
                 <p className="font-mono text-sm text-slate-300">
@@ -341,9 +389,6 @@ export default async function Home() {
                   <a href="#demo" className="btn-primary">
                     See it run
                   </a>
-                  <Link href="/outcomes" className="btn-ghost">
-                    See the outcomes
-                  </Link>
                 </div>
               </div>
             </div>
@@ -351,9 +396,9 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Platform statusline strip */}
+      {/* Platform strip */}
       <section className="border-t border-ink-700/70">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 font-mono md:flex-row md:items-center md:justify-between">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-5 font-sans md:flex-row md:items-center md:justify-between">
           <span className="text-xs text-slate-500">one harness, four platforms</span>
           <div className="flex flex-wrap gap-2">
             {SDK_CHIPS.map(sdk => (
@@ -363,13 +408,13 @@ export default async function Home() {
                 className="chip transition hover:border-brand/50 hover:text-brand"
               >
                 <span
-                  className={sdk.status === 'live' ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-600'}
+                  className={sdk.status === 'live' ? 'text-brand' : 'text-slate-600'}
                   aria-hidden
                 >
                   {sdk.status === 'live' ? '●' : '○'}
                 </span>
                 {sdk.name}
-                <span className={sdk.status === 'live' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500'}>
+                <span className={sdk.status === 'live' ? 'text-brand' : 'text-slate-500'}>
                   {sdk.status}
                 </span>
               </Link>
@@ -378,12 +423,10 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Works with — one MCP server, every client. The product exposes the
-          MCP protocol (vectalon serve), so the compat story is a list of the
-          clients that speak it — not a claim about any single integration. */}
+      {/* MCP clients */}
       <section className="border-t border-ink-700/70">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 font-mono md:flex-row md:items-center md:justify-between">
-          <span className="micro shrink-0">one mcp server — every client</span>
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-6 font-sans md:flex-row md:items-center md:justify-between">
+          <span className="micro shrink-0">one mcp server, every client</span>
           <div className="flex flex-wrap justify-center gap-2 md:justify-end">
             {MCP_CLIENTS.map(c => (
               <code key={c} className="chip transition hover:border-brand/50 hover:text-brand">
@@ -394,19 +437,19 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* How it works — one recorded session */}
-      <section className="border-t border-ink-700/70 py-20">
-        <div className="mx-auto max-w-6xl px-4">
+      {/* How it works */}
+      <section className="border-t border-ink-700/70 py-24">
+        <div className="mx-auto max-w-6xl px-5">
           <div className="max-w-2xl">
-            <h2 className="text-3xl font-bold text-slate-50">One loop, three commands</h2>
-            <p className="mt-3 text-slate-400">
-              The whole workflow — context, generation, verification — is a CLI loop. No IDE
+            <h2 className="text-3xl font-bold text-slate-50 sm:text-4xl">One loop, three commands</h2>
+            <p className="mt-4 text-lg text-slate-400">
+              The whole workflow (context, generation, verification) is a CLI loop. No IDE
               plugin, no dashboard, no state to sync.
             </p>
           </div>
-          <div className="console mt-12">
+          <div className="console mt-14">
             <div className="console-head">
-              <span>vectalon — session</span>
+              <span>vectalon - session</span>
               <span className="hidden items-center gap-1.5 sm:flex">
                 <span className="live-dot" aria-hidden />
                 live
@@ -416,11 +459,12 @@ export default async function Home() {
               {STEPS.map((s, i) => (
                 <div
                   key={s.title}
-                  className="reveal grid gap-3 px-5 py-6 sm:px-7 md:grid-cols-[260px_1fr] md:gap-8"
+                  className="reveal grid gap-4 px-6 py-7 sm:px-8 md:grid-cols-[280px_1fr] md:gap-10"
                   style={{ '--reveal-delay': `${i * 90}ms` } as CSSProperties}
                 >
                   <div>
-                    <div className="font-mono text-sm text-brand">
+                    <div className="flex items-center gap-2 font-mono text-sm text-brand">
+                      <AgentOrb state={i === 0 ? 'searching' : i === 1 ? 'connecting' : 'solving'} size={20} label={s.title} />
                       <span>$</span> {s.cmd}
                     </div>
                     <div className="mt-1 font-mono text-[11px] text-slate-600">
@@ -429,7 +473,7 @@ export default async function Home() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-slate-50">{s.title}</h3>
-                    <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-slate-400">{s.body}</p>
+                    <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-400">{s.body}</p>
                   </div>
                 </div>
               ))}
@@ -438,55 +482,55 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Video demo — a console session */}
-      <section id="demo" className="border-t border-ink-700/70 py-20">
-        <div className="mx-auto max-w-4xl px-4">
-          <div className="mb-10 text-center">
-            <h2 className="text-3xl font-bold text-slate-50">Watch it run — 85 seconds, no cuts</h2>
-            <p className="mt-3 text-sm text-slate-400">
-              The real CLI on a real 19-screen Expo app — init, arch, sec, feature, bench.
+      {/* Video demo */}
+      <section id="demo" className="border-t border-ink-700/70 py-24">
+        <div className="mx-auto max-w-4xl px-5">
+          <div className="mb-12 text-center">
+            <h2 className="text-3xl font-bold text-slate-50 sm:text-4xl">Watch it run: 85 seconds, no cuts</h2>
+            <p className="mt-4 text-slate-400">
+              The real CLI on a real 19-screen Expo app: init, arch, sec, feature, bench.
             </p>
           </div>
           <DemoPlayer />
         </div>
       </section>
 
-      {/* Benchmark statusline */}
-      <section className="border-t border-ink-700/70">
-        <div className="mx-auto max-w-6xl px-4 py-10">
+      {/* Stats */}
+      <section className="border-t border-ink-700/70 bg-gradient-to-b from-transparent via-brand/[0.02] to-transparent">
+        <div className="mx-auto max-w-6xl px-5 py-12">
           <div className="statusline !border-0 !bg-transparent">
             {STATS.map((s, i) => (
               <div
                 key={s.label}
-                className="reveal seg !block !px-6 !py-4 text-center"
+                className="reveal seg !block !px-6 !py-5 text-center"
                 style={{ '--reveal-delay': `${i * 90}ms` } as CSSProperties}
               >
                 <div className="font-display text-3xl font-bold text-brand">{s.value}</div>
-                <div className="mt-1 font-mono text-[11px] uppercase tracking-wider text-slate-500">
+                <div className="mt-1.5 font-sans text-[11px] uppercase tracking-wider text-slate-500">
                   {s.label}
                 </div>
               </div>
             ))}
           </div>
-          <div className="mt-7 text-center">
+          <div className="mt-8 text-center">
             <Link href="/benchmarks" className="text-sm text-brand transition hover:text-brand-strong hover:underline">
-              Full leaderboard — 11 RN scenarios, measured against human references →
+              Full leaderboard: benchmark scenarios, measured against human references →
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Features — pane grid */}
-      <section className="border-t border-ink-700/70 py-20">
-        <div className="mx-auto max-w-6xl px-4">
+      {/* Features */}
+      <section className="border-t border-ink-700/70 py-24">
+        <div className="mx-auto max-w-6xl px-5">
           <div className="max-w-2xl">
-            <h2 className="text-3xl font-bold text-slate-50">What it does for you</h2>
-            <p className="mt-3 text-slate-400">
-              One harness for the whole loop — context, generation, verification, and upgrade —
+            <h2 className="text-3xl font-bold text-slate-50 sm:text-4xl">What it does for you</h2>
+            <p className="mt-4 text-lg text-slate-400">
+              One harness for the whole loop (context, generation, verification, upgrade)
               with the model and knowledge base maintained by Vectalon, not you.
             </p>
           </div>
-          <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f, i) => (
               <div
                 key={f.title}
@@ -501,18 +545,15 @@ export default async function Home() {
               </div>
             ))}
           </div>
-          {/* Roadmap pane — full-width CTA below the grid. Goes to the iOS
-              waitlist (the first in-development harness) so the "join the
-              waitlist" promise lands on a working form. */}
           <Link
             href="/sdk/ios"
-            className="reveal card group mt-3 flex flex-col justify-between transition hover:-translate-y-0.5 hover:border-brand/50 lg:flex-row lg:items-center"
+            className="reveal card group mt-4 flex flex-col justify-between transition hover:-translate-y-0.5 hover:border-brand/50 lg:flex-row lg:items-center"
           >
             <div>
               <h3 className="font-semibold text-slate-50">Your platform next</h3>
               <p className="mt-2 max-w-lg text-sm leading-relaxed text-slate-400">
                 iOS, Android, and Flutter harnesses are in development. Join the waitlist and
-                we’ll email the moment a beta opens.
+                we'll email the moment a beta opens.
               </p>
             </div>
             <span className="mt-4 inline-flex items-center gap-1 text-sm text-brand transition group-hover:gap-2 lg:mt-0 lg:shrink-0">
@@ -522,24 +563,23 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* The deterministic agent fleet — no model required */}
-      <section className="border-t border-ink-700/70 py-20">
-        <div className="mx-auto max-w-6xl px-4">
+      {/* Agent fleet */}
+      <section className="border-t border-ink-700/70 py-24">
+        <div className="mx-auto max-w-6xl px-5">
           <div className="max-w-2xl">
-            <h2 className="text-3xl font-bold text-slate-50">
-              44 deterministic agents — <span className="text-brand">zero model calls</span>
+            <h2 className="text-3xl font-bold text-slate-50 sm:text-4xl">
+              44 deterministic agents. <span className="text-brand">Zero model calls</span>
             </h2>
-            <p className="mt-3 text-slate-400">
+            <p className="mt-4 text-lg text-slate-400">
               Same result every run, on any machine, with a report and a verdict. They run on the
-              free tier, offline, and they feed the dashboard — one executive view of the whole
-              project.
+              free tier, offline, and they feed the dashboard.
             </p>
           </div>
-          <div className="mt-12 grid gap-3 lg:grid-cols-3">
+          <div className="mt-14 grid gap-4 lg:grid-cols-[1.5fr_1fr_1fr]">
             {AGENT_PHASES.map((p, i) => (
               <div
                 key={p.phase}
-                className="reveal card flex flex-col"
+                className={`reveal card flex flex-col ${i === 0 ? 'lg:row-span-2' : ''}`}
                 style={{ '--reveal-delay': `${i * 90}ms` } as CSSProperties}
               >
                 <div className="flex items-center gap-2">
@@ -549,7 +589,7 @@ export default async function Home() {
                 <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-400">{p.body}</p>
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {p.cmds.map(c => (
-                    <code key={c} className="rounded-[3px] border border-ink-700 bg-ink-900 px-1.5 py-0.5 font-mono text-[11px] text-brand">
+                    <code key={c} className="rounded-lg border border-ink-700 code-bg px-2 py-0.5 font-mono text-[11px] text-brand">
                       {c}
                     </code>
                   ))}
@@ -557,31 +597,30 @@ export default async function Home() {
               </div>
             ))}
           </div>
-          <div className="mt-7 text-center">
+          <div className="mt-8 text-center">
             <Link href="/agents" className="text-sm text-brand transition hover:text-brand-strong hover:underline">
-              Full agent catalog — every command, every verdict, every report →
+              Full agent catalog: every command, every verdict, every report →
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Currency — the always-current model */}
-      <section className="border-t border-ink-700/70 py-20">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="grid items-start gap-10 lg:grid-cols-2">
+      {/* Currency */}
+      <section className="border-t border-ink-700/70 py-24">
+        <div className="mx-auto max-w-6xl px-5">
+          <div className="grid items-start gap-12 lg:grid-cols-2">
             <div className="reveal">
-              <h2 className="text-3xl font-bold text-slate-50">The model is never stale</h2>
-              <p className="mt-4 leading-relaxed text-slate-400">
-                Vectalon refreshes its own web intel — every hour under serve — and inlines the
-                headlines into every model system prompt. The same release feed your upgrade steps
-                read is the feed the model sees. If the ecosystem ships it, the model knows it.
+              <h2 className="text-3xl font-bold text-slate-50 sm:text-4xl">The model is never stale</h2>
+              <p className="mt-5 text-lg leading-relaxed text-slate-400">
+                Vectalon refreshes its own web intel every hour under serve and inlines the
+                headlines into every model system prompt. If the ecosystem ships it, the model knows it.
               </p>
-              <Link href="/changelog" className="mt-6 inline-block text-sm text-brand hover:underline">
+              <Link href="/changelog" className="mt-7 inline-block text-sm text-brand hover:underline">
                 See what shipped in v{PRODUCT_MANIFEST.packages.reactNative.version} →
               </Link>
             </div>
             <div className="reveal card !p-0" style={{ '--reveal-delay': '120ms' } as CSSProperties}>
-              <div className="pane-head !border-0 px-5 py-3">
+              <div className="pane-head !border-0 px-6 py-3">
                 <span>live intel sources</span>
                 <span className="flex items-center gap-1.5 !normal-case tracking-normal text-slate-500">
                   <span className="live-dot" aria-hidden />
@@ -590,7 +629,7 @@ export default async function Home() {
                   <FeedAge fetchedAt={intelFetchedAt} />
                 </span>
               </div>
-              <div className="ticker h-60 border-t border-ink-700/60">
+              <div className="ticker h-64 border-t border-ink-700/60">
                 <ul className="ticker-inner">
                   {[...intel, ...intel].map((item, i) => (
                     <IntelRow key={i} item={item} variant="large" />
@@ -602,51 +641,49 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* FAQ — the questions that decide a download. Zero-JS <details>
-          accordions, mirroring the console's no-JS ethos. */}
-      <section className="border-t border-ink-700/70 py-20">
-        <div className="mx-auto max-w-3xl px-4">
-          <h2 className="text-3xl font-bold text-slate-50">Questions, answered</h2>
-          <p className="mt-3 text-slate-400">The short version of everything.</p>
-          <div className="mt-10 space-y-3">
+      {/* FAQ */}
+      <section className="border-t border-ink-700/70 py-24">
+        <div className="mx-auto max-w-3xl px-5">
+          <h2 className="text-3xl font-bold text-slate-50 sm:text-4xl">Questions, answered</h2>
+          <p className="mt-4 text-lg text-slate-400">The short version of everything.</p>
+          <div className="mt-12 space-y-3">
             {FAQ.map((item, i) => (
               <details
                 key={item.q}
                 className="reveal card group !p-0"
                 style={{ '--reveal-delay': `${i * 60}ms` } as CSSProperties}
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 font-mono text-sm font-semibold text-slate-50 [&::-webkit-details-marker]:hidden">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-6 py-5 font-sans text-sm font-semibold text-slate-50 [&::-webkit-details-marker]:hidden">
                   {item.q}
                   <span aria-hidden className="text-lg text-slate-500 transition-transform duration-200 group-open:rotate-45">
                     +
                   </span>
                 </summary>
-                <p className="faq-a px-5 pb-5 text-sm leading-relaxed text-slate-400">{item.a}</p>
+                <p className="faq-a px-6 pb-5 text-sm leading-relaxed text-slate-400">{item.a}</p>
               </details>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA — the closing prompt */}
-      <section className="border-t border-ink-700/70 py-20">
-        <div className="mx-auto max-w-3xl px-4 text-center">
+      {/* CTA */}
+      <section className="border-t border-ink-700/70 py-24 bg-gradient-to-b from-transparent via-accent/[0.02] to-transparent">
+        <div className="mx-auto max-w-3xl px-5 text-center">
           <div className="reveal console">
             <div className="console-head justify-center">
-              <span>vectalon — install</span>
+              <span>vectalon - install</span>
             </div>
-            <div className="px-6 py-10">
-              <h2 className="text-3xl font-bold text-slate-50">Try it. Free, no signup.</h2>
-              <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-slate-400">
-                The free tier is genuinely useful — init, serve, feature, doctor. Premium commands
-                offer a 14-day trial with one GitHub login. iOS, Android, and Flutter harnesses are in
-                development.
+            <div className="px-8 py-12">
+              <h2 className="text-3xl font-bold text-slate-50 sm:text-4xl">Try it. Free, no signup.</h2>
+              <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-slate-400">
+                The free tier is genuinely useful: init, serve, feature, doctor. Premium commands
+                offer a 14-day trial with one GitHub login.
               </p>
-              <p className="mx-auto mt-7 w-fit rounded-[3px] border border-ink-700 bg-ink-900 px-4 py-3 font-mono text-sm text-slate-300">
+              <p className="mx-auto mt-8 w-fit rounded-xl border border-ink-700 code-bg px-5 py-3.5 font-mono text-sm text-slate-300">
                 <span className="text-brand">$</span> npx vectalon@latest init
                 <span className="caret" />
               </p>
-              <div className="mt-7 flex flex-wrap justify-center gap-3">
+              <div className="mt-8 flex flex-wrap justify-center gap-4">
                 <a
                   href="https://github.com/Vectalon/Vectalon"
                   target="_blank"

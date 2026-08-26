@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { NAV } from '../lib/nav'
 
 const PRODUCTS = [
@@ -21,6 +21,16 @@ export function MobileMenu() {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const pathname = usePathname()
+  const router = useRouter()
+
+  /** Navigate then close the menu. Using router.push() instead of
+   *  relying on <Link> click handling avoids a race where setOpen(false)
+   *  unmounts the menu DOM before Next.js client-side router completes
+   *  the navigation (agents/reports pages would silently fail to load). */
+  const navigate = useCallback((href: string) => {
+    setOpen(false)
+    router.push(href)
+  }, [router])
 
   // Outside press closes. pointerdown (not mousedown) so touch devices fire
   // it immediately — on iOS a tap that ends in a scroll never produces a
@@ -76,11 +86,11 @@ export function MobileMenu() {
               key={p.slug}
               href={`/sdk/${p.slug}`}
               role="menuitem"
-              onClick={() => setOpen(false)}
+              onClick={(e) => { e.preventDefault(); navigate(`/sdk/${p.slug}`) }}
               className="flex items-center justify-between rounded-[3px] px-2.5 py-2 transition hover:bg-ink-700/60 [touch-action:manipulation]"
             >
               <span className="font-mono text-sm text-slate-50">{p.name}</span>
-              <span className={p.status === 'live' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-600'}>
+              <span className={p.status === 'live' ? 'text-emerald-500' : 'text-slate-600'}>
                 {p.status === 'live' ? '● live' : '○ soon'}
               </span>
             </Link>
@@ -93,7 +103,7 @@ export function MobileMenu() {
               key={item.href}
               href={item.href}
               role="menuitem"
-              onClick={() => setOpen(false)}
+              onClick={(e) => { e.preventDefault(); navigate(item.href) }}
               className={`flex items-center justify-between rounded-[3px] px-2.5 py-2 transition hover:bg-ink-700/60 [touch-action:manipulation] ${
                 pathname === item.href ? 'bg-brand/15 text-brand' : 'text-slate-50'
               }`}
@@ -104,7 +114,7 @@ export function MobileMenu() {
           <Link
             href="/trial"
             role="menuitem"
-            onClick={() => setOpen(false)}
+            onClick={(e) => { e.preventDefault(); navigate('/trial') }}
             className="mt-1.5 block bg-brand px-2.5 py-2 text-center text-[13px] font-semibold text-on-brand transition hover:bg-brand-strong [touch-action:manipulation]"
           >
             Get started

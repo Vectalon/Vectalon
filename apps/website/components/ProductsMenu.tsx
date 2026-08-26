@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { PRODUCT_MANIFEST } from '../lib/product-manifest'
 
 const PRODUCTS = [
@@ -15,6 +16,12 @@ export function ProductsMenu() {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const itemRefs = useRef<Array<HTMLAnchorElement | null>>([])
+  const router = useRouter()
+
+  const navigate = useCallback((href: string) => {
+    setOpen(false)
+    router.push(href)
+  }, [router])
 
   useEffect(() => {
     // Outside press closes. pointerdown (not mousedown) so touch devices fire
@@ -98,7 +105,7 @@ export function ProductsMenu() {
                 }}
                 href={`/sdk/${p.slug}`}
                 role="menuitem"
-                onClick={() => setOpen(false)}
+                onClick={(e) => { e.preventDefault(); navigate(`/sdk/${p.slug}`) }}
                 className="flex items-center justify-between gap-3 rounded-[3px] px-3 py-2.5 transition hover:bg-ink-700/60 focus-visible:bg-ink-700/60 focus-visible:outline-none"
               >
                 <span>

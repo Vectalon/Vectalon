@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { CSSProperties } from 'react'
 import { WaitlistForm } from '../../components/WaitlistForm'
+import { AgentOrb } from '../../components/AgentOrb'
 import {
   AGENT_PHASE_LABELS,
   AGENT_REPOS,
@@ -102,8 +103,8 @@ export default async function AgentsPage(props: { searchParams: Promise<{ repo?:
             </span>
           </span>
           <span className="hidden items-center gap-1.5 sm:flex">
-            <span className="live-dot" aria-hidden />
-            deterministic
+            <AgentOrb state="connecting" size={20} label="Agent fleet active" />
+            <span>deterministic</span>
           </span>
         </div>
 
@@ -127,7 +128,7 @@ export default async function AgentsPage(props: { searchParams: Promise<{ repo?:
                     active
                       ? 'text-brand'
                       : r.status === 'live'
-                        ? 'text-emerald-600 dark:text-emerald-400'
+                        ? 'text-emerald-500'
                         : 'text-slate-600'
                   }
                 >
@@ -153,13 +154,16 @@ export default async function AgentsPage(props: { searchParams: Promise<{ repo?:
         ) : (
           <div className="p-6 sm:p-10">
             <div className="mx-auto max-w-xl text-center">
+              <div className="mb-4 flex justify-center">
+                <AgentOrb state="breathing" size={64} label={`${repo.name} harness in development`} />
+              </div>
               <h2 className="text-2xl font-bold text-slate-50">
                 No agents here yet — the {repo.name} harness is in development
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-slate-400">{repo.tagline}</p>
               <div className="mt-5 flex flex-wrap justify-center gap-1.5">
                 {repo.planned.map(p => (
-                  <code key={p} className="rounded-[3px] border border-ink-700 bg-ink-900 px-1.5 py-0.5 font-mono text-[11px] text-slate-400">
+                  <code key={p} className="rounded-[3px] border border-ink-700 code-bg px-1.5 py-0.5 font-mono text-[11px] text-slate-400">
                     {p}
                   </code>
                 ))}

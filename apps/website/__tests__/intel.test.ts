@@ -246,7 +246,7 @@ describe('fetchIntelFeed', () => {
     const items = await fetchIntelFeed(fetchImpl)
     const seeds = items.filter(i => !i.href)
     expect(seeds.map(i => i.label)).toEqual([
-      'RN 0.87-rc',
+      'RN 0.80-rc.2',
       'Expo SDK 57',
       'HN "React Native"',
       'trending RN repos',
@@ -263,7 +263,7 @@ describe('fetchIntelFeed', () => {
     })
     const items = await fetchIntelFeed(fetchImpl)
     expect(items).toEqual([
-      { label: 'RN 0.87-rc', source: 'RN releases' },
+      { label: 'RN 0.80-rc.2', source: 'RN releases' },
       { label: 'Expo SDK 57', source: 'Expo changelog' },
       { label: 'HN "React Native"', source: 'Algolia API' },
       { label: 'trending RN repos', source: 'GitHub Search' },
