@@ -1,15 +1,15 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://contracts.vectalon.dev/v1/ErrorEnvelope.schema.json",
-  "title": "ErrorEnvelope",
-  "type": "object",
-  "required": ["contractVersion", "ok", "error"],
-  "properties": {
-    "contractVersion": { "const": "1.0.0" },
-    "ok": { "const": false },
-    "error": { "type": "object", "required": ["code", "message", "retryable"], "properties": {
-      "code": { "type": "string", "minLength": 1 }, "message": { "type": "string", "minLength": 1 }, "retryable": { "type": "boolean" },
-      "requestId": { "type": "string" }, "details": { "type": "object" }
-    }}
-  }
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.vectalon.dev/v1/ErrorEnvelope.schema.json",
+    "title": "ErrorEnvelope",
+    "type": "object",
+    "required": ["contractVersion", "ok", "error"],
+    "properties": {
+        "contractVersion": { "const": "1.0.0" },
+        "ok": { "const": false },
+        "error": { "type": "object", "required": ["code", "message", "retryable"], "properties": {
+                "code": { "type": "string", "minLength": 1 }, "message": { "type": "string", "minLength": 1 }, "retryable": { "type": "boolean" },
+                "requestId": { "type": "string" }, "details": { "type": "object" }
+            } }
+    }
 }

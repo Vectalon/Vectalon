@@ -7,6 +7,13 @@ export interface Capability {
   description?: string
 }
 
+export interface CapabilityCatalog {
+  contractVersion: '1.0.0'
+  productId: string
+  productVersion: string
+  capabilities: { id: string; version: string; lifecycle: 'planned' | 'experimental' | 'beta' | 'release-candidate' | 'available' | 'deprecated' | 'removed'; implemented: boolean; owner: { name: string; repository: string }; outcome: string; support: { productVersions: { min: string; maxExclusive?: string }; plans: string[]; platforms: string[]; tier: string }; dependencies: string[]; failureModes: string[]; performanceBudget: { metric: string; limit: number; unit: string }; tests: string[]; docs: string[]; evidence: { kind: 'implementation' | 'customer-workflow' | 'failure-mode' | 'performance' | 'support'; status: 'passed' | 'failed' | 'pending'; reference: string; digest?: string; recordedAt: string; productVersion: string; capabilityVersion: string }[]; deprecation?: { noticeVersion: string; noticeReference: string; migrationReference: string; removalVersion: string; licenseEffect: string } }[]
+}
+
 export interface DiagnosticResult {
   contractVersion: '1.0.0'
   id: string

@@ -1,0 +1,79 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://contracts.vectalon.dev/v1/CapabilityCatalog.schema.json",
+    "$comment": "Business Source License 1.1 (BSL-1.1). See LICENSE.",
+    "title": "CapabilityCatalog",
+    "type": "object",
+    "required": ["contractVersion", "productId", "productVersion", "capabilities"],
+    "properties": {
+        "contractVersion": { "const": "1.0.0" },
+        "productId": { "type": "string", "pattern": "^[a-z][a-z0-9.-]*$" },
+        "productVersion": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
+        "capabilities": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["id", "version", "lifecycle", "implemented", "owner", "outcome", "support", "dependencies", "failureModes", "performanceBudget", "tests", "docs", "evidence"],
+                "properties": {
+                    "id": { "type": "string", "pattern": "^[a-z][a-z0-9.-]*$" },
+                    "version": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
+                    "lifecycle": { "enum": ["planned", "experimental", "beta", "release-candidate", "available", "deprecated", "removed"] },
+                    "implemented": { "type": "boolean" },
+                    "owner": {
+                        "type": "object", "required": ["name", "repository"],
+                        "properties": { "name": { "type": "string", "pattern": "\\S" }, "repository": { "type": "string", "pattern": "\\S" } }
+                    },
+                    "outcome": { "type": "string", "pattern": "\\S" },
+                    "support": {
+                        "type": "object", "required": ["productVersions", "plans", "platforms", "tier"],
+                        "properties": {
+                            "productVersions": {
+                                "type": "object", "required": ["min"],
+                                "properties": {
+                                    "min": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
+                                    "maxExclusive": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" }
+                                }
+                            },
+                            "plans": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "\\S" } },
+                            "platforms": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "\\S" } },
+                            "tier": { "type": "string", "pattern": "\\S" }
+                        }
+                    },
+                    "dependencies": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z][a-z0-9.-]*$" } },
+                    "failureModes": { "type": "array", "items": { "type": "string", "pattern": "\\S" } },
+                    "performanceBudget": {
+                        "type": "object", "required": ["metric", "limit", "unit"],
+                        "properties": { "metric": { "type": "string", "pattern": "\\S" }, "limit": { "type": "number", "exclusiveMinimum": 0 }, "unit": { "type": "string", "pattern": "\\S" } }
+                    },
+                    "tests": { "type": "array", "items": { "type": "string", "pattern": "\\S" } },
+                    "docs": { "type": "array", "items": { "type": "string", "pattern": "\\S" } },
+                    "evidence": {
+                        "type": "array",
+                        "items": {
+                            "type": "object", "required": ["kind", "status", "reference", "recordedAt", "productVersion", "capabilityVersion"],
+                            "properties": {
+                                "kind": { "enum": ["implementation", "customer-workflow", "failure-mode", "performance", "support"] },
+                                "status": { "enum": ["passed", "failed", "pending"] },
+                                "reference": { "type": "string", "pattern": "\\S" },
+                                "digest": { "type": "string", "pattern": "^(sha256:)?[a-f0-9]{64}$" },
+                                "recordedAt": { "type": "string", "format": "date-time" },
+                                "productVersion": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
+                                "capabilityVersion": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" }
+                            }
+                        }
+                    },
+                    "deprecation": {
+                        "type": "object", "required": ["noticeVersion", "noticeReference", "migrationReference", "removalVersion", "licenseEffect"],
+                        "properties": {
+                            "noticeVersion": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
+                            "noticeReference": { "type": "string", "pattern": "\\S" },
+                            "migrationReference": { "type": "string", "pattern": "\\S" },
+                            "removalVersion": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
+                            "licenseEffect": { "type": "string", "pattern": "\\S" }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

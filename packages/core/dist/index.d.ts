@@ -19,6 +19,8 @@ export { DevMode } from './dev/DevMode';
 export { CONTRACT_NAMES, CONTRACT_REVISION, CONTRACT_SCHEMAS, generateContractTypes, generateRegistryManifest, findBreakingSchemaChanges, validateContract, } from './contracts';
 export type { ContractName, ContractValidationError, ContractValidationResult, } from './contracts';
 export type * from './contracts/generated';
+export { validateCapabilityCatalog, checkCapabilityAvailability, validateCapabilityTransition } from './capabilities/CapabilityCatalog';
+export type { CapabilityDeclaration, CapabilityLifecycle, CapabilityEvidence, CapabilityDeprecation, CapabilityAvailabilityRequest, CapabilityAvailabilityDecision, } from './capabilities/CapabilityCatalog';
 export type { Scanner, ProjectSnapshot } from './platform/Scanner';
 export type { ContextEngine, PromptOptions } from './platform/ContextEngine';
 export type { GuardrailEngine, GuardrailRule, GuardrailFinding } from './platform/GuardrailEngine';

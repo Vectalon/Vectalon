@@ -17,6 +17,7 @@ export interface TierConfig {
     name: Tier;
     features: Feature[];
     products: Product[];
+    /** Omitted means no tier-wide ceiling; purchased license seat counts remain authoritative. */
     maxSeats?: number;
 }
 export declare const TIER_CONFIGS: Record<Tier, TierConfig>;

@@ -1,0 +1,40 @@
+{
+  "contractVersion": "0.9.0",
+  "productId": "example",
+  "productVersion": "1.0.0",
+  "capabilities": [
+    {
+      "id": "example.inspect",
+      "version": "1.0.0",
+      "lifecycle": "planned",
+      "implemented": false,
+      "owner": {
+        "name": "Example team",
+        "repository": "https://example.test/repository"
+      },
+      "outcome": "Inspect a project",
+      "support": {
+        "productVersions": {
+          "min": "1.0.0"
+        },
+        "plans": [
+          "free"
+        ],
+        "platforms": [
+          "desktop"
+        ],
+        "tier": "none"
+      },
+      "dependencies": [],
+      "failureModes": [],
+      "performanceBudget": {
+        "metric": "elapsed-time",
+        "limit": 500,
+        "unit": "ms"
+      },
+      "tests": [],
+      "docs": [],
+      "evidence": []
+    }
+  ]
+}
