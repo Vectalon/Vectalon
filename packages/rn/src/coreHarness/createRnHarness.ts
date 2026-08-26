@@ -8,11 +8,11 @@ import {
 import type { ProjectInfo } from '../harness/types'
 import { Scanner } from '../harness/Scanner'
 import type { GuardrailConventions, GuardrailFinding, GuardrailResult, GuardrailRule } from '../guardrails/types'
-import { existsSync } from 'fs'
+import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { createHash } from 'crypto'
 
-const CORE_REVISION = '309707259c7c12db08c77fd3b5ebaa5a3343c2c4'
+const CORE_REVISION = readFileSync(require.resolve('@vectalon-dev/core/core-source-revision.txt'), 'utf8').trim()
 const PROFILE_SCHEMA_VERSION = '1.0.0'
 
 interface RouterPort {

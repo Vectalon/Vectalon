@@ -15,6 +15,27 @@ const noSecrets: GuardrailRule = {
 }
 
 describe('React Native Core harness adapter', () => {
+  it('reports the bundled Core revision instead of a source-code pin', async () => {
+    const revisionPath = require.resolve('@vectalon-dev/core/core-source-revision.txt')
+    const revision = 'b'.repeat(40)
+    jest.doMock('fs', () => {
+      const actual = jest.requireActual<typeof import('fs')>('fs')
+      return { ...actual, readFileSync: (file: string, options: never) => file === revisionPath ? revision : actual.readFileSync(file, options) }
+    })
+    let create = createRnHarness
+    try {
+      jest.isolateModules(() => {
+        create = require('../../src/coreHarness/createRnHarness').createRnHarness
+      })
+      const outcome = await create({
+        projectRoot: '/missing', project: discoverRnProject('/missing'), rules: [],
+      }).validate([])
+      expect(outcome.run.safe.coreRevision).toBe(revision)
+    } finally {
+      jest.dontMock('fs')
+    }
+  })
+
   it.each([
     {
       name: 'bare RN', app: '.',
