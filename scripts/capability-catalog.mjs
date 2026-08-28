@@ -214,9 +214,13 @@ export function validateFreeze(root, { base = 'HEAD', previous, previousSurfaces
   let priorSurfaces = previousSurfaces
   let resolvedBase = base
   try { resolvedBase = execFileSync('git', ['rev-parse', base], { cwd: root, encoding: 'utf8' }).trim() } catch { /* fromGit reports the actionable history error */ }
+  let initialLineage = resolvedBase === INITIAL_BASE
+  if (!initialLineage) {
+    try { execFileSync('git', ['merge-base', '--is-ancestor', INITIAL_BASE, resolvedBase], { cwd: root, stdio: 'ignore' }); initialLineage = true } catch { /* unrelated history is not an adoption base */ }
+  }
   if (!prior) {
     try { prior = fromGit(root, base, CATALOG); priorSurfaces = fromGit(root, base, INVENTORY) }
-    catch { if (resolvedBase !== INITIAL_BASE) errors.push(`history: catalog missing at base ${base}; cannot validate lifecycle history`) }
+    catch { if (!initialLineage) errors.push(`history: catalog missing at base ${base}; cannot validate lifecycle history`) }
   }
   if (prior) {
     for (const before of prior.capabilities) {
