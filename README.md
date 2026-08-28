@@ -14,7 +14,7 @@ MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact -->
 
 ## What is Vectalon?
 
-Vectalon is an open-core developer tool that embeds AI intelligence directly into your codebase. It scans your project, understands its architecture, and provides project-aware assistance across the full SDLC — through a local MCP-native agent (feature workflows, codegen, upgrades, device control) and a fleet of 44 deterministic agent commands (review, security, SOC 2, release prediction, dashboard, fix, pr, archive, …) that run offline with a report and a verdict every time.
+Vectalon is an open-core developer tool for project-aware React Native assistance. Beta onboarding and policy capabilities are separated from experimental model, analysis, upgrade, and distribution previews in the released catalog. The package currently registers 44 deterministic commands; lifecycle, evidence, opt-in, and network requirements vary by capability, and results require human review.
 
 > **📌 This is a public repository.** The source code is available under the Business Source License 1.1 (BSL-1.1). Commercial use by teams with >3 developers requires a paid license. The admin dashboard and internal operations tools are maintained in a separate private repository.
 

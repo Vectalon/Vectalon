@@ -2842,7 +2842,11 @@
     "source": "apps/website/app/admin/(protected)/customers/page.tsx",
     "digest": "sha256:118d7e708a59ee965c70edcd6aa0ac315b37db9c93faf6881cb361e135957597",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/app/admin/(protected)/errors/page.tsx",
@@ -2851,7 +2855,11 @@
     "source": "apps/website/app/admin/(protected)/errors/page.tsx",
     "digest": "sha256:fc014cf34fa5ce3e79262a62521eda7ff918af50cd0747432c3f70585cbfbdcd",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/app/admin/(protected)/licenses/page.tsx",
@@ -2860,7 +2868,11 @@
     "source": "apps/website/app/admin/(protected)/licenses/page.tsx",
     "digest": "sha256:9ef113dd6c6bfc21b34a72378b9a57801ed300bf411b7eb55cf69a2f601f396f",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/app/admin/(protected)/page.tsx",
@@ -2869,7 +2881,11 @@
     "source": "apps/website/app/admin/(protected)/page.tsx",
     "digest": "sha256:aa879c95524b6509cbf5ed9d3b59727492458ce230daf4ba83c48cb7b70ac7bc",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/app/admin/(protected)/trials/page.tsx",
@@ -2878,7 +2894,11 @@
     "source": "apps/website/app/admin/(protected)/trials/page.tsx",
     "digest": "sha256:8d42dc39e367a53663717cce02d967ed3aa7770ead8682fe8c2e20dcfd7fd2f3",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/app/admin/(protected)/usage/page.tsx",
@@ -2887,7 +2907,11 @@
     "source": "apps/website/app/admin/(protected)/usage/page.tsx",
     "digest": "sha256:90ec8b449592cf4e8539ed3b0d46e29a2e1bc65c1726b38d31360f58af9f0ca2",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/app/admin/login/page.tsx",
@@ -2896,16 +2920,24 @@
     "source": "apps/website/app/admin/login/page.tsx",
     "digest": "sha256:414ca1d3f62e6d6e09a39b69b43bc37d93e02e82b9125a1c0c47608f7d5f1d59",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/app/agents/page.tsx",
     "kind": "claims",
     "name": "apps/website/app/agents/page.tsx",
     "source": "apps/website/app/agents/page.tsx",
-    "digest": "sha256:e57d7a1e36cf16af54dd8cfedd6ef0ed4b5c4203a41d516b432c3dd978d30501",
+    "digest": "sha256:d4a08c44510709871cc3b2ba5180ea62f27f1295f9e1156f5b1e4074ac661989",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.analysis",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.analysis.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/app/benchmarks/page.tsx",
@@ -2914,7 +2946,11 @@
     "source": "apps/website/app/benchmarks/page.tsx",
     "digest": "sha256:e4e181143d1bf56f1399fda050afb54d0d7e007e45aab20d69e9ef9d64ed97e3",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.evaluation",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.evaluation.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/app/changelog/page.tsx",
@@ -2923,7 +2959,11 @@
     "source": "apps/website/app/changelog/page.tsx",
     "digest": "sha256:06cedb366e31dabcef2aa550504832a3d8895f6b477167e48232adb5c5079273",
     "historical": true,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.evaluation",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.evaluation.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/app/demo/page.tsx",
@@ -2932,7 +2972,11 @@
     "source": "apps/website/app/demo/page.tsx",
     "digest": "sha256:0644e543072843d8c95e8688d605fa7f8889f6d659767e963d69d9f1092f4d2c",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.evaluation",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.evaluation.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/app/docs/page.tsx",
@@ -2941,25 +2985,39 @@
     "source": "apps/website/app/docs/page.tsx",
     "digest": "sha256:f96ba0e6d479714451b24511efb394ebd266ac4dea8fb8017cef0f23ed2f1270",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.project.inspect",
+    "capabilityLifecycle": "beta",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/app/outcomes/page.tsx",
     "kind": "claims",
     "name": "apps/website/app/outcomes/page.tsx",
     "source": "apps/website/app/outcomes/page.tsx",
-    "digest": "sha256:d3e06279d81a0f5785915ada36000e9a8e6708072aeb0fb4d37ab4ad2805b99c",
+    "digest": "sha256:d95a13912c360264673d909f23c3ca68c48a94ff57962f4846f298c215fdf11c",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.analysis",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.analysis.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/app/page.tsx",
     "kind": "claims",
     "name": "apps/website/app/page.tsx",
     "source": "apps/website/app/page.tsx",
-    "digest": "sha256:2ffc2282222c27dd38191f30ac841ec073be2f44ee0220d9bc68d31a7687c689",
+    "digest": "sha256:d5a9db34f8635ce41511939617d2ca97883573617e21ba8ccc98f60a7735254d",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.project.inspect",
+    "capabilityLifecycle": "beta",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/app/pricing/page.tsx",
@@ -2968,16 +3026,24 @@
     "source": "apps/website/app/pricing/page.tsx",
     "digest": "sha256:af0e1f5ec568b4b5190051c378b48184fc50213067f1546d2a6f2815fffda855",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/app/reports/page.tsx",
     "kind": "claims",
     "name": "apps/website/app/reports/page.tsx",
     "source": "apps/website/app/reports/page.tsx",
-    "digest": "sha256:29d1a4a2ab8cb6b1c93d1a42f248074096b953e49bc64e6e2d0ce03bb211d1ad",
+    "digest": "sha256:cd19baf41c1838ec8cebb98b74fa57341f404c757b7b43e7ccfafbb783a84475",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.analysis",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.analysis.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/app/sdk/[slug]/page.tsx",
@@ -2986,7 +3052,11 @@
     "source": "apps/website/app/sdk/[slug]/page.tsx",
     "digest": "sha256:0dda6eb6a34139f3d767e86deadb0e6c3cc1cc7340cc4f09d3a68f313fd47c32",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/app/trial/page.tsx",
@@ -2995,7 +3065,11 @@
     "source": "apps/website/app/trial/page.tsx",
     "digest": "sha256:2dce869af586c0bf7fc6fbf6eb53c7a42a4122c55ccae121601bd1f30a8b3578",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/components/AgentOrb.tsx",
@@ -3004,7 +3078,11 @@
     "source": "apps/website/components/AgentOrb.tsx",
     "digest": "sha256:27fda9545b3bd5b018a1aa5e098b9173e93b9200f531d52b9fbb32754385904a",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.analysis",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.analysis.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/components/DemoPlayer.tsx",
@@ -3013,7 +3091,11 @@
     "source": "apps/website/components/DemoPlayer.tsx",
     "digest": "sha256:e2c3afd5c30314361e90d9e251d5e8388bc6c9e3953a80f4096b837fc0d35142",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.evaluation",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.evaluation.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/components/FeatureIcon.tsx",
@@ -3022,7 +3104,12 @@
     "source": "apps/website/components/FeatureIcon.tsx",
     "digest": "sha256:ea8a4c8f67882726d8d5f49cea7d28f681ee57a6225d7a01eb3410cb8cc06a8e",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.project.inspect",
+    "capabilityLifecycle": "beta",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/components/FeedAge.tsx",
@@ -3031,7 +3118,11 @@
     "source": "apps/website/components/FeedAge.tsx",
     "digest": "sha256:7f99f29797619b112d94a09b78415454062a5921a98d7538a1a94681988620ef",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.knowledge",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.knowledge.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/components/GlobalParticles.tsx",
@@ -3040,7 +3131,12 @@
     "source": "apps/website/components/GlobalParticles.tsx",
     "digest": "sha256:7c6af12194a2d02acc408ea3bfd9dd53690191f5f3f1fb9089af7c1af2cbb11c",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.project.inspect",
+    "capabilityLifecycle": "beta",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/components/HeroHeadline.tsx",
@@ -3049,7 +3145,12 @@
     "source": "apps/website/components/HeroHeadline.tsx",
     "digest": "sha256:5ddb2ebe7d7482fd58bdf0632302c63afeafa3007008996dbf969c3a71bfaf59",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.project.inspect",
+    "capabilityLifecycle": "beta",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/components/HeroMotion.tsx",
@@ -3058,7 +3159,12 @@
     "source": "apps/website/components/HeroMotion.tsx",
     "digest": "sha256:77383f387eb42385ef729904fcd54033f43ce4c03feb0a0d2bdffc3667502fc4",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.project.inspect",
+    "capabilityLifecycle": "beta",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/components/MobileMenu.tsx",
@@ -3067,7 +3173,11 @@
     "source": "apps/website/components/MobileMenu.tsx",
     "digest": "sha256:1e6d6e71136f91aabcd8d19064871a69c5e27acc8a02ab5180d1cf4786ec5926",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/components/ProductsMenu.tsx",
@@ -3076,7 +3186,11 @@
     "source": "apps/website/components/ProductsMenu.tsx",
     "digest": "sha256:55ddca8ce265ef00c0cfb02d0d25bb9343c29684be95061c63f1740735d2e9c7",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/components/ReportWindow.tsx",
@@ -3085,7 +3199,11 @@
     "source": "apps/website/components/ReportWindow.tsx",
     "digest": "sha256:e870f3b4b4ac9ccdd468378fba6bf7c1cfc9f99e0fd83e8dd91319b8bffc581e",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.analysis",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.analysis.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/components/SiteNav.tsx",
@@ -3094,7 +3212,11 @@
     "source": "apps/website/components/SiteNav.tsx",
     "digest": "sha256:eb4377424233d4b9aeffe3469e14baef58e3842d0d21f0f5880e50a018fb3992",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/components/ThemeToggle.tsx",
@@ -3103,7 +3225,11 @@
     "source": "apps/website/components/ThemeToggle.tsx",
     "digest": "sha256:4ff853c8b5af3dd824d3910249f44b2f7f07c7ca92301361345c42ae30153b54",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/components/TypePrompt.tsx",
@@ -3112,7 +3238,11 @@
     "source": "apps/website/components/TypePrompt.tsx",
     "digest": "sha256:bbaf2862170cc357f028feae3a39591b9b3a5c3ebf5ebf7165a8e76838c7c1c7",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.model-generation",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.model-generation.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/components/WaitlistForm.tsx",
@@ -3121,7 +3251,11 @@
     "source": "apps/website/components/WaitlistForm.tsx",
     "digest": "sha256:d4c0ca7d01044e403796c3b6c174236ef88894bc761ead88b8c6bdc0ffbee7ff",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:apps/website/lib/agents.ts",
@@ -3130,7 +3264,11 @@
     "source": "apps/website/lib/agents.ts",
     "digest": "sha256:b5fa221842608a95a6d17d4bbb5bdb265538a31f01f7c7c97340a7ee3c1607dc",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.analysis",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.analysis.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:LICENSE-COMMERCIAL",
@@ -3139,7 +3277,11 @@
     "source": "LICENSE-COMMERCIAL",
     "digest": "sha256:0ea5f23efcc1fbe526e61a9dde5166bda5718b714d3d2eb5ceee0ba782d30207",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:packages/rn/README.md",
@@ -3148,16 +3290,26 @@
     "source": "packages/rn/README.md",
     "digest": "sha256:9a1d6b5a8245b5f84ea58cebb95029bdb3005e99719182a8460d608bc2d3970a",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.project.inspect",
+    "capabilityLifecycle": "beta",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "claims:README.md",
     "kind": "claims",
     "name": "README.md",
     "source": "README.md",
-    "digest": "sha256:3e0ec722e65ede4d5067c0a89654ead76ed94fa2fd0d802dbf30e1e0d709162e",
+    "digest": "sha256:cd4517703b10124188707174113dd2863fce424f74fe333dfc5992eccb1cfe19",
     "historical": false,
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.project.inspect",
+    "capabilityLifecycle": "beta",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "cli:a11y",
@@ -4644,77 +4796,121 @@
     "kind": "plan-feature",
     "name": "enterprise/Deployment, governance, security, and support controls only when implemented, tested, and contracted",
     "source": "product-manifest.json",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.enterprise-controls",
+    "capabilityLifecycle": "planned",
+    "capabilityEvidence": []
   },
   {
     "key": "plan-feature:enterprise/Product and capability scope defined in the signed order",
     "kind": "plan-feature",
     "name": "enterprise/Product and capability scope defined in the signed order",
     "source": "product-manifest.json",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "plan-feature:free/Basic React Native guardrails",
     "kind": "plan-feature",
     "name": "free/Basic React Native guardrails",
     "source": "product-manifest.json",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.policy.check",
+    "capabilityLifecycle": "beta",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.policy.check.1.0.0.0.16.0.customer-workflow.json",
+      "capabilities/evidence/rn.policy.check.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "plan-feature:free/Local project setup and diagnostics",
     "kind": "plan-feature",
     "name": "free/Local project setup and diagnostics",
     "source": "product-manifest.json",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.project.inspect",
+    "capabilityLifecycle": "beta",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "plan-feature:free/No payment method required",
     "kind": "plan-feature",
     "name": "free/No payment method required",
     "source": "product-manifest.json",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "plan-feature:individual/Commercial-use license for Vectalon React Native for one developer",
     "kind": "plan-feature",
     "name": "individual/Commercial-use license for Vectalon React Native for one developer",
     "source": "product-manifest.json",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "plan-feature:individual/Qualified Individual capabilities from the released catalog",
     "kind": "plan-feature",
     "name": "individual/Qualified Individual capabilities from the released catalog",
     "source": "product-manifest.json",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "plan-feature:individual/Separately labelled beta access",
     "kind": "plan-feature",
     "name": "individual/Separately labelled beta access",
     "source": "product-manifest.json",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "plan-feature:team/Commercial-use license for Vectalon React Native for each purchased developer seat",
     "kind": "plan-feature",
     "name": "team/Commercial-use license for Vectalon React Native for each purchased developer seat",
     "source": "product-manifest.json",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "plan-feature:team/Qualified Team capabilities from the released catalog",
     "kind": "plan-feature",
     "name": "team/Qualified Team capabilities from the released catalog",
     "source": "product-manifest.json",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "plan-feature:team/Separately labelled beta access",
     "kind": "plan-feature",
     "name": "team/Separately labelled beta access",
     "source": "product-manifest.json",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "platform:android",
@@ -4761,202 +4957,321 @@
     "kind": "route",
     "name": "/",
     "source": "apps/website/app/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.project.inspect",
+    "capabilityLifecycle": "beta",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/admin/(protected)",
     "kind": "route",
     "name": "/admin/(protected)",
     "source": "apps/website/app/admin/(protected)/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/admin/(protected)/customers",
     "kind": "route",
     "name": "/admin/(protected)/customers",
     "source": "apps/website/app/admin/(protected)/customers/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/admin/(protected)/errors",
     "kind": "route",
     "name": "/admin/(protected)/errors",
     "source": "apps/website/app/admin/(protected)/errors/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/admin/(protected)/licenses",
     "kind": "route",
     "name": "/admin/(protected)/licenses",
     "source": "apps/website/app/admin/(protected)/licenses/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/admin/(protected)/trials",
     "kind": "route",
     "name": "/admin/(protected)/trials",
     "source": "apps/website/app/admin/(protected)/trials/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/admin/(protected)/usage",
     "kind": "route",
     "name": "/admin/(protected)/usage",
     "source": "apps/website/app/admin/(protected)/usage/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/admin/login",
     "kind": "route",
     "name": "/admin/login",
     "source": "apps/website/app/admin/login/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/agents",
     "kind": "route",
     "name": "/agents",
     "source": "apps/website/app/agents/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.analysis",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.analysis.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/api/admin/data",
     "kind": "route",
     "name": "/api/admin/data",
     "source": "apps/website/app/api/admin/data/route.ts",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/api/admin/licenses",
     "kind": "route",
     "name": "/api/admin/licenses",
     "source": "apps/website/app/api/admin/licenses/route.ts",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/api/admin/licenses/[key]/revoke",
     "kind": "route",
     "name": "/api/admin/licenses/[key]/revoke",
     "source": "apps/website/app/api/admin/licenses/[key]/revoke/route.ts",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/api/admin/login",
     "kind": "route",
     "name": "/api/admin/login",
     "source": "apps/website/app/api/admin/login/route.ts",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/api/admin/logout",
     "kind": "route",
     "name": "/api/admin/logout",
     "source": "apps/website/app/api/admin/logout/route.ts",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/api/v1/health",
     "kind": "route",
     "name": "/api/v1/health",
     "source": "apps/website/app/api/v1/health/route.ts",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.project.inspect",
+    "capabilityLifecycle": "beta",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/api/v1/trial",
     "kind": "route",
     "name": "/api/v1/trial",
     "source": "apps/website/app/api/v1/trial/route.ts",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/api/v1/trial/check",
     "kind": "route",
     "name": "/api/v1/trial/check",
     "source": "apps/website/app/api/v1/trial/check/route.ts",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/api/v1/validate",
     "kind": "route",
     "name": "/api/v1/validate",
     "source": "apps/website/app/api/v1/validate/route.ts",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/api/v1/webhooks/lemon-squeezy",
     "kind": "route",
     "name": "/api/v1/webhooks/lemon-squeezy",
     "source": "apps/website/app/api/v1/webhooks/lemon-squeezy/route.ts",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/api/waitlist",
     "kind": "route",
     "name": "/api/waitlist",
     "source": "apps/website/app/api/waitlist/route.ts",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/benchmarks",
     "kind": "route",
     "name": "/benchmarks",
     "source": "apps/website/app/benchmarks/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.evaluation",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.evaluation.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/changelog",
     "kind": "route",
     "name": "/changelog",
     "source": "apps/website/app/changelog/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.evaluation",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.evaluation.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/demo",
     "kind": "route",
     "name": "/demo",
     "source": "apps/website/app/demo/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.evaluation",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.evaluation.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/docs",
     "kind": "route",
     "name": "/docs",
     "source": "apps/website/app/docs/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.project.inspect",
+    "capabilityLifecycle": "beta",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/outcomes",
     "kind": "route",
     "name": "/outcomes",
     "source": "apps/website/app/outcomes/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.analysis",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.analysis.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/pricing",
     "kind": "route",
     "name": "/pricing",
     "source": "apps/website/app/pricing/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/reports",
     "kind": "route",
     "name": "/reports",
     "source": "apps/website/app/reports/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.analysis",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.analysis.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/sdk/[slug]",
     "kind": "route",
     "name": "/sdk/[slug]",
     "source": "apps/website/app/sdk/[slug]/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   },
   {
     "key": "route:/trial",
     "kind": "route",
     "name": "/trial",
     "source": "apps/website/app/trial/page.tsx",
-    "capabilityId": "rn.commercial-information"
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.commercial-information.1.0.0.0.16.0.implementation.json"
+    ]
   }
 ]

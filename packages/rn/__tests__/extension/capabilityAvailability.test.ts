@@ -1,4 +1,4 @@
-import { extensionCommandDecision, extensionCommandLabel } from '../../extension/src/capabilityAvailability'
+import { extensionCommandDecision, extensionCommandDecisionFrom, extensionCommandLabel } from '../../extension/src/capabilityAvailability'
 import extension from '../../extension/package.json'
 
 describe('extension capability boundary', () => {
@@ -19,5 +19,32 @@ describe('extension capability boundary', () => {
     expect(archive).toMatchObject({ title: expect.stringContaining('[experimental]'), enablement: 'config.vectalon.experimentalCapabilities' })
     expect(policy).toMatchObject({ title: expect.stringContaining('[beta]') })
     expect(policy?.enablement).toBeUndefined()
+  })
+
+  it('returns migration and license guidance for deprecated commands', () => {
+    const decision = extensionCommandDecisionFrom({
+      'vectalon.deprecatedFixture': {
+        capabilityId: 'rn.old-command',
+        capabilityVersion: '2.1.0',
+        lifecycle: 'deprecated',
+        implemented: true,
+        plans: ['individual', 'team'],
+        supportTier: 'maintenance-only',
+        deprecation: {
+          noticeVersion: '2.0.0',
+          noticeReference: 'docs/deprecations/old-command.md',
+          migrationReference: 'docs/migrations/new-command.md',
+          removalVersion: '3.0.0',
+          licenseEffect: 'Existing licenses retain use until removal.',
+        },
+      },
+    }, 'vectalon.deprecatedFixture', false)
+    expect(decision).toEqual({
+      available: true,
+      reason: 'deprecated',
+      warning: expect.stringContaining('Remove in 3.0.0'),
+    })
+    expect(decision.warning).toContain('docs/migrations/new-command.md')
+    expect(decision.warning).toContain('Existing licenses retain use until removal.')
   })
 })

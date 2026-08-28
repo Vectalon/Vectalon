@@ -4,6 +4,7 @@ import { createRequire } from 'node:module'
 import { execFileSync, spawnSync } from 'node:child_process'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { buildExtensionCapabilityStatus, extensionManifestProjectionErrors } from './capability-projections.mjs'
 
 const here = path.resolve(import.meta.dirname, '..')
 const require = createRequire(path.join(here, 'packages/rn/package.json'))
@@ -11,6 +12,7 @@ const ts = require('typescript')
 const { validateCapabilityCatalog, validateCapabilityTransition, checkCapabilityAvailability } = require('@vectalon-dev/core')
 export const CATALOG = 'packages/rn/src/capabilities/catalog.json'
 export const INVENTORY = 'packages/rn/src/capabilities/surfaces.json'
+export const OWNERSHIP_QUALIFICATIONS = 'capabilities/ownership-qualifications.json'
 // Step 5 adoption point: the last released main commit before this catalog existed.
 const INITIAL_BASE = '7fa0734f7bd8648aa8be33145a958c1425fe87b1'
 const read = (root, file) => readFileSync(path.join(root, file), 'utf8')
@@ -26,6 +28,28 @@ function files(root, dir) {
   }).sort()
 }
 const literal = node => node && (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) ? node.text : undefined
+const PUBLIC_SURFACE_KINDS = new Set(['claims', 'route', 'plan-feature'])
+
+export function explicitOwner(definitions, row) {
+  const matches = []
+  for (const [id, definition] of Object.entries(definitions)) {
+    if (definition[row.kind]?.includes(row.name) || (row.kind === 'extension-handler' && definition.extension?.includes(row.name))) matches.push(id)
+  }
+  if (matches.length > 1) throw new Error(`ownership: ${row.key} has conflicting explicit owners ${matches.join(', ')}`)
+  return matches[0]
+}
+
+function publicSurfaceMetadata(capability, productVersion) {
+  return {
+    capabilityLifecycle: capability.lifecycle,
+    capabilityEvidence: capability.evidence
+      .filter(evidence => evidence.status === 'passed'
+        && evidence.productVersion === productVersion
+        && evidence.capabilityVersion === capability.version)
+      .map(evidence => evidence.reference)
+      .sort(),
+  }
+}
 
 /** Source declarations, including conditional tools, are counted before availability. */
 export function discoverSurfaces(root) {
@@ -123,11 +147,34 @@ export function validateFreeze(root, { base = 'HEAD', previous, previousSurfaces
   const catalog = json(root, CATALOG)
   const inventory = json(root, INVENTORY)
   const actual = discoverSurfaces(root)
+  const definitions = json(root, 'capabilities/definition.json')
+  const ownershipQualifications = json(root, OWNERSHIP_QUALIFICATIONS)
   const declarations = new Map(catalog.capabilities.map(entry => [entry.id, entry]))
   errors.push(...validateCapabilityCatalog(catalog).errors.map(error => `qualification: ${error.path} ${error.code}`))
-  const projection = inventory.map(({ capabilityId, ...surface }) => surface)
+  const projection = inventory.map(({ capabilityId, capabilityLifecycle, capabilityEvidence, ...surface }) => surface)
   if (JSON.stringify(actual) !== JSON.stringify(projection)) errors.push('inventory: source registrations/claims differ from frozen inventory; review explicit ownership and evidence')
   for (const surface of inventory) if (!declarations.has(surface.capabilityId)) errors.push(`inventory: orphan ${surface.key}`)
+  for (const surface of inventory.filter(surface => PUBLIC_SURFACE_KINDS.has(surface.kind))) {
+    let expectedOwner
+    try { expectedOwner = explicitOwner(definitions, surface) }
+    catch (cause) { errors.push(cause.message); continue }
+    if (!expectedOwner) errors.push(`ownership: ${surface.key} requires an explicit capability definition`)
+    else if (surface.capabilityId !== expectedOwner) errors.push(`ownership: ${surface.key} expected ${expectedOwner}, found ${surface.capabilityId}`)
+    const capability = declarations.get(surface.capabilityId)
+    if (!capability) continue
+    const expected = publicSurfaceMetadata(capability, catalog.productVersion)
+    if (surface.capabilityLifecycle !== expected.capabilityLifecycle) errors.push(`ownership: ${surface.key} lifecycle projection differs from ${surface.capabilityId}`)
+    if (JSON.stringify(surface.capabilityEvidence) !== JSON.stringify(expected.capabilityEvidence)) errors.push(`ownership: ${surface.key} evidence projection differs from ${surface.capabilityId}`)
+    if (capability.implemented && expected.capabilityEvidence.length === 0) errors.push(`ownership: ${surface.key} owner ${surface.capabilityId} has no current passed evidence`)
+  }
+  const expectedExtensionStatus = buildExtensionCapabilityStatus(catalog, inventory)
+  if (JSON.stringify(json(root, 'packages/rn/extension/src/capability-status.generated.json')) !== JSON.stringify(expectedExtensionStatus)) {
+    errors.push('projection: extension capability status differs from the catalog and frozen inventory')
+  }
+  if (JSON.stringify(json(root, 'packages/rn/extension/out/capability-status.generated.json')) !== JSON.stringify(expectedExtensionStatus)) {
+    errors.push('projection: packaged extension capability status differs from the catalog and frozen inventory')
+  }
+  errors.push(...extensionManifestProjectionErrors(json(root, 'packages/rn/extension/package.json'), expectedExtensionStatus))
   const forbiddenClaims = [
     /all current and future Vectalon products/i,
     /cross-project intelligence \+ cloud sync/i,
@@ -135,6 +182,11 @@ export function validateFreeze(root, { base = 'HEAD', previous, previousSurfaces
     /SSO\s*\/\s*SAML \+ audit trails/i,
     /one license key covers every Vectalon SDK/i,
     /Revocation is instant(?! online)/i,
+    /all\s+44\s+deterministic\s+agents[^.\n]*(?:work|run)[^.\n]*fully\s+offline/i,
+    /44\s+deterministic\s+agents[^.\n]*all[^.\n]*offline/i,
+    /44\s+deterministic\s+commands[\s\S]{0,240}run\s+offline[\s\S]{0,120}free\s+on\s+every\s+tier/i,
+    /44\s+deterministic\s+agents[\s\S]{0,180}they\s+run[\s\S]{0,80}offline/i,
+    /free\s+on\s+every\s+tier,\s+fully\s+offline/i,
   ]
   for (const surface of inventory.filter(row => row.kind === 'claims' && !row.historical)) {
     const source = read(root, surface.source)
@@ -179,6 +231,23 @@ export function validateFreeze(root, { base = 'HEAD', previous, previousSurfaces
     }
     for (const after of catalog.capabilities) if (json(root, 'product-manifest.json').product.releaseStatus !== 'available' && !prior.capabilities.some(before => before.id === after.id) && after.implemented) errors.push(`freeze: newly implemented ${after.id}`)
     const oldKeys = new Set((priorSurfaces || []).map(row => row.key))
+    const oldSurfacesByKey = new Map((priorSurfaces || []).map(row => [row.key, row]))
+    for (const surface of inventory) {
+      const before = oldSurfacesByKey.get(surface.key)
+      if (!before || before.capabilityId === surface.capabilityId) continue
+      const target = declarations.get(surface.capabilityId)
+      const qualification = ownershipQualifications.find(record => (record.key === surface.key || record.keys?.includes(surface.key))
+        && record.fromCapabilityId === before.capabilityId
+        && record.toCapabilityId === surface.capabilityId
+        && record.productVersion === catalog.productVersion
+        && record.capabilityVersion === target?.version)
+      const evidence = target?.evidence.find(record => record.reference === qualification?.evidenceReference
+        && record.status === 'passed'
+        && record.productVersion === catalog.productVersion
+        && record.capabilityVersion === target.version)
+      const plannedQualification = target?.lifecycle === 'planned' && qualification?.evidenceReference === null
+      if (!qualification || (!evidence && !plannedQualification)) errors.push(`ownership: ${surface.key} changed ${before.capabilityId} -> ${surface.capabilityId} without explicit current qualification`)
+    }
     for (const surface of inventory) if (!oldKeys.has(surface.key) && ['cli', 'mcp', 'extension', 'extension-handler', 'api'].includes(surface.kind)) errors.push(`freeze: new public registration ${surface.key}`)
   }
   const counts = {}

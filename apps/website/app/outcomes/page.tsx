@@ -60,7 +60,7 @@ const RATE = 75 // blended rate ($/hr) — matches vc outcomes default
 export const metadata = {
   title: 'Vectalon — engineering outcomes, not feature counts',
   description:
-    '127 issues detected · 91 automatically fixed · 23 PRs reviewed · 14 build failures resolved · 8 hours saved on RN upgrade · 31 regressions prevented. The sales material is outcomes, not agent counts.',
+    'An experimental demo ledger showing how committed report samples can be aggregated. Example values are not promised customer outcomes.',
 }
 
 function TermLine({ children }: { children: React.ReactNode }) {
@@ -75,16 +75,16 @@ export default function SavingsPage() {
           <span className="chip font-mono">
             vectalon<span className="text-brand">/</span>outcomes
           </span>
-          <span className="badge badge-ok">● zero model calls</span>
+          <span className="badge badge-warn">○ experimental demo data</span>
         </div>
         <h1 className="text-4xl font-bold text-slate-50 sm:text-5xl">
           Engineering <span className="text-brand">outcomes</span>, not feature counts
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-slate-400">
           Anyone can count agents. The ledger an engineering manager actually reads is outcomes —
-          issues detected and fixed, PR issues caught, build failures resolved, hours saved. Every
-          number below comes from the <span className="font-mono text-slate-300">report.json</span>{' '}
-          files Vectalon already writes to your repo, on every run, deterministically.
+          issues detected and fixed, PR issues caught, build failures resolved, hours saved. This
+          example is derived from committed demo <span className="font-mono text-slate-300">report.json</span>{' '}
+          files. The analysis capability is experimental and does not promise these outcomes for a customer repository.
         </p>
       </div>
 

@@ -4,7 +4,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
 import path from 'node:path'
-import { discoverSurfaces, digest, CATALOG, INVENTORY } from './capability-catalog.mjs'
+import { discoverSurfaces, digest, explicitOwner, CATALOG, INVENTORY } from './capability-catalog.mjs'
 
 const root = path.resolve(import.meta.dirname, '..')
 const read = file => readFileSync(path.join(root, file), 'utf8')
@@ -81,9 +81,9 @@ for (const [id, definition] of Object.entries(definitions)) {
 if (process.exitCode) throw new Error('Qualification failed; catalog was not updated')
 write(CATALOG, { contractVersion: '1.0.0', productId: 'rn', productVersion, capabilities })
 function owner(row) {
-  for (const [id, definition] of Object.entries(definitions)) if (definition[row.kind]?.includes(row.name) || (row.kind === 'extension-handler' && definition.extension?.includes(row.name))) return id
+  const declared = explicitOwner(definitions, row)
+  if (declared) return declared
   if (row.kind === 'platform') return row.name === 'reactNative' ? 'rn.project.inspect' : `sdk.${row.name}`
-  if (['claims', 'route', 'plan-feature'].includes(row.kind)) return 'rn.commercial-information'
   if (['benchmark', 'demo'].includes(row.kind)) return 'rn.evaluation'
   if (row.kind === 'mcp') {
     for (const [id, definition] of Object.entries(definitions)) if (definition.sources?.includes(row.source)) return id
@@ -91,4 +91,20 @@ function owner(row) {
   return 'rn.analysis'
 }
 const old = existsSync(path.join(root, INVENTORY)) ? JSON.parse(read(INVENTORY)) : []
-write(INVENTORY, discoverSurfaces(root).map(row => ({ ...row, capabilityId: old.find(prior => prior.key === row.key)?.capabilityId || owner(row) })))
+const byId = new Map(capabilities.map(capability => [capability.id, capability]))
+write(INVENTORY, discoverSurfaces(root).map(row => {
+  const prior = old.find(surface => surface.key === row.key)
+  const capabilityId = owner(row) || prior?.capabilityId
+  if (!capabilityId) throw new Error(`${row.key}: no capability owner declared`)
+  const surface = { ...row, capabilityId }
+  if (['claims', 'route', 'plan-feature'].includes(row.kind)) {
+    const capability = byId.get(capabilityId)
+    if (!capability) throw new Error(`${row.key}: unknown capability owner ${capabilityId}`)
+    surface.capabilityLifecycle = capability.lifecycle
+    surface.capabilityEvidence = capability.evidence
+      .filter(evidence => evidence.status === 'passed' && evidence.productVersion === productVersion && evidence.capabilityVersion === capability.version)
+      .map(evidence => evidence.reference)
+      .sort()
+  }
+  return surface
+}))

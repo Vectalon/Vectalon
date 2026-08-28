@@ -20,22 +20,22 @@ const SDK_CHIPS = [
 const FEATURES: Array<{ title: string; body: string; icon: FeatureIconName }> = [
   {
     title: 'MCP-native agent',
-    body: `A local model runs as an agent over ${PRODUCT_MANIFEST.capabilities.mcpTools} project-aware tools: feature workflows, code review, upgrades, E2E generation, device control. All through the MCP protocol your editor already speaks. On top: ${PRODUCT_MANIFEST.capabilities.deterministicCommands} deterministic agents that need no model.`,
+    body: `An experimental, opt-in local-model agent can use ${PRODUCT_MANIFEST.capabilities.mcpTools} registered project-aware tools. The catalog also tracks ${PRODUCT_MANIFEST.capabilities.deterministicCommands} deterministic commands; lifecycle, evidence, and availability vary by command.`,
     icon: 'robot',
   },
   {
     title: 'Self-maintaining knowledge',
-    body: 'Init scans your repo and builds a living knowledge graph; serve re-seeds it hourly. Every run is distilled into L0→L3 project memory. The project teaches the model, and the model never works from a generic guess.',
+    body: 'Beta onboarding can inspect local project context. Self-maintaining knowledge and hourly refresh workflows remain experimental and require explicit opt-in.',
     icon: 'brain',
   },
   {
     title: 'Always-current model',
-    body: 'Web intel pipelines (RN releases, Expo changelog, Hacker News, GitHub trending, Callstack) feed the model\'s system prompt. It knows the next release before the changelog is published.',
+    body: 'Experimental web-intel inputs can augment a configured model. They depend on network sources and are not evidence of future-release knowledge.',
     icon: 'broadcast',
   },
   {
     title: 'Upgrade Copilot',
-    body: 'rn-diff-purge diffs, AST-grade impact analysis, and codemods. Plan and apply React Native upgrades with every native and JS/TS change mapped out.',
+    body: 'Experimental upgrade tools can inspect diffs and propose bounded changes. Verification must be reviewed in the target project.',
     icon: 'wrench',
   },
   {
@@ -45,12 +45,12 @@ const FEATURES: Array<{ title: string; body: string; icon: FeatureIconName }> = 
   },
   {
     title: 'Compile-checked healing',
-    body: 'Every agent fix is typechecked before it lands. A fix that does not reduce errors is reverted. Generated code renders headlessly in a sandbox before you see it.',
+    body: 'Experimental repair workflows can run configured type checks and bounded retries. Results still require review; this is not a guarantee that every generated fix compiles.',
     icon: 'check',
   },
   {
     title: 'Impact regression coverage',
-    body: 'Changed files map to affected screens (AST-driven, no model calls), each one gets a Maestro regression flow with accessibility variants for screens covered by a11y criteria.',
+    body: 'Experimental analysis can map changed files to affected screens and propose regression coverage. Availability and evidence come from the released catalog.',
     icon: 'shield',
   },
 ]
@@ -64,7 +64,7 @@ const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'Does it need a model?',
-    a: 'The optional model-driven agent does, but the 44 deterministic commands (review, security, SOC 2, GitHub PR triage, incident command, build archive, …) need no model at all. They run offline with a report and a verdict, zero model calls, free on every tier.',
+    a: 'Model-driven workflows require a configured provider. The catalog tracks 44 deterministic command registrations, but broad analysis and report commands are experimental. Some commands make zero model calls; network and credential requirements depend on the command and configuration.',
   },
   {
     q: 'Do the deterministic agents go stale?',
@@ -80,13 +80,13 @@ const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'What does it cost?',
-    a: 'Free tier: init, serve, feature, doctor, and all 48 agents, no card. Individual $19/dev/mo, Team $49/dev/mo, Enterprise custom. Business Source License 1.1.',
+    a: 'Free includes qualified capabilities listed by the released catalog, with no card. Experimental commands require opt-in and are not a purchased promise. Individual is $19/dev/mo, Team is $49/dev/mo, and Enterprise is quoted.',
   },
 ]
 
 const STATS = [
   { value: '94%', label: 'guardrail pass rate' },
-  { value: '44', label: 'deterministic agents' },
+  { value: '44', label: 'registered deterministic commands' },
   { value: '64', label: 'project-aware tools' },
   { value: '43', label: 'benchmark scenarios' },
 ]
@@ -568,11 +568,11 @@ export default async function Home() {
         <div className="mx-auto max-w-6xl px-5">
           <div className="max-w-2xl">
             <h2 className="text-3xl font-bold text-slate-50 sm:text-4xl">
-              44 deterministic agents. <span className="text-brand">Zero model calls</span>
+              44 registered deterministic commands. <span className="text-brand">Experimental preview</span>
             </h2>
             <p className="mt-4 text-lg text-slate-400">
-              Same result every run, on any machine, with a report and a verdict. They run on the
-              free tier, offline, and they feed the dashboard.
+              The broad analysis fleet is experimental today: opt-in is required, results need
+              review, and offline or network behavior depends on the command and configuration.
             </p>
           </div>
           <div className="mt-14 grid gap-4 lg:grid-cols-[1.5fr_1fr_1fr]">

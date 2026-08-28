@@ -1,30 +1,21 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+import { buildExtensionCapabilityStatus, projectExtensionManifest } from './capability-projections.mjs'
 
 const root = path.resolve(process.argv[2] || process.cwd())
 const read = async file => JSON.parse(await readFile(path.join(root, file), 'utf8'))
 const catalog = await read('packages/rn/src/capabilities/catalog.json')
 const surfaces = await read('packages/rn/src/capabilities/surfaces.json')
 const lifecycle = new Map(catalog.capabilities.map(entry => [entry.id, entry.lifecycle]))
-
-const status = Object.fromEntries(surfaces
-  .filter(surface => surface.kind === 'extension' || surface.kind === 'extension-handler')
-  .map(surface => [surface.name, lifecycle.get(surface.capabilityId)]).sort(([a], [b]) => a.localeCompare(b)))
-await writeFile(path.join(root, 'packages/rn/extension/src/capability-status.generated.json'), `${JSON.stringify(status, null, 2)}\n`)
+const status = buildExtensionCapabilityStatus(catalog, surfaces)
+const serializedStatus = `${JSON.stringify(status, null, 2)}\n`
+await Promise.all([
+  writeFile(path.join(root, 'packages/rn/extension/src/capability-status.generated.json'), serializedStatus),
+  writeFile(path.join(root, 'packages/rn/extension/out/capability-status.generated.json'), serializedStatus),
+])
 
 const extensionFile = 'packages/rn/extension/package.json'
-const extension = await read(extensionFile)
-for (const command of extension.contributes.commands) {
-  const state = status[command.command] || 'unregistered'
-  command.title = `[${state}] ${command.title.replace(/^\[[^\]]+\]\s*/, '')}`
-  if (state === 'experimental') command.enablement = 'config.vectalon.experimentalCapabilities'
-  else if (state === 'planned' || state === 'removed' || state === 'unregistered') command.enablement = 'false'
-  else delete command.enablement
-}
-extension.contributes.configuration.properties['vectalon.experimentalCapabilities'] = {
-  type: 'boolean', default: false,
-  description: 'Show and allow experimental Vectalon commands. This does not grant paid entitlements.',
-}
+const extension = projectExtensionManifest(await read(extensionFile), status)
 await writeFile(path.join(root, extensionFile), `${JSON.stringify(extension, null, 2)}\n`)
 
 const counts = {}

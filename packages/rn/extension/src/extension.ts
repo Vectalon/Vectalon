@@ -61,6 +61,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         void vscode.window.showWarningMessage(`Vectalon: ${command} unavailable (${decision.reason}). Experimental access does not grant paid entitlements.`)
         return
       }
+      if (decision.warning) void vscode.window.showWarningMessage(decision.warning)
       return callback.apply(thisArg, args)
     })
 

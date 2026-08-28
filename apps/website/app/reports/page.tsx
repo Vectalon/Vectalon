@@ -6,7 +6,7 @@ import { AgentOrb } from '../../components/AgentOrb'
 export const metadata = {
   title: 'Vectalon — generated documents, real reports',
   description:
-    'All 44 real documents vectalon generates — crash intelligence, incident briefs, DX scorecards, sentry triage, release trains, build archives, and every other agent report — shown exactly as written to docs/vectalon/.',
+    'Committed sample documents from the experimental deterministic-command catalog, with lifecycle and human-review caveats.',
 }
 
 const VERDICT_COUNT = REPORT_SAMPLES.reduce<Record<ReportSample['verdict'], number>>(
@@ -25,17 +25,17 @@ export default function ReportsPage() {
           <span className="chip font-mono">
             vectalon<span className="text-brand">/</span>docs
           </span>
-          <span className="badge badge-ok">● real output</span>
+          <span className="badge badge-warn">○ experimental samples</span>
           <AgentOrb state="composing" size={20} label="Reports generated" />
         </div>
         <h1 className="text-4xl font-bold text-slate-50 sm:text-5xl">
           Generated documents — <span className="text-brand">no filler</span>
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-slate-400">
-          Every agent ends in the same place: a report written to{' '}
+          Experimental report commands can write a report to{' '}
           <span className="font-mono text-slate-300">docs/vectalon/</span> in your project. Below
           are <span className="font-mono text-slate-300">all {REPORT_SAMPLES.length} documents</span>{' '}
-          — one per agent, all 44 of them — generated against the demo app and rendered{' '}
+          — committed samples generated against the demo app and rendered{' '}
           <em>exactly as written</em>. Verdicts included, warts included, honest
           “nothing to fix” verdicts included. Regenerate any of them with the command shown.
         </p>
@@ -75,11 +75,11 @@ export default function ReportsPage() {
 
       <div className="mt-12 flex flex-col items-center gap-3">
         <Link href="/agents" className="text-sm text-brand transition hover:text-brand-strong hover:underline">
-          The 48 agents that produce these documents →
+          Browse the experimental command catalog →
         </Link>
         <p className="font-mono text-xs text-slate-500">
-          all {REPORT_SAMPLES.length} verified end-to-end — each one writes a report like these to
-          docs/vectalon/&lt;cmd&gt;/ · synced from the demo with scripts/sync-reports.mjs
+          {REPORT_SAMPLES.length} committed samples demonstrate report format, not universal
+          customer-workflow qualification · synced with scripts/sync-reports.mjs
         </p>
       </div>
     </div>

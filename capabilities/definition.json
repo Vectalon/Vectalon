@@ -4,6 +4,9 @@
     "cli": ["init", "serve", "doctor", "status", "support", "auth", "plan", "models"],
     "mcp": ["get_project_context", "get_learned_patterns"],
     "extension": ["vectalon.startServer", "vectalon.restartServer", "vectalon.stopServer", "vectalon.projectContext"],
+    "claims": ["README.md", "packages/rn/README.md", "apps/website/app/page.tsx", "apps/website/app/docs/page.tsx", "apps/website/components/FeatureIcon.tsx", "apps/website/components/GlobalParticles.tsx", "apps/website/components/HeroHeadline.tsx", "apps/website/components/HeroMotion.tsx"],
+    "route": ["/", "/docs", "/api/v1/health"],
+    "plan-feature": ["free/Local project setup and diagnostics"],
     "sources": ["packages/rn/src/cli/commands/init.ts", "packages/rn/src/protocol/MCPServer.ts", "packages/rn/src/cli/commands/doctor.ts", "packages/rn/src/cli/commands/support.ts", "packages/rn/src/cli/commands/status.ts"],
     "workflows": ["__tests__/cli/index.test.ts", "__tests__/cli/doctor.test.ts", "__tests__/diagnostics/health.test.ts"],
     "limitations": "Host-toolchain checker doubles isolate diagnostics formatting. No claim of native builds, remote providers, SSO, certification, or model quality."
@@ -13,6 +16,7 @@
     "cli": ["policy"],
     "mcp": ["check_guardrails"],
     "extension": ["vectalon.checkGuardrails"],
+    "plan-feature": ["free/Basic React Native guardrails"],
     "sources": ["packages/rn/src/cli/commands/policy.ts", "packages/rn/src/coreHarness/createRnHarness.ts"],
     "workflows": ["__tests__/cli/policy.test.ts", "__tests__/workflows/implementationHarness.test.ts"],
     "limitations": "Local fixture findings only; not a security audit or certification."
@@ -34,6 +38,8 @@
   },
   "rn.analysis": {
     "outcome": "Generate deterministic project engineering reports. Individual report implementations exist; cross-project and customer qualification remain incomplete.",
+    "claims": ["apps/website/app/agents/page.tsx", "apps/website/app/outcomes/page.tsx", "apps/website/app/reports/page.tsx", "apps/website/components/AgentOrb.tsx", "apps/website/components/ReportWindow.tsx", "apps/website/lib/agents.ts"],
+    "route": ["/agents", "/outcomes", "/reports"],
     "sources": ["packages/rn/src/cli/commands/intel.ts", "packages/rn/src/protocol/tools/SdlcTools.ts"]
   },
   "rn.model-generation": {
@@ -41,12 +47,14 @@
     "cli": ["pull", "mode", "generate", "train", "dataset", "lora", "evals"],
     "mcp": ["run_agent", "generate_component", "write_test"],
     "extension": ["vectalon.generateComponent"],
+    "claims": ["apps/website/components/TypePrompt.tsx"],
     "sources": ["packages/rn/src/model/ModelRouter.ts", "packages/rn/src/protocol/tools/CoreTools.ts"]
   },
   "rn.knowledge": {
     "outcome": "Store local project knowledge and inspect configured Git-based sharing. Hosted cloud sync and qualified cross-project intelligence are not included.",
     "cli": ["refresh", "suggestions", "sync", "team-policy", "team", "brain", "search", "repos"],
     "extension": ["vectalon.searchKnowledge", "vectalon.refreshKnowledge", "vectalon.openArtifact"],
+    "claims": ["apps/website/components/FeedAge.tsx"],
     "sources": ["packages/rn/src/protocol/tools/KnowledgeTools.ts", "packages/rn/src/protocol/tools/TeamBrainTools.ts"]
   },
   "rn.build-distribution": {
@@ -68,13 +76,18 @@
   "rn.evaluation": {
     "outcome": "Run committed local benchmark scenarios and inspect demonstration or evaluation reports; demonstrations are not production success evidence.",
     "cli": ["bench", "fix-bench", "rnbench", "leaderboard", "smoke", "selftest", "demo", "sales-demo"],
+    "claims": ["apps/website/app/benchmarks/page.tsx", "apps/website/app/changelog/page.tsx", "apps/website/app/demo/page.tsx", "apps/website/components/DemoPlayer.tsx"],
+    "route": ["/benchmarks", "/changelog", "/demo"],
     "sources": ["packages/rn/src/bench/runner.ts", "packages/rn/src/cli/commands/demo.ts"]
   },
   "rn.commercial-information": {
     "outcome": "Read current RN lifecycle and plan information; this informational surface does not grant product entitlements.",
+    "claims": ["LICENSE-COMMERCIAL", "apps/website/app/admin/(protected)/customers/page.tsx", "apps/website/app/admin/(protected)/errors/page.tsx", "apps/website/app/admin/(protected)/licenses/page.tsx", "apps/website/app/admin/(protected)/page.tsx", "apps/website/app/admin/(protected)/trials/page.tsx", "apps/website/app/admin/(protected)/usage/page.tsx", "apps/website/app/admin/login/page.tsx", "apps/website/app/pricing/page.tsx", "apps/website/app/sdk/[slug]/page.tsx", "apps/website/app/trial/page.tsx", "apps/website/components/MobileMenu.tsx", "apps/website/components/ProductsMenu.tsx", "apps/website/components/SiteNav.tsx", "apps/website/components/ThemeToggle.tsx", "apps/website/components/WaitlistForm.tsx"],
+    "route": ["/admin/(protected)", "/admin/(protected)/customers", "/admin/(protected)/errors", "/admin/(protected)/licenses", "/admin/(protected)/trials", "/admin/(protected)/usage", "/admin/login", "/api/admin/data", "/api/admin/licenses", "/api/admin/licenses/[key]/revoke", "/api/admin/login", "/api/admin/logout", "/api/v1/trial", "/api/v1/trial/check", "/api/v1/validate", "/api/v1/webhooks/lemon-squeezy", "/api/waitlist", "/pricing", "/sdk/[slug]", "/trial"],
+    "plan-feature": ["free/No payment method required", "individual/Commercial-use license for Vectalon React Native for one developer", "individual/Qualified Individual capabilities from the released catalog", "individual/Separately labelled beta access", "team/Commercial-use license for Vectalon React Native for each purchased developer seat", "team/Qualified Team capabilities from the released catalog", "team/Separately labelled beta access", "enterprise/Product and capability scope defined in the signed order"],
     "sources": ["apps/website/lib/product-manifest.ts"]
   },
-  "rn.enterprise-controls": { "outcome": "Planned SSO/SAML and security qualification; no certification, guaranteed isolation, instant offline revocation, or unbuilt control is sold.", "planned": true },
+  "rn.enterprise-controls": { "outcome": "Planned SSO/SAML and security qualification; no certification, guaranteed isolation, instant offline revocation, or unbuilt control is sold.", "plan-feature": ["enterprise/Deployment, governance, security, and support controls only when implemented, tested, and contracted"], "planned": true },
   "rn.hosted-sync": { "outcome": "Planned hosted cloud sync and qualified cross-project intelligence; existing Git sharing is experimental and separately described.", "planned": true },
   "sdk.ios": { "outcome": "Planned native iOS SDK; no purchase or future-product grant.", "planned": true },
   "sdk.android": { "outcome": "Planned native Android SDK; no purchase or future-product grant.", "planned": true },
