@@ -1,0 +1,83 @@
+{
+  "rn.project.inspect": {
+    "outcome": "Initialize and inspect a local React Native project; serve project context and collect diagnostic/support reports. Beta covers fixture-based local operation, not every host toolchain or model provider.",
+    "cli": ["init", "serve", "doctor", "status", "support", "auth", "plan", "models"],
+    "mcp": ["get_project_context", "get_learned_patterns"],
+    "extension": ["vectalon.startServer", "vectalon.restartServer", "vectalon.stopServer", "vectalon.projectContext"],
+    "sources": ["packages/rn/src/cli/commands/init.ts", "packages/rn/src/protocol/MCPServer.ts", "packages/rn/src/cli/commands/doctor.ts", "packages/rn/src/cli/commands/support.ts", "packages/rn/src/cli/commands/status.ts"],
+    "workflows": ["__tests__/cli/index.test.ts", "__tests__/cli/doctor.test.ts", "__tests__/diagnostics/health.test.ts"],
+    "limitations": "Host-toolchain checker doubles isolate diagnostics formatting. No claim of native builds, remote providers, SSO, certification, or model quality."
+  },
+  "rn.policy.check": {
+    "outcome": "Evaluate local source against configured RN policy and return actionable findings, including policy failures through the Core harness.",
+    "cli": ["policy"],
+    "mcp": ["check_guardrails"],
+    "extension": ["vectalon.checkGuardrails"],
+    "sources": ["packages/rn/src/cli/commands/policy.ts", "packages/rn/src/coreHarness/createRnHarness.ts"],
+    "workflows": ["__tests__/cli/policy.test.ts", "__tests__/workflows/implementationHarness.test.ts"],
+    "limitations": "Local fixture findings only; not a security audit or certification."
+  },
+  "rn.generated-file.repair": {
+    "outcome": "Bound generated-file repair attempts and refuse unchanged invalid output before writes. Model responses are scripted in qualification; model quality is not guaranteed.",
+    "sources": ["packages/rn/src/workflows/phases/implementationPhase.ts", "packages/rn/src/coreHarness/createRnHarness.ts"],
+    "workflows": ["__tests__/workflows/implementationHarness.test.ts"],
+    "limitations": "Scripted model dependency; checks real policy/repair orchestration and refusal, not an autonomous real-provider outcome."
+  },
+  "rn.feature.workflow": {
+    "outcome": "Run the local feature workflow orchestration and persist its reports. Beta qualification uses dry-run fixtures and scripted intent; generated production feature quality requires human review.",
+    "cli": ["feature"],
+    "mcp": ["execute_workflow"],
+    "extension": ["vectalon.runFeatureWorkflow"],
+    "sources": ["packages/rn/src/cli/commands/feature.ts", "packages/rn/src/workflows/WorkflowEngine.ts"],
+    "workflows": ["__tests__/cli/feature.test.ts"],
+    "limitations": "Dry-run persistence with scripted intent; no unqualified end-to-end production feature promise."
+  },
+  "rn.analysis": {
+    "outcome": "Generate deterministic project engineering reports. Individual report implementations exist; cross-project and customer qualification remain incomplete.",
+    "sources": ["packages/rn/src/cli/commands/intel.ts", "packages/rn/src/protocol/tools/SdlcTools.ts"]
+  },
+  "rn.model-generation": {
+    "outcome": "Configure model providers and request code or document generation, subject to provider availability, explicit network configuration, and review.",
+    "cli": ["pull", "mode", "generate", "train", "dataset", "lora", "evals"],
+    "mcp": ["run_agent", "generate_component", "write_test"],
+    "extension": ["vectalon.generateComponent"],
+    "sources": ["packages/rn/src/model/ModelRouter.ts", "packages/rn/src/protocol/tools/CoreTools.ts"]
+  },
+  "rn.knowledge": {
+    "outcome": "Store local project knowledge and inspect configured Git-based sharing. Hosted cloud sync and qualified cross-project intelligence are not included.",
+    "cli": ["refresh", "suggestions", "sync", "team-policy", "team", "brain", "search", "repos"],
+    "extension": ["vectalon.searchKnowledge", "vectalon.refreshKnowledge", "vectalon.openArtifact"],
+    "sources": ["packages/rn/src/protocol/tools/KnowledgeTools.ts", "packages/rn/src/protocol/tools/TeamBrainTools.ts"]
+  },
+  "rn.build-distribution": {
+    "outcome": "Plan or execute explicitly configured build archival and distribution. Store credentials, native toolchains, and remote delivery are not qualified by local tests.",
+    "cli": ["archive", "distribute", "share", "portal", "release"],
+    "extension": ["vectalon.archiveBuild", "vectalon.distributeBuild", "vectalon.shareBuild", "vectalon.generatePortal"],
+    "sources": ["packages/rn/src/protocol/tools/ArchiveTools.ts"]
+  },
+  "rn.device-and-sandbox": {
+    "outcome": "Inspect rendering, performance, device integrations, and configured process isolation. Not a certified security boundary or air-gap guarantee.",
+    "cli": ["ecosystem", "sandbox", "render", "profile", "perf", "daemon", "visual-ci", "visual-baseline"],
+    "sources": ["packages/rn/src/protocol/tools/EcosystemTools.ts", "packages/rn/src/protocol/tools/SandboxTools.ts", "packages/rn/src/protocol/tools/RenderTools.ts", "packages/rn/src/protocol/tools/PerfTools.ts"]
+  },
+  "rn.upgrade-and-fix": {
+    "outcome": "Diagnose and propose or apply bounded upgrades and fixes; verification must be reviewed in the target project.",
+    "cli": ["upgrade", "fix", "bug-fix", "build-fix", "test-repair"],
+    "sources": ["packages/rn/src/protocol/tools/UpgradeTools.ts", "packages/rn/src/cli/commands/fix.ts"]
+  },
+  "rn.evaluation": {
+    "outcome": "Run committed local benchmark scenarios and inspect demonstration or evaluation reports; demonstrations are not production success evidence.",
+    "cli": ["bench", "fix-bench", "rnbench", "leaderboard", "smoke", "selftest", "demo", "sales-demo"],
+    "sources": ["packages/rn/src/bench/runner.ts", "packages/rn/src/cli/commands/demo.ts"]
+  },
+  "rn.commercial-information": {
+    "outcome": "Read current RN lifecycle and plan information; this informational surface does not grant product entitlements.",
+    "sources": ["apps/website/lib/product-manifest.ts"]
+  },
+  "rn.enterprise-controls": { "outcome": "Planned SSO/SAML and security qualification; no certification, guaranteed isolation, instant offline revocation, or unbuilt control is sold.", "planned": true },
+  "rn.hosted-sync": { "outcome": "Planned hosted cloud sync and qualified cross-project intelligence; existing Git sharing is experimental and separately described.", "planned": true },
+  "sdk.ios": { "outcome": "Planned native iOS SDK; no purchase or future-product grant.", "planned": true },
+  "sdk.android": { "outcome": "Planned native Android SDK; no purchase or future-product grant.", "planned": true },
+  "sdk.flutter": { "outcome": "Planned Flutter SDK; no purchase or future-product grant.", "planned": true },
+  "sdk.python": { "outcome": "Planned Python SDK; no purchase or future-product grant.", "planned": true }
+}

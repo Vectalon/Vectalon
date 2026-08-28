@@ -1,0 +1,17 @@
+{
+    "vectalon.archiveBuild": "experimental",
+    "vectalon.checkGuardrails": "beta",
+    "vectalon.distributeBuild": "experimental",
+    "vectalon.generateComponent": "experimental",
+    "vectalon.generatePortal": "experimental",
+    "vectalon.openArtifact": "experimental",
+    "vectalon.projectContext": "beta",
+    "vectalon.refreshKnowledge": "experimental",
+    "vectalon.restartServer": "beta",
+    "vectalon.reviewCode": "experimental",
+    "vectalon.runFeatureWorkflow": "beta",
+    "vectalon.searchKnowledge": "experimental",
+    "vectalon.shareBuild": "experimental",
+    "vectalon.startServer": "beta",
+    "vectalon.stopServer": "beta"
+}

@@ -8,6 +8,8 @@
 // Re-export core interfaces for convenience
 export type { Tier, TierCheck, Product, Feature } from '@vectalon-dev/core'
 export { requireTier } from '@vectalon-dev/core'
+export { capabilityCatalog, surfaceCapability, surfaceAvailability, capabilityLabel } from './capabilities'
+export type { CapabilityDeclaration, CapabilityCatalog } from '@vectalon-dev/core'
 
 export { Scanner, ContextEngine, parseSource, analyzeSourceFile, walk, buildKnowledgeGraph, extractExpoRoutes, computeReRenderImpact } from './harness'
 export { detectWorkspace, findWorkspaceRoot, resolveNodeModulesRoot } from './harness'
@@ -479,4 +481,3 @@ export { loadFixBenchScenarios, defaultFixScenariosDir } from './fixBench/loader
 
 export { runScore, aggregateOverall, buildRecommendations, renderScoreMarkdown, writeScoreReport, scoreDocsDir, findingKey, priorityOf, verdictOf as scoreVerdictOf, readHistory, writeHistory, collectSourceAndTests } from './score'
 export type { ScoreReport, ScoreDimension, ScoreFinding, ScoreOptions, ScorePriority, ScoreRecommendation, ScoreVerdict, ScoreHistory, ScoreHistoryEntry } from './score'
-

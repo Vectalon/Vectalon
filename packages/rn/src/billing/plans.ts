@@ -8,11 +8,9 @@
  * customers actually buy, priced to get the first 5 paying teams, with the
  * exact feature split from the roadmap.
  *
- * Individual → engine `pro`  — Local AI + project intelligence + diagnostics
- * Team       → engine `team` — Team Brain, shared policies, PR review, CI,
- *                              shared knowledge, dashboards
- * Enterprise → engine `enterprise` — self-hosted, SSO, audit, private
- *                              models, org-wide policies, multi-repo intel
+ * Plan entitlement and capability availability are independent. Features in
+ * the generated manifest are commercial promises; runtime availability comes
+ * from the released capability catalog.
  */
 import type { Tier } from '@vectalon-dev/core'
 import productPlans from './product-plans.generated.json'
@@ -36,9 +34,9 @@ export interface PlanDef {
 
 const TAGLINES: Record<PlanId, string> = {
   free: 'Local project setup, diagnostics, and basic React Native guardrails.',
-  individual: 'Local AI + project intelligence + diagnostics.',
-  team: 'Team Brain, shared policies, PR review, CI, shared knowledge, dashboards.',
-  enterprise: 'Self-hosted, SSO, audit, private models, organization-wide policies, multi-repository intelligence.',
+  individual: 'Commercial use for one developer, plus qualified Individual capabilities.',
+  team: 'Commercial use per purchased developer seat, plus qualified Team capabilities.',
+  enterprise: 'Capability, deployment, governance, and support scope defined in the signed order.',
 }
 
 export const PLANS: PlanDef[] = productPlans.map(plan => ({

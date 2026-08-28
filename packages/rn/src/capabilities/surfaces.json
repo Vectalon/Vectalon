@@ -1,0 +1,4962 @@
+[
+  {
+    "key": "api:AcceptanceCriteriaWriter",
+    "kind": "api",
+    "name": "AcceptanceCriteriaWriter",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:AccessibilityChecker",
+    "kind": "api",
+    "name": "AccessibilityChecker",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ActivityTracer",
+    "kind": "api",
+    "name": "ActivityTracer",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ADRWriter",
+    "kind": "api",
+    "name": "ADRWriter",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:aggregateHealth",
+    "kind": "api",
+    "name": "aggregateHealth",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:aggregateOverall",
+    "kind": "api",
+    "name": "aggregateOverall",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:analyzeCpuProfile",
+    "kind": "api",
+    "name": "analyzeCpuProfile",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:analyzeCrashRate",
+    "kind": "api",
+    "name": "analyzeCrashRate",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:analyzeHeapSnapshot",
+    "kind": "api",
+    "name": "analyzeHeapSnapshot",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:analyzeHermesRuntime",
+    "kind": "api",
+    "name": "analyzeHermesRuntime",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:analyzeSourceFile",
+    "kind": "api",
+    "name": "analyzeSourceFile",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:analyzeUpgradeImpact",
+    "kind": "api",
+    "name": "analyzeUpgradeImpact",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:answerBrainQuestion",
+    "kind": "api",
+    "name": "answerBrainQuestion",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:applyEditsToContent",
+    "kind": "api",
+    "name": "applyEditsToContent",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:applyUpgradeCodemods",
+    "kind": "api",
+    "name": "applyUpgradeCodemods",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:areaOfFile",
+    "kind": "api",
+    "name": "areaOfFile",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ARTIFACT_ROLES",
+    "kind": "api",
+    "name": "ARTIFACT_ROLES",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ARTIFACT_TYPES",
+    "kind": "api",
+    "name": "ARTIFACT_TYPES",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:artifactProvenance",
+    "kind": "api",
+    "name": "artifactProvenance",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ArtifactStore",
+    "kind": "api",
+    "name": "ArtifactStore",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ArtifactSync",
+    "kind": "api",
+    "name": "ArtifactSync",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:AXIS_WEIGHTS",
+    "kind": "api",
+    "name": "AXIS_WEIGHTS",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:benchmarkSnapshot",
+    "kind": "api",
+    "name": "benchmarkSnapshot",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:bestEffort",
+    "kind": "api",
+    "name": "bestEffort",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:bestEffortAsync",
+    "kind": "api",
+    "name": "bestEffortAsync",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:blendedRate",
+    "kind": "api",
+    "name": "blendedRate",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:bucketCrashSeries",
+    "kind": "api",
+    "name": "bucketCrashSeries",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:BugTriageAnalyzer",
+    "kind": "api",
+    "name": "BugTriageAnalyzer",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:buildApplicationModel",
+    "kind": "api",
+    "name": "buildApplicationModel",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:buildAreaExpertise",
+    "kind": "api",
+    "name": "buildAreaExpertise",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:buildBwrapArgs",
+    "kind": "api",
+    "name": "buildBwrapArgs",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:buildFixPrompt",
+    "kind": "api",
+    "name": "buildFixPrompt",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:buildHarnessScript",
+    "kind": "api",
+    "name": "buildHarnessScript",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:buildHeartbeatPayload",
+    "kind": "api",
+    "name": "buildHeartbeatPayload",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:buildKnowledgeGraph",
+    "kind": "api",
+    "name": "buildKnowledgeGraph",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:buildLimitWrapper",
+    "kind": "api",
+    "name": "buildLimitWrapper",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:buildLLMReviewPrompt",
+    "kind": "api",
+    "name": "buildLLMReviewPrompt",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:buildMacProfile",
+    "kind": "api",
+    "name": "buildMacProfile",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:buildMetroReporterSource",
+    "kind": "api",
+    "name": "buildMetroReporterSource",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:buildRecommendations",
+    "kind": "api",
+    "name": "buildRecommendations",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:buildShellArgs",
+    "kind": "api",
+    "name": "buildShellArgs",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:buildShimFile",
+    "kind": "api",
+    "name": "buildShimFile",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:buildSupportBundle",
+    "kind": "api",
+    "name": "buildSupportBundle",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:bumpVersion",
+    "kind": "api",
+    "name": "bumpVersion",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:capabilityCatalog",
+    "kind": "api",
+    "name": "capabilityCatalog",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:capabilityLabel",
+    "kind": "api",
+    "name": "capabilityLabel",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:captureError",
+    "kind": "api",
+    "name": "captureError",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:categorizeChecks",
+    "kind": "api",
+    "name": "categorizeChecks",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:checksum",
+    "kind": "api",
+    "name": "checksum",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:classifyJsThread",
+    "kind": "api",
+    "name": "classifyJsThread",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:CodeReviewAnalyzer",
+    "kind": "api",
+    "name": "CodeReviewAnalyzer",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:collectDiagnosticsBundle",
+    "kind": "api",
+    "name": "collectDiagnosticsBundle",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:collectHealthReport",
+    "kind": "api",
+    "name": "collectHealthReport",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:collectOutcomes",
+    "kind": "api",
+    "name": "collectOutcomes",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:collectSourceAndTests",
+    "kind": "api",
+    "name": "collectSourceAndTests",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:commandContext",
+    "kind": "api",
+    "name": "commandContext",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:compareToBaseline",
+    "kind": "api",
+    "name": "compareToBaseline",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:compileSource",
+    "kind": "api",
+    "name": "compileSource",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ComponentGenerator",
+    "kind": "api",
+    "name": "ComponentGenerator",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:compositeScore",
+    "kind": "api",
+    "name": "compositeScore",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:computeConfidence",
+    "kind": "api",
+    "name": "computeConfidence",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:computeReRenderImpact",
+    "kind": "api",
+    "name": "computeReRenderImpact",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:confidenceFactor",
+    "kind": "api",
+    "name": "confidenceFactor",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ContextEngine",
+    "kind": "api",
+    "name": "ContextEngine",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:CORRECTNESS_WEIGHTS",
+    "kind": "api",
+    "name": "CORRECTNESS_WEIGHTS",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:cosineSimilarity",
+    "kind": "api",
+    "name": "cosineSimilarity",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:createAdapters",
+    "kind": "api",
+    "name": "createAdapters",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:createArtifactSync",
+    "kind": "api",
+    "name": "createArtifactSync",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:createModelGenerate",
+    "kind": "api",
+    "name": "createModelGenerate",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:createRemoteEmbeddingProvider",
+    "kind": "api",
+    "name": "createRemoteEmbeddingProvider",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:createTracedRunner",
+    "kind": "api",
+    "name": "createTracedRunner",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:createWorkflowState",
+    "kind": "api",
+    "name": "createWorkflowState",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:DaemonServer",
+    "kind": "api",
+    "name": "DaemonServer",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:daemonStatePath",
+    "kind": "api",
+    "name": "daemonStatePath",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:daemonStatus",
+    "kind": "api",
+    "name": "daemonStatus",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:DebugAnalyzer",
+    "kind": "api",
+    "name": "DebugAnalyzer",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:decisionMatches",
+    "kind": "api",
+    "name": "decisionMatches",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:DEFAULT_HEARTBEAT_INTERVAL_MS",
+    "kind": "api",
+    "name": "DEFAULT_HEARTBEAT_INTERVAL_MS",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:DEFAULT_SYNC_BRANCH",
+    "kind": "api",
+    "name": "DEFAULT_SYNC_BRANCH",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:DEFAULT_TELEMETRY_BASE_URL",
+    "kind": "api",
+    "name": "DEFAULT_TELEMETRY_BASE_URL",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:DEFAULT_TELEMETRY_DIRS",
+    "kind": "api",
+    "name": "DEFAULT_TELEMETRY_DIRS",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:defaultFixScenariosDir",
+    "kind": "api",
+    "name": "defaultFixScenariosDir",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:defaultReferencesDir",
+    "kind": "api",
+    "name": "defaultReferencesDir",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:defaultScenariosDir",
+    "kind": "api",
+    "name": "defaultScenariosDir",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:defaultWsFactory",
+    "kind": "api",
+    "name": "defaultWsFactory",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:deriveAnomalyBaseline",
+    "kind": "api",
+    "name": "deriveAnomalyBaseline",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:deriveFromGitHistory",
+    "kind": "api",
+    "name": "deriveFromGitHistory",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:describeProvider",
+    "kind": "api",
+    "name": "describeProvider",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:DesignSystemExtractor",
+    "kind": "api",
+    "name": "DesignSystemExtractor",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:detectBackend",
+    "kind": "api",
+    "name": "detectBackend",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:detectBumpType",
+    "kind": "api",
+    "name": "detectBumpType",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:detectCiProvider",
+    "kind": "api",
+    "name": "detectCiProvider",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:detectCiProviderFromEnv",
+    "kind": "api",
+    "name": "detectCiProviderFromEnv",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:detectCrashAnomaly",
+    "kind": "api",
+    "name": "detectCrashAnomaly",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:detectDevicePlatform",
+    "kind": "api",
+    "name": "detectDevicePlatform",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:detectProjectTooling",
+    "kind": "api",
+    "name": "detectProjectTooling",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:detectProjectType",
+    "kind": "api",
+    "name": "detectProjectType",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:detectProjectTypeFromPkg",
+    "kind": "api",
+    "name": "detectProjectTypeFromPkg",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:detectTelemetryFormat",
+    "kind": "api",
+    "name": "detectTelemetryFormat",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:detectVersions",
+    "kind": "api",
+    "name": "detectVersions",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:detectWorkspace",
+    "kind": "api",
+    "name": "detectWorkspace",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:deterministicGenerate",
+    "kind": "api",
+    "name": "deterministicGenerate",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:DeviceController",
+    "kind": "api",
+    "name": "DeviceController",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:diffBundleComposition",
+    "kind": "api",
+    "name": "diffBundleComposition",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:disableEcosystemItem",
+    "kind": "api",
+    "name": "disableEcosystemItem",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:discoverHermesTargets",
+    "kind": "api",
+    "name": "discoverHermesTargets",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ECOSYSTEM_CATALOG",
+    "kind": "api",
+    "name": "ECOSYSTEM_CATALOG",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ECOSYSTEM_ITEMS",
+    "kind": "api",
+    "name": "ECOSYSTEM_ITEMS",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:EMPTY_COUNTS",
+    "kind": "api",
+    "name": "EMPTY_COUNTS",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:enableEcosystemItem",
+    "kind": "api",
+    "name": "enableEcosystemItem",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ensureCiConfigs",
+    "kind": "api",
+    "name": "ensureCiConfigs",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ensureReleaseConfigs",
+    "kind": "api",
+    "name": "ensureReleaseConfigs",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:err",
+    "kind": "api",
+    "name": "err",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ERROR_ENDPOINT",
+    "kind": "api",
+    "name": "ERROR_ENDPOINT",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:errorsEnabled",
+    "kind": "api",
+    "name": "errorsEnabled",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:EXPO_SDK_RN_PAIRS",
+    "kind": "api",
+    "name": "EXPO_SDK_RN_PAIRS",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:exportEcosystemConfig",
+    "kind": "api",
+    "name": "exportEcosystemConfig",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:extractExpoRoutes",
+    "kind": "api",
+    "name": "extractExpoRoutes",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:extractFixedCode",
+    "kind": "api",
+    "name": "extractFixedCode",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:FEATURE_CATALOG",
+    "kind": "api",
+    "name": "FEATURE_CATALOG",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:featureDevelopmentWorkflow",
+    "kind": "api",
+    "name": "featureDevelopmentWorkflow",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:findingKey",
+    "kind": "api",
+    "name": "findingKey",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:findPriorRun",
+    "kind": "api",
+    "name": "findPriorRun",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:findWorkspaceRoot",
+    "kind": "api",
+    "name": "findWorkspaceRoot",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:FIX_BENCH_BASE",
+    "kind": "api",
+    "name": "FIX_BENCH_BASE",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:fixCodeWithLLM",
+    "kind": "api",
+    "name": "fixCodeWithLLM",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:fixDocsDir",
+    "kind": "api",
+    "name": "fixDocsDir",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:flushErrorQueue",
+    "kind": "api",
+    "name": "flushErrorQueue",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:formatBenchmarkReport",
+    "kind": "api",
+    "name": "formatBenchmarkReport",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:formatFailedHeals",
+    "kind": "api",
+    "name": "formatFailedHeals",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:formatLLMReview",
+    "kind": "api",
+    "name": "formatLLMReview",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:formatRubricResult",
+    "kind": "api",
+    "name": "formatRubricResult",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:GapAnalyzer",
+    "kind": "api",
+    "name": "GapAnalyzer",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:generateAzurePipeline",
+    "kind": "api",
+    "name": "generateAzurePipeline",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:generateBitbucketPipelines",
+    "kind": "api",
+    "name": "generateBitbucketPipelines",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:generateEasReleaseWorkflow",
+    "kind": "api",
+    "name": "generateEasReleaseWorkflow",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:generateEasWorkflow",
+    "kind": "api",
+    "name": "generateEasWorkflow",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:generateGithubActionsWorkflow",
+    "kind": "api",
+    "name": "generateGithubActionsWorkflow",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:generateGithubReleaseWorkflow",
+    "kind": "api",
+    "name": "generateGithubReleaseWorkflow",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:generateGitlabCi",
+    "kind": "api",
+    "name": "generateGitlabCi",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:generateSupportToken",
+    "kind": "api",
+    "name": "generateSupportToken",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:getConfig",
+    "kind": "api",
+    "name": "getConfig",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:getEcosystemItem",
+    "kind": "api",
+    "name": "getEcosystemItem",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:getFeatureCheck",
+    "kind": "api",
+    "name": "getFeatureCheck",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:getLatestCrashBaseline",
+    "kind": "api",
+    "name": "getLatestCrashBaseline",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:getLatestPerfBaseline",
+    "kind": "api",
+    "name": "getLatestPerfBaseline",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:getWasmPreset",
+    "kind": "api",
+    "name": "getWasmPreset",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:getWorkflow",
+    "kind": "api",
+    "name": "getWorkflow",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:guardrailPassRate",
+    "kind": "api",
+    "name": "guardrailPassRate",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:guardrailPerFile",
+    "kind": "api",
+    "name": "guardrailPerFile",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:HashEmbeddingProvider",
+    "kind": "api",
+    "name": "HashEmbeddingProvider",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:hasMetroReporter",
+    "kind": "api",
+    "name": "hasMetroReporter",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:HEAL_LOOP",
+    "kind": "api",
+    "name": "HEAL_LOOP",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:HEARTBEAT_ENDPOINT",
+    "kind": "api",
+    "name": "HEARTBEAT_ENDPOINT",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:hoursSaved",
+    "kind": "api",
+    "name": "hoursSaved",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:IncidentAnalyzer",
+    "kind": "api",
+    "name": "IncidentAnalyzer",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:INTEL_MAX_AGE_DEFAULT_MS",
+    "kind": "api",
+    "name": "INTEL_MAX_AGE_DEFAULT_MS",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:isBreaking",
+    "kind": "api",
+    "name": "isBreaking",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:isDaemonRunning",
+    "kind": "api",
+    "name": "isDaemonRunning",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:isDecisionQuestion",
+    "kind": "api",
+    "name": "isDecisionQuestion",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:isDeploymentMode",
+    "kind": "api",
+    "name": "isDeploymentMode",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:KnowledgeIndex",
+    "kind": "api",
+    "name": "KnowledgeIndex",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:KNOWN_RN_MINORS",
+    "kind": "api",
+    "name": "KNOWN_RN_MINORS",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:KpiReportAnalyzer",
+    "kind": "api",
+    "name": "KpiReportAnalyzer",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:LATEST_KNOWN_RN",
+    "kind": "api",
+    "name": "LATEST_KNOWN_RN",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:LintFixer",
+    "kind": "api",
+    "name": "LintFixer",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:listEcosystemItems",
+    "kind": "api",
+    "name": "listEcosystemItems",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:listFeatureChecks",
+    "kind": "api",
+    "name": "listFeatureChecks",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:listVectalonState",
+    "kind": "api",
+    "name": "listVectalonState",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:listWorkflows",
+    "kind": "api",
+    "name": "listWorkflows",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:LiveProgressReporter",
+    "kind": "api",
+    "name": "LiveProgressReporter",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:loadFailedHeals",
+    "kind": "api",
+    "name": "loadFailedHeals",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:loadFixBenchScenarios",
+    "kind": "api",
+    "name": "loadFixBenchScenarios",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:loadReferences",
+    "kind": "api",
+    "name": "loadReferences",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:loadScenarios",
+    "kind": "api",
+    "name": "loadScenarios",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:MaestroFlowWriter",
+    "kind": "api",
+    "name": "MaestroFlowWriter",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:MAX_QUEUED_ERRORS",
+    "kind": "api",
+    "name": "MAX_QUEUED_ERRORS",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:MAX_REVIEW_ATTEMPTS",
+    "kind": "api",
+    "name": "MAX_REVIEW_ATTEMPTS",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:MCPServer",
+    "kind": "api",
+    "name": "MCPServer",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:measureJsThreadLatency",
+    "kind": "api",
+    "name": "measureJsThreadLatency",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:MetroEventHandler",
+    "kind": "api",
+    "name": "MetroEventHandler",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:metroReporterPath",
+    "kind": "api",
+    "name": "metroReporterPath",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:MIGRATION_CATALOG",
+    "kind": "api",
+    "name": "MIGRATION_CATALOG",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:MODE_DEFAULT_PROVIDER",
+    "kind": "api",
+    "name": "MODE_DEFAULT_PROVIDER",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:MODE_IDS",
+    "kind": "api",
+    "name": "MODE_IDS",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:MODE_PROVIDERS",
+    "kind": "api",
+    "name": "MODE_PROVIDERS",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:modeAllows",
+    "kind": "api",
+    "name": "modeAllows",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ModelRouter",
+    "kind": "api",
+    "name": "ModelRouter",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:modeOfProvider",
+    "kind": "api",
+    "name": "modeOfProvider",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:MODES",
+    "kind": "api",
+    "name": "MODES",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:monitorRelease",
+    "kind": "api",
+    "name": "monitorRelease",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:monitorReleaseAnomaly",
+    "kind": "api",
+    "name": "monitorReleaseAnomaly",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ok",
+    "kind": "api",
+    "name": "ok",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:OpenAICompatibleEmbeddingProvider",
+    "kind": "api",
+    "name": "OpenAICompatibleEmbeddingProvider",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:OpenAIEmbeddingProvider",
+    "kind": "api",
+    "name": "OpenAIEmbeddingProvider",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:OUTCOME_HOURS",
+    "kind": "api",
+    "name": "OUTCOME_HOURS",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:parseCommitHistory",
+    "kind": "api",
+    "name": "parseCommitHistory",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:parseCpuProfile",
+    "kind": "api",
+    "name": "parseCpuProfile",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:parseCrashlyticsReport",
+    "kind": "api",
+    "name": "parseCrashlyticsReport",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:parseDecisionCard",
+    "kind": "api",
+    "name": "parseDecisionCard",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:parseGitLog",
+    "kind": "api",
+    "name": "parseGitLog",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:parseLLMReview",
+    "kind": "api",
+    "name": "parseLLMReview",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:parseSentryExport",
+    "kind": "api",
+    "name": "parseSentryExport",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:parseSource",
+    "kind": "api",
+    "name": "parseSource",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:parseTelemetryContent",
+    "kind": "api",
+    "name": "parseTelemetryContent",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:PatternLearner",
+    "kind": "api",
+    "name": "PatternLearner",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:patternProvenance",
+    "kind": "api",
+    "name": "patternProvenance",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:PIPELINE",
+    "kind": "api",
+    "name": "PIPELINE",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:PLAN_BY_ID",
+    "kind": "api",
+    "name": "PLAN_BY_ID",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:planCovers",
+    "kind": "api",
+    "name": "planCovers",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:planForTier",
+    "kind": "api",
+    "name": "planForTier",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:planRelease",
+    "kind": "api",
+    "name": "planRelease",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:PLANS",
+    "kind": "api",
+    "name": "PLANS",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:planUpgrade",
+    "kind": "api",
+    "name": "planUpgrade",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:priorityOf",
+    "kind": "api",
+    "name": "priorityOf",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:proactiveBundleTip",
+    "kind": "api",
+    "name": "proactiveBundleTip",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:PROBE_INTERVAL_MS",
+    "kind": "api",
+    "name": "PROBE_INTERVAL_MS",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ProjectMemory",
+    "kind": "api",
+    "name": "ProjectMemory",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:PROVIDER_PATHS",
+    "kind": "api",
+    "name": "PROVIDER_PATHS",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:queuePathFor",
+    "kind": "api",
+    "name": "queuePathFor",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:rankByConfidence",
+    "kind": "api",
+    "name": "rankByConfidence",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:readDaemonState",
+    "kind": "api",
+    "name": "readDaemonState",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:readEcosystemConfig",
+    "kind": "api",
+    "name": "readEcosystemConfig",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:readErrorQueue",
+    "kind": "api",
+    "name": "readErrorQueue",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:readHistory",
+    "kind": "api",
+    "name": "readHistory",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:readProjectIntel",
+    "kind": "api",
+    "name": "readProjectIntel",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:readSanitizedPackageJson",
+    "kind": "api",
+    "name": "readSanitizedPackageJson",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:readSyncConfig",
+    "kind": "api",
+    "name": "readSyncConfig",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:recencyFactor",
+    "kind": "api",
+    "name": "recencyFactor",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:recordCrashBaseline",
+    "kind": "api",
+    "name": "recordCrashBaseline",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:recordFailedHeals",
+    "kind": "api",
+    "name": "recordFailedHeals",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:recordPerfBaseline",
+    "kind": "api",
+    "name": "recordPerfBaseline",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:RefactorSuggester",
+    "kind": "api",
+    "name": "RefactorSuggester",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ReleaseNoteWriter",
+    "kind": "api",
+    "name": "ReleaseNoteWriter",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:RENDER_MARKER",
+    "kind": "api",
+    "name": "RENDER_MARKER",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderActivityLog",
+    "kind": "api",
+    "name": "renderActivityLog",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderAnomalyReport",
+    "kind": "api",
+    "name": "renderAnomalyReport",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderApplicationModel",
+    "kind": "api",
+    "name": "renderApplicationModel",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderBaselineComparison",
+    "kind": "api",
+    "name": "renderBaselineComparison",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderBrainAnswer",
+    "kind": "api",
+    "name": "renderBrainAnswer",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderDecisionCard",
+    "kind": "api",
+    "name": "renderDecisionCard",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderExpertiseTree",
+    "kind": "api",
+    "name": "renderExpertiseTree",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderFixMarkdown",
+    "kind": "api",
+    "name": "renderFixMarkdown",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderGitDerivation",
+    "kind": "api",
+    "name": "renderGitDerivation",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderHealLoop",
+    "kind": "api",
+    "name": "renderHealLoop",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderHtmlReport",
+    "kind": "api",
+    "name": "renderHtmlReport",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderInSandbox",
+    "kind": "api",
+    "name": "renderInSandbox",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderJsonReport",
+    "kind": "api",
+    "name": "renderJsonReport",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderMonitorReport",
+    "kind": "api",
+    "name": "renderMonitorReport",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderOutcomeLines",
+    "kind": "api",
+    "name": "renderOutcomeLines",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderPerfReport",
+    "kind": "api",
+    "name": "renderPerfReport",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderPipeline",
+    "kind": "api",
+    "name": "renderPipeline",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderReleasePlan",
+    "kind": "api",
+    "name": "renderReleasePlan",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderRenderResult",
+    "kind": "api",
+    "name": "renderRenderResult",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderSandboxResult",
+    "kind": "api",
+    "name": "renderSandboxResult",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderScoreMarkdown",
+    "kind": "api",
+    "name": "renderScoreMarkdown",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderTerminalReport",
+    "kind": "api",
+    "name": "renderTerminalReport",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderTerminalSummary",
+    "kind": "api",
+    "name": "renderTerminalSummary",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:renderUpgradeReport",
+    "kind": "api",
+    "name": "renderUpgradeReport",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:reportError",
+    "kind": "api",
+    "name": "reportError",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:reportErrorTelemetry",
+    "kind": "api",
+    "name": "reportErrorTelemetry",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:RequirementWriter",
+    "kind": "api",
+    "name": "RequirementWriter",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:requireTier",
+    "kind": "api",
+    "name": "requireTier",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:resetBackendCache",
+    "kind": "api",
+    "name": "resetBackendCache",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:resolveNodeModulesRoot",
+    "kind": "api",
+    "name": "resolveNodeModulesRoot",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:resolveProjectBabel",
+    "kind": "api",
+    "name": "resolveProjectBabel",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:resolveTarget",
+    "kind": "api",
+    "name": "resolveTarget",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:reviewCodeWithLLM",
+    "kind": "api",
+    "name": "reviewCodeWithLLM",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:RN_REACT_PAIRS",
+    "kind": "api",
+    "name": "RN_REACT_PAIRS",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ROLE_ARTIFACT_TYPES",
+    "kind": "api",
+    "name": "ROLE_ARTIFACT_TYPES",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:RoleEngine",
+    "kind": "api",
+    "name": "RoleEngine",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:RootCauseAnalyzer",
+    "kind": "api",
+    "name": "RootCauseAnalyzer",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:rubricAdherence",
+    "kind": "api",
+    "name": "rubricAdherence",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:rubricChecks",
+    "kind": "api",
+    "name": "rubricChecks",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:runBenchmark",
+    "kind": "api",
+    "name": "runBenchmark",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:runBenchmarkFromDir",
+    "kind": "api",
+    "name": "runBenchmarkFromDir",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:RunbookWriter",
+    "kind": "api",
+    "name": "RunbookWriter",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:runFix",
+    "kind": "api",
+    "name": "runFix",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:runFixBenchmark",
+    "kind": "api",
+    "name": "runFixBenchmark",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:runFixBenchmarkFromDir",
+    "kind": "api",
+    "name": "runFixBenchmarkFromDir",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:runFixScenario",
+    "kind": "api",
+    "name": "runFixScenario",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:runProbeCycle",
+    "kind": "api",
+    "name": "runProbeCycle",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:runRubric",
+    "kind": "api",
+    "name": "runRubric",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:runSandboxed",
+    "kind": "api",
+    "name": "runSandboxed",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:runScenario",
+    "kind": "api",
+    "name": "runScenario",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:runScore",
+    "kind": "api",
+    "name": "runScore",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:runSelfTest",
+    "kind": "api",
+    "name": "runSelfTest",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:runUpgrade",
+    "kind": "api",
+    "name": "runUpgrade",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:safe",
+    "kind": "api",
+    "name": "safe",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:safeAsync",
+    "kind": "api",
+    "name": "safeAsync",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:Sandbox",
+    "kind": "api",
+    "name": "Sandbox",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:sanitize",
+    "kind": "api",
+    "name": "sanitize",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:savingsEstimate",
+    "kind": "api",
+    "name": "savingsEstimate",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:Scanner",
+    "kind": "api",
+    "name": "Scanner",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:SCENARIO_SPEC_VERSION",
+    "kind": "api",
+    "name": "SCENARIO_SPEC_VERSION",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:scoreDocsDir",
+    "kind": "api",
+    "name": "scoreDocsDir",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:scoreVerdictOf",
+    "kind": "api",
+    "name": "scoreVerdictOf",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:scrubEnv",
+    "kind": "api",
+    "name": "scrubEnv",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:SELF_TEST_CATEGORIES",
+    "kind": "api",
+    "name": "SELF_TEST_CATEGORIES",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:sendHeartbeat",
+    "kind": "api",
+    "name": "sendHeartbeat",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:setConfig",
+    "kind": "api",
+    "name": "setConfig",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:setErrorsEnabled",
+    "kind": "api",
+    "name": "setErrorsEnabled",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:SHIM_SOURCE",
+    "kind": "api",
+    "name": "SHIM_SOURCE",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:shouldRunScenario",
+    "kind": "api",
+    "name": "shouldRunScenario",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:SOURCE_CONFIDENCE",
+    "kind": "api",
+    "name": "SOURCE_CONFIDENCE",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:stalenessDate",
+    "kind": "api",
+    "name": "stalenessDate",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:startDaemon",
+    "kind": "api",
+    "name": "startDaemon",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:startHeartbeat",
+    "kind": "api",
+    "name": "startHeartbeat",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:STATUS_CONFIDENCE",
+    "kind": "api",
+    "name": "STATUS_CONFIDENCE",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:stopDaemon",
+    "kind": "api",
+    "name": "stopDaemon",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:StoryWriter",
+    "kind": "api",
+    "name": "StoryWriter",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:stringifyRenderTree",
+    "kind": "api",
+    "name": "stringifyRenderTree",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:summarizeImpact",
+    "kind": "api",
+    "name": "summarizeImpact",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:SUPPORT_ENDPOINT",
+    "kind": "api",
+    "name": "SUPPORT_ENDPOINT",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:SUPPORT_RECIPIENT",
+    "kind": "api",
+    "name": "SUPPORT_RECIPIENT",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:SupportTicketAnalyzer",
+    "kind": "api",
+    "name": "SupportTicketAnalyzer",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:surfaceAvailability",
+    "kind": "api",
+    "name": "surfaceAvailability",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:surfaceCapability",
+    "kind": "api",
+    "name": "surfaceCapability",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:SWOTAnalyzer",
+    "kind": "api",
+    "name": "SWOTAnalyzer",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:TeamStore",
+    "kind": "api",
+    "name": "TeamStore",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:TELEMETRY_BASE_URL",
+    "kind": "api",
+    "name": "TELEMETRY_BASE_URL",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:TelemetryIngestionService",
+    "kind": "api",
+    "name": "TelemetryIngestionService",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:TestCaseWriter",
+    "kind": "api",
+    "name": "TestCaseWriter",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:TestPlanWriter",
+    "kind": "api",
+    "name": "TestPlanWriter",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:TestWriter",
+    "kind": "api",
+    "name": "TestWriter",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:ThreatModeler",
+    "kind": "api",
+    "name": "ThreatModeler",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:toError",
+    "kind": "api",
+    "name": "toError",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:tokenForRoot",
+    "kind": "api",
+    "name": "tokenForRoot",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:tokensOf",
+    "kind": "api",
+    "name": "tokensOf",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:totalsForRuns",
+    "kind": "api",
+    "name": "totalsForRuns",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:Traceability",
+    "kind": "api",
+    "name": "Traceability",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:TradeoffAnalyzer",
+    "kind": "api",
+    "name": "TradeoffAnalyzer",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:uploadSupportBundle",
+    "kind": "api",
+    "name": "uploadSupportBundle",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:validateScenario",
+    "kind": "api",
+    "name": "validateScenario",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:verdictOf",
+    "kind": "api",
+    "name": "verdictOf",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:verifyMode",
+    "kind": "api",
+    "name": "verifyMode",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:verifyUpgrade",
+    "kind": "api",
+    "name": "verifyUpgrade",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:walk",
+    "kind": "api",
+    "name": "walk",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:WASM_MODEL_PRESETS",
+    "kind": "api",
+    "name": "WASM_MODEL_PRESETS",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:wasmCacheDir",
+    "kind": "api",
+    "name": "wasmCacheDir",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:wasmCacheReady",
+    "kind": "api",
+    "name": "wasmCacheReady",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:wasmDtype",
+    "kind": "api",
+    "name": "wasmDtype",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:WasmProvider",
+    "kind": "api",
+    "name": "WasmProvider",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:wasmZeroConfigEnabled",
+    "kind": "api",
+    "name": "wasmZeroConfigEnabled",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:WireframeGenerator",
+    "kind": "api",
+    "name": "WireframeGenerator",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:wireMetroReporter",
+    "kind": "api",
+    "name": "wireMetroReporter",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:WorkflowEngine",
+    "kind": "api",
+    "name": "WorkflowEngine",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:writeDiagnosticsBundle",
+    "kind": "api",
+    "name": "writeDiagnosticsBundle",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:writeEcosystemConfig",
+    "kind": "api",
+    "name": "writeEcosystemConfig",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:writeErrorQueue",
+    "kind": "api",
+    "name": "writeErrorQueue",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:writeFixReport",
+    "kind": "api",
+    "name": "writeFixReport",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:writeHistory",
+    "kind": "api",
+    "name": "writeHistory",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:writeMetroReporter",
+    "kind": "api",
+    "name": "writeMetroReporter",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:writeScoreReport",
+    "kind": "api",
+    "name": "writeScoreReport",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:writeSupportBundle",
+    "kind": "api",
+    "name": "writeSupportBundle",
+    "source": "packages/rn/src/diagnostics/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "api:writeSyncConfig",
+    "kind": "api",
+    "name": "writeSyncConfig",
+    "source": "packages/rn/src/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-01-login-screen.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-01-login-screen.json",
+    "source": "packages/rn/bench/scenarios/rn-01-login-screen.json",
+    "digest": "sha256:219bd55a323479eeaa893a33f22f906f588dbd7b98e3239e658605ac9606b91f",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-02-flatlist-fetch.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-02-flatlist-fetch.json",
+    "source": "packages/rn/bench/scenarios/rn-02-flatlist-fetch.json",
+    "digest": "sha256:07f55e2ee1498597ca60da2aca3fddda24af04099f53094fa591a124d8757d39",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-03-dark-mode-component.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-03-dark-mode-component.json",
+    "source": "packages/rn/bench/scenarios/rn-03-dark-mode-component.json",
+    "digest": "sha256:05292bd98a5b926bec202a31ad97d0095327e8531767fd13ecbc917f5657c987",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-04-typed-navigation.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-04-typed-navigation.json",
+    "source": "packages/rn/bench/scenarios/rn-04-typed-navigation.json",
+    "digest": "sha256:d1fe6c2dbe1cbcf363776ca8ec178ac1ba2b10388d57a5162a924af9d6aa1e3d",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-05-form-validation.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-05-form-validation.json",
+    "source": "packages/rn/bench/scenarios/rn-05-form-validation.json",
+    "digest": "sha256:80cff114894e4bb0a59728350674388ae228e47cbcbf048eaa8ef251f1e305c2",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-06-offline-queue.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-06-offline-queue.json",
+    "source": "packages/rn/bench/scenarios/rn-06-offline-queue.json",
+    "digest": "sha256:a02c2619203b5d70d890972eddf6397ab906dca4d68d1b4ff334df53ca98cd0e",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-07-image-feed.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-07-image-feed.json",
+    "source": "packages/rn/bench/scenarios/rn-07-image-feed.json",
+    "digest": "sha256:3a7fad744b8fc1227d5535d08e2b86bf4c57d26f1e7e888635633e50cf1f3666",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-08-feature-flags.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-08-feature-flags.json",
+    "source": "packages/rn/bench/scenarios/rn-08-feature-flags.json",
+    "digest": "sha256:64b2a62b8cd04e51cb29f0d6e39aae54696a6f8395d7c3e12c14203b97decab2",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-09-accessible-form.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-09-accessible-form.json",
+    "source": "packages/rn/bench/scenarios/rn-09-accessible-form.json",
+    "digest": "sha256:43d978d866ee0ecaa4e3e8215f43e3274c922f909d3d470e175955bc82bbfc08",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-10-refactor-hooks-ts.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-10-refactor-hooks-ts.json",
+    "source": "packages/rn/bench/scenarios/rn-10-refactor-hooks-ts.json",
+    "digest": "sha256:476fe3f02bf89dce71e653eab046f77eb8a435fd0dfcaba661163a3e28a37b57",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-11-remove-dependency-native.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-11-remove-dependency-native.json",
+    "source": "packages/rn/bench/scenarios/rn-11-remove-dependency-native.json",
+    "digest": "sha256:9d8f923b4c62396d7eb7845539397bb7a43cda3e9ebd06163e132afea310c14d",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-12-notifications-screen.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-12-notifications-screen.json",
+    "source": "packages/rn/bench/scenarios/rn-12-notifications-screen.json",
+    "digest": "sha256:df553a8e35b391fb3eab734ceea57584d2dd635c5b7bca8ae0d5d9ff31efdbee",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-13-account-delete-screen.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-13-account-delete-screen.json",
+    "source": "packages/rn/bench/scenarios/rn-13-account-delete-screen.json",
+    "digest": "sha256:6a72eb50bd59b00c82b1010570f0f2db7678fe936585c79ceec3329ba8643156",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-14-checkout-flow.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-14-checkout-flow.json",
+    "source": "packages/rn/bench/scenarios/rn-14-checkout-flow.json",
+    "digest": "sha256:2bf33ca726617d202eb4993810c0c054d1c34f0afe41be18cbd0286d5b2db5c2",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-15-product-search.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-15-product-search.json",
+    "source": "packages/rn/bench/scenarios/rn-15-product-search.json",
+    "digest": "sha256:de848f46318850497e3f45ecea0cb4fcf313f1334f21910f636ce8f1169fd4de",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-16-chat-thread.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-16-chat-thread.json",
+    "source": "packages/rn/bench/scenarios/rn-16-chat-thread.json",
+    "digest": "sha256:6fadbf8e0cd7975b4280b97a564b01d590252bce3e13fe933e7299c79cb7442d",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-17-social-feed.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-17-social-feed.json",
+    "source": "packages/rn/bench/scenarios/rn-17-social-feed.json",
+    "digest": "sha256:8bec8b8dfd136836d7794f308be133ca75fdac7bb77511443edaad889440445d",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-18-booking-slots.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-18-booking-slots.json",
+    "source": "packages/rn/bench/scenarios/rn-18-booking-slots.json",
+    "digest": "sha256:fb4bce1ed3423a717435363bb922777132c1481752d59d7c9d7f8797dbb64d53",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-19-payment-methods.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-19-payment-methods.json",
+    "source": "packages/rn/bench/scenarios/rn-19-payment-methods.json",
+    "digest": "sha256:ea56fd72b28e45872ae68b15f4168a94e64d64e4ca35f153f8135cf02a6ac44a",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-20-order-tracking.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-20-order-tracking.json",
+    "source": "packages/rn/bench/scenarios/rn-20-order-tracking.json",
+    "digest": "sha256:13f0f087973322e0de510fa4d41a39cd337ac02839e1013b722ba0d9757b1ea8",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-21-health-dashboard.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-21-health-dashboard.json",
+    "source": "packages/rn/bench/scenarios/rn-21-health-dashboard.json",
+    "digest": "sha256:35cd63ae29fc5e7636ac9d842a9ba9fd01ed1b1061caf2500bc83d2a6835de28",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-22-workout-timer.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-22-workout-timer.json",
+    "source": "packages/rn/bench/scenarios/rn-22-workout-timer.json",
+    "digest": "sha256:cb98fe12a60a52bc68272e3a49ed793d13b3b88550c9925a408d03d5a5cc4cd6",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-23-music-player.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-23-music-player.json",
+    "source": "packages/rn/bench/scenarios/rn-23-music-player.json",
+    "digest": "sha256:b48c337a521ab80e652a9c09b4dc758c5e545ffcaf56688097828472a0a4be5c",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-24-video-detail.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-24-video-detail.json",
+    "source": "packages/rn/bench/scenarios/rn-24-video-detail.json",
+    "digest": "sha256:6341995b17e8908b2dcb6239fac6755ca21615786486c3a94c0f3d24639c8c75",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-25-profile-edit.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-25-profile-edit.json",
+    "source": "packages/rn/bench/scenarios/rn-25-profile-edit.json",
+    "digest": "sha256:a49bf4a86ea3c32fbc872e58fe414d5dc2bf9e12aba89cf87f55aa57d7681723",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-26-onboarding-wizard.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-26-onboarding-wizard.json",
+    "source": "packages/rn/bench/scenarios/rn-26-onboarding-wizard.json",
+    "digest": "sha256:3090d524473d92cc93caca21c3b894b1822f1017328c55b6255a3690e90c3d82",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-27-biometric-gate.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-27-biometric-gate.json",
+    "source": "packages/rn/bench/scenarios/rn-27-biometric-gate.json",
+    "digest": "sha256:52b7417b3e5b7f4ae8988668a6fe2e55512da1890f3bedf95886adb823093a39",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-28-document-list.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-28-document-list.json",
+    "source": "packages/rn/bench/scenarios/rn-28-document-list.json",
+    "digest": "sha256:316de4607a788cfdfd253bf8495f055699ffe4ce4a769d14f4ced08330ff963e",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-29-task-board.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-29-task-board.json",
+    "source": "packages/rn/bench/scenarios/rn-29-task-board.json",
+    "digest": "sha256:4e64c2547dc33fbfbc1ed57d5739a904a2e6462fc80052d400856877a0c8bf07",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-30-subscription-plans.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-30-subscription-plans.json",
+    "source": "packages/rn/bench/scenarios/rn-30-subscription-plans.json",
+    "digest": "sha256:0bc898779434843d28d27b7e7dd5cf1e941143f70f686d26f57fa88858e22073",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-31-places-nearby.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-31-places-nearby.json",
+    "source": "packages/rn/bench/scenarios/rn-31-places-nearby.json",
+    "digest": "sha256:57d916f20a0fecd0c77cca984824e67d88893b1246188ac7a4f5f2beed55e807",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-32-weather-forecast.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-32-weather-forecast.json",
+    "source": "packages/rn/bench/scenarios/rn-32-weather-forecast.json",
+    "digest": "sha256:9ecd43a3200e0ef84801e89470b152ea32ae10d8d8582e8a8ff78aa3b85f577a",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-33-privacy-settings.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-33-privacy-settings.json",
+    "source": "packages/rn/bench/scenarios/rn-33-privacy-settings.json",
+    "digest": "sha256:036fec5aa7d7b857042c5c7e71f1ef5c63bcbda80098b98f74683606b0a9ea17",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-34-remove-sentry-sdk.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-34-remove-sentry-sdk.json",
+    "source": "packages/rn/bench/scenarios/rn-34-remove-sentry-sdk.json",
+    "digest": "sha256:57289bf88ca36e6672fb80cd6ad93e8478c29f23b24ed20261db85d8dccaa6fe",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-35-remove-firebase-sdk.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-35-remove-firebase-sdk.json",
+    "source": "packages/rn/bench/scenarios/rn-35-remove-firebase-sdk.json",
+    "digest": "sha256:fccc66a7192eff573566a65d17eff5035d7d0ff69ddce5708538756888643093",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-36-upgrade-compile-sdk.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-36-upgrade-compile-sdk.json",
+    "source": "packages/rn/bench/scenarios/rn-36-upgrade-compile-sdk.json",
+    "digest": "sha256:c79a097d140e72166c89a2701b995eac952ba3bb31df5585a85adbb1142066f1",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-37-upgrade-kotlin-gradle.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-37-upgrade-kotlin-gradle.json",
+    "source": "packages/rn/bench/scenarios/rn-37-upgrade-kotlin-gradle.json",
+    "digest": "sha256:ba9a7a38c57b1d354cf8e2c4a975dfa08d303747cfe401b04bf30b8056ba7b5f",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-38-upgrade-new-arch.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-38-upgrade-new-arch.json",
+    "source": "packages/rn/bench/scenarios/rn-38-upgrade-new-arch.json",
+    "digest": "sha256:d002b2ef98a5513a7c831f41e9d83f3d3a23b89ed18f120d612d54e3cde1be51",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-39-upgrade-deprecated-api.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-39-upgrade-deprecated-api.json",
+    "source": "packages/rn/bench/scenarios/rn-39-upgrade-deprecated-api.json",
+    "digest": "sha256:c3ef01d7cc201d3053ba83e233c4fb3fbae7de08c6dc5db67cba01353826e279",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-40-debug-metro-resolution.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-40-debug-metro-resolution.json",
+    "source": "packages/rn/bench/scenarios/rn-40-debug-metro-resolution.json",
+    "digest": "sha256:7dbd573ac81886fb9afd8e328d51da0f5843ac449a1f6be27f5025e7b39df35a",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-41-debug-hermes-crash.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-41-debug-hermes-crash.json",
+    "source": "packages/rn/bench/scenarios/rn-41-debug-hermes-crash.json",
+    "digest": "sha256:22378f697c4063cd29d0e00848fd6eb143f9d5f90d0a94196bf53bb53094da8e",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-42-debug-ts-regression.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-42-debug-ts-regression.json",
+    "source": "packages/rn/bench/scenarios/rn-42-debug-ts-regression.json",
+    "digest": "sha256:2b0990bb042e0c86d8e0144c7a7e89d1006b49bfb19c90a1e1ad295e2c680a9e",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "benchmark:packages/rn/bench/scenarios/rn-43-debug-linking.json",
+    "kind": "benchmark",
+    "name": "packages/rn/bench/scenarios/rn-43-debug-linking.json",
+    "source": "packages/rn/bench/scenarios/rn-43-debug-linking.json",
+    "digest": "sha256:e78203a50e645e121445602f27ca3e58f1ee78b5e89057f946377b3f2788554d",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "claims:apps/website/app/admin/(protected)/customers/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/admin/(protected)/customers/page.tsx",
+    "source": "apps/website/app/admin/(protected)/customers/page.tsx",
+    "digest": "sha256:118d7e708a59ee965c70edcd6aa0ac315b37db9c93faf6881cb361e135957597",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/app/admin/(protected)/errors/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/admin/(protected)/errors/page.tsx",
+    "source": "apps/website/app/admin/(protected)/errors/page.tsx",
+    "digest": "sha256:fc014cf34fa5ce3e79262a62521eda7ff918af50cd0747432c3f70585cbfbdcd",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/app/admin/(protected)/licenses/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/admin/(protected)/licenses/page.tsx",
+    "source": "apps/website/app/admin/(protected)/licenses/page.tsx",
+    "digest": "sha256:9ef113dd6c6bfc21b34a72378b9a57801ed300bf411b7eb55cf69a2f601f396f",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/app/admin/(protected)/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/admin/(protected)/page.tsx",
+    "source": "apps/website/app/admin/(protected)/page.tsx",
+    "digest": "sha256:aa879c95524b6509cbf5ed9d3b59727492458ce230daf4ba83c48cb7b70ac7bc",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/app/admin/(protected)/trials/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/admin/(protected)/trials/page.tsx",
+    "source": "apps/website/app/admin/(protected)/trials/page.tsx",
+    "digest": "sha256:8d42dc39e367a53663717cce02d967ed3aa7770ead8682fe8c2e20dcfd7fd2f3",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/app/admin/(protected)/usage/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/admin/(protected)/usage/page.tsx",
+    "source": "apps/website/app/admin/(protected)/usage/page.tsx",
+    "digest": "sha256:90ec8b449592cf4e8539ed3b0d46e29a2e1bc65c1726b38d31360f58af9f0ca2",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/app/admin/login/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/admin/login/page.tsx",
+    "source": "apps/website/app/admin/login/page.tsx",
+    "digest": "sha256:414ca1d3f62e6d6e09a39b69b43bc37d93e02e82b9125a1c0c47608f7d5f1d59",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/app/agents/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/agents/page.tsx",
+    "source": "apps/website/app/agents/page.tsx",
+    "digest": "sha256:e57d7a1e36cf16af54dd8cfedd6ef0ed4b5c4203a41d516b432c3dd978d30501",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/app/benchmarks/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/benchmarks/page.tsx",
+    "source": "apps/website/app/benchmarks/page.tsx",
+    "digest": "sha256:e4e181143d1bf56f1399fda050afb54d0d7e007e45aab20d69e9ef9d64ed97e3",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/app/changelog/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/changelog/page.tsx",
+    "source": "apps/website/app/changelog/page.tsx",
+    "digest": "sha256:06cedb366e31dabcef2aa550504832a3d8895f6b477167e48232adb5c5079273",
+    "historical": true,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/app/demo/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/demo/page.tsx",
+    "source": "apps/website/app/demo/page.tsx",
+    "digest": "sha256:0644e543072843d8c95e8688d605fa7f8889f6d659767e963d69d9f1092f4d2c",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/app/docs/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/docs/page.tsx",
+    "source": "apps/website/app/docs/page.tsx",
+    "digest": "sha256:f96ba0e6d479714451b24511efb394ebd266ac4dea8fb8017cef0f23ed2f1270",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/app/outcomes/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/outcomes/page.tsx",
+    "source": "apps/website/app/outcomes/page.tsx",
+    "digest": "sha256:d3e06279d81a0f5785915ada36000e9a8e6708072aeb0fb4d37ab4ad2805b99c",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/app/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/page.tsx",
+    "source": "apps/website/app/page.tsx",
+    "digest": "sha256:2ffc2282222c27dd38191f30ac841ec073be2f44ee0220d9bc68d31a7687c689",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/app/pricing/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/pricing/page.tsx",
+    "source": "apps/website/app/pricing/page.tsx",
+    "digest": "sha256:af0e1f5ec568b4b5190051c378b48184fc50213067f1546d2a6f2815fffda855",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/app/reports/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/reports/page.tsx",
+    "source": "apps/website/app/reports/page.tsx",
+    "digest": "sha256:29d1a4a2ab8cb6b1c93d1a42f248074096b953e49bc64e6e2d0ce03bb211d1ad",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/app/sdk/[slug]/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/sdk/[slug]/page.tsx",
+    "source": "apps/website/app/sdk/[slug]/page.tsx",
+    "digest": "sha256:0dda6eb6a34139f3d767e86deadb0e6c3cc1cc7340cc4f09d3a68f313fd47c32",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/app/trial/page.tsx",
+    "kind": "claims",
+    "name": "apps/website/app/trial/page.tsx",
+    "source": "apps/website/app/trial/page.tsx",
+    "digest": "sha256:2dce869af586c0bf7fc6fbf6eb53c7a42a4122c55ccae121601bd1f30a8b3578",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/components/AgentOrb.tsx",
+    "kind": "claims",
+    "name": "apps/website/components/AgentOrb.tsx",
+    "source": "apps/website/components/AgentOrb.tsx",
+    "digest": "sha256:27fda9545b3bd5b018a1aa5e098b9173e93b9200f531d52b9fbb32754385904a",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/components/DemoPlayer.tsx",
+    "kind": "claims",
+    "name": "apps/website/components/DemoPlayer.tsx",
+    "source": "apps/website/components/DemoPlayer.tsx",
+    "digest": "sha256:e2c3afd5c30314361e90d9e251d5e8388bc6c9e3953a80f4096b837fc0d35142",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/components/FeatureIcon.tsx",
+    "kind": "claims",
+    "name": "apps/website/components/FeatureIcon.tsx",
+    "source": "apps/website/components/FeatureIcon.tsx",
+    "digest": "sha256:ea8a4c8f67882726d8d5f49cea7d28f681ee57a6225d7a01eb3410cb8cc06a8e",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/components/FeedAge.tsx",
+    "kind": "claims",
+    "name": "apps/website/components/FeedAge.tsx",
+    "source": "apps/website/components/FeedAge.tsx",
+    "digest": "sha256:7f99f29797619b112d94a09b78415454062a5921a98d7538a1a94681988620ef",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/components/GlobalParticles.tsx",
+    "kind": "claims",
+    "name": "apps/website/components/GlobalParticles.tsx",
+    "source": "apps/website/components/GlobalParticles.tsx",
+    "digest": "sha256:7c6af12194a2d02acc408ea3bfd9dd53690191f5f3f1fb9089af7c1af2cbb11c",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/components/HeroHeadline.tsx",
+    "kind": "claims",
+    "name": "apps/website/components/HeroHeadline.tsx",
+    "source": "apps/website/components/HeroHeadline.tsx",
+    "digest": "sha256:5ddb2ebe7d7482fd58bdf0632302c63afeafa3007008996dbf969c3a71bfaf59",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/components/HeroMotion.tsx",
+    "kind": "claims",
+    "name": "apps/website/components/HeroMotion.tsx",
+    "source": "apps/website/components/HeroMotion.tsx",
+    "digest": "sha256:77383f387eb42385ef729904fcd54033f43ce4c03feb0a0d2bdffc3667502fc4",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/components/MobileMenu.tsx",
+    "kind": "claims",
+    "name": "apps/website/components/MobileMenu.tsx",
+    "source": "apps/website/components/MobileMenu.tsx",
+    "digest": "sha256:1e6d6e71136f91aabcd8d19064871a69c5e27acc8a02ab5180d1cf4786ec5926",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/components/ProductsMenu.tsx",
+    "kind": "claims",
+    "name": "apps/website/components/ProductsMenu.tsx",
+    "source": "apps/website/components/ProductsMenu.tsx",
+    "digest": "sha256:55ddca8ce265ef00c0cfb02d0d25bb9343c29684be95061c63f1740735d2e9c7",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/components/ReportWindow.tsx",
+    "kind": "claims",
+    "name": "apps/website/components/ReportWindow.tsx",
+    "source": "apps/website/components/ReportWindow.tsx",
+    "digest": "sha256:e870f3b4b4ac9ccdd468378fba6bf7c1cfc9f99e0fd83e8dd91319b8bffc581e",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/components/SiteNav.tsx",
+    "kind": "claims",
+    "name": "apps/website/components/SiteNav.tsx",
+    "source": "apps/website/components/SiteNav.tsx",
+    "digest": "sha256:eb4377424233d4b9aeffe3469e14baef58e3842d0d21f0f5880e50a018fb3992",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/components/ThemeToggle.tsx",
+    "kind": "claims",
+    "name": "apps/website/components/ThemeToggle.tsx",
+    "source": "apps/website/components/ThemeToggle.tsx",
+    "digest": "sha256:4ff853c8b5af3dd824d3910249f44b2f7f07c7ca92301361345c42ae30153b54",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/components/TypePrompt.tsx",
+    "kind": "claims",
+    "name": "apps/website/components/TypePrompt.tsx",
+    "source": "apps/website/components/TypePrompt.tsx",
+    "digest": "sha256:bbaf2862170cc357f028feae3a39591b9b3a5c3ebf5ebf7165a8e76838c7c1c7",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/components/WaitlistForm.tsx",
+    "kind": "claims",
+    "name": "apps/website/components/WaitlistForm.tsx",
+    "source": "apps/website/components/WaitlistForm.tsx",
+    "digest": "sha256:d4c0ca7d01044e403796c3b6c174236ef88894bc761ead88b8c6bdc0ffbee7ff",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:apps/website/lib/agents.ts",
+    "kind": "claims",
+    "name": "apps/website/lib/agents.ts",
+    "source": "apps/website/lib/agents.ts",
+    "digest": "sha256:b5fa221842608a95a6d17d4bbb5bdb265538a31f01f7c7c97340a7ee3c1607dc",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:LICENSE-COMMERCIAL",
+    "kind": "claims",
+    "name": "LICENSE-COMMERCIAL",
+    "source": "LICENSE-COMMERCIAL",
+    "digest": "sha256:0ea5f23efcc1fbe526e61a9dde5166bda5718b714d3d2eb5ceee0ba782d30207",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:packages/rn/README.md",
+    "kind": "claims",
+    "name": "packages/rn/README.md",
+    "source": "packages/rn/README.md",
+    "digest": "sha256:9a1d6b5a8245b5f84ea58cebb95029bdb3005e99719182a8460d608bc2d3970a",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "claims:README.md",
+    "kind": "claims",
+    "name": "README.md",
+    "source": "README.md",
+    "digest": "sha256:3e0ec722e65ede4d5067c0a89654ead76ed94fa2fd0d802dbf30e1e0d709162e",
+    "historical": false,
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "cli:a11y",
+    "kind": "cli",
+    "name": "a11y",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:app-store",
+    "kind": "cli",
+    "name": "app-store",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:arch",
+    "kind": "cli",
+    "name": "arch",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:arch-score",
+    "kind": "cli",
+    "name": "arch-score",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:archive",
+    "kind": "cli",
+    "name": "archive",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "cli:audit",
+    "kind": "cli",
+    "name": "audit",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:auth",
+    "kind": "cli",
+    "name": "auth",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "cli:bench",
+    "kind": "cli",
+    "name": "bench",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "cli:brain",
+    "kind": "cli",
+    "name": "brain",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "cli:bug-fix",
+    "kind": "cli",
+    "name": "bug-fix",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.upgrade-and-fix"
+  },
+  {
+    "key": "cli:build-fix",
+    "kind": "cli",
+    "name": "build-fix",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.upgrade-and-fix"
+  },
+  {
+    "key": "cli:bundle",
+    "kind": "cli",
+    "name": "bundle",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:ci",
+    "kind": "cli",
+    "name": "ci",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:ci-incident",
+    "kind": "cli",
+    "name": "ci-incident",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:cicd",
+    "kind": "cli",
+    "name": "cicd",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:cost",
+    "kind": "cli",
+    "name": "cost",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:coverage",
+    "kind": "cli",
+    "name": "coverage",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:crash",
+    "kind": "cli",
+    "name": "crash",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:daemon",
+    "kind": "cli",
+    "name": "daemon",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "cli:dashboard",
+    "kind": "cli",
+    "name": "dashboard",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:dataset",
+    "kind": "cli",
+    "name": "dataset",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.model-generation"
+  },
+  {
+    "key": "cli:demo",
+    "kind": "cli",
+    "name": "demo",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "cli:deps",
+    "kind": "cli",
+    "name": "deps",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:diagnostics",
+    "kind": "cli",
+    "name": "diagnostics",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:distribute",
+    "kind": "cli",
+    "name": "distribute",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "cli:doctor",
+    "kind": "cli",
+    "name": "doctor",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "cli:dx",
+    "kind": "cli",
+    "name": "dx",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:ecosystem",
+    "kind": "cli",
+    "name": "ecosystem",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "cli:evals",
+    "kind": "cli",
+    "name": "evals",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.model-generation"
+  },
+  {
+    "key": "cli:feature",
+    "kind": "cli",
+    "name": "feature",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.feature.workflow"
+  },
+  {
+    "key": "cli:figma",
+    "kind": "cli",
+    "name": "figma",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:fix",
+    "kind": "cli",
+    "name": "fix",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.upgrade-and-fix"
+  },
+  {
+    "key": "cli:fix-bench",
+    "kind": "cli",
+    "name": "fix-bench",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "cli:generate",
+    "kind": "cli",
+    "name": "generate",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.model-generation"
+  },
+  {
+    "key": "cli:gh-app",
+    "kind": "cli",
+    "name": "gh-app",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:gh-ci",
+    "kind": "cli",
+    "name": "gh-ci",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:gh-issue",
+    "kind": "cli",
+    "name": "gh-issue",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:gh-pr",
+    "kind": "cli",
+    "name": "gh-pr",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:gh-sec",
+    "kind": "cli",
+    "name": "gh-sec",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:governance",
+    "kind": "cli",
+    "name": "governance",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:impact",
+    "kind": "cli",
+    "name": "impact",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:incident",
+    "kind": "cli",
+    "name": "incident",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:init",
+    "kind": "cli",
+    "name": "init",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "cli:intel",
+    "kind": "cli",
+    "name": "intel",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:leaderboard",
+    "kind": "cli",
+    "name": "leaderboard",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "cli:lora",
+    "kind": "cli",
+    "name": "lora",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.model-generation"
+  },
+  {
+    "key": "cli:mode",
+    "kind": "cli",
+    "name": "mode",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.model-generation"
+  },
+  {
+    "key": "cli:models",
+    "kind": "cli",
+    "name": "models",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "cli:monitor",
+    "kind": "cli",
+    "name": "monitor",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:observability",
+    "kind": "cli",
+    "name": "observability",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:outcomes",
+    "kind": "cli",
+    "name": "outcomes",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:perf",
+    "kind": "cli",
+    "name": "perf",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "cli:perms",
+    "kind": "cli",
+    "name": "perms",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:plan",
+    "kind": "cli",
+    "name": "plan",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "cli:play-store",
+    "kind": "cli",
+    "name": "play-store",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:policy",
+    "kind": "cli",
+    "name": "policy",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.policy.check"
+  },
+  {
+    "key": "cli:portal",
+    "kind": "cli",
+    "name": "portal",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "cli:pr",
+    "kind": "cli",
+    "name": "pr",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:profile",
+    "kind": "cli",
+    "name": "profile",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "cli:pull",
+    "kind": "cli",
+    "name": "pull",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.model-generation"
+  },
+  {
+    "key": "cli:refactor",
+    "kind": "cli",
+    "name": "refactor",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:refresh",
+    "kind": "cli",
+    "name": "refresh",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "cli:release",
+    "kind": "cli",
+    "name": "release",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "cli:release-predict",
+    "kind": "cli",
+    "name": "release-predict",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:release-ready",
+    "kind": "cli",
+    "name": "release-ready",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:render",
+    "kind": "cli",
+    "name": "render",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "cli:repos",
+    "kind": "cli",
+    "name": "repos",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "cli:review",
+    "kind": "cli",
+    "name": "review",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:rnbench",
+    "kind": "cli",
+    "name": "rnbench",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "cli:sales-demo",
+    "kind": "cli",
+    "name": "sales-demo",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "cli:sandbox",
+    "kind": "cli",
+    "name": "sandbox",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "cli:score",
+    "kind": "cli",
+    "name": "score",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:search",
+    "kind": "cli",
+    "name": "search",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "cli:sec",
+    "kind": "cli",
+    "name": "sec",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:selftest",
+    "kind": "cli",
+    "name": "selftest",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "cli:sentry",
+    "kind": "cli",
+    "name": "sentry",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:serve",
+    "kind": "cli",
+    "name": "serve",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "cli:share",
+    "kind": "cli",
+    "name": "share",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "cli:smoke",
+    "kind": "cli",
+    "name": "smoke",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "cli:soc2",
+    "kind": "cli",
+    "name": "soc2",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:status",
+    "kind": "cli",
+    "name": "status",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "cli:suggestions",
+    "kind": "cli",
+    "name": "suggestions",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "cli:support",
+    "kind": "cli",
+    "name": "support",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "cli:sync",
+    "kind": "cli",
+    "name": "sync",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "cli:team",
+    "kind": "cli",
+    "name": "team",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "cli:team-policy",
+    "kind": "cli",
+    "name": "team-policy",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "cli:team-stats",
+    "kind": "cli",
+    "name": "team-stats",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:telemetry",
+    "kind": "cli",
+    "name": "telemetry",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:test-repair",
+    "kind": "cli",
+    "name": "test-repair",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.upgrade-and-fix"
+  },
+  {
+    "key": "cli:tokens",
+    "kind": "cli",
+    "name": "tokens",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "cli:train",
+    "kind": "cli",
+    "name": "train",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.model-generation"
+  },
+  {
+    "key": "cli:upgrade",
+    "kind": "cli",
+    "name": "upgrade",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.upgrade-and-fix"
+  },
+  {
+    "key": "cli:visual-baseline",
+    "kind": "cli",
+    "name": "visual-baseline",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "cli:visual-ci",
+    "kind": "cli",
+    "name": "visual-ci",
+    "source": "packages/rn/src/cli/index.ts",
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "demo:apps/website/demo/cli-app/package.json",
+    "kind": "demo",
+    "name": "apps/website/demo/cli-app/package.json",
+    "source": "apps/website/demo/cli-app/package.json",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "demo:apps/website/demo/login-app/package.json",
+    "kind": "demo",
+    "name": "apps/website/demo/login-app/package.json",
+    "source": "apps/website/demo/login-app/package.json",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "demo:apps/website/demo/recording/README.md",
+    "kind": "demo",
+    "name": "apps/website/demo/recording/README.md",
+    "source": "apps/website/demo/recording/README.md",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "demo:packages/rn/src/cli/commands/demo.ts",
+    "kind": "demo",
+    "name": "packages/rn/src/cli/commands/demo.ts",
+    "source": "packages/rn/src/cli/commands/demo.ts",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "demo:packages/rn/src/cli/commands/salesDemo.ts",
+    "kind": "demo",
+    "name": "packages/rn/src/cli/commands/salesDemo.ts",
+    "source": "packages/rn/src/cli/commands/salesDemo.ts",
+    "capabilityId": "rn.evaluation"
+  },
+  {
+    "key": "extension-handler:vectalon.archiveBuild",
+    "kind": "extension-handler",
+    "name": "vectalon.archiveBuild",
+    "source": "packages/rn/extension/src/commands.ts",
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "extension-handler:vectalon.checkGuardrails",
+    "kind": "extension-handler",
+    "name": "vectalon.checkGuardrails",
+    "source": "packages/rn/extension/src/commands.ts",
+    "capabilityId": "rn.policy.check"
+  },
+  {
+    "key": "extension-handler:vectalon.distributeBuild",
+    "kind": "extension-handler",
+    "name": "vectalon.distributeBuild",
+    "source": "packages/rn/extension/src/commands.ts",
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "extension-handler:vectalon.generateComponent",
+    "kind": "extension-handler",
+    "name": "vectalon.generateComponent",
+    "source": "packages/rn/extension/src/commands.ts",
+    "capabilityId": "rn.model-generation"
+  },
+  {
+    "key": "extension-handler:vectalon.generatePortal",
+    "kind": "extension-handler",
+    "name": "vectalon.generatePortal",
+    "source": "packages/rn/extension/src/commands.ts",
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "extension-handler:vectalon.openArtifact",
+    "kind": "extension-handler",
+    "name": "vectalon.openArtifact",
+    "source": "packages/rn/extension/src/commands.ts",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "extension-handler:vectalon.projectContext",
+    "kind": "extension-handler",
+    "name": "vectalon.projectContext",
+    "source": "packages/rn/extension/src/commands.ts",
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "extension-handler:vectalon.refreshKnowledge",
+    "kind": "extension-handler",
+    "name": "vectalon.refreshKnowledge",
+    "source": "packages/rn/extension/src/commands.ts",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "extension-handler:vectalon.restartServer",
+    "kind": "extension-handler",
+    "name": "vectalon.restartServer",
+    "source": "packages/rn/extension/src/extension.ts",
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "extension-handler:vectalon.reviewCode",
+    "kind": "extension-handler",
+    "name": "vectalon.reviewCode",
+    "source": "packages/rn/extension/src/commands.ts",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "extension-handler:vectalon.runFeatureWorkflow",
+    "kind": "extension-handler",
+    "name": "vectalon.runFeatureWorkflow",
+    "source": "packages/rn/extension/src/commands.ts",
+    "capabilityId": "rn.feature.workflow"
+  },
+  {
+    "key": "extension-handler:vectalon.searchKnowledge",
+    "kind": "extension-handler",
+    "name": "vectalon.searchKnowledge",
+    "source": "packages/rn/extension/src/commands.ts",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "extension-handler:vectalon.shareBuild",
+    "kind": "extension-handler",
+    "name": "vectalon.shareBuild",
+    "source": "packages/rn/extension/src/commands.ts",
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "extension-handler:vectalon.startServer",
+    "kind": "extension-handler",
+    "name": "vectalon.startServer",
+    "source": "packages/rn/extension/src/extension.ts",
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "extension-handler:vectalon.stopServer",
+    "kind": "extension-handler",
+    "name": "vectalon.stopServer",
+    "source": "packages/rn/extension/src/extension.ts",
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "extension:vectalon.archiveBuild",
+    "kind": "extension",
+    "name": "vectalon.archiveBuild",
+    "source": "packages/rn/extension/package.json",
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "extension:vectalon.checkGuardrails",
+    "kind": "extension",
+    "name": "vectalon.checkGuardrails",
+    "source": "packages/rn/extension/package.json",
+    "capabilityId": "rn.policy.check"
+  },
+  {
+    "key": "extension:vectalon.distributeBuild",
+    "kind": "extension",
+    "name": "vectalon.distributeBuild",
+    "source": "packages/rn/extension/package.json",
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "extension:vectalon.generateComponent",
+    "kind": "extension",
+    "name": "vectalon.generateComponent",
+    "source": "packages/rn/extension/package.json",
+    "capabilityId": "rn.model-generation"
+  },
+  {
+    "key": "extension:vectalon.generatePortal",
+    "kind": "extension",
+    "name": "vectalon.generatePortal",
+    "source": "packages/rn/extension/package.json",
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "extension:vectalon.projectContext",
+    "kind": "extension",
+    "name": "vectalon.projectContext",
+    "source": "packages/rn/extension/package.json",
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "extension:vectalon.refreshKnowledge",
+    "kind": "extension",
+    "name": "vectalon.refreshKnowledge",
+    "source": "packages/rn/extension/package.json",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "extension:vectalon.restartServer",
+    "kind": "extension",
+    "name": "vectalon.restartServer",
+    "source": "packages/rn/extension/package.json",
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "extension:vectalon.reviewCode",
+    "kind": "extension",
+    "name": "vectalon.reviewCode",
+    "source": "packages/rn/extension/package.json",
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "extension:vectalon.runFeatureWorkflow",
+    "kind": "extension",
+    "name": "vectalon.runFeatureWorkflow",
+    "source": "packages/rn/extension/package.json",
+    "capabilityId": "rn.feature.workflow"
+  },
+  {
+    "key": "extension:vectalon.searchKnowledge",
+    "kind": "extension",
+    "name": "vectalon.searchKnowledge",
+    "source": "packages/rn/extension/package.json",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "extension:vectalon.shareBuild",
+    "kind": "extension",
+    "name": "vectalon.shareBuild",
+    "source": "packages/rn/extension/package.json",
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "extension:vectalon.startServer",
+    "kind": "extension",
+    "name": "vectalon.startServer",
+    "source": "packages/rn/extension/package.json",
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "extension:vectalon.stopServer",
+    "kind": "extension",
+    "name": "vectalon.stopServer",
+    "source": "packages/rn/extension/package.json",
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "mcp:analyze_crash",
+    "kind": "mcp",
+    "name": "analyze_crash",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:analyze_error",
+    "kind": "mcp",
+    "name": "analyze_error",
+    "source": "packages/rn/src/protocol/tools/CoreTools.ts",
+    "requires": null,
+    "capabilityId": "rn.model-generation"
+  },
+  {
+    "key": "mcp:analyze_hermes_profile",
+    "kind": "mcp",
+    "name": "analyze_hermes_profile",
+    "source": "packages/rn/src/protocol/tools/PerfTools.ts",
+    "requires": null,
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "mcp:analyze_impact",
+    "kind": "mcp",
+    "name": "analyze_impact",
+    "source": "packages/rn/src/protocol/tools/CoreTools.ts",
+    "requires": null,
+    "capabilityId": "rn.model-generation"
+  },
+  {
+    "key": "mcp:analyze_incident",
+    "kind": "mcp",
+    "name": "analyze_incident",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:analyze_kpis",
+    "kind": "mcp",
+    "name": "analyze_kpis",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:analyze_root_cause",
+    "kind": "mcp",
+    "name": "analyze_root_cause",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:analyze_support_tickets",
+    "kind": "mcp",
+    "name": "analyze_support_tickets",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:analyze_tradeoffs",
+    "kind": "mcp",
+    "name": "analyze_tradeoffs",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:apply_upgrade",
+    "kind": "mcp",
+    "name": "apply_upgrade",
+    "source": "packages/rn/src/protocol/tools/UpgradeTools.ts",
+    "requires": null,
+    "capabilityId": "rn.upgrade-and-fix"
+  },
+  {
+    "key": "mcp:archive_build",
+    "kind": "mcp",
+    "name": "archive_build",
+    "source": "packages/rn/src/protocol/tools/ArchiveTools.ts",
+    "requires": null,
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "mcp:check_accessibility",
+    "kind": "mcp",
+    "name": "check_accessibility",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:check_crash_rate",
+    "kind": "mcp",
+    "name": "check_crash_rate",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:check_design_compliance",
+    "kind": "mcp",
+    "name": "check_design_compliance",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:check_guardrails",
+    "kind": "mcp",
+    "name": "check_guardrails",
+    "source": "packages/rn/src/protocol/tools/CoreTools.ts",
+    "requires": null,
+    "capabilityId": "rn.policy.check"
+  },
+  {
+    "key": "mcp:define_acceptance_criteria",
+    "kind": "mcp",
+    "name": "define_acceptance_criteria",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:derive_from_git_history",
+    "kind": "mcp",
+    "name": "derive_from_git_history",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:detect_flavors",
+    "kind": "mcp",
+    "name": "detect_flavors",
+    "source": "packages/rn/src/protocol/tools/ArchiveTools.ts",
+    "requires": null,
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "mcp:detect_upgrade_state",
+    "kind": "mcp",
+    "name": "detect_upgrade_state",
+    "source": "packages/rn/src/protocol/tools/UpgradeTools.ts",
+    "requires": null,
+    "capabilityId": "rn.upgrade-and-fix"
+  },
+  {
+    "key": "mcp:device_accessibility_tree",
+    "kind": "mcp",
+    "name": "device_accessibility_tree",
+    "source": "packages/rn/src/protocol/tools/EcosystemTools.ts",
+    "requires": null,
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "mcp:device_announcements",
+    "kind": "mcp",
+    "name": "device_announcements",
+    "source": "packages/rn/src/protocol/tools/EcosystemTools.ts",
+    "requires": null,
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "mcp:device_boot",
+    "kind": "mcp",
+    "name": "device_boot",
+    "source": "packages/rn/src/protocol/tools/EcosystemTools.ts",
+    "requires": null,
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "mcp:device_logs",
+    "kind": "mcp",
+    "name": "device_logs",
+    "source": "packages/rn/src/protocol/tools/EcosystemTools.ts",
+    "requires": null,
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "mcp:device_open_url",
+    "kind": "mcp",
+    "name": "device_open_url",
+    "source": "packages/rn/src/protocol/tools/EcosystemTools.ts",
+    "requires": null,
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "mcp:device_screenshot",
+    "kind": "mcp",
+    "name": "device_screenshot",
+    "source": "packages/rn/src/protocol/tools/EcosystemTools.ts",
+    "requires": null,
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "mcp:device_set_voiceover",
+    "kind": "mcp",
+    "name": "device_set_voiceover",
+    "source": "packages/rn/src/protocol/tools/EcosystemTools.ts",
+    "requires": null,
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "mcp:device_swipe",
+    "kind": "mcp",
+    "name": "device_swipe",
+    "source": "packages/rn/src/protocol/tools/EcosystemTools.ts",
+    "requires": null,
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "mcp:device_tap",
+    "kind": "mcp",
+    "name": "device_tap",
+    "source": "packages/rn/src/protocol/tools/EcosystemTools.ts",
+    "requires": null,
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "mcp:distribute_build",
+    "kind": "mcp",
+    "name": "distribute_build",
+    "source": "packages/rn/src/protocol/tools/ArchiveTools.ts",
+    "requires": null,
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "mcp:execute_workflow",
+    "kind": "mcp",
+    "name": "execute_workflow",
+    "source": "packages/rn/src/protocol/tools/CoreTools.ts",
+    "requires": null,
+    "capabilityId": "rn.feature.workflow"
+  },
+  {
+    "key": "mcp:extract_design_system",
+    "kind": "mcp",
+    "name": "extract_design_system",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:figma_fetch_design",
+    "kind": "mcp",
+    "name": "figma_fetch_design",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:figma_generate_component",
+    "kind": "mcp",
+    "name": "figma_generate_component",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:generate_component",
+    "kind": "mcp",
+    "name": "generate_component",
+    "source": "packages/rn/src/protocol/tools/CoreTools.ts",
+    "requires": null,
+    "capabilityId": "rn.model-generation"
+  },
+  {
+    "key": "mcp:generate_maestro_flow",
+    "kind": "mcp",
+    "name": "generate_maestro_flow",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:generate_portal",
+    "kind": "mcp",
+    "name": "generate_portal",
+    "source": "packages/rn/src/protocol/tools/ArchiveTools.ts",
+    "requires": null,
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "mcp:generate_team_brain",
+    "kind": "mcp",
+    "name": "generate_team_brain",
+    "source": "packages/rn/src/protocol/tools/TeamBrainTools.ts",
+    "requires": "artifactStore",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "mcp:generate_wireframe",
+    "kind": "mcp",
+    "name": "generate_wireframe",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:get_artifact",
+    "kind": "mcp",
+    "name": "get_artifact",
+    "source": "packages/rn/src/protocol/tools/KnowledgeTools.ts",
+    "requires": "artifactStore",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "mcp:get_knowledge_context",
+    "kind": "mcp",
+    "name": "get_knowledge_context",
+    "source": "packages/rn/src/protocol/tools/KnowledgeTools.ts",
+    "requires": "artifactStore",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "mcp:get_learned_patterns",
+    "kind": "mcp",
+    "name": "get_learned_patterns",
+    "source": "packages/rn/src/protocol/tools/CoreTools.ts",
+    "requires": null,
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "mcp:get_project_context",
+    "kind": "mcp",
+    "name": "get_project_context",
+    "source": "packages/rn/src/protocol/tools/CoreTools.ts",
+    "requires": null,
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "mcp:get_rn_upgrade_diff",
+    "kind": "mcp",
+    "name": "get_rn_upgrade_diff",
+    "source": "packages/rn/src/protocol/tools/UpgradeTools.ts",
+    "requires": null,
+    "capabilityId": "rn.upgrade-and-fix"
+  },
+  {
+    "key": "mcp:get_team_context",
+    "kind": "mcp",
+    "name": "get_team_context",
+    "source": "packages/rn/src/protocol/tools/KnowledgeTools.ts",
+    "requires": "teamStore",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "mcp:ingest_telemetry",
+    "kind": "mcp",
+    "name": "ingest_telemetry",
+    "source": "packages/rn/src/protocol/tools/KnowledgeTools.ts",
+    "requires": "artifactStore",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "mcp:link_artifacts",
+    "kind": "mcp",
+    "name": "link_artifacts",
+    "source": "packages/rn/src/protocol/tools/KnowledgeTools.ts",
+    "requires": "artifactStore",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "mcp:list_artifacts",
+    "kind": "mcp",
+    "name": "list_artifacts",
+    "source": "packages/rn/src/protocol/tools/KnowledgeTools.ts",
+    "requires": "artifactStore",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "mcp:list_builds",
+    "kind": "mcp",
+    "name": "list_builds",
+    "source": "packages/rn/src/protocol/tools/ArchiveTools.ts",
+    "requires": null,
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "mcp:plan_release",
+    "kind": "mcp",
+    "name": "plan_release",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:plan_upgrade",
+    "kind": "mcp",
+    "name": "plan_upgrade",
+    "source": "packages/rn/src/protocol/tools/UpgradeTools.ts",
+    "requires": null,
+    "capabilityId": "rn.upgrade-and-fix"
+  },
+  {
+    "key": "mcp:render_component",
+    "kind": "mcp",
+    "name": "render_component",
+    "source": "packages/rn/src/protocol/tools/RenderTools.ts",
+    "requires": null,
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "mcp:review_code",
+    "kind": "mcp",
+    "name": "review_code",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:run_agent",
+    "kind": "mcp",
+    "name": "run_agent",
+    "source": "packages/rn/src/protocol/tools/CoreTools.ts",
+    "requires": null,
+    "capabilityId": "rn.model-generation"
+  },
+  {
+    "key": "mcp:run_gap_analysis",
+    "kind": "mcp",
+    "name": "run_gap_analysis",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:sandbox_backend",
+    "kind": "mcp",
+    "name": "sandbox_backend",
+    "source": "packages/rn/src/protocol/tools/SandboxTools.ts",
+    "requires": null,
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "mcp:sandbox_run",
+    "kind": "mcp",
+    "name": "sandbox_run",
+    "source": "packages/rn/src/protocol/tools/SandboxTools.ts",
+    "requires": null,
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "mcp:scaffold_native_module",
+    "kind": "mcp",
+    "name": "scaffold_native_module",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:search_knowledge",
+    "kind": "mcp",
+    "name": "search_knowledge",
+    "source": "packages/rn/src/protocol/tools/KnowledgeTools.ts",
+    "requires": "teamStore",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "mcp:search_team_knowledge",
+    "kind": "mcp",
+    "name": "search_team_knowledge",
+    "source": "packages/rn/src/protocol/tools/TeamBrainTools.ts",
+    "requires": "teamStore",
+    "capabilityId": "rn.knowledge"
+  },
+  {
+    "key": "mcp:share_build_locally",
+    "kind": "mcp",
+    "name": "share_build_locally",
+    "source": "packages/rn/src/protocol/tools/ArchiveTools.ts",
+    "requires": null,
+    "capabilityId": "rn.build-distribution"
+  },
+  {
+    "key": "mcp:suggest_dependency_update",
+    "kind": "mcp",
+    "name": "suggest_dependency_update",
+    "source": "packages/rn/src/protocol/tools/CoreTools.ts",
+    "requires": null,
+    "capabilityId": "rn.model-generation"
+  },
+  {
+    "key": "mcp:suggest_refactors",
+    "kind": "mcp",
+    "name": "suggest_refactors",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:threat_model",
+    "kind": "mcp",
+    "name": "threat_model",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:triage_bugs",
+    "kind": "mcp",
+    "name": "triage_bugs",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:visual_capture_reference",
+    "kind": "mcp",
+    "name": "visual_capture_reference",
+    "source": "packages/rn/src/protocol/tools/EcosystemTools.ts",
+    "requires": null,
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "mcp:visual_check",
+    "kind": "mcp",
+    "name": "visual_check",
+    "source": "packages/rn/src/protocol/tools/EcosystemTools.ts",
+    "requires": null,
+    "capabilityId": "rn.device-and-sandbox"
+  },
+  {
+    "key": "mcp:write_adr",
+    "kind": "mcp",
+    "name": "write_adr",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:write_prd",
+    "kind": "mcp",
+    "name": "write_prd",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:write_release_notes",
+    "kind": "mcp",
+    "name": "write_release_notes",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:write_runbook",
+    "kind": "mcp",
+    "name": "write_runbook",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:write_test",
+    "kind": "mcp",
+    "name": "write_test",
+    "source": "packages/rn/src/protocol/tools/CoreTools.ts",
+    "requires": null,
+    "capabilityId": "rn.model-generation"
+  },
+  {
+    "key": "mcp:write_test_plan",
+    "kind": "mcp",
+    "name": "write_test_plan",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "mcp:write_user_stories",
+    "kind": "mcp",
+    "name": "write_user_stories",
+    "source": "packages/rn/src/protocol/tools/SdlcTools.ts",
+    "requires": null,
+    "capabilityId": "rn.analysis"
+  },
+  {
+    "key": "plan-feature:enterprise/Deployment, governance, security, and support controls only when implemented, tested, and contracted",
+    "kind": "plan-feature",
+    "name": "enterprise/Deployment, governance, security, and support controls only when implemented, tested, and contracted",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "plan-feature:enterprise/Product and capability scope defined in the signed order",
+    "kind": "plan-feature",
+    "name": "enterprise/Product and capability scope defined in the signed order",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "plan-feature:free/Basic React Native guardrails",
+    "kind": "plan-feature",
+    "name": "free/Basic React Native guardrails",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "plan-feature:free/Local project setup and diagnostics",
+    "kind": "plan-feature",
+    "name": "free/Local project setup and diagnostics",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "plan-feature:free/No payment method required",
+    "kind": "plan-feature",
+    "name": "free/No payment method required",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "plan-feature:individual/Commercial-use license for Vectalon React Native for one developer",
+    "kind": "plan-feature",
+    "name": "individual/Commercial-use license for Vectalon React Native for one developer",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "plan-feature:individual/Qualified Individual capabilities from the released catalog",
+    "kind": "plan-feature",
+    "name": "individual/Qualified Individual capabilities from the released catalog",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "plan-feature:individual/Separately labelled beta access",
+    "kind": "plan-feature",
+    "name": "individual/Separately labelled beta access",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "plan-feature:team/Commercial-use license for Vectalon React Native for each purchased developer seat",
+    "kind": "plan-feature",
+    "name": "team/Commercial-use license for Vectalon React Native for each purchased developer seat",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "plan-feature:team/Qualified Team capabilities from the released catalog",
+    "kind": "plan-feature",
+    "name": "team/Qualified Team capabilities from the released catalog",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "plan-feature:team/Separately labelled beta access",
+    "kind": "plan-feature",
+    "name": "team/Separately labelled beta access",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "platform:android",
+    "kind": "platform",
+    "name": "android",
+    "source": "product-manifest.json",
+    "status": "coming-soon",
+    "capabilityId": "sdk.android"
+  },
+  {
+    "key": "platform:flutter",
+    "kind": "platform",
+    "name": "flutter",
+    "source": "product-manifest.json",
+    "status": "coming-soon",
+    "capabilityId": "sdk.flutter"
+  },
+  {
+    "key": "platform:ios",
+    "kind": "platform",
+    "name": "ios",
+    "source": "product-manifest.json",
+    "status": "coming-soon",
+    "capabilityId": "sdk.ios"
+  },
+  {
+    "key": "platform:python",
+    "kind": "platform",
+    "name": "python",
+    "source": "product-manifest.json",
+    "status": "coming-soon",
+    "capabilityId": "sdk.python"
+  },
+  {
+    "key": "platform:reactNative",
+    "kind": "platform",
+    "name": "reactNative",
+    "source": "product-manifest.json",
+    "status": "beta",
+    "capabilityId": "rn.project.inspect"
+  },
+  {
+    "key": "route:/",
+    "kind": "route",
+    "name": "/",
+    "source": "apps/website/app/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/admin/(protected)",
+    "kind": "route",
+    "name": "/admin/(protected)",
+    "source": "apps/website/app/admin/(protected)/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/admin/(protected)/customers",
+    "kind": "route",
+    "name": "/admin/(protected)/customers",
+    "source": "apps/website/app/admin/(protected)/customers/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/admin/(protected)/errors",
+    "kind": "route",
+    "name": "/admin/(protected)/errors",
+    "source": "apps/website/app/admin/(protected)/errors/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/admin/(protected)/licenses",
+    "kind": "route",
+    "name": "/admin/(protected)/licenses",
+    "source": "apps/website/app/admin/(protected)/licenses/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/admin/(protected)/trials",
+    "kind": "route",
+    "name": "/admin/(protected)/trials",
+    "source": "apps/website/app/admin/(protected)/trials/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/admin/(protected)/usage",
+    "kind": "route",
+    "name": "/admin/(protected)/usage",
+    "source": "apps/website/app/admin/(protected)/usage/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/admin/login",
+    "kind": "route",
+    "name": "/admin/login",
+    "source": "apps/website/app/admin/login/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/agents",
+    "kind": "route",
+    "name": "/agents",
+    "source": "apps/website/app/agents/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/api/admin/data",
+    "kind": "route",
+    "name": "/api/admin/data",
+    "source": "apps/website/app/api/admin/data/route.ts",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/api/admin/licenses",
+    "kind": "route",
+    "name": "/api/admin/licenses",
+    "source": "apps/website/app/api/admin/licenses/route.ts",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/api/admin/licenses/[key]/revoke",
+    "kind": "route",
+    "name": "/api/admin/licenses/[key]/revoke",
+    "source": "apps/website/app/api/admin/licenses/[key]/revoke/route.ts",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/api/admin/login",
+    "kind": "route",
+    "name": "/api/admin/login",
+    "source": "apps/website/app/api/admin/login/route.ts",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/api/admin/logout",
+    "kind": "route",
+    "name": "/api/admin/logout",
+    "source": "apps/website/app/api/admin/logout/route.ts",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/api/v1/health",
+    "kind": "route",
+    "name": "/api/v1/health",
+    "source": "apps/website/app/api/v1/health/route.ts",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/api/v1/trial",
+    "kind": "route",
+    "name": "/api/v1/trial",
+    "source": "apps/website/app/api/v1/trial/route.ts",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/api/v1/trial/check",
+    "kind": "route",
+    "name": "/api/v1/trial/check",
+    "source": "apps/website/app/api/v1/trial/check/route.ts",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/api/v1/validate",
+    "kind": "route",
+    "name": "/api/v1/validate",
+    "source": "apps/website/app/api/v1/validate/route.ts",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/api/v1/webhooks/lemon-squeezy",
+    "kind": "route",
+    "name": "/api/v1/webhooks/lemon-squeezy",
+    "source": "apps/website/app/api/v1/webhooks/lemon-squeezy/route.ts",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/api/waitlist",
+    "kind": "route",
+    "name": "/api/waitlist",
+    "source": "apps/website/app/api/waitlist/route.ts",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/benchmarks",
+    "kind": "route",
+    "name": "/benchmarks",
+    "source": "apps/website/app/benchmarks/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/changelog",
+    "kind": "route",
+    "name": "/changelog",
+    "source": "apps/website/app/changelog/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/demo",
+    "kind": "route",
+    "name": "/demo",
+    "source": "apps/website/app/demo/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/docs",
+    "kind": "route",
+    "name": "/docs",
+    "source": "apps/website/app/docs/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/outcomes",
+    "kind": "route",
+    "name": "/outcomes",
+    "source": "apps/website/app/outcomes/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/pricing",
+    "kind": "route",
+    "name": "/pricing",
+    "source": "apps/website/app/pricing/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/reports",
+    "kind": "route",
+    "name": "/reports",
+    "source": "apps/website/app/reports/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/sdk/[slug]",
+    "kind": "route",
+    "name": "/sdk/[slug]",
+    "source": "apps/website/app/sdk/[slug]/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  },
+  {
+    "key": "route:/trial",
+    "kind": "route",
+    "name": "/trial",
+    "source": "apps/website/app/trial/page.tsx",
+    "capabilityId": "rn.commercial-information"
+  }
+]

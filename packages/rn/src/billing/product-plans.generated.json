@@ -22,11 +22,9 @@
     "checkout": "checkout",
     "trialEligible": true,
     "features": [
-      "Local AI — your source never leaves your machine",
-      "Project intelligence (intel, score, review, sec, arch)",
-      "Diagnostics (doctor, build-fix, profile, sandbox, render)",
-      "Upgrade copilot + self-healing CI",
-      "All deterministic agents, zero model calls"
+      "Commercial-use license for Vectalon React Native for one developer",
+      "Qualified Individual capabilities from the released catalog",
+      "Separately labelled beta access"
     ]
   },
   {
@@ -38,11 +36,9 @@
     "checkout": "checkout",
     "trialEligible": true,
     "features": [
-      "Everything in Individual",
-      "Team Brain — decisions, expertise, shared knowledge across projects",
-      "Shared policies + PR review (team-policy, review)",
-      "CI + dashboards (ci, coverage, score trends)",
-      "Cross-project intelligence + cloud sync (sync)"
+      "Commercial-use license for Vectalon React Native for each purchased developer seat",
+      "Qualified Team capabilities from the released catalog",
+      "Separately labelled beta access"
     ]
   },
   {
@@ -54,10 +50,8 @@
     "checkout": "sales",
     "trialEligible": false,
     "features": [
-      "Everything in Team",
-      "Deployment and governance scope confirmed during sales qualification",
-      "Self-hosting, SSO / SAML, audit, and model controls only when contracted",
-      "Organization policy and multi-repository scope only when contracted"
+      "Product and capability scope defined in the signed order",
+      "Deployment, governance, security, and support controls only when implemented, tested, and contracted"
     ]
   }
 ]

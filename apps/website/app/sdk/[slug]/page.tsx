@@ -163,7 +163,7 @@ export default async function SdkPage(props: { params: Promise<{ slug: string }>
       <section className="mt-20">
         <h2 className="text-center text-2xl font-bold text-slate-50">Pricing</h2>
         <p className="mx-auto mt-2 max-w-xl text-center text-sm text-slate-400">
-          Three plans — one license key covers every Vectalon SDK on every tier.
+          Plans apply to the purchased product scope. This release covers Vectalon React Native.
         </p>
         <div className="mx-auto mt-8 grid max-w-4xl gap-5 md:grid-cols-3">
           <div className="card flex flex-col">
@@ -208,8 +208,7 @@ export default async function SdkPage(props: { params: Promise<{ slug: string }>
             <div className="font-mono text-xs font-semibold text-slate-400">Enterprise</div>
             <div className="mt-1 font-display text-3xl font-bold text-slate-50">Custom</div>
             <p className="mt-2 flex-1 text-sm text-slate-400">
-              Self-hosted (air-gapped ready), SSO, audit trails, private models,
-              org-wide policies, multi-repo intelligence.
+              Product, deployment, governance, security, and support scope defined in the signed order.
             </p>
             <a href="mailto:sales@vectalon.in" className="btn-ghost mt-6 w-full">
               Talk to us

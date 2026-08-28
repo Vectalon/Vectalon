@@ -8,7 +8,7 @@ const FREE: Array<[string, string]> = [
   ['mode', 'Where your source runs — Cloud (hosted models) / Private (company LLM) / Air-gapped (local model, nothing leaves the machine); enforced, not labeled'],
   ['demo', 'The flagship demonstration — the feature workflow, live: Requirement → … → PR + the self-healing loop, from a real prior run when present, zero model calls'],
   ['brain', 'The productized Team Brain — ask "Why Zustand?" and get the decision card (ADR, reason, approver, related, reviewed); ask "Who owns auth?" and get the expertise tree (owner, experts, ADRs, services, changes)'],
-  ['plan', 'The commercial plan surface — Individual $19/dev/mo (local AI + project intelligence + diagnostics), Team $49/dev/mo (Team Brain, shared policies, PR review, CI, dashboards), Enterprise custom (self-hosted, SSO, audit, private models); shows your current plan from the license or trial'],
+  ['plan', 'Commercial-use plans and their qualified capability IDs; beta access is labelled separately and experimental capabilities require opt-in'],
   ['outcomes', 'Engineering outcomes, not feature counts — the sales material: issues detected, automatically fixed or prevented, PR issues caught, build failures resolved, RN upgrades completed, tests generated, perf regressions detected, and the estimated developer-hours + dollars saved from your committed reports (--rate to set the blended rate)'],
   ['serve', 'Run the MCP server — agents connect from your editor'],
   ['feature "…"', 'Generate components, write tests, run workflows'],
@@ -35,7 +35,7 @@ const PRO: Array<[string, string]> = [
   ['profile', 'Hermes runtime analysis — JS-thread blocks, retained objects, leak candidates'],
   ['sandbox', 'Run commands with deny-by-default env, no network, hard time/memory limits'],
   ['render', 'Compile + headless-render generated code before the diff — Metro transform, sandboxed'],
-  ['sync', 'Team brain — cross-project knowledge + cloud sync (Team)'],
+  ['sync', 'Experimental cross-project Team knowledge; explicit opt-in required'],
   ['team-policy', 'Org-wide guardrail policy — publish/pull the team policy + shared bundle budgets through the sync remote (Team)'],
 ]
 

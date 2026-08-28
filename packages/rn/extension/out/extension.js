@@ -42,6 +42,7 @@ const guardrails_1 = require("./guardrails");
 const knowledgeTree_1 = require("./knowledgeTree");
 const commands_1 = require("./commands");
 const output_1 = require("./output");
+const capabilityAvailability_1 = require("./capabilityAvailability");
 let server = null;
 let statusBar = null;
 let treeProvider = null;
@@ -71,12 +72,21 @@ async function activate(context) {
     treeProvider = tree;
     context.subscriptions.push(vscode.window.createTreeView('vectalon.knowledgeView', { treeDataProvider: tree }));
     (0, commands_1.registerCommands)(context, () => server?.client ?? null, guardrails, tree);
+    const registerCapabilityCommand = (command, callback, thisArg) => vscode.commands.registerCommand(command, async (...args) => {
+        const experimental = vscode.workspace.getConfiguration('vectalon').get('experimentalCapabilities', false);
+        const decision = (0, capabilityAvailability_1.extensionCommandDecision)(command, experimental);
+        if (!decision.available) {
+            void vscode.window.showWarningMessage(`Vectalon: ${command} unavailable (${decision.reason}). Experimental access does not grant paid entitlements.`);
+            return;
+        }
+        return callback.apply(thisArg, args);
+    });
     // Start / stop MCP server commands (also the status-bar fallback).
-    context.subscriptions.push(vscode.commands.registerCommand('vectalon.startServer', async () => {
+    context.subscriptions.push(registerCapabilityCommand('vectalon.startServer', async () => {
         await connect(baseUrl, autoStart);
-    }), vscode.commands.registerCommand('vectalon.restartServer', async () => {
+    }), registerCapabilityCommand('vectalon.restartServer', async () => {
         await restartServer(baseUrl, autoStart);
-    }), vscode.commands.registerCommand('vectalon.stopServer', () => {
+    }), registerCapabilityCommand('vectalon.stopServer', () => {
         disconnect();
     }));
     // Inline guardrail status: run on the active file when it changes / saves.

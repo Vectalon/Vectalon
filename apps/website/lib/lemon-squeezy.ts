@@ -51,13 +51,14 @@ export function checkoutUrlFor(tier: LsTier, product: ProductId = 'rn'): string 
 
 /** Reverse lookup: which tier+product owns a variant id (from env config). */
 export function tierForVariantId(variantId: string): { tier: LsTier; product: ProductId } | null {
+  const tiers = new Set<LsTier>(['pro', 'all-access', 'team', 'enterprise'])
+  const products = new Set<ProductId>(['rn', 'ios', 'android', 'flutter'])
   for (const key of Object.keys(process.env)) {
     const m = /^LEMONSQUEEZY_VARIANT_([A-Z_]+)_([A-Z]+)$/.exec(key)
     if (m && process.env[key] === variantId) {
-      return {
-        tier: m[1].toLowerCase().replace('_', '-') as LsTier,
-        product: m[2].toLowerCase() as ProductId,
-      }
+      const tier = m[1].toLowerCase().replace('_', '-') as LsTier
+      const product = m[2].toLowerCase() as ProductId
+      return tiers.has(tier) && products.has(product) ? { tier, product } : null
     }
   }
   return null
@@ -137,13 +138,16 @@ export async function handleLemonSqueezyEvent(
   switch (event.eventName) {
     case 'order_created': {
       if (!email) return { handled: false, skipped: 'no customer email' }
-      const tier = (mapped?.tier as Tier) ?? 'pro'
-      const product = mapped?.product ?? 'rn'
+      if (!mapped) return { handled: false, skipped: 'manual-review: unknown variant' }
+      if (mapped.product !== 'rn') return { handled: false, skipped: 'manual-review: product not available' }
+      if (mapped.tier === 'team') return { handled: false, skipped: 'manual-review: trusted Team seat quantity required' }
+      const tier = mapped.tier as Tier
+      const product = mapped.product
       const license = await store.issueLicense({
         tier,
         email,
         product,
-        seats: tier === 'team' ? 5 : 1,
+        seats: 1,
         days: 365,
         source: 'lemon-squeezy',
       })
@@ -151,8 +155,8 @@ export async function handleLemonSqueezyEvent(
         email,
         tier,
         product,
-        seats: tier === 'team' ? 5 : 1,
-        mrrCents: TIER_MRR_CENTS[(mapped?.tier as LsTier) ?? 'pro'] ?? 1900,
+        seats: 1,
+        mrrCents: TIER_MRR_CENTS[mapped.tier],
       })
       await sendLicenseEmail({ email, license, tier, product })
       await store.markWebhookEvent(event.eventId)

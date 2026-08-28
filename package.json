@@ -17,6 +17,10 @@
     "product:test": "node --test scripts/product-manifest.test.mjs scripts/core-contracts.test.mjs",
     "contracts:generate": "node scripts/core-contracts.mjs generate",
     "contracts:check": "node scripts/core-contracts.mjs check",
+    "capabilities:check": "node scripts/capability-catalog.mjs check .",
+    "capabilities:test": "node --test scripts/capability-catalog.test.mjs",
+    "capabilities:generate": "node scripts/generate-capability-projections.mjs && node scripts/qualify-capabilities.mjs",
+    "capabilities:qualify": "node scripts/qualify-capabilities.mjs --workflows && node scripts/generate-capability-projections.mjs",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "publish:rn": "pnpm --filter @vectalon-dev/rn release"

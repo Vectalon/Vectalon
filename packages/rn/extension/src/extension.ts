@@ -6,6 +6,7 @@ import { createGuardrailRunner, isCheckableFile } from './guardrails'
 import { KnowledgeTreeProvider } from './knowledgeTree'
 import { registerCommands } from './commands'
 import { getOutputChannel, log, disposeOutputChannel } from './output'
+import { extensionCommandDecision } from './capabilityAvailability'
 
 let server: ServerHandle | null = null
 let statusBar: vscode.StatusBarItem | null = null
@@ -52,15 +53,26 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     tree
   )
 
+  const registerCapabilityCommand: typeof vscode.commands.registerCommand = (command, callback, thisArg) =>
+    vscode.commands.registerCommand(command, async (...args: unknown[]) => {
+      const experimental = vscode.workspace.getConfiguration('vectalon').get<boolean>('experimentalCapabilities', false)
+      const decision = extensionCommandDecision(command, experimental)
+      if (!decision.available) {
+        void vscode.window.showWarningMessage(`Vectalon: ${command} unavailable (${decision.reason}). Experimental access does not grant paid entitlements.`)
+        return
+      }
+      return callback.apply(thisArg, args)
+    })
+
   // Start / stop MCP server commands (also the status-bar fallback).
   context.subscriptions.push(
-    vscode.commands.registerCommand('vectalon.startServer', async () => {
+    registerCapabilityCommand('vectalon.startServer', async () => {
       await connect(baseUrl, autoStart)
     }),
-    vscode.commands.registerCommand('vectalon.restartServer', async () => {
+    registerCapabilityCommand('vectalon.restartServer', async () => {
       await restartServer(baseUrl, autoStart)
     }),
-    vscode.commands.registerCommand('vectalon.stopServer', () => {
+    registerCapabilityCommand('vectalon.stopServer', () => {
       disconnect()
     })
   )

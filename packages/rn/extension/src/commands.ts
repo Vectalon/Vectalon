@@ -4,6 +4,7 @@ import { PreviewPanel } from './webview'
 import { openArtifact, type KnowledgeTreeProvider } from './knowledgeTree'
 import type { GuardrailRunner } from './guardrails'
 import { log } from './output'
+import { extensionCommandDecision } from './capabilityAvailability'
 
 /** Register every Vectalon command palette workflow. */
 export function registerCommands(
@@ -12,6 +13,16 @@ export function registerCommands(
   guardrails: GuardrailRunner,
   knowledgeTree: KnowledgeTreeProvider
 ): void {
+  const registerCapabilityCommand: typeof vscode.commands.registerCommand = (command, callback, thisArg) =>
+    vscode.commands.registerCommand(command, async (...args: unknown[]) => {
+      const experimental = vscode.workspace.getConfiguration('vectalon').get<boolean>('experimentalCapabilities', false)
+      const decision = extensionCommandDecision(command, experimental)
+      if (!decision.available) {
+        void vscode.window.showWarningMessage(`Vectalon: ${command} unavailable (${decision.reason}). Experimental access does not grant paid entitlements.`)
+        return
+      }
+      return callback.apply(thisArg, args)
+    })
   const requireClient = (): McpHttpClient | null => {
     const client = getClient()
     if (!client) {
@@ -33,7 +44,7 @@ export function registerCommands(
   }
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('vectalon.runFeatureWorkflow', () =>
+    registerCapabilityCommand('vectalon.runFeatureWorkflow', () =>
       withClient(async client => {
         const prompt = await vscode.window.showInputBox({
           prompt: 'Describe the feature to build',
@@ -53,7 +64,7 @@ export function registerCommands(
       })
     ),
 
-    vscode.commands.registerCommand('vectalon.reviewCode', () =>
+    registerCapabilityCommand('vectalon.reviewCode', () =>
       withClient(async client => {
         const editor = vscode.window.activeTextEditor
         if (!editor) return
@@ -66,7 +77,7 @@ export function registerCommands(
       })
     ),
 
-    vscode.commands.registerCommand('vectalon.checkGuardrails', () =>
+    registerCapabilityCommand('vectalon.checkGuardrails', () =>
       withClient(async () => {
         const editor = vscode.window.activeTextEditor
         if (!editor) return
@@ -75,7 +86,7 @@ export function registerCommands(
       })
     ),
 
-    vscode.commands.registerCommand('vectalon.generateComponent', () =>
+    registerCapabilityCommand('vectalon.generateComponent', () =>
       withClient(async client => {
         const name = await vscode.window.showInputBox({
           prompt: 'Component name (PascalCase)',
@@ -87,7 +98,7 @@ export function registerCommands(
       })
     ),
 
-    vscode.commands.registerCommand('vectalon.archiveBuild', () =>
+    registerCapabilityCommand('vectalon.archiveBuild', () =>
       withClient(async client => {
         const flavor = await vscode.window.showInputBox({
           prompt: 'Build flavor (leave empty for auto-detect)',
@@ -104,7 +115,7 @@ export function registerCommands(
       })
     ),
 
-    vscode.commands.registerCommand('vectalon.distributeBuild', () =>
+    registerCapabilityCommand('vectalon.distributeBuild', () =>
       withClient(async client => {
         const target = await vscode.window.showQuickPick(['testflight', 'play-store', 'saas', 'portal'], {
           placeHolder: 'Distribution target (dry-run plan by default)',
@@ -115,14 +126,14 @@ export function registerCommands(
       })
     ),
 
-    vscode.commands.registerCommand('vectalon.shareBuild', () =>
+    registerCapabilityCommand('vectalon.shareBuild', () =>
       withClient(async client => {
         const result = await client.callTool('share_build_locally', {})
         PreviewPanel.show('Share Build', result.content)
       })
     ),
 
-    vscode.commands.registerCommand('vectalon.generatePortal', () =>
+    registerCapabilityCommand('vectalon.generatePortal', () =>
       withClient(async client => {
         const branding = await vscode.window.showInputBox({
           prompt: 'Portal branding (title)',
@@ -133,14 +144,14 @@ export function registerCommands(
       })
     ),
 
-    vscode.commands.registerCommand('vectalon.projectContext', () =>
+    registerCapabilityCommand('vectalon.projectContext', () =>
       withClient(async client => {
         const result = await client.callTool('get_project_context')
         PreviewPanel.show('Project Context', result.content)
       })
     ),
 
-    vscode.commands.registerCommand('vectalon.searchKnowledge', () =>
+    registerCapabilityCommand('vectalon.searchKnowledge', () =>
       withClient(async client => {
         const query = await vscode.window.showInputBox({
           prompt: 'Search the team knowledge base',
@@ -152,11 +163,11 @@ export function registerCommands(
       })
     ),
 
-    vscode.commands.registerCommand('vectalon.refreshKnowledge', () => {
+    registerCapabilityCommand('vectalon.refreshKnowledge', () => {
       knowledgeTree.refresh()
     }),
 
-    vscode.commands.registerCommand(
+    registerCapabilityCommand(
       'vectalon.openArtifact',
       (artifact: { id: string; title?: string; type?: string; status?: string; version?: number; updatedAt?: string } | null) =>
         withClient(async client => {

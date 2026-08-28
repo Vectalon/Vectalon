@@ -1,0 +1,60 @@
+{
+  "productVersion": "0.16.0",
+  "counts": {
+    "api": {
+      "declared": 356,
+      "enabledByDefault": 0,
+      "conditional": 0
+    },
+    "benchmark": {
+      "declared": 43,
+      "enabledByDefault": 0,
+      "conditional": 0
+    },
+    "claims": {
+      "declared": 36,
+      "enabledByDefault": 0,
+      "conditional": 0
+    },
+    "cli": {
+      "declared": 94,
+      "enabledByDefault": 10,
+      "conditional": 0
+    },
+    "demo": {
+      "declared": 5,
+      "enabledByDefault": 0,
+      "conditional": 0
+    },
+    "extension": {
+      "declared": 14,
+      "enabledByDefault": 6,
+      "conditional": 0
+    },
+    "extension-handler": {
+      "declared": 15,
+      "enabledByDefault": 6,
+      "conditional": 0
+    },
+    "mcp": {
+      "declared": 73,
+      "enabledByDefault": 4,
+      "conditional": 9
+    },
+    "plan-feature": {
+      "declared": 11,
+      "enabledByDefault": 0,
+      "conditional": 0
+    },
+    "platform": {
+      "declared": 5,
+      "enabledByDefault": 1,
+      "conditional": 0
+    },
+    "route": {
+      "declared": 29,
+      "enabledByDefault": 0,
+      "conditional": 0
+    }
+  }
+}
