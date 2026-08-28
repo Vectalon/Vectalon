@@ -187,6 +187,7 @@ export function validateFreeze(root, { base = 'HEAD', previous, previousSurfaces
     /44\s+deterministic\s+commands[\s\S]{0,240}run\s+offline[\s\S]{0,120}free\s+on\s+every\s+tier/i,
     /44\s+deterministic\s+agents[\s\S]{0,180}they\s+run[\s\S]{0,80}offline/i,
     /free\s+on\s+every\s+tier,\s+fully\s+offline/i,
+    /deterministic\s+(?:agents?|(?:agent\s+)?commands?)[^.\n]{0,240}(?:(?:work|run)[^.\n]{0,80}fully\s+offline|need(?:s)?\s+no\s+model)/i,
   ]
   for (const surface of inventory.filter(row => row.kind === 'claims' && !row.historical)) {
     const source = read(root, surface.source)

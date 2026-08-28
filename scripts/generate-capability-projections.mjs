@@ -8,10 +8,13 @@ const catalog = await read('packages/rn/src/capabilities/catalog.json')
 const surfaces = await read('packages/rn/src/capabilities/surfaces.json')
 const lifecycle = new Map(catalog.capabilities.map(entry => [entry.id, entry.lifecycle]))
 const status = buildExtensionCapabilityStatus(catalog, surfaces)
-const serializedStatus = `${JSON.stringify(status, null, 2)}\n`
+const sourceStatus = `${JSON.stringify(status, null, 2)}\n`
+// TypeScript copies imported JSON into out/ with four-space indentation.
+// Match that byte-for-byte so generation and extension compilation are stable.
+const packagedStatus = `${JSON.stringify(status, null, 4)}\n`
 await Promise.all([
-  writeFile(path.join(root, 'packages/rn/extension/src/capability-status.generated.json'), serializedStatus),
-  writeFile(path.join(root, 'packages/rn/extension/out/capability-status.generated.json'), serializedStatus),
+  writeFile(path.join(root, 'packages/rn/extension/src/capability-status.generated.json'), sourceStatus),
+  writeFile(path.join(root, 'packages/rn/extension/out/capability-status.generated.json'), packagedStatus),
 ])
 
 const extensionFile = 'packages/rn/extension/package.json'

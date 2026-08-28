@@ -22,6 +22,7 @@ for (const mutation of [
   'api-registration',
   'claim',
   'offline-claim',
+  'interpolated-offline-claim',
   'ownership',
   'ownership-qualification',
   'public-lifecycle',
@@ -62,6 +63,9 @@ for (const mutation of [
       } else if (mutation === 'offline-claim') {
         const file = path.join(dir, 'apps/website/app/page.tsx')
         await writeFile(file, `${await readFile(file, 'utf8')}\nAll 44 deterministic agents work fully offline.\n`)
+      } else if (mutation === 'interpolated-offline-claim') {
+        const file = path.join(dir, 'apps/website/app/pricing/page.tsx')
+        await writeFile(file, `${await readFile(file, 'utf8')}\nconst bypass = \`All \${PRODUCT_MANIFEST.capabilities.deterministicCommands} deterministic agents work fully offline.\`\n`)
       } else if (mutation === 'ownership') {
         const file = path.join(dir, 'packages/rn/src/capabilities/surfaces.json')
         const surfaces = JSON.parse(await readFile(file, 'utf8'))
@@ -110,12 +114,13 @@ for (const mutation of [
       assert.equal(result.status, 1)
       const expectedError = {
         ownership: /ownership: claims:apps\/website\/app\/agents\/page\.tsx/,
-        'ownership-qualification': /ownership: claims:apps\/website\/app\/agents\/page\.tsx changed rn\.commercial-information -> rn\.evaluation without explicit current qualification/,
+        'ownership-qualification': /ownership: claims:apps\/website\/app\/agents\/page\.tsx changed rn\.analysis -> rn\.evaluation without explicit current qualification/,
         'public-lifecycle': /ownership: claims:apps\/website\/app\/agents\/page\.tsx lifecycle projection differs/,
         'public-evidence': /ownership: claims:apps\/website\/app\/agents\/page\.tsx evidence projection differs/,
         'extension-projection': /projection: extension capability status/,
         'extension-enablement': /projection: extension manifest enablement/,
         'offline-claim': /public-claim: unsupported unconditional promise/,
+        'interpolated-offline-claim': /public-claim: unsupported unconditional promise/,
       }[mutation] || /inventory|evidence|qualification|insufficient-evidence|public-claim/
       assert.match(result.stderr, expectedError)
     } finally { await rm(dir, { recursive: true, force: true }) }

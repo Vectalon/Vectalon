@@ -48,6 +48,8 @@ function registerCommands(context, getClient, guardrails, knowledgeTree) {
             void vscode.window.showWarningMessage(`Vectalon: ${command} unavailable (${decision.reason}). Experimental access does not grant paid entitlements.`);
             return;
         }
+        if (decision.warning)
+            void vscode.window.showWarningMessage(decision.warning);
         return callback.apply(thisArg, args);
     });
     const requireClient = () => {

@@ -79,6 +79,8 @@ async function activate(context) {
             void vscode.window.showWarningMessage(`Vectalon: ${command} unavailable (${decision.reason}). Experimental access does not grant paid entitlements.`);
             return;
         }
+        if (decision.warning)
+            void vscode.window.showWarningMessage(decision.warning);
         return callback.apply(thisArg, args);
     });
     // Start / stop MCP server commands (also the status-bar fallback).

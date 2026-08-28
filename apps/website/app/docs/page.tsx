@@ -90,7 +90,7 @@ const STEPS = [
     n: '02',
     title: 'Serve the agent',
     code: 'npx vectalon serve',
-    body: `Boots the MCP server. Your editor or any MCP client connects and gets ${PRODUCT_MANIFEST.capabilities.mcpTools} project-aware tools — plus ${PRODUCT_MANIFEST.capabilities.deterministicCommands} deterministic agent commands that need no model at all. The VS Code extension (vectalon-dev, free) connects here: one-click workflows, inline guardrail status, and the team knowledge base. Web intel and the knowledge base auto-refresh hourly.`,
+    body: `Boots the MCP server. The package registers ${PRODUCT_MANIFEST.capabilities.mcpTools} project-aware tools and ${PRODUCT_MANIFEST.capabilities.deterministicCommands} deterministic commands, but availability follows the released lifecycle catalog. Beta onboarding and policy surfaces are enabled by default; experimental analysis, knowledge, model, and integration commands require opt-in and may need configured models, credentials, or network services.`,
   },
   {
     n: '03',

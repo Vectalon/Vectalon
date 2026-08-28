@@ -18,7 +18,7 @@
     "contracts:generate": "node scripts/core-contracts.mjs generate",
     "contracts:check": "node scripts/core-contracts.mjs check",
     "capabilities:check": "node scripts/capability-catalog.mjs check .",
-    "capabilities:test": "node --test scripts/capability-catalog.test.mjs",
+    "capabilities:test": "node --test scripts/capability-catalog.test.mjs scripts/capability-projections.test.mjs scripts/extension-packaged-runtime.test.mjs",
     "capabilities:generate": "node scripts/generate-capability-projections.mjs && node scripts/qualify-capabilities.mjs",
     "capabilities:qualify": "node scripts/qualify-capabilities.mjs --workflows && node scripts/generate-capability-projections.mjs",
     "lint": "turbo run lint",
