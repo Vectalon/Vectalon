@@ -212,9 +212,11 @@ export function validateFreeze(root, { base = 'HEAD', previous, previousSurfaces
   }
   let prior = previous
   let priorSurfaces = previousSurfaces
+  let resolvedBase = base
+  try { resolvedBase = execFileSync('git', ['rev-parse', base], { cwd: root, encoding: 'utf8' }).trim() } catch { /* fromGit reports the actionable history error */ }
   if (!prior) {
     try { prior = fromGit(root, base, CATALOG); priorSurfaces = fromGit(root, base, INVENTORY) }
-    catch { if (base !== INITIAL_BASE) errors.push(`history: catalog missing at base ${base}; cannot validate lifecycle history`) }
+    catch { if (resolvedBase !== INITIAL_BASE) errors.push(`history: catalog missing at base ${base}; cannot validate lifecycle history`) }
   }
   if (prior) {
     for (const before of prior.capabilities) {
