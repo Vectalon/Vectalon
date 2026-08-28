@@ -107,7 +107,7 @@
     "@types/pngjs": "^6.0.0",
     "@types/vscode": "^1.125.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "@typescript-eslint/parser": "^7.0.0",
+    "@typescript-eslint/parser": "^8.68.0",
     "@vectalon-dev/core": "workspace:^",
     "@vscode/vsce": "^3.9.2",
     "eslint": "^8.57.0",
