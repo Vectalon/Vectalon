@@ -108,6 +108,7 @@ import { dynamicImport } from '../utils/dynamicImport'
 import { runCommand } from '../adapters/runCommand'
 import { captureError, flushErrorQueue, writeDiagnosticsBundle } from '../diagnostics'
 import { buildRefreshHint, countPersistedSuggestions } from './refreshHint'
+import { assertSurfaceAvailable, surfaceAvailability, capabilityLabel, interactiveChoices, CapabilityUnavailableError } from '../capabilities'
 
 export function createProgram(): Command {
   const program = new Command()
@@ -117,11 +118,17 @@ export function createProgram(): Command {
     .description('The adaptive AI harness for React Native')
     .version(pkg.version)
     .option('--dev', 'Enable dev mode — bypass all tier/license checks')
+    .option('--experimental', 'Opt into unqualified experimental capabilities (does not grant paid entitlements)')
     .option('--diagnostics', 'Write .vectalon/diagnostics-bundle.json (environment, last 5000 log lines, project state) — works on every command')
-    .hook('preAction', (thisCommand) => {
+    .hook('preAction', (thisCommand, actionCommand) => {
+      const experimental = thisCommand.opts().experimental === true || process.env.VECTALON_EXPERIMENTAL === '1'
+      const names: string[] = []
+      for (let command: Command | null = actionCommand; command && command !== program; command = command.parent) names.unshift(command.name())
+      assertSurfaceAvailable(`cli:${names.join(' ')}`, experimental, message => logger.warn(message))
+      if (experimental) process.env.VECTALON_EXPERIMENTAL = '1'
       if (thisCommand.opts().dev) {
         process.env.VECTALON_DEV_MODE = '1'
-        logger.info(pc.yellow('DEV MODE — all features unlocked'))
+        logger.info(pc.yellow('DEV MODE — tier/license checks bypassed; capability lifecycle unchanged'))
       }
     })
 
@@ -997,6 +1004,17 @@ export function createProgram(): Command {
       leaderboardCommand({ ...opts, dir: directory || opts.dir })
     )
 
+  const labelCommands = (parent: Command, prefix = '') => {
+    for (const command of parent.commands) {
+      const key = `cli:${prefix}${command.name()}`
+      command.description(`${capabilityLabel(key)} ${command.description()}`)
+      labelCommands(command, `${prefix}${command.name()} `)
+    }
+    parent.configureHelp({ visibleCommands: command => command.commands.filter(child =>
+      surfaceAvailability(`cli:${prefix}${child.name()}`, program.opts().experimental === true || process.env.VECTALON_EXPERIMENTAL === '1').available) })
+  }
+  labelCommands(program)
+  program.addHelpText('after', '\nExperimental capabilities are hidden. Use --experimental --help to inspect them. Availability does not grant paid entitlements.')
   return program
 }
 
@@ -1063,7 +1081,7 @@ export async function runCLI(): Promise<void> {
       writeDiagnosticsBundle(pendingDiagnostics)
     }
     // Errors-only, opt-out telemetry: queue + best-effort flush, then exit 1.
-    await flushErrorQueue()
+    if (!(err instanceof CapabilityUnavailableError)) await flushErrorQueue()
     process.exit(1)
   }
 }
@@ -1145,7 +1163,7 @@ async function runInteractive(): Promise<void> {
 
   const action = await p.select({
     message: 'What would you like to do?',
-    options: [
+    options: interactiveChoices([
       { value: 'init', label: 'Initialize a project', hint: 'Scan React Native project and create .vectalon/' },
       { value: 'fix', label: 'Fix my React Native issue', hint: 'THE workflow — root cause → fix → verify → diff (killer P0)' },
       { value: 'score', label: 'Show the Engineering Health Score', hint: 'One 0-100 number — 8 dimensions, delta, P0/P1/P2 actions' },
@@ -1230,7 +1248,7 @@ async function runInteractive(): Promise<void> {
       { value: 'pull', label: 'Download local model', hint: 'Download the default Qwen2.5-Coder model' },
       { value: 'models', label: 'List models', hint: 'Show available and downloaded local models' },
       { value: 'help', label: 'Show help', hint: 'Print command reference' },
-    ],
+    ]),
   })
 
   if (p.isCancel(action)) {
@@ -1239,9 +1257,13 @@ async function runInteractive(): Promise<void> {
   }
 
   if (action === 'help') {
-    new Command().name('vectalon').help()
+    createProgram().outputHelp()
     return
   }
+
+  // Interactive actions intentionally bypass Commander; guard before any prompts,
+  // direct command calls, writes or dev-mode checks on this path too.
+  assertSurfaceAvailable(`cli:${String(action)}`, undefined, message => logger.warn(message))
 
   if (action === 'init') {
     const directory = await p.text({

@@ -76,59 +76,67 @@
     "commands": [
       {
         "command": "vectalon.runFeatureWorkflow",
-        "title": "Vectalon: Run Feature Workflow"
+        "title": "[beta] Vectalon: Run Feature Workflow"
       },
       {
         "command": "vectalon.reviewCode",
-        "title": "Vectalon: Review Code (current file)"
+        "title": "[experimental] Vectalon: Review Code (current file)",
+        "enablement": "config.vectalon.experimentalCapabilities"
       },
       {
         "command": "vectalon.checkGuardrails",
-        "title": "Vectalon: Check Guardrails (current file)"
+        "title": "[beta] Vectalon: Check Guardrails (current file)"
       },
       {
         "command": "vectalon.generateComponent",
-        "title": "Vectalon: Generate Component"
+        "title": "[experimental] Vectalon: Generate Component",
+        "enablement": "config.vectalon.experimentalCapabilities"
       },
       {
         "command": "vectalon.archiveBuild",
-        "title": "Vectalon: Archive Build"
+        "title": "[experimental] Vectalon: Archive Build",
+        "enablement": "config.vectalon.experimentalCapabilities"
       },
       {
         "command": "vectalon.distributeBuild",
-        "title": "Vectalon: Distribute Build (dry-run plan)"
+        "title": "[experimental] Vectalon: Distribute Build (dry-run plan)",
+        "enablement": "config.vectalon.experimentalCapabilities"
       },
       {
         "command": "vectalon.shareBuild",
-        "title": "Vectalon: Share Build (local server)"
+        "title": "[experimental] Vectalon: Share Build (local server)",
+        "enablement": "config.vectalon.experimentalCapabilities"
       },
       {
         "command": "vectalon.generatePortal",
-        "title": "Vectalon: Generate Build Portal"
+        "title": "[experimental] Vectalon: Generate Build Portal",
+        "enablement": "config.vectalon.experimentalCapabilities"
       },
       {
         "command": "vectalon.projectContext",
-        "title": "Vectalon: Show Project Context"
+        "title": "[beta] Vectalon: Show Project Context"
       },
       {
         "command": "vectalon.searchKnowledge",
-        "title": "Vectalon: Search Knowledge Base"
+        "title": "[experimental] Vectalon: Search Knowledge Base",
+        "enablement": "config.vectalon.experimentalCapabilities"
       },
       {
         "command": "vectalon.refreshKnowledge",
-        "title": "Vectalon: Refresh Knowledge View"
+        "title": "[experimental] Vectalon: Refresh Knowledge View",
+        "enablement": "config.vectalon.experimentalCapabilities"
       },
       {
         "command": "vectalon.startServer",
-        "title": "Vectalon: Start MCP Server"
+        "title": "[beta] Vectalon: Start MCP Server"
       },
       {
         "command": "vectalon.restartServer",
-        "title": "Vectalon: Restart MCP Server"
+        "title": "[beta] Vectalon: Restart MCP Server"
       },
       {
         "command": "vectalon.stopServer",
-        "title": "Vectalon: Stop MCP Server"
+        "title": "[beta] Vectalon: Stop MCP Server"
       }
     ],
     "configuration": {
@@ -148,6 +156,11 @@
           "type": "boolean",
           "default": true,
           "description": "Run guardrail checks on the active file and surface findings in the Problems panel."
+        },
+        "vectalon.experimentalCapabilities": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show and allow experimental Vectalon commands. This does not grant paid entitlements."
         }
       }
     }

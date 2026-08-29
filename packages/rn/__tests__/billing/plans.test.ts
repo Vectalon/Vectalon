@@ -24,31 +24,26 @@ describe('commercial plans', () => {
     expect(PLAN_BY_ID.enterprise.engineTier).toBe('enterprise')
   })
 
-  it('Individual carries local AI + project intelligence + diagnostics', () => {
+  it('Individual promises only released qualified RN scope and separately labelled beta access', () => {
     const features = PLAN_BY_ID.individual.features.join(' ').toLowerCase()
-    expect(features).toContain('local ai')
-    expect(features).toContain('project intelligence')
-    expect(features).toContain('diagnostics')
-    expect(features).toContain('zero model calls')
+    expect(features).toContain('vectalon react native for one developer')
+    expect(features).toContain('qualified individual capabilities from the released catalog')
+    expect(features).toContain('separately labelled beta access')
   })
 
-  it('Team carries Team Brain, shared policies, PR review, CI, shared knowledge, dashboards', () => {
+  it('Team is per purchased developer seat and promises only qualified released scope', () => {
     const features = PLAN_BY_ID.team.features.join(' ').toLowerCase()
-    expect(features).toContain('team brain')
-    expect(features).toContain('shared policies')
-    expect(features).toContain('pr review')
-    expect(features).toContain('ci')
-    expect(features).toContain('shared knowledge')
+    expect(features).toContain('each purchased developer seat')
+    expect(features).toContain('qualified team capabilities from the released catalog')
+    expect(features).toContain('separately labelled beta access')
   })
 
   it('qualifies Enterprise deployment and governance capabilities as contracted scope', () => {
     const features = PLAN_BY_ID.enterprise.features.join(' ').toLowerCase()
-    expect(features).toContain('self-hosting')
-    expect(features).toContain('sso')
-    expect(features).toContain('audit')
-    expect(features).toContain('only when contracted')
-    expect(features).toContain('organization policy')
-    expect(features).toContain('multi-repository')
+    expect(features).toContain('scope defined in the signed order')
+    expect(features).toContain('only when implemented, tested, and contracted')
+    expect(features).not.toContain('sso')
+    expect(features).not.toContain('self-hosting')
     expect(features).not.toContain('air-gapped ready')
   })
 

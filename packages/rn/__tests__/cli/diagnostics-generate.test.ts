@@ -21,7 +21,12 @@ afterEach(() => {
 
 function run(args: string[], cwd: string): { code: number; stdout: string; stderr: string } {
   try {
-    const stdout = execFileSync(process.execPath, [BIN, ...args], { cwd, encoding: 'utf-8', timeout: 60_000 })
+    const stdout = execFileSync(process.execPath, [BIN, ...args], {
+      cwd,
+      encoding: 'utf-8',
+      timeout: 60_000,
+      env: { ...process.env, VECTALON_EXPERIMENTAL: '1' },
+    })
     return { code: 0, stdout, stderr: '' }
   } catch (err) {
     const e = err as { status?: number; stdout?: string; stderr?: string }

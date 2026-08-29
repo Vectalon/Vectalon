@@ -55,9 +55,9 @@ export async function smokeCommand(directory: string, options: SmokeOptions): Pr
     return
   }
 
-  // Dev mode is ALWAYS on by default so every feature is exercised for real
-  // (no license-gate skips). Opt out with --no-dev when a run should respect
-  // the actual tier.
+  // Dev mode is on by default so the verification run explicitly exercises
+  // licensed and experimental features. Opt out with --no-dev when a run
+  // should respect the actual license and lifecycle gates.
   const devMode = options.dev !== false
   logger.info(pc.bold(`vectalon smoke — @vectalon-dev/rn`))
   logger.info(`project: ${root}`)
@@ -65,7 +65,7 @@ export async function smokeCommand(directory: string, options: SmokeOptions): Pr
   if (options.only) logger.info(`checks: ${options.only}`)
   if (options.skip) logger.info(`skipping: ${options.skip}`)
   if (options.full) logger.info('including slow / model-heavy checks (--full)')
-  logger.info(devMode ? 'dev mode — all tier-gated features run for real (--no-dev to disable)' : 'tier mode — tier-gated checks report as skips (--dev enables)')
+  logger.info(devMode ? 'verification mode — licensed and experimental features run for real (--no-dev to disable)' : 'customer mode — license and lifecycle gates remain active (--dev enables verification mode)')
   logger.info('')
 
   const report = await runSmoke(

@@ -55,7 +55,7 @@ describe('MCPServer sub-MCP proxying', () => {
     const tools = server.getToolList()
     expect(tools.find(t => t.name === 'metro-mcp__get_console_logs')).toEqual({
       name: 'metro-mcp__get_console_logs',
-      description: '[Metro MCP] Read Metro console logs',
+      description: '[third-party; not Vectalon-qualified: Metro MCP] Read Metro console logs',
       inputSchema: { type: 'object' },
     })
     expect(tools.find(t => t.name === 'metro-mcp__get_network_requests')).toBeDefined()

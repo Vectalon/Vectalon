@@ -14,9 +14,9 @@ import {
 } from '../../lib/agents'
 
 export const metadata = {
-  title: 'Vectalon agents — 44 deterministic commands, zero model calls',
+  title: 'Vectalon agents — experimental deterministic command catalog',
   description:
-    'Every deterministic Vectalon agent — code review, security, SOC 2, release prediction, Figma sync — with its verdict and the report it produces.',
+    'The experimental React Native deterministic-command preview, with lifecycle caveats, sample verdicts, and report formats.',
 }
 
 function AgentCard({ agent, index }: { agent: AgentInfo; index: number }) {
@@ -83,13 +83,12 @@ export default async function AgentsPage(props: { searchParams: Promise<{ repo?:
           </span>
         </div>
         <h1 className="text-4xl font-bold text-slate-50 sm:text-5xl">
-          Deterministic agents — <span className="text-brand">zero model calls</span>
+          Deterministic command catalog — <span className="text-brand">experimental preview</span>
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-slate-400">
-          The deterministic fleet behind the control plane — the review, diagnose, and validate
-          muscles that need no model. Same result every run, on any machine: each agent scans, reaches
-          a verdict, and writes a report to <span className="font-mono text-slate-300">docs/vectalon/</span>.
-          Free on every tier, fully offline.
+          These registered commands preview review, diagnose, and validate surfaces. The analysis
+          capability is experimental and requires opt-in; results need human review. Zero-model
+          commands do not invoke a model, but some can still use configured remote integrations.
         </p>
       </div>
 
@@ -200,7 +199,7 @@ export default async function AgentsPage(props: { searchParams: Promise<{ repo?:
         </div>
         <div className="seg !block !px-6 !py-4 text-center">
           <div className="font-display text-2xl font-bold text-brand">$0</div>
-          <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-500">on the free tier</div>
+          <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-slate-500">catalog price; opt-in still required</div>
         </div>
       </div>
 

@@ -14,6 +14,7 @@ describe('sandboxCommand', () => {
 
   afterEach(() => {
     stdoutSpy.mockRestore()
+    process.exitCode = undefined
   })
 
   it('runs a command and prints the human report', async () => {

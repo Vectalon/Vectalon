@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { checkoutUrlFor, type LsTier } from '../../lib/lemon-squeezy'
-import { PRODUCT_MANIFEST, PRODUCT_PLANS, type ProductPlanId } from '../../lib/product-manifest'
+import { PRODUCT_PLANS, type ProductPlanId } from '../../lib/product-manifest'
 
 const PLAN_PRESENTATION: Record<ProductPlanId, {
   blurb: string
@@ -55,7 +55,7 @@ const PLANS: Array<{
 const FAQ = [
   {
     q: 'Is there still a free tier?',
-    a: `Yes. init, serve, feature, doctor, and all ${PRODUCT_MANIFEST.capabilities.deterministicCommands} deterministic agents work fully offline and cover the daily loop for an individual project. Free means free — no card, no trial countdown.`,
+    a: 'Yes. The released catalog identifies the qualified Free capabilities: local project setup, diagnostics, and basic React Native guardrails. Experimental commands require explicit opt-in, are not a purchased promise, and may need configured models, credentials, or network services. No card or trial countdown.',
   },
   {
     q: 'How does the 14-day trial work?',

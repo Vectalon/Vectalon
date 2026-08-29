@@ -135,17 +135,17 @@ describe('smoke runner', () => {
     expect(report.runs[0].output).not.toContain('\u001b[')
   })
 
-  it('runs checks in dev mode by default (VECTALON_DEV_MODE=1, no forced color)', async () => {
+  it('runs checks in verification mode by default (dev entitlement plus explicit experimental opt-in)', async () => {
     const dir = join(tmpdir(), `vectalon-smoke-env-${Math.random().toString(36).slice(2)}`)
     mkdirSync(dir, { recursive: true })
     const script = `#!/usr/bin/env node
-process.stdout.write('dev=' + process.env.VECTALON_DEV_MODE + ' color=' + process.env.FORCE_COLOR + '\\n')
+process.stdout.write('dev=' + process.env.VECTALON_DEV_MODE + ' experimental=' + process.env.VECTALON_EXPERIMENTAL + ' color=' + process.env.FORCE_COLOR + '\\n')
 process.exit(0)
 `
     const bin = join(dir, 'vectalon.js')
     writeFileSync(bin, script)
     const report = await runSmoke(fakeContext(bin), { only: ['version'] })
-    expect(report.runs[0].output).toContain('dev=1 color=0')
+    expect(report.runs[0].output).toContain('dev=1 experimental=1 color=0')
   })
 
   it('respects devMode: false for tier-respecting runs', async () => {

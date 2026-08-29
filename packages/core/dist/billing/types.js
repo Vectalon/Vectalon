@@ -20,7 +20,6 @@ exports.TIER_CONFIGS = {
         name: 'team',
         features: ['sync', 'custom-model', 'priority-inference', 'team-brain'],
         products: ['rn', 'ios', 'android', 'python'],
-        maxSeats: 50,
     },
     enterprise: {
         name: 'enterprise',
