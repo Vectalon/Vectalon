@@ -2,5 +2,19 @@
   "regions": ["iad1"],
   "env": {
     "DATA_DIR": "/tmp/vectalon-data"
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/familyOS/privacy",
+      "destination": "/familyOS/privacy.html"
+    },
+    {
+      "source": "/familyOS/terms",
+      "destination": "/familyOS/terms.html"
+    },
+    {
+      "source": "/familyOS/health-disclaimer",
+      "destination": "/familyOS/health-disclaimer.html"
+    }
+  ]
 }
