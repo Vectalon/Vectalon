@@ -2,7 +2,7 @@
 
 **The adaptive AI harness for developers — React Native, iOS, Android, Python, and beyond.**
 
-Current RN release: <!-- product-fact:rn-version -->0.15.0<!-- /product-fact --> ·
+Current RN release: <!-- product-fact:rn-version -->0.17.0<!-- /product-fact --> ·
 benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
 deterministic agents: <!-- product-fact:deterministic-commands -->44<!-- /product-fact --> ·
 MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact -->
@@ -14,7 +14,7 @@ MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact -->
 
 ## What is Vectalon?
 
-Vectalon is an open-core developer tool that embeds AI intelligence directly into your codebase. It scans your project, understands its architecture, and provides project-aware assistance across the full SDLC — through a local MCP-native agent (feature workflows, codegen, upgrades, device control) and a fleet of 44 deterministic agent commands (review, security, SOC 2, release prediction, dashboard, fix, pr, archive, …) that run offline with a report and a verdict every time.
+Vectalon is an open-core developer tool for project-aware React Native assistance. Beta onboarding and policy capabilities are separated from experimental model, analysis, upgrade, and distribution previews in the released catalog. The package currently registers 44 deterministic commands; lifecycle, evidence, opt-in, and network requirements vary by capability, and results require human review.
 
 > **📌 This is a public repository.** The source code is available under the Business Source License 1.1 (BSL-1.1). Commercial use by teams with >3 developers requires a paid license. The admin dashboard and internal operations tools are maintained in a separate private repository.
 
@@ -134,31 +134,22 @@ npx vectalon serve   # Start MCP server for agents
 
 ### Free — $0
 - Project scanning and context building
-- 64 MCP project-aware tools
-- **All deterministic agent commands** — code review, architecture, security, build/test repair, refactoring, SOC 2, CI/CD, store readiness, team analytics, and enterprise intelligence (figma, sentry, governance, release-predict, dataset, lora, …), each with a report and a verdict — no model required. `fix` diagnoses and auto-fixes real RN failures; `fix-bench` proves it against 100 committed failure scenarios (100/100 diagnosis, 70/100 auto-fix, 0 false positives); `pr` reviews a pull request — five checks over the added lines, the health impact, and a one-command bot comment; `gh-app` runs the install-once webhook server that turns every pull request into that review, posted back by the app itself
-- Component generation
-- Test writing
-- Ecosystem doctor
-- Benchmark suite
+- Available and beta capabilities shown by `npx vectalon capabilities`
+- Experimental capabilities require `--experimental` and are not part of a paid promise
 
 ### Individual — <!-- product-fact:individual-price -->$19<!-- /product-fact -->/developer/month
-- **Local AI** — local GGUF/WASM models, your source never leaves the machine
-- **Project intelligence** — intel, score, review, sec, arch
-- **Diagnostics** — doctor, build-fix, profile, sandbox, render
-- **Upgrade Copilot** — Automated React Native/Expo upgrades with codemods
-- **Self-healing CI** — Auto-generate and fix CI workflows
+- Commercial-use license for Vectalon React Native for one developer
+- Qualified capabilities for this plan, as listed by the released capability catalog
+- Beta access is labelled separately and is not a guaranteed purchased outcome
 
 ### Team — <!-- product-fact:team-price -->$49<!-- /product-fact -->/developer/month
-- **Team Brain** — decisions, expertise, shared knowledge across projects
-- **Shared policies + PR review**
-- **CI + dashboards** — coverage, score trends
-- **Cross-project intelligence + cloud sync**
+- Commercial-use license for Vectalon React Native for the purchased developer quantity
+- Qualified Team capabilities, as listed by the released capability catalog
+- No tier-wide 50-seat cap; each developer requires a purchased seat
 
 ### Enterprise — Custom (annual)
-- Self-hosted deployment (air-gapped ready)
-- SSO / SAML + audit trails
-- Private / company-controlled models (Ollama, vLLM)
-- Organization-wide policies + multi-repository intelligence
+- Deployment, governance, support, and capability scope defined in the signed order
+- Security controls are included only when implemented, independently tested, and contracted
 
 See your current plan and what each tier unlocks with `npx vectalon plan`, and
 the engineering outcomes your reports produce with `npx vectalon outcomes`.

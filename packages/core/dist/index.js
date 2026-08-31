@@ -6,8 +6,8 @@
  * See LICENSE for details.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isCompositeDetection = exports.isTestCoverageDetection = exports.isBuildConfigDetection = exports.isStaticAnalysisDetection = exports.isRegexDetection = exports.isASTDetection = exports.createRule = exports.languageProfiles = exports.LanguageProfileRegistry = exports.ruleRegistry = exports.RuleRegistry = exports.createToolCaller = exports.createAlwaysResponds = exports.FakeModelProvider = exports.modelProviders = exports.ModelRateLimitError = exports.ModelProviderError = exports.ModelProviderRegistry = exports.buildRepairPrompt = exports.RepairLoop = exports.FileMatchDetector = exports.RegexDetector = exports.EngineGuardrail = exports.violationsToPrompt = exports.violationToPrompt = exports.violationsFromJSON = exports.violationsToJSON = exports.violationDeserialize = exports.violationSerialize = exports.violationFromJSON = exports.violationToJSON = exports.createViolation = exports.CURRENT_SCHEMA_VERSION = exports.EngineeringProfile = exports.validateContract = exports.findBreakingSchemaChanges = exports.generateRegistryManifest = exports.generateContractTypes = exports.CONTRACT_SCHEMAS = exports.CONTRACT_REVISION = exports.CONTRACT_NAMES = exports.DevMode = exports.VectalonConfig = exports.UsageReporter = exports.requireTier = exports.FeatureGates = exports.TierResolver = exports.TrialTracker = exports.LicenseValidator = exports.LicenseStore = void 0;
-exports.DEFAULT_PRECEDENCE = exports.LAYER_ORDER = exports.composeProfiles = exports.CompositionEngine = exports.androidDefinition = exports.iosDefinition = exports.platformProfiles = exports.PlatformProfileRegistry = exports.rnSec002 = exports.rnBuild001 = exports.rnTest001 = exports.rnNative001 = exports.rnSec001 = exports.rnState001 = exports.rnPerf001 = exports.rnRn001 = exports.rnTs001 = exports.rnArch002 = exports.rnArch001 = exports.rnRules = exports.reactNativeDefinition = exports.reactDefinition = exports.frameworkProfiles = exports.FrameworkProfileRegistry = exports.typescriptDefinition = exports.isManualRemediation = exports.isSnippetRemediation = exports.isGuidanceRemediation = exports.isAutoFixRemediation = void 0;
+exports.isStaticAnalysisDetection = exports.isRegexDetection = exports.isASTDetection = exports.createRule = exports.languageProfiles = exports.LanguageProfileRegistry = exports.ruleRegistry = exports.RuleRegistry = exports.createToolCaller = exports.createAlwaysResponds = exports.FakeModelProvider = exports.modelProviders = exports.ModelRateLimitError = exports.ModelProviderError = exports.ModelProviderRegistry = exports.buildRepairPrompt = exports.RepairLoop = exports.FileMatchDetector = exports.RegexDetector = exports.EngineGuardrail = exports.violationsToPrompt = exports.violationToPrompt = exports.violationsFromJSON = exports.violationsToJSON = exports.violationDeserialize = exports.violationSerialize = exports.violationFromJSON = exports.violationToJSON = exports.createViolation = exports.CURRENT_SCHEMA_VERSION = exports.EngineeringProfile = exports.validateCapabilityTransition = exports.checkCapabilityAvailability = exports.validateCapabilityCatalog = exports.validateContract = exports.findBreakingSchemaChanges = exports.generateRegistryManifest = exports.generateContractTypes = exports.CONTRACT_SCHEMAS = exports.CONTRACT_REVISION = exports.CONTRACT_NAMES = exports.DevMode = exports.VectalonConfig = exports.UsageReporter = exports.requireTier = exports.FeatureGates = exports.TierResolver = exports.TrialTracker = exports.LicenseValidator = exports.LicenseStore = void 0;
+exports.createCoreHarness = exports.DEFAULT_PRECEDENCE = exports.LAYER_ORDER = exports.composeProfiles = exports.CompositionEngine = exports.androidDefinition = exports.iosDefinition = exports.platformProfiles = exports.PlatformProfileRegistry = exports.reactDefinition = exports.frameworkProfiles = exports.FrameworkProfileRegistry = exports.typescriptDefinition = exports.isManualRemediation = exports.isSnippetRemediation = exports.isGuidanceRemediation = exports.isAutoFixRemediation = exports.isCompositeDetection = exports.isTestCoverageDetection = exports.isBuildConfigDetection = void 0;
 // Auth
 var LicenseStore_1 = require("./auth/LicenseStore");
 Object.defineProperty(exports, "LicenseStore", { enumerable: true, get: function () { return LicenseStore_1.LicenseStore; } });
@@ -39,6 +39,11 @@ Object.defineProperty(exports, "generateContractTypes", { enumerable: true, get:
 Object.defineProperty(exports, "generateRegistryManifest", { enumerable: true, get: function () { return contracts_1.generateRegistryManifest; } });
 Object.defineProperty(exports, "findBreakingSchemaChanges", { enumerable: true, get: function () { return contracts_1.findBreakingSchemaChanges; } });
 Object.defineProperty(exports, "validateContract", { enumerable: true, get: function () { return contracts_1.validateContract; } });
+// Capability availability is independent of paid entitlement and license issuance.
+var CapabilityCatalog_1 = require("./capabilities/CapabilityCatalog");
+Object.defineProperty(exports, "validateCapabilityCatalog", { enumerable: true, get: function () { return CapabilityCatalog_1.validateCapabilityCatalog; } });
+Object.defineProperty(exports, "checkCapabilityAvailability", { enumerable: true, get: function () { return CapabilityCatalog_1.checkCapabilityAvailability; } });
+Object.defineProperty(exports, "validateCapabilityTransition", { enumerable: true, get: function () { return CapabilityCatalog_1.validateCapabilityTransition; } });
 // Engineering Profiles
 var EngineeringProfile_1 = require("./profiles/EngineeringProfile");
 Object.defineProperty(exports, "EngineeringProfile", { enumerable: true, get: function () { return EngineeringProfile_1.EngineeringProfile; } });
@@ -104,23 +109,6 @@ Object.defineProperty(exports, "frameworkProfiles", { enumerable: true, get: fun
 // Framework definitions (first-class plugins)
 var react_1 = require("./profiles/frameworks/react");
 Object.defineProperty(exports, "reactDefinition", { enumerable: true, get: function () { return react_1.reactDefinition; } });
-var react_native_1 = require("./profiles/frameworks/react-native");
-Object.defineProperty(exports, "reactNativeDefinition", { enumerable: true, get: function () { return react_native_1.reactNativeDefinition; } });
-// Real RN rules (with working detection)
-var react_native_rules_1 = require("./profiles/rules/react-native-rules");
-Object.defineProperty(exports, "rnRules", { enumerable: true, get: function () { return react_native_rules_1.rnRules; } });
-var react_native_rules_2 = require("./profiles/rules/react-native-rules");
-Object.defineProperty(exports, "rnArch001", { enumerable: true, get: function () { return react_native_rules_2.rnArch001; } });
-Object.defineProperty(exports, "rnArch002", { enumerable: true, get: function () { return react_native_rules_2.rnArch002; } });
-Object.defineProperty(exports, "rnTs001", { enumerable: true, get: function () { return react_native_rules_2.rnTs001; } });
-Object.defineProperty(exports, "rnRn001", { enumerable: true, get: function () { return react_native_rules_2.rnRn001; } });
-Object.defineProperty(exports, "rnPerf001", { enumerable: true, get: function () { return react_native_rules_2.rnPerf001; } });
-Object.defineProperty(exports, "rnState001", { enumerable: true, get: function () { return react_native_rules_2.rnState001; } });
-Object.defineProperty(exports, "rnSec001", { enumerable: true, get: function () { return react_native_rules_2.rnSec001; } });
-Object.defineProperty(exports, "rnNative001", { enumerable: true, get: function () { return react_native_rules_2.rnNative001; } });
-Object.defineProperty(exports, "rnTest001", { enumerable: true, get: function () { return react_native_rules_2.rnTest001; } });
-Object.defineProperty(exports, "rnBuild001", { enumerable: true, get: function () { return react_native_rules_2.rnBuild001; } });
-Object.defineProperty(exports, "rnSec002", { enumerable: true, get: function () { return react_native_rules_2.rnSec002; } });
 // Platform Profile Registry (plugin system)
 var PlatformProfileRegistry_1 = require("./profiles/PlatformProfileRegistry");
 Object.defineProperty(exports, "PlatformProfileRegistry", { enumerable: true, get: function () { return PlatformProfileRegistry_1.PlatformProfileRegistry; } });
@@ -136,3 +124,6 @@ Object.defineProperty(exports, "CompositionEngine", { enumerable: true, get: fun
 Object.defineProperty(exports, "composeProfiles", { enumerable: true, get: function () { return CompositionEngine_1.composeProfiles; } });
 Object.defineProperty(exports, "LAYER_ORDER", { enumerable: true, get: function () { return CompositionEngine_1.LAYER_ORDER; } });
 Object.defineProperty(exports, "DEFAULT_PRECEDENCE", { enumerable: true, get: function () { return CompositionEngine_1.DEFAULT_PRECEDENCE; } });
+// Product-neutral engineering harness
+var CoreHarness_1 = require("./profiles/CoreHarness");
+Object.defineProperty(exports, "createCoreHarness", { enumerable: true, get: function () { return CoreHarness_1.createCoreHarness; } });

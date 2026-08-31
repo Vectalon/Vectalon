@@ -1,0 +1,212 @@
+{
+  "vectalon.archiveBuild": {
+    "capabilityId": "rn.build-distribution",
+    "capabilityVersion": "1.0.0",
+    "lifecycle": "experimental",
+    "implemented": true,
+    "plans": [
+      "free",
+      "individual",
+      "team",
+      "enterprise"
+    ],
+    "supportTier": "community-preview; no SLA",
+    "deprecation": null
+  },
+  "vectalon.checkGuardrails": {
+    "capabilityId": "rn.policy.check",
+    "capabilityVersion": "1.0.0",
+    "lifecycle": "beta",
+    "implemented": true,
+    "plans": [
+      "free",
+      "individual",
+      "team",
+      "enterprise"
+    ],
+    "supportTier": "community-preview; no SLA",
+    "deprecation": null
+  },
+  "vectalon.distributeBuild": {
+    "capabilityId": "rn.build-distribution",
+    "capabilityVersion": "1.0.0",
+    "lifecycle": "experimental",
+    "implemented": true,
+    "plans": [
+      "free",
+      "individual",
+      "team",
+      "enterprise"
+    ],
+    "supportTier": "community-preview; no SLA",
+    "deprecation": null
+  },
+  "vectalon.generateComponent": {
+    "capabilityId": "rn.model-generation",
+    "capabilityVersion": "1.0.0",
+    "lifecycle": "experimental",
+    "implemented": true,
+    "plans": [
+      "free",
+      "individual",
+      "team",
+      "enterprise"
+    ],
+    "supportTier": "community-preview; no SLA",
+    "deprecation": null
+  },
+  "vectalon.generatePortal": {
+    "capabilityId": "rn.build-distribution",
+    "capabilityVersion": "1.0.0",
+    "lifecycle": "experimental",
+    "implemented": true,
+    "plans": [
+      "free",
+      "individual",
+      "team",
+      "enterprise"
+    ],
+    "supportTier": "community-preview; no SLA",
+    "deprecation": null
+  },
+  "vectalon.openArtifact": {
+    "capabilityId": "rn.knowledge",
+    "capabilityVersion": "1.0.0",
+    "lifecycle": "experimental",
+    "implemented": true,
+    "plans": [
+      "free",
+      "individual",
+      "team",
+      "enterprise"
+    ],
+    "supportTier": "community-preview; no SLA",
+    "deprecation": null
+  },
+  "vectalon.projectContext": {
+    "capabilityId": "rn.project.inspect",
+    "capabilityVersion": "1.0.0",
+    "lifecycle": "beta",
+    "implemented": true,
+    "plans": [
+      "free",
+      "individual",
+      "team",
+      "enterprise"
+    ],
+    "supportTier": "community-preview; no SLA",
+    "deprecation": null
+  },
+  "vectalon.refreshKnowledge": {
+    "capabilityId": "rn.knowledge",
+    "capabilityVersion": "1.0.0",
+    "lifecycle": "experimental",
+    "implemented": true,
+    "plans": [
+      "free",
+      "individual",
+      "team",
+      "enterprise"
+    ],
+    "supportTier": "community-preview; no SLA",
+    "deprecation": null
+  },
+  "vectalon.restartServer": {
+    "capabilityId": "rn.project.inspect",
+    "capabilityVersion": "1.0.0",
+    "lifecycle": "beta",
+    "implemented": true,
+    "plans": [
+      "free",
+      "individual",
+      "team",
+      "enterprise"
+    ],
+    "supportTier": "community-preview; no SLA",
+    "deprecation": null
+  },
+  "vectalon.reviewCode": {
+    "capabilityId": "rn.analysis",
+    "capabilityVersion": "1.0.0",
+    "lifecycle": "experimental",
+    "implemented": true,
+    "plans": [
+      "free",
+      "individual",
+      "team",
+      "enterprise"
+    ],
+    "supportTier": "community-preview; no SLA",
+    "deprecation": null
+  },
+  "vectalon.runFeatureWorkflow": {
+    "capabilityId": "rn.feature.workflow",
+    "capabilityVersion": "1.0.0",
+    "lifecycle": "beta",
+    "implemented": true,
+    "plans": [
+      "free",
+      "individual",
+      "team",
+      "enterprise"
+    ],
+    "supportTier": "community-preview; no SLA",
+    "deprecation": null
+  },
+  "vectalon.searchKnowledge": {
+    "capabilityId": "rn.knowledge",
+    "capabilityVersion": "1.0.0",
+    "lifecycle": "experimental",
+    "implemented": true,
+    "plans": [
+      "free",
+      "individual",
+      "team",
+      "enterprise"
+    ],
+    "supportTier": "community-preview; no SLA",
+    "deprecation": null
+  },
+  "vectalon.shareBuild": {
+    "capabilityId": "rn.build-distribution",
+    "capabilityVersion": "1.0.0",
+    "lifecycle": "experimental",
+    "implemented": true,
+    "plans": [
+      "free",
+      "individual",
+      "team",
+      "enterprise"
+    ],
+    "supportTier": "community-preview; no SLA",
+    "deprecation": null
+  },
+  "vectalon.startServer": {
+    "capabilityId": "rn.project.inspect",
+    "capabilityVersion": "1.0.0",
+    "lifecycle": "beta",
+    "implemented": true,
+    "plans": [
+      "free",
+      "individual",
+      "team",
+      "enterprise"
+    ],
+    "supportTier": "community-preview; no SLA",
+    "deprecation": null
+  },
+  "vectalon.stopServer": {
+    "capabilityId": "rn.project.inspect",
+    "capabilityVersion": "1.0.0",
+    "lifecycle": "beta",
+    "implemented": true,
+    "plans": [
+      "free",
+      "individual",
+      "team",
+      "enterprise"
+    ],
+    "supportTier": "community-preview; no SLA",
+    "deprecation": null
+  }
+}

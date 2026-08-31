@@ -97,7 +97,7 @@ describe('MCP tool registries (decorator pattern)', () => {
     }
   })
 
-  it('a new registry plugs into the server with no changes to MCPServer', async () => {
+  it('fails closed when a runtime registry adds an unqualified tool', async () => {
     // The pattern: build a registry off ToolRegistry, then hand its tools to
     // the server's handler surface. MCPServer itself is untouched.
     class ExtraTools extends ToolRegistry {
@@ -133,7 +133,7 @@ describe('MCP tool registries (decorator pattern)', () => {
 
     expect(server.getToolList()).toHaveLength(before) // discovery list is registry-driven
     const result = await server.handleToolCall({ id: '1', name: 'extra_thing', arguments: {} })
-    expect(result.isError).not.toBe(true)
-    expect(result.content).toBe('extra result')
+    expect(result.isError).toBe(true)
+    expect(result.content).toContain('unknown-capability')
   })
 })

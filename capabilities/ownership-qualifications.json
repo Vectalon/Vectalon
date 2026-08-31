@@ -1,0 +1,89 @@
+[
+  {
+    "keys": [
+      "claims:apps/website/app/docs/page.tsx",
+      "claims:apps/website/app/page.tsx",
+      "claims:apps/website/components/FeatureIcon.tsx",
+      "claims:apps/website/components/GlobalParticles.tsx",
+      "claims:apps/website/components/HeroHeadline.tsx",
+      "claims:apps/website/components/HeroMotion.tsx",
+      "claims:packages/rn/README.md",
+      "claims:README.md",
+      "plan-feature:free/Local project setup and diagnostics",
+      "route:/",
+      "route:/api/v1/health",
+      "route:/docs"
+    ],
+    "fromCapabilityId": "rn.commercial-information",
+    "toCapabilityId": "rn.project.inspect",
+    "productVersion": "0.16.0",
+    "capabilityVersion": "1.0.0",
+    "evidenceReference": "capabilities/evidence/rn.project.inspect.1.0.0.0.16.0.implementation.json"
+  },
+  {
+    "keys": [
+      "claims:apps/website/app/agents/page.tsx",
+      "claims:apps/website/app/outcomes/page.tsx",
+      "claims:apps/website/app/reports/page.tsx",
+      "claims:apps/website/components/AgentOrb.tsx",
+      "claims:apps/website/components/ReportWindow.tsx",
+      "claims:apps/website/lib/agents.ts",
+      "route:/agents",
+      "route:/outcomes",
+      "route:/reports"
+    ],
+    "fromCapabilityId": "rn.commercial-information",
+    "toCapabilityId": "rn.analysis",
+    "productVersion": "0.16.0",
+    "capabilityVersion": "1.0.0",
+    "evidenceReference": "capabilities/evidence/rn.analysis.1.0.0.0.16.0.implementation.json"
+  },
+  {
+    "keys": [
+      "claims:apps/website/app/benchmarks/page.tsx",
+      "claims:apps/website/app/changelog/page.tsx",
+      "claims:apps/website/app/demo/page.tsx",
+      "claims:apps/website/components/DemoPlayer.tsx",
+      "route:/benchmarks",
+      "route:/changelog",
+      "route:/demo"
+    ],
+    "fromCapabilityId": "rn.commercial-information",
+    "toCapabilityId": "rn.evaluation",
+    "productVersion": "0.16.0",
+    "capabilityVersion": "1.0.0",
+    "evidenceReference": "capabilities/evidence/rn.evaluation.1.0.0.0.16.0.implementation.json"
+  },
+  {
+    "keys": ["claims:apps/website/components/FeedAge.tsx"],
+    "fromCapabilityId": "rn.commercial-information",
+    "toCapabilityId": "rn.knowledge",
+    "productVersion": "0.16.0",
+    "capabilityVersion": "1.0.0",
+    "evidenceReference": "capabilities/evidence/rn.knowledge.1.0.0.0.16.0.implementation.json"
+  },
+  {
+    "keys": ["claims:apps/website/components/TypePrompt.tsx"],
+    "fromCapabilityId": "rn.commercial-information",
+    "toCapabilityId": "rn.model-generation",
+    "productVersion": "0.16.0",
+    "capabilityVersion": "1.0.0",
+    "evidenceReference": "capabilities/evidence/rn.model-generation.1.0.0.0.16.0.implementation.json"
+  },
+  {
+    "keys": ["plan-feature:free/Basic React Native guardrails"],
+    "fromCapabilityId": "rn.commercial-information",
+    "toCapabilityId": "rn.policy.check",
+    "productVersion": "0.16.0",
+    "capabilityVersion": "1.0.0",
+    "evidenceReference": "capabilities/evidence/rn.policy.check.1.0.0.0.16.0.implementation.json"
+  },
+  {
+    "keys": ["plan-feature:enterprise/Deployment, governance, security, and support controls only when implemented, tested, and contracted"],
+    "fromCapabilityId": "rn.commercial-information",
+    "toCapabilityId": "rn.enterprise-controls",
+    "productVersion": "0.16.0",
+    "capabilityVersion": "1.0.0",
+    "evidenceReference": null
+  }
+]

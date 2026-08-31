@@ -1,11 +1,11 @@
 {
   "contractVersion": "1.0.0",
-  "revision": "1.0.0+2e0c787b4c8955ec7f66796dea6b7abffddd82609b93decdd51f57721ad63e63",
+  "revision": "1.0.0+6f374fcb040cb305275a519b9e1ffdec271f1677807d3d66d69c6d2fae7bce98",
   "generator": {
     "name": "vectalon-core",
     "version": "1.0.0"
   },
-  "typeProjectionDigest": "9dad9d0dc7aa764876839686e7f98f6632a761aa5df06688fae733e325095a84",
+  "typeProjectionDigest": "8bcfeea96eb8acbe226492345cffa9ec520346f61438ad546272eb2f1de3e528",
   "compatibility": {
     "unknownFields": "accept",
     "unknownMajorVersions": "reject",
@@ -18,6 +18,14 @@
       "id": "https://contracts.vectalon.dev/v1/Capability.schema.json",
       "version": "1.0.0",
       "digest": "5c96731f7795e7f9b8e73c8b155d109f703bd0b3a2aa44a6632f3493a42779ac",
+      "status": "current"
+    },
+    {
+      "name": "CapabilityCatalog",
+      "owner": "core",
+      "id": "https://contracts.vectalon.dev/v1/CapabilityCatalog.schema.json",
+      "version": "1.0.0",
+      "digest": "7cfce1aa947c996e380d2dc2c6040f72f8edb1bb1791ad44a6dca33e49c6897d",
       "status": "current"
     },
     {

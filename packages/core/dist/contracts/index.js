@@ -11,6 +11,7 @@ exports.generateContractTypes = generateContractTypes;
 const node_crypto_1 = require("node:crypto");
 const _2020_1 = __importDefault(require("ajv/dist/2020"));
 const Capability_schema_json_1 = __importDefault(require("./schemas/Capability.schema.json"));
+const CapabilityCatalog_schema_json_1 = __importDefault(require("./schemas/CapabilityCatalog.schema.json"));
 const DiagnosticResult_schema_json_1 = __importDefault(require("./schemas/DiagnosticResult.schema.json"));
 const EntitlementDecision_schema_json_1 = __importDefault(require("./schemas/EntitlementDecision.schema.json"));
 const ErrorEnvelope_schema_json_1 = __importDefault(require("./schemas/ErrorEnvelope.schema.json"));
@@ -21,6 +22,7 @@ const TelemetryEvent_schema_json_1 = __importDefault(require("./schemas/Telemetr
 const TrialCredential_schema_json_1 = __importDefault(require("./schemas/TrialCredential.schema.json"));
 exports.CONTRACT_NAMES = [
     'Capability',
+    'CapabilityCatalog',
     'DiagnosticResult',
     'EntitlementDecision',
     'ErrorEnvelope',
@@ -32,6 +34,7 @@ exports.CONTRACT_NAMES = [
 ];
 exports.CONTRACT_SCHEMAS = {
     Capability: Capability_schema_json_1.default,
+    CapabilityCatalog: CapabilityCatalog_schema_json_1.default,
     DiagnosticResult: DiagnosticResult_schema_json_1.default,
     EntitlementDecision: EntitlementDecision_schema_json_1.default,
     ErrorEnvelope: ErrorEnvelope_schema_json_1.default,

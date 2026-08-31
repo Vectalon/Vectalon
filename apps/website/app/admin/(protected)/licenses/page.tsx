@@ -13,8 +13,8 @@ export default async function AdminLicensesPage() {
       <div>
         <h1 className="text-2xl font-bold text-slate-50">Licenses</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Generate, view, and revoke license keys. Revocation is instant — the CLI&apos;s online
-          check picks it up on the next validation.
+          Generate, view, and revoke license keys. Online clients receive revocation on their
+          next validation; offline clients follow the license grace policy.
         </p>
       </div>
 

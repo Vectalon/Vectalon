@@ -1,5 +1,8 @@
 Vectalon Commercial License
 
+These terms apply to new purchases under this version. A separately signed
+customer agreement controls where it differs from these terms.
+
 This Commercial License Agreement ("Agreement") is entered into between
 Vectalon ("Licensor") and the licensee ("Licensee").
 
@@ -9,37 +12,27 @@ Vectalon ("Licensor") and the licensee ("Licensee").
    
    a) Use the Vectalon software for commercial purposes
    b) Install and run Vectalon on Licensee's infrastructure
-   c) Access premium features as defined in the purchased tier
+   c) Access capabilities implemented for the purchased tier and product
+      version, as identified by the released capability catalog
 
 2. LICENSE TIERS
 
    Individual ($19/developer/month):
-   - Local AI — local GGUF/WASM models, source never leaves the machine
-   - Project intelligence (intel, score, review, sec, arch)
-   - Diagnostics (doctor, build-fix, profile, sandbox, render)
-   - Upgrade copilot + self-healing CI
-   - All deterministic agents, zero model calls
-   - All current and future Vectalon products
+   - Commercial use of Vectalon React Native
+   - Qualified Individual capabilities for the purchased product version
    - Single developer use
    
    Team ($49/developer/month):
-   - Everything in Individual
-   - Team Brain — decisions, expertise, shared knowledge across projects
-   - Shared policies + PR review
-   - CI + dashboards (coverage, score trends)
-   - Cross-project intelligence + cloud sync
-   - Up to 50 seats
+   - Commercial use of Vectalon React Native
+   - Qualified Team capabilities for the purchased product version
+   - One purchased seat per developer, with no tier-wide seat cap
    
    Enterprise (Custom, annual):
-   - Everything in Team
-   - Self-hosted deployment (air-gapped ready)
-   - SSO / SAML
-   - Audit trails
-   - Private / company-controlled models (Ollama, vLLM)
-   - Organization-wide policies
-   - Multi-repository intelligence
-   - Dedicated support
-   - Custom integrations
+   - Product, capability, deployment, governance, and support scope stated in
+     the signed order
+
+   Beta access, when offered, is separately labelled and is not a guaranteed
+   purchased outcome. Experimental capabilities require explicit opt-in.
 
 3. RESTRICTIONS
    Licensee may NOT:
@@ -49,7 +42,7 @@ Vectalon ("Licensor") and the licensee ("Licensee").
    d) Use Team/Enterprise features with a Pro license
 
 4. PAYMENT
-   License fees are paid via LemonSqueezy (our merchant of record).
+   License fees are paid via Lemon Squeezy (our merchant of record).
    All fees are non-refundable except as required by law.
 
 5. TERM AND TERMINATION

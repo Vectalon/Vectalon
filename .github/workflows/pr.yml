@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Check for core PAT
         id: pat
@@ -46,6 +48,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Verify capability inventory, evidence, and freeze
+        run: node scripts/capability-catalog.mjs check . --base origin/main
+
+      - name: Test capability freeze mutations
+        run: pnpm capabilities:test
 
       - name: Type check all packages
         run: pnpm turbo run typecheck

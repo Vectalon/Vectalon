@@ -2,6 +2,8 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, existsSync
 import { join } from 'path'
 import { tmpdir } from 'os'
 import { implementationPhase } from '../../src/workflows/phases/implementationPhase'
+import { codeReviewPhase } from '../../src/workflows/phases/codeReviewPhase'
+import { verificationPhase } from '../../src/workflows/phases/verificationPhase'
 import { ModelRouter } from '../../src/model/ModelRouter'
 import type { WorkflowContext } from '../../src/adapters/types'
 
@@ -152,6 +154,76 @@ describe('implementationPhase', () => {
 
     const screenPath = join(projectRoot, 'src/screens/AddLoginScreenScreen.tsx')
     expect(readFileSync(screenPath, 'utf-8')).toContain('export function LoginScreen')
+  })
+
+  it('repairs a generated guardrail violation through Core before writing it', async () => {
+    const router = createMockModelRouterSequence([
+      JSON.stringify({ intents: [{ type: 'add-feature', feature: 'login', confidence: 1, reasoning: 'new feature' }] }),
+      JSON.stringify({ files: [{ path: 'src/screens/Login.tsx', content: 'console.log("secret")\nexport function Login() { return null }' }] }),
+      'export function Login() { return null }\n',
+    ])
+
+    const result = await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
+
+    expect(readFileSync(join(projectRoot, 'src/screens/Login.tsx'), 'utf-8')).toBe('export function Login() { return null }\n')
+    expect(result.artifacts[0].content).toBe('export function Login() { return null }\n')
+    expect(jest.mocked(router.generate)).toHaveBeenCalledTimes(3)
+  })
+
+  it('does not write a generated file when Core exhausts repair', async () => {
+    const invalid = 'console.log("still invalid")\nexport function Login() { return null }'
+    const router = createMockModelRouterSequence([
+      JSON.stringify({ intents: [{ type: 'add-feature', feature: 'login', confidence: 1, reasoning: 'new feature' }] }),
+      JSON.stringify({ files: [{ path: 'src/screens/InvalidLogin.tsx', content: invalid }] }),
+      invalid,
+    ])
+
+    const context = createContext(router, 'Add a login screen', projectRoot)
+    const result = await implementationPhase.run(context)
+
+    expect(existsSync(join(projectRoot, 'src/screens/InvalidLogin.tsx'))).toBe(false)
+    expect(result.output).toContain('Validation failed safely (REPAIR_EXHAUSTED)')
+    expect(result.output).not.toContain('Files written to disk')
+    expect(result.artifacts).toHaveLength(1)
+    expect(result.artifacts[0].path).toBeUndefined()
+    expect(result.artifacts[0].content).not.toContain(invalid)
+
+    context.state.phases.push(result)
+    const review = await codeReviewPhase.run(context)
+    context.state.phases.push(review)
+    await verificationPhase.run(context)
+    expect(existsSync(join(projectRoot, 'src/screens/InvalidLogin.tsx'))).toBe(false)
+  })
+
+  it('routes the deterministic fallback through Core and blocks invalid writes', async () => {
+    mkdirSync(join(projectRoot, '.vectalon'), { recursive: true })
+    writeFileSync(join(projectRoot, '.vectalon', 'policy.json'), JSON.stringify({
+      version: 1,
+      customRules: [{
+        id: 'block-scaffold', name: 'Block scaffold', description: 'fixture rule',
+        severity: 'error', pattern: 'export', message: 'blocked by project policy',
+      }],
+    }))
+    const router = createMockModelRouter('not parseable as generated files')
+
+    const result = await implementationPhase.run(createContext(router, 'Add a login screen', projectRoot))
+
+    expect(existsSync(join(projectRoot, 'src/services/AddLoginScreenApi.ts'))).toBe(false)
+    expect(result.output).toContain('Validation failed safely (GUARDRAIL_BLOCKED)')
+    expect(result.output).not.toContain('Files written to disk')
+    expect(result.artifacts.every(artifact => artifact.path === undefined)).toBe(true)
+    expect(result.artifacts.every(artifact => !artifact.content.includes('export class'))).toBe(true)
+  })
+
+  it('preserves the legacy guardrail summary for a no-project fallback', async () => {
+    const router = createMockModelRouter('not parseable as generated files')
+    const context = createContext(router, 'Add a login screen', projectRoot)
+    context.projectRoot = undefined as never
+
+    const result = await implementationPhase.run(context)
+
+    expect(result.output).toContain('## Guardrail summary')
+    expect(result.output).toContain('All guardrails passed')
   })
 
   it('parses markdown sections with ### paths and fenced code into files on disk', async () => {

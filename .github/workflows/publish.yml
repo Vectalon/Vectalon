@@ -36,6 +36,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Check for core PAT
         id: pat
@@ -78,7 +80,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Validate product and pinned Core contracts
-        run: pnpm product:check && pnpm contracts:check
+        run: pnpm product:check && pnpm contracts:check && node scripts/capability-catalog.mjs check . --base HEAD^
         env:
           CORE_REPO_DIR: packages/core/src
 
@@ -87,6 +89,8 @@ jobs:
 
       - name: Benchmark regression gate
         run: node packages/rn/bin/rn-vectalon.js bench --baseline packages/rn/bench/baseline.json
+        env:
+          VECTALON_EXPERIMENTAL: '1'
 
   publish-rn:
     runs-on: ubuntu-latest
@@ -99,6 +103,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Check for core PAT
         id: pat
@@ -148,7 +154,7 @@ jobs:
         run: pnpm turbo run build --filter=@vectalon-dev/rn
 
       - name: Validate product and pinned Core contracts
-        run: pnpm product:check && pnpm contracts:check
+        run: pnpm product:check && pnpm contracts:check && node scripts/capability-catalog.mjs check . --base HEAD^
         env:
           CORE_REPO_DIR: packages/core/src
 

@@ -9,6 +9,7 @@ import { collectHealthReport } from '../diagnostics/health'
 import { validateToolArgs, formatValidationIssues } from './validate'
 import type { ModelResponse } from '../model/types'
 import pkg from '../../package.json'
+import { assertSurfaceAvailable, surfaceAvailability, capabilityLabel } from '../capabilities'
 import {
   CoreTools,
   SdlcTools,
@@ -167,6 +168,9 @@ export class MCPServer {
       return { id: call.id, content: `Unknown tool: ${call.name}`, isError: true }
     }
 
+    try { assertSurfaceAvailable(`mcp:${call.name}`) }
+    catch (err) { return { id: call.id, content: (err as Error).message, isError: true } }
+
     // P2-18: validate args against the tool's declared inputSchema before the
     // handler runs — a missing/empty/wrong-typed required field becomes a
     // structured MCP error, never a TypeError deep inside the handler.
@@ -194,7 +198,7 @@ export class MCPServer {
     const proxiedTools: AgentTool[] = this.subMcpClients.flatMap(client =>
       client.tools.map(tool => ({
         name: `${client.item.id}__${tool.name}`,
-        description: `[${client.item.name}] ${tool.description}`,
+        description: `[third-party; not Vectalon-qualified: ${client.item.name}] ${tool.description}`,
         inputSchema: tool.inputSchema,
       }))
     )
@@ -206,9 +210,10 @@ export class MCPServer {
       for (const def of registry.metadata()) {
         if (!this.serviceAvailable(def.requires)) continue
         if (!this.toolAllowedInSafeMode(def.name)) continue
+        if (!surfaceAvailability(`mcp:${def.name}`).available) continue
         registeredTools.push({
           name: def.name,
-          description: def.description,
+          description: `${capabilityLabel(`mcp:${def.name}`)} ${def.description}`,
           inputSchema: def.inputSchema || {},
         })
       }

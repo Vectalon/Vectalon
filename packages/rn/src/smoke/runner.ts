@@ -30,10 +30,10 @@ export interface SmokeRunnerOptions {
   /** Per-check timeout in ms (default 60s; probe checks use their own). */
   timeoutMs?: number
   /**
-   * Run checks in dev mode (VECTALON_DEV_MODE=1) so tier-gated features run
-   * for real instead of hitting the license gate. Default true — a post-release
-   * verification should exercise every feature. Pass false to let tier-gated
-   * checks report as skips.
+   * Run checks in dev mode (VECTALON_DEV_MODE=1) and explicitly opt into
+   * experimental capabilities (VECTALON_EXPERIMENTAL=1). Default true — a
+   * post-release verification should exercise every feature. Pass false to
+   * respect both license and lifecycle gates.
    */
   devMode?: boolean
 }
@@ -103,7 +103,12 @@ function spawnCli(args: string[], ctx: SmokeContext, timeoutMs: number, devMode:
   return new Promise(resolvePromise => {
     const child = spawn(nodeBin(), [ctx.bin, ...args], {
       cwd: ctx.root,
-      env: { ...process.env, VECTALON_DEV_MODE: devMode ? '1' : '0', FORCE_COLOR: '0' },
+      env: {
+        ...process.env,
+        VECTALON_DEV_MODE: devMode ? '1' : '0',
+        VECTALON_EXPERIMENTAL: devMode ? '1' : process.env.VECTALON_EXPERIMENTAL,
+        FORCE_COLOR: '0',
+      },
       stdio: ['pipe', 'pipe', 'pipe'],
       shell: false,
     })
@@ -145,7 +150,12 @@ function probeCli(check: SmokeCheck, args: string[], ctx: SmokeContext, devMode:
   return new Promise(resolvePromise => {
     const child = spawn(nodeBin(), [ctx.bin, ...args], {
       cwd: ctx.root,
-      env: { ...process.env, VECTALON_DEV_MODE: devMode ? '1' : '0', FORCE_COLOR: '0' },
+      env: {
+        ...process.env,
+        VECTALON_DEV_MODE: devMode ? '1' : '0',
+        VECTALON_EXPERIMENTAL: devMode ? '1' : process.env.VECTALON_EXPERIMENTAL,
+        FORCE_COLOR: '0',
+      },
       stdio: ['pipe', 'pipe', 'pipe'],
       shell: false,
     })

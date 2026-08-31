@@ -10,14 +10,14 @@
   "packages": {
     "reactNative": {
       "name": "@vectalon-dev/rn",
-      "version": "0.15.0",
+      "version": "0.17.0",
       "status": "beta"
     },
     "core": {
       "name": "@vectalon-dev/core",
-      "version": "0.3.0",
+      "version": "0.5.0",
       "distribution": "bundled-private-runtime",
-      "contractRevision": "1.0.0+2e0c787b4c8955ec7f66796dea6b7abffddd82609b93decdd51f57721ad63e63"
+      "contractRevision": "1.0.0+6f374fcb040cb305275a519b9e1ffdec271f1677807d3d66d69c6d2fae7bce98"
     }
   },
   "platforms": {
@@ -64,11 +64,9 @@
       "productScope": ["rn"],
       "checkout": "checkout",
       "features": [
-        "Local AI — your source never leaves your machine",
-        "Project intelligence (intel, score, review, sec, arch)",
-        "Diagnostics (doctor, build-fix, profile, sandbox, render)",
-        "Upgrade copilot + self-healing CI",
-        "All deterministic agents, zero model calls"
+        "Commercial-use license for Vectalon React Native for one developer",
+        "Qualified Individual capabilities from the released catalog",
+        "Separately labelled beta access"
       ]
     },
     {
@@ -84,11 +82,9 @@
       "productScope": ["rn"],
       "checkout": "checkout",
       "features": [
-        "Everything in Individual",
-        "Team Brain — decisions, expertise, shared knowledge across projects",
-        "Shared policies + PR review (team-policy, review)",
-        "CI + dashboards (ci, coverage, score trends)",
-        "Cross-project intelligence + cloud sync (sync)"
+        "Commercial-use license for Vectalon React Native for each purchased developer seat",
+        "Qualified Team capabilities from the released catalog",
+        "Separately labelled beta access"
       ]
     },
     {
@@ -104,10 +100,8 @@
       "productScope": ["rn"],
       "checkout": "sales",
       "features": [
-        "Everything in Team",
-        "Deployment and governance scope confirmed during sales qualification",
-        "Self-hosting, SSO / SAML, audit, and model controls only when contracted",
-        "Organization policy and multi-repository scope only when contracted"
+        "Product and capability scope defined in the signed order",
+        "Deployment, governance, security, and support controls only when implemented, tested, and contracted"
       ]
     }
   ],

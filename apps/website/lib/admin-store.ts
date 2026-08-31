@@ -17,6 +17,7 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'fs'
 import { join } from 'path'
 import { randomBytes, createHash } from 'crypto'
 import { Pool } from 'pg'
+import { validateExplicitCapabilityGrants } from './capability-availability'
 
 export type Tier = 'free' | 'pro' | 'all-access' | 'team' | 'enterprise'
 export type LicenseStatus = 'active' | 'revoked' | 'expired' | 'pending'
@@ -32,6 +33,7 @@ export interface License {
   expiresAt: number
   seats: number
   source: 'lemon-squeezy' | 'manual' | 'trial-conversion' | 'demo'
+  capabilities?: string[]
 }
 
 export interface Trial {
@@ -306,12 +308,27 @@ export class AdminStore {
     days?: number
     product?: string
     source?: License['source']
+    capabilityIds?: string[]
+    experimentalOptIn?: boolean
   }): Promise<License> {
+    const product = input.product ?? 'rn'
+    if (product !== 'rn') throw new Error('product-not-available-for-new-grants')
+    if (input.tier === 'team' && (!Number.isSafeInteger(input.seats) || (input.seats ?? 0) < 2)) {
+      throw new Error('Team requires a trusted purchased seat quantity')
+    }
+    const capabilities = input.capabilityIds?.length
+      ? validateExplicitCapabilityGrants({
+          tier: input.tier,
+          product,
+          capabilityIds: input.capabilityIds,
+          experimentalOptIn: input.experimentalOptIn,
+        })
+      : undefined
     const data = await this.read()
     const license: License = {
       key: `vct_${createHash('sha256').update(randomBytes(32)).digest('hex').slice(0, 32)}`,
       tier: input.tier,
-      product: input.product ?? 'rn',
+      product,
       email: input.email,
       githubUsername: input.githubUsername,
       status: 'active',
@@ -319,6 +336,7 @@ export class AdminStore {
       expiresAt: daysFromNow(input.days ?? 365),
       seats: input.seats ?? 1,
       source: input.source ?? 'manual',
+      capabilities,
     }
     data.licenses.unshift(license)
     await this.write(data)

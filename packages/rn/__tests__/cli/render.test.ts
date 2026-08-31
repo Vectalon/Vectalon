@@ -14,6 +14,7 @@ describe('renderCommand', () => {
 
   afterEach(() => {
     stdoutSpy.mockRestore()
+    process.exitCode = undefined
   })
 
   it('renders a project file headlessly and prints the report', async () => {

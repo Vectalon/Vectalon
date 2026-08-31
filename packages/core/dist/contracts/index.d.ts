@@ -1,4 +1,4 @@
-export declare const CONTRACT_NAMES: readonly ["Capability", "DiagnosticResult", "EntitlementDecision", "ErrorEnvelope", "IdentityReference", "LicenseClaims", "ProductDefinition", "TelemetryEvent", "TrialCredential"];
+export declare const CONTRACT_NAMES: readonly ["Capability", "CapabilityCatalog", "DiagnosticResult", "EntitlementDecision", "ErrorEnvelope", "IdentityReference", "LicenseClaims", "ProductDefinition", "TelemetryEvent", "TrialCredential"];
 export type ContractName = (typeof CONTRACT_NAMES)[number];
 type Schema = Record<string, any>;
 export declare const CONTRACT_SCHEMAS: Record<ContractName, Schema>;
@@ -17,7 +17,7 @@ export declare function generateRegistryManifest(): {
         previousMajorVersions: string;
     };
     schemas: {
-        name: "Capability" | "DiagnosticResult" | "EntitlementDecision" | "ErrorEnvelope" | "IdentityReference" | "LicenseClaims" | "ProductDefinition" | "TelemetryEvent" | "TrialCredential";
+        name: "Capability" | "CapabilityCatalog" | "DiagnosticResult" | "EntitlementDecision" | "ErrorEnvelope" | "IdentityReference" | "LicenseClaims" | "ProductDefinition" | "TelemetryEvent" | "TrialCredential";
         owner: string;
         id: string;
         version: string;

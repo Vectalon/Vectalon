@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
@@ -34,6 +36,12 @@ jobs:
 
       - name: Check generated contract projections
         run: pnpm contracts:check
+
+      - name: Verify capability inventory, evidence, and freeze
+        run: node scripts/capability-catalog.mjs check . --base origin/main
+
+      - name: Test capability freeze mutations
+        run: pnpm capabilities:test
 
   test:
     needs: [product-truth]
@@ -195,6 +203,8 @@ jobs:
 
       - name: Benchmark deterministic baseline gate
         run: node packages/rn/bin/rn-vectalon.js bench --baseline packages/rn/bench/baseline.json
+        env:
+          VECTALON_EXPERIMENTAL: '1'
 
       - name: Upload benchmark results
         uses: actions/upload-artifact@v7
