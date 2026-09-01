@@ -69,7 +69,7 @@ jobs:
           echo "$CORE_SHA" > packages/core/core-source-revision.txt
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v5
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
@@ -133,7 +133,7 @@ jobs:
         run: echo "${{ needs.bench-gate.outputs.core-sha }}" > packages/core/core-source-revision.txt
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v5
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v5
