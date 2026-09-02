@@ -6,8 +6,12 @@
  */
 export { LicenseStore } from './auth/LicenseStore';
 export { LicenseValidator } from './auth/LicenseValidator';
+export { verifyLicenseToken } from './auth/LicenseVerifier';
+export type { TrustedVerificationKey, VerificationErrorCode, VerificationResult, } from './auth/LicenseVerifier';
 export { TrialTracker } from './auth/TrialTracker';
 export type { LicenseInfo, TrialInfo } from './auth/types';
+export { isTrustedClaims } from './auth/TrustedClaims';
+export type { TrustedClaims } from './auth/TrustedClaims';
 export { TierResolver } from './billing/TierResolver';
 export { FeatureGates, requireTier } from './billing/FeatureGates';
 export type { Tier, TierCheck, Product, Feature } from './billing/types';

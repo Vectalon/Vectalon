@@ -46,7 +46,7 @@ export function checkoutUrlFor(tier: LsTier, product: ProductId = 'rn'): string 
   const store = process.env.LEMONSQUEEZY_STORE_ID
   const variant = variantIdFor(tier, product)
   if (!store || !variant) return null
-  return `https://store.lemonsqueezy.com/checkout/buy/${store}/${variant}`
+  return `https://${store}.lemonsqueezy.com/checkout/buy/${variant}`
 }
 
 /** Reverse lookup: which tier+product owns a variant id (from env config). */
