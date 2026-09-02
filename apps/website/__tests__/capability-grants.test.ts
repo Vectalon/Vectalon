@@ -13,8 +13,8 @@ describe('new purchase qualification does not revoke existing licenses', () => {
     process.env.LEMONSQUEEZY_STORE_ID = 'configured'
     process.env.LEMONSQUEEZY_VARIANT_PRO_RN = '123'
     process.env.LEMONSQUEEZY_VARIANT_ALL_ACCESS_RN = '456'
-    expect(checkoutUrlFor('pro')).toBe('https://store.lemonsqueezy.com/checkout/buy/configured/123')
-    expect(checkoutUrlFor('all-access')).toBe('https://store.lemonsqueezy.com/checkout/buy/configured/456')
+    expect(checkoutUrlFor('pro')).toBe('https://configured.lemonsqueezy.com/checkout/buy/123')
+    expect(checkoutUrlFor('all-access')).toBe('https://configured.lemonsqueezy.com/checkout/buy/456')
   })
 
   it('keeps entitlement-only RN issuance independent of capability availability', async () => {

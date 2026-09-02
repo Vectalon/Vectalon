@@ -67,9 +67,9 @@ describe('lemon-squeezy webhook security', () => {
     process.env.LEMONSQUEEZY_VARIANT_ALL_ACCESS_RN = 'var_aa_rn'
     process.env.LEMONSQUEEZY_VARIANT_PRO_IOS = 'var_pro_ios'
 
-    expect(checkoutUrlFor('pro')).toBe('https://store.lemonsqueezy.com/checkout/buy/vectalon/var_pro_rn')
-    expect(checkoutUrlFor('all-access')).toBe('https://store.lemonsqueezy.com/checkout/buy/vectalon/var_aa_rn')
-    expect(checkoutUrlFor('pro', 'ios')).toBe('https://store.lemonsqueezy.com/checkout/buy/vectalon/var_pro_ios')
+    expect(checkoutUrlFor('pro')).toBe('https://vectalon.lemonsqueezy.com/checkout/buy/var_pro_rn')
+    expect(checkoutUrlFor('all-access')).toBe('https://vectalon.lemonsqueezy.com/checkout/buy/var_aa_rn')
+    expect(checkoutUrlFor('pro', 'ios')).toBe('https://vectalon.lemonsqueezy.com/checkout/buy/var_pro_ios')
     expect(checkoutUrlFor('team')).toBeNull()
 
     expect(tierForVariantId('var_aa_rn')).toEqual({ tier: 'all-access', product: 'rn' })

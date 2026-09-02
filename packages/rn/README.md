@@ -4,7 +4,7 @@
 
 Project-aware SDLC intelligence for any agent — CLI, MCP server, VS Code extension, benchmark suite, and fine-tuning pipeline in one package.
 
-Current release: <!-- product-fact:rn-version -->0.17.0<!-- /product-fact --> ·
+Current release: <!-- product-fact:rn-version -->0.18.0<!-- /product-fact --> ·
 benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
 deterministic agents: <!-- product-fact:deterministic-commands -->44<!-- /product-fact --> ·
 MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact -->

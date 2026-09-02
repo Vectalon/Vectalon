@@ -9,6 +9,9 @@ const crypto_1 = require("crypto");
 const fs_1 = require("fs");
 const path_1 = require("path");
 const os_1 = require("os");
+const TrustedClaims_1 = require("./TrustedClaims");
+const LicenseParser_1 = require("./LicenseParser");
+const LicenseVerifier_1 = require("./LicenseVerifier");
 const CONFIG_DIR = (0, path_1.join)((0, os_1.homedir)(), '.config', 'vectalon');
 const MISSING_KEY_ERROR = 'License validation unavailable: no public key found. Set VECTALON_PUBLIC_KEY to a ' +
     'PEM file path, place public-key.pem in the package root or ~/.config/vectalon/, or run ' +
@@ -69,6 +72,10 @@ class LicenseValidator {
         this.keyState = null;
     }
     static validate(token) {
+        const parsed = (0, LicenseParser_1.parseLicenseToken)(token);
+        if (!parsed.ok) {
+            return { valid: false, error: `Invalid license token: ${parsed.code}` };
+        }
         const key = this.loadKey();
         if (!key) {
             return { valid: false, error: MISSING_KEY_ERROR };
@@ -76,31 +83,18 @@ class LicenseValidator {
         if ('error' in key) {
             return { valid: false, error: key.error };
         }
-        try {
-            const verified = (0, crypto_1.verify)('SHA256', Buffer.from(token.split('.').slice(0, 2).join('.')), key.publicKey, Buffer.from(token.split('.')[2], 'base64'));
-            if (!verified) {
-                return { valid: false, error: 'Invalid license signature' };
-            }
-            const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
-            if (payload.exp * 1000 < Date.now()) {
-                return { valid: false, error: 'License expired' };
-            }
-            const license = {
-                key: token,
-                tier: payload.tier,
-                product: payload.product,
-                issuedAt: payload.iat * 1000,
-                expiresAt: payload.exp * 1000,
-                githubUserId: payload.sub,
-            };
-            return { valid: true, license };
-        }
-        catch (err) {
+        const result = (0, LicenseVerifier_1.verifyLicenseToken)(token, {
+            id: process.env.VECTALON_KEY_ID || 'vectalon-legacy',
+            algorithm: 'RS256',
+            publicKey: key.publicKey,
+        }, Date.now());
+        if (!result.ok) {
             return {
                 valid: false,
-                error: `Invalid license: ${err instanceof Error ? err.message : String(err)}`,
+                error: result.code === 'expired' ? 'License expired' : `Invalid license: ${result.code}`,
             };
         }
+        return { valid: true, license: (0, TrustedClaims_1.trustedClaimsToLicenseInfo)(token, result.claims) };
     }
     static isExpired(license) {
         return license.expiresAt < Date.now();

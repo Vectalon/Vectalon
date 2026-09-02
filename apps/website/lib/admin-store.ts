@@ -18,6 +18,7 @@ import { join } from 'path'
 import { randomBytes, createHash } from 'crypto'
 import { Pool } from 'pg'
 import { validateExplicitCapabilityGrants } from './capability-availability'
+import { signLicenseToken } from './license-signing'
 
 export type Tier = 'free' | 'pro' | 'all-access' | 'team' | 'enterprise'
 export type LicenseStatus = 'active' | 'revoked' | 'expired' | 'pending'
@@ -324,16 +325,34 @@ export class AdminStore {
           experimentalOptIn: input.experimentalOptIn,
         })
       : undefined
+    const days = input.days ?? 365
+    if (!Number.isSafeInteger(days) || days < 1) throw new Error('license-duration-invalid')
+    const issuedAt = Date.now()
+    const expiresAt = issuedAt + days * DAY
+    if (!Number.isSafeInteger(expiresAt)) throw new Error('license-duration-invalid')
+    const privateKey = process.env.VECTALON_LICENSE_PRIVATE_KEY
+    if (!privateKey && (process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production')) {
+      throw new Error('license-signing-key-not-configured')
+    }
+    const key = privateKey
+      ? signLicenseToken({
+          subject: input.email,
+          tier: input.tier,
+          product,
+          issuedAt,
+          expiresAt,
+        }, privateKey, process.env.VECTALON_KEY_ID || 'vectalon-legacy')
+      : `vct_${createHash('sha256').update(randomBytes(32)).digest('hex').slice(0, 32)}`
     const data = await this.read()
     const license: License = {
-      key: `vct_${createHash('sha256').update(randomBytes(32)).digest('hex').slice(0, 32)}`,
+      key,
       tier: input.tier,
       product,
       email: input.email,
       githubUsername: input.githubUsername,
       status: 'active',
-      issuedAt: Date.now(),
-      expiresAt: daysFromNow(input.days ?? 365),
+      issuedAt,
+      expiresAt,
       seats: input.seats ?? 1,
       source: input.source ?? 'manual',
       capabilities,

@@ -1,6 +1,6 @@
 {
   "name": "@vectalon-dev/core",
-  "version": "0.5.0",
+  "version": "0.8.0",
   "description": "Vectalon core — auth, licensing, billing, telemetry, and platform interfaces",
   "license": "BSL-1.1",
   "author": "Vectalon",

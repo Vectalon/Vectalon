@@ -1,6 +1,8 @@
 import { mkdtempSync, rmSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
+import { generateKeyPairSync } from 'crypto'
+import { verifyLicenseToken } from '@vectalon-dev/core'
 import { AdminStore, FilePersistence } from '../lib/admin-store'
 
 function makeStore(): { store: AdminStore; dir: string } {
@@ -12,6 +14,9 @@ function makeStore(): { store: AdminStore; dir: string } {
 describe('AdminStore persistence', () => {
   afterEach(() => {
     delete process.env.VECTALON_SEED_DEMO
+    delete process.env.VECTALON_LICENSE_PRIVATE_KEY
+    delete process.env.VECTALON_KEY_ID
+    delete process.env.VERCEL_ENV
   })
 
   it('starts empty (no demo rows) outside development', async () => {
@@ -70,6 +75,40 @@ describe('AdminStore persistence', () => {
     const revoked = await store.validateLicense(license.key)
     expect(revoked.valid).toBe(false)
     expect(revoked.reason).toBe('license revoked')
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('issues Core-verifiable signed licenses when production signing is configured', async () => {
+    const pair = generateKeyPairSync('rsa', { modulusLength: 2048 })
+    process.env.VECTALON_LICENSE_PRIVATE_KEY = pair.privateKey.export({ type: 'pkcs8', format: 'pem' }).toString()
+    process.env.VECTALON_KEY_ID = 'production-1'
+    const { store, dir } = makeStore()
+    const license = await store.issueLicense({ tier: 'pro', email: 'signed@acme.dev', days: 30 })
+
+    expect(verifyLicenseToken(license.key, {
+      id: 'production-1',
+      algorithm: 'RS256',
+      publicKey: pair.publicKey,
+    }, license.issuedAt)).toMatchObject({ ok: true })
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('fails closed in production when signing is not configured', async () => {
+    process.env.VERCEL_ENV = 'production'
+    const { store, dir } = makeStore()
+    await expect(store.issueLicense({ tier: 'pro', email: 'buyer@acme.dev' })).rejects.toThrow(
+      'license-signing-key-not-configured'
+    )
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('rejects unsafe license durations', async () => {
+    const { store, dir } = makeStore()
+    await expect(store.issueLicense({
+      tier: 'pro',
+      email: 'buyer@acme.dev',
+      days: Number.MAX_SAFE_INTEGER,
+    })).rejects.toThrow('license-duration-invalid')
     rmSync(dir, { recursive: true, force: true })
   })
 

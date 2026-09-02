@@ -5,6 +5,22 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.0] - 2026-09-02
+
+### Security
+
+- Bundle Core 0.8.0 with strict bounded token parsing and an RS256-only
+  verification boundary. License tokens now require matching trusted key IDs,
+  RSA-2048+ public keys, valid required claims, and safe finite error results.
+- Preserve exact Core source provenance in the RN artifact. Existing valid
+  licenses remain compatible when `kid` matches `VECTALON_KEY_ID` (default
+  `vectalon-legacy`).
+
+### Changed
+
+- Refresh README, website product metadata, capability evidence, and release
+  inputs to RN 0.18.0 / Core 0.8.0 without changing pricing or capability scope.
+
 ## [0.16.0] - 2026-08-26
 
 ### Changed
