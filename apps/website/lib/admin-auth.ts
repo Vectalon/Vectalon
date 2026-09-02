@@ -5,7 +5,7 @@
  * Production fails closed unless ADMIN_PASSWORD is explicitly configured.
  */
 import { cookies } from 'next/headers'
-import { createHash } from 'crypto'
+import { createHmac, timingSafeEqual } from 'crypto'
 
 export const ADMIN_COOKIE = 'vectalon_admin'
 export const DEFAULT_ADMIN_PASSWORD = 'vectalon'
@@ -23,15 +23,20 @@ export function adminPassword(): string | null {
  */
 export function adminSessionToken(): string | null {
   const password = adminPassword()
-  return password
-    ? createHash('sha256').update(`${password}::vectalon-admin-session`).digest('hex')
+  const production = process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production'
+  const secret = process.env.ADMIN_SESSION_SECRET?.trim() || (production ? null : 'vectalon-local-session')
+  return password && secret
+    ? createHmac('sha256', secret).update('vectalon-admin-session').digest('hex')
     : null
 }
 
 export function isAdminToken(token: string | undefined): boolean {
   if (!token) return false
   const expected = adminSessionToken()
-  return expected !== null && token === expected
+  if (!expected) return false
+  const provided = Buffer.from(token)
+  const trusted = Buffer.from(expected)
+  return provided.length === trusted.length && timingSafeEqual(provided, trusted)
 }
 
 /** Server-component guard helper: true when the request carries a valid admin cookie. */

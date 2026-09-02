@@ -8,6 +8,7 @@ import {
 describe('production admin authentication', () => {
   afterEach(() => {
     delete process.env.ADMIN_PASSWORD
+    delete process.env.ADMIN_SESSION_SECRET
     delete process.env.VERCEL_ENV
   })
 
@@ -22,6 +23,7 @@ describe('production admin authentication', () => {
   it('accepts only the configured production credential', () => {
     process.env.VERCEL_ENV = 'production'
     process.env.ADMIN_PASSWORD = 'configured-secret'
+    process.env.ADMIN_SESSION_SECRET = 'independent-session-secret'
 
     const token = adminSessionToken()
     expect(adminPassword()).toBe('configured-secret')
