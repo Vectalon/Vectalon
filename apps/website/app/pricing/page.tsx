@@ -71,7 +71,7 @@ const FAQ = [
   },
   {
     q: 'What happens when a license is revoked?',
-    a: 'Online checks observe revocation immediately. Offline clients may continue only for the signed grace period shown in the plan contract, then must refresh. Refund and manual-revocation copy never promises impossible instant offline enforcement.',
+    a: 'Online checks observe revocation immediately. Subscription licenses use a maximum 35-day signed offline window and rotate at renewal, so cancelled or refunded access expires when that window ends.',
   },
   {
     q: 'Do you store my code?',

@@ -92,6 +92,22 @@ export interface AdminStats {
 
 const DAY = 24 * 3600 * 1000
 
+function createLicenseKey(input: {
+  subject: string
+  tier: Tier
+  product: string
+  issuedAt: number
+  expiresAt: number
+}): string {
+  const privateKey = process.env.VECTALON_LICENSE_PRIVATE_KEY
+  if (!privateKey && (process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production')) {
+    throw new Error('license-signing-key-not-configured')
+  }
+  return privateKey
+    ? signLicenseToken(input, privateKey, process.env.VECTALON_KEY_ID || 'vectalon-legacy')
+    : `vct_${createHash('sha256').update(randomBytes(32)).digest('hex').slice(0, 32)}`
+}
+
 function daysFromNow(days: number): number {
   return Date.now() + days * DAY
 }
@@ -330,19 +346,7 @@ export class AdminStore {
     const issuedAt = Date.now()
     const expiresAt = issuedAt + days * DAY
     if (!Number.isSafeInteger(expiresAt)) throw new Error('license-duration-invalid')
-    const privateKey = process.env.VECTALON_LICENSE_PRIVATE_KEY
-    if (!privateKey && (process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production')) {
-      throw new Error('license-signing-key-not-configured')
-    }
-    const key = privateKey
-      ? signLicenseToken({
-          subject: input.email,
-          tier: input.tier,
-          product,
-          issuedAt,
-          expiresAt,
-        }, privateKey, process.env.VECTALON_KEY_ID || 'vectalon-legacy')
-      : `vct_${createHash('sha256').update(randomBytes(32)).digest('hex').slice(0, 32)}`
+    const key = createLicenseKey({ subject: input.email, tier: input.tier, product, issuedAt, expiresAt })
     const data = await this.read()
     const license: License = {
       key,
@@ -406,15 +410,39 @@ export class AdminStore {
     tier?: Tier
     expiresAt: number
     active: boolean
-  }): Promise<boolean> {
+  }): Promise<License | null> {
     const data = await this.read()
     const license = data.licenses.find(l => l.email === input.email && l.status !== 'revoked')
-    if (!license) return false
-    if (input.tier) license.tier = input.tier
-    license.expiresAt = input.expiresAt
-    license.status = input.active ? 'active' : 'expired'
+    if (!license) return null
+    if (!input.active || license.source !== 'lemon-squeezy') {
+      if (input.tier) license.tier = input.tier
+      license.expiresAt = input.expiresAt
+      license.status = input.active ? 'active' : 'expired'
+      await this.write(data)
+      return license
+    }
+    const issuedAt = Date.now()
+    if (!Number.isSafeInteger(input.expiresAt) || input.expiresAt <= issuedAt) {
+      throw new Error('license-interval-invalid')
+    }
+    license.status = 'revoked'
+    const renewed: License = {
+      ...license,
+      key: createLicenseKey({
+        subject: license.email,
+        tier: input.tier ?? license.tier,
+        product: license.product,
+        issuedAt,
+        expiresAt: input.expiresAt,
+      }),
+      tier: input.tier ?? license.tier,
+      status: 'active',
+      issuedAt,
+      expiresAt: input.expiresAt,
+    }
+    data.licenses.unshift(renewed)
     await this.write(data)
-    return true
+    return renewed
   }
 
   async validateLicense(key: string): Promise<{ valid: boolean; license?: License; reason?: string }> {
