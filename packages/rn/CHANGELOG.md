@@ -5,6 +5,14 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.2] - 2026-09-02
+
+### Security
+
+- Fail the production website admin login closed when `ADMIN_PASSWORD` is not
+  configured. The documented default remains available only in local
+  development and tests.
+
 ## [0.18.1] - 2026-09-02
 
 ### Fixed
