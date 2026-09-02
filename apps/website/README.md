@@ -32,6 +32,7 @@ Paid checkout fails closed unless the deployment has all of the following:
 - `VECTALON_LICENSE_PRIVATE_KEY` — an RSA private key of at least 2048 bits; escaped newlines are accepted
 - `VECTALON_KEY_ID` — the key identifier used by both the website signer and the client verifier (defaults to `vectalon-legacy`)
 - `DATABASE_URL` for durable orders, customers, and licenses
+- `ADMIN_PASSWORD` for the website operations dashboard; production login fails closed without it
 
 The private key must match `packages/core/public-key.pem`. Never commit it. Set
 the same `VECTALON_KEY_ID` in the website deployment and in any client

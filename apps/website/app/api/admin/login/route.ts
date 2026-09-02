@@ -11,12 +11,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: 'invalid body' }, { status: 400 })
   }
 
-  if (body.password !== adminPassword()) {
+  const expectedPassword = adminPassword()
+  const token = adminSessionToken()
+  if (!expectedPassword || !token || body.password !== expectedPassword) {
     return NextResponse.json({ ok: false, error: 'invalid password' }, { status: 401 })
   }
 
   const res = NextResponse.json({ ok: true })
-  res.cookies.set(ADMIN_COOKIE, adminSessionToken(), {
+  res.cookies.set(ADMIN_COOKIE, token, {
     httpOnly: true,
     sameSite: 'lax',
     path: '/',
