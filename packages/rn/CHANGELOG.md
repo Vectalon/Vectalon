@@ -5,6 +5,18 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.1] - 2026-09-02
+
+### Fixed
+
+- Bound new subscription licenses to a 35-day offline window and rotate the
+  signed credential at renewal, preventing monthly cancellations from retaining
+  a year of offline access.
+- Preserve manual and legacy licenses while revoking superseded Lemon Squeezy
+  keys online and delivering renewed credentials by email.
+- Align pricing and deployment documentation with the implemented revocation
+  and renewal behavior.
+
 ## [0.18.0] - 2026-09-02
 
 ### Security

@@ -22,6 +22,7 @@ export type ProductId = 'rn' | 'ios' | 'android' | 'flutter'
 export type LsTier = 'pro' | 'all-access' | 'team' | 'enterprise'
 
 const DAY = 24 * 3600 * 1000
+const INITIAL_LICENSE_DAYS = 35
 
 /** Approximate monthly-revenue contribution per tier (US cents). */
 export const TIER_MRR_CENTS: Record<LsTier, number> = {
@@ -148,7 +149,7 @@ export async function handleLemonSqueezyEvent(
         email,
         product,
         seats: 1,
-        days: 365,
+        days: INITIAL_LICENSE_DAYS,
         source: 'lemon-squeezy',
       })
       await store.recordPayment({
@@ -171,18 +172,21 @@ export async function handleLemonSqueezyEvent(
         ? new Date(attrs.ends_at).getTime()
         : attrs.renews_at
           ? new Date(attrs.renews_at).getTime()
-          : Date.now() + 365 * DAY
+          : Date.now() + INITIAL_LICENSE_DAYS * DAY
       // LS subscription payloads don't carry the variant in attributes, so
       // `mapped` is usually null here — pass the tier through only when we
       // actually mapped one, and let the store preserve the existing tier.
-      await store.updateLicenseForSubscription({
+      const license = await store.updateLicenseForSubscription({
         email,
         tier: mapped?.tier as Tier | undefined,
         expiresAt,
         active,
       })
+      if (active && license) {
+        await sendLicenseEmail({ email, license, tier: license.tier, product: license.product })
+      }
       await store.markWebhookEvent(event.eventId)
-      return { handled: true }
+      return { handled: true, license: license ?? undefined }
     }
 
     case 'order_refunded': {

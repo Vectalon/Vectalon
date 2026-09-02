@@ -108,6 +108,7 @@ describe('lemon-squeezy license lifecycle', () => {
     expect(first.license?.tier).toBe('pro')
     expect(first.license?.source).toBe('lemon-squeezy')
     expect(first.license?.email).toBe('buyer@x.dev')
+    expect((first.license?.expiresAt ?? 0) - (first.license?.issuedAt ?? 0)).toBe(35 * 24 * 3600 * 1000)
 
     const data = await store.getData()
     expect(data.customers.find(c => c.email === 'buyer@x.dev')?.status).toBe('active')
@@ -177,15 +178,20 @@ describe('lemon-squeezy license lifecycle', () => {
       { eventId: 'evt_sub1', eventName: 'subscription_updated', attributes: { customer_email: 'sub@x.dev', status: 'active', ends_at: endsAt } },
       store
     )
-    let license = (await store.licensesForEmail('sub@x.dev'))[0]
+    let licenses = await store.licensesForEmail('sub@x.dev')
+    let license = licenses[0]
     expect(license.status).toBe('active')
     expect(license.expiresAt).toBe(new Date(endsAt).getTime())
+    expect(licenses).toHaveLength(2)
+    expect(licenses[1].status).toBe('revoked')
+    expect(licenses[0].key).not.toBe(licenses[1].key)
 
     await handleLemonSqueezyEvent(
       { eventId: 'evt_sub2', eventName: 'subscription_updated', attributes: { customer_email: 'sub@x.dev', status: 'cancelled' } },
       store
     )
-    license = (await store.licensesForEmail('sub@x.dev'))[0]
+    licenses = await store.licensesForEmail('sub@x.dev')
+    license = licenses[0]
     expect(license.status).toBe('expired')
     rmSync(dir, { recursive: true, force: true })
   })

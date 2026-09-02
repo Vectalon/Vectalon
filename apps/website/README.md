@@ -38,6 +38,11 @@ the same `VECTALON_KEY_ID` in the website deployment and in any client
 environment that overrides the default. `RESEND_API_KEY` and the configured
 sender are required for automatic license delivery email.
 
+Subscription purchases receive a 35-day signed offline credential. Active
+subscription webhooks rotate the credential through the next renewal date and
+email the replacement; cancellation and refunds revoke online access while the
+last signed credential ages out within that bounded window.
+
 ## Pages
 
 - `/` — Landing page
