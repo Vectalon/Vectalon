@@ -22,9 +22,9 @@ describe('signLicenseToken', () => {
     expect(result.ok).toBe(true)
   })
 
-  test('rejects invalid intervals and private keys weaker than RSA-2048', () => {
-    const weak = generateKeyPairSync('rsa', { modulusLength: 1024 })
-    const privateKey = weak.privateKey.export({ type: 'pkcs8', format: 'pem' }).toString()
+  test('rejects invalid intervals and non-RSA private keys', () => {
+    const unsupported = generateKeyPairSync('ed25519')
+    const privateKey = unsupported.privateKey.export({ type: 'pkcs8', format: 'pem' }).toString()
     const input = {
       subject: 'buyer@example.test',
       tier: 'pro',
@@ -33,7 +33,7 @@ describe('signLicenseToken', () => {
       expiresAt: 1_900_000_000_000,
     }
 
-    expect(() => signLicenseToken(input, privateKey, 'weak')).toThrow('license-signing-key-invalid')
-    expect(() => signLicenseToken({ ...input, expiresAt: input.issuedAt }, privateKey, 'weak')).toThrow('license-interval-invalid')
+    expect(() => signLicenseToken(input, privateKey, 'unsupported')).toThrow('license-signing-key-invalid')
+    expect(() => signLicenseToken({ ...input, expiresAt: input.issuedAt }, privateKey, 'unsupported')).toThrow('license-interval-invalid')
   })
 })
