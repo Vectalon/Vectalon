@@ -295,7 +295,6 @@ it says so instead of inventing numbers.
 | **Free** | $0 | Qualified Free capabilities from the released catalog; 64 runtime-advertised MCP tools and 44 deterministic commands have lifecycle and entitlement checks |
 | **Individual** | $19/developer/month | + Local AI (local GGUF / WASM models — your source never leaves the machine), project intelligence, diagnostics (doctor, build-fix, profile, sandbox, render), upgrade copilot, self-healing CI |
 | **Team** | $49/developer/month | + Team Brain (decisions, expertise, shared knowledge), shared policies + PR review, CI + dashboards, cross-project intelligence + cloud sync |
-| **Enterprise** | Custom | + Self-hosted (air-gapped ready), SSO / SAML + audit trails, private models (Ollama, vLLM), organization-wide policies, multi-repo intelligence |
 
 See your current plan and what each tier unlocks with `npx vectalon plan`.
 Start a 14-day free trial: `npx vectalon auth --github`

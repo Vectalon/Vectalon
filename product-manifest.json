@@ -10,12 +10,12 @@
   "packages": {
     "reactNative": {
       "name": "@vectalon-dev/rn",
-      "version": "0.18.2",
+      "version": "0.18.3",
       "status": "beta"
     },
     "core": {
       "name": "@vectalon-dev/core",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "distribution": "bundled-private-runtime",
       "contractRevision": "1.0.0+6f374fcb040cb305275a519b9e1ffdec271f1677807d3d66d69c6d2fae7bce98"
     }

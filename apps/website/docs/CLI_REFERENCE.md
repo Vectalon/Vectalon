@@ -1943,7 +1943,6 @@ npx vectalon plan --json   # machine-readable: current tier, plan, all plans
 |---|---|---|---|
 | **Individual** | $19/developer/month | `pro` | Local AI (local GGUF / WASM models) + project intelligence (intel, score, review, sec, arch) + diagnostics (doctor, build-fix, profile, sandbox, render); all 44 deterministic agents, zero model calls |
 | **Team** | $49/developer/month | `team` | Everything in Individual + Team Brain (decisions, expertise, shared knowledge), shared policies + PR review, CI + dashboards (coverage, score trends), cross-project intelligence + cloud sync |
-| **Enterprise** | Custom (annual) | `enterprise` | Everything in Team + self-hosted deployment (air-gapped ready), SSO / SAML + audit trails, private / company-controlled models (Ollama, vLLM), organization-wide policies + multi-repository intelligence |
 
 Pricing is deliberately simple — the goal is the first paying teams, not
 pricing-page psychology. A `free`/`pro` license reads as Individual, `team`

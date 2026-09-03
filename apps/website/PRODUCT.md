@@ -2,7 +2,7 @@
 
 <!-- impeccable:product-schema 1 -->
 
-Current RN release: <!-- product-fact:rn-version -->0.18.2<!-- /product-fact --> ·
+Current RN release: <!-- product-fact:rn-version -->0.18.3<!-- /product-fact --> ·
 benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
 deterministic agents: <!-- product-fact:deterministic-commands -->44<!-- /product-fact --> ·
 MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact --> ·
@@ -35,7 +35,7 @@ The mechanism a competitor could not copy-paste: the agent never works from a ge
 
 ## Operating Context
 
-The product is a CLI (`npx vectalon init / serve / feature / doctor / diagnostics / generate / upgrade / bench / smoke …`) plus 44 deterministic agent commands (review, arch, sec, soc2, dashboard, figma, gh-pr, monitor, evals, dx, archive, share, … — phases 8-12, roadmap items 061-104) that run on the free tier with a report and a verdict and no model calls. The website's demo is a real recorded terminal session (85 s, no cuts, on a 19-screen Expo app), while current benchmark results are derived from all 43 committed scenarios. Pricing: Free $0 (init, serve, feature, doctor, + all 44 agents; no card), Individual $19/dev/mo (Local AI + project intelligence + diagnostics), Team $49/dev/mo (Team Brain, shared policies, PR review, CI, dashboards), Enterprise custom (self-hosted, SSO, audit, private models). `vectalon plan` shows the current plan; `vectalon outcomes` shows the engineering-outcome ledger and savings estimate. Business Source License 1.1 — free for personal/education/OSS and commercial teams ≤3 devs; becomes MIT after 4 years. React Native 0.14.2 is available; iOS, Android, Flutter, and Python are in development.
+The product is a CLI (`npx vectalon init / serve / feature / doctor / diagnostics / generate / upgrade / bench / smoke …`) plus 44 deterministic agent commands (review, arch, sec, soc2, dashboard, figma, gh-pr, monitor, evals, dx, archive, share, … — phases 8-12, roadmap items 061-104) that run on the free tier with a report and a verdict and no model calls. The website's demo is a real recorded terminal session (85 s, no cuts, on a 19-screen Expo app), while current benchmark results are derived from all 43 committed scenarios. Pricing: Free $0 (init, serve, feature, doctor, + all 44 agents; no card), Individual $19/dev/mo (Local AI + project intelligence + diagnostics), and Team $49/dev/mo (Team Brain, shared policies, PR review, CI, dashboards). `vectalon plan` shows the current plan; `vectalon outcomes` shows the engineering-outcome ledger and savings estimate. Business Source License 1.1 — free for personal/education/OSS and commercial teams ≤3 devs; becomes MIT after 4 years. React Native is available; iOS, Android, Flutter, and Python are in development.
 
 ## Strategy — Capability Freeze (P0)
 

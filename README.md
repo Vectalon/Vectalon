@@ -2,7 +2,7 @@
 
 **The adaptive AI harness for developers — React Native, iOS, Android, Python, and beyond.**
 
-Current RN release: <!-- product-fact:rn-version -->0.18.2<!-- /product-fact --> ·
+Current RN release: <!-- product-fact:rn-version -->0.18.3<!-- /product-fact --> ·
 benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
 deterministic agents: <!-- product-fact:deterministic-commands -->44<!-- /product-fact --> ·
 MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact -->
@@ -146,10 +146,6 @@ npx vectalon serve   # Start MCP server for agents
 - Commercial-use license for Vectalon React Native for the purchased developer quantity
 - Qualified Team capabilities, as listed by the released capability catalog
 - No tier-wide 50-seat cap; each developer requires a purchased seat
-
-### Enterprise — Custom (annual)
-- Deployment, governance, support, and capability scope defined in the signed order
-- Security controls are included only when implemented, independently tested, and contracted
 
 See your current plan and what each tier unlocks with `npx vectalon plan`, and
 the engineering outcomes your reports produce with `npx vectalon outcomes`.

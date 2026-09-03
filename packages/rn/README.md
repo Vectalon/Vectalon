@@ -4,7 +4,7 @@
 
 Project-aware SDLC intelligence for any agent — CLI, MCP server, VS Code extension, benchmark suite, and fine-tuning pipeline in one package.
 
-Current release: <!-- product-fact:rn-version -->0.18.2<!-- /product-fact --> ·
+Current release: <!-- product-fact:rn-version -->0.18.3<!-- /product-fact --> ·
 benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
 deterministic agents: <!-- product-fact:deterministic-commands -->44<!-- /product-fact --> ·
 MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact -->
@@ -794,8 +794,8 @@ packages/rn/
 
 ## Tiers
 
-Three commercial plans on top of the deterministic engine gating (`free` /
-`pro` / `team` / `enterprise`). Pricing is deliberately simple — the goal is
+Two commercial plans on top of the deterministic engine gating (`free` /
+`pro` / `team`). Pricing is deliberately simple — the goal is
 the first paying teams, not pricing-page psychology. Run `npx vectalon plan`
 to see your current plan and what each tier includes.
 
@@ -804,7 +804,6 @@ to see your current plan and what each tier includes.
 | **Free** | $0 | Available and beta capabilities identified by the released catalog; experimental capabilities require opt-in |
 | **Individual** | $19/developer/month | Commercial-use license for Vectalon React Native for one developer, plus qualified Individual capabilities |
 | **Team** | $49/developer/month | Commercial-use license for the purchased developer quantity, plus qualified Team capabilities; no tier-wide seat cap |
-| **Enterprise** | Custom (annual) | Deployment, governance, support, and capability scope defined in the signed order |
 
 Start a 14-day free trial: `npx vectalon auth --github`
 
@@ -863,6 +862,6 @@ Business Source License 1.1 (BSL-1.1)
 © 2026 Vectalon. Commercial use requires a paid license.
 
 - **Free**: Personal use, education, open source, teams ≤3 developers
-- **Paid**: Teams >3 developers — Individual $19/dev/mo, Team $49/dev/mo, Enterprise custom
+- **Paid**: Teams >3 developers — Individual $19/dev/mo or Team $49/dev/mo
 
 See [LICENSE](../LICENSE) for full terms.
