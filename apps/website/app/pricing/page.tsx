@@ -46,7 +46,7 @@ const PLANS: Array<{
   fallback: string
   href?: string
   highlight?: boolean
-}> = PRODUCT_PLANS.map(plan => ({
+}> = PRODUCT_PLANS.filter(plan => plan.id !== 'enterprise').map(plan => ({
   ...plan,
   ...PLAN_PRESENTATION[plan.id],
   tier: plan.checkout === 'checkout' ? plan.engineTier as LsTier : undefined,
@@ -110,13 +110,13 @@ export default function PricingPage() {
       <div className="text-center">
         <div className="mx-auto mb-5 w-fit">
           <span className="chip font-mono">
-            vectalon pricing — <span className="text-brand">four plans</span> — free means free
+            vectalon pricing — <span className="text-brand">three plans</span> — free means free
           </span>
         </div>
         <h1 className="text-4xl font-bold text-slate-50">Pricing</h1>
         <p className="mx-auto mt-4 max-w-2xl text-slate-400">
-          Individual for developers, Team for the org, Enterprise for the infrastructure. The free
-          tier is genuinely useful; trials are one GitHub login, no card.
+          Individual for developers and Team for organizations. The free tier is genuinely useful;
+          trials are one GitHub login, no card.
         </p>
         <p className="mx-auto mt-2 max-w-2xl font-mono text-xs text-slate-500">
           we're optimizing for the <span className="text-brand">first 5 paying teams</span> — not
@@ -125,7 +125,7 @@ export default function PricingPage() {
         </p>
       </div>
 
-      <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-12 grid gap-5 md:grid-cols-3">
         {PLANS.map(p => (
           <div
             key={p.name}

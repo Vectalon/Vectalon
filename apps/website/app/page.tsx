@@ -80,7 +80,7 @@ const FAQ: Array<{ q: string; a: string }> = [
   },
   {
     q: 'What does it cost?',
-    a: 'Free includes qualified capabilities listed by the released catalog, with no card. Experimental commands require opt-in and are not a purchased promise. Individual is $19/dev/mo, Team is $49/dev/mo, and Enterprise is quoted.',
+    a: 'Free includes qualified capabilities listed by the released catalog, with no card. Experimental commands require opt-in and are not a purchased promise. Individual is $19/dev/mo and Team is $49/dev/mo.',
   },
 ]
 

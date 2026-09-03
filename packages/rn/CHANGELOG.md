@@ -5,6 +5,15 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.3] - 2026-09-03
+
+### Security
+
+- Bundle Core 0.8.1 with the production RSA-3072 public verification key so
+  credentials issued by Vectalon checkout validate offline in the SDK.
+- Keep the signing private key out of source and public packages; only the
+  matching public key ships with Core and RN.
+
 ## [0.18.2] - 2026-09-02
 
 ### Security

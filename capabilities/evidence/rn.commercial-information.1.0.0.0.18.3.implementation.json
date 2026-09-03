@@ -1,0 +1,13 @@
+{
+  "capabilityId": "rn.commercial-information",
+  "capabilityVersion": "1.0.0",
+  "productVersion": "0.18.3",
+  "kind": "implementation",
+  "status": "passed",
+  "recordedAt": "2026-09-03T07:58:27.198Z",
+  "inputs": {
+    "apps/website/lib/core-contracts.generated.ts": "sha256:8bcfeea96eb8acbe226492345cffa9ec520346f61438ad546272eb2f1de3e528",
+    "apps/website/lib/product-manifest.ts": "sha256:c2ac1108e21a9d4b35441a5fc6c1ca15e587eb1904a4dcf452fd8f657303f99d"
+  },
+  "method": "Inspect actual source declarations, not customer or GA qualification."
+}
