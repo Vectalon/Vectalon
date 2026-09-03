@@ -5,6 +5,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "env": ["LEMONSQUEEZY_STORE_ID", "LEMONSQUEEZY_CHECKOUT_*"],
       "outputs": ["dist/**", ".next/**", "out/**"]
     },
     "test": {
