@@ -23,6 +23,9 @@ function makeStore(): { store: AdminStore; dir: string } {
 const ENV_KEYS = [
   'LEMONSQUEEZY_STORE_ID',
   'LEMONSQUEEZY_WEBHOOK_SECRET',
+  'LEMONSQUEEZY_CHECKOUT_PRO_RN',
+  'LEMONSQUEEZY_CHECKOUT_ALL_ACCESS_RN',
+  'LEMONSQUEEZY_CHECKOUT_PRO_IOS',
   'LEMONSQUEEZY_VARIANT_PRO_RN',
   'LEMONSQUEEZY_VARIANT_ALL_ACCESS_RN',
   'LEMONSQUEEZY_VARIANT_TEAM_RN',
@@ -63,15 +66,19 @@ describe('lemon-squeezy webhook security', () => {
 
   it('maps variant ids to tier+product from env and builds checkout URLs', () => {
     process.env.LEMONSQUEEZY_STORE_ID = 'vectalon'
-    process.env.LEMONSQUEEZY_VARIANT_PRO_RN = 'var_pro_rn'
+    process.env.LEMONSQUEEZY_CHECKOUT_PRO_RN = 'checkout_pro_rn'
+    process.env.LEMONSQUEEZY_CHECKOUT_ALL_ACCESS_RN = 'checkout_aa_rn'
+    process.env.LEMONSQUEEZY_CHECKOUT_PRO_IOS = 'checkout_pro_ios'
+    process.env.LEMONSQUEEZY_VARIANT_PRO_RN = '1335683'
     process.env.LEMONSQUEEZY_VARIANT_ALL_ACCESS_RN = 'var_aa_rn'
     process.env.LEMONSQUEEZY_VARIANT_PRO_IOS = 'var_pro_ios'
 
-    expect(checkoutUrlFor('pro')).toBe('https://vectalon.lemonsqueezy.com/checkout/buy/var_pro_rn')
-    expect(checkoutUrlFor('all-access')).toBe('https://vectalon.lemonsqueezy.com/checkout/buy/var_aa_rn')
-    expect(checkoutUrlFor('pro', 'ios')).toBe('https://vectalon.lemonsqueezy.com/checkout/buy/var_pro_ios')
+    expect(checkoutUrlFor('pro')).toBe('https://vectalon.lemonsqueezy.com/checkout/buy/checkout_pro_rn')
+    expect(checkoutUrlFor('all-access')).toBe('https://vectalon.lemonsqueezy.com/checkout/buy/checkout_aa_rn')
+    expect(checkoutUrlFor('pro', 'ios')).toBe('https://vectalon.lemonsqueezy.com/checkout/buy/checkout_pro_ios')
     expect(checkoutUrlFor('team')).toBeNull()
 
+    expect(tierForVariantId('1335683')).toEqual({ tier: 'pro', product: 'rn' })
     expect(tierForVariantId('var_aa_rn')).toEqual({ tier: 'all-access', product: 'rn' })
     expect(tierForVariantId('var_pro_ios')).toEqual({ tier: 'pro', product: 'ios' })
     expect(tierForVariantId('nope')).toBeNull()
