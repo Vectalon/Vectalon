@@ -7,6 +7,7 @@
  *
  *   LEMONSQUEEZY_STORE_ID             — store slug for checkout URLs
  *   LEMONSQUEEZY_WEBHOOK_SECRET       — HMAC secret for webhook verification
+ *   LEMONSQUEEZY_CHECKOUT_<TIER>_<PRODUCT> — checkout UUID from /checkout/buy/<uuid>
  *   LEMONSQUEEZY_VARIANT_<TIER>_<PRODUCT> — variant ids per tier+platform
  *     e.g. LEMONSQUEEZY_VARIANT_PRO_RN, LEMONSQUEEZY_VARIANT_ALL_ACCESS_RN,
  *          LEMONSQUEEZY_VARIANT_TEAM_RN, ..._IOS / ..._ANDROID / ..._FLUTTER
@@ -39,15 +40,22 @@ export function variantIdFor(tier: LsTier, product: ProductId = 'rn'): string | 
   return value && value.trim() ? value.trim() : undefined
 }
 
+/** Checkout UUID lookup. This is distinct from Lemon Squeezy's numeric variant id. */
+export function checkoutIdFor(tier: LsTier, product: ProductId = 'rn'): string | undefined {
+  const key = `LEMONSQUEEZY_CHECKOUT_${tier.toUpperCase().replace('-', '_')}_${product.toUpperCase()}`
+  const value = process.env[key]
+  return value && value.trim() ? value.trim() : undefined
+}
+
 /**
  * Checkout URL for a tier+product, or null when the store isn't configured
  * yet (UI shows "Launching soon" instead of a dead link).
  */
 export function checkoutUrlFor(tier: LsTier, product: ProductId = 'rn'): string | null {
   const store = process.env.LEMONSQUEEZY_STORE_ID
-  const variant = variantIdFor(tier, product)
-  if (!store || !variant) return null
-  return `https://${store}.lemonsqueezy.com/checkout/buy/${variant}`
+  const checkout = checkoutIdFor(tier, product)
+  if (!store || !checkout) return null
+  return `https://${store}.lemonsqueezy.com/checkout/buy/${checkout}`
 }
 
 /** Reverse lookup: which tier+product owns a variant id (from env config). */

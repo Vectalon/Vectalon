@@ -27,7 +27,9 @@ pnpm dev
 
 Paid checkout fails closed unless the deployment has all of the following:
 
-- `LEMONSQUEEZY_STORE_ID` (the store subdomain) and the configured product variant IDs
+- `LEMONSQUEEZY_STORE_ID` (the store subdomain), reusable checkout UUIDs in
+  `LEMONSQUEEZY_CHECKOUT_<TIER>_<PRODUCT>`, and numeric webhook variant IDs in
+  `LEMONSQUEEZY_VARIANT_<TIER>_<PRODUCT>`
 - `LEMONSQUEEZY_WEBHOOK_SECRET`
 - `VECTALON_LICENSE_PRIVATE_KEY` — an RSA private key of at least 2048 bits; escaped newlines are accepted
 - `VECTALON_KEY_ID` — the key identifier used by both the website signer and the client verifier (defaults to `vectalon-legacy`)
