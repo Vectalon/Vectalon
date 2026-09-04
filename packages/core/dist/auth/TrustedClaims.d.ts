@@ -9,6 +9,8 @@ export type TrustedClaims = Readonly<{
     issuedAt: number;
     expiresAt: number;
     githubUserId?: number;
+    capabilities?: readonly string[];
+    seats?: number;
 }>;
 type TrustedClaimsInput = Omit<TrustedClaims, typeof TRUSTED_CLAIMS_TYPE>;
 /** @internal Only verification code may call this constructor. */

@@ -7,6 +7,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TierResolver = void 0;
 const types_1 = require("./types");
 class TierResolver {
+    static isTier(value) {
+        return Object.prototype.hasOwnProperty.call(types_1.TIER_CONFIGS, value);
+    }
     static getConfig(tier) {
         return types_1.TIER_CONFIGS[tier];
     }

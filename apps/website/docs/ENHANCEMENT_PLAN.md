@@ -1,6 +1,6 @@
 # rn-vectalon Enhancement Plan
 
-Current RN release: <!-- product-fact:rn-version -->0.18.3<!-- /product-fact --> ·
+Current RN release: <!-- product-fact:rn-version -->0.18.4<!-- /product-fact --> ·
 benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact -->
 
 > From "Project Harness" to "Company Brain" to **Autonomous RN Engineering Org** —

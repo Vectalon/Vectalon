@@ -117,7 +117,6 @@ export function createProgram(): Command {
     .name('vectalon')
     .description('The adaptive AI harness for React Native')
     .version(pkg.version)
-    .option('--dev', 'Enable dev mode — bypass all tier/license checks')
     .option('--experimental', 'Opt into unqualified experimental capabilities (does not grant paid entitlements)')
     .option('--diagnostics', 'Write .vectalon/diagnostics-bundle.json (environment, last 5000 log lines, project state) — works on every command')
     .hook('preAction', (thisCommand, actionCommand) => {
@@ -126,10 +125,6 @@ export function createProgram(): Command {
       for (let command: Command | null = actionCommand; command && command !== program; command = command.parent) names.unshift(command.name())
       assertSurfaceAvailable(`cli:${names.join(' ')}`, experimental, message => logger.warn(message))
       if (experimental) process.env.VECTALON_EXPERIMENTAL = '1'
-      if (thisCommand.opts().dev) {
-        process.env.VECTALON_DEV_MODE = '1'
-        logger.info(pc.yellow('DEV MODE — tier/license checks bypassed; capability lifecycle unchanged'))
-      }
     })
 
   program
@@ -910,7 +905,6 @@ export function createProgram(): Command {
     .option('--only <ids>', 'Run only these check ids (comma-separated)')
     .option('--skip <ids>', 'Skip these check ids (comma-separated)')
     .option('--full', 'Include slow / model-heavy checks (feature, bench, selftest, pull)')
-    .option('--no-dev', 'Disable dev mode — tier-gated checks (bundle, sandbox, ci, visual-ci, …) report as skips instead of running for real (dev mode is the default)')
     .option('--json', 'Print the JSON report to stdout instead of files')
     .option('--no-html', 'Skip writing the HTML dashboard')
     .option('--open', 'Open the HTML dashboard in the browser after the run')

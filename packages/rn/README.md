@@ -4,7 +4,7 @@
 
 Project-aware SDLC intelligence for any agent — CLI, MCP server, VS Code extension, benchmark suite, and fine-tuning pipeline in one package.
 
-Current release: <!-- product-fact:rn-version -->0.18.3<!-- /product-fact --> ·
+Current release: <!-- product-fact:rn-version -->0.18.4<!-- /product-fact --> ·
 benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
 deterministic agents: <!-- product-fact:deterministic-commands -->44<!-- /product-fact --> ·
 MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact -->
@@ -133,7 +133,7 @@ Run `npx vectalon <command> --help` for detailed options.
 | `intel [dir]` | **Project Intelligence Core (Roadmap 001-010)** — one deterministic pass: versioned project manifest + validation, workspace/monorepo discovery (pnpm/yarn/npm/turbo/lerna/nx), file→file dependency graph with circular-import cycles, AST parse-rate stats, incremental repository index (content fingerprints), component + navigation graphs, native module registry (pods/podspecs/gradle/TurboModule specs), and ranked knowledge retrieval with a sub-second benchmark — repository-wide in monorepos, writes `docs/vectalon/intel/report.{json,md}` | `--json`, `--graph <deps\|components\|navigation\|native\|manifest>`, `--search <q>`, `--bench` |
 | `perf [dir]` | **Static performance scan (Roadmap Phase 4, items 021-023/027/029)** — one deterministic pass over source: render-phase `setState` (021), inline handler/literal props + unmemoized context values that defeat `React.memo` (022), heavyweight module-scope imports + entry-file side effects that delay first render (023), legacy bridge traffic (`NativeModules` / `requireNativeComponent` / `TurboModuleRegistry`) (027), and a severity-ranked, deduped recommendation engine (029) — with a markdown report to `docs/vectalon/perf/` | `--json` |
 | `coverage [dir]` | Render the **coverage dashboard** (`docs/vectalon/coverage/coverage-gaps.md`) — a per-screen E2E + a11y gap summary with links to the open follow-up tasks | `--json`, `--limit <n>` |
-| `smoke [dir]` | **Post-release verification** — run every CLI command against the project (dev mode by default so all features run), capture the full output of each, and report pass/warn/skip/fail; exits non-zero on any failure. Wired into the generated release workflows as a `verify` job | `--list`, `--only <ids>`, `--skip <ids>`, `--full`, `--json`, `--no-dev`, `--out <dir>`, `--timeout <ms>` |
+| `smoke [dir]` | **Post-release verification** — run every CLI command against the project with production entitlement checks, capture output, and report pass/warn/skip/fail; exits non-zero on failures | `--list`, `--only <ids>`, `--skip <ids>`, `--full`, `--json`, `--out <dir>`, `--timeout <ms>` |
 | `bench` | RN coding-test benchmark (deterministic baseline or real-model) | `--model <provider>`, `--suite <id>`, `--live`, `--install`, `--json`, `-o <path>`, `--baseline <file>`, `--tolerance <n>` |
 | `leaderboard [dir]` | Merge benchmark results into `BENCHMARK_RESULTS.md` | `--out <path>`, `--json`, `--timestamp`, `--pr-comment` |
 | `archive [dir]` | **Build Archive Agent** — build (or ingest) IPA/APK/AAB, SHA-256 checksum, typed BuildManifest with full provenance (git, flavor, environment), stored under `.vectalon/builds/`; zero-config flavor detection from Gradle `productFlavors`, Xcode schemes, and `eas.json` | `--flavor`, `--platform`, `--environment`, `--env-file`, `--build-number`, `--no-build`, `--artifact`, `--list`, `--init`, `--dry-run`, `--json` |
@@ -154,7 +154,6 @@ Run `npx vectalon <command> --help` for detailed options.
 
 | Flag | Description |
 |------|-------------|
-| `--dev` | **Dev mode** — bypass all tier/license checks. All features unlock. |
 | `--diagnostics` | Write `.vectalon/diagnostics-bundle.json` (environment, last 5000 log lines, model provider, `.vectalon` state) — works on **every** command |
 | `-h, --help` | Display help for command |
 | `-V, --version` | Output the version number |
@@ -307,11 +306,10 @@ Run **every CLI command** against the project and capture the full output of
 each one, so a release can be verified end-to-end before it ships:
 
 ```bash
-npx vectalon smoke                # every fast check, dev mode → .vectalon/smoke/report.{json,log,html}
+npx vectalon smoke                # every fast check → .vectalon/smoke/report.{json,log,html}
 npx vectalon smoke --full         # + feature workflow, bench, full selftest, model pull
 npx vectalon smoke --json         # machine-readable report (CI gates)
 npx vectalon smoke --only impact,coverage
-npx vectalon smoke --no-dev       # respect the real tier — Pro/Team commands become skips
 ```
 
 - **37 checks** cover the whole surface — version/help, init, status, models,
@@ -323,11 +321,9 @@ npx vectalon smoke --no-dev       # respect the real tier — Pro/Team commands 
 - **Full captured output** per command lands in `report.log` (readable),
   `report.json` (CI), and an HTML dashboard; the terminal streams each check
   live and prints a summary table
-- **Always runs in dev mode** — every check runs with `VECTALON_DEV_MODE=1`, so
-  Pro/Team features (bundle, sandbox, ci, visual-ci, ci-incident, team-policy)
-  execute for real instead of hitting the license gate; pass `--no-dev` to
-  respect the actual tier. Commands that need inputs a project lacks (Hermes
-  profile files, a sync remote) stay `skip` with reasons
+- **Production entitlement behavior** — Pro/Team commands run only with a valid
+  license; otherwise they are reported as tier-gated skips. Commands that need
+  inputs a project lacks stay `skip` with reasons.
 - **Clean output** — captured stdout/stderr is ANSI-stripped and children run
   with `FORCE_COLOR=0`, so `report.log` / the HTML dashboard contain plain
   text with no escape codes or gate-promo noise
@@ -739,8 +735,8 @@ Production visibility without usage tracking — **errors only, opt-out**.
 | **`support --upload`** | Sanitized bundle (logs, error queue, crash report, package.json, `.vectalon` state) → gzipped upload with a `RN-XXXXXXXX` token; secrets redacted recursively. |
 
 Privacy: all telemetry is **opt-out** — set `telemetry.enabled=false` (or
-`telemetry.errors=false`) in `~/.config/rn-vectalon/config.json`. Dev mode and
-`NODE_ENV=test` never send anything. Override the endpoint with
+`telemetry.errors=false`) in `~/.config/rn-vectalon/config.json`. Tests never
+send anything. Override the endpoint with
 `RN_VECTALON_TELEMETRY_URL`.
 
 ---
@@ -808,30 +804,6 @@ to see your current plan and what each tier includes.
 Start a 14-day free trial: `npx vectalon auth --github`
 
 ---
-
-## Dev Mode (Internal Only)
-
-> ⚠️ **For Vectalon contributors and maintainers only.** Not intended for end users.
-
-Bypasses all tier and license checks so the team can test every feature during development:
-
-```bash
-# CLI flag
-npx vectalon --dev doctor
-npx vectalon --dev sync --init --remote <url>
-npx vectalon --dev telemetry --analyze
-
-# Environment variable
-VECTALON_DEV_MODE=1 npx vectalon sync
-VECTALON_BYPASS_TIER=1 npx vectalon doctor
-```
-
-In dev mode:
-- All features unlock (treated as `enterprise` tier)
-- Telemetry tracking is skipped (no noise)
-- A yellow banner prints on startup
-
-**Never use in production. End users should use the free tier or start a trial instead.**
 
 ---
 

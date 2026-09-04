@@ -9,6 +9,7 @@ function createTrustedClaims(input) {
     const claims = Object.freeze({
         ...input,
         product: Array.isArray(input.product) ? Object.freeze([...input.product]) : input.product,
+        ...(input.capabilities ? { capabilities: Object.freeze([...input.capabilities]) } : {}),
     });
     verifiedClaims.add(claims);
     return claims;

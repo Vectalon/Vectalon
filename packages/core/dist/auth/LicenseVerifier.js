@@ -67,7 +67,7 @@ function verifyLicenseToken(raw, key, now) {
     return { ok: true, claims: (0, TrustedClaims_1.createTrustedClaims)(claims) };
 }
 function normalizeClaims(payload) {
-    const { sub, tier, product, iat, exp } = payload;
+    const { sub, tier, product, iat, exp, capabilities, seats } = payload;
     if (!validSubject(sub) || !nonempty(tier) || !validProduct(product))
         return null;
     if (!validTimestamp(iat) || !validTimestamp(exp) || iat >= exp)
@@ -80,6 +80,10 @@ function normalizeClaims(payload) {
         issuedAt: iat * 1000,
         expiresAt: exp * 1000,
         ...(typeof sub === 'number' ? { githubUserId: sub } : {}),
+        ...(Array.isArray(capabilities) && capabilities.every(nonempty)
+            ? { capabilities: [...new Set(capabilities)] }
+            : {}),
+        ...(Number.isSafeInteger(seats) && seats > 0 ? { seats: seats } : {}),
     };
 }
 function nonempty(value) {

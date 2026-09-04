@@ -4,6 +4,7 @@
  */
 import type { Tier, TierConfig } from './types';
 export declare class TierResolver {
+    static isTier(value: string): value is Tier;
     static getConfig(tier: Tier): TierConfig;
     static hierarchy(tier: Tier): number;
     static meets(tier: Tier, required: Tier): boolean;
