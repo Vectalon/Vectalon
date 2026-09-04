@@ -1,0 +1,23 @@
+{
+  "capabilityId": "rn.commercial-information",
+  "capabilityVersion": "1.1.0",
+  "productVersion": "0.19.0",
+  "kind": "implementation",
+  "status": "passed",
+  "recordedAt": "2026-09-04T11:56:43.458Z",
+  "inputs": {
+    "apps/website/lib/core-contracts.generated.ts": "sha256:0019448a5a74f63311a065f4cd35b5a7f87320b9e0828337a05fb3bf8a8f17e1",
+    "apps/website/lib/product-manifest.ts": "sha256:c2ac1108e21a9d4b35441a5fc6c1ca15e587eb1904a4dcf452fd8f657303f99d",
+    "apps/website/lib/trial-device.ts": "sha256:a126b879c46173ab1a343639e173e4c8613963e1f56bd786f50113a8ed6ac340",
+    "packages/rn/src/auth/trialDeviceFlow.ts": "sha256:1472d0e1801318d5c888f79f29f0ea8fe0243c598919710b25e0aae84b8954d8",
+    "packages/rn/src/auth/trialState.ts": "sha256:e71f108540b1eabf129eaa824c28bd2492e98f2e071ff3fc56442a570065dc09",
+    "packages/rn/src/cli/logfile.ts": "sha256:7781d6b5a88ff326e39ba9497b1013602259562f5ebc30b84c838ba978425cac",
+    "packages/rn/src/cli/logger.ts": "sha256:a361a5ed9d6ff2855f84198520e70ccb309d8499bf8908728b28a86ff4ab79c1",
+    "packages/rn/src/config/index.ts": "sha256:80e585dc80f1639c0b0e9519ca7b3d3fbbe8bd4e8bfaf642f41f9089d900440e",
+    "packages/rn/src/diagnostics/alerts.ts": "sha256:d5c4a9597b4361236fb4cc8f8ba44d48330e558e2134677f54603713d0442f82",
+    "packages/rn/src/diagnostics/errorReporter.ts": "sha256:b05ed46e2d677c6f289f84f141954a3545c16fe42d61c650047e875d6cb7fd2c",
+    "packages/rn/src/diagnostics/types.ts": "sha256:43ac2132944dc64a905d2819f1ec30dec6c554f54d9b28bf104b1c444a983102",
+    "packages/rn/src/utils/safe.ts": "sha256:e2b591b869cfa7e3bd2d3066da8bb836238d15e101fb0f6590b23498a9b0156c"
+  },
+  "method": "Inspect actual source declarations, not customer or GA qualification."
+}

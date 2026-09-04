@@ -11,21 +11,8 @@ export interface LicenseInfo {
     githubUserId?: number;
     githubUsername?: string;
 }
-export interface TrialInfo {
-    tier: string;
-    githubUserId: number;
-    githubUsername: string;
-    startedAt: number;
-    expiresAt: number;
-    deviceFingerprint: string;
-}
 export interface LicenseValidationResult {
     valid: boolean;
     license?: LicenseInfo;
     error?: string;
-}
-export interface GitHubUser {
-    id: number;
-    login: string;
-    email?: string;
 }

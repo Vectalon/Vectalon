@@ -190,8 +190,12 @@ export interface TrialCredential {
     contractVersion: '1.0.0';
     trialId: string;
     subjectId: string;
+    audience?: string;
     productScope: string[];
     tier: 'pro' | 'team';
     issuedAt: string;
+    notBefore?: string;
     expiresAt: string;
+    keyId?: string;
+    policyVersion?: string;
 }

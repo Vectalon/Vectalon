@@ -4,25 +4,15 @@
  * sets VECTALON_ALERT_WEBHOOK before requiring the module and stubs globalThis
  * fetch to record POSTs instead of hitting the real endpoint.
  */
-import { mkdirSync, readFileSync, writeFileSync, rmSync } from 'fs'
-import { homedir } from 'os'
+import { mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
-import { TrialTracker } from '@vectalon-dev/core'
 import { createTempProject, cleanup, useTempConfig } from '../helpers/tmp'
 import { resetConfig } from '../../src/config'
 
 // Core's LicenseStore hardcodes ~/.config/vectalon (no env override), so
 // TrialTracker.start() in this suite writes to the real home dir. Clean it up
 // so running tests never leaves stray state on the developer's machine.
-const HOME_TRIAL_FILE = join(homedir(), '.config', 'vectalon', 'trial.json')
-
-function clearHomeTrialFile(): void {
-  try {
-    rmSync(HOME_TRIAL_FILE, { force: true })
-  } catch {
-    // ignore
-  }
-}
+let activeTrial = false
 
 // The webhook URL is read from the env at module load, so it must be set
 // before the (dynamic) import of the alerts module in beforeAll.
@@ -57,9 +47,10 @@ describe('admin alert webhook (P2-19)', () => {
     // Core's LicenseStore hardcodes ~/.config/vectalon (ignores the temp
     // config dir), so a trial started in one test persists for every later
     // test. Clear it before each test to isolate license state.
-    clearHomeTrialFile()
+    activeTrial = false
     process.env.VECTALON_ALERT_WEBHOOK = 'https://discord.example/webhook'
     jest.resetModules()
+    jest.doMock('../../src/auth/trialState', () => ({ hasActiveTrial: () => activeTrial }))
     alerts = (await import('../../src/diagnostics/alerts')) as unknown as AlertsModule
 
     fetchMock = jest.fn(async () => ({ ok: true, status: 200 }))
@@ -69,7 +60,6 @@ describe('admin alert webhook (P2-19)', () => {
   afterEach(() => {
     cleanup(root)
     cleanup(configDir)
-    clearHomeTrialFile()
     // `fetch` is a required (non-optional) global in newer TS libs, so delete
     // needs a cast — CI's TS is stricter than the local dev toolchain.
     delete (globalThis as unknown as { fetch?: unknown }).fetch
@@ -190,7 +180,7 @@ describe('admin alert webhook (P2-19)', () => {
 
   it('alerts when an active-license heartbeat went silent for >30 min', async () => {
     // Real active trial in the sandboxed config dir.
-    TrialTracker.start({ id: 1, login: 'tester' }, 'team')
+    activeTrial = true
 
     alerts.recordHeartbeatPing(root, 'serve')
     // Fresh ping → no alert.
@@ -237,7 +227,7 @@ describe('admin alert webhook (P2-19)', () => {
   })
 
   it('dedupes the stale-heartbeat alert to once per stale window', async () => {
-    TrialTracker.start({ id: 1, login: 'tester' }, 'team')
+    activeTrial = true
     const path = alerts.heartbeatStatePath(root)
     mkdirSync(join(path, '..'), { recursive: true })
 

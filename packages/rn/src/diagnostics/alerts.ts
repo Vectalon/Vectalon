@@ -15,7 +15,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import pkg from '../../package.json'
-import { LicenseStore, LicenseValidator, TrialTracker } from '@vectalon-dev/core'
+import { LicenseStore, LicenseValidator } from '@vectalon-dev/core'
+import { hasActiveTrial } from '../auth/trialState'
 import { configDirPath } from '../config'
 import { reportError } from '../utils/safe'
 import type { ErrorReport } from './types'
@@ -190,7 +191,7 @@ export function hasActiveLicense(): boolean {
     }
     // isActive() (not daysRemaining()) — a cleared/empty trial record has no
     // expiresAt and must not count as an active license.
-    return TrialTracker.isActive()
+    return hasActiveTrial()
   } catch {
     return false
   }
