@@ -5,7 +5,8 @@
 
 import { resolve } from 'path'
 import { existsSync, accessSync, constants } from 'fs'
-import { LicenseStore, LicenseValidator, TrialTracker } from '@vectalon-dev/core'
+import { LicenseStore, LicenseValidator } from '@vectalon-dev/core'
+import { trialDaysRemaining, trialStatus } from '../../auth/trialState'
 import { reportError } from '../../utils/safe'
 import { spawnSync } from 'child_process'
 import pc from 'picocolors'
@@ -460,12 +461,12 @@ export async function doctorCommand(directory: string, options: DoctorOptions): 
   logger.info(pc.bold('Upgrade Readiness'))
   logger.info('-----------------')
   const license = LicenseStore.read()
-  const trial = TrialTracker.getInfo()
+  const trial = trialStatus()
   if (license && license.key && LicenseValidator.validate(license.key).valid) {
     const days = LicenseValidator.daysRemaining(license)
     logger.info(`✅ License active (${days} days remaining)`)
-  } else if (trial && TrialTracker.isActive()) {
-    logger.info(`🔄 Trial active (${TrialTracker.daysRemaining()} days remaining)`)
+  } else if (trial.status === 'active') {
+    logger.info(`🔄 Trial active (${trialDaysRemaining(trial)} days remaining)`)
   } else {
     logger.info(`ℹ️  Free tier — upgrade at https://vectalon.in/pricing`)
   }

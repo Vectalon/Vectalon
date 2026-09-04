@@ -52,5 +52,8 @@ class LicenseStore {
             (0, fs_1.writeFileSync)(TRIAL_FILE, JSON.stringify({}, null, 2));
         }
     }
+    read() { return LicenseStore.readTrial(); }
+    write(state) { LicenseStore.writeTrial(state); }
+    clear() { LicenseStore.clearTrial(); }
 }
 exports.LicenseStore = LicenseStore;

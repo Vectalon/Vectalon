@@ -1,11 +1,11 @@
 {
   "contractVersion": "1.0.0",
-  "revision": "1.0.0+6f374fcb040cb305275a519b9e1ffdec271f1677807d3d66d69c6d2fae7bce98",
+  "revision": "1.0.0+b2c205f6555429fb0ffe9470b8ab70e6ed35d28353c01ea79c1fa052967cc0e5",
   "generator": {
     "name": "vectalon-core",
     "version": "1.0.0"
   },
-  "typeProjectionDigest": "8bcfeea96eb8acbe226492345cffa9ec520346f61438ad546272eb2f1de3e528",
+  "typeProjectionDigest": "0019448a5a74f63311a065f4cd35b5a7f87320b9e0828337a05fb3bf8a8f17e1",
   "compatibility": {
     "unknownFields": "accept",
     "unknownMajorVersions": "reject",
@@ -89,7 +89,7 @@
       "owner": "core",
       "id": "https://contracts.vectalon.dev/v1/TrialCredential.schema.json",
       "version": "1.0.0",
-      "digest": "49c330dda713d545538a8d51057aa3cbd5e789f66d877d9c2e8fe0bac423b93f",
+      "digest": "b52b04747f5119e8ee9bc57fd011a0f3f2fbf4e586c018c0f7afcbe53072d99d",
       "status": "current"
     }
   ]

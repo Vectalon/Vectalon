@@ -5,6 +5,21 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.0] - 2026-09-04
+
+### Security
+
+- Replace self-asserted GitHub usernames and locally authored trial dates with a
+  verified GitHub device flow and server-signed Core 0.9.0 trial credentials.
+- Store trial credentials atomically with owner-only permissions and reject
+  malformed, expired, revoked, wrong-audience, and wrong-product credentials.
+- Retire the public trial identity lookup and legacy unsigned issuance routes.
+
+### Added
+
+- `vectalon auth --github` now completes the browserless device authorization
+  flow and activates a 14-day Pro trial without requesting repository scopes.
+
 ## [0.18.4] - 2026-09-04
 
 ### Security

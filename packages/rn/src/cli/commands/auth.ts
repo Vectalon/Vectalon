@@ -3,8 +3,10 @@
  * Business Source License 1.1 (BSL-1.1)
  */
 
-import { LicenseStore, LicenseValidator, TrialTracker } from '@vectalon-dev/core'
+import { LicenseStore, LicenseValidator } from '@vectalon-dev/core'
 import { logger } from '../logger'
+import { pollTrialDeviceFlow, startTrialDeviceFlow } from '../../auth/trialDeviceFlow'
+import { activateTrial, clearTrial, trialDaysRemaining, trialStatus } from '../../auth/trialState'
 
 interface AuthOptions {
   license?: string
@@ -30,21 +32,19 @@ export async function authCommand(options: AuthOptions): Promise<void> {
 
   if (options.logout) {
     LicenseStore.clear()
-    LicenseStore.clearTrial()
+    clearTrial()
     logger.info('👋 Logged out. Reverted to free tier.')
     return
   }
 
   if (options.github) {
-    logger.info('🔐 GitHub authentication...')
-    logger.info('   (OAuth device flow will be implemented here)')
-    logger.info('   Visit: https://vectalon.in/trial to start a trial')
+    await authenticateTrial()
     return
   }
 
   // Default: show status
   const license = LicenseStore.read()
-  const trial = TrialTracker.getInfo()
+  const trial = trialStatus()
 
   logger.info('📊 Authentication Status')
   logger.info('')
@@ -58,10 +58,9 @@ export async function authCommand(options: AuthOptions): Promise<void> {
     } else {
       logger.info(`⚠️  License invalid: ${validation.error}`)
     }
-  } else if (trial && TrialTracker.isActive()) {
-    logger.info(`🔄 Trial: ${trial.tier}`)
-    logger.info(`   Days remaining: ${TrialTracker.daysRemaining()}`)
-    logger.info(`   GitHub: ${trial.githubUsername || 'unknown'}`)
+  } else if (trial.status === 'active' && trial.credential) {
+    logger.info(`🔄 Trial: ${trial.credential.tier}`)
+    logger.info(`   Days remaining: ${trialDaysRemaining(trial)}`)
   } else {
     logger.info('ℹ️  Free tier (no license or trial)')
   }
@@ -74,4 +73,36 @@ export async function authCommand(options: AuthOptions): Promise<void> {
   logger.info('')
   logger.info('Get a license: https://vectalon.in/pricing')
   logger.info('Start a trial: https://vectalon.in/trial')
+}
+
+async function authenticateTrial(): Promise<void> {
+  const origin = process.env.VECTALON_API_URL || 'https://vectalon.in'
+  let challenge
+  try { challenge = await startTrialDeviceFlow(fetch, origin) } catch {
+    logger.error('Trial sign-in is currently unavailable. Try again later.')
+    process.exitCode = 1
+    return
+  }
+  logger.info(`Open ${challenge.verificationUri}`)
+  logger.info(`Enter code: ${challenge.userCode}`)
+  const deadline = Date.now() + challenge.expiresIn * 1000
+  let interval = challenge.interval
+  while (Date.now() < deadline) {
+    await new Promise(resolve => setTimeout(resolve, interval * 1000))
+    const result = await pollTrialDeviceFlow(fetch, origin, challenge.deviceCode)
+    if (result.status === 'pending') continue
+    if (result.status === 'slow_down') { interval = result.interval; continue }
+    if (result.status === 'complete') {
+      const status = activateTrial(result.credential)
+      if (status.status === 'active') { logger.success(`14-day Pro trial activated (${trialDaysRemaining(status)} days remaining).`); return }
+      logger.error(`Trial credential rejected: ${status.reasonCode}`)
+      process.exitCode = 1
+      return
+    }
+    logger.error(result.status === 'denied' ? 'GitHub sign-in was denied.' : 'Trial sign-in expired or is unavailable.')
+    process.exitCode = 1
+    return
+  }
+  logger.error('GitHub sign-in expired. Run the command again for a new code.')
+  process.exitCode = 1
 }

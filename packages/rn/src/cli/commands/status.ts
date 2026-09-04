@@ -18,7 +18,8 @@ import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { ContextEngine } from '../../harness/ContextEngine'
 import { ModelRouter } from '../../model/ModelRouter'
 import { MCPServer } from '../../protocol/MCPServer'
-import { LicenseStore, LicenseValidator, TrialTracker } from '@vectalon-dev/core'
+import { LicenseStore, LicenseValidator } from '@vectalon-dev/core'
+import { trialDaysRemaining, trialStatus } from '../../auth/trialState'
 import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
 import { activeModelLabel, isRemoteKeyMissing, detectModelAvailability } from '../../model/setup'
 import { checkHeartbeatStaleness } from '../../diagnostics/alerts'
@@ -165,9 +166,9 @@ function printLicense(): void {
       logger.info(`License: ${pc.yellow('invalid')} — run \`vectalon auth --license <key>\` with a valid key`)
       return
     }
-    const trial = TrialTracker.getInfo()
-    if (trial && TrialTracker.isActive()) {
-      const days = TrialTracker.daysRemaining()
+    const trial = trialStatus()
+    if (trial.status === 'active') {
+      const days = trialDaysRemaining(trial)
       logger.info(`License: ${pc.green('trial')} (${days} days remaining)`)
       return
     }

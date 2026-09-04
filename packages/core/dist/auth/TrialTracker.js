@@ -1,50 +1,54 @@
 "use strict";
-/**
- * TrialTracker — GitHub-based trial management (1 trial per GitHub account)
- * Business Source License 1.1 (BSL-1.1)
- */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TrialTracker = void 0;
-const os_1 = require("os");
-const crypto_1 = require("crypto");
-const LicenseStore_1 = require("./LicenseStore");
-const TRIAL_DAYS = 14;
+const TrialCredentialVerifier_1 = require("./TrialCredentialVerifier");
+/** Tracks server-authoritative trials. It cannot create a trial or author dates locally. */
 class TrialTracker {
-    static start(githubUser, tier) {
-        const trial = {
-            tier,
-            githubUserId: githubUser.id,
-            githubUsername: githubUser.login,
-            startedAt: Date.now(),
-            expiresAt: Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000,
-            deviceFingerprint: this.getDeviceFingerprint(),
-        };
-        LicenseStore_1.LicenseStore.writeTrial(trial);
-        return trial;
+    options;
+    constructor(options) {
+        this.options = options;
     }
-    static isActive() {
-        const trial = LicenseStore_1.LicenseStore.readTrial();
-        if (!trial || !trial.expiresAt)
-            return false;
-        return Date.now() < trial.expiresAt;
+    activate(token) {
+        const now = this.options.clock.now();
+        const result = this.verify(token, now);
+        if (!result.ok)
+            return this.failure(result.code);
+        this.options.store.write({ token, lastTrustedTime: now, lastOnlineAt: now });
+        return { status: 'active', reasonCode: 'active', credential: result.credential };
     }
-    static daysRemaining() {
-        const trial = LicenseStore_1.LicenseStore.readTrial();
-        if (!trial || !trial.expiresAt)
-            return 0;
-        return Math.max(0, Math.ceil((trial.expiresAt - Date.now()) / (24 * 60 * 60 * 1000)));
+    status(revocation = 'current') {
+        const state = this.options.store.read();
+        if (!state)
+            return { status: 'none', reasonCode: 'not_started' };
+        const now = this.options.clock.now();
+        if (!Number.isSafeInteger(now) || now < 0)
+            return { status: 'invalid', reasonCode: 'invalid_verification_time' };
+        if (!validStoredTime(state.lastTrustedTime) || !validStoredTime(state.lastOnlineAt) || !validDuration(this.options.offlineAllowanceMs)) {
+            return { status: 'invalid', reasonCode: 'invalid_state' };
+        }
+        if (now < state.lastTrustedTime)
+            return { status: 'invalid', reasonCode: 'clock_rollback' };
+        const result = this.verify(state.token, now);
+        if (!result.ok)
+            return this.failure(result.code);
+        if (revocation === 'revoked')
+            return { status: 'revoked', reasonCode: 'revoked' };
+        if (revocation === 'stale') {
+            if (now - state.lastOnlineAt > this.options.offlineAllowanceMs)
+                return { status: 'invalid', reasonCode: 'offline_allowance_exhausted' };
+            return { status: 'degraded', reasonCode: 'offline_grace', credential: result.credential };
+        }
+        this.options.store.write({ ...state, lastTrustedTime: now, lastOnlineAt: now });
+        return { status: 'active', reasonCode: 'active', credential: result.credential };
     }
-    static getInfo() {
-        return LicenseStore_1.LicenseStore.readTrial();
+    clear() { this.options.store.clear(); }
+    verify(token, now) {
+        return (0, TrialCredentialVerifier_1.verifyTrialToken)(token, this.options.key, { now, audience: this.options.audience, product: this.options.product });
     }
-    static hasTrial() {
-        const trial = LicenseStore_1.LicenseStore.readTrial();
-        return trial !== null && !!trial.githubUserId;
-    }
-    static getDeviceFingerprint() {
-        // Simple hash of hostname + username
-        const data = `${(0, os_1.hostname)()}-${(0, os_1.userInfo)().username}-${process.platform}`;
-        return (0, crypto_1.createHash)('sha256').update(data).digest('hex').slice(0, 16);
+    failure(code) {
+        return { status: code === 'expired' ? 'expired' : 'invalid', reasonCode: code };
     }
 }
 exports.TrialTracker = TrialTracker;
+function validStoredTime(value) { return Number.isSafeInteger(value) && value >= 0; }
+function validDuration(value) { return Number.isSafeInteger(value) && value >= 0; }

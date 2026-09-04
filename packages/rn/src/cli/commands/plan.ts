@@ -10,7 +10,8 @@
 import { resolve, join } from 'path'
 import pc from 'picocolors'
 import { printCarbonReport, parchment, dim } from '../carbon'
-import { LicenseStore, LicenseValidator, TrialTracker } from '@vectalon-dev/core'
+import { LicenseStore, LicenseValidator } from '@vectalon-dev/core'
+import { trialStatus } from '../../auth/trialState'
 import type { Tier } from '@vectalon-dev/core'
 import { PLANS, PLAN_BY_ID, planForTier } from '../../billing/plans'
 import type { PlanId } from '../../billing/plans'
@@ -37,9 +38,9 @@ export function currentEngineTier(): { tier: Tier; source: 'license' | 'trial' |
     // fall through to trial / free
   }
   try {
-    const trial = TrialTracker.getInfo()
-    if (trial && TrialTracker.isActive()) {
-      const tier = trial.tier as Tier
+    const trial = trialStatus()
+    if (trial.status === 'active' && trial.credential) {
+      const tier = trial.credential.tier as Tier
       if (['free', 'pro', 'team', 'enterprise'].includes(tier)) {
         return { tier, source: 'trial' }
       }

@@ -205,7 +205,12 @@ export function validateFreeze(root, { base = 'HEAD', previous, previousSurfaces
         if (record.capabilityId !== entry.id || record.kind !== evidence.kind || record.status !== evidence.status
           || record.productVersion !== evidence.productVersion || record.capabilityVersion !== evidence.capabilityVersion) errors.push(`evidence: record mismatch ${entry.id}`)
         if (!record.inputs || !Object.keys(record.inputs).length) errors.push(`evidence: missing inputs ${entry.id}`)
-        for (const [file, hash] of Object.entries(record.inputs || {})) if (digest(read(root, file)) !== hash) errors.push(`evidence: stale input ${entry.id} ${file}`)
+        // Historical evidence proves an earlier released artifact and remains
+        // immutable by digest. Only current-version evidence is expected to
+        // match the present working tree.
+        if (record.productVersion === catalog.productVersion) {
+          for (const [file, hash] of Object.entries(record.inputs || {})) if (digest(read(root, file)) !== hash) errors.push(`evidence: stale input ${entry.id} ${file}`)
+        }
         if (evidence.kind !== 'implementation' && (!record.command || record.exitCode !== 0 || !record.output)) errors.push(`evidence: missing executed result ${entry.id}`)
       } catch (cause) { errors.push(`evidence: ${entry.id}: ${cause.message}`) }
     }
