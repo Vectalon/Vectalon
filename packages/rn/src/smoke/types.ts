@@ -32,8 +32,6 @@ export interface SmokeContext {
   flavor: SmokeFlavor
   /** Candidate source files (for impact / render), relative to root. */
   srcFiles: string[]
-  /** Dev mode (VECTALON_DEV_MODE=1) — children inherit it via env. */
-  devMode: boolean
 }
 
 export interface SmokeProbe {

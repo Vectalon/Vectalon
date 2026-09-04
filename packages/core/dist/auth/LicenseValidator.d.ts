@@ -3,6 +3,7 @@
  * Business Source License 1.1 (BSL-1.1)
  */
 import type { LicenseInfo, LicenseValidationResult } from './types';
+import type { TrustedClaims } from './TrustedClaims';
 export declare class LicenseValidator {
     private static keyState;
     /**
@@ -11,10 +12,17 @@ export declare class LicenseValidator {
      */
     private static loadKey;
     /**
-     * Clear the cached key state so the next validate() re-resolves the key —
-     * e.g. after setting VECTALON_PUBLIC_KEY or rotating the key on disk.
+     * Clear the cached key state so tests and package upgrades can reload the
+     * bundled trust root.
      */
     static resetKey(): void;
+    static validateClaims(token: string, now?: number): {
+        valid: true;
+        claims: TrustedClaims;
+    } | {
+        valid: false;
+        error: string;
+    };
     static validate(token: string): LicenseValidationResult;
     static isExpired(license: LicenseInfo): boolean;
     static daysRemaining(license: LicenseInfo): number;

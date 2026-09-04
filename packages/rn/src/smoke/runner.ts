@@ -29,17 +29,10 @@ export interface SmokeRunnerOptions {
   full?: boolean
   /** Per-check timeout in ms (default 60s; probe checks use their own). */
   timeoutMs?: number
-  /**
-   * Run checks in dev mode (VECTALON_DEV_MODE=1) and explicitly opt into
-   * experimental capabilities (VECTALON_EXPERIMENTAL=1). Default true — a
-   * post-release verification should exercise every feature. Pass false to
-   * respect both license and lifecycle gates.
-   */
-  devMode?: boolean
 }
 
 /** License-gate announcement in command output (e.g. "requires Pro tier"). */
-const TIER_GATE = /requires\s+(Pro|Team)\s+tier|Current:\s*(free|pro)\s*\|\s*Required:\s*(pro|team)/i
+const TIER_GATE = /requires\s+(Pro|Team)\s+tier|Current:\s*(free|pro)\s*\|\s*Required:\s*(pro|team)|valid license is required|current plan does not include|license does not include the requested product/i
 
 /** CSI / OSC / two-byte ANSI escape sequences — stripped from captured output. */
 // ANSI escapes are the point of this pattern.
@@ -84,7 +77,7 @@ function classify(check: SmokeCheck, exitCode: number | null, output: string, ti
   if (check.okExits?.includes(exitCode) || exitCode === 0) return { status: 'pass' }
   if (TIER_GATE.test(output)) {
     const tier = /Team/i.test(output) ? 'Team' : 'Pro'
-    return { status: 'skip', reason: `tier-gated (${tier}) — run with a license or --dev` }
+    return { status: 'skip', reason: `tier-gated (${tier}) — activate a valid license` }
   }
   if (check.warnOnExits?.includes(exitCode)) {
     return { status: 'warn', reason: `exit ${exitCode} (expected on a fresh project)` }
@@ -99,14 +92,13 @@ interface SpawnOutcome {
 }
 
 /** Spawn `node <cli> <args>` in the project root and capture combined output. */
-function spawnCli(args: string[], ctx: SmokeContext, timeoutMs: number, devMode: boolean): Promise<SpawnOutcome> {
+function spawnCli(args: string[], ctx: SmokeContext, timeoutMs: number): Promise<SpawnOutcome> {
   return new Promise(resolvePromise => {
     const child = spawn(nodeBin(), [ctx.bin, ...args], {
       cwd: ctx.root,
       env: {
         ...process.env,
-        VECTALON_DEV_MODE: devMode ? '1' : '0',
-        VECTALON_EXPERIMENTAL: devMode ? '1' : process.env.VECTALON_EXPERIMENTAL,
+        VECTALON_EXPERIMENTAL: process.env.VECTALON_EXPERIMENTAL,
         FORCE_COLOR: '0',
       },
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -144,7 +136,7 @@ function spawnCli(args: string[], ctx: SmokeContext, timeoutMs: number, devMode:
  * marker, then kill. A marker within the probe timeout is a pass; a timeout
  * without the marker is a failure. The child is always killed.
  */
-function probeCli(check: SmokeCheck, args: string[], ctx: SmokeContext, devMode: boolean): Promise<SmokeRun> {
+function probeCli(check: SmokeCheck, args: string[], ctx: SmokeContext): Promise<SmokeRun> {
   const probe = check.probe!
   const startedAt = Date.now()
   return new Promise(resolvePromise => {
@@ -152,8 +144,7 @@ function probeCli(check: SmokeCheck, args: string[], ctx: SmokeContext, devMode:
       cwd: ctx.root,
       env: {
         ...process.env,
-        VECTALON_DEV_MODE: devMode ? '1' : '0',
-        VECTALON_EXPERIMENTAL: devMode ? '1' : process.env.VECTALON_EXPERIMENTAL,
+        VECTALON_EXPERIMENTAL: process.env.VECTALON_EXPERIMENTAL,
         FORCE_COLOR: '0',
       },
       stdio: ['pipe', 'pipe', 'pipe'],
@@ -192,7 +183,7 @@ function probeCli(check: SmokeCheck, args: string[], ctx: SmokeContext, devMode:
     })
     child.on('close', code => {
       // Exited before becoming ready (e.g. tier gate, missing deps).
-      if (TIER_GATE.test(output)) finish('skip', 'tier-gated (Pro/Team) — run with a license or --dev')
+      if (TIER_GATE.test(output)) finish('skip', 'tier-gated (Pro/Team) — activate a valid license')
       else finish('fail', code === null ? 'exited before becoming ready' : `exited ${code} before becoming ready`)
     })
   })
@@ -201,19 +192,17 @@ function probeCli(check: SmokeCheck, args: string[], ctx: SmokeContext, devMode:
 async function runCheck(check: SmokeCheck, ctx: SmokeContext, opts: SmokeRunnerOptions): Promise<SmokeRun> {
   const args = check.args(ctx)
   const startedAt = Date.now()
-  const devMode = opts.devMode ?? true
-
   const skipReason = check.skipWhen ? check.skipWhen(ctx) : null
   if (skipReason) {
     return { check, status: 'skip', exitCode: null, durationMs: 0, output: '', reason: skipReason, args }
   }
 
   if (check.probe) {
-    return probeCli(check, args, ctx, devMode)
+    return probeCli(check, args, ctx)
   }
 
   const timeoutMs = check.timeoutMs ?? opts.timeoutMs ?? 60000
-  const { exitCode, output, timedOut } = await spawnCli(args, ctx, timeoutMs, devMode)
+  const { exitCode, output, timedOut } = await spawnCli(args, ctx, timeoutMs)
   const { status, reason } = classify(check, exitCode, output, timedOut)
   return {
     check,

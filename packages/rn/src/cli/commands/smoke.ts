@@ -39,8 +39,6 @@ export interface SmokeOptions {
   open?: boolean
   out?: string
   timeoutMs?: number
-  /** Commander --no-dev: false when the user opts out; dev mode is the default. */
-  dev?: boolean
 }
 
 export async function smokeCommand(directory: string, options: SmokeOptions): Promise<void> {
@@ -55,17 +53,13 @@ export async function smokeCommand(directory: string, options: SmokeOptions): Pr
     return
   }
 
-  // Dev mode is on by default so the verification run explicitly exercises
-  // licensed and experimental features. Opt out with --no-dev when a run
-  // should respect the actual license and lifecycle gates.
-  const devMode = options.dev !== false
   logger.info(pc.bold(`vectalon smoke — @vectalon-dev/rn`))
   logger.info(`project: ${root}`)
   logger.info(`flavor: ${detectFlavor(root)}`)
   if (options.only) logger.info(`checks: ${options.only}`)
   if (options.skip) logger.info(`skipping: ${options.skip}`)
   if (options.full) logger.info('including slow / model-heavy checks (--full)')
-  logger.info(devMode ? 'verification mode — licensed and experimental features run for real (--no-dev to disable)' : 'customer mode — license and lifecycle gates remain active (--dev enables verification mode)')
+  logger.info('customer mode — license and lifecycle gates remain active')
   logger.info('')
 
   const report = await runSmoke(
@@ -74,9 +68,8 @@ export async function smokeCommand(directory: string, options: SmokeOptions): Pr
       bin: cliEntry(),
       flavor: detectFlavor(root),
       srcFiles: detectSourceFiles(root),
-      devMode,
     },
-    { only, skip, full: options.full, timeoutMs: options.timeoutMs, devMode },
+    { only, skip, full: options.full, timeoutMs: options.timeoutMs },
     // Live stream each check as it finishes.
     {
       onDone: run => {

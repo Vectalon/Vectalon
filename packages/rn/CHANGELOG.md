@@ -5,6 +5,16 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.4] - 2026-09-04
+
+### Security
+
+- Bundle Core 0.8.2 and route paid checks through its fail-closed, trusted-claims
+  entitlement evaluator with stable denial reasons.
+- Remove the public `--dev` tier bypass and verification-runner bypass injection.
+- Recreate the bundled Core directory on every build so removed security code
+  cannot survive from an older artifact.
+
 ## [0.18.3] - 2026-09-03
 
 ### Security

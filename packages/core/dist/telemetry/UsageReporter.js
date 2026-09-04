@@ -41,8 +41,6 @@ class UsageReporter {
     track(event, product, feature, metadata) {
         if (!this.enabled)
             return;
-        if (process.env.VECTALON_DEV_MODE === '1')
-            return;
         const telemetryEvent = {
             event,
             product,

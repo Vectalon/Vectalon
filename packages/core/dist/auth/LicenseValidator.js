@@ -8,30 +8,20 @@ exports.LicenseValidator = void 0;
 const crypto_1 = require("crypto");
 const fs_1 = require("fs");
 const path_1 = require("path");
-const os_1 = require("os");
 const TrustedClaims_1 = require("./TrustedClaims");
 const LicenseParser_1 = require("./LicenseParser");
 const LicenseVerifier_1 = require("./LicenseVerifier");
-const CONFIG_DIR = (0, path_1.join)((0, os_1.homedir)(), '.config', 'vectalon');
-const MISSING_KEY_ERROR = 'License validation unavailable: no public key found. Set VECTALON_PUBLIC_KEY to a ' +
-    'PEM file path, place public-key.pem in the package root or ~/.config/vectalon/, or run ' +
-    '"npm run keygen" to generate a development key.';
+const MISSING_KEY_ERROR = 'License validation unavailable: the package does not contain its trusted public key.';
 /**
  * Resolve the public key path. Order of preference:
- *   1. VECTALON_PUBLIC_KEY env var (explicit override)
- *   2. Standard locations relative to the compiled output
- *   3. The user config dir (~/.config/vectalon)
+ * Resolve only the public key shipped in the package. Customer-controlled
+ * environment variables and files must never replace the production trust root.
  */
 function resolvePublicKeyPath() {
-    const envPath = process.env.VECTALON_PUBLIC_KEY;
-    if (envPath && (0, fs_1.existsSync)(envPath)) {
-        return envPath;
-    }
     const candidates = [
         (0, path_1.join)(__dirname, '..', 'public-key.pem'), // dist/auth or src/auth
         (0, path_1.join)(__dirname, '..', '..', 'public-key.pem'), // dist or src
         (0, path_1.join)(__dirname, '..', '..', '..', 'public-key.pem'), // package root
-        (0, path_1.join)(CONFIG_DIR, 'public-key.pem'), // ~/.config/vectalon
     ];
     for (const path of candidates) {
         if ((0, fs_1.existsSync)(path))
@@ -65,13 +55,13 @@ class LicenseValidator {
         return this.keyState;
     }
     /**
-     * Clear the cached key state so the next validate() re-resolves the key —
-     * e.g. after setting VECTALON_PUBLIC_KEY or rotating the key on disk.
+     * Clear the cached key state so tests and package upgrades can reload the
+     * bundled trust root.
      */
     static resetKey() {
         this.keyState = null;
     }
-    static validate(token) {
+    static validateClaims(token, now = Date.now()) {
         const parsed = (0, LicenseParser_1.parseLicenseToken)(token);
         if (!parsed.ok) {
             return { valid: false, error: `Invalid license token: ${parsed.code}` };
@@ -84,16 +74,22 @@ class LicenseValidator {
             return { valid: false, error: key.error };
         }
         const result = (0, LicenseVerifier_1.verifyLicenseToken)(token, {
-            id: process.env.VECTALON_KEY_ID || 'vectalon-legacy',
+            id: 'vectalon-legacy',
             algorithm: 'RS256',
             publicKey: key.publicKey,
-        }, Date.now());
+        }, now);
         if (!result.ok) {
             return {
                 valid: false,
                 error: result.code === 'expired' ? 'License expired' : `Invalid license: ${result.code}`,
             };
         }
+        return { valid: true, claims: result.claims };
+    }
+    static validate(token) {
+        const result = this.validateClaims(token);
+        if (!result.valid)
+            return result;
         return { valid: true, license: (0, TrustedClaims_1.trustedClaimsToLicenseInfo)(token, result.claims) };
     }
     static isExpired(license) {

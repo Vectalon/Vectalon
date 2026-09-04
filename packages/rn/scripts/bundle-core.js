@@ -10,7 +10,7 @@
  * as a standalone package.
  */
 
-const { existsSync, mkdirSync, cpSync, readdirSync, readFileSync, writeFileSync } = require('fs')
+const { existsSync, mkdirSync, cpSync, rmSync, writeFileSync } = require('fs')
 const { join, dirname } = require('path')
 
 const RN_ROOT = dirname(__dirname)
@@ -22,7 +22,9 @@ if (!existsSync(join(CORE_ROOT, 'dist', 'index.js'))) {
   process.exit(1)
 }
 
-// 1. Create vendor directory
+// 1. Recreate the vendor directory so removed Core files cannot survive from
+// a previous build and leak into a release artifact.
+rmSync(VENDOR_DIR, { recursive: true, force: true })
 mkdirSync(VENDOR_DIR, { recursive: true })
 
 // 2. Copy core dist

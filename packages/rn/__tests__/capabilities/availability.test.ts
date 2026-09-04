@@ -6,7 +6,7 @@ import { ModelRouter } from '../../src/model/ModelRouter'
 import * as publicApi from '../../dist/index.js'
 
 describe('public lifecycle boundaries', () => {
-  afterEach(() => { process.env.VECTALON_EXPERIMENTAL = '1'; delete process.env.VECTALON_DEV_MODE })
+  afterEach(() => { process.env.VECTALON_EXPERIMENTAL = '1' })
 
   it('hides unqualified experimental commands and labels the beta onboarding loop', () => {
     delete process.env.VECTALON_EXPERIMENTAL
@@ -17,25 +17,25 @@ describe('public lifecycle boundaries', () => {
   })
 
   it('exports the canonical catalog and read-only availability projection', () => {
-    expect(publicApi.capabilityCatalog).toMatchObject({ productId: 'rn', productVersion: '0.18.3' })
+    expect(publicApi.capabilityCatalog).toMatchObject({ productId: 'rn', productVersion: '0.18.4' })
     expect(publicApi.surfaceAvailability('cli:policy')).toEqual({ available: true, reason: 'available' })
   })
 
-  it('blocks real command execution before any side effects, even in dev mode', async () => {
+  it('rejects the removed dev flag before command side effects', async () => {
     delete process.env.VECTALON_EXPERIMENTAL
     const entry = join(__dirname, '../../dist/cli/index.js')
     const result = spawnSync(process.execPath, ['-e', `const p = require(${JSON.stringify(entry)}).createProgram(); p.commands.find(c => c.name() === 'soc2').action(() => console.log('EXECUTED')); p.parseAsync(['node','vectalon','--dev','soc2']).catch(e => { console.error(e.message); process.exitCode = 1 })`], { encoding: 'utf8' })
     expect(result.status).toBe(1)
-    expect(result.stderr).toContain('experimental-opt-in-required')
+    expect(result.stderr).toContain("unknown option '--dev'")
     expect(result.stdout + result.stderr).not.toContain('all features unlocked')
     expect(result.stdout).not.toContain('EXECUTED')
   })
 
-  it('describes dev mode as entitlement-only on an available command', () => {
+  it('does not accept the removed dev flag on available commands', () => {
     const entry = join(__dirname, '../../dist/cli/index.js')
     const result = spawnSync(process.execPath, ['-e', `const p = require(${JSON.stringify(entry)}).createProgram(); p.commands.find(c => c.name() === 'init').action(() => {}); p.parseAsync(['node','vectalon','--dev','init'])`], { encoding: 'utf8' })
-    expect(result.stdout + result.stderr).toContain('tier/license checks bypassed; capability lifecycle unchanged')
-    expect(result.stdout + result.stderr).not.toContain('all features unlocked')
+    expect(result.status).toBe(1)
+    expect(result.stderr).toContain("unknown option '--dev'")
   })
 
   it('does not advertise or dispatch experimental MCP tools without opt-in', async () => {

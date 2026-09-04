@@ -41,7 +41,6 @@ function fakeContext(bin: string, root?: string) {
     bin,
     flavor: 'rn-cli' as const,
     srcFiles: ['App.tsx'],
-    devMode: false,
   }
 }
 
@@ -135,7 +134,9 @@ describe('smoke runner', () => {
     expect(report.runs[0].output).not.toContain('\u001b[')
   })
 
-  it('runs checks in verification mode by default (dev entitlement plus explicit experimental opt-in)', async () => {
+  it('does not inject entitlement or experimental bypasses', async () => {
+    const previousExperimental = process.env.VECTALON_EXPERIMENTAL
+    delete process.env.VECTALON_EXPERIMENTAL
     const dir = join(tmpdir(), `vectalon-smoke-env-${Math.random().toString(36).slice(2)}`)
     mkdirSync(dir, { recursive: true })
     const script = `#!/usr/bin/env node
@@ -144,21 +145,13 @@ process.exit(0)
 `
     const bin = join(dir, 'vectalon.js')
     writeFileSync(bin, script)
-    const report = await runSmoke(fakeContext(bin), { only: ['version'] })
-    expect(report.runs[0].output).toContain('dev=1 experimental=1 color=0')
-  })
-
-  it('respects devMode: false for tier-respecting runs', async () => {
-    const dir = join(tmpdir(), `vectalon-smoke-nodev-${Math.random().toString(36).slice(2)}`)
-    mkdirSync(dir, { recursive: true })
-    const script = `#!/usr/bin/env node
-process.stdout.write('dev=' + process.env.VECTALON_DEV_MODE + '\\n')
-process.exit(0)
-`
-    const bin = join(dir, 'vectalon.js')
-    writeFileSync(bin, script)
-    const report = await runSmoke(fakeContext(bin), { only: ['version'], devMode: false })
-    expect(report.runs[0].output).toContain('dev=0')
+    try {
+      const report = await runSmoke(fakeContext(bin), { only: ['version'] })
+      expect(report.runs[0].output).toContain('dev=undefined experimental=undefined color=0')
+    } finally {
+      if (previousExperimental === undefined) delete process.env.VECTALON_EXPERIMENTAL
+      else process.env.VECTALON_EXPERIMENTAL = previousExperimental
+    }
   })
 
   it('fails on a non-zero exit', async () => {
