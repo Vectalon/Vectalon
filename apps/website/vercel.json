@@ -5,6 +5,10 @@
   },
   "rewrites": [
     {
+      "source": "/api/internal/trials/issue",
+      "destination": "/api/v1/trial"
+    },
+    {
       "source": "/familyOS/privacy",
       "destination": "/familyOS/privacy.html"
     },
