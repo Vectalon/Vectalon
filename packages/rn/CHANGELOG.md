@@ -5,6 +5,14 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.19.2] - 2026-09-05
+
+### Fixed
+
+- Generate CI and release workflows with the published scoped npm package, so
+  fresh runners no longer attempt to install the nonexistent `vectalon` package.
+- Show a verified zero-install command on the public website.
+
 ## [0.19.1] - 2026-09-05
 
 ### Fixed

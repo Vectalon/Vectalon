@@ -164,7 +164,7 @@ function ciIncidentStepLines(gate: string): string[] {
   return [
     '- name: File CI incident',
     '  if: failure()',
-    `  run: npx vectalon@latest ci-incident --gate ${gate} --commit ${sha} --branch ${branch}`,
+    `  run: npx --yes --package=@vectalon-dev/rn@latest -- vectalon ci-incident --gate ${gate} --commit ${sha} --branch ${branch}`,
   ]
 }
 
@@ -193,7 +193,7 @@ function visualJobLines(pm: 'npm' | 'yarn' | 'pnpm'): string[] {
     `          cache: ${pm}`,
     ...managerSetup(pm).map(s => `      ${s}`),
     `      - run: ${installCommand(pm)}`,
-    '      - run: npx vectalon@latest visual-ci --pr ${{ github.event.pull_request.number }} --base ${{ github.event.pull_request.base.sha }} --platform ios --push',
+    '      - run: npx --yes --package=@vectalon-dev/rn@latest -- vectalon visual-ci --pr ${{ github.event.pull_request.number }} --base ${{ github.event.pull_request.base.sha }} --platform ios --push',
     '        env:',
     '          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}',
     '      - uses: actions/upload-artifact@v4',
@@ -229,10 +229,10 @@ function archiveJobLines(pm: 'npm' | 'yarn' | 'pnpm'): string[] {
     ...managerSetup(pm).map(s => `      ${s}`),
     `      - run: ${installCommand(pm)}`,
     '      - name: Archive the build',
-    '        run: npx vectalon@latest archive --flavor "$VECTALON_BUILD_FLAVOR"',
+    '        run: npx --yes --package=@vectalon-dev/rn@latest -- vectalon archive --flavor "$VECTALON_BUILD_FLAVOR"',
     '      - name: Distribute the latest build to the SaaS portal',
     "        if: secrets.VECTALON_API_KEY != ''",
-    '        run: npx vectalon@latest distribute --latest --target saas',
+    '        run: npx --yes --package=@vectalon-dev/rn@latest -- vectalon distribute --latest --target saas',
     '        env:',
     '          VECTALON_API_KEY: ${{ secrets.VECTALON_API_KEY }}',
     '      - uses: actions/upload-artifact@v4',
@@ -368,7 +368,7 @@ export function generateAzurePipeline(root: string): string {
     ...nodeSetup,
     install,
     ...qualityScripts.map(([, command]) => `- script: ${command}`),
-    `- script: npx vectalon@latest ci-incident --gate quality --commit $(Build.SourceVersion) --branch $(System.PullRequest.SourceBranch)`,
+    `- script: npx --yes --package=@vectalon-dev/rn@latest -- vectalon ci-incident --gate quality --commit $(Build.SourceVersion) --branch $(System.PullRequest.SourceBranch)`,
     '  condition: failed()',
   ]
 
@@ -398,7 +398,7 @@ export function generateAzurePipeline(root: string): string {
       ...nodeSetup,
       install,
       ...native.map(c => `- script: ${c.cmd} ${c.args.join(' ')}`),
-      `- script: npx vectalon@latest ci-incident --gate native --commit $(Build.SourceVersion) --branch $(System.PullRequest.SourceBranch)`,
+      `- script: npx --yes --package=@vectalon-dev/rn@latest -- vectalon ci-incident --gate native --commit $(Build.SourceVersion) --branch $(System.PullRequest.SourceBranch)`,
       '  condition: failed()',
     ]
     jobs.push(
@@ -424,7 +424,7 @@ export function generateAzurePipeline(root: string): string {
     '        fetchDepth: 0',
     ...nodeSetup.map(s => `      ${s}`),
     `      - script: ${installCommand(pm)}`,
-    '      - script: npx vectalon@latest visual-ci --pr $(System.PullRequest.PullRequestId) --base $(System.PullRequest.TargetBranch) --platform ios --push',
+    '      - script: npx --yes --package=@vectalon-dev/rn@latest -- vectalon visual-ci --pr $(System.PullRequest.PullRequestId) --base $(System.PullRequest.TargetBranch) --platform ios --push',
     '        env:',
     '          AZURE_DEVOPS_TOKEN: $(System.AccessToken)',
     '      - publish: .vectalon/visual-ci',
@@ -495,7 +495,7 @@ export function generateGitlabCi(root: string): string {
       '    - quality',
       '    - native',
       '  script:',
-      '    - npx vectalon@latest ci-incident --gate ci --commit $CI_COMMIT_SHA --branch $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME',
+      '    - npx --yes --package=@vectalon-dev/rn@latest -- vectalon ci-incident --gate ci --commit $CI_COMMIT_SHA --branch $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME',
       ''
     )
   } else {
@@ -507,7 +507,7 @@ export function generateGitlabCi(root: string): string {
       '  needs:',
       '    - quality',
       '  script:',
-      '    - npx vectalon@latest ci-incident --gate quality --commit $CI_COMMIT_SHA --branch $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME',
+      '    - npx --yes --package=@vectalon-dev/rn@latest -- vectalon ci-incident --gate quality --commit $CI_COMMIT_SHA --branch $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME',
       ''
     )
   }
@@ -521,7 +521,7 @@ export function generateGitlabCi(root: string): string {
     '  allow_failure: true',
     '  script:',
     `    - ${install}`,
-    '    - npx vectalon@latest visual-ci --pr $CI_MERGE_REQUEST_IID --base $CI_MERGE_REQUEST_TARGET_BRANCH_NAME --platform ios --push',
+    '    - npx --yes --package=@vectalon-dev/rn@latest -- vectalon visual-ci --pr $CI_MERGE_REQUEST_IID --base $CI_MERGE_REQUEST_TARGET_BRANCH_NAME --platform ios --push',
     '    env:',
     '      GITLAB_TOKEN: $GITLAB_TOKEN',
     '  artifacts:',
@@ -610,10 +610,10 @@ export function generateEasWorkflow(root: string, withArchive?: boolean): string
         '    steps:',
         `      - run: ${installCommand(pm)}`,
         '      - name: Archive the build',
-        '        run: npx vectalon@latest archive --flavor "$VECTALON_BUILD_FLAVOR"',
+        '        run: npx --yes --package=@vectalon-dev/rn@latest -- vectalon archive --flavor "$VECTALON_BUILD_FLAVOR"',
         '      - name: Distribute the latest build to the SaaS portal',
         "        if: ${{ secrets.VECTALON_API_KEY != '' }}",
-        '        run: npx vectalon@latest distribute --latest --target saas',
+        '        run: npx --yes --package=@vectalon-dev/rn@latest -- vectalon distribute --latest --target saas',
         '        env:',
         '          VECTALON_API_KEY: ${{ secrets.VECTALON_API_KEY }}',
       ]

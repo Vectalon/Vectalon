@@ -17,7 +17,7 @@ describe('public lifecycle boundaries', () => {
   })
 
   it('exports the canonical catalog and read-only availability projection', () => {
-    expect(publicApi.capabilityCatalog).toMatchObject({ productId: 'rn', productVersion: '0.19.1' })
+    expect(publicApi.capabilityCatalog).toMatchObject({ productId: 'rn', productVersion: '0.19.2' })
     expect(publicApi.surfaceAvailability('cli:policy')).toEqual({ available: true, reason: 'available' })
   })
 

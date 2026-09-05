@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { CSSProperties } from 'react'
+import { PUBLIC_INSTALL_COMMAND } from '../lib/install-command'
 import { FeatureIcon, type FeatureIconName } from '../components/FeatureIcon'
 import { DemoPlayer } from '../components/DemoPlayer'
 import { TypePrompt, type TypePromptHeadline } from '../components/TypePrompt'
@@ -680,7 +681,7 @@ export default async function Home() {
                 offer a 14-day trial with one GitHub login.
               </p>
               <p className="mx-auto mt-8 w-fit rounded-xl border border-ink-700 code-bg px-5 py-3.5 font-mono text-sm text-slate-300">
-                <span className="text-brand">$</span> npx vectalon@latest init
+                <span className="text-brand">$</span> {PUBLIC_INSTALL_COMMAND}
                 <span className="caret" />
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-4">
