@@ -41,6 +41,9 @@ import { featureCommand, formatUpgradeSuggestions, renderUpgradeSuggestions, for
 import type { ImprovementSuggestion } from '../../src/knowledge/refresh'
 import type { IntentPrediction } from '../../src/workflows/phases/intent'
 
+// These are full filesystem-backed workflow tests, not isolated unit tests.
+jest.setTimeout(30_000)
+
 describe('featureCommand', () => {
   let dir: string
   let configDir: string
