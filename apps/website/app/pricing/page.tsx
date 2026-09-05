@@ -23,7 +23,7 @@ const PLAN_PRESENTATION: Record<ProductPlanId, {
   team: {
     blurb: 'Team Brain, shared policies, PR review, CI, shared knowledge, dashboards.',
     cta: 'Buy Team',
-    fallback: 'Contact us',
+    fallback: 'Coming soon',
     highlight: true,
   },
   enterprise: {
@@ -96,7 +96,7 @@ function PlanCta({ plan }: { plan: (typeof PLANS)[number] }) {
     )
   }
   // Not configured yet — never ship a dead link.
-  const fallbackHref = plan.tier === 'team' ? 'mailto:sales@vectalon.in' : '/sdk/react-native'
+  const fallbackHref = '/sdk/react-native'
   return (
     <a href={fallbackHref} className={`mt-6 w-full ${plan.highlight ? 'btn-accent' : 'btn-ghost'} opacity-90`}>
       {plan.fallback}

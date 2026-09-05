@@ -165,7 +165,7 @@ export default async function SdkPage(props: { params: Promise<{ slug: string }>
         <p className="mx-auto mt-2 max-w-xl text-center text-sm text-slate-400">
           Plans apply to the purchased product scope. This release covers Vectalon React Native.
         </p>
-        <div className="mx-auto mt-8 grid max-w-4xl gap-5 md:grid-cols-3">
+        <div className="mx-auto mt-8 grid max-w-3xl gap-5 md:grid-cols-2">
           <div className="card flex flex-col">
             <div className="font-mono text-xs font-semibold text-slate-400">Individual</div>
             <div className="mt-1 font-display text-3xl font-bold text-slate-50">
@@ -203,16 +203,6 @@ export default async function SdkPage(props: { params: Promise<{ slug: string }>
                 See pricing
               </a>
             )}
-          </div>
-          <div className="card flex flex-col">
-            <div className="font-mono text-xs font-semibold text-slate-400">Enterprise</div>
-            <div className="mt-1 font-display text-3xl font-bold text-slate-50">Custom</div>
-            <p className="mt-2 flex-1 text-sm text-slate-400">
-              Product, deployment, governance, security, and support scope defined in the signed order.
-            </p>
-            <a href="mailto:sales@vectalon.in" className="btn-ghost mt-6 w-full">
-              Talk to us
-            </a>
           </div>
         </div>
       </section>
