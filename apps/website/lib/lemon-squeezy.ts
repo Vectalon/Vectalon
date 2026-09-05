@@ -152,24 +152,30 @@ export async function handleLemonSqueezyEvent(
       if (mapped.tier === 'team') return { handled: false, skipped: 'manual-review: trusted Team seat quantity required' }
       const tier = mapped.tier as Tier
       const product = mapped.product
-      const license = await store.issueLicense({
+      const fulfillment = await store.issueLicenseForWebhook(event.eventId, {
         tier,
         email,
         product,
         seats: 1,
         days: INITIAL_LICENSE_DAYS,
-        source: 'lemon-squeezy',
       })
-      await store.recordPayment({
-        email,
-        tier,
-        product,
-        seats: 1,
-        mrrCents: TIER_MRR_CENTS[mapped.tier],
-      })
-      await sendLicenseEmail({ email, license, tier, product })
-      await store.markWebhookEvent(event.eventId)
-      return { handled: true, license }
+      if (fulfillment.created) {
+        await store.recordPayment({
+          email,
+          tier,
+          product,
+          seats: 1,
+          mrrCents: TIER_MRR_CENTS[mapped.tier],
+        })
+      }
+      if (!fulfillment.emailSent) {
+        const delivery = await sendLicenseEmail({ email, license: fulfillment.license, tier, product })
+        if (!delivery.sent && !delivery.skipped) {
+          throw new Error(`license-delivery-failed: ${delivery.error ?? 'unknown error'}`)
+        }
+        await store.markWebhookDeliverySent(event.eventId)
+      }
+      return { handled: true, license: fulfillment.license }
     }
 
     case 'subscription_created':

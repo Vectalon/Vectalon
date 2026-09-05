@@ -128,6 +128,28 @@ describe('lemon-squeezy license lifecycle', () => {
     rmSync(dir, { recursive: true, force: true })
   })
 
+  it('retries failed email delivery without minting a second license', async () => {
+    process.env.LEMONSQUEEZY_VARIANT_PRO_RN = 'var_pro'
+    process.env.RESEND_API_KEY = 'test-key'
+    const send = jest.spyOn(global, 'fetch')
+      .mockResolvedValueOnce(new Response('', { status: 503 }))
+      .mockResolvedValueOnce(new Response('', { status: 200 }))
+    const { store, dir } = makeStore()
+    const event = orderEvent('var_pro', 'retry@x.dev', 'evt_retry')
+
+    await expect(handleLemonSqueezyEvent(event, store)).rejects.toThrow('license-delivery-failed')
+    expect((await store.licensesForEmail('retry@x.dev'))).toHaveLength(1)
+    expect(await store.hasWebhookEvent('evt_retry')).toBe(false)
+
+    const retry = await handleLemonSqueezyEvent(event, store)
+    expect(retry.handled).toBe(true)
+    expect((await store.licensesForEmail('retry@x.dev'))).toHaveLength(1)
+    expect(await store.hasWebhookEvent('evt_retry')).toBe(true)
+    expect(send).toHaveBeenCalledTimes(2)
+    send.mockRestore()
+    rmSync(dir, { recursive: true, force: true })
+  })
+
   it('maps all-access variant to the all-access tier', async () => {
     process.env.LEMONSQUEEZY_VARIANT_ALL_ACCESS_RN = 'var_aa'
     const { store, dir } = makeStore()

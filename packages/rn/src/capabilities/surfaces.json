@@ -2918,7 +2918,7 @@
     "kind": "claims",
     "name": "apps/website/app/admin/login/page.tsx",
     "source": "apps/website/app/admin/login/page.tsx",
-    "digest": "sha256:414ca1d3f62e6d6e09a39b69b43bc37d93e02e82b9125a1c0c47608f7d5f1d59",
+    "digest": "sha256:0431a16a0d35194998f47260c735c6a7d4ec380b5b3b7681ac07d1ef0db9fb34",
     "historical": false,
     "capabilityId": "rn.commercial-information",
     "capabilityLifecycle": "experimental",

@@ -25,6 +25,7 @@ describe('AdminStore persistence', () => {
     expect(data.licenses).toEqual([])
     expect(data.customers).toEqual([])
     expect(data.processedWebhookEvents).toEqual([])
+    expect(data.webhookDeliveries).toEqual([])
     rmSync(dir, { recursive: true, force: true })
   })
 
@@ -45,6 +46,7 @@ describe('AdminStore persistence', () => {
     )
     const data = await store.getData()
     expect(data.processedWebhookEvents).toEqual([])
+    expect(data.webhookDeliveries).toEqual([])
     expect(data.waitlist).toEqual([])
     // The webhook idempotency path must not throw on the old shape.
     expect(await store.hasWebhookEvent('evt_x')).toBe(false)
