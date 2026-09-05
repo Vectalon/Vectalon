@@ -2,6 +2,19 @@
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env.*local"],
   "globalEnv": ["NODE_ENV", "NPM_TOKEN", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"],
+  "globalPassThroughEnv": [
+    "ADMIN_CONTROL_PLANE_URL",
+    "ADMIN_PASSWORD",
+    "ADMIN_SESSION_SECRET",
+    "DATABASE_URL",
+    "LEMONSQUEEZY_VARIANT_*",
+    "LEMONSQUEEZY_WEBHOOK_SECRET",
+    "RESEND_API_KEY",
+    "RESEND_FROM",
+    "VECTALON_CONTROL_PLANE_SECRET",
+    "VECTALON_KEY_ID",
+    "VECTALON_LICENSE_PRIVATE_KEY"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
