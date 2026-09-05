@@ -112,8 +112,8 @@ describe('ciTemplates', () => {
       const workflow = generateGithubActionsWorkflow(dir, true)
       expect(workflow).toContain('  archive:')
       expect(workflow).toContain('Build, archive, and distribute')
-      expect(workflow).toContain('npx vectalon@latest archive --flavor "$VECTALON_BUILD_FLAVOR"')
-      expect(workflow).toContain('npx vectalon@latest distribute --latest --target saas')
+      expect(workflow).toContain('npx --yes --package=@vectalon-dev/rn@latest -- vectalon archive --flavor "$VECTALON_BUILD_FLAVOR"')
+      expect(workflow).toContain('npx --yes --package=@vectalon-dev/rn@latest -- vectalon distribute --latest --target saas')
       expect(workflow).toContain('VECTALON_API_KEY')
       expect(workflow).toContain('upload-artifact@v4')
       expect(workflow).toContain('.vectalon/builds/')
@@ -148,8 +148,8 @@ describe('ciTemplates', () => {
       const workflow = generateEasWorkflow(dir, true)
       expect(workflow).toContain('  archive:')
       expect(workflow).toContain('Build, archive, and distribute')
-      expect(workflow).toContain('npx vectalon@latest archive --flavor "$VECTALON_BUILD_FLAVOR"')
-      expect(workflow).toContain('npx vectalon@latest distribute --latest --target saas')
+      expect(workflow).toContain('npx --yes --package=@vectalon-dev/rn@latest -- vectalon archive --flavor "$VECTALON_BUILD_FLAVOR"')
+      expect(workflow).toContain('npx --yes --package=@vectalon-dev/rn@latest -- vectalon distribute --latest --target saas')
     })
   })
 
@@ -328,8 +328,8 @@ describe('ciTemplates', () => {
       const written = readFileSync(join(dir, '.github', 'workflows', 'vectalon-ci.yml'), 'utf-8')
       expect(result[0].written).toBe(true)
       expect(written).toContain('  archive:')
-      expect(written).toContain('vectalon@latest archive')
-      expect(written).toContain('vectalon@latest distribute')
+      expect(written).toContain('--package=@vectalon-dev/rn@latest -- vectalon archive')
+      expect(written).toContain('--package=@vectalon-dev/rn@latest -- vectalon distribute')
     })
 
     it('never overwrites an existing workflow', () => {
