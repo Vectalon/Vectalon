@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { pollDeviceAuthorization } from '../../../../../../lib/trial-device'
+import { consumeTrialPollBudget } from '../../../../../../lib/trial-rate-limit'
 
 export const runtime = 'nodejs'
 
@@ -9,6 +10,13 @@ export async function POST(request: Request) {
     const body: unknown = await request.json()
     const deviceCode = body && typeof body === 'object' ? (body as { deviceCode?: unknown }).deviceCode : undefined
     if (typeof deviceCode !== 'string') return NextResponse.json({ status: 'invalid_request' }, { status: 400 })
+    const budget = await consumeTrialPollBudget(deviceCode)
+    if (!budget.allowed) {
+      return NextResponse.json({ status: 'slow_down', interval: budget.retryAfterSeconds }, {
+        status: 429,
+        headers: { 'retry-after': String(budget.retryAfterSeconds) },
+      })
+    }
     const result = await pollDeviceAuthorization(deviceCode, config())
     const { httpStatus, ...payload } = result
     return NextResponse.json(payload, { status: httpStatus })

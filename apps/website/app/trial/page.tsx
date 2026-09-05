@@ -17,7 +17,7 @@ export default function TrialPage() {
           <li>Enter the one-time code and approve sign-in.</li>
           <li>The CLI securely stores your signed Pro trial credential.</li>
         </ol>
-        <p className="text-xs text-slate-500">Vectalon verifies your stable GitHub account ID to enforce one trial per person. Your username is display-only; repository scopes and a payment card are not requested.</p>
+        <p className="text-xs text-slate-500">Vectalon verifies your stable GitHub account ID to enforce one trial per person. Your username is display-only; repository scopes and a payment card are not requested. You can request an export or deletion at <a className="text-brand hover:underline" href="mailto:privacy@vectalon.in">privacy@vectalon.in</a>.</p>
       </div>
       <div className="mt-6 text-center text-xs text-slate-500">
         Already have a license? <Link href="/pricing" className="text-brand hover:underline">See pricing</Link> — <Link href="/docs" className="text-brand hover:underline">Read the docs</Link>
