@@ -1,7 +1,7 @@
 # Publishing
 
-Current release inputs: RN <!-- product-fact:rn-version -->0.19.0<!-- /product-fact --> ·
-core <!-- product-fact:core-version -->0.9.0<!-- /product-fact -->
+Current release inputs: RN <!-- product-fact:rn-version -->0.19.1<!-- /product-fact --> ·
+core <!-- product-fact:core-version -->0.9.1<!-- /product-fact -->
 
 `@vectalon-dev/rn` is the only independently published npm package. Its build
 bundles the private core runtime, including the exact core Git revision, into

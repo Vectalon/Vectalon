@@ -24,7 +24,9 @@ function resolvePublicKeyPath() {
         (0, path_1.join)(__dirname, '..', '..', '..', 'public-key.pem'), // package root
     ];
     for (const path of candidates) {
-        if ((0, fs_1.existsSync)(path))
+        // The candidates are fixed package-relative paths. Prevent server bundlers
+        // from treating this lookup as permission to trace the consumer's project.
+        if ((0, fs_1.existsSync)(/* turbopackIgnore: true */ path))
             return path;
     }
     return null;
@@ -44,7 +46,7 @@ class LicenseValidator {
             return this.keyState;
         }
         try {
-            const pem = (0, fs_1.readFileSync)(path, 'utf-8');
+            const pem = (0, fs_1.readFileSync)(/* turbopackIgnore: true */ path, 'utf-8');
             this.keyState = { publicKey: (0, crypto_1.createPublicKey)(pem) };
         }
         catch {
