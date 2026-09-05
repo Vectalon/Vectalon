@@ -55,10 +55,6 @@ export default function AdminLoginPage() {
               autoFocus
               className="input"
             />
-            <p className="mt-2 text-xs text-slate-500">
-              Demo mode: the password is <span className="font-mono text-brand">vectalon</span>.
-              Set <span className="font-mono">ADMIN_PASSWORD</span> to override.
-            </p>
           </div>
           {error && (
             <p className="rounded-lg border border-red-600/30 bg-red-600/10 px-4 py-2.5 text-sm text-red-500">

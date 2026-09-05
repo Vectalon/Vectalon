@@ -66,6 +66,12 @@ export interface FeatureEvent {
   date: string
 }
 
+export interface WebhookDelivery {
+  eventId: string
+  licenseKey: string
+  emailSent: boolean
+}
+
 export interface AdminData {
   licenses: License[]
   trials: Trial[]
@@ -74,6 +80,8 @@ export interface AdminData {
   revenueByMonth: Array<{ month: string; mrrCents: number; arrCents: number }>
   /** Lemon Squeezy webhook event ids already processed (idempotency). */
   processedWebhookEvents: string[]
+  /** Durable order fulfillment state, used to retry email without minting twice. */
+  webhookDeliveries: WebhookDelivery[]
   /** SDK waitlist signups — { email, product, at } appended in order. */
   waitlist: Array<{ email: string; product: string; at: number }>
 }
@@ -121,6 +129,7 @@ function emptyData(): AdminData {
     featureUsage: [],
     revenueByMonth: [],
     processedWebhookEvents: [],
+    webhookDeliveries: [],
     waitlist: [],
   }
 }
@@ -192,6 +201,7 @@ function seededDemo(): AdminData {
       { month: '2026-08', mrrCents: 122500, arrCents: 1470000 },
     ],
     processedWebhookEvents: [],
+    webhookDeliveries: [],
     waitlist: [],
   }
 }
@@ -282,6 +292,7 @@ export class AdminStore {
       // array here would throw in hasWebhookEvent/addWaitlist and take down
       // the webhook + admin paths for existing installs.
       if (!Array.isArray(loaded.processedWebhookEvents)) loaded.processedWebhookEvents = []
+      if (!Array.isArray(loaded.webhookDeliveries)) loaded.webhookDeliveries = []
       if (!Array.isArray(loaded.waitlist)) loaded.waitlist = []
       return loaded
     }
@@ -364,6 +375,63 @@ export class AdminStore {
     data.licenses.unshift(license)
     await this.write(data)
     return license
+  }
+
+  /** Atomically mint once per order event and remember its delivery state. */
+  async issueLicenseForWebhook(eventId: string, input: {
+    tier: Tier
+    email: string
+    seats?: number
+    days?: number
+    product?: string
+  }): Promise<{ license: License; created: boolean; emailSent: boolean }> {
+    const data = await this.read()
+    const existing = data.webhookDeliveries.find(delivery => delivery.eventId === eventId)
+    if (existing) {
+      const license = data.licenses.find(candidate => candidate.key === existing.licenseKey)
+      if (!license) throw new Error('webhook-delivery-license-missing')
+      return { license, created: false, emailSent: existing.emailSent }
+    }
+
+    const product = input.product ?? 'rn'
+    if (product !== 'rn') throw new Error('product-not-available-for-new-grants')
+    if (input.tier === 'team' && (!Number.isSafeInteger(input.seats) || (input.seats ?? 0) < 2)) {
+      throw new Error('Team requires a trusted purchased seat quantity')
+    }
+    const days = input.days ?? 365
+    if (!Number.isSafeInteger(days) || days < 1) throw new Error('license-duration-invalid')
+    const issuedAt = Date.now()
+    const expiresAt = issuedAt + days * DAY
+    if (!Number.isSafeInteger(expiresAt)) throw new Error('license-duration-invalid')
+    const license: License = {
+      key: createLicenseKey({ subject: input.email, tier: input.tier, product, issuedAt, expiresAt }),
+      tier: input.tier,
+      product,
+      email: input.email,
+      status: 'active',
+      issuedAt,
+      expiresAt,
+      seats: input.seats ?? 1,
+      source: 'lemon-squeezy',
+    }
+    data.licenses.unshift(license)
+    data.webhookDeliveries.push({ eventId, licenseKey: license.key, emailSent: false })
+    data.webhookDeliveries = data.webhookDeliveries.slice(-500)
+    await this.write(data)
+    return { license, created: true, emailSent: false }
+  }
+
+  /** Complete fulfillment and idempotency in one durable write. */
+  async markWebhookDeliverySent(eventId: string): Promise<void> {
+    const data = await this.read()
+    const delivery = data.webhookDeliveries.find(candidate => candidate.eventId === eventId)
+    if (!delivery) throw new Error('webhook-delivery-missing')
+    delivery.emailSent = true
+    if (!data.processedWebhookEvents.includes(eventId)) {
+      data.processedWebhookEvents.push(eventId)
+      data.processedWebhookEvents = data.processedWebhookEvents.slice(-500)
+    }
+    await this.write(data)
   }
 
   async revokeLicense(key: string): Promise<boolean> {
