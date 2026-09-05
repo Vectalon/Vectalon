@@ -242,6 +242,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <a href="mailto:support@vectalon.in" className="transition hover:text-brand">support@vectalon.in</a>
               <Link href="/pricing" className="transition hover:text-brand">pricing</Link>
               <Link href="/docs" className="transition hover:text-brand">docs</Link>
+              <a href="/legal/privacy.html" className="transition hover:text-brand">privacy</a>
+              <a href="/legal/terms.html" className="transition hover:text-brand">terms</a>
+              <a href="/legal/refunds.html" className="transition hover:text-brand">refunds</a>
             </div>
           </div>
           <div className="border-t border-frame/50">
