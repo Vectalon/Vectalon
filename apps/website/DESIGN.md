@@ -2,20 +2,22 @@
 name: Vectalon
 description: Adaptive AI harness for developers — an engineering control plane.
 colors:
-  primary: "#00E6C3"
-  secondary: "#37B6FF"
-  tertiary: "#8B5CF6"
-  graphite: "#0B0F14"
-  slate: "#151B26"
-  off-white: "#F2F4F7"
+  primary: "#E35336"
+  surface: "#F5F5DC"
+  accent: "#F4A460"
+  secondary: "#A0522D"
+  graphite-dark: "#1A120E"
+  warm-dark: "#261C14"
 typography:
+  headings:
+    fontFamily: "Satoshi, system-ui, sans-serif"
   ui:
     fontFamily: "Inter, system-ui, sans-serif"
     fontSize: "15px"
     fontWeight: 400
     lineHeight: 1.6
   display:
-    fontFamily: "Inter, system-ui, sans-serif"
+    fontFamily: "Satoshi, Inter, system-ui, sans-serif"
     fontSize: "clamp(2rem, 5vw, 3.4rem)"
     fontWeight: 700
     lineHeight: 1.1
@@ -37,19 +39,21 @@ spacing:
 
 ## Overview
 
-Vectalon is an adaptive AI harness for developers — an engineering control plane that understands, reviews, diagnoses, upgrades, and validates code. The design reflects precision, trust, and technical depth.
+Vectalon is an adaptive AI harness for developers — an engineering control plane that understands, reviews, diagnoses, upgrades, and validates code. The design reflects warmth, precision, and trust through an earthy terracotta palette.
 
 ## Colors
 
 ### Brand Family
-- **Electric Teal** (#00E6C3): Primary accent, CTAs, active states, the "live" indicator
-- **Cyan Blue** (#37B6FF): Secondary accent, data highlights, links
-- **Vivid Violet** (#8B5CF6): Tertiary accent, decorative depth, hover states
-- **Off White** (#F2F4F7): Primary text, headings on dark backgrounds
+- **Terracotta** (#E35336): Primary brand, CTAs, active states, the "live" indicator
+- **Sandy Brown** (#F4A460): Secondary accent, data highlights, decorative
+- **Sienna** (#A0522D): Tertiary accent, depth, hover states, dark mode text
+- **Beige Cream** (#F5F5DC): Primary surface, light mode background
 
 ### Surfaces
-- **Graphite** (#0B0F14): Primary dark background (the ground)
-- **Slate** (#151B26): Elevated surfaces, card interiors, panels
+- **Beige Cream** (#F5F5DC): Light mode primary background
+- **Warm Cream** (#FAF8E8): Light mode elevated surfaces
+- **Warm Dark** (#18120E): Dark mode primary background
+- **Deep Warm** (#261C14): Dark mode elevated surfaces
 
 ### Semantic Status
 - **Emerald**: Pass / live / success
@@ -58,19 +62,22 @@ Vectalon is an adaptive AI harness for developers — an engineering control pla
 
 ## Typography
 
-### Primary: Inter
-UI text, body copy, navigation, buttons, headings. Clean, readable, professional.
+### Primary: Satoshi (Headings)
+Used for all headings and display text. Bold, distinctive, modern.
 
-### Secondary: JetBrains Mono
+### Secondary: Inter
+UI text, body copy, navigation, buttons. Clean, readable, professional.
+
+### Tertiary: JetBrains Mono
 Code blocks, terminal output, CLI commands, technical labels. Monospace for precision.
 
 ### Hierarchy
-- **Display** (700, clamp(2rem, 5vw, 3.4rem)): Hero headlines
-- **Headline** (700, 36px): Section titles
-- **Title** (600, 16px): Card titles, feature names
-- **Body** (400, 15px): Paragraphs, descriptions
-- **Code** (400, 13px): CLI commands, code blocks
-- **Label** (600, 11px, uppercase): Status labels, metadata
+- **Display** (Satoshi 700, clamp(2rem, 5vw, 3.4rem)): Hero headlines
+- **Headline** (Satoshi 700, 36px): Section titles
+- **Title** (Satoshi 600, 16px): Card titles, feature names
+- **Body** (Inter 400, 15px): Paragraphs, descriptions
+- **Code** (JetBrains Mono 400, 13px): CLI commands, code blocks
+- **Label** (Inter 600, 11px, uppercase): Status labels, metadata
 
 ## Layout
 
@@ -78,7 +85,7 @@ Single column, max-width 1152px (max-w-6xl). Sections separated by subtle border
 
 ## Elevation & Depth
 
-Flat surfaces with subtle ambient shadows. Cards lift on hover with a soft glow in the brand teal color. No hard offset shadows.
+Flat surfaces with subtle ambient shadows. Cards lift on hover with a soft glow in the brand terracotta color. No hard offset shadows.
 
 ## Shapes
 
@@ -87,13 +94,13 @@ Rounded corners at 12px for cards and panels, 8px for buttons and chips. Consist
 ## Components
 
 ### Buttons
-- **Primary**: Electric Teal fill, dark text, soft glow on hover
-- **Ghost**: Bordered outline, light text, teal border on hover
-- **Accent**: Cyan Blue fill, white text
+- **Primary**: Terracotta fill, cream text, soft glow on hover
+- **Ghost**: Bordered outline, warm text, terracotta border on hover
+- **Accent**: Sandy Brown fill, dark text
 
 ### Cards
-- Slate background, subtle border, 12px radius
-- Hover: slight lift, border warms to teal
+- Warm cream background, subtle border, 12px radius
+- Hover: slight lift, border warms to terracotta
 
 ### Chips / Badges
 - Bordered segments, 8px radius
@@ -103,21 +110,21 @@ Rounded corners at 12px for cards and panels, 8px for buttons and chips. Consist
 
 - **Entrance**: fade-up animations with staggered delays
 - **Hover**: subtle lift and border color transitions
-- **Live indicator**: pulsing teal dot
-- **Beam**: ambient teal-to-blue gradient sweep across the hero
+- **Live indicator**: pulsing terracotta dot
+- **Beam**: ambient terracotta-to-sandy-brown gradient sweep across the hero
 - Respect `prefers-reduced-motion`
 
 ## Do's and Don'ts
 
 ### Do:
-- Use Electric Teal for primary actions and active states
+- Use Terracotta for primary actions and active states
 - Keep the design spacious and breathable
-- Use Inter for all UI text
+- Use Satoshi for headings, Inter for body text
 - Use JetBrains Mono for code and terminal content
 - Maintain WCAG AA contrast ratios
 
 ### Don't:
-- Use gradient text effects
+- Use gradient text effects (except hero gradient)
 - Add glassmorphism or excessive blur
 - Overuse animations
 - Mix too many accent colors in one section

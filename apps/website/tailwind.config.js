@@ -1,9 +1,8 @@
 /**
- * Vectalon brand palette — redesigned with:
- * Graphite #0B0F14 · Slate #151B26 · Electric Teal #00E6C3 ·
- * Cyan Blue #37B6FF · Vivid Violet #8B5CF6 · Off White #F2F4F7
+ * Vectalon brand palette — Earthy Terracotta Theme:
+ * Terracotta #E35336 · Beige Cream #F5F5DC · Sandy Brown #F4A460 · Sienna #A0522D
  *
- * Inter (UI/body) · JetBrains Mono (code/terminal)
+ * Satoshi (headings) · Inter (UI/body) · JetBrains Mono (code/terminal)
  * Light-first semantic tokens: fg*, surface*, border*
  */
 /** @type {import('tailwindcss').Config} */

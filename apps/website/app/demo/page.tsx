@@ -110,19 +110,19 @@ export default function DemoPage() {
           </span>
           <span className="badge badge-ok">● zero model calls</span>
         </div>
-        <h1 className="text-4xl font-bold text-slate-50 sm:text-5xl">
+        <h1 className="text-4xl font-bold text-fg sm:text-5xl">
           The feature workflow, <span className="text-brand">live</span>
         </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-slate-400">
+        <p className="mx-auto mt-4 max-w-2xl text-fg-muted">
           Type one sentence. Vectalon runs the whole loop — requirement,
           architecture decision, affected files, implementation plan, code,
           tests, review, build verification, pull request — and when a gate
-          fails, it <em className="text-slate-300">diagnoses, modifies, rebuilds, and
+          fails, it <em className="text-fg-secondary">diagnoses, modifies, rebuilds, and
           re-verifies</em> until the build passes. This is the demo, not a
           promise: it is a real workflow run against the demo app.
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <span className="font-mono text-sm text-slate-300">
+          <span className="font-mono text-sm text-fg-secondary">
             <span className="text-brand">$</span> vectalon feature &quot;Build a Login
             feature.&quot;
           </span>
@@ -130,7 +130,7 @@ export default function DemoPage() {
       </div>
 
       {/* The pipeline — the hero block */}
-      <div className="mt-12 overflow-hidden rounded-lg border border-ink-700/60 code-bg/80 shadow-2xl">
+      <div className="mt-12 overflow-hidden rounded-lg border border-frame/60 shadow-2xl" style={{ background: 'rgb(28 20 14)' }}>
         <div className="term-head">
           <div className="flex items-center gap-1.5" aria-hidden>
             <span className="term-dot bg-[#ff5f56]" />
@@ -189,20 +189,20 @@ export default function DemoPage() {
       {/* The self-healing loop */}
       <div className="mt-14">
         <div className="flex items-center gap-3">
-          <h2 className="text-2xl font-bold text-slate-50">The self-healing loop</h2>
+          <h2 className="text-2xl font-bold text-fg">The self-healing loop</h2>
           <span className="badge badge-warn">when a gate fails</span>
         </div>
-        <p className="mt-2 max-w-2xl text-slate-400">
-          Verification and readiness are real gates — <span className="font-mono text-slate-300">tsc</span>,{' '}
-          <span className="font-mono text-slate-300">jest</span>,{' '}
-          <span className="font-mono text-slate-300">lint</span> run against the generated code. When a
+        <p className="mt-2 max-w-2xl text-fg-muted">
+          Verification and readiness are real gates — <span className="font-mono text-fg-secondary">tsc</span>,{' '}
+          <span className="font-mono text-fg-secondary">jest</span>,{' '}
+          <span className="font-mono text-fg-secondary">lint</span> run against the generated code. When a
           check fails, the workflow doesn&apos;t stop and hand you an error: it extracts the failing
           facts, sends them back to implementation, regenerates, and retries the gate.
         </p>
-        <div className="mt-5 overflow-hidden rounded-lg border border-ink-700/60 code-bg/80">
+        <div className="mt-5 overflow-hidden rounded-lg border border-frame/60" style={{ background: 'rgb(28 20 14)' }}>
           <div className="border-t border-term-frame/60 px-5 py-5">
             <TerminalLine>
-              <span className="text-slate-300">
+              <span className="text-fg-secondary">
                 {HEAL_LOOP.map((h, i) => (
                   <span key={h}>
                     {i > 0 && <span className="text-term-ink/40"> → </span>}
@@ -242,9 +242,9 @@ export default function DemoPage() {
             body: 'Intel first, score to measure, fix to repair, mode to control where it runs — this workflow is the whole system in motion.',
           },
         ].map(card => (
-          <div key={card.title} className="rounded-lg border border-ink-700/60 code-bg/50 p-5">
+          <div key={card.title} className="rounded-lg border border-frame p-5 bg-surface-elevated">
             <div className="font-mono text-sm font-semibold text-brand">{card.title}</div>
-            <p className="mt-2 text-sm leading-relaxed text-slate-400">{card.body}</p>
+            <p className="mt-2 text-sm leading-relaxed text-fg-dim">{card.body}</p>
           </div>
         ))}
       </div>
@@ -252,12 +252,12 @@ export default function DemoPage() {
       {/* The 30-minute sales demo */}
       <div className="mt-16">
         <div className="flex flex-wrap items-center gap-3">
-          <h2 className="text-2xl font-bold text-slate-50">The 30-minute sales demo</h2>
+          <h2 className="text-2xl font-bold text-fg">The 30-minute sales demo</h2>
           <span className="badge badge-ok">● no explanation required</span>
         </div>
-        <p className="mt-2 max-w-2xl text-slate-400">
-          The feature workflow is the hero. The <span className="font-mono text-slate-300">vc sales-demo</span>{' '}
-          command is the meeting — five acts, run <em className="text-slate-300">live</em> against a real
+        <p className="mt-2 max-w-2xl text-fg-muted">
+          The feature workflow is the hero. The <span className="font-mono text-fg-secondary">vc sales-demo</span>{' '}
+          command is the meeting — five acts, run <em className="text-fg-secondary">live</em> against a real
           React Native repository, every number real, zero model calls, and the fix act touches only a
           sandbox. These are the real numbers from the demo app:
         </p>
@@ -265,19 +265,19 @@ export default function DemoPage() {
           {SALES_ACTS.map(act => (
             <div
               key={act.act}
-              className="grid gap-3 rounded-lg border border-ink-700/60 code-bg/50 p-5 sm:grid-cols-[120px_1fr_auto]"
+              className="grid gap-3 rounded-lg border border-frame p-5 sm:grid-cols-[120px_1fr_auto] bg-surface-elevated"
             >
               <div className="flex items-start gap-3">
                 <span className="badge font-mono">{act.minutes}</span>
               </div>
               <div>
                 <div className="font-mono text-sm font-semibold text-brand">
-                  {act.act} — <span className="text-slate-200">{act.command}</span>
+                  {act.act} — <span className="text-fg-secondary">{act.command}</span>
                 </div>
-                <div className="mt-1 text-slate-200">
+                <div className="mt-1 text-fg-secondary">
                   &ldquo;{act.narration}&rdquo;
                 </div>
-                <div className="mt-2 space-y-0.5 font-mono text-[12.5px] text-term-ink/70">
+                <div className="mt-2 space-y-0.5 font-mono text-[12.5px] text-fg-dim">
                   {act.stats.map(s => (
                     <div key={s}>· {s}</div>
                   ))}
@@ -289,7 +289,7 @@ export default function DemoPage() {
             </div>
           ))}
         </div>
-        <div className="mt-6 overflow-hidden rounded-lg border border-ink-700/60 code-bg/80">
+        <div className="mt-6 overflow-hidden rounded-lg border border-frame/60" style={{ background: 'rgb(28 20 14)' }}>
           <div className="border-t border-term-frame/60 px-5 py-5">
             <TerminalLine>
               <span className="text-term-ink/50">$</span>{' '}
@@ -301,10 +301,10 @@ export default function DemoPage() {
               <span className="text-term-ink">vc sales-demo --log build.log</span>{' '}
               <span className="text-term-ink/40"># bring your own real failure</span>
             </TerminalLine>
-            <div className="mt-3 text-sm text-slate-400">
+            <div className="mt-3 text-sm text-fg-dim">
               Every act prints a carbon window with the minute marker, the narration line, and the real
               output; the full 30-minute script is written to{' '}
-              <span className="font-mono text-slate-300">docs/vectalon/sales-demo/SCRIPT.md</span>.
+              <span className="font-mono text-fg-secondary">docs/vectalon/sales-demo/SCRIPT.md</span>.
             </div>
           </div>
         </div>
@@ -312,15 +312,15 @@ export default function DemoPage() {
 
       {/* CTA */}
       <div className="mt-14 text-center">
-        <div className="mx-auto max-w-xl rounded-lg border border-ink-700/60 code-bg/50 p-6">
-          <p className="font-mono text-sm text-slate-300">
+        <div className="mx-auto max-w-xl rounded-lg border border-frame p-6 bg-surface-elevated">
+          <p className="font-mono text-sm text-fg-secondary">
             Run it on your own repo — the workflow, the docs, and the healing loop are yours:
           </p>
-          <div className="mt-3 font-mono text-sm text-slate-400">
+          <div className="mt-3 font-mono text-sm text-fg-dim">
             <span className="text-brand">$</span> npx vectalon feature &quot;Build a Login
             feature.&quot;
           </div>
-          <div className="mt-1 font-mono text-sm text-slate-400">
+          <div className="mt-1 font-mono text-sm text-fg-dim">
             <span className="text-brand">$</span> npx vectalon sales-demo
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
@@ -332,7 +332,7 @@ export default function DemoPage() {
             </Link>
             <Link
               href="/agents"
-              className="rounded-md border border-ink-600 px-4 py-2 text-sm font-semibold text-slate-300 transition hover:border-brand hover:text-brand"
+              className="rounded-md border border-frame px-4 py-2 text-sm font-semibold text-fg-secondary transition hover:border-brand hover:text-brand"
             >
               See the 46 agents
             </Link>

@@ -2,9 +2,64 @@ import Link from 'next/link'
 
 const RELEASES = [
   {
+    version: 'v0.19.2',
+    date: '2026-09-05',
+    tag: 'latest',
+    core: 'Core 0.9.1',
+    highlights: [
+      'Fix: generate CI and release workflows with the published scoped npm package, so fresh runners no longer attempt to install the nonexistent `vectalon` package',
+      'Fix: show a verified zero-install command on the public website',
+    ],
+  },
+  {
+    version: 'v0.19.1',
+    date: '2026-09-05',
+    core: 'Core 0.9.1',
+    highlights: [
+      'Fix: bundle Core 0.9.1 and constrain its package-relative license-key lookup so server bundlers no longer trace and package the customer\'s entire project',
+    ],
+  },
+  {
+    version: 'v0.19.0',
+    date: '2026-09-04',
+    core: 'Core 0.9.0',
+    highlights: [
+      '**Security**: replace self-asserted GitHub usernames and locally authored trial dates with a verified GitHub device flow and server-signed Core 0.9.0 trial credentials',
+      '**Security**: store trial credentials atomically with owner-only permissions and reject malformed, expired, revoked, wrong-audience, and wrong-product credentials',
+      '**Security**: retire the public trial identity lookup and legacy unsigned issuance routes',
+      '**Added**: `vectalon auth --github` now completes the browserless device authorization flow and activates a 14-day Pro trial without requesting repository scopes',
+    ],
+  },
+  {
+    version: 'v0.18.4',
+    date: '2026-09-04',
+    core: 'Core 0.8.2',
+    highlights: [
+      '**Security**: bundle Core 0.8.2 and route paid checks through its fail-closed, trusted-claims entitlement evaluator with stable denial reasons',
+      '**Security**: remove the public `--dev` tier bypass and verification-runner bypass injection',
+      '**Security**: recreate the bundled Core directory on every build so removed security code cannot survive from an older artifact',
+    ],
+  },
+  {
+    version: 'v0.18.3',
+    date: '2026-09-03',
+    core: 'Core 0.8.1',
+    highlights: [
+      '**Security**: bundle Core 0.8.1 with the production RSA-3072 public verification key so credentials issued by Vectalon checkout validate offline in the SDK',
+      '**Security**: keep the signing private key out of source and public packages — only the matching public key ships with Core and RN',
+    ],
+  },
+  {
+    version: 'v0.18.2',
+    date: '2026-09-02',
+    core: 'Core 0.8.0',
+    highlights: [
+      '**Security**: fail the production website admin login closed when `ADMIN_PASSWORD` is not configured — the documented default remains available only in local development and tests',
+    ],
+  },
+  {
     version: 'v0.15.0',
     date: '2026-08-19',
-    tag: 'latest',
     highlights: [
       '**Core product contract adopted** — the RN harness now consumes `@vectalon-dev/core` v0.3.0 through the canonical product manifest (`product-manifest.json`). The contract pins the product identity, package versions, platform statuses, capability counts, and commercial plans in a single machine-readable file that every surface (CLI, website, VS Code extension) reads from. The website derives its stats, pricing, and feature claims directly from the manifest — no hardcoded numbers that can drift',
       '**Product truth enforcement** — a CI gate now fails the build if the website, docs, or CLI output claim numbers that disagree with the manifest. The manifest is the single source of truth for deterministic agent counts (44), MCP tool counts (64), benchmark scenarios (43), package versions, and plan definitions. Adding an agent or changing a price is a one-file edit that propagates everywhere',
@@ -237,8 +292,8 @@ export default function ChangelogPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-16">
       <div className="mb-10">
-        <h1 className="text-4xl font-bold text-slate-50">Changelog</h1>
-        <p className="mt-3 text-slate-400">
+        <h1 className="text-4xl font-bold text-fg">Changelog</h1>
+        <p className="mt-3 text-fg-muted">
           Every release of <span className="font-mono text-brand">@vectalon-dev/rn</span>.
           The model stays current with the ecosystem; these notes keep you current with the model.
         </p>
@@ -254,12 +309,17 @@ export default function ChangelogPage() {
                   {r.tag}
                 </span>
               )}
-              <span className="ml-auto text-sm text-slate-500">{r.date}</span>
+              {r.core && (
+                <span className="rounded-full bg-violet/15 px-2.5 py-0.5 text-xs font-semibold text-violet">
+                  {r.core}
+                </span>
+              )}
+              <span className="ml-auto text-sm text-fg-dim">{r.date}</span>
             </div>
             {r.version === 'v0.13.0' && (
               <div className="mt-4">
                 <video
-                  className="aspect-[8/5] w-full rounded-[3px] border border-ink-700 bg-black/30 object-contain"
+                  className="aspect-[8/5] w-full rounded-[3px] border border-frame bg-black/30 object-contain"
                   controls
                   muted
                   playsInline
@@ -271,14 +331,14 @@ export default function ChangelogPage() {
                   <source src="/demo/plan-outcomes.mp4" type="video/mp4" />
                   Your browser doesn&apos;t support the video tag.
                 </video>
-                <p className="mt-2 font-mono text-[11px] text-slate-500">
+                <p className="mt-2 font-mono text-[11px] text-fg-dim">
                   The commercial surface — <span className="text-brand">vc plan</span> and{' '}
                   <span className="text-brand">vc outcomes</span> side by side, on a real 19-screen
                   Expo app.
                 </p>
               </div>
             )}
-            <ul className="mt-4 space-y-2 text-sm leading-relaxed text-slate-300">
+            <ul className="mt-4 space-y-2 text-sm leading-relaxed text-fg-secondary">
               {r.highlights.map(h => (
                 <li key={h} className="flex gap-2">
                   <span className="text-brand">▸</span>
@@ -290,7 +350,7 @@ export default function ChangelogPage() {
         ))}
       </div>
 
-      <div className="mt-12 rounded-[3px] border border-ink-700 bg-ink-800 p-6 text-sm text-slate-400">
+      <div className="mt-12 rounded-lg border border-frame bg-surface-elevated p-6 text-sm text-fg-muted">
         The full changelog — including the pre-0.1.22 history — lives in the repository.
         <Link href="https://github.com/Vectalon/Vectalon/blob/main/packages/rn/CHANGELOG.md" target="_blank" className="ml-2 text-brand hover:underline">
           View on GitHub →
