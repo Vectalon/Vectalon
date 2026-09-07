@@ -77,19 +77,19 @@ export default function SavingsPage() {
           </span>
           <span className="badge badge-warn">○ experimental demo data</span>
         </div>
-        <h1 className="text-4xl font-bold text-slate-50 sm:text-5xl">
+        <h1 className="text-4xl font-bold text-fg sm:text-5xl">
           Engineering <span className="text-brand">outcomes</span>, not feature counts
         </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-slate-400">
+        <p className="mx-auto mt-4 max-w-2xl text-fg-muted">
           Anyone can count agents. The ledger an engineering manager actually reads is outcomes —
           issues detected and fixed, PR issues caught, build failures resolved, hours saved. This
-          example is derived from committed demo <span className="font-mono text-slate-300">report.json</span>{' '}
+          example is derived from committed demo <span className="font-mono text-fg-secondary">report.json</span>{' '}
           files. The analysis capability is experimental and does not promise these outcomes for a customer repository.
         </p>
       </div>
 
       {/* The Acme Corp ledger — the hero block */}
-      <div className="mt-12 overflow-hidden rounded-lg border border-ink-700/60 code-bg/80 shadow-2xl">
+      <div className="mt-12 overflow-hidden rounded-lg border border-frame/60 code-bg/80 shadow-2xl">
         <div className="term-head">
           <div className="flex items-center gap-1.5" aria-hidden>
             <span className="term-dot bg-[#ff5f56]" />
@@ -137,23 +137,23 @@ export default function SavingsPage() {
       {/* How it's derived */}
       <div className="mt-14">
         <div className="flex items-center gap-3">
-          <h2 className="text-2xl font-bold text-slate-50">Your ledger, from your repo</h2>
+          <h2 className="text-2xl font-bold text-fg">Your ledger, from your repo</h2>
           <span className="badge badge-warn">real reports, not estimates</span>
         </div>
-        <p className="mt-2 max-w-2xl text-slate-400">
-          <span className="font-mono text-slate-300">vc outcomes</span> reads the committed reports
-          under <span className="font-mono text-slate-300">docs/vectalon/</span> and{' '}
-          <span className="font-mono text-slate-300">.vectalon/upgrades/</span> and counts each
+        <p className="mt-2 max-w-2xl text-fg-muted">
+          <span className="font-mono text-fg-secondary">vc outcomes</span> reads the committed reports
+          under <span className="font-mono text-fg-secondary">docs/vectalon/</span> and{' '}
+          <span className="font-mono text-fg-secondary">.vectalon/upgrades/</span> and counts each
           outcome from real artifacts — then multiplies the hours by a blended rate ($75/hr by
-          default, override with <span className="font-mono text-slate-300">--rate</span>). Nothing
+          default, override with <span className="font-mono text-fg-secondary">--rate</span>). Nothing
           is estimated from thin air; if no reports exist yet, the ledger says so.
         </p>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           {SIGNALS.map(s => (
-            <div key={s.agent} className="rounded-lg border border-ink-700/60 code-bg/50 p-5">
+            <div key={s.agent} className="rounded-lg border border-frame/60 code-bg/50 p-5">
               <div className="font-mono text-sm font-semibold text-brand">{s.agent}</div>
-              <div className="mt-1 font-mono text-[12px] text-slate-300">→ {s.outcome}</div>
-              <p className="mt-2 text-sm leading-relaxed text-slate-400">{s.detail}</p>
+              <div className="mt-1 font-mono text-[12px] text-fg-secondary">→ {s.outcome}</div>
+              <p className="mt-2 text-sm leading-relaxed text-fg-dim">{s.detail}</p>
             </div>
           ))}
         </div>
@@ -161,11 +161,11 @@ export default function SavingsPage() {
 
       {/* CTA */}
       <div className="mt-14 text-center">
-        <div className="mx-auto max-w-xl rounded-lg border border-ink-700/60 code-bg/50 p-6">
-          <p className="font-mono text-sm text-slate-300">
+        <div className="mx-auto max-w-xl rounded-lg border border-frame/60 code-bg/50 p-6">
+          <p className="font-mono text-sm text-fg-secondary">
             See your own ledger — it takes as long as the agents you&apos;ve already run:
           </p>
-          <div className="mt-3 font-mono text-sm text-slate-400">
+          <div className="mt-3 font-mono text-sm text-fg-dim">
             <span className="text-brand">$</span> npx vectalon outcomes --rate 75
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
@@ -177,7 +177,7 @@ export default function SavingsPage() {
             </Link>
             <Link
               href="/agents"
-              className="rounded-md border border-ink-600 px-4 py-2 text-sm font-semibold text-slate-300 transition hover:border-brand hover:text-brand"
+              className="rounded-md border border-frame px-4 py-2 text-sm font-semibold text-fg-secondary transition hover:border-brand hover:text-brand"
             >
               Browse the 48 agents
             </Link>
