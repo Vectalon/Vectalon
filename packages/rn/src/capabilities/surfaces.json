@@ -2957,7 +2957,7 @@
     "kind": "claims",
     "name": "apps/website/app/changelog/page.tsx",
     "source": "apps/website/app/changelog/page.tsx",
-    "digest": "sha256:b8264d88f78efc3d1c43a8c1e05f7defc5a24fdd4628a6430448eebf318499e1",
+    "digest": "sha256:49cf2b5ade375b614f649edf3115cb9b8ef099d1a2b3edae8f0579d401552986",
     "historical": true,
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
