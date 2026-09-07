@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vectalon Theme Preview — Light & Dark Mode</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --page-bg: #1a1a1a;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--page-bg);
+      color: #e0e0e0;
+      min-height: 100vh;
+    }
+
+    .page-header {
+      text-align: center;
+      padding: 40px 20px 20px;
+    }
+    .page-header h1 {
+      font-family: 'Satoshi', sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .page-header p {
+      font-size: 14px;
+      color: #999;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      padding: 24px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .preview-column {
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .preview-label {
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      text-align: center;
+    }
+
+    .preview-frame {
+      padding: 32px 24px;
+      min-height: 700px;
+    }
+
+    /* ── Light Mode ── */
+    .light-mode .preview-label {
+      background: #E35336;
+      color: #FFF8EE;
+    }
+    .light-mode .preview-frame {
+      background: #F5F5DC;
+      color: #4B3423;
+    }
+    .light-mode h2 {
+      font-family: 'Satoshi', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #342216;
+      margin-bottom: 12px;
+    }
+    .light-mode h3 {
+      font-family: 'Satoshi', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #6C523A;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 20px 0 10px;
+    }
+    .light-mode p {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #4B3423;
+      margin-bottom: 12px;
+    }
+    .light-mode .card {
+      background: #FAF8E8;
+      border: 1px solid #C8B9A0;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .light-mode .card-title {
+      font-family: 'Satoshi', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: #342216;
+      margin-bottom: 6px;
+    }
+    .light-mode .card-text {
+      font-size: 13px;
+      color: #6C523A;
+    }
+    .light-mode .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+    .light-mode .badge-brand {
+      background: rgba(227, 83, 54, 0.1);
+      color: #E35336;
+      border: 1px solid rgba(227, 83, 54, 0.3);
+    }
+    .light-mode .badge-accent {
+      background: rgba(244, 164, 96, 0.15);
+      color: #A0522D;
+      border: 1px solid rgba(160, 82, 45, 0.3);
+    }
+    .light-mode .badge-success {
+      background: rgba(22, 163, 74, 0.1);
+      color: #16a34a;
+      border: 1px solid rgba(22, 163, 74, 0.3);
+    }
+    .light-mode .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: #E35336;
+      color: #FFF8EE;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+    .light-mode .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: transparent;
+      color: #4B3423;
+      border: 1px solid #C8B9A0;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    .light-mode .terminal {
+      background: #1A120E;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+    .light-mode .terminal-bar {
+      background: #261C14;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .light-mode .terminal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .light-mode .terminal-dot.red { background: #E35336; }
+    .light-mode .terminal-dot.yellow { background: #F4A460; }
+    .light-mode .terminal-dot.green { background: #6C523A; }
+    .light-mode .terminal-body {
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #C3B6A2;
+    }
+    .light-mode .terminal-body .brand { color: #E35336; }
+    .light-mode .terminal-body .accent { color: #F4A460; }
+    .light-mode .terminal-body .muted { color: #8A7D6C; }
+    .light-mode .stat-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .light-mode .stat-card {
+      background: #FAF8E8;
+      border: 1px solid #C8B9A0;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .light-mode .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #8C7358;
+    }
+    .light-mode .stat-value {
+      font-family: 'Satoshi', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #E35336;
+      margin-top: 4px;
+    }
+    .light-mode .link {
+      color: #E35336;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .light-mode .link:hover {
+      text-decoration: underline;
+    }
+    .light-mode .divider {
+      height: 1px;
+      background: #C8B9A0;
+      margin: 20px 0;
+    }
+
+    /* ── Dark Mode ── */
+    .dark-mode .preview-label {
+      background: #EE6648;
+      color: #FFF5EB;
+    }
+    .dark-mode .preview-frame {
+      background: #18120E;
+      color: #E4DAC8;
+    }
+    .dark-mode h2 {
+      font-family: 'Satoshi', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #F5EEE1;
+      margin-bottom: 12px;
+    }
+    .dark-mode h3 {
+      font-family: 'Satoshi', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: #8A7D6C;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 20px 0 10px;
+    }
+    .dark-mode p {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #E4DAC8;
+      margin-bottom: 12px;
+    }
+    .dark-mode .card {
+      background: #261C14;
+      border: 1px solid #3A2A1E;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .dark-mode .card-title {
+      font-family: 'Satoshi', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: #F5EEE1;
+      margin-bottom: 6px;
+    }
+    .dark-mode .card-text {
+      font-size: 13px;
+      color: #C3B6A2;
+    }
+    .dark-mode .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+    .dark-mode .badge-brand {
+      background: rgba(238, 102, 72, 0.15);
+      color: #EE6648;
+      border: 1px solid rgba(238, 102, 72, 0.3);
+    }
+    .dark-mode .badge-accent {
+      background: rgba(244, 164, 96, 0.15);
+      color: #F4A460;
+      border: 1px solid rgba(244, 164, 96, 0.3);
+    }
+    .dark-mode .badge-success {
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    .dark-mode .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: #EE6648;
+      color: #FFF5EB;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+    .dark-mode .btn-primary:hover {
+      box-shadow: 0 0 20px rgba(238, 102, 72, 0.3);
+    }
+    .dark-mode .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: transparent;
+      color: #E4DAC8;
+      border: 1px solid #3A2A1E;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    .dark-mode .terminal {
+      background: #120C08;
+      border: 1px solid #3A2A1E;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+    .dark-mode .terminal-bar {
+      background: #261C14;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid #3A2A1E;
+    }
+    .dark-mode .terminal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .dark-mode .terminal-dot.red { background: #EE6648; }
+    .dark-mode .terminal-dot.yellow { background: #F4A460; }
+    .dark-mode .terminal-dot.green { background: #4E3A28; }
+    .dark-mode .terminal-body {
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      color: #C3B6A2;
+    }
+    .dark-mode .terminal-body .brand { color: #EE6648; }
+    .dark-mode .terminal-body .accent { color: #F4A460; }
+    .dark-mode .terminal-body .muted { color: #8A7D6C; }
+    .dark-mode .stat-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .dark-mode .stat-card {
+      background: #261C14;
+      border: 1px solid #3A2A1E;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .dark-mode .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #8A7D6C;
+    }
+    .dark-mode .stat-value {
+      font-family: 'Satoshi', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #EE6648;
+      margin-top: 4px;
+    }
+    .dark-mode .link {
+      color: #EE6648;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .dark-mode .link:hover {
+      text-decoration: underline;
+    }
+    .dark-mode .divider {
+      height: 1px;
+      background: #3A2A1E;
+      margin: 20px 0;
+    }
+
+    /* ── Logo SVG shared styles ── */
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .logo-text {
+      font-family: 'Satoshi', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .light-mode .logo-text { color: #342216; }
+    .dark-mode .logo-text { color: #F5EEE1; }
+
+    .product-tag {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+    .light-mode .product-tag {
+      background: rgba(227, 83, 54, 0.1);
+      color: #E35336;
+    }
+    .dark-mode .product-tag {
+      background: rgba(238, 102, 72, 0.15);
+      color: #EE6648;
+    }
+
+    /* ── Color swatches ── */
+    .swatch-row {
+      display: flex;
+      gap: 8px;
+      margin: 16px 0;
+    }
+    .swatch {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: flex-end;
+      padding: 4px;
+      font-size: 9px;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .light-mode .swatch { border: 1px solid #C8B9A0; }
+    .dark-mode .swatch { border: 1px solid #3A2A1E; }
+    .swatch-label {
+      font-size: 10px;
+      text-align: center;
+      margin-top: 4px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .light-mode .swatch-label { color: #6C523A; }
+    .dark-mode .swatch-label { color: #8A7D6C; }
+
+    /* ── Nav mock ── */
+    .nav-mock {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+    .light-mode .nav-mock {
+      background: #FAF8E8;
+      border: 1px solid #C8B9A0;
+    }
+    .dark-mode .nav-mock {
+      background: #261C14;
+      border: 1px solid #3A2A1E;
+    }
+    .nav-item {
+      padding: 10px 16px;
+      font-weight: 500;
+    }
+    .light-mode .nav-item { color: #8C7358; }
+    .dark-mode .nav-item { color: #8A7D6C; }
+    .light-mode .nav-item.active {
+      background: rgba(227, 83, 54, 0.12);
+      color: #E35336;
+    }
+    .dark-mode .nav-item.active {
+      background: rgba(238, 102, 72, 0.12);
+      color: #EE6648;
+    }
+
+    /* ── Footer ── */
+    .page-footer {
+      text-align: center;
+      padding: 24px 20px 40px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    @media (max-width: 900px) {
+      .preview-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <h1>Vectalon — Theme Preview</h1>
+    <p>Earthy Terracotta palette · Light & Dark mode side by side</p>
+  </div>
+
+  <div class="preview-grid">
+
+    <!-- ═══════════ LIGHT MODE ═══════════ -->
+    <div class="preview-column light-mode">
+      <div class="preview-label">☀️ Light Mode</div>
+      <div class="preview-frame">
+
+        <div class="logo-row">
+          <svg width="28" height="30" viewBox="0 0 220 240" fill="none">
+            <path d="M25 48L70 70L110 195" stroke="url(#pl-terra)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M195 48L150 70L110 195" stroke="url(#pl-sienna)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="55" cy="112" r="9" fill="#E35336"/>
+            <circle cx="165" cy="112" r="9" fill="#A0522D"/>
+            <circle cx="110" cy="84" r="8" fill="#F4A460"/>
+            <circle cx="110" cy="195" r="11" fill="#F4A460" stroke="#F0D4B8" stroke-width="3"/>
+            <defs>
+              <linearGradient id="pl-terra" x1="20" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#E35336"/><stop offset="1" stop-color="#F4A460"/>
+              </linearGradient>
+              <linearGradient id="pl-sienna" x1="200" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#A0522D"/><stop offset="1" stop-color="#F4A460"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span class="logo-text">Vectalon</span>
+          <span class="product-tag">Family OS</span>
+        </div>
+
+        <div class="nav-mock">
+          <div class="nav-item active">Dashboard</div>
+          <div class="nav-item">Members</div>
+          <div class="nav-item">Health</div>
+          <div class="nav-item">Settings</div>
+        </div>
+
+        <h2>Good morning, Bhishak</h2>
+        <p>Your family dashboard is looking great. 3 members active, all health records up to date.</p>
+
+        <div class="swatch-row">
+          <div>
+            <div class="swatch" style="background:#E35336;color:#FFF8EE;">brand</div>
+            <div class="swatch-label">#E35336</div>
+          </div>
+          <div>
+            <div class="swatch" style="background:#F5F5DC;color:#342216;">surface</div>
+            <div class="swatch-label">#F5F5DC</div>
+          </div>
+          <div>
+            <div class="swatch" style="background:#F4A460;color:#322012;">accent</div>
+            <div class="swatch-label">#F4A460</div>
+          </div>
+          <div>
+            <div class="swatch" style="background:#A0522D;color:#FFF8EE;">sienna</div>
+            <div class="swatch-label">#A0522D</div>
+          </div>
+        </div>
+
+        <h3>Components</h3>
+
+        <div style="margin-bottom: 12px;">
+          <button class="btn-primary">Get Started</button>
+          <button class="btn-ghost">Learn More</button>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <span class="badge badge-brand">Terracotta</span>
+          <span class="badge badge-accent">Sandy Brown</span>
+          <span class="badge badge-success">Active</span>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Family Health Overview</div>
+          <div class="card-text">All members have up-to-date health records. Next checkup scheduled in 14 days.</div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="stat-label">Members</div>
+            <div class="stat-value">4</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Records</div>
+            <div class="stat-value">127</div>
+          </div>
+        </div>
+
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="terminal-dot red"></div>
+            <div class="terminal-dot yellow"></div>
+            <div class="terminal-dot green"></div>
+          </div>
+          <div class="terminal-body">
+            <span class="brand">$</span> vectalon <span class="accent">status</span><br>
+            <span class="muted">✓</span> All systems operational<br>
+            <span class="muted">✓</span> Family sync: <span class="accent">active</span><br>
+            <span class="muted">✓</span> Health records: <span class="brand">up to date</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════ DARK MODE ═══════════ -->
+    <div class="preview-column dark-mode">
+      <div class="preview-label">🌙 Dark Mode</div>
+      <div class="preview-frame">
+
+        <div class="logo-row">
+          <svg width="28" height="30" viewBox="0 0 220 240" fill="none">
+            <path d="M25 48L70 70L110 195" stroke="url(#pd-terra)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M195 48L150 70L110 195" stroke="url(#pd-sienna)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="55" cy="112" r="9" fill="#EE6648"/>
+            <circle cx="165" cy="112" r="9" fill="#B96C3E"/>
+            <circle cx="110" cy="84" r="8" fill="#F4A460"/>
+            <circle cx="110" cy="195" r="11" fill="#F4A460" stroke="#E8C8A0" stroke-width="3"/>
+            <defs>
+              <linearGradient id="pd-terra" x1="20" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#EE6648"/><stop offset="1" stop-color="#F4A460"/>
+              </linearGradient>
+              <linearGradient id="pd-sienna" x1="200" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#B96C3E"/><stop offset="1" stop-color="#F4A460"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span class="logo-text">Vectalon</span>
+          <span class="product-tag">Family OS</span>
+        </div>
+
+        <div class="nav-mock">
+          <div class="nav-item active">Dashboard</div>
+          <div class="nav-item">Members</div>
+          <div class="nav-item">Health</div>
+          <div class="nav-item">Settings</div>
+        </div>
+
+        <h2>Good morning, Bhishak</h2>
+        <p>Your family dashboard is looking great. 3 members active, all health records up to date.</p>
+
+        <div class="swatch-row">
+          <div>
+            <div class="swatch" style="background:#EE6648;color:#FFF5EB;">brand</div>
+            <div class="swatch-label">#EE6648</div>
+          </div>
+          <div>
+            <div class="swatch" style="background:#18120E;color:#F5EEE1;border-color:#3A2A1E;">surface</div>
+            <div class="swatch-label">#18120E</div>
+          </div>
+          <div>
+            <div class="swatch" style="background:#F4A460;color:#322012;">accent</div>
+            <div class="swatch-label">#F4A460</div>
+          </div>
+          <div>
+            <div class="swatch" style="background:#B96C3E;color:#FFF5EB;">sienna</div>
+            <div class="swatch-label">#B96C3E</div>
+          </div>
+        </div>
+
+        <h3>Components</h3>
+
+        <div style="margin-bottom: 12px;">
+          <button class="btn-primary">Get Started</button>
+          <button class="btn-ghost">Learn More</button>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <span class="badge badge-brand">Terracotta</span>
+          <span class="badge badge-accent">Sandy Brown</span>
+          <span class="badge badge-success">Active</span>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Family Health Overview</div>
+          <div class="card-text">All members have up-to-date health records. Next checkup scheduled in 14 days.</div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="stat-label">Members</div>
+            <div class="stat-value">4</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Records</div>
+            <div class="stat-value">127</div>
+          </div>
+        </div>
+
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="terminal-dot red"></div>
+            <div class="terminal-dot yellow"></div>
+            <div class="terminal-dot green"></div>
+          </div>
+          <div class="terminal-body">
+            <span class="brand">$</span> vectalon <span class="accent">status</span><br>
+            <span class="muted">✓</span> All systems operational<br>
+            <span class="muted">✓</span> Family sync: <span class="accent">active</span><br>
+            <span class="muted">✓</span> Health records: <span class="brand">up to date</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="page-footer">
+    Vectalon — Earthy Terracotta Theme · Light & Dark Mode Preview
+  </div>
+
+</body>
+</html>

@@ -3,13 +3,16 @@
 @tailwind utilities;
 
 /* ─────────────────────────────────────────────────────────────
-   VECTALON — Design system tokens
+   VECTALON — Design system tokens (Earthy Terracotta Theme)
    
    Light mode is the default (CSS :root).
    Dark mode overrides via .dark class on <html>.
    
-   Semantic tokens: --fg*, --surface*, --border*, --term-*
-   Brand tokens: --brand, --accent, --violet
+   Brand colors:
+     Terracotta  #E35336  → 227  83  54
+     Beige       #F5F5DC  → 245 245 220
+     Sandy Brown #F4A460  → 244 164  96
+     Sienna      #A0522D  → 160  82  45
    ───────────────────────────────────────────────────────────── */
 
 /* ═══════════════════════════════════════════════════════════════
@@ -18,65 +21,67 @@
 :root {
   color-scheme: light;
 
-  /* ── Brand ── */
-  --brand: 0 210 180;
-  --brand-dim: 0 185 155;
-  --brand-strong: 0 165 140;
-  --accent: 55 182 255;
-  --accent-dim: 40 150 220;
-  --violet: 139 92 246;
-  --violet-dim: 120 75 220;
+  /* ── Brand (Terracotta) ── */
+  --brand: 227 83 54;
+  --brand-dim: 200 70 45;
+  --brand-strong: 175 55 35;
+  /* ── Accent (Sandy Brown) ── */
+  --accent: 244 164 96;
+  --accent-dim: 220 145 80;
+  /* ── Secondary (Sienna) ── */
+  --violet: 160 82 45;
+  --violet-dim: 140 70 38;
 
   /* ── Text (semantic) ── */
-  --fg: 8 11 16;
-  --fg-secondary: 40 50 68;
-  --fg-muted: 70 82 100;
-  --fg-dim: 100 112 130;
+  --fg: 52 34 22;
+  --fg-secondary: 75 52 35;
+  --fg-muted: 108 82 58;
+  --fg-dim: 140 115 88;
 
-  /* ── Surfaces ── */
-  --surface: 245 247 250;
-  --surface-elevated: 255 255 255;
-  --surface-deep: 240 243 247;
+  /* ── Surfaces (Beige Cream) ── */
+  --surface: 245 245 220;
+  --surface-elevated: 250 248 232;
+  --surface-deep: 235 232 212;
 
   /* ── Borders ── */
-  --border: 200 210 224;
-  --border-strong: 180 192 210;
+  --border: 200 185 160;
+  --border-strong: 178 160 135;
 
   /* ── Terminal ── */
-  --term: 6 8 12;
-  --term-border: 35 44 60;
-  --term-ink: 200 210 225;
-  --term-brand: 0 230 195;
-  --term-meta: 100 115 135;
+  --term: 28 20 14;
+  --term-border: 58 42 30;
+  --term-ink: 218 208 192;
+  --term-brand: 227 83 54;
+  --term-meta: 130 108 82;
 
   /* ── Legacy ink tokens (for bg-ink-* utilities) ── */
-  --ink: 245 247 250;
-  --ink-900: 255 255 255;
-  --ink-800: 240 243 247;
-  --ink-700: 200 210 224;
+  --ink: 245 245 220;
+  --ink-900: 250 248 232;
+  --ink-800: 235 232 212;
+  --ink-700: 200 185 160;
 
   /* ── Legacy slate tokens (for text-slate-* utilities) ── */
-  --slate-50: 8 11 16;
-  --slate-100: 18 22 30;
-  --slate-200: 30 38 52;
-  --slate-300: 55 65 85;
-  --slate-400: 70 82 100;
-  --slate-500: 100 112 130;
-  --slate-600: 140 150 170;
-  --slate-700: 175 185 200;
-  --slate-800: 208 214 224;
-  --slate-900: 232 236 242;
-  --slate-950: 242 245 248;
+  --slate-50: 52 34 22;
+  --slate-100: 68 48 32;
+  --slate-200: 88 65 45;
+  --slate-300: 108 82 58;
+  --slate-400: 130 105 78;
+  --slate-500: 155 130 100;
+  --slate-600: 178 160 138;
+  --slate-700: 200 188 170;
+  --slate-800: 218 212 198;
+  --slate-900: 232 228 218;
+  --slate-950: 242 240 230;
 
   /* ── On-color (text on brand/accent fills) ── */
-  --on-brand: 11 15 20;
-  --on-accent: 255 255 255;
+  --on-brand: 255 248 238;
+  --on-accent: 50 32 18;
 
   /* ── Decorative ── */
-  --grid-line: rgba(0, 210, 180, 0.06);
-  --glow-brand: rgba(0, 210, 180, 0.12);
-  --glow-accent: rgba(55, 182, 255, 0.10);
-  --glow-violet: rgba(139, 92, 246, 0.10);
+  --grid-line: rgba(227, 83, 54, 0.06);
+  --glow-brand: rgba(227, 83, 54, 0.12);
+  --glow-accent: rgba(244, 164, 96, 0.10);
+  --glow-violet: rgba(160, 82, 45, 0.10);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -85,65 +90,67 @@
 .dark {
   color-scheme: dark;
 
-  /* ── Brand ── */
-  --brand: 0 230 195;
-  --brand-dim: 0 200 170;
-  --brand-strong: 0 210 180;
-  --accent: 55 182 255;
-  --accent-dim: 40 150 220;
-  --violet: 139 92 246;
-  --violet-dim: 120 75 220;
+  /* ── Brand (Terracotta — brighter for dark bg) ── */
+  --brand: 238 102 72;
+  --brand-dim: 220 88 58;
+  --brand-strong: 227 83 54;
+  /* ── Accent (Sandy Brown) ── */
+  --accent: 244 164 96;
+  --accent-dim: 225 148 82;
+  /* ── Secondary (Sienna — lighter for dark bg) ── */
+  --violet: 185 108 62;
+  --violet-dim: 160 90 48;
 
   /* ── Text (semantic) ── */
-  --fg: 242 244 247;
-  --fg-secondary: 225 230 238;
-  --fg-muted: 200 210 225;
-  --fg-dim: 130 145 170;
+  --fg: 245 238 225;
+  --fg-secondary: 228 218 200;
+  --fg-muted: 195 182 162;
+  --fg-dim: 138 125 108;
 
   /* ── Surfaces ── */
-  --surface: 11 15 20;
-  --surface-elevated: 21 27 38;
-  --surface-deep: 8 11 16;
+  --surface: 24 18 14;
+  --surface-elevated: 38 28 20;
+  --surface-deep: 18 12 8;
 
   /* ── Borders ── */
-  --border: 35 44 60;
-  --border-strong: 50 62 82;
+  --border: 58 42 30;
+  --border-strong: 78 58 40;
 
   /* ── Terminal ── */
-  --term: 11 15 20;
-  --term-border: 30 38 52;
-  --term-ink: 200 210 225;
-  --term-brand: 0 230 195;
-  --term-meta: 100 115 135;
+  --term: 22 16 12;
+  --term-border: 50 36 24;
+  --term-ink: 218 208 192;
+  --term-brand: 238 102 72;
+  --term-meta: 128 115 95;
 
-  /* ── Legacy ink tokens (for bg-ink-* utilities) ── */
-  --ink: 11 15 20;
-  --ink-900: 8 11 16;
-  --ink-800: 21 27 38;
-  --ink-700: 35 44 60;
+  /* ── Legacy ink tokens ── */
+  --ink: 24 18 14;
+  --ink-900: 18 12 8;
+  --ink-800: 38 28 20;
+  --ink-700: 58 42 30;
 
-  /* ── Legacy slate tokens (for text-slate-* utilities) ── */
-  --slate-50: 242 244 247;
-  --slate-100: 225 230 238;
-  --slate-200: 200 210 225;
-  --slate-300: 170 180 200;
-  --slate-400: 130 145 170;
-  --slate-500: 100 115 140;
-  --slate-600: 75 88 110;
-  --slate-700: 50 60 78;
-  --slate-800: 35 44 58;
-  --slate-900: 22 28 38;
-  --slate-950: 14 18 24;
+  /* ── Legacy slate tokens ── */
+  --slate-50: 245 238 225;
+  --slate-100: 228 218 200;
+  --slate-200: 195 182 162;
+  --slate-300: 168 155 138;
+  --slate-400: 138 125 108;
+  --slate-500: 112 100 82;
+  --slate-600: 88 78 62;
+  --slate-700: 65 55 42;
+  --slate-800: 48 38 28;
+  --slate-900: 32 24 18;
+  --slate-950: 22 16 12;
 
   /* ── On-color ── */
-  --on-brand: 11 15 20;
-  --on-accent: 255 255 255;
+  --on-brand: 255 245 235;
+  --on-accent: 50 32 18;
 
   /* ── Decorative ── */
-  --grid-line: rgba(0, 230, 195, 0.04);
-  --glow-brand: rgba(0, 230, 195, 0.18);
-  --glow-accent: rgba(55, 182, 255, 0.14);
-  --glow-violet: rgba(139, 92, 246, 0.14);
+  --grid-line: rgba(227, 83, 54, 0.04);
+  --glow-brand: rgba(227, 83, 54, 0.18);
+  --glow-accent: rgba(244, 164, 96, 0.14);
+  --glow-violet: rgba(160, 82, 45, 0.14);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -327,30 +334,30 @@
   }
 
   .code-bg {
-    background: rgb(11 15 20);
+    background: rgb(28 20 14);
     /* Force all children into dark mode — terminal/carbon UI never changes with theme */
-    --fg: 242 244 247;
-    --fg-secondary: 225 230 238;
-    --fg-muted: 200 210 225;
-    --fg-dim: 130 145 170;
-    --surface: 11 15 20;
-    --surface-elevated: 21 27 38;
-    --surface-deep: 8 11 16;
-    --border: 35 44 60;
-    --border-strong: 50 62 82;
-    --ink: 11 15 20;
-    --ink-900: 8 11 16;
-    --ink-800: 21 27 38;
-    --ink-700: 35 44 60;
-    --slate-50: 242 244 247;
-    --slate-100: 225 230 238;
-    --slate-200: 200 210 225;
-    --slate-300: 170 180 200;
-    --slate-400: 130 145 170;
-    --slate-500: 100 115 140;
-    --slate-600: 75 88 110;
-    --on-brand: 11 15 20;
-    --glow-brand: rgba(0, 230, 195, 0.18);
+    --fg: 245 238 225;
+    --fg-secondary: 228 218 200;
+    --fg-muted: 195 182 162;
+    --fg-dim: 138 125 108;
+    --surface: 24 18 14;
+    --surface-elevated: 38 28 20;
+    --surface-deep: 18 12 8;
+    --border: 58 42 30;
+    --border-strong: 78 58 40;
+    --ink: 24 18 14;
+    --ink-900: 18 12 8;
+    --ink-800: 38 28 20;
+    --ink-700: 58 42 30;
+    --slate-50: 245 238 225;
+    --slate-100: 228 218 200;
+    --slate-200: 195 182 162;
+    --slate-300: 168 155 138;
+    --slate-400: 138 125 108;
+    --slate-500: 112 100 82;
+    --slate-600: 88 78 62;
+    --on-brand: 255 245 235;
+    --glow-brand: rgba(238, 102, 72, 0.18);
   }
 
   .console {
@@ -431,9 +438,9 @@
     background: linear-gradient(
       to bottom,
       transparent,
-      rgb(0 210 180 / 0.05) 30%,
-      rgb(35 160 240 / 0.04) 50%,
-      rgb(120 75 230 / 0.03) 70%,
+      rgb(227 83 54 / 0.05) 30%,
+      rgb(244 164 96 / 0.04) 50%,
+      rgb(160 82 45 / 0.03) 70%,
       transparent
     );
     animation: beam-sweep 8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
@@ -483,14 +490,14 @@
   }
 
   .report-body {
-    color: rgb(200 210 225 / 0.92);
+    color: rgb(218 208 192 / 0.92);
     font-size: 12.5px;
     line-height: 1.75;
   }
   .report-body .tk-h1 {
     font-size: 15px;
     font-weight: 700;
-    color: #7dd3fc;
+    color: #e8a888;
     margin: 0 0 0.6rem;
     letter-spacing: -0.01em;
   }
@@ -515,17 +522,17 @@
     margin: 1.1rem 0 0.4rem;
     font-size: 13px;
     font-weight: 600;
-    color: #e2e8f0;
+    color: #f0e0cc;
   }
   .report-body .tk-p {
     margin: 0 0 0.65rem;
   }
   .report-body strong {
-    color: #e2e8f0;
+    color: #f0e0cc;
     font-weight: 700;
   }
   .report-body em {
-    color: rgb(200 210 225 / 0.75);
+    color: rgb(218 208 192 / 0.75);
   }
   .report-body .tk-ul,
   .report-body .tk-ol {
@@ -562,7 +569,7 @@
     margin: 0 0 0.7rem;
     padding: 0.3rem 0 0.3rem 0.8rem;
     border-left: 2px solid rgb(var(--brand) / 0.8);
-    color: rgb(200 210 225 / 0.6);
+    color: rgb(218 208 192 / 0.6);
     font-style: italic;
   }
   .report-body .tk-hr {
@@ -577,7 +584,7 @@
     border: 1px solid rgb(var(--term-border) / 0.8);
     background: rgb(255 255 255 / 0.05);
     font-size: 11.5px;
-    color: #7dd3fc;
+    color: #e8a888;
   }
   .report-body .tk-pre {
     margin: 0.5rem 0 0.9rem;
@@ -593,21 +600,21 @@
     font-family: inherit;
   }
   .report-body .tk-com {
-    color: #64748b;
+    color: #9a8878;
     font-style: italic;
   }
   .report-body .tk-str {
-    color: #fbbf24;
+    color: #f4c460;
   }
   .report-body .tk-num {
-    color: #7dd3fc;
+    color: #e8a888;
   }
   .report-body .tk-kw {
     color: rgb(var(--brand));
     font-weight: 600;
   }
   .report-body .tk-fn {
-    color: #86efac;
+    color: #b8d4a0;
   }
   .report-body .tk-table-wrap {
     margin: 0.5rem 0 0.9rem;
@@ -622,7 +629,7 @@
     text-align: left;
     padding: 0.35rem 0.6rem;
     border-bottom: 1px solid rgb(var(--term-border));
-    color: #7dd3fc;
+    color: #e8a888;
     font-weight: 600;
     white-space: nowrap;
   }
@@ -635,37 +642,37 @@
     border-bottom: 0;
   }
   .report-body td.tk-first {
-    color: #e2e8f0;
+    color: #f0e0cc;
     font-weight: 500;
   }
 
   .man-term {
-    --ink: 11 15 20;
-    --ink-900: 0 0 0;
-    --ink-800: 21 27 38;
-    --ink-700: 30 38 52;
-    --slate-50: 242 244 247;
-    --slate-100: 225 230 238;
-    --slate-200: 200 210 225;
-    --slate-300: 200 210 225;
-    --slate-400: 180 190 210;
-    --slate-500: 150 162 180;
-    --slate-600: 120 132 150;
-    --slate-700: 90 100 118;
-    --slate-800: 65 74 90;
-    --slate-900: 45 52 65;
-    --slate-950: 30 36 48;
-    --surface: 11 15 20;
-    --surface-elevated: 21 27 38;
-    --surface-deep: 8 11 16;
-    --border: 30 38 52;
-    --fg: 242 244 247;
-    --fg-secondary: 200 210 225;
-    --fg-muted: 180 190 210;
-    --fg-dim: 150 162 180;
+    --ink: 24 18 14;
+    --ink-900: 12 8 4;
+    --ink-800: 38 28 20;
+    --ink-700: 50 36 24;
+    --slate-50: 245 238 225;
+    --slate-100: 228 218 200;
+    --slate-200: 195 182 162;
+    --slate-300: 195 182 162;
+    --slate-400: 172 158 138;
+    --slate-500: 148 135 115;
+    --slate-600: 118 108 88;
+    --slate-700: 88 78 58;
+    --slate-800: 62 52 35;
+    --slate-900: 42 34 22;
+    --slate-950: 28 22 14;
+    --surface: 24 18 14;
+    --surface-elevated: 38 28 20;
+    --surface-deep: 18 12 8;
+    --border: 50 36 24;
+    --fg: 245 238 225;
+    --fg-secondary: 218 208 192;
+    --fg-muted: 172 158 138;
+    --fg-dim: 148 135 115;
   }
   .man-term .man-body {
-    color: rgb(200 210 225 / 0.92);
+    color: rgb(218 208 192 / 0.92);
   }
 
   .ticker {
@@ -711,7 +718,7 @@
   box-shadow:
     0 1px 0 rgb(255 255 255 / 0.15) inset,
     0 24px 70px -20px rgb(0 0 0 / 0.40);
-  border-color: rgb(45 58 80);
+  border-color: rgb(78 58 40);
 }
 .report-window {
   box-shadow:
@@ -734,12 +741,14 @@
 .seg:hover {
   background: rgb(var(--brand) / 0.06);
 }
+
+/* ── Light Hero ── */
 .hero-bg {
-  background: linear-gradient(180deg, rgb(232 236 242) 0%, rgb(240 243 247) 30%, rgb(245 247 250) 60%, rgb(232 236 242) 100%);
+  background: linear-gradient(180deg, rgb(232 228 208) 0%, rgb(240 238 220) 30%, rgb(245 245 220) 60%, rgb(235 232 212) 100%);
 }
 .hero-pill {
-  border-color: rgb(180 190 208 / 0.6);
-  background: rgb(255 255 255 / 0.7);
+  border-color: rgb(178 160 135 / 0.6);
+  background: rgb(250 248 232 / 0.7);
   box-shadow: 0 1px 4px rgb(0 0 0 / 0.04);
 }
 .scanlines {
@@ -749,7 +758,7 @@
   display: none;
 }
 .hero-gradient-text {
-  background: linear-gradient(135deg, rgb(0 175 150) 0%, rgb(25 135 210) 50%, rgb(100 60 200) 100%);
+  background: linear-gradient(135deg, rgb(227 83 54) 0%, rgb(200 70 45) 40%, rgb(160 82 45) 70%, rgb(244 164 96) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -764,14 +773,15 @@
   filter: blur(90px);
 }
 .hero-aurora--primary {
-  background: radial-gradient(ellipse, rgb(0 210 180 / 0.2) 0%, rgb(35 160 240 / 0.1) 50%, transparent 70%);
+  background: radial-gradient(ellipse, rgb(227 83 54 / 0.2) 0%, rgb(244 164 96 / 0.1) 50%, transparent 70%);
 }
 .hero-aurora--secondary {
-  background: radial-gradient(ellipse, rgb(120 75 230 / 0.15) 0%, rgb(35 160 240 / 0.08) 50%, transparent 70%);
+  background: radial-gradient(ellipse, rgb(160 82 45 / 0.15) 0%, rgb(244 164 96 / 0.08) 50%, transparent 70%);
 }
 .hero-glow-ring {
-  background: radial-gradient(circle, rgb(0 210 180 / 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgb(227 83 54 / 0.1) 0%, transparent 70%);
 }
+
 /* ═══════════════════════════════════════════════════════════════
    DARK MODE — component class overrides
    Only what needs to change from the light-mode defaults above.
@@ -783,7 +793,7 @@
 }
 .dark .term {
   box-shadow: 0 24px 70px -32px rgb(0 0 0 / 0.6);
-  border-color: rgb(30 38 52 / 1);
+  border-color: rgb(50 36 24 / 1);
 }
 .dark .report-window {
   box-shadow:
@@ -803,12 +813,14 @@
 .dark .seg:hover {
   background: transparent;
 }
+
+/* ── Dark Hero ── */
 .dark .hero-bg {
-  background: linear-gradient(180deg, rgb(11 15 20) 0%, rgb(15 22 35) 40%, rgb(21 27 38) 70%, rgb(11 15 20) 100%);
+  background: linear-gradient(180deg, rgb(24 18 14) 0%, rgb(32 22 16) 40%, rgb(38 28 20) 70%, rgb(24 18 14) 100%);
 }
 .dark .hero-pill {
-  border-color: rgb(35 44 60);
-  background: rgb(21 27 38 / 0.6);
+  border-color: rgb(58 42 30);
+  background: rgb(38 28 20 / 0.6);
   box-shadow: none;
 }
 .dark .scanlines {
@@ -834,13 +846,13 @@
   filter: blur(80px);
 }
 .dark .hero-aurora--primary {
-  background: radial-gradient(ellipse, rgb(0 230 195 / 0.3) 0%, rgb(55 182 255 / 0.15) 50%, transparent 70%);
+  background: radial-gradient(ellipse, rgb(238 102 72 / 0.3) 0%, rgb(244 164 96 / 0.15) 50%, transparent 70%);
 }
 .dark .hero-aurora--secondary {
-  background: radial-gradient(ellipse, rgb(139 92 246 / 0.25) 0%, rgb(55 182 255 / 0.1) 50%, transparent 70%);
+  background: radial-gradient(ellipse, rgb(185 108 62 / 0.25) 0%, rgb(244 164 96 / 0.1) 50%, transparent 70%);
 }
 .dark .hero-glow-ring {
-  background: radial-gradient(circle, rgb(0 230 195 / 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgb(238 102 72 / 0.15) 0%, transparent 70%);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -895,8 +907,8 @@
 @keyframes console-target {
   0% {
     box-shadow:
-      0 0 0 1px rgb(0 230 195 / 0.55),
-      0 0 32px -6px rgb(0 230 195 / 0.45);
+      0 0 0 1px rgb(238 102 72 / 0.55),
+      0 0 32px -6px rgb(238 102 72 / 0.45);
   }
   100% {
     box-shadow:
@@ -911,8 +923,8 @@
 @keyframes report-target {
   0% {
     box-shadow:
-      0 0 0 1px rgb(0 230 195 / 0.55),
-      0 0 40px -8px rgb(0 230 195 / 0.5);
+      0 0 0 1px rgb(238 102 72 / 0.55),
+      0 0 40px -8px rgb(238 102 72 / 0.5);
   }
   100% {
     box-shadow:
@@ -969,7 +981,7 @@ details[open] .faq-a {
   top: -10%;
   left: 50%;
   transform: translateX(-50%);
-  background: radial-gradient(ellipse, rgb(0 230 195 / 0.3) 0%, rgb(55 182 255 / 0.15) 50%, transparent 70%);
+  background: radial-gradient(ellipse, rgb(238 102 72 / 0.3) 0%, rgb(244 164 96 / 0.15) 50%, transparent 70%);
 }
 .hero-aurora--secondary {
   width: 500px;
@@ -977,7 +989,7 @@ details[open] .faq-a {
   top: 5%;
   left: 55%;
   transform: translateX(-40%);
-  background: radial-gradient(ellipse, rgb(139 92 246 / 0.25) 0%, rgb(55 182 255 / 0.1) 50%, transparent 70%);
+  background: radial-gradient(ellipse, rgb(185 108 62 / 0.25) 0%, rgb(244 164 96 / 0.1) 50%, transparent 70%);
   animation-delay: -4s;
   animation-duration: 15s;
 }
@@ -1053,7 +1065,7 @@ details[open] .faq-a {
   border-radius: 50%;
   opacity: 0;
   animation: glow-ring-in 1s ease-out 0.6s forwards;
-  background: radial-gradient(circle, rgb(0 230 195 / 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgb(238 102 72 / 0.15) 0%, transparent 70%);
 }
 
 @keyframes glow-ring-in {
@@ -1087,8 +1099,7 @@ html.anim-frozen .hero-logo-enter,
 html.anim-frozen .hero-glow-ring {
   animation: none !important;
 }
-html.anim-frozen .hero-stagger > *,
-html.anim-frozen .hero-logo-enter {
+html.anim-frozen .hero-stagger > *, html.anim-frozen .hero-logo-enter {
   opacity: 1 !important;
   transform: none !important;
   filter: none !important;

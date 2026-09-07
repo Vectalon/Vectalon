@@ -224,23 +224,23 @@ export default async function Home() {
             <div className="mx-auto mb-6 flex justify-center">
               <div className="hero-logo-enter relative">
                 <div className="hero-glow-ring" />
-                <svg width="80" height="88" viewBox="0 0 220 240" fill="none" className="relative drop-shadow-[0_0_40px_rgba(0,230,195,0.3)]">
-                  <path d="M25 48L70 70L110 195" stroke="url(#hero-lg-teal)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M195 48L150 70L110 195" stroke="url(#hero-lg-violet)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M55 112L110 195L165 112" stroke="#4DAEFF" strokeOpacity="0.9" strokeWidth="4" strokeLinecap="round"/>
-                  <path d="M110 84V195" stroke="#39BFFF" strokeWidth="4" strokeLinecap="round"/>
+                <svg width="80" height="88" viewBox="0 0 220 240" fill="none" className="relative drop-shadow-[0_0_40px_rgba(227,83,54,0.3)]">
+                  <path d="M25 48L70 70L110 195" stroke="url(#hero-lg-terra)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M195 48L150 70L110 195" stroke="url(#hero-lg-sienna)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M55 112L110 195L165 112" stroke="#D4845C" strokeOpacity="0.9" strokeWidth="4" strokeLinecap="round"/>
+                  <path d="M110 84V195" stroke="#C07040" strokeWidth="4" strokeLinecap="round"/>
                   {/* Breathing nodes */}
-                  <circle cx="55" cy="112" r="9" fill="#00E6C3" className="hero-logo-node hero-logo-node--teal"/>
-                  <circle cx="165" cy="112" r="9" fill="#8B5CF6" className="hero-logo-node hero-logo-node--violet"/>
-                  <circle cx="110" cy="84" r="8" fill="#37B6FF" className="hero-logo-node hero-logo-node--cyan"/>
-                  <circle cx="110" cy="195" r="11" fill="#37B6FF" stroke="#B8E8FF" strokeWidth="3" className="hero-logo-node hero-logo-node--base"/>
-                  <path d="M110 28L122 52H98L110 28Z" fill="#66E8FF"/>
+                  <circle cx="55" cy="112" r="9" fill="#E35336" className="hero-logo-node hero-logo-node--teal"/>
+                  <circle cx="165" cy="112" r="9" fill="#A0522D" className="hero-logo-node hero-logo-node--violet"/>
+                  <circle cx="110" cy="84" r="8" fill="#F4A460" className="hero-logo-node hero-logo-node--cyan"/>
+                  <circle cx="110" cy="195" r="11" fill="#F4A460" stroke="#F0D4B8" strokeWidth="3" className="hero-logo-node hero-logo-node--base"/>
+                  <path d="M110 28L122 52H98L110 28Z" fill="#E8A878"/>
                   <defs>
-                    <linearGradient id="hero-lg-teal" x1="20" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#00E6C3"/><stop offset="1" stopColor="#37B6FF"/>
+                    <linearGradient id="hero-lg-terra" x1="20" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#E35336"/><stop offset="1" stopColor="#F4A460"/>
                     </linearGradient>
-                    <linearGradient id="hero-lg-violet" x1="200" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#8B5CF6"/><stop offset="1" stopColor="#37B6FF"/>
+                    <linearGradient id="hero-lg-sienna" x1="200" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#A0522D"/><stop offset="1" stopColor="#F4A460"/>
                     </linearGradient>
                   </defs>
                 </svg>

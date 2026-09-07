@@ -173,21 +173,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 >
                   {/* Vectalon logo mark */}
                   <svg width="22" height="24" viewBox="0 0 220 240" fill="none" className="shrink-0">
-                    <path d="M25 48L70 70L110 195" stroke="url(#lg-teal)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M195 48L150 70L110 195" stroke="url(#lg-violet)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M55 112L110 195L165 112" stroke="#4DAEFF" strokeOpacity="0.9" strokeWidth="4" strokeLinecap="round"/>
-                    <path d="M110 84V195" stroke="#39BFFF" strokeWidth="4" strokeLinecap="round"/>
-                    <circle cx="55" cy="112" r="9" fill="#00E6C3"/>
-                    <circle cx="165" cy="112" r="9" fill="#8B5CF6"/>
-                    <circle cx="110" cy="84" r="8" fill="#37B6FF"/>
-                    <circle cx="110" cy="195" r="11" fill="#37B6FF" stroke="#B8E8FF" strokeWidth="3"/>
-                    <path d="M110 28L122 52H98L110 28Z" fill="#66E8FF"/>
+                    <path d="M25 48L70 70L110 195" stroke="url(#lg-terra)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M195 48L150 70L110 195" stroke="url(#lg-sienna)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M55 112L110 195L165 112" stroke="#D4845C" strokeOpacity="0.9" strokeWidth="4" strokeLinecap="round"/>
+                    <path d="M110 84V195" stroke="#C07040" strokeWidth="4" strokeLinecap="round"/>
+                    <circle cx="55" cy="112" r="9" fill="#E35336"/>
+                    <circle cx="165" cy="112" r="9" fill="#A0522D"/>
+                    <circle cx="110" cy="84" r="8" fill="#F4A460"/>
+                    <circle cx="110" cy="195" r="11" fill="#F4A460" stroke="#F0D4B8" strokeWidth="3"/>
+                    <path d="M110 28L122 52H98L110 28Z" fill="#E8A878"/>
                     <defs>
-                      <linearGradient id="lg-teal" x1="20" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
-                        <stop stopColor="#00E6C3"/><stop offset="1" stopColor="#37B6FF"/>
+                      <linearGradient id="lg-terra" x1="20" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#E35336"/><stop offset="1" stopColor="#F4A460"/>
                       </linearGradient>
-                      <linearGradient id="lg-violet" x1="200" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
-                        <stop stopColor="#8B5CF6"/><stop offset="1" stopColor="#37B6FF"/>
+                      <linearGradient id="lg-sienna" x1="200" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                        <stop stopColor="#A0522D"/><stop offset="1" stopColor="#F4A460"/>
                       </linearGradient>
                     </defs>
                   </svg>
@@ -218,15 +218,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-10 text-[13px] text-fg-muted sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <svg width="18" height="20" viewBox="0 0 220 240" fill="none" className="shrink-0 opacity-60">
-                <path d="M25 48L70 70L110 195" stroke="url(#fl-teal)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M195 48L150 70L110 195" stroke="url(#fl-violet)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="110" cy="84" r="8" fill="#37B6FF"/>
+                <path d="M25 48L70 70L110 195" stroke="url(#fl-terra)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M195 48L150 70L110 195" stroke="url(#fl-sienna)" strokeWidth="12" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="110" cy="84" r="8" fill="#F4A460"/>
                 <defs>
-                  <linearGradient id="fl-teal" x1="20" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#00E6C3"/><stop offset="1" stopColor="#37B6FF"/>
+                  <linearGradient id="fl-terra" x1="20" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#E35336"/><stop offset="1" stopColor="#F4A460"/>
                   </linearGradient>
-                  <linearGradient id="fl-violet" x1="200" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
-                    <stop stopColor="#8B5CF6"/><stop offset="1" stopColor="#37B6FF"/>
+                  <linearGradient id="fl-sienna" x1="200" y1="50" x2="110" y2="205" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#A0522D"/><stop offset="1" stopColor="#F4A460"/>
                   </linearGradient>
                 </defs>
               </svg>
