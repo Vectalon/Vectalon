@@ -277,7 +277,7 @@ export default function DemoPage() {
                 <div className="mt-1 text-fg-secondary">
                   &ldquo;{act.narration}&rdquo;
                 </div>
-                <div className="mt-2 space-y-0.5 font-mono text-[12.5px] text-term-ink/70">
+                <div className="mt-2 space-y-0.5 font-mono text-[12.5px] text-fg-dim">
                   {act.stats.map(s => (
                     <div key={s}>· {s}</div>
                   ))}
