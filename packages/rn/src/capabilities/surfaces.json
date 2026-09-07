@@ -2970,7 +2970,7 @@
     "kind": "claims",
     "name": "apps/website/app/demo/page.tsx",
     "source": "apps/website/app/demo/page.tsx",
-    "digest": "sha256:fdb510fd4a52c0899bf16b06f2702d109236cd29629d358a85724fb107481219",
+    "digest": "sha256:fbd649e35034cf280ec78a3064290326b81b966c17d907d6766060402a98c817",
     "historical": false,
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",

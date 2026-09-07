@@ -5,6 +5,18 @@ All notable changes to rn-vectalon will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Redesigned website with earthy terracotta theme: brand `#E35336`, surface
+  `#F5F5DC`, accent `#F4A460`, secondary `#A0522D` — full light and dark
+  mode support across all pages.
+- Added Family OS legal pages (privacy, terms, health disclaimer) to
+  `vectalon.in/familyOS/` with clean URL rewrites.
+- Updated demo and outcomes pages to use semantic color tokens for
+  proper theme adaptation.
+
 ## [0.19.2] - 2026-09-05
 
 ### Fixed
