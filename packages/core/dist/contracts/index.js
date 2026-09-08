@@ -17,6 +17,7 @@ const EntitlementDecision_schema_json_1 = __importDefault(require("./schemas/Ent
 const ErrorEnvelope_schema_json_1 = __importDefault(require("./schemas/ErrorEnvelope.schema.json"));
 const IdentityReference_schema_json_1 = __importDefault(require("./schemas/IdentityReference.schema.json"));
 const LicenseClaims_schema_json_1 = __importDefault(require("./schemas/LicenseClaims.schema.json"));
+const LicenseClaimsV2_schema_json_1 = __importDefault(require("./schemas/LicenseClaimsV2.schema.json"));
 const ProductDefinition_schema_json_1 = __importDefault(require("./schemas/ProductDefinition.schema.json"));
 const TelemetryEvent_schema_json_1 = __importDefault(require("./schemas/TelemetryEvent.schema.json"));
 const TrialCredential_schema_json_1 = __importDefault(require("./schemas/TrialCredential.schema.json"));
@@ -28,6 +29,7 @@ exports.CONTRACT_NAMES = [
     'ErrorEnvelope',
     'IdentityReference',
     'LicenseClaims',
+    'LicenseClaimsV2',
     'ProductDefinition',
     'TelemetryEvent',
     'TrialCredential',
@@ -40,6 +42,7 @@ exports.CONTRACT_SCHEMAS = {
     ErrorEnvelope: ErrorEnvelope_schema_json_1.default,
     IdentityReference: IdentityReference_schema_json_1.default,
     LicenseClaims: LicenseClaims_schema_json_1.default,
+    LicenseClaimsV2: LicenseClaimsV2_schema_json_1.default,
     ProductDefinition: ProductDefinition_schema_json_1.default,
     TelemetryEvent: TelemetryEvent_schema_json_1.default,
     TrialCredential: TrialCredential_schema_json_1.default,
@@ -61,7 +64,7 @@ function generateRegistryManifest() {
             name,
             owner: 'core',
             id: exports.CONTRACT_SCHEMAS[name].$id,
-            version: '1.0.0',
+            version: exports.CONTRACT_SCHEMAS[name]['x-contractVersion'] ?? exports.CONTRACT_SCHEMAS[name].properties?.contractVersion?.const ?? '1.0.0',
             digest: (0, node_crypto_1.createHash)('sha256').update(JSON.stringify(exports.CONTRACT_SCHEMAS[name])).digest('hex'),
             status: 'current',
         })),
@@ -146,6 +149,7 @@ function findBreakingSchemaChanges(previous, candidate, path = '') {
     return changes;
 }
 const ajv = new _2020_1.default({ allErrors: true, strict: true });
+ajv.addKeyword({ keyword: 'x-contractVersion', schemaType: 'string' });
 ajv.addFormat('date-time', /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/);
 ajv.addFormat('date', /^\d{4}-\d{2}-\d{2}$/);
 const validators = Object.fromEntries(exports.CONTRACT_NAMES.map(name => [name, ajv.compile(exports.CONTRACT_SCHEMAS[name])]));
@@ -176,7 +180,7 @@ function sensitiveMetadataErrors(value, path = '/metadata') {
 function schemaError(error) {
     const missing = error.keyword === 'required' ? `/${String(error.params.missingProperty)}` : '';
     const path = `${error.instancePath}${missing}` || '/';
-    if (path === '/contractVersion' && error.keyword === 'const')
+    if ((path === '/contractVersion' || path === '/license_version') && error.keyword === 'const')
         return { path, code: 'unsupported-version' };
     if (path.endsWith('/price/minorUnits') && error.keyword === 'type')
         return { path, code: 'integer-minor-units' };
@@ -194,6 +198,17 @@ function semanticErrors(name, value) {
         const expires = Date.parse(payload.expiresAt);
         if (Number.isFinite(issued) && Number.isFinite(expires) && expires <= issued) {
             errors.push({ path: '/expiresAt', code: 'time-order' });
+        }
+    }
+    if (name === 'LicenseClaimsV2') {
+        const issued = payload.iat;
+        const notBefore = payload.nbf;
+        const expires = payload.exp;
+        if (Number.isSafeInteger(issued) && Number.isSafeInteger(notBefore) && issued > notBefore) {
+            errors.push({ path: '/nbf', code: 'time-order' });
+        }
+        if (Number.isSafeInteger(notBefore) && Number.isSafeInteger(expires) && notBefore >= expires) {
+            errors.push({ path: '/exp', code: 'time-order' });
         }
     }
     if (name === 'TelemetryEvent' && payload.metadata && typeof payload.metadata === 'object') {
@@ -215,6 +230,10 @@ function propertyType(schema) {
         return literal(schema.const);
     if (schema.enum)
         return schema.enum.map((value) => literal(value)).join(' | ');
+    if (schema.anyOf)
+        return schema.anyOf.map((value) => propertyType(value)).join(' | ');
+    if (schema.oneOf)
+        return schema.oneOf.map((value) => propertyType(value)).join(' | ');
     if (Array.isArray(schema.type))
         return schema.type.map((type) => propertyType({ ...schema, type })).join(' | ');
     if (schema.type === 'string')

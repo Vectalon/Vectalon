@@ -1,0 +1,14 @@
+{
+  "license_version": "2",
+  "jti": "",
+  "iss": "",
+  "aud": [],
+  "sub": "",
+  "product": [],
+  "tier": "",
+  "seats": 1.5,
+  "state": "unknown",
+  "iat": -1,
+  "nbf": "not-a-second",
+  "exp": null
+}

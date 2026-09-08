@@ -10,8 +10,9 @@
  * as a standalone package.
  */
 
-const { existsSync, mkdirSync, cpSync, rmSync, writeFileSync } = require('fs')
+const { existsSync, mkdirSync, cpSync, readFileSync, rmSync, writeFileSync } = require('fs')
 const { join, dirname } = require('path')
+const { createHash } = require('crypto')
 
 const RN_ROOT = dirname(__dirname)
 const CORE_ROOT = join(RN_ROOT, '..', 'core')
@@ -30,19 +31,33 @@ mkdirSync(VENDOR_DIR, { recursive: true })
 // 2. Copy core dist
 cpSync(join(CORE_ROOT, 'dist'), VENDOR_DIR, { recursive: true, force: true })
 
-// 3. Copy public key (optional — may be in private repo only)
+// 3. Copy the permitted public key set. A package without a trust root is not
+// releasable: it could not verify new lifecycle credentials fail-closed.
 const publicKeyPath = join(CORE_ROOT, 'public-key.pem')
-if (existsSync(publicKeyPath)) {
-  cpSync(publicKeyPath, join(VENDOR_DIR, 'public-key.pem'), { force: true })
-}
+if (!existsSync(publicKeyPath)) throw new Error('Core public-key.pem is required for a license-capable RN artifact.')
+cpSync(publicKeyPath, join(VENDOR_DIR, 'public-key.pem'), { force: true })
 
 // Preserve the exact private-core commit used for this artifact. The release
 // workflow writes this file immediately after checking out Vectalon/core main;
 // local builds use the committed revision that produced packages/core/dist.
 const revisionPath = join(CORE_ROOT, 'core-source-revision.txt')
-if (existsSync(revisionPath)) {
-  cpSync(revisionPath, join(VENDOR_DIR, 'core-source-revision.txt'), { force: true })
-}
+if (!existsSync(revisionPath)) throw new Error('Core source revision is required for a release artifact.')
+const coreSourceRevision = readFileSync(revisionPath, 'utf8').trim()
+if (!/^[a-f0-9]{40}$/.test(coreSourceRevision)) throw new Error('Core source revision must be a full Git SHA.')
+cpSync(revisionPath, join(VENDOR_DIR, 'core-source-revision.txt'), { force: true })
+
+// Keep public-key IDs/status and the exact Core revision beside the packed
+// runtime. This is public provenance, never signing material.
+writeFileSync(join(RN_ROOT, 'dist', 'license-provenance.json'), JSON.stringify({
+  schemaVersion: 1,
+  coreSourceRevision,
+  keys: [{
+    id: 'vectalon-legacy',
+    algorithm: 'RS256',
+    status: 'active',
+    sha256: createHash('sha256').update(readFileSync(publicKeyPath)).digest('hex'),
+  }],
+}, null, 2) + '\n')
 
 // 4. Create a synthetic package.json so Node resolution treats this as a package
 writeFileSync(

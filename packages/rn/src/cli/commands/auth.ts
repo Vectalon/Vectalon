@@ -3,29 +3,34 @@
  * Business Source License 1.1 (BSL-1.1)
  */
 
-import { LicenseStore, LicenseValidator } from '@vectalon-dev/core'
+import { LicenseStore } from '@vectalon-dev/core'
 import { logger } from '../logger'
 import { pollTrialDeviceFlow, startTrialDeviceFlow } from '../../auth/trialDeviceFlow'
 import { activateTrial, clearTrial, trialDaysRemaining, trialStatus } from '../../auth/trialState'
+import { customerLicenseStore, describeLicenseStatus, verifyCustomerLicense } from '../../auth/licenseLifecycle'
 
 interface AuthOptions {
   license?: string
   github?: boolean
   status?: boolean
   logout?: boolean
+  refresh?: boolean
+  recover?: boolean
 }
 
 export async function authCommand(options: AuthOptions): Promise<void> {
   if (options.license) {
-    const validation = LicenseValidator.validate(options.license)
-    if (validation.valid && validation.license) {
-      LicenseStore.write(validation.license)
-      logger.info(`✅ License activated: ${validation.license.tier} tier`)
-      logger.info(`   Expires: ${new Date(validation.license.expiresAt).toISOString().split('T')[0]}`)
-      logger.info(`   Products: ${Array.isArray(validation.license.product) ? validation.license.product.join(', ') : validation.license.product}`)
+    const stored = customerLicenseStore().save(options.license, verifyCustomerLicense)
+    if (stored.ok) {
+      const record = customerLicenseStore().read()
+      const validation = record.ok ? verifyCustomerLicense(record.record.token, record.record) : null
+      if (validation?.ok) {
+        logger.info(`✅ License activated: ${validation.tier} tier`)
+        logger.info(`   Expires: ${new Date(validation.expiresAt).toISOString().split('T')[0]}`)
+      } else logger.info('✅ License activated.')
     } else {
-      logger.error(`❌ Invalid license: ${validation.error}`)
-      process.exit(1)
+      logger.error(`❌ License activation failed: ${stored.code}`)
+      process.exitCode = 1
     }
     return
   }
@@ -42,22 +47,47 @@ export async function authCommand(options: AuthOptions): Promise<void> {
     return
   }
 
+  if (options.recover) {
+    const migration = customerLicenseStore().migrateLegacy(verifyCustomerLicense)
+    if (!migration.ok) {
+      logger.error(`License recovery failed: ${migration.code}`)
+      process.exitCode = 1
+      return
+    }
+    const recovered = customerLicenseStore().read()
+    if (recovered.ok && recovered.recovered) logger.warn('Recovered the prior verified license record. Run vectalon auth --refresh when online.')
+    else if (recovered.ok) logger.info('A verified local license record is already available.')
+    else logger.warn('No recoverable local license record was found.')
+    return
+  }
+
+  if (options.refresh) {
+    logger.warn('Online refresh is not available until the customer gateway is configured. Your current bounded offline lease remains subject to its expiry.')
+    process.exitCode = 1
+    return
+  }
+
   // Default: show status
-  const license = LicenseStore.read()
+  const store = customerLicenseStore()
+  const migration = store.migrateLegacy(verifyCustomerLicense)
+  const license = store.read()
   const trial = trialStatus()
 
   logger.info('📊 Authentication Status')
   logger.info('')
 
-  if (license && license.key) {
-    const validation = LicenseValidator.validate(license.key)
-    if (validation.valid && validation.license) {
-      logger.info(`✅ License: ${validation.license.tier}`)
-      logger.info(`   Product: ${Array.isArray(validation.license.product) ? validation.license.product.join(', ') : validation.license.product}`)
-      logger.info(`   Expires: ${new Date(validation.license.expiresAt).toISOString().split('T')[0]} (${LicenseValidator.daysRemaining(validation.license)} days remaining)`)
-    } else {
-      logger.info(`⚠️  License invalid: ${validation.error}`)
+  if (!migration.ok) {
+    logger.warn(`License storage needs recovery: ${migration.code}`)
+  } else if (license.ok) {
+    const validation = verifyCustomerLicense(license.record.token, license.record)
+    const status = describeLicenseStatus(validation)
+    logger.info(`${status.access === 'granted' ? '✅' : status.access === 'warning' ? '⚠️' : '⛔'} License: ${status.state}`)
+    if (validation.ok) {
+      logger.info(`   Tier: ${validation.tier}`)
+      logger.info(`   Expires: ${new Date(validation.expiresAt).toISOString().split('T')[0]}`)
     }
+    logger.info(`   ${status.message}`)
+    if (license.recovered) logger.warn('Using a recoverable prior record; refresh when online.')
   } else if (trial.status === 'active' && trial.credential) {
     logger.info(`🔄 Trial: ${trial.credential.tier}`)
     logger.info(`   Days remaining: ${trialDaysRemaining(trial)}`)
@@ -68,8 +98,11 @@ export async function authCommand(options: AuthOptions): Promise<void> {
   logger.info('')
   logger.info('Commands:')
   logger.info('  vectalon auth --license <key>    Activate license')
+  logger.info('  vectalon auth --status           Show explicit license lifecycle status')
+  logger.info('  vectalon auth --refresh          Refresh license while online')
+  logger.info('  vectalon auth --recover          Recover a prior local license record')
   logger.info('  vectalon auth --github           Authenticate with GitHub')
-  logger.info('  vectalon auth --logout           Clear license')
+  logger.info('  vectalon auth --logout           Clear local license and trial')
   logger.info('')
   logger.info('Get a license: https://vectalon.in/pricing')
   logger.info('Start a trial: https://vectalon.in/trial')

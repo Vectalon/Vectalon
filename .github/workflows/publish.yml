@@ -15,6 +15,9 @@ on:
 
 env:
   CI: true
+  # Step 08 release input: a reviewed Core revision, not an unreviewed moving
+  # branch. Update deliberately after Core contract/security review.
+  VECTALON_CORE_RELEASE_REF: 98aee264a9d9139c058fd11d3e312b384deb2e40
 
 jobs:
   # P1-11: the release regression gate. Runs the deterministic benchmark
@@ -56,7 +59,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: Vectalon/core
-          ref: main
+          ref: ${{ env.VECTALON_CORE_RELEASE_REF }}
           fetch-depth: 1
           path: packages/core/src
           token: ${{ secrets.CORE_REPO_PAT }}
@@ -86,6 +89,9 @@ jobs:
 
       - name: Build
         run: pnpm turbo run build --filter=@vectalon-dev/rn
+
+      - name: Verify packed Core and key provenance
+        run: pnpm --filter @vectalon-dev/rn test -- --runInBand __tests__/contracts/productDefinition.test.ts
 
       - name: Benchmark regression gate
         run: node packages/rn/bin/rn-vectalon.js bench --baseline packages/rn/bench/baseline.json
@@ -152,6 +158,9 @@ jobs:
 
       - name: Build
         run: pnpm turbo run build --filter=@vectalon-dev/rn
+
+      - name: Verify packed Core and key provenance
+        run: pnpm --filter @vectalon-dev/rn test -- --runInBand __tests__/contracts/productDefinition.test.ts
 
       - name: Validate product and pinned Core contracts
         run: pnpm product:check && pnpm contracts:check && node scripts/capability-catalog.mjs check . --base HEAD^
