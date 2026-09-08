@@ -1,5 +1,5 @@
 import { handleLicenseRefresh } from '../lib/license-refresh-route'
-import { durableLifecycleAdapter, lifecycleAdapterForStore } from '../lib/lifecycle-gateway'
+import { durableLifecycleAdapter } from '../lib/lifecycle-gateway'
 
 const credential = 'stored-license-credential'
 
@@ -34,15 +34,6 @@ describe('authenticated license refresh route', () => {
     const body = await response.text()
     expect(body).not.toContain(credential)
     expect(body).toContain('invalid_transition')
-  })
-
-  it('consults the durable registry for revoked credentials instead of duplicating lifecycle policy', async () => {
-    const validateLicense = jest.fn(async () => ({ valid: false, reason: 'license revoked' }))
-    const request = new Request('https://vectalon.in/api/v1/license/refresh', { method: 'POST', headers: { authorization: `Bearer ${credential}` } })
-    const response = await handleLicenseRefresh(request, lifecycleAdapterForStore({ validateLicense, recordUsage: async () => undefined }))
-    expect(validateLicense).toHaveBeenCalledWith(credential)
-    expect(response.status).toBe(409)
-    expect(await response.text()).not.toContain(credential)
   })
 
   it('rejects missing credentials and malformed Admin v1 envelopes', async () => {

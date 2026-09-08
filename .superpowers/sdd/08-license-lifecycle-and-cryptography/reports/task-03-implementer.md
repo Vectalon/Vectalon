@@ -116,3 +116,29 @@ The website route deliberately uses the configured durable registry that is alre
 ### Remaining production adapter blocker
 
 The website's existing configured adapter still projects its legacy `AdminStore` validation/usage APIs and cannot perform the approved Admin lifecycle command. This checkout has no same-process Admin lifecycle service, durable revision/audit repository, or Admin signer authority to invoke. A correct fix requires an explicitly authorized, fixed Admin command boundary; it must not send an operator secret to an arbitrary environment-configured origin or recreate lifecycle policy in the website.
+
+---
+
+## In-process Admin lifecycle adapter completion
+
+- Replaced the legacy `AdminStore` refresh projection with a server-only, pinned Admin lifecycle runtime snapshot. The snapshot is sourced from reviewed Admin commit `79bcfcad1ae323eab0669812d8186a140385e3a9` and contains only the lifecycle domain/service, durable repository, signer/key helpers, and public V1 response schema needed by the website route.
+- Added a reproducible sync and drift checker with per-file SHA-256 provenance, plus a CI snapshot workflow. Full source verification rejects any non-approved Admin revision, source/provenance mismatch, or generated-file drift; CI independently verifies the checked-in snapshot digests.
+- `POST /api/v1/license/refresh` now reaches the reviewed lifecycle service directly in the website deployment via `DATABASE_URL`, a TLS-verified runtime pool, and deployment-only signing configuration. It does not use an operator secret, perform Admin network egress, or retain the legacy policy projection.
+- The customer bearer is cryptographically verified before a durable record lookup. Actor identity, expected revision, idempotency key, and audit fields are derived server-side; the public response remains the approved V1 envelope and strips internal lifecycle material before returning it to the client.
+
+### Adapter verification
+
+| Check | Outcome |
+| --- | --- |
+| Website tests | 20 suites, 100 tests passed (`--no-watchman`) |
+| Website typecheck | passed |
+| Admin source + snapshot drift checks | passed against approved Admin SHA |
+| Website webpack production build | passed; route included as dynamic `/api/v1/license/refresh` |
+| RN typecheck / lint / build | passed; lint has four existing warnings |
+| RN package dry run | passed with isolated cache; 2,587 files, 2.1 MB package / 9.5 MB unpacked |
+| Secret/client-boundary scan | passed; no private key or operator secret in browser assets or route response path |
+| Full RN suite | one unrelated `featureDevelopment` test exceeded its 5-second timeout; no lifecycle adapter test failed |
+
+### Deployment condition
+
+The website deployment must provide `DATABASE_URL`, `VECTALON_LICENSE_PRIVATE_KEY`, `VECTALON_KEY_ID`, and (for non-local PostgreSQL) `VECTALON_LICENSE_DATABASE_SSL_CA`. Key material remains server-only and is neither serialized nor logged.
