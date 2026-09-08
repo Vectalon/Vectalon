@@ -1,7 +1,7 @@
 import { sandboxCommand } from '../../src/cli/commands/sandbox'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
-jest.mock('@vectalon-dev/core', () => ({
+jest.mock('../../src/auth/licenseLifecycle', () => ({
   requireTier: () => ({ allowed: true, currentTier: 'pro', requiredTier: 'pro', canTrial: false }),
 }))
 

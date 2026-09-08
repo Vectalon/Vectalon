@@ -4,7 +4,7 @@ import { createTempProject, cleanup } from '../helpers/tmp'
 import { profileCommand } from '../../src/cli/commands/profile'
 import { cpuProfileFixture, heapSnapshotFixture } from '../perf/fixtures'
 
-jest.mock('@vectalon-dev/core', () => ({
+jest.mock('../../src/auth/licenseLifecycle', () => ({
   requireTier: jest.fn(() => ({ allowed: true, currentTier: 'pro', requiredTier: 'pro', canTrial: false })),
 }))
 

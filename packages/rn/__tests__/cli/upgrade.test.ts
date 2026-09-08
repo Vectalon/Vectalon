@@ -1,7 +1,7 @@
 import { createTempProject, cleanup } from '../helpers/tmp'
 import { upgradeCommand } from '../../src/cli/commands/upgrade'
 
-jest.mock('@vectalon-dev/core', () => ({
+jest.mock('../../src/auth/licenseLifecycle', () => ({
   requireTier: jest.fn(() => ({ allowed: true, currentTier: 'pro', requiredTier: 'pro', canTrial: false })),
 }))
 

@@ -7,7 +7,7 @@
  * catalog-driven, no LLM.
  */
 
-import { requireTier } from '@vectalon-dev/core'
+import { requireTier } from '../../auth/licenseLifecycle'
 import { resolve } from 'path'
 import { readlineConfirm } from '../../utils/readlineConfirm'
 import pc from 'picocolors'

@@ -5,7 +5,7 @@
 
 import { resolve, join } from 'path'
 import { existsSync } from 'fs'
-import { requireTier } from '@vectalon-dev/core'
+import { requireTier } from '../../auth/licenseLifecycle'
 import { logger } from '../logger'
 import { createArtifactSync, readSyncConfig, writeSyncConfig } from '../../knowledge/artifactSync'
 

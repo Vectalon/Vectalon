@@ -5,7 +5,7 @@
 
 import { existsSync, readFileSync } from 'fs'
 import { join, resolve } from 'path'
-import { requireTier } from '@vectalon-dev/core'
+import { requireTier } from '../../auth/licenseLifecycle'
 import { logger } from '../logger'
 import { ensureCiConfigs, detectCiProvider, PROVIDER_PATHS } from '../../adapters/ciTemplates'
 import type { CiProvider } from '../../adapters/ciTemplates'

@@ -1,4 +1,4 @@
-import { requireTier } from '@vectalon-dev/core'
+import { requireTier } from '../../auth/licenseLifecycle'
 import { ContextEngine } from '../../harness/ContextEngine'
 import { buildTeamBrain } from '../../teamBrain'
 import { MCPServer } from '../../protocol/MCPServer'

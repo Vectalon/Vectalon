@@ -4,7 +4,7 @@ import { bundleCommand } from '../../src/cli/commands/bundle'
 import { collectBundleSignals } from '../../src/utils/npmSignals'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
-jest.mock('@vectalon-dev/core', () => ({
+jest.mock('../../src/auth/licenseLifecycle', () => ({
   requireTier: () => ({ allowed: true, currentTier: 'pro', requiredTier: 'pro', canTrial: false }),
 }))
 

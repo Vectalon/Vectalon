@@ -12,18 +12,26 @@ import { homedir } from 'os'
 import { dirname, join } from 'path'
 import {
   AtomicLicenseStorage,
+  evaluateEntitlement,
   LicenseValidator,
   StaticLicenseKeySource,
   verifyLicenseWithPolicy,
+  type EntitlementDecision,
   type LicenseVerificationKey,
   type StoredLicenseRecord,
+  type Tier,
+  type TierCheck,
+  type TrustedClaims,
+  type VerifiedLicenseClaims,
 } from '@vectalon-dev/core'
+import { createTrustedClaims } from '@vectalon-dev/core/dist/auth/TrustedClaims'
+import issuerPolicy from '../license-policy.json'
 
 export type LicenseAccess = 'granted' | 'warning' | 'blocked'
 export type LicenseStateLabel = 'active' | 'grace' | 'stale' | 'suspended' | 'expired' | 'canceled' | 'refunded' | 'revoked' | 'superseded' | 'invalid'
 
 export type LicenseCredentialCheck =
-  | Readonly<{ ok: true; tier: string; state: 'active' | 'grace'; expiresAt: number; legacy?: boolean }>
+  | Readonly<{ ok: true; tier: string; state: 'active' | 'grace'; expiresAt: number; entitlementClaims?: TrustedClaims; legacy?: boolean }>
   | Readonly<{ ok: false; code: string; lifecycle?: string }>
 
 export type LicenseCredentialVerifier = (token: string, record?: Readonly<{ lastTrustedTime: number; lastOnlineAt: number }>) => LicenseCredentialCheck
@@ -42,7 +50,8 @@ export type VerifiedCustomerLicense =
 export const LICENSE_KEYSET_PROVENANCE: LicenseKeysetManifest = loadBundledKeyset()
 
 const LIFECYCLE_FILENAME = 'license-v2.json'
-const DEFAULT_ISSUER = 'https://licenses.vectalon.dev'
+/** One release-pinned issuer is shared with the website lifecycle signer. */
+const DEFAULT_ISSUER = issuerPolicy.issuer
 const DEFAULT_AUDIENCE = 'vectalon-cli'
 const DEFAULT_TIERS = ['pro', 'team', 'enterprise']
 
@@ -166,7 +175,7 @@ export function verifyCustomerLicense(
     lastOnlineAt: record?.lastOnlineAt,
   })
   if (result.ok && (result.claims.state === 'active' || result.claims.state === 'grace')) {
-    return { ok: true, tier: result.claims.tier, state: result.claims.state, expiresAt: result.claims.expiresAt }
+    return { ok: true, tier: result.claims.tier, state: result.claims.state, expiresAt: result.claims.expiresAt, entitlementClaims: trustedEntitlementClaims(result.claims) }
   }
   if (result.ok) return { ok: false, code: 'inactive_lifecycle', lifecycle: result.claims.state }
   if (recognizesV2(token)) return { ok: false, code: result.code }
@@ -174,7 +183,21 @@ export function verifyCustomerLicense(
   // Compatibility is intentionally limited to genuinely legacy credentials.
   const legacy = LicenseValidator.validate(token)
   if (legacy.valid && legacy.license) {
-    return { ok: true, tier: legacy.license.tier, state: 'active', expiresAt: legacy.license.expiresAt, legacy: true }
+    return {
+      ok: true,
+      tier: legacy.license.tier,
+      state: 'active',
+      expiresAt: legacy.license.expiresAt,
+      entitlementClaims: createTrustedClaims({
+        schemaVersion: 1,
+        subject: String(legacy.license.githubUserId ?? 'legacy-license'),
+        tier: legacy.license.tier,
+        product: legacy.license.product,
+        issuedAt: legacy.license.issuedAt,
+        expiresAt: legacy.license.expiresAt,
+      }),
+      legacy: true,
+    }
   }
   return { ok: false, code: result.code }
 }
@@ -185,6 +208,35 @@ export function currentCustomerLicense(): VerifiedCustomerLicense {
   const migration = store.migrateLegacy(verifyCustomerLicense)
   if (!migration.ok) return { ok: false, code: migration.code }
   return store.readVerified(verifyCustomerLicense)
+}
+
+/**
+ * The sole paid-command gate. It selects the V2 atomic record first and uses
+ * Core's entitlement decision table for both V2 leases and a one-time verified
+ * legacy migration. No command reads Core's legacy LicenseStore directly.
+ */
+export function evaluateCustomerTier(
+  requiredTier: Tier,
+  options: Readonly<{ store?: LicenseLifecycleStore; verify?: LicenseCredentialVerifier; now?: () => number }> = {},
+): TierCheck {
+  const store = options.store ?? customerLicenseStore()
+  const verify = options.verify ?? verifyCustomerLicense
+  const now = (options.now ?? Date.now)()
+  const migration = store.migrateLegacy(verify, now)
+  const selected = migration.ok ? store.readVerified(verify) : { ok: false as const, code: migration.code }
+  const decision = evaluateEntitlement({
+    requiredTier,
+    product: 'rn',
+    now,
+    lastTrustedTime: selected.ok ? selected.record.lastTrustedTime : undefined,
+    claims: selected.ok && selected.check.ok ? selected.check.entitlementClaims ?? null : null,
+  })
+  return tierCheck(decision)
+}
+
+/** Backward-compatible command-facing name; unlike Core's legacy gate it is V2-store backed. */
+export function requireTier(requiredTier: Tier, _product: 'rn' = 'rn', _feature?: string): TierCheck {
+  return evaluateCustomerTier(requiredTier)
 }
 
 export function describeLicenseStatus(check: LicenseCredentialCheck): Readonly<{ access: LicenseAccess; state: LicenseStateLabel; message: string }> {
@@ -239,6 +291,30 @@ function recognizesV2(token: string): boolean {
     const decodedPayload = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as Record<string, unknown>
     return decodedPayload.license_version === 2 || decodedHeader.typ === 'vectalon-license+jwt'
   } catch { return false }
+}
+
+/** A Core V2 policy result is signature-verified; adapt it once for Core's evaluator. */
+function trustedEntitlementClaims(claims: VerifiedLicenseClaims): TrustedClaims {
+  return createTrustedClaims({
+    schemaVersion: 1,
+    subject: claims.subject,
+    tier: claims.tier,
+    product: claims.product,
+    issuedAt: claims.issuedAt,
+    expiresAt: claims.expiresAt,
+    seats: claims.seats,
+  })
+}
+
+function tierCheck(decision: EntitlementDecision): TierCheck {
+  return {
+    allowed: decision.allowed,
+    currentTier: decision.currentTier,
+    requiredTier: decision.requiredTier,
+    canTrial: false,
+    ...(decision.expiresAt === undefined ? {} : { daysRemaining: Math.max(0, Math.ceil((decision.expiresAt - Date.now()) / 86_400_000)) }),
+    message: decision.message,
+  }
 }
 
 function isKeysetManifest(value: unknown): value is LicenseKeysetManifest {

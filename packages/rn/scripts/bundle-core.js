@@ -11,12 +11,15 @@
  */
 
 const { existsSync, mkdirSync, cpSync, readFileSync, rmSync, writeFileSync } = require('fs')
-const { join, dirname } = require('path')
+const { join, dirname, resolve } = require('path')
 const { createHash } = require('crypto')
 
 const RN_ROOT = dirname(__dirname)
 const CORE_ROOT = join(RN_ROOT, '..', 'core')
-const REVIEWED_CORE_ROOT = process.env.CORE_REPO_DIR || CORE_ROOT
+// Release workflows name the private checkout relative to the workspace root;
+// normalize here because package scripts execute with packages/rn as cwd.
+const WORKSPACE_ROOT = resolve(RN_ROOT, '..', '..')
+const REVIEWED_CORE_ROOT = process.env.CORE_REPO_DIR ? resolve(WORKSPACE_ROOT, process.env.CORE_REPO_DIR) : CORE_ROOT
 const VENDOR_DIR = join(RN_ROOT, 'dist', 'node_modules', '@vectalon-dev', 'core')
 
 if (!existsSync(join(REVIEWED_CORE_ROOT, 'dist', 'index.js'))) {
@@ -46,6 +49,10 @@ for (const key of keyset.keys) {
   cpSync(publicKeyPath, join(VENDOR_DIR, key.publicKeyFile), { force: true })
 }
 cpSync(keysetPath, join(VENDOR_DIR, 'license-keyset.json'), { force: true })
+const issuerPolicyPath = join(RN_ROOT, 'src', 'license-policy.json')
+const issuerPolicy = JSON.parse(readFileSync(issuerPolicyPath, 'utf8'))
+if (!issuerPolicy || typeof issuerPolicy.issuer !== 'string' || !/^https:\/\/licenses\.vectalon\.(dev|in)$/.test(issuerPolicy.issuer)) throw new Error('RN issuer policy is invalid.')
+cpSync(issuerPolicyPath, join(RN_ROOT, 'dist', 'license-policy.json'), { force: true })
 
 // Preserve the exact private-core commit used for this artifact. The release
 // workflow writes this file immediately after checking out Vectalon/core main;

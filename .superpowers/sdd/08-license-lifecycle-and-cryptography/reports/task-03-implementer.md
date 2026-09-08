@@ -142,3 +142,28 @@ The website's existing configured adapter still projects its legacy `AdminStore`
 ### Deployment condition
 
 The website deployment must provide `DATABASE_URL`, `VECTALON_LICENSE_PRIVATE_KEY`, `VECTALON_KEY_ID`, and (for non-local PostgreSQL) `VECTALON_LICENSE_DATABASE_SSL_CA`. Key material remains server-only and is neither serialized nor logged.
+
+---
+
+## Final-review blocker remediation
+
+- Replaced every RN command import of Core's legacy `requireTier()` with the V2-store-backed gate in `licenseLifecycle.ts`. The gate first selects/migrates the atomic V2 record, adapts only a Core-verified claim into Core's entitlement evaluator, and leaves the legacy file as a bounded migration input.
+- Introduced one canonical issuer policy at `packages/rn/src/license-policy.json`. Both the website signer default and RN verifier import that same policy; the existing shipped `.dev` issuer remains the default compatibility value.
+- Customer refresh idempotency now fingerprints the immutable server-derived bearer/action key before a live optimistic revision can change. The original committed envelope is replayed on a lost-response retry; a distinct action gets a distinct key and is not replayed as refresh.
+- The website bearer boundary now calls Core's V2 verifier with the canonical issuer, `vectalon-cli` audience, `rn` product, bounded lease/time policy, and a public-only status-aware key registry. `overlap` keys are verification-active; retired and compromised keys remain terminal Core rejections. Durable `jti`/subject/audience identity and the server-owned revision are checked before a new mutation.
+- Both publish jobs install and build the exact frozen private Core checkout before generating key provenance and invoking the RN bundle. The bundler resolves `CORE_REPO_DIR` from the workspace root, preventing package-script cwd drift.
+
+### Final-review verification
+
+| Check | Outcome |
+| --- | --- |
+| Website tests | 20 suites, 101 tests passed (`--runInBand --watchman=false`) |
+| Website typecheck and webpack production build | passed |
+| RN lifecycle/gate/release workflow regressions | 27 tests passed; paid V2 gate, refresh replay, canonical issuer/key policy, and frozen-Core build order covered |
+| Representative paid CLI command tests | CI and bundle command suites passed against the unified gate seam |
+| RN typecheck / build | passed; bundled reviewed Core with `CORE_REPO_DIR=packages/core` |
+| RN lint | 0 errors; 4 pre-existing unused-symbol warnings |
+| RN package | packed with isolated npm cache: 2,588 files, 2.1 MB / 9.5 MB unpacked |
+| Secret scan | source and extracted package: no PEM private-key marker or assigned `VECTALON_LICENSE_PRIVATE_KEY` value |
+| Broad selected RN suites | 62 passed; 4 `sandbox`/`render` assertions remain host-blocked because this environment denies `sandbox-exec` (`exit 71`) |
+| Diff check | passed |

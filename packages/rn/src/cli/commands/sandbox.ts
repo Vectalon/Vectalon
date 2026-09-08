@@ -13,7 +13,7 @@
  */
 
 import { resolve } from 'path'
-import { requireTier } from '@vectalon-dev/core'
+import { requireTier } from '../../auth/licenseLifecycle'
 import { logger } from '../logger'
 import { runSandboxed, renderSandboxResult, detectBackend } from '../../sandbox'
 

@@ -70,7 +70,6 @@ jobs:
           CORE_SHA=$(git -C packages/core/src rev-parse HEAD)
           echo "sha=$CORE_SHA" >> "$GITHUB_OUTPUT"
           echo "$CORE_SHA" > packages/core/core-source-revision.txt
-          node packages/rn/scripts/generate-license-keyset.js packages/core/src "$CORE_SHA" packages/core/src/license-keyset.json
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
@@ -79,6 +78,12 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 22
+
+      - name: Install and build frozen Core checkout
+        run: |
+          npm ci --prefix packages/core/src
+          npm run build --prefix packages/core/src
+          node packages/rn/scripts/generate-license-keyset.js packages/core/src "${{ steps.core-revision.outputs.sha }}" packages/core/src/license-keyset.json
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -139,9 +144,7 @@ jobs:
 
       - name: Record core revision
         if: steps.pat.outputs.has_pat == 'true'
-        run: |
-          echo "${{ needs.bench-gate.outputs.core-sha }}" > packages/core/core-source-revision.txt
-          node packages/rn/scripts/generate-license-keyset.js packages/core/src "${{ needs.bench-gate.outputs.core-sha }}" packages/core/src/license-keyset.json
+        run: echo "${{ needs.bench-gate.outputs.core-sha }}" > packages/core/core-source-revision.txt
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
@@ -151,6 +154,12 @@ jobs:
         with:
           node-version: 22
           registry-url: 'https://registry.npmjs.org'
+
+      - name: Install and build frozen Core checkout
+        run: |
+          npm ci --prefix packages/core/src
+          npm run build --prefix packages/core/src
+          node packages/rn/scripts/generate-license-keyset.js packages/core/src "${{ needs.bench-gate.outputs.core-sha }}" packages/core/src/license-keyset.json
 
       - name: Configure npm auth
         run: |

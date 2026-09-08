@@ -1,7 +1,9 @@
 import 'server-only'
 
-import { createHash, createPublicKey, verify } from 'node:crypto'
+import { createHash } from 'node:crypto'
 import { Pool, type PoolConfig } from 'pg'
+import { StaticLicenseKeySource, verifyLicenseWithPolicy, type LicenseVerificationKey } from '@vectalon-dev/core'
+import issuerPolicy from '../../../../packages/rn/src/license-policy.json'
 import { LicenseLifecycleService } from './generated/service'
 import { PostgresLicenseRepository } from './generated/postgres'
 import { signerFromEnvironment, type LicenseSigner } from './generated/signer'
@@ -28,8 +30,8 @@ export type InProcessLifecycleDependencies = Readonly<{
  */
 export function createInProcessLifecycleAdapter(dependencies: InProcessLifecycleDependencies) {
   const now = dependencies.now ?? Date.now
-  const issuer = dependencies.issuer ?? 'https://licenses.vectalon.in'
-  const service = new LicenseLifecycleService(dependencies.repository, dependencies.signer, issuer)
+  const issuer = dependencies.issuer ?? issuerPolicy.issuer
+  const service = new LicenseLifecycleService(customerReplayRepository(dependencies.repository), dependencies.signer, issuer)
   return {
     async execute(input: Readonly<{ action: CustomerAction; credential: string }>): Promise<Record<string, unknown>> {
       const claims = await dependencies.credentialVerifier(input.credential)
@@ -39,6 +41,8 @@ export function createInProcessLifecycleAdapter(dependencies: InProcessLifecycle
       const command = {
         action: input.action,
         licenseId: record.id,
+        // The first mutation still checks the durable revision. Customer replay
+        // fingerprints are derived before this live value can change.
         expectedRevision: record.revision,
         // This stable key makes network retries replay the original signed lease.
         idempotencyKey: requestKey(input.action, input.credential),
@@ -73,30 +77,71 @@ function lifecyclePool(): Pool {
 }
 
 /** Verifies a V2 credential using a non-public deployment key; never logs it. */
-export function environmentCredentialVerifier(environment: NodeJS.ProcessEnv = process.env): CredentialVerifier {
-  const privateKey = environment.VECTALON_LICENSE_PRIVATE_KEY
-  if (!privateKey) throw new Error('license-signing-unavailable')
-  const publicKey = createPublicKey(privateKey.replace(/\\n/g, '\n'))
-  return async credential => verifyCredential(credential, publicKey)
+export function environmentCredentialVerifier(environment: Readonly<Record<string, string | undefined>> = process.env): CredentialVerifier {
+  const keys = environmentVerificationKeys(environment)
+  return async credential => verifyCredential(credential, keys)
 }
 
-export async function verifyCredential(credential: string, publicKey: ReturnType<typeof createPublicKey>): Promise<VerifiedCredential | null> {
-  const parts = credential.split('.')
-  if (parts.length !== 3 || parts.some(part => !/^[A-Za-z0-9_-]+$/.test(part))) return null
+/**
+ * This is deliberately a Core policy call, not a second JWT implementation:
+ * kid/algorithm/key status, issuer/audience/product, lease times, signature,
+ * and lifecycle state all fail closed before a route can select a record.
+ */
+export async function verifyCredential(credential: string, keys: StaticLicenseKeySource, now = Date.now): Promise<VerifiedCredential | null> {
   try {
-    const header = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8')) as Record<string, unknown>
-    const claims = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8')) as Record<string, unknown>
-    if (header.alg !== 'RS256' || header.typ !== 'vectalon-license+jwt' || !verify('RSA-SHA256', Buffer.from(`${parts[0]}.${parts[1]}`, 'ascii'), publicKey, Buffer.from(parts[2], 'base64url'))) return null
-    if (claims.license_version !== 2 || !text(claims.jti) || !text(claims.sub) || !text(claims.aud) || !Array.isArray(claims.product) || !claims.product.every(text) || !['pro', 'team', 'enterprise'].includes(String(claims.tier)) || !Number.isSafeInteger(claims.seats) || !['active', 'grace'].includes(String(claims.state))) return null
-    return { jti: claims.jti, sub: claims.sub, aud: claims.aud, product: claims.product, tier: claims.tier as VerifiedCredential['tier'], seats: claims.seats as number, state: claims.state as VerifiedCredential['state'] }
+    const result = verifyLicenseWithPolicy(credential, {
+      keys,
+      clock: { now },
+      policy: { issuer: issuerPolicy.issuer, audience: 'vectalon-cli', product: 'rn', allowedTiers: ['pro', 'team', 'enterprise'] },
+    })
+    if (!result.ok) return null
+    const claims = result.claims
+    return { jti: claims.licenseId, sub: claims.subject, aud: claims.audience[0], product: claims.product, tier: claims.tier as VerifiedCredential['tier'], seats: claims.seats, state: claims.state as VerifiedCredential['state'] }
   } catch { return null }
+}
+
+/** Public key registry only: active and overlap are usable; retired/compromised remain explicit rejections. */
+export function environmentVerificationKeys(environment: Readonly<Record<string, string | undefined>> = process.env): StaticLicenseKeySource {
+  const raw = environment.VECTALON_LICENSE_VERIFICATION_KEYS
+  if (!raw) throw new Error('license-verification-keyset-unavailable')
+  let keys: unknown
+  try { keys = JSON.parse(raw) } catch { throw new Error('license-verification-keyset-unavailable') }
+  if (!Array.isArray(keys)) throw new Error('license-verification-keyset-unavailable')
+  const verified: LicenseVerificationKey[] = keys.map(value => {
+    if (!value || typeof value !== 'object') throw new Error('license-verification-keyset-unavailable')
+    const key = value as Record<string, unknown>
+    if (typeof key.id !== 'string' || key.algorithm !== 'RS256' || !['active', 'overlap', 'retired', 'compromised'].includes(String(key.status)) || typeof key.publicKey !== 'string' || /PRIVATE KEY/.test(key.publicKey)) throw new Error('license-verification-keyset-unavailable')
+    // Core's public verifier calls an overlap key active; its Admin-only
+    // rollout label never changes the fact that retired/compromised reject.
+    return { id: key.id, algorithm: 'RS256', status: (key.status === 'overlap' ? 'active' : key.status) as LicenseVerificationKey['status'], publicKey: key.publicKey }
+  })
+  return new StaticLicenseKeySource(verified)
 }
 
 function requestKey(action: CustomerAction, credential: string): string {
   return `customer-${action}-${createHash('sha256').update(credential).digest('hex').slice(0, 48)}`
 }
-function text(value: unknown): value is string { return typeof value === 'string' && value.length > 0 }
 function matchesRecord(claims: VerifiedCredential, record: LicenseRecord): boolean {
-  return claims.sub === record.subjectId && claims.aud === record.audience && claims.tier === record.tier && claims.seats === record.seats && claims.product.length === record.product.length && claims.product.every((product, index) => product === record.product[index])
+  // Mutable entitlement fields deliberately do not block an idempotent replay.
+  // A fresh mutation still compares the server-owned revision in the transaction.
+  return claims.jti === record.id && claims.sub === record.subjectId && claims.aud === record.audience
+}
+
+/**
+ * The public gateway derives one key per bearer/action, so its replay body is
+ * keyed by that immutable command identity rather than an optimistic revision
+ * read after a lost response. Generic Admin commands retain their full command
+ * fingerprint through the underlying repository.
+ */
+function customerReplayRepository(repository: LicenseRepository): LicenseRepository {
+  return {
+    requiresSigningKeySnapshot: repository.requiresSigningKeySnapshot,
+    get: licenseId => repository.get(licenseId),
+    listAudit: licenseId => repository.listAudit(licenseId),
+    atomic: (input, work) => repository.atomic({
+      ...input,
+      fingerprint: createHash('sha256').update(`customer-replay:${input.idempotencyKey}`).digest('hex'),
+    }, work),
+  }
 }
 function failure(code: Extract<LifecycleResult, { ok: false }>['code'], message: string): LifecycleResult { return { ok: false, code, message } }
