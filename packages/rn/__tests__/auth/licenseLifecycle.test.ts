@@ -174,6 +174,57 @@ describe('license lifecycle UX', () => {
     }
   })
 
+  it('accepts an online replacement after an offline lease became stale and records a fresh online time', async () => {
+    const temp = createTempProject({})
+    const store = new LicenseLifecycleStore({ directory: temp, legacyPaths: [] })
+    const staleAt = NOW - 35 * DAY - 1
+    const verify: LicenseCredentialVerifier = (token, record) => {
+      if (token === 'replacement-license') {
+        return record?.lastOnlineAt === NOW
+          ? { ok: true, tier: 'team', state: 'active', expiresAt: NOW + 30 * DAY }
+          : { ok: false, code: 'offline_lease_expired' }
+      }
+      return accepted(token, record)
+    }
+    try {
+      expect(store.save('stale-license', verify, staleAt)).toEqual({ ok: true })
+      jest.spyOn(Date, 'now').mockReturnValue(NOW)
+      await authCommand({ refresh: true }, {
+        store,
+        verify,
+        gateway: { refresh: async (token: string) => {
+          expect(token).toBe('stale-license')
+          return { ok: true, credential: 'replacement-license' }
+        } },
+      })
+      expect(store.read()).toMatchObject({
+        ok: true,
+        record: { token: 'replacement-license', revision: 2, lastTrustedTime: NOW, lastOnlineAt: NOW },
+      })
+    } finally {
+      jest.restoreAllMocks()
+      cleanup(temp)
+    }
+  })
+
+  it('retains clock-rollback protection while saving an online replacement', () => {
+    const temp = createTempProject({})
+    try {
+      const store = new LicenseLifecycleStore({ directory: temp, legacyPaths: [] })
+      expect(store.save('credential-one', accepted, NOW + 1)).toEqual({ ok: true })
+      const selected = store.read()
+      if (!selected.ok) throw new Error('test record was not stored')
+      const rollback: LicenseCredentialVerifier = (_token, record) => record?.lastTrustedTime === NOW + 1
+        ? { ok: false, code: 'clock_rollback' }
+        : accepted('credential-two')
+
+      expect(store.saveOnlineReplacement('credential-two', rollback, selected.record, NOW)).toEqual({ ok: false, code: 'clock_rollback' })
+      expect(store.read()).toMatchObject({ ok: true, record: { token: 'credential-one', revision: 1 } })
+    } finally {
+      cleanup(temp)
+    }
+  })
+
   it('uses the same gateway after local recovery without failing usable offline recovery', async () => {
     const temp = createTempProject({})
     const store = new LicenseLifecycleStore({ directory: temp, legacyPaths: [] })
@@ -183,6 +234,28 @@ describe('license lifecycle UX', () => {
       await authCommand({ recover: true }, { store, verify: accepted, gateway })
       expect(gateway.refresh).toHaveBeenCalledWith('credential-one')
       expect(store.read()).toMatchObject({ ok: true, record: { token: 'credential-one' } })
+    } finally {
+      cleanup(temp)
+    }
+  })
+
+  it('refreshes the verified prior record after recovering from a policy-invalid current record', async () => {
+    const temp = createTempProject({})
+    const store = new LicenseLifecycleStore({ directory: temp, legacyPaths: [] })
+    const verify: LicenseCredentialVerifier = token => token === 'invalid-current'
+      ? { ok: false, code: 'inactive_lifecycle', lifecycle: 'revoked' }
+      : accepted(token)
+    try {
+      expect(store.save('verified-prior', accepted, NOW)).toEqual({ ok: true })
+      expect(store.save('invalid-current', accepted, NOW + 1)).toEqual({ ok: true })
+      const gateway = { refresh: jest.fn(async (token: string) => {
+        expect(token).toBe('verified-prior')
+        return { ok: true as const, credential: 'replacement-license' }
+      }) }
+      await authCommand({ recover: true }, { store, verify, gateway })
+      expect(gateway.refresh).toHaveBeenCalledWith('verified-prior')
+      expect(store.read()).toMatchObject({ ok: true, record: { token: 'replacement-license', revision: 4 } })
+      expect(readFileSync(join(temp, 'license-v2.json.previous'), 'utf8')).toContain('verified-prior')
     } finally {
       cleanup(temp)
     }

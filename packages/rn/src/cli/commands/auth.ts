@@ -3,7 +3,7 @@
  * Business Source License 1.1 (BSL-1.1)
  */
 
-import { LicenseStore } from '@vectalon-dev/core'
+import { LicenseStore, type StoredLicenseRecord } from '@vectalon-dev/core'
 import { logger } from '../logger'
 import { pollTrialDeviceFlow, startTrialDeviceFlow } from '../../auth/trialDeviceFlow'
 import { activateTrial, clearTrial, trialDaysRemaining, trialStatus } from '../../auth/trialState'
@@ -68,7 +68,18 @@ export async function authCommand(options: AuthOptions, dependencies: AuthComman
     if (recovered.ok && recovered.recovered) logger.warn('Recovered the prior verified license record.')
     else if (recovered.ok) logger.info('A verified local license record is already available.')
     else logger.warn('No recoverable local license record was found.')
-    if (recovered.ok) await refreshStoredLicense(store, verify, dependencies.gateway ?? new LicenseGatewayClient(), false)
+    if (recovered.ok) {
+      // A policy-invalid primary can coexist with a verified previous record.
+      // Promote the verified selection through Core's atomic revision protocol
+      // before any network operation, then refresh that exact credential.
+      const promoted = recovered.recovered ? store.promote(recovered.record) : { ok: true as const, record: recovered.record }
+      if (!promoted.ok) {
+        logger.error(`License recovery failed: ${promoted.code}`)
+        process.exitCode = 1
+        return
+      }
+      await refreshStoredLicense(store, verify, dependencies.gateway ?? new LicenseGatewayClient(), false, promoted.record)
+    }
     return
   }
 
@@ -123,8 +134,9 @@ async function refreshStoredLicense(
   verify: LicenseCredentialVerifier,
   gateway: Pick<LicenseGatewayClient, 'refresh'>,
   explicit: boolean,
+  selected?: StoredLicenseRecord,
 ): Promise<void> {
-  const stored = store.read()
+  const stored = selected ? { ok: true as const, record: selected } : store.read()
   if (!stored.ok) {
     if (explicit) {
       logger.error('License refresh requires a stored license. Activate or recover a license first.')
@@ -143,9 +155,12 @@ async function refreshStoredLicense(
     } else logger.warn(message)
     return
   }
-  const saved = store.save(refreshed.credential, verify)
+  const saved = store.saveOnlineReplacement(refreshed.credential, verify, stored.record)
   if (!saved.ok) {
-    const status = describeLicenseStatus(verify(refreshed.credential, stored.record))
+    const status = describeLicenseStatus(verify(refreshed.credential, {
+      lastTrustedTime: stored.record.lastTrustedTime,
+      lastOnlineAt: Date.now(),
+    }))
     logger.error(`License refresh rejected: ${status.state}`)
     if (explicit) process.exitCode = 1
     return

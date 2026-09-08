@@ -91,6 +91,33 @@ export class LicenseLifecycleStore {
     return written.ok ? { ok: true } : { ok: false, code: written.code }
   }
 
+  /**
+   * An online replacement has just been authenticated by the gateway. Verify
+   * its signature, claims, current time, clock rollback, and storage revision,
+   * but deliberately do not reapply an already-expired offline-age check.
+   */
+  saveOnlineReplacement(
+    token: string,
+    verify: LicenseCredentialVerifier,
+    prior: StoredLicenseRecord,
+    now = Date.now(),
+  ): Readonly<{ ok: true }> | Readonly<{ ok: false; code: string }> {
+    const checked = verify(token, { lastTrustedTime: prior.lastTrustedTime, lastOnlineAt: now })
+    if (!checked.ok) return { ok: false, code: checked.code }
+    const written = this.storage.write({ token, lastTrustedTime: now, lastOnlineAt: now })
+    return written.ok ? { ok: true } : { ok: false, code: written.code }
+  }
+
+  /** Promote a verified fallback through Core's atomic revision protocol. */
+  promote(record: StoredLicenseRecord): Readonly<{ ok: true; record: StoredLicenseRecord }> | Readonly<{ ok: false; code: string }> {
+    const written = this.storage.write({
+      token: record.token,
+      lastTrustedTime: record.lastTrustedTime,
+      lastOnlineAt: record.lastOnlineAt,
+    })
+    return written.ok ? { ok: true, record: written.record } : { ok: false, code: written.code }
+  }
+
   /** Logout removes both the selected record and its recoverable predecessor. */
   clear(): void {
     for (const path of [join(dirname(this.previousPath), LIFECYCLE_FILENAME), this.previousPath]) {

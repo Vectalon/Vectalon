@@ -93,3 +93,26 @@ The explicitly authorized online lifecycle path is now enabled.
 ### Residual deployment condition
 
 The website route deliberately uses the configured durable registry that is already deployed with vectalon.in. It does not relay the credential to an arbitrary secondary Admin URL, because the authorization is limited to vectalon.in. Production lifecycle state and signing-key deployment remain owned by the Admin service and its separate deployment controls.
+
+---
+
+## Reviewer-remediation follow-up: local refresh durability
+
+- Added a dedicated online replacement write path. It verifies the replacement against the selected record's trusted clock while supplying the newly observed online time, so a stale offline lease cannot reject a successful refresh. Core's signature, claim, current-time, clock-rollback, and atomic revision checks remain in force before the record is published.
+- `--recover` now promotes the verified selected fallback through Core's atomic revision protocol and refreshes that exact record. It no longer reloads and forwards a structurally valid but policy-invalid current credential.
+- Regression coverage reproduces stale-lease replacement, preserved clock-rollback rejection, policy-invalid-current recovery, exact credential forwarding, and safe fallback promotion.
+
+### Follow-up verification
+
+| Check | Outcome |
+| --- | --- |
+| Focused RN lifecycle tests | 25 passing |
+| RN typecheck / build | passed |
+| RN lint | 0 errors; 4 existing warnings |
+| RN package | packed successfully to an isolated temporary directory |
+| Diff / scoped secret scan | passed; no private key or credential material added |
+| Full RN suite | one unrelated host-sensitive timeout in `__tests__/workflows/featureDevelopment.test.ts`; focused lifecycle tests pass |
+
+### Remaining production adapter blocker
+
+The website's existing configured adapter still projects its legacy `AdminStore` validation/usage APIs and cannot perform the approved Admin lifecycle command. This checkout has no same-process Admin lifecycle service, durable revision/audit repository, or Admin signer authority to invoke. A correct fix requires an explicitly authorized, fixed Admin command boundary; it must not send an operator secret to an arbitrary environment-configured origin or recreate lifecycle policy in the website.
