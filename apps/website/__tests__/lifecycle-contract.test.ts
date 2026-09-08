@@ -1,4 +1,5 @@
 import fixture from '../contracts/admin/license-command-v1.json'
+import successFixture from '../contracts/admin/license-command-v1-success.json'
 import { parseLifecycleCommandResponse } from '../lib/lifecycle-contract'
 
 describe('Admin lifecycle public contract adapter', () => {
@@ -7,6 +8,13 @@ describe('Admin lifecycle public contract adapter', () => {
       ok: false,
       code: 'invalid_command',
       retryable: false,
+    })
+  })
+
+  it('replays the recorded Admin success response without exposing or transforming its credential', () => {
+    expect(parseLifecycleCommandResponse(successFixture.response)).toEqual({
+      ok: true,
+      credential: successFixture.response.credential,
     })
   })
 

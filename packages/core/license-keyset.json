@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "coreSourceRevision": "98aee264a9d9139c058fd11d3e312b384deb2e40",
+  "keys": [
+    {
+      "id": "vectalon-legacy",
+      "algorithm": "RS256",
+      "status": "active",
+      "publicKeyFile": "public-key.pem",
+      "sha256": "a19c5f1b054638d7c1c368ffffa9f28b9ea78035d331b79b0d47cd1fc4688cb7"
+    }
+  ]
+}

@@ -1,10 +1,13 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
+import { generateKeyPairSync, sign } from 'crypto'
 import { join } from 'path'
 import {
+  createCustomerLicenseVerifier,
   LicenseLifecycleStore,
   describeLicenseStatus,
   type LicenseCredentialVerifier,
 } from '../../src/auth/licenseLifecycle'
+import { authCommand } from '../../src/cli/commands/auth'
 import { cleanup, createTempProject } from '../helpers/tmp'
 
 const accepted: LicenseCredentialVerifier = () => ({
@@ -13,6 +16,29 @@ const accepted: LicenseCredentialVerifier = () => ({
   state: 'active',
   expiresAt: 1_900_000_000_000,
 })
+
+const NOW = 1_800_000_000_000
+const DAY = 86_400_000
+
+function encode(value: object): string {
+  return Buffer.from(JSON.stringify(value)).toString('base64url')
+}
+
+/** A real RS256 V2 credential. The private key exists only for this test process. */
+function v2Fixture() {
+  const pair = generateKeyPairSync('rsa', { modulusLength: 2048 })
+  const key = { id: 'test-key', algorithm: 'RS256' as const, status: 'active' as const, publicKey: pair.publicKey }
+  const claims = {
+    license_version: 2, jti: 'license-123', iss: 'https://licenses.vectalon.dev', aud: 'vectalon-cli',
+    sub: 'customer-123', product: ['rn'], tier: 'team', seats: 4, state: 'active',
+    iat: NOW / 1000, nbf: NOW / 1000, exp: (NOW + 30 * DAY) / 1000,
+  }
+  const token = (patch: Record<string, unknown> = {}, header: Record<string, unknown> = {}) => {
+    const input = `${encode({ alg: 'RS256', kid: key.id, typ: 'vectalon-license+jwt', ...header })}.${encode({ ...claims, ...patch })}`
+    return `${input}.${sign('RSA-SHA256', Buffer.from(input, 'ascii'), pair.privateKey).toString('base64url')}`
+  }
+  return { key, claims, token }
+}
 
 describe('versioned license lifecycle storage', () => {
   let directory: string
@@ -50,6 +76,60 @@ describe('versioned license lifecycle storage', () => {
 
     expect(store.read()).toMatchObject({ ok: true, recovered: true, record: { token: 'credential-one' } })
     expect(readFileSync(join(directory, 'license-v2.json.previous'), 'utf8')).not.toContain('credential-two')
+  })
+
+  it('recovers a verified previous record when the current structurally valid record is policy-incompatible', () => {
+    const f = v2Fixture()
+    const verify = createCustomerLicenseVerifier({ keys: [f.key], now: () => NOW })
+    const store = new LicenseLifecycleStore({ directory, legacyPaths: [] })
+    expect(store.save(f.token(), verify, NOW)).toEqual({ ok: true })
+    expect(store.save(f.token({ aud: 'previous-product-version' }), () => ({ ok: true, tier: 'team', state: 'active', expiresAt: NOW + DAY }), NOW + 1)).toEqual({ ok: true })
+
+    expect(store.readVerified(verify)).toMatchObject({ ok: true, recovered: true, record: { revision: 1 }, check: { ok: true, tier: 'team' } })
+  })
+})
+
+describe('versioned customer credential policy', () => {
+  it('activates a verified V2 credential through the auth command and leaves it authoritative for recovery', async () => {
+    const f = v2Fixture()
+    const verify = createCustomerLicenseVerifier({ keys: [f.key], now: () => NOW })
+    const temp = createTempProject({})
+    try {
+      const store = new LicenseLifecycleStore({ directory: temp, legacyPaths: [] })
+      jest.spyOn(Date, 'now').mockReturnValue(NOW)
+      await authCommand({ license: f.token() }, { store, verify })
+      expect(store.readVerified(verify)).toMatchObject({ ok: true, recovered: false, check: { tier: 'team', state: 'active' } })
+    } finally { cleanup(temp) }
+  })
+
+  it.each([
+    ['inactive lifecycle', { state: 'revoked' }, 'inactive_lifecycle'],
+    ['wrong issuer', { iss: 'https://attacker.example' }, 'wrong_issuer'],
+    ['wrong audience', { aud: 'not-vectalon' }, 'wrong_audience'],
+    ['wrong product', { product: ['python'] }, 'wrong_product'],
+    ['expired offline lease', {}, 'offline_lease_expired'],
+  ])('keeps a recognized V2 %s failure terminal instead of accepting it as legacy', (_name, patch, expected) => {
+    const f = v2Fixture()
+    const record = expected === 'offline_lease_expired' ? { lastTrustedTime: NOW, lastOnlineAt: NOW - 35 * DAY - 1 } : undefined
+    const verify = createCustomerLicenseVerifier({ keys: [f.key], now: () => NOW })
+    expect(verify(f.token(patch), record)).toEqual(expect.objectContaining({ ok: false, code: expected }))
+  })
+
+  it.each([
+    ['unknown', [], 'unknown_key'],
+    ['retired', ['retired'] as const, 'retired_key'],
+    ['compromised', ['compromised'] as const, 'compromised_key'],
+  ])('keeps a recognized V2 %s key failure terminal', (_name, statuses, expected) => {
+    const f = v2Fixture()
+    const keys = statuses.length === 0 ? [] : [{ ...f.key, status: statuses[0] }]
+    const verify = createCustomerLicenseVerifier({ keys, now: () => NOW })
+    expect(verify(f.token())).toEqual(expect.objectContaining({ ok: false, code: expected }))
+  })
+
+  it('keeps V2 algorithm confusion terminal', () => {
+    const f = v2Fixture()
+    const verify = createCustomerLicenseVerifier({ keys: [f.key], now: () => NOW })
+    expect(verify(f.token({}, { alg: 'HS256' }))).toEqual(expect.objectContaining({ ok: false, code: 'unsupported_algorithm' }))
   })
 })
 

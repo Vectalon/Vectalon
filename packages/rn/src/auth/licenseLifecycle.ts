@@ -6,15 +6,17 @@
  * a credential to a caller that might log it.
  */
 
-import { existsSync, readFileSync } from 'fs'
+import { createHash } from 'crypto'
+import { existsSync, readFileSync, unlinkSync } from 'fs'
 import { homedir } from 'os'
-import { join } from 'path'
+import { dirname, join } from 'path'
 import {
   AtomicLicenseStorage,
   LicenseValidator,
   StaticLicenseKeySource,
   verifyLicenseWithPolicy,
-  type LicenseVerificationErrorCode,
+  type LicenseVerificationKey,
+  type StoredLicenseRecord,
 } from '@vectalon-dev/core'
 
 export type LicenseAccess = 'granted' | 'warning' | 'blocked'
@@ -26,10 +28,18 @@ export type LicenseCredentialCheck =
 
 export type LicenseCredentialVerifier = (token: string, record?: Readonly<{ lastTrustedTime: number; lastOnlineAt: number }>) => LicenseCredentialCheck
 
-export const LICENSE_KEYSET_PROVENANCE = Object.freeze({
-  coreSourceRevision: '98aee264a9d9139c058fd11d3e312b384deb2e40',
-  keys: Object.freeze([{ id: 'vectalon-legacy', algorithm: 'RS256' as const, status: 'active' as const }]),
-})
+export type LicenseKeysetManifest = Readonly<{
+  schemaVersion: 1
+  coreSourceRevision: string
+  keys: readonly Readonly<{ id: string; algorithm: 'RS256'; status: 'active' | 'retired' | 'compromised'; publicKeyFile: string; sha256: string }>[]
+}>
+
+export type VerifiedCustomerLicense =
+  | Readonly<{ ok: true; record: StoredLicenseRecord; recovered: boolean; check: Extract<LicenseCredentialCheck, { ok: true }> }>
+  | Readonly<{ ok: false; code: string; check?: Extract<LicenseCredentialCheck, { ok: false }> }>
+
+/** The reviewed, package-relative trust manifest; malformed input fails V2 closed. */
+export const LICENSE_KEYSET_PROVENANCE: LicenseKeysetManifest = loadBundledKeyset()
 
 const LIFECYCLE_FILENAME = 'license-v2.json'
 const DEFAULT_ISSUER = 'https://licenses.vectalon.dev'
@@ -43,10 +53,12 @@ const DEFAULT_TIERS = ['pro', 'team', 'enterprise']
  */
 export class LicenseLifecycleStore {
   private readonly storage: AtomicLicenseStorage
+  private readonly previousPath: string
   private readonly legacyPaths: readonly string[]
 
   constructor(options: Readonly<{ directory: string; legacyPaths?: readonly string[] }>) {
     this.storage = new AtomicLicenseStorage({ directory: options.directory, filename: LIFECYCLE_FILENAME })
+    this.previousPath = join(options.directory, `${LIFECYCLE_FILENAME}.previous`)
     this.legacyPaths = options.legacyPaths ?? [
       join(options.directory, 'license.json'),
       join(homedir(), '.config', 'vectalon', 'license.json'),
@@ -54,6 +66,21 @@ export class LicenseLifecycleStore {
   }
 
   read() { return this.storage.read() }
+
+  /** Verify a current record, then independently verify its previous revision if needed. */
+  readVerified(verify: LicenseCredentialVerifier): VerifiedCustomerLicense {
+    const current = this.storage.read()
+    if (!current.ok) return { ok: false, code: current.code }
+    const checked = verify(current.record.token, current.record)
+    if (checked.ok) return { ok: true, record: current.record, recovered: current.recovered, check: checked }
+    if (current.recovered) return { ok: false, code: checked.code, check: checked }
+
+    const previous = readStoredRecord(this.previousPath)
+    if (!previous || previous.revision >= current.record.revision) return { ok: false, code: checked.code, check: checked }
+    const priorChecked = verify(previous.token, previous)
+    if (priorChecked.ok) return { ok: true, record: previous, recovered: true, check: priorChecked }
+    return { ok: false, code: checked.code, check: checked }
+  }
 
   save(token: string, verify: LicenseCredentialVerifier, now = Date.now()): Readonly<{ ok: true }> | Readonly<{ ok: false; code: string }> {
     const prior = this.storage.read()
@@ -64,8 +91,17 @@ export class LicenseLifecycleStore {
     return written.ok ? { ok: true } : { ok: false, code: written.code }
   }
 
+  /** Logout removes both the selected record and its recoverable predecessor. */
+  clear(): void {
+    for (const path of [join(dirname(this.previousPath), LIFECYCLE_FILENAME), this.previousPath]) {
+      try { if (existsSync(path)) unlinkSync(path) } catch { /* logout is best-effort */ }
+    }
+  }
+
   migrateLegacy(verify: LicenseCredentialVerifier, now = Date.now()): Readonly<{ ok: true; migrated: boolean }> | Readonly<{ ok: false; code: string }> {
-    if (this.storage.read().ok) return { ok: true, migrated: false }
+    const existing = this.storage.read()
+    if (existing.ok) return { ok: true, migrated: false }
+    if (existing.code !== 'not_found') return { ok: false, code: existing.code }
     for (const path of this.legacyPaths) {
       const token = readLegacyToken(path)
       if (!token) continue
@@ -76,11 +112,23 @@ export class LicenseLifecycleStore {
   }
 }
 
-/** Verify with the reviewed Core policy, then retain the legacy facade only for compatible old credentials. */
-export function verifyCustomerLicense(token: string, record?: Readonly<{ lastTrustedTime: number; lastOnlineAt: number }>): LicenseCredentialCheck {
+export function createCustomerLicenseVerifier(options: Readonly<{ keys: readonly LicenseVerificationKey[]; now?: () => number }>): LicenseCredentialVerifier {
+  const keys = new StaticLicenseKeySource(options.keys)
+  return (token, record) => verifyCustomerLicense(token, record, { keys, now: options.now })
+}
+
+/**
+ * Recognize V2 before policy evaluation: a V2 credential never falls through
+ * to the permissive legacy verifier after any V2 policy/key/signature error.
+ */
+export function verifyCustomerLicense(
+  token: string,
+  record?: Readonly<{ lastTrustedTime: number; lastOnlineAt: number }>,
+  options?: Readonly<{ keys?: StaticLicenseKeySource; now?: () => number }>,
+): LicenseCredentialCheck {
   const result = verifyLicenseWithPolicy(token, {
-    keys: keySource(),
-    clock: { now: () => Date.now() },
+    keys: options?.keys ?? keySource(),
+    clock: { now: options?.now ?? (() => Date.now()) },
     policy: {
       issuer: process.env.VECTALON_LICENSE_ISSUER || DEFAULT_ISSUER,
       audience: process.env.VECTALON_LICENSE_AUDIENCE || DEFAULT_AUDIENCE,
@@ -94,14 +142,22 @@ export function verifyCustomerLicense(token: string, record?: Readonly<{ lastTru
     return { ok: true, tier: result.claims.tier, state: result.claims.state, expiresAt: result.claims.expiresAt }
   }
   if (result.ok) return { ok: false, code: 'inactive_lifecycle', lifecycle: result.claims.state }
+  if (recognizesV2(token)) return { ok: false, code: result.code }
 
-  // Existing compatible credentials retain their established verification
-  // behavior. They are still stored atomically after their first lifecycle use.
+  // Compatibility is intentionally limited to genuinely legacy credentials.
   const legacy = LicenseValidator.validate(token)
   if (legacy.valid && legacy.license) {
     return { ok: true, tier: legacy.license.tier, state: 'active', expiresAt: legacy.license.expiresAt, legacy: true }
   }
-  return { ok: false, code: result.code as LicenseVerificationErrorCode }
+  return { ok: false, code: result.code }
+}
+
+/** One authoritative evaluator for access gates, status, doctor, and alerts. */
+export function currentCustomerLicense(): VerifiedCustomerLicense {
+  const store = customerLicenseStore()
+  const migration = store.migrateLegacy(verifyCustomerLicense)
+  if (!migration.ok) return { ok: false, code: migration.code }
+  return store.readVerified(verifyCustomerLicense)
 }
 
 export function describeLicenseStatus(check: LicenseCredentialCheck): Readonly<{ access: LicenseAccess; state: LicenseStateLabel; message: string }> {
@@ -126,8 +182,60 @@ export function customerLicenseStore(): LicenseLifecycleStore {
 }
 
 function keySource(): StaticLicenseKeySource {
-  const publicKey = readFileSync(require.resolve('@vectalon-dev/core/public-key.pem'), 'utf8')
-  return new StaticLicenseKeySource(LICENSE_KEYSET_PROVENANCE.keys.map(key => ({ ...key, publicKey })))
+  const root = dirname(require.resolve('@vectalon-dev/core/package.json'))
+  const keys: LicenseVerificationKey[] = []
+  for (const key of LICENSE_KEYSET_PROVENANCE.keys) {
+    try {
+      const publicKey = readFileSync(join(root, key.publicKeyFile), 'utf8')
+      if (createHash('sha256').update(publicKey).digest('hex') !== key.sha256 || /PRIVATE KEY/.test(publicKey)) continue
+      keys.push({ id: key.id, algorithm: key.algorithm, status: key.status, publicKey })
+    } catch { /* missing/malformed trust material makes V2 fail closed */ }
+  }
+  return new StaticLicenseKeySource(keys)
+}
+
+function loadBundledKeyset(): LicenseKeysetManifest {
+  try {
+    const value: unknown = JSON.parse(readFileSync(require.resolve('@vectalon-dev/core/license-keyset.json'), 'utf8'))
+    if (!isKeysetManifest(value)) throw new Error('invalid keyset')
+    return Object.freeze({ ...value, keys: Object.freeze(value.keys.map(key => Object.freeze({ ...key }))) })
+  } catch {
+    return Object.freeze({ schemaVersion: 1, coreSourceRevision: 'unavailable', keys: Object.freeze([]) })
+  }
+}
+
+function recognizesV2(token: string): boolean {
+  try {
+    const [header, payload, signature, ...extra] = token.split('.')
+    if (!header || !payload || !signature || extra.length > 0) return false
+    const decodedHeader = JSON.parse(Buffer.from(header, 'base64url').toString('utf8')) as Record<string, unknown>
+    const decodedPayload = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as Record<string, unknown>
+    return decodedPayload.license_version === 2 || decodedHeader.typ === 'vectalon-license+jwt'
+  } catch { return false }
+}
+
+function isKeysetManifest(value: unknown): value is LicenseKeysetManifest {
+  if (!value || typeof value !== 'object') return false
+  const manifest = value as Record<string, unknown>
+  if (manifest.schemaVersion !== 1 || typeof manifest.coreSourceRevision !== 'string' || !/^[a-f0-9]{40}$/.test(manifest.coreSourceRevision) || !Array.isArray(manifest.keys) || manifest.keys.length === 0) return false
+  return manifest.keys.every(key => {
+    if (!key || typeof key !== 'object') return false
+    const record = key as Record<string, unknown>
+    return typeof record.id === 'string' && record.id.length > 0 && record.algorithm === 'RS256' &&
+      ['active', 'retired', 'compromised'].includes(record.status as string) && typeof record.publicKeyFile === 'string' &&
+      !record.publicKeyFile.includes('/') && typeof record.sha256 === 'string' && /^[a-f0-9]{64}$/.test(record.sha256)
+  })
+}
+
+function readStoredRecord(path: string): StoredLicenseRecord | null {
+  try {
+    const value: unknown = JSON.parse(readFileSync(path, 'utf8'))
+    if (!value || typeof value !== 'object') return null
+    const record = value as Record<string, unknown>
+    return record.version === 1 && Number.isSafeInteger(record.revision) && (record.revision as number) > 0 &&
+      typeof record.token === 'string' && record.token.length > 0 && Number.isSafeInteger(record.lastTrustedTime) && (record.lastTrustedTime as number) >= 0 &&
+      Number.isSafeInteger(record.lastOnlineAt) && (record.lastOnlineAt as number) >= 0 ? record as StoredLicenseRecord : null
+  } catch { return null }
 }
 
 function readLegacyToken(path: string): string | null {

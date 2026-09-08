@@ -7,7 +7,7 @@ import { LicenseStore } from '@vectalon-dev/core'
 import { logger } from '../logger'
 import { pollTrialDeviceFlow, startTrialDeviceFlow } from '../../auth/trialDeviceFlow'
 import { activateTrial, clearTrial, trialDaysRemaining, trialStatus } from '../../auth/trialState'
-import { customerLicenseStore, describeLicenseStatus, verifyCustomerLicense } from '../../auth/licenseLifecycle'
+import { customerLicenseStore, describeLicenseStatus, verifyCustomerLicense, type LicenseCredentialVerifier, type LicenseLifecycleStore } from '../../auth/licenseLifecycle'
 
 interface AuthOptions {
   license?: string
@@ -18,12 +18,19 @@ interface AuthOptions {
   recover?: boolean
 }
 
-export async function authCommand(options: AuthOptions): Promise<void> {
+export interface AuthCommandDependencies {
+  store?: LicenseLifecycleStore
+  verify?: LicenseCredentialVerifier
+}
+
+export async function authCommand(options: AuthOptions, dependencies: AuthCommandDependencies = {}): Promise<void> {
+  const store = dependencies.store ?? customerLicenseStore()
+  const verify = dependencies.verify ?? verifyCustomerLicense
   if (options.license) {
-    const stored = customerLicenseStore().save(options.license, verifyCustomerLicense)
+    const stored = store.save(options.license, verify)
     if (stored.ok) {
-      const record = customerLicenseStore().read()
-      const validation = record.ok ? verifyCustomerLicense(record.record.token, record.record) : null
+      const record = store.read()
+      const validation = record.ok ? verify(record.record.token, record.record) : null
       if (validation?.ok) {
         logger.info(`✅ License activated: ${validation.tier} tier`)
         logger.info(`   Expires: ${new Date(validation.expiresAt).toISOString().split('T')[0]}`)
@@ -36,6 +43,7 @@ export async function authCommand(options: AuthOptions): Promise<void> {
   }
 
   if (options.logout) {
+    store.clear()
     LicenseStore.clear()
     clearTrial()
     logger.info('👋 Logged out. Reverted to free tier.')
@@ -48,13 +56,13 @@ export async function authCommand(options: AuthOptions): Promise<void> {
   }
 
   if (options.recover) {
-    const migration = customerLicenseStore().migrateLegacy(verifyCustomerLicense)
+    const migration = store.migrateLegacy(verify)
     if (!migration.ok) {
       logger.error(`License recovery failed: ${migration.code}`)
       process.exitCode = 1
       return
     }
-    const recovered = customerLicenseStore().read()
+    const recovered = store.readVerified(verify)
     if (recovered.ok && recovered.recovered) logger.warn('Recovered the prior verified license record. Run vectalon auth --refresh when online.')
     else if (recovered.ok) logger.info('A verified local license record is already available.')
     else logger.warn('No recoverable local license record was found.')
@@ -68,9 +76,8 @@ export async function authCommand(options: AuthOptions): Promise<void> {
   }
 
   // Default: show status
-  const store = customerLicenseStore()
-  const migration = store.migrateLegacy(verifyCustomerLicense)
-  const license = store.read()
+  const migration = store.migrateLegacy(verify)
+  const license = store.readVerified(verify)
   const trial = trialStatus()
 
   logger.info('📊 Authentication Status')
@@ -79,7 +86,7 @@ export async function authCommand(options: AuthOptions): Promise<void> {
   if (!migration.ok) {
     logger.warn(`License storage needs recovery: ${migration.code}`)
   } else if (license.ok) {
-    const validation = verifyCustomerLicense(license.record.token, license.record)
+    const validation = license.check
     const status = describeLicenseStatus(validation)
     logger.info(`${status.access === 'granted' ? '✅' : status.access === 'warning' ? '⚠️' : '⛔'} License: ${status.state}`)
     if (validation.ok) {

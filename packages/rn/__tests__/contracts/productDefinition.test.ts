@@ -1,6 +1,9 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
 import { createRequire } from 'node:module'
 import path from 'node:path'
+import { execFileSync } from 'node:child_process'
+import { tmpdir } from 'node:os'
 
 import type { ProductDefinition } from '../../src/contracts/core.generated'
 
@@ -27,11 +30,17 @@ describe('shipped ProductDefinition contract', () => {
   test('carries Core revision and public-key provenance in the packed artifact', () => {
     const provenance = JSON.parse(readFileSync(path.join(__dirname, '../../dist/license-provenance.json'), 'utf8')) as {
       coreSourceRevision: string
-      keys: Array<{ id: string; algorithm: string; status: string; sha256: string }>
+      keys: Array<{ id: string; algorithm: string; status: string; publicKeyFile: string; sha256: string }>
     }
 
-    expect(provenance.coreSourceRevision).toBe('98aee264a9d9139c058fd11d3e312b384deb2e40')
-    expect(provenance.keys).toEqual([{ id: 'vectalon-legacy', algorithm: 'RS256', status: 'active', sha256: expect.stringMatching(/^[a-f0-9]{64}$/) }])
+    const reviewed = JSON.parse(readFileSync(path.resolve(__dirname, '../../../core/license-keyset.json'), 'utf8'))
+    expect(provenance).toEqual(reviewed)
+    expect(readFileSync(path.join(bundledCoreRoot, 'license-keyset.json'), 'utf8')).toBe(readFileSync(path.resolve(__dirname, '../../../core/license-keyset.json'), 'utf8'))
+    for (const key of provenance.keys) {
+      const publicKey = readFileSync(path.join(bundledCoreRoot, key.publicKeyFile), 'utf8')
+      expect(createHash('sha256').update(publicKey).digest('hex')).toBe(key.sha256)
+      expect(publicKey).not.toContain('PRIVATE KEY')
+    }
   })
 
   test('fails closed for the future-major Core fixture', () => {
@@ -43,5 +52,21 @@ describe('shipped ProductDefinition contract', () => {
       path: '/contractVersion',
       code: 'unsupported-version',
     })
+  })
+
+  test('packed CLI logout clears both current and recoverable lifecycle records', () => {
+    const home = mkdtempSync(path.join(tmpdir(), 'vectalon-packed-home-'))
+    const config = path.join(home, 'config')
+    try {
+      mkdirSync(config, { recursive: true })
+      writeFileSync(path.join(config, 'license-v2.json'), JSON.stringify({ version: 1, revision: 2, token: 'redacted-current', lastTrustedTime: 1, lastOnlineAt: 1 }))
+      writeFileSync(path.join(config, 'license-v2.json.previous'), JSON.stringify({ version: 1, revision: 1, token: 'redacted-previous', lastTrustedTime: 1, lastOnlineAt: 1 }))
+      execFileSync(process.execPath, [path.resolve(__dirname, '../../bin/rn-vectalon.js'), 'auth', '--logout'], {
+        env: { ...process.env, HOME: home, RN_VECTALON_CONFIG_DIR: config },
+        stdio: 'pipe',
+      })
+      expect(existsSync(path.join(config, 'license-v2.json'))).toBe(false)
+      expect(existsSync(path.join(config, 'license-v2.json.previous'))).toBe(false)
+    } finally { rmSync(home, { recursive: true, force: true }) }
   })
 })

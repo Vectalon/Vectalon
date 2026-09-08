@@ -70,6 +70,7 @@ jobs:
           CORE_SHA=$(git -C packages/core/src rev-parse HEAD)
           echo "sha=$CORE_SHA" >> "$GITHUB_OUTPUT"
           echo "$CORE_SHA" > packages/core/core-source-revision.txt
+          node packages/rn/scripts/generate-license-keyset.js packages/core/src "$CORE_SHA" packages/core/src/license-keyset.json
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
@@ -89,6 +90,8 @@ jobs:
 
       - name: Build
         run: pnpm turbo run build --filter=@vectalon-dev/rn
+        env:
+          CORE_REPO_DIR: packages/core/src
 
       - name: Verify packed Core and key provenance
         run: pnpm --filter @vectalon-dev/rn test -- --runInBand __tests__/contracts/productDefinition.test.ts
@@ -136,7 +139,9 @@ jobs:
 
       - name: Record core revision
         if: steps.pat.outputs.has_pat == 'true'
-        run: echo "${{ needs.bench-gate.outputs.core-sha }}" > packages/core/core-source-revision.txt
+        run: |
+          echo "${{ needs.bench-gate.outputs.core-sha }}" > packages/core/core-source-revision.txt
+          node packages/rn/scripts/generate-license-keyset.js packages/core/src "${{ needs.bench-gate.outputs.core-sha }}" packages/core/src/license-keyset.json
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v5
@@ -158,6 +163,8 @@ jobs:
 
       - name: Build
         run: pnpm turbo run build --filter=@vectalon-dev/rn
+        env:
+          CORE_REPO_DIR: packages/core/src
 
       - name: Verify packed Core and key provenance
         run: pnpm --filter @vectalon-dev/rn test -- --runInBand __tests__/contracts/productDefinition.test.ts

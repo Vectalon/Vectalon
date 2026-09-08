@@ -10,9 +10,9 @@
 import { resolve, join } from 'path'
 import pc from 'picocolors'
 import { printCarbonReport, parchment, dim } from '../carbon'
-import { LicenseStore, LicenseValidator } from '@vectalon-dev/core'
 import { trialStatus } from '../../auth/trialState'
 import type { Tier } from '@vectalon-dev/core'
+import { currentCustomerLicense } from '../../auth/licenseLifecycle'
 import { PLANS, PLAN_BY_ID, planForTier } from '../../billing/plans'
 import type { PlanId } from '../../billing/plans'
 
@@ -24,15 +24,10 @@ export interface PlanCommandOptions {
 /** Determine the engine tier currently active on this machine. */
 export function currentEngineTier(): { tier: Tier; source: 'license' | 'trial' | 'free' } {
   try {
-    const license = LicenseStore.read()
-    if (license?.key) {
-      const validation = LicenseValidator.validate(license.key)
-      if (validation.valid && validation.license) {
-        const tier = validation.license.tier as Tier
-        if (['free', 'pro', 'team', 'enterprise'].includes(tier)) {
-          return { tier, source: 'license' }
-        }
-      }
+    const license = currentCustomerLicense()
+    if (license.ok) {
+      const tier = license.check.tier as Tier
+      if (['free', 'pro', 'team', 'enterprise'].includes(tier)) return { tier, source: 'license' }
     }
   } catch {
     // fall through to trial / free

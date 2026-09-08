@@ -5,8 +5,8 @@
 
 import { resolve } from 'path'
 import { existsSync, accessSync, constants } from 'fs'
-import { LicenseStore, LicenseValidator } from '@vectalon-dev/core'
 import { trialDaysRemaining, trialStatus } from '../../auth/trialState'
+import { currentCustomerLicense } from '../../auth/licenseLifecycle'
 import { reportError } from '../../utils/safe'
 import { spawnSync } from 'child_process'
 import pc from 'picocolors'
@@ -460,10 +460,10 @@ export async function doctorCommand(directory: string, options: DoctorOptions): 
   logger.info('')
   logger.info(pc.bold('Upgrade Readiness'))
   logger.info('-----------------')
-  const license = LicenseStore.read()
+  const license = currentCustomerLicense()
   const trial = trialStatus()
-  if (license && license.key && LicenseValidator.validate(license.key).valid) {
-    const days = LicenseValidator.daysRemaining(license)
+  if (license.ok) {
+    const days = Math.max(0, Math.ceil((license.check.expiresAt - Date.now()) / 86_400_000))
     logger.info(`✅ License active (${days} days remaining)`)
   } else if (trial.status === 'active') {
     logger.info(`🔄 Trial active (${trialDaysRemaining(trial)} days remaining)`)
