@@ -8,6 +8,7 @@ import {
   type LicenseCredentialVerifier,
 } from '../../src/auth/licenseLifecycle'
 import { authCommand } from '../../src/cli/commands/auth'
+import { getLogLines } from '../../src/cli/logger'
 import { cleanup, createTempProject } from '../helpers/tmp'
 
 const accepted: LicenseCredentialVerifier = () => ({
@@ -66,6 +67,15 @@ describe('versioned license lifecycle storage', () => {
     const rejected: LicenseCredentialVerifier = () => ({ ok: false, code: 'invalid_signature' })
     expect(store.save('credential-two', rejected, 1_800_000_000_001)).toEqual({ ok: false, code: 'invalid_signature' })
     expect(store.read()).toMatchObject({ ok: true, record: { token: 'credential-one' } })
+  })
+
+  it.each(['revoked', 'superseded'] as const)('does not replace the atomic record when a refreshed credential is %s', lifecycle => {
+    const store = new LicenseLifecycleStore({ directory, legacyPaths: [] })
+    expect(store.save('credential-one', accepted, NOW)).toEqual({ ok: true })
+    const rejected: LicenseCredentialVerifier = () => ({ ok: false, code: 'inactive_lifecycle', lifecycle })
+
+    expect(store.save('credential-two', rejected, NOW + 1)).toEqual({ ok: false, code: 'inactive_lifecycle' })
+    expect(store.read()).toMatchObject({ ok: true, record: { token: 'credential-one', revision: 1 } })
   })
 
   it('recovers the prior record when the current record is corrupt', () => {
@@ -145,6 +155,56 @@ describe('license lifecycle UX', () => {
     expect(command).toContain(".option('--status'")
     expect(command).toContain(".option('--refresh'")
     expect(command).toContain(".option('--recover'")
+  })
+
+  it('refreshes through the injected gateway, commits only a verified replacement, and redacts credentials from output', async () => {
+    const temp = createTempProject({})
+    const store = new LicenseLifecycleStore({ directory: temp, legacyPaths: [] })
+    try {
+      expect(store.save('credential-one', accepted, NOW)).toEqual({ ok: true })
+      const gateway = { refresh: jest.fn(async (token: string) => {
+        expect(token).toBe('credential-one')
+        return { ok: true as const, credential: 'credential-two' }
+      }) }
+      await authCommand({ refresh: true }, { store, verify: accepted, gateway })
+      expect(store.read()).toMatchObject({ ok: true, record: { token: 'credential-two', revision: 2 } })
+      expect(getLogLines().join('\n')).not.toContain('credential-two')
+    } finally {
+      cleanup(temp)
+    }
+  })
+
+  it('uses the same gateway after local recovery without failing usable offline recovery', async () => {
+    const temp = createTempProject({})
+    const store = new LicenseLifecycleStore({ directory: temp, legacyPaths: [] })
+    try {
+      expect(store.save('credential-one', accepted, NOW)).toEqual({ ok: true })
+      const gateway = { refresh: jest.fn(async () => ({ ok: false as const, code: 'offline' as const, retryable: true })) }
+      await authCommand({ recover: true }, { store, verify: accepted, gateway })
+      expect(gateway.refresh).toHaveBeenCalledWith('credential-one')
+      expect(store.read()).toMatchObject({ ok: true, record: { token: 'credential-one' } })
+    } finally {
+      cleanup(temp)
+    }
+  })
+
+  it.each(['revoked', 'superseded'] as const)('reports a %s refresh safely and keeps the old credential', async lifecycle => {
+    const temp = createTempProject({})
+    const store = new LicenseLifecycleStore({ directory: temp, legacyPaths: [] })
+    try {
+      const verify: LicenseCredentialVerifier = token => token === 'credential-two'
+        ? { ok: false, code: 'inactive_lifecycle', lifecycle }
+        : accepted(token)
+      expect(store.save('credential-one', verify, NOW)).toEqual({ ok: true })
+      await authCommand({ refresh: true }, { store, verify, gateway: { refresh: async () => ({ ok: true, credential: 'credential-two' }) } })
+      expect(store.read()).toMatchObject({ ok: true, record: { token: 'credential-one', revision: 1 } })
+      const output = getLogLines().join('\n')
+      expect(output).toContain(`License refresh rejected: ${lifecycle}`)
+      expect(output).not.toContain('credential-two')
+    } finally {
+      process.exitCode = undefined
+      cleanup(temp)
+    }
   })
 
 })

@@ -8,6 +8,7 @@ import { logger } from '../logger'
 import { pollTrialDeviceFlow, startTrialDeviceFlow } from '../../auth/trialDeviceFlow'
 import { activateTrial, clearTrial, trialDaysRemaining, trialStatus } from '../../auth/trialState'
 import { customerLicenseStore, describeLicenseStatus, verifyCustomerLicense, type LicenseCredentialVerifier, type LicenseLifecycleStore } from '../../auth/licenseLifecycle'
+import { LicenseGatewayClient } from '../../auth/licenseGateway'
 
 interface AuthOptions {
   license?: string
@@ -21,6 +22,7 @@ interface AuthOptions {
 export interface AuthCommandDependencies {
   store?: LicenseLifecycleStore
   verify?: LicenseCredentialVerifier
+  gateway?: Pick<LicenseGatewayClient, 'refresh'>
 }
 
 export async function authCommand(options: AuthOptions, dependencies: AuthCommandDependencies = {}): Promise<void> {
@@ -63,15 +65,15 @@ export async function authCommand(options: AuthOptions, dependencies: AuthComman
       return
     }
     const recovered = store.readVerified(verify)
-    if (recovered.ok && recovered.recovered) logger.warn('Recovered the prior verified license record. Run vectalon auth --refresh when online.')
+    if (recovered.ok && recovered.recovered) logger.warn('Recovered the prior verified license record.')
     else if (recovered.ok) logger.info('A verified local license record is already available.')
     else logger.warn('No recoverable local license record was found.')
+    if (recovered.ok) await refreshStoredLicense(store, verify, dependencies.gateway ?? new LicenseGatewayClient(), false)
     return
   }
 
   if (options.refresh) {
-    logger.warn('Online refresh is not available until the customer gateway is configured. Your current bounded offline lease remains subject to its expiry.')
-    process.exitCode = 1
+    await refreshStoredLicense(store, verify, dependencies.gateway ?? new LicenseGatewayClient(), true)
     return
   }
 
@@ -113,6 +115,42 @@ export async function authCommand(options: AuthOptions, dependencies: AuthComman
   logger.info('')
   logger.info('Get a license: https://vectalon.in/pricing')
   logger.info('Start a trial: https://vectalon.in/trial')
+}
+
+/** Refresh validates a replacement before the atomic store can publish it. */
+async function refreshStoredLicense(
+  store: LicenseLifecycleStore,
+  verify: LicenseCredentialVerifier,
+  gateway: Pick<LicenseGatewayClient, 'refresh'>,
+  explicit: boolean,
+): Promise<void> {
+  const stored = store.read()
+  if (!stored.ok) {
+    if (explicit) {
+      logger.error('License refresh requires a stored license. Activate or recover a license first.')
+      process.exitCode = 1
+    }
+    return
+  }
+  const refreshed = await gateway.refresh(stored.record.token)
+  if (!refreshed.ok) {
+    const message = refreshed.code === 'offline' || refreshed.code === 'timeout'
+      ? 'License refresh is unavailable while offline. Your existing bounded lease remains in effect until it expires.'
+      : `License refresh failed: ${refreshed.code}`
+    if (explicit) {
+      logger.error(message)
+      process.exitCode = 1
+    } else logger.warn(message)
+    return
+  }
+  const saved = store.save(refreshed.credential, verify)
+  if (!saved.ok) {
+    const status = describeLicenseStatus(verify(refreshed.credential, stored.record))
+    logger.error(`License refresh rejected: ${status.state}`)
+    if (explicit) process.exitCode = 1
+    return
+  }
+  logger.success('License refreshed securely.')
 }
 
 async function authenticateTrial(): Promise<void> {

@@ -65,3 +65,31 @@
 | Pack dry run | passed; 2,583 files, 2,065,997-byte tarball |
 | Secret scan + diff check | passed; no private key or credential material in scoped runtime/package files |
 | Full RN suite | host-unrelated `featureDevelopment` timeout (local command simulation); lifecycle/provenance focused suites passed |
+
+---
+
+## Online refresh authorization completion
+
+The explicitly authorized online lifecycle path is now enabled.
+
+- RN has one strict customer gateway: its production origin is exactly `https://vectalon.in`; non-production overrides require both an explicit opt-in and an HTTPS origin. It sends the stored credential only in the `Authorization` header to `/api/v1/license/refresh`, has a ten-second bounded timeout, blocks every redirect, and returns finite typed failures without logging a credential or response body.
+- `vectalon auth --refresh` loads the durable current/recovered record, refreshes it through that gateway, verifies the candidate before committing it through Core's atomic store, and leaves the current/previous revision untouched when the candidate is rejected. `--recover` retains its local rollback behavior and then attempts the same refresh when a usable local record exists; offline recovery remains usable.
+- The website now exposes the authenticated server route `POST /api/v1/license/refresh`. It rejects credentials in request bodies, consumes the approved Admin v1 response parser, and delegates credential validity to the existing durable Admin registry. It does not mint, sign, or expose key material.
+- Regression coverage adds gateway allowlist, explicit secure override, header-only forwarding, redirect, timeout, offline, contract/error mapping, redaction, activation/refresh route, durable registry, corrupt/atomic rollback, and revoked/superseded cases.
+
+### Fresh verification
+
+| Check | Outcome |
+| --- | --- |
+| Focused RN lifecycle/gateway tests | 2 suites, 25 tests passed |
+| Website suite | 17 suites, 94 tests passed (`--no-watchman`) |
+| RN typecheck and build | passed; reviewed Core bundled |
+| RN lint | 0 errors; four pre-existing warnings |
+| Website typecheck and webpack production build | passed; route included as dynamic `/api/v1/license/refresh` |
+| RN package dry run | passed with isolated cache; 2,587 files, 2.1 MB package / 9.5 MB unpacked |
+| Scoped source/package secret and log scan | no new private-key or live-secret match; no gateway credential/body logging path |
+| Diff check | passed |
+
+### Residual deployment condition
+
+The website route deliberately uses the configured durable registry that is already deployed with vectalon.in. It does not relay the credential to an arbitrary secondary Admin URL, because the authorization is limited to vectalon.in. Production lifecycle state and signing-key deployment remain owned by the Admin service and its separate deployment controls.
