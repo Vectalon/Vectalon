@@ -42,3 +42,26 @@
 - Online refresh/recovery must be completed only after explicit authority to transmit the stored license credential to a named production gateway; do not work around that approval with an arbitrary URL or query parameter.
 - The website currently consumes the reviewed public Admin response contract but does not host Admin policy or a private signer. Wire its activation/refresh route to the authenticated Admin gateway after the credential-forwarding decision.
 - Re-run the host-restricted RN integration suites in CI or a developer environment that permits loopback ports and `sandbox-exec`.
+
+---
+
+## Reviewer-remediation addendum
+
+- V2 credentials are recognized before policy evaluation. A recognized V2 token cannot fall back to `LicenseValidator` after a lifecycle, issuer, audience, product, offline-lease, key-state, or algorithm failure.
+- `currentCustomerLicense()` is now the single product-facing evaluator and backs plan tier resolution, status, doctor, diagnostics alerts, auth recovery, and logout. Legacy files remain migration-only input.
+- Recovery independently verifies `license-v2.json.previous` when a structurally valid current record is policy-incompatible, while retaining Core rollback detection. Logout clears both durable lifecycle revisions.
+- Release packaging generates a public keyset manifest from the reviewed Core checkout, validates each key digest and non-private PEM, copies it with the packed Core runtime, and consumes it at runtime. The manifest supports active overlap plus retired and compromised keys.
+- Added real-RS256 V2 activation/policy/recovery tests, a packed CLI logout test, packed manifest/key-digest checks, and an Admin-shaped success-response fixture replay. Online refresh remains explicitly non-forwarding and never logs credentials.
+
+### Remediation verification
+
+| Check | Outcome |
+| --- | --- |
+| RN lifecycle + packed artifact tests | 20 passing |
+| RN typecheck / build | passed |
+| RN lint | 0 errors; 4 pre-existing warnings |
+| Website lifecycle fixture test / typecheck | passed |
+| Website production build | Turbopack remains host-port blocked; webpack production build passed |
+| Pack dry run | passed; 2,583 files, 2,065,997-byte tarball |
+| Secret scan + diff check | passed; no private key or credential material in scoped runtime/package files |
+| Full RN suite | host-unrelated `featureDevelopment` timeout (local command simulation); lifecycle/provenance focused suites passed |
