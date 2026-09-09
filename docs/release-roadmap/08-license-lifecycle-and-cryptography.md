@@ -68,6 +68,14 @@ Offline verification and online lifecycle controls must complement each other. A
 - Vectalon clean-install, upgrade, rollback, offline-expiry, refresh, and recovery tests against the packed artifact.
 - Reviewer independently validates public-key provenance, algorithm allowlists, lifecycle transitions, and private-key isolation.
 
+## Task 04 integration evidence (2026-09-09)
+
+**Status: integration-qualified with deployment blockers.** Core `98aee26`, Admin `79bcfca`, and Vectalon `b33dfa0` were exercised together. The golden corpus is byte-identical in Core, Admin, and the packed RN Core runtime (`SHA-256 310bd00dd261965fea049918385a3b714411fcf450542b1bb735a19e1caf754f`). Core replayed the full corpus; Admin lifecycle/key-state tests and RN lifecycle/storage/upgrade/rollback tests passed. An Admin-issued in-memory RS256 credential was accepted by the bundled Core and RN consumers. The packed RN artifact preserves Core source SHA `98aee264a9d9139c058fd11d3e312b384deb2e40`, its public-key manifest, and the vector corpus; extracted-artifact and tracked-source scans found no private key or assigned signing-secret value.
+
+Fresh gates: Core 23 suites / 599 tests; Admin 67 passed with one opt-in live-PostgreSQL test skipped; RN lifecycle/gate/provenance 33 tests; website 20 suites / 101 tests. Core/Admin/RN/website typechecks and production builds passed, as did contract, product, Admin-snapshot provenance, and RN package checks. The integration correction is `643bd87` (generated Core V2 projections and the actual pinned contract revision).
+
+Deployment blockers only: do not promote until the approved additive Admin migrations are applied and verified by an authorized database owner; run the live PostgreSQL role/isolation/concurrency drill against an empty disposable staging or CI database; provision the server-only signer/KMS identity and align the durable active key, overlap/retired/compromised public registry, and shipped RN keyset; configure the website database/TLS inputs; and rerun host-restricted sandbox/process-timing cases in CI. No production migration or KMS activation was performed here.
+
 ## Exit and rollback
 
 Exit requires a rehearsed rotation and a complete lifecycle from purchase-derived issuance through revocation/recovery. Rollback retains verification for previously issued compatible claims and never restores a compromised key.
