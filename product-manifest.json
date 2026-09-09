@@ -17,7 +17,7 @@
       "name": "@vectalon-dev/core",
       "version": "0.9.1",
       "distribution": "bundled-private-runtime",
-      "contractRevision": "1.0.0+b2c205f6555429fb0ffe9470b8ab70e6ed35d28353c01ea79c1fa052967cc0e5"
+      "contractRevision": "1.0.0+a56b503318b7748b15d68f0be86a2515b4977018bc4151d9a4f5e45f1c23c1dc"
     }
   },
   "platforms": {
