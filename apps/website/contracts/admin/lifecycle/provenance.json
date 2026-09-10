@@ -1,7 +1,7 @@
 {
   "adapterVersion": 1,
   "source": "vectalon-admin",
-  "sourceCommit": "79bcfcad1ae323eab0669812d8186a140385e3a9",
+  "sourceCommit": "b8d5448a121f6d19c98656732d4f1a4a6c66db93",
   "files": {
     "lib/admin-lifecycle/generated/types.ts": {
       "source": "lib/licenses/types.ts",
@@ -33,7 +33,7 @@
     },
     "contracts/admin/lifecycle/LicenseCommandV1Response.schema.json": {
       "source": "contracts/schemas/LicenseCommandV1Response.schema.json",
-      "sha256": "74ead04a7b7b27831374d3d28ca7c47a5837ec15788511d8600138e03e458343"
+      "sha256": "b3393a91bcec32b0e5235d2557ddf483bfd8ea5c8e4fc012816ffc1b5bf56b18"
     }
   }
 }

@@ -12,18 +12,16 @@ import { homedir } from 'os'
 import { dirname, join } from 'path'
 import {
   AtomicLicenseStorage,
-  createTrustedClaims,
-  evaluateEntitlement,
+  evaluateLicenseEntitlement,
   LicenseValidator,
   StaticLicenseKeySource,
+  TierResolver,
   verifyLicenseWithPolicy,
   type EntitlementDecision,
   type LicenseVerificationKey,
   type StoredLicenseRecord,
   type Tier,
   type TierCheck,
-  type TrustedClaims,
-  type VerifiedLicenseClaims,
 } from '@vectalon-dev/core'
 import { AUTHORITATIVE_LIFECYCLE_DENIAL_STATES, type AuthoritativeLifecycleDenialState } from './licenseGateway'
 import issuerPolicy from '../license-policy.json'
@@ -32,10 +30,13 @@ export type LicenseAccess = 'granted' | 'warning' | 'blocked'
 export type LicenseStateLabel = 'active' | 'grace' | 'stale' | 'suspended' | 'expired' | 'canceled' | 'refunded' | 'revoked' | 'superseded' | 'invalid'
 
 export type LicenseCredentialCheck =
-  | Readonly<{ ok: true; tier: string; state: 'active' | 'grace'; expiresAt: number; entitlementClaims?: TrustedClaims; legacy?: boolean }>
+  | Readonly<{ ok: true; tier: string; state: 'active' | 'grace'; expiresAt: number; legacy?: boolean }>
   | Readonly<{ ok: false; code: string; lifecycle?: string }>
 
-export type LicenseCredentialVerifier = (token: string, record?: Readonly<{ lastTrustedTime: number; lastOnlineAt: number }>) => LicenseCredentialCheck
+export type LicenseCredentialVerifier = ((token: string, record?: Readonly<{ lastTrustedTime: number; lastOnlineAt: number }>) => LicenseCredentialCheck) & {
+  /** Core-owned V2 verification plus entitlement evaluation for persisted credentials. */
+  evaluateEntitlement?: (token: string, record: Readonly<{ lastTrustedTime: number; lastOnlineAt: number }>, requiredTier: Tier, now: number) => EntitlementDecision
+}
 
 export type LicenseKeysetManifest = Readonly<{
   schemaVersion: 1
@@ -193,7 +194,19 @@ export class LicenseLifecycleStore {
 
 export function createCustomerLicenseVerifier(options: Readonly<{ keys: readonly LicenseVerificationKey[]; now?: () => number }>): LicenseCredentialVerifier {
   const keys = new StaticLicenseKeySource(options.keys)
-  return (token, record) => verifyCustomerLicense(token, record, { keys, now: options.now })
+  const verify = ((token, record) => verifyCustomerLicense(token, record, { keys, now: options.now })) as LicenseCredentialVerifier
+  verify.evaluateEntitlement = (token, record, requiredTier, now) => evaluateLicenseEntitlement(token, {
+    verification: {
+      keys,
+      clock: { now: () => now },
+      policy: customerVerificationPolicy(),
+      lastTrustedTime: record.lastTrustedTime,
+      lastOnlineAt: record.lastOnlineAt,
+    },
+    requiredTier,
+    product: 'rn',
+  })
+  return verify
 }
 
 /**
@@ -208,20 +221,15 @@ export function verifyCustomerLicense(
   const result = verifyLicenseWithPolicy(token, {
     keys: options?.keys ?? keySource(),
     clock: { now: options?.now ?? (() => Date.now()) },
-    policy: {
-      issuer: process.env.VECTALON_LICENSE_ISSUER || DEFAULT_ISSUER,
-      audience: process.env.VECTALON_LICENSE_AUDIENCE || DEFAULT_AUDIENCE,
-      product: 'rn',
-      allowedTiers: DEFAULT_TIERS,
-    },
+    policy: customerVerificationPolicy(),
     lastTrustedTime: record?.lastTrustedTime,
     lastOnlineAt: record?.lastOnlineAt,
   })
   if (result.ok && (result.claims.state === 'active' || result.claims.state === 'grace')) {
-    return { ok: true, tier: result.claims.tier, state: result.claims.state, expiresAt: result.claims.expiresAt, entitlementClaims: trustedEntitlementClaims(result.claims) }
+    return { ok: true, tier: result.claims.tier, state: result.claims.state, expiresAt: result.claims.expiresAt }
   }
   if (result.ok) return { ok: false, code: 'inactive_lifecycle', lifecycle: result.claims.state }
-  if (recognizesV2(token)) return { ok: false, code: result.code, ...(result.lifecycle === undefined ? {} : { lifecycle: result.lifecycle }) }
+  if (recognizesV2(token)) return { ok: false, code: result.code, ...(result.code === 'inactive_lifecycle' ? lifecycleFromRecognizedToken(token) : {}) }
 
   // Compatibility is intentionally limited to genuinely legacy credentials.
   const legacy = LicenseValidator.validate(token)
@@ -231,14 +239,6 @@ export function verifyCustomerLicense(
       tier: legacy.license.tier,
       state: 'active',
       expiresAt: legacy.license.expiresAt,
-      entitlementClaims: createTrustedClaims({
-        schemaVersion: 1,
-        subject: String(legacy.license.githubUserId ?? 'legacy-license'),
-        tier: legacy.license.tier,
-        product: legacy.license.product,
-        issuedAt: legacy.license.issuedAt,
-        expiresAt: legacy.license.expiresAt,
-      }),
       legacy: true,
     }
   }
@@ -263,18 +263,13 @@ export function evaluateCustomerTier(
   options: Readonly<{ store?: LicenseLifecycleStore; verify?: LicenseCredentialVerifier; now?: () => number }> = {},
 ): TierCheck {
   const store = options.store ?? customerLicenseStore()
-  const verify = options.verify ?? verifyCustomerLicense
+  const verify: LicenseCredentialVerifier = options.verify ?? createCustomerLicenseVerifier({ keys: bundledVerificationKeys() })
   const now = (options.now ?? Date.now)()
   const migration = store.migrateLegacy(verify, now)
   const selected = migration.ok ? store.readVerified(verify) : { ok: false as const, code: migration.code }
-  const decision = evaluateEntitlement({
-    requiredTier,
-    product: 'rn',
-    now,
-    lastTrustedTime: selected.ok ? selected.record.lastTrustedTime : undefined,
-    claims: selected.ok && selected.check.ok ? selected.check.entitlementClaims ?? null : null,
-  })
-  return tierCheck(decision)
+  if (!selected.ok || !selected.check.ok) return unavailableTierCheck(requiredTier)
+  const coreDecision = verify.evaluateEntitlement?.(selected.record.token, selected.record, requiredTier, now)
+  return coreDecision ? tierCheck(coreDecision) : verifiedCompatibilityTierCheck(selected.check, requiredTier)
 }
 
 /** Backward-compatible command-facing name; unlike Core's legacy gate it is V2-store backed. */
@@ -304,6 +299,10 @@ export function customerLicenseStore(): LicenseLifecycleStore {
 }
 
 function keySource(): StaticLicenseKeySource {
+  return new StaticLicenseKeySource(bundledVerificationKeys())
+}
+
+function bundledVerificationKeys(): LicenseVerificationKey[] {
   const root = dirname(require.resolve('@vectalon-dev/core/package.json'))
   const keys: LicenseVerificationKey[] = []
   for (const key of LICENSE_KEYSET_PROVENANCE.keys) {
@@ -313,7 +312,7 @@ function keySource(): StaticLicenseKeySource {
       keys.push({ id: key.id, algorithm: key.algorithm, status: key.status, publicKey })
     } catch { /* missing/malformed trust material makes V2 fail closed */ }
   }
-  return new StaticLicenseKeySource(keys)
+  return keys
 }
 
 function loadBundledKeyset(): LicenseKeysetManifest {
@@ -336,19 +335,16 @@ function recognizesV2(token: string): boolean {
   } catch { return false }
 }
 
-/** A Core V2 policy result is signature-verified; adapt it once for Core's evaluator. */
-function trustedEntitlementClaims(claims: VerifiedLicenseClaims): TrustedClaims {
-  return createTrustedClaims({
-    schemaVersion: 1,
-    subject: claims.subject,
-    tier: claims.tier,
-    product: claims.product,
-    issuedAt: claims.issuedAt,
-    expiresAt: claims.expiresAt,
-    seats: claims.seats,
-  })
+/** A signed V2 verification failure may still render its terminal state, never grant access. */
+function lifecycleFromRecognizedToken(token: string): Readonly<{ lifecycle: string }> | Record<string, never> {
+  try {
+    const payload = JSON.parse(Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8')) as Record<string, unknown>
+    const state = payload.state
+    return AUTHORITATIVE_LIFECYCLE_DENIAL_STATES.includes(state as AuthoritativeLifecycleDenialState) ? { lifecycle: state as string } : {}
+  } catch { return {} }
 }
 
+/** A Core V2 policy result is signature-verified; adapt it once for Core's evaluator. */
 function tierCheck(decision: EntitlementDecision): TierCheck {
   return {
     allowed: decision.allowed,
@@ -358,6 +354,27 @@ function tierCheck(decision: EntitlementDecision): TierCheck {
     ...(decision.expiresAt === undefined ? {} : { daysRemaining: Math.max(0, Math.ceil((decision.expiresAt - Date.now()) / 86_400_000)) }),
     message: decision.message,
   }
+}
+
+function customerVerificationPolicy() {
+  return {
+    issuer: process.env.VECTALON_LICENSE_ISSUER || DEFAULT_ISSUER,
+    audience: process.env.VECTALON_LICENSE_AUDIENCE || DEFAULT_AUDIENCE,
+    product: 'rn',
+    allowedTiers: DEFAULT_TIERS,
+  }
+}
+
+/** Compatibility verifiers are test seams and legacy migration inputs; V2 uses Core above. */
+function verifiedCompatibilityTierCheck(check: Extract<LicenseCredentialCheck, { ok: true }>, requiredTier: Tier): TierCheck {
+  const currentTier = TierResolver.isTier(check.tier) ? check.tier : 'free'
+  const allowed = TierResolver.meets(currentTier, requiredTier)
+  return { allowed, currentTier, requiredTier, canTrial: false, message: allowed ? 'Your license includes this capability.' : 'Your current plan does not include this capability.' }
+}
+
+function unavailableTierCheck(requiredTier: Tier): TierCheck {
+  const allowed = requiredTier === 'free'
+  return { allowed, currentTier: 'free', requiredTier, canTrial: false, message: allowed ? 'Available on the Free plan.' : 'A valid license is required. Free features remain available.' }
 }
 
 function isKeysetManifest(value: unknown): value is LicenseKeysetManifest {

@@ -99,7 +99,7 @@ export async function verifyCredential(credential: string, keys: StaticLicenseKe
     })
     if (!result.ok) {
       if (result.code === 'expired') return { denied: 'expired' }
-      const lifecycle = result.code === 'inactive_lifecycle' ? terminalLifecycle(result.lifecycle) : undefined
+      const lifecycle = result.code === 'inactive_lifecycle' ? terminalLifecycleFromCredential(credential) : undefined
       if (lifecycle) return { denied: lifecycle }
       return null
     }
@@ -138,6 +138,14 @@ function matchesRecord(claims: VerifiedCredential, record: LicenseRecord): boole
 function terminalLifecycle(value: unknown): CustomerTerminalLifecycleState | undefined {
   return CUSTOMER_TERMINAL_LIFECYCLE_STATES.includes(value as CustomerTerminalLifecycleState)
     ? value as CustomerTerminalLifecycleState : undefined
+}
+
+/** Only a Core-confirmed inactive-lifecycle result may surface this display state. */
+function terminalLifecycleFromCredential(credential: string): CustomerTerminalLifecycleState | undefined {
+  try {
+    const payload = JSON.parse(Buffer.from(credential.split('.')[1] ?? '', 'base64url').toString('utf8')) as Record<string, unknown>
+    return terminalLifecycle(payload.state)
+  } catch { return undefined }
 }
 
 /**

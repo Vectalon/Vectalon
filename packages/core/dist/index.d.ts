@@ -25,12 +25,12 @@ export type { TrialClock, TrialState, TrialStateStore, TrialStatus, TrialStatusR
 export { verifyTrialToken, isVerifiedTrialCredential } from './auth/TrialCredentialVerifier';
 export type { TrialVerificationContext, TrialVerificationErrorCode, TrialVerificationKey, TrialVerificationResult, VerifiedTrialCredential } from './auth/TrialCredentialVerifier';
 export type { LicenseInfo } from './auth/types';
-export { createTrustedClaims, isTrustedClaims } from './auth/TrustedClaims';
+export { isTrustedClaims } from './auth/TrustedClaims';
 export type { TrustedClaims } from './auth/TrustedClaims';
 export { TierResolver } from './billing/TierResolver';
 export { FeatureGates, requireTier } from './billing/FeatureGates';
-export { evaluateEntitlement, ENTITLEMENT_POLICY_VERSION } from './billing/EntitlementEvaluator';
-export type { EntitlementDecision, EntitlementReasonCode, EntitlementRequest } from './billing/EntitlementEvaluator';
+export { evaluateEntitlement, evaluateLicenseEntitlement, ENTITLEMENT_POLICY_VERSION } from './billing/EntitlementEvaluator';
+export type { EntitlementDecision, EntitlementReasonCode, EntitlementRequest, LicenseEntitlementRequest } from './billing/EntitlementEvaluator';
 export type { Tier, TierCheck, Product, Feature } from './billing/types';
 export { UsageReporter } from './telemetry/UsageReporter';
 export type { TelemetryEvent } from './telemetry/types';
