@@ -38,5 +38,11 @@ function verifyLicenseWithPolicy(raw, context) {
             header: signed.header,
             payload: signed.payload,
         },
-    } : evaluated;
+    } : {
+        ...evaluated,
+        // The payload is RS256-authenticated and schema-validated at this
+        // point. Preserve lifecycle evidence for denied status UX, while the
+        // false result remains unusable by entitlement evaluation.
+        lifecycle: claims.state,
+    };
 }

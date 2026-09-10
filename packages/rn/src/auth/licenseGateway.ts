@@ -27,9 +27,13 @@ export type LicenseGatewayFailureCode =
   | 'service_unavailable'
   | 'contract_invalid'
 
+/** A durable server decision that invalidates every locally recoverable lease. */
+export const AUTHORITATIVE_LIFECYCLE_DENIAL_STATES = ['suspended', 'expired', 'canceled', 'refunded', 'revoked', 'superseded'] as const
+export type AuthoritativeLifecycleDenialState = typeof AUTHORITATIVE_LIFECYCLE_DENIAL_STATES[number]
+
 export type LicenseGatewayResult =
   | Readonly<{ ok: true; credential: string }>
-  | Readonly<{ ok: false; code: LicenseGatewayFailureCode; retryable: boolean }>
+  | Readonly<{ ok: false; code: LicenseGatewayFailureCode; retryable: boolean; lifecycle?: AuthoritativeLifecycleDenialState }>
 
 type FetchLike = (url: string, init: RequestInit) => Promise<Response>
 type Environment = Readonly<Record<string, string | undefined>>
@@ -100,7 +104,12 @@ function parseGatewayResponse(value: unknown): LicenseGatewayResult {
   if (!isObject(value.error) || typeof value.error.code !== 'string' || typeof value.error.retryable !== 'boolean' || !ADMIN_FAILURES.has(value.error.code as LicenseGatewayFailureCode)) {
     return { ok: false, code: 'contract_invalid', retryable: false }
   }
-  return { ok: false, code: value.error.code as LicenseGatewayFailureCode, retryable: value.error.retryable }
+  const lifecycle = value.error.lifecycle
+  if (lifecycle !== undefined && (!AUTHORITATIVE_LIFECYCLE_DENIAL_STATES.includes(lifecycle as AuthoritativeLifecycleDenialState) || value.error.retryable)) {
+    return { ok: false, code: 'contract_invalid', retryable: false }
+  }
+  return { ok: false, code: value.error.code as LicenseGatewayFailureCode, retryable: value.error.retryable,
+    ...(lifecycle === undefined ? {} : { lifecycle: lifecycle as AuthoritativeLifecycleDenialState }) }
 }
 
 function boundedTimeout(value: number | undefined): number {

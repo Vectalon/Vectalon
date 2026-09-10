@@ -10,7 +10,7 @@ export async function handleLicenseRefresh(request: Request, adapter: DurableLif
   const result = await adapter.execute({ action, credential })
   if (result.ok) return NextResponse.json({ contractVersion: '1.0.0', ok: true, credential: result.credential })
   const status = result.code === 'unauthorized' ? 401 : result.code === 'not_found' ? 404 : result.code === 'invalid_transition' ? 409 : result.code === 'contract_invalid' ? 502 : 503
-  return NextResponse.json({ contractVersion: '1.0.0', ok: false, error: { code: result.code, retryable: result.retryable } }, { status })
+  return NextResponse.json({ contractVersion: '1.0.0', ok: false, error: { code: result.code, retryable: result.retryable, ...(result.lifecycle === undefined ? {} : { lifecycle: result.lifecycle }) } }, { status })
 }
 
 function bearerCredential(header: string | null): string | null {

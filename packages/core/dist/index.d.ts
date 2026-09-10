@@ -25,7 +25,7 @@ export type { TrialClock, TrialState, TrialStateStore, TrialStatus, TrialStatusR
 export { verifyTrialToken, isVerifiedTrialCredential } from './auth/TrialCredentialVerifier';
 export type { TrialVerificationContext, TrialVerificationErrorCode, TrialVerificationKey, TrialVerificationResult, VerifiedTrialCredential } from './auth/TrialCredentialVerifier';
 export type { LicenseInfo } from './auth/types';
-export { isTrustedClaims } from './auth/TrustedClaims';
+export { createTrustedClaims, isTrustedClaims } from './auth/TrustedClaims';
 export type { TrustedClaims } from './auth/TrustedClaims';
 export { TierResolver } from './billing/TierResolver';
 export { FeatureGates, requireTier } from './billing/FeatureGates';

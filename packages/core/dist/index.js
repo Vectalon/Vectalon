@@ -38,6 +38,7 @@ var TrialCredentialVerifier_1 = require("./auth/TrialCredentialVerifier");
 Object.defineProperty(exports, "verifyTrialToken", { enumerable: true, get: function () { return TrialCredentialVerifier_1.verifyTrialToken; } });
 Object.defineProperty(exports, "isVerifiedTrialCredential", { enumerable: true, get: function () { return TrialCredentialVerifier_1.isVerifiedTrialCredential; } });
 var TrustedClaims_1 = require("./auth/TrustedClaims");
+Object.defineProperty(exports, "createTrustedClaims", { enumerable: true, get: function () { return TrustedClaims_1.createTrustedClaims; } });
 Object.defineProperty(exports, "isTrustedClaims", { enumerable: true, get: function () { return TrustedClaims_1.isTrustedClaims; } });
 // Billing
 var TierResolver_1 = require("./billing/TierResolver");

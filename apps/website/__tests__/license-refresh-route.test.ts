@@ -36,6 +36,16 @@ describe('authenticated license refresh route', () => {
     expect(body).toContain('invalid_transition')
   })
 
+  it('forwards a typed terminal lifecycle denial so customers can immediately disable local access', async () => {
+    const request = new Request('https://vectalon.in/api/v1/license/refresh', { method: 'POST', headers: { authorization: `Bearer ${credential}` } })
+    const response = await handleLicenseRefresh(request, durableLifecycleAdapter(async () => ({
+      contractVersion: '1.0.0', ok: false, error: { code: 'invalid_transition', message: 'revoked by issuer', retryable: false, lifecycle: 'revoked' },
+    })))
+
+    expect(response.status).toBe(409)
+    await expect(response.json()).resolves.toEqual({ contractVersion: '1.0.0', ok: false, error: { code: 'invalid_transition', retryable: false, lifecycle: 'revoked' } })
+  })
+
   it('rejects missing credentials and malformed Admin v1 envelopes', async () => {
     const missing = await handleLicenseRefresh(new Request('https://vectalon.in/api/v1/license/refresh', { method: 'POST' }), durableLifecycleAdapter(async () => ({})))
     expect(missing.status).toBe(401)

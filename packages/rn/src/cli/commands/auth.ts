@@ -8,7 +8,7 @@ import { logger } from '../logger'
 import { pollTrialDeviceFlow, startTrialDeviceFlow } from '../../auth/trialDeviceFlow'
 import { activateTrial, clearTrial, trialDaysRemaining, trialStatus } from '../../auth/trialState'
 import { customerLicenseStore, describeLicenseStatus, verifyCustomerLicense, type LicenseCredentialVerifier, type LicenseLifecycleStore } from '../../auth/licenseLifecycle'
-import { LicenseGatewayClient } from '../../auth/licenseGateway'
+import { AUTHORITATIVE_LIFECYCLE_DENIAL_STATES, LicenseGatewayClient } from '../../auth/licenseGateway'
 
 interface AuthOptions {
   license?: string
@@ -108,6 +108,10 @@ export async function authCommand(options: AuthOptions, dependencies: AuthComman
     }
     logger.info(`   ${status.message}`)
     if (license.recovered) logger.warn('Using a recoverable prior record; refresh when online.')
+  } else if (license.check) {
+    const status = describeLicenseStatus(license.check)
+    logger.info(`${status.access === 'granted' ? '✅' : status.access === 'warning' ? '⚠️' : '⛔'} License: ${status.state}`)
+    logger.info(`   ${status.message}`)
   } else if (trial.status === 'active' && trial.credential) {
     logger.info(`🔄 Trial: ${trial.credential.tier}`)
     logger.info(`   Days remaining: ${trialDaysRemaining(trial)}`)
@@ -146,6 +150,17 @@ async function refreshStoredLicense(
   }
   const refreshed = await gateway.refresh(stored.record.token)
   if (!refreshed.ok) {
+    if (refreshed.lifecycle && AUTHORITATIVE_LIFECYCLE_DENIAL_STATES.includes(refreshed.lifecycle)) {
+      const quarantined = store.quarantine(refreshed.lifecycle)
+      const message = quarantined.ok
+        ? `License refresh rejected: ${refreshed.lifecycle}`
+        : 'License refresh rejection could not be recorded safely. Paid access remains unavailable until you reactivate.'
+      if (explicit) {
+        logger.error(message)
+        process.exitCode = 1
+      } else logger.warn(message)
+      return
+    }
     const message = refreshed.code === 'offline' || refreshed.code === 'timeout'
       ? 'License refresh is unavailable while offline. Your existing bounded lease remains in effect until it expires.'
       : `License refresh failed: ${refreshed.code}`
@@ -157,10 +172,14 @@ async function refreshStoredLicense(
   }
   const saved = store.saveOnlineReplacement(refreshed.credential, verify, stored.record)
   if (!saved.ok) {
-    const status = describeLicenseStatus(verify(refreshed.credential, {
+    const replacementCheck = verify(refreshed.credential, {
       lastTrustedTime: stored.record.lastTrustedTime,
       lastOnlineAt: Date.now(),
-    }))
+    })
+    const status = describeLicenseStatus(replacementCheck)
+    if (!replacementCheck.ok && replacementCheck.lifecycle && AUTHORITATIVE_LIFECYCLE_DENIAL_STATES.includes(replacementCheck.lifecycle as typeof AUTHORITATIVE_LIFECYCLE_DENIAL_STATES[number])) {
+      store.quarantine(replacementCheck.lifecycle as typeof AUTHORITATIVE_LIFECYCLE_DENIAL_STATES[number])
+    }
     logger.error(`License refresh rejected: ${status.state}`)
     if (explicit) process.exitCode = 1
     return

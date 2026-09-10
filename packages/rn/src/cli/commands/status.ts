@@ -162,6 +162,11 @@ function printLicense(): void {
       logger.info(`License: ${status.access === 'granted' ? pc.green(status.state) : pc.yellow(status.state)} (${days} days remaining, expires ${exp})`)
       return
     }
+    if (license.check) {
+      const status = describeLicenseStatus(license.check)
+      logger.info(`License: ${pc.yellow(status.state)} — ${status.message}`)
+      return
+    }
     if (license.code !== 'not_found') logger.info(`License: ${pc.yellow('invalid')} — run \`vectalon auth --license <key>\` with a valid key`)
     const trial = trialStatus()
     if (trial.status === 'active') {

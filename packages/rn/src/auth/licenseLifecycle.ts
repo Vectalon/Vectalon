@@ -7,11 +7,12 @@
  */
 
 import { createHash } from 'crypto'
-import { existsSync, readFileSync, unlinkSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'fs'
 import { homedir } from 'os'
 import { dirname, join } from 'path'
 import {
   AtomicLicenseStorage,
+  createTrustedClaims,
   evaluateEntitlement,
   LicenseValidator,
   StaticLicenseKeySource,
@@ -24,7 +25,7 @@ import {
   type TrustedClaims,
   type VerifiedLicenseClaims,
 } from '@vectalon-dev/core'
-import { createTrustedClaims } from '@vectalon-dev/core/dist/auth/TrustedClaims'
+import { AUTHORITATIVE_LIFECYCLE_DENIAL_STATES, type AuthoritativeLifecycleDenialState } from './licenseGateway'
 import issuerPolicy from '../license-policy.json'
 
 export type LicenseAccess = 'granted' | 'warning' | 'blocked'
@@ -50,6 +51,7 @@ export type VerifiedCustomerLicense =
 export const LICENSE_KEYSET_PROVENANCE: LicenseKeysetManifest = loadBundledKeyset()
 
 const LIFECYCLE_FILENAME = 'license-v2.json'
+const QUARANTINE_FILENAME = 'license-v2.denied.json'
 /** One release-pinned issuer is shared with the website lifecycle signer. */
 const DEFAULT_ISSUER = issuerPolicy.issuer
 const DEFAULT_AUDIENCE = 'vectalon-cli'
@@ -63,11 +65,13 @@ const DEFAULT_TIERS = ['pro', 'team', 'enterprise']
 export class LicenseLifecycleStore {
   private readonly storage: AtomicLicenseStorage
   private readonly previousPath: string
+  private readonly quarantinePath: string
   private readonly legacyPaths: readonly string[]
 
   constructor(options: Readonly<{ directory: string; legacyPaths?: readonly string[] }>) {
     this.storage = new AtomicLicenseStorage({ directory: options.directory, filename: LIFECYCLE_FILENAME })
     this.previousPath = join(options.directory, `${LIFECYCLE_FILENAME}.previous`)
+    this.quarantinePath = join(options.directory, QUARANTINE_FILENAME)
     this.legacyPaths = options.legacyPaths ?? [
       join(options.directory, 'license.json'),
       join(homedir(), '.config', 'vectalon', 'license.json'),
@@ -78,6 +82,8 @@ export class LicenseLifecycleStore {
 
   /** Verify a current record, then independently verify its previous revision if needed. */
   readVerified(verify: LicenseCredentialVerifier): VerifiedCustomerLicense {
+    const quarantine = this.readQuarantine()
+    if (quarantine) return { ok: false, code: 'inactive_lifecycle', check: { ok: false, code: 'inactive_lifecycle', lifecycle: quarantine } }
     const current = this.storage.read()
     if (!current.ok) return { ok: false, code: current.code }
     const checked = verify(current.record.token, current.record)
@@ -97,7 +103,8 @@ export class LicenseLifecycleStore {
     const checked = verify(token, record)
     if (!checked.ok) return { ok: false, code: checked.code }
     const written = this.storage.write({ token, lastTrustedTime: now, lastOnlineAt: now })
-    return written.ok ? { ok: true } : { ok: false, code: written.code }
+    if (!written.ok) return { ok: false, code: written.code }
+    return this.clearQuarantine() ? { ok: true } : { ok: false, code: 'corrupt_storage' }
   }
 
   /**
@@ -114,11 +121,13 @@ export class LicenseLifecycleStore {
     const checked = verify(token, { lastTrustedTime: prior.lastTrustedTime, lastOnlineAt: now })
     if (!checked.ok) return { ok: false, code: checked.code }
     const written = this.storage.write({ token, lastTrustedTime: now, lastOnlineAt: now })
-    return written.ok ? { ok: true } : { ok: false, code: written.code }
+    if (!written.ok) return { ok: false, code: written.code }
+    return this.clearQuarantine() ? { ok: true } : { ok: false, code: 'corrupt_storage' }
   }
 
   /** Promote a verified fallback through Core's atomic revision protocol. */
   promote(record: StoredLicenseRecord): Readonly<{ ok: true; record: StoredLicenseRecord }> | Readonly<{ ok: false; code: string }> {
+    if (this.readQuarantine()) return { ok: false, code: 'inactive_lifecycle' }
     const written = this.storage.write({
       token: record.token,
       lastTrustedTime: record.lastTrustedTime,
@@ -129,12 +138,31 @@ export class LicenseLifecycleStore {
 
   /** Logout removes both the selected record and its recoverable predecessor. */
   clear(): void {
-    for (const path of [join(dirname(this.previousPath), LIFECYCLE_FILENAME), this.previousPath]) {
+    for (const path of [join(dirname(this.previousPath), LIFECYCLE_FILENAME), this.previousPath, this.quarantinePath]) {
       try { if (existsSync(path)) unlinkSync(path) } catch { /* logout is best-effort */ }
     }
   }
 
+  /**
+   * Publish a token-free denial before removing the primary and previous files.
+   * Readers consult this atomically-renamed marker first, so an interruption
+   * cannot revive a recoverable paid credential after a terminal server reply.
+   */
+  quarantine(lifecycle: AuthoritativeLifecycleDenialState, now = Date.now()): Readonly<{ ok: true }> | Readonly<{ ok: false; code: 'corrupt_storage' }> {
+    try {
+      mkdirSync(dirname(this.quarantinePath), { recursive: true, mode: 0o700 })
+      const temporary = `${this.quarantinePath}.${process.pid}.${now}.tmp`
+      writeFileSync(temporary, JSON.stringify({ version: 1, lifecycle, quarantinedAt: now }), { encoding: 'utf8', mode: 0o600 })
+      renameSync(temporary, this.quarantinePath)
+      for (const path of [join(dirname(this.previousPath), LIFECYCLE_FILENAME), this.previousPath]) {
+        try { if (existsSync(path)) unlinkSync(path) } catch { /* marker already denies access */ }
+      }
+      return { ok: true }
+    } catch { return { ok: false, code: 'corrupt_storage' } }
+  }
+
   migrateLegacy(verify: LicenseCredentialVerifier, now = Date.now()): Readonly<{ ok: true; migrated: boolean }> | Readonly<{ ok: false; code: string }> {
+    if (this.readQuarantine()) return { ok: true, migrated: false }
     const existing = this.storage.read()
     if (existing.ok) return { ok: true, migrated: false }
     if (existing.code !== 'not_found') return { ok: false, code: existing.code }
@@ -145,6 +173,21 @@ export class LicenseLifecycleStore {
       return saved.ok ? { ok: true, migrated: true } : saved
     }
     return { ok: true, migrated: false }
+  }
+
+  private readQuarantine(): AuthoritativeLifecycleDenialState | null {
+    try {
+      if (!existsSync(this.quarantinePath)) return null
+      const value: unknown = JSON.parse(readFileSync(this.quarantinePath, 'utf8'))
+      if (!value || typeof value !== 'object') return null
+      const lifecycle = (value as Record<string, unknown>).lifecycle
+      return AUTHORITATIVE_LIFECYCLE_DENIAL_STATES.includes(lifecycle as AuthoritativeLifecycleDenialState)
+        ? lifecycle as AuthoritativeLifecycleDenialState : null
+    } catch { return null }
+  }
+
+  private clearQuarantine(): boolean {
+    try { if (existsSync(this.quarantinePath)) unlinkSync(this.quarantinePath); return true } catch { return false }
   }
 }
 
@@ -178,7 +221,7 @@ export function verifyCustomerLicense(
     return { ok: true, tier: result.claims.tier, state: result.claims.state, expiresAt: result.claims.expiresAt, entitlementClaims: trustedEntitlementClaims(result.claims) }
   }
   if (result.ok) return { ok: false, code: 'inactive_lifecycle', lifecycle: result.claims.state }
-  if (recognizesV2(token)) return { ok: false, code: result.code }
+  if (recognizesV2(token)) return { ok: false, code: result.code, ...(result.lifecycle === undefined ? {} : { lifecycle: result.lifecycle }) }
 
   // Compatibility is intentionally limited to genuinely legacy credentials.
   const legacy = LicenseValidator.validate(token)

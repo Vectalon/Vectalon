@@ -147,6 +147,24 @@ The website deployment must provide `DATABASE_URL`, `VECTALON_LICENSE_PRIVATE_KE
 
 ## Final-review blocker remediation
 
+### Final-review follow-up (2026-09-10)
+
+- Core's supported package root now exports `createTrustedClaims`; RN no longer deep-imports a second Core module instance. The packed-artifact regression creates an ephemeral signed RS256 V2 credential and runs a paid gate from an isolated tarball extraction, with no Jest mapping or workspace-Core fallback.
+- The public website refresh contract preserves an authenticated, non-retryable terminal lifecycle state. RN accepts only the finite terminal state set, atomically publishes a token-free quarantine marker, then removes current and previous credentials. Every paid gate checks that marker before recovery; retryable transport and service failures continue to retain the bounded offline lease.
+- Core verification retains signed, schema-valid lifecycle metadata on a fail-closed result. RN maps it to explicit blocked `auth --status`, `status`, and doctor output for signed suspended/canceled/refunded/revoked/superseded credentials and for expired/stale reasons; no unverified payload is used for status or entitlement.
+
+### Follow-up verification
+
+| Check | Outcome |
+| --- | --- |
+| RN build/typecheck and focused lifecycle/gateway/gate/package tests | passed, 4 suites / 45 tests |
+| Isolated packed V2 gate | passed with an ephemeral RS256 team credential and no Jest mapping/workspace Core resolution |
+| Website typecheck and signed-token/production-envelope regressions | passed, 3 suites / 13 tests (`--watchman=false`) |
+| RN lint | 0 errors; 4 pre-existing warnings |
+| Website Admin snapshot drift check | not run: this isolated checkout lacks the required Admin source input |
+| Scoped diff/package secret scan | no private PEM or assigned signing-secret value found |
+
+
 - Replaced every RN command import of Core's legacy `requireTier()` with the V2-store-backed gate in `licenseLifecycle.ts`. The gate first selects/migrates the atomic V2 record, adapts only a Core-verified claim into Core's entitlement evaluator, and leaves the legacy file as a bounded migration input.
 - Introduced one canonical issuer policy at `packages/rn/src/license-policy.json`. Both the website signer default and RN verifier import that same policy; the existing shipped `.dev` issuer remains the default compatibility value.
 - Customer refresh idempotency now fingerprints the immutable server-derived bearer/action key before a live optimistic revision can change. The original committed envelope is replayed on a lost-response retry; a distinct action gets a distinct key and is not replayed as refresh.

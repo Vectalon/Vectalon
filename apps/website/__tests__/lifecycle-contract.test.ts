@@ -18,6 +18,13 @@ describe('Admin lifecycle public contract adapter', () => {
     })
   })
 
+  it('preserves a finite authoritative terminal state only on a non-retryable transition rejection', () => {
+    expect(parseLifecycleCommandResponse({ contractVersion: '1.0.0', ok: false, error: { code: 'invalid_transition', retryable: false, lifecycle: 'revoked' } })).toEqual({
+      ok: false, code: 'invalid_transition', retryable: false, lifecycle: 'revoked',
+    })
+    expect(parseLifecycleCommandResponse({ contractVersion: '1.0.0', ok: false, error: { code: 'invalid_transition', retryable: true, lifecycle: 'revoked' } })).toEqual({ ok: false, code: 'contract_invalid', retryable: false })
+  })
+
   it('rejects unsupported versions and malformed responses before they reach a customer endpoint', () => {
     expect(parseLifecycleCommandResponse({ contractVersion: '2.0.0', ok: true })).toEqual({ ok: false, code: 'contract_invalid', retryable: false })
     expect(parseLifecycleCommandResponse({ contractVersion: '1.0.0', ok: false, error: { code: 'unexpected', retryable: false } })).toEqual({ ok: false, code: 'contract_invalid', retryable: false })

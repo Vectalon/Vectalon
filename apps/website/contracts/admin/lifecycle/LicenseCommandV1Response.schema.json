@@ -19,7 +19,7 @@
       "required": ["contractVersion", "ok", "error"],
       "properties": {
         "contractVersion": { "const": "1.0.0" }, "ok": { "const": false },
-        "error": { "type": "object", "additionalProperties": false, "required": ["code", "message", "retryable"], "properties": { "code": { "enum": ["unauthorized", "invalid_command", "not_found", "invalid_transition", "revision_conflict", "idempotency_conflict", "signing_unavailable", "service_unavailable"] }, "message": { "type": "string", "minLength": 1 }, "retryable": { "type": "boolean" }, "currentRevision": { "type": "integer", "minimum": 1 } } }
+        "error": { "type": "object", "additionalProperties": false, "required": ["code", "message", "retryable"], "properties": { "code": { "enum": ["unauthorized", "invalid_command", "not_found", "invalid_transition", "revision_conflict", "idempotency_conflict", "signing_unavailable", "service_unavailable"] }, "message": { "type": "string", "minLength": 1 }, "retryable": { "type": "boolean" }, "currentRevision": { "type": "integer", "minimum": 1 }, "lifecycle": { "enum": ["suspended", "expired", "canceled", "refunded", "revoked", "superseded"] } } }
       }
     }
   ],

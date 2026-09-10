@@ -9,11 +9,12 @@ import { PostgresLicenseRepository } from './generated/postgres'
 import { signerFromEnvironment, type LicenseSigner } from './generated/signer'
 import type { LicenseClaimsV2, LicenseRecord, LifecycleResult } from './generated/types'
 import type { LicenseRepository } from './generated/repository'
-import { lifecycleEnvelope } from './public-envelope'
+import { CUSTOMER_TERMINAL_LIFECYCLE_STATES, lifecycleEnvelope, type CustomerTerminalLifecycleState } from './public-envelope'
 
 type CustomerAction = 'activate' | 'refresh'
 export type VerifiedCredential = Readonly<Pick<LicenseClaimsV2, 'jti' | 'sub' | 'aud' | 'product' | 'tier' | 'seats' | 'state'>>
-export type CredentialVerifier = (credential: string) => Promise<VerifiedCredential | null>
+export type VerifiedLifecycleDenial = Readonly<{ denied: CustomerTerminalLifecycleState }>
+export type CredentialVerifier = (credential: string) => Promise<VerifiedCredential | VerifiedLifecycleDenial | null>
 
 export type InProcessLifecycleDependencies = Readonly<{
   repository: LicenseRepository
@@ -36,6 +37,7 @@ export function createInProcessLifecycleAdapter(dependencies: InProcessLifecycle
     async execute(input: Readonly<{ action: CustomerAction; credential: string }>): Promise<Record<string, unknown>> {
       const claims = await dependencies.credentialVerifier(input.credential)
       if (!claims) return lifecycleEnvelope(failure('unauthorized', 'credential verification failed'))
+      if ('denied' in claims) return lifecycleEnvelope(failure('invalid_transition', `license is ${claims.denied}`), claims.denied)
       const record = await dependencies.repository.get(claims.jti)
       if (!record || !matchesRecord(claims, record)) return lifecycleEnvelope(failure('not_found', 'license does not exist'))
       const command = {
@@ -49,7 +51,8 @@ export function createInProcessLifecycleAdapter(dependencies: InProcessLifecycle
         actor: { id: `customer:${record.subjectId}`, permissions: ['license:write', 'license:sign'] as const },
         now: now(),
       } as const
-      return lifecycleEnvelope(await service.execute(command))
+      const result = await service.execute(command)
+      return lifecycleEnvelope(result, !result.ok ? terminalLifecycle(record.state) : undefined)
     },
   }
 }
@@ -87,14 +90,19 @@ export function environmentCredentialVerifier(environment: Readonly<Record<strin
  * kid/algorithm/key status, issuer/audience/product, lease times, signature,
  * and lifecycle state all fail closed before a route can select a record.
  */
-export async function verifyCredential(credential: string, keys: StaticLicenseKeySource, now = Date.now): Promise<VerifiedCredential | null> {
+export async function verifyCredential(credential: string, keys: StaticLicenseKeySource, now = Date.now): Promise<VerifiedCredential | VerifiedLifecycleDenial | null> {
   try {
     const result = verifyLicenseWithPolicy(credential, {
       keys,
       clock: { now },
       policy: { issuer: issuerPolicy.issuer, audience: 'vectalon-cli', product: 'rn', allowedTiers: ['pro', 'team', 'enterprise'] },
     })
-    if (!result.ok) return null
+    if (!result.ok) {
+      if (result.code === 'expired') return { denied: 'expired' }
+      const lifecycle = result.code === 'inactive_lifecycle' ? terminalLifecycle(result.lifecycle) : undefined
+      if (lifecycle) return { denied: lifecycle }
+      return null
+    }
     const claims = result.claims
     return { jti: claims.licenseId, sub: claims.subject, aud: claims.audience[0], product: claims.product, tier: claims.tier as VerifiedCredential['tier'], seats: claims.seats, state: claims.state as VerifiedCredential['state'] }
   } catch { return null }
@@ -125,6 +133,11 @@ function matchesRecord(claims: VerifiedCredential, record: LicenseRecord): boole
   // Mutable entitlement fields deliberately do not block an idempotent replay.
   // A fresh mutation still compares the server-owned revision in the transaction.
   return claims.jti === record.id && claims.sub === record.subjectId && claims.aud === record.audience
+}
+
+function terminalLifecycle(value: unknown): CustomerTerminalLifecycleState | undefined {
+  return CUSTOMER_TERMINAL_LIFECYCLE_STATES.includes(value as CustomerTerminalLifecycleState)
+    ? value as CustomerTerminalLifecycleState : undefined
 }
 
 /**

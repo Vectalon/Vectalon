@@ -5,6 +5,7 @@
 import type { LicenseKeySource } from './LicenseKeySource';
 import type { LicenseClaimsV2 } from '../contracts/generated';
 import { type LicenseClock, type LicensePolicy, type LicensePolicyErrorCode, type VerifiedLicenseClaims } from './LicensePolicy';
+import type { LicenseLifecycleState } from './LicenseLifecycle';
 import { type LicenseSignatureErrorCode } from './LicenseSignature';
 export type LicenseVerificationErrorCode = LicenseSignatureErrorCode | LicensePolicyErrorCode | 'invalid_token_type' | 'invalid_verification_time';
 /** Authenticated JWT metadata retained alongside the exact shared signed payload. */
@@ -24,6 +25,8 @@ export type LicenseVerificationResult = {
 } | {
     ok: false;
     code: LicenseVerificationErrorCode;
+    /** Present only after a trusted signature and V2 claim schema succeeded. */
+    lifecycle?: LicenseLifecycleState;
 };
 export interface LicenseVerificationContext {
     keys: LicenseKeySource;

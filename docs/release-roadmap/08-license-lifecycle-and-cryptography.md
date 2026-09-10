@@ -74,6 +74,14 @@ Offline verification and online lifecycle controls must complement each other. A
 
 Fresh gates: Core 23 suites / 599 tests; Admin 67 passed with one opt-in live-PostgreSQL test skipped; RN lifecycle/gate/provenance 33 tests; website 20 suites / 101 tests. Core/Admin/RN/website typechecks and production builds passed, as did contract, product, Admin-snapshot provenance, and RN package checks. The integration correction is `643bd87` (generated Core V2 projections and the actual pinned contract revision).
 
+## Final-review remediation evidence (2026-09-10)
+
+The final-review packaging, online-denial, and blocked-status findings were remediated in the Vectalon checkout. The bundled Core package exports the trusted-claims constructor from its root, and RN imports that same runtime boundary as the entitlement evaluator. An isolated tarball extraction test signs an ephemeral RS256 V2 team credential, loads only the packed RN/Core modules (without Jest module mapping or a workspace-Core fallback), and proves the paid gate grants access.
+
+The website now carries a non-retryable terminal lifecycle state in the public refresh response, while retaining finite error codes. RN writes a token-free, atomically renamed denial marker before deleting both current and recoverable records; gates read that marker before any fallback, so an authoritative suspended, expired, canceled, refunded, revoked, or superseded response immediately denies paid access. Retryable offline/timeout/service errors retain the bounded lease. Signed terminal, expired, and stale verification failures retain their fail-closed reason in `auth --status`, `status`, and doctor output rather than falling through to Free tier.
+
+Fresh local evidence: RN build/typecheck plus focused lifecycle, gateway, paid-gate, provenance, and isolated package tests passed (4 suites / 45 tests); website typecheck plus lifecycle contract, refresh route, and in-process signed-token tests passed (3 suites / 13 tests). RN lint completed with zero errors and four pre-existing warnings. The Admin snapshot drift checker still requires the separate Admin source checkout, which was not present in this isolated workspace; no production migration, KMS activation, or live PostgreSQL drill was performed.
+
 Deployment blockers only: do not promote until the approved additive Admin migrations are applied and verified by an authorized database owner; run the live PostgreSQL role/isolation/concurrency drill against an empty disposable staging or CI database; provision the server-only signer/KMS identity and align the durable active key, overlap/retired/compromised public registry, and shipped RN keyset; configure the website database/TLS inputs; and rerun host-restricted sandbox/process-timing cases in CI. No production migration or KMS activation was performed here.
 
 ## Exit and rollback

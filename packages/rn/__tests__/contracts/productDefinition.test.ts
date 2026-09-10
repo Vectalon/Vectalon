@@ -1,5 +1,5 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { createHash } from 'node:crypto'
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { createHash, generateKeyPairSync, sign } from 'node:crypto'
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { execFileSync } from 'node:child_process'
@@ -68,5 +68,46 @@ describe('shipped ProductDefinition contract', () => {
       expect(existsSync(path.join(config, 'license-v2.json'))).toBe(false)
       expect(existsSync(path.join(config, 'license-v2.json.previous'))).toBe(false)
     } finally { rmSync(home, { recursive: true, force: true }) }
+  })
+
+  test('an isolated packed install grants a V2 paid gate through its one bundled Core runtime', () => {
+    const consumer = mkdtempSync(path.join(tmpdir(), 'vectalon-clean-install-'))
+    const pair = generateKeyPairSync('rsa', { modulusLength: 2048 })
+    const now = 1_800_000_000_000
+    const encode = (value: object) => Buffer.from(JSON.stringify(value)).toString('base64url')
+    const key = { id: 'clean-install-key', algorithm: 'RS256' as const, status: 'active' as const, publicKey: pair.publicKey }
+    const payload = {
+      license_version: 2, jti: 'clean-install-license', iss: 'https://licenses.vectalon.dev', aud: 'vectalon-cli',
+      sub: 'clean-install-customer', product: ['rn'], tier: 'team', seats: 2, state: 'active',
+      iat: now / 1000, nbf: now / 1000, exp: (now + 30 * 86_400_000) / 1000,
+    }
+    const input = `${encode({ alg: 'RS256', kid: key.id, typ: 'vectalon-license+jwt' })}.${encode(payload)}`
+    const credential = `${input}.${sign('RSA-SHA256', Buffer.from(input, 'ascii'), pair.privateKey).toString('base64url')}`
+    let tarball: string | undefined
+    try {
+      writeFileSync(path.join(consumer, 'package.json'), JSON.stringify({ private: true, name: 'clean-vectalon-consumer' }))
+      const npmEnvironment = { ...process.env, npm_config_cache: path.join(consumer, '.npm-cache') }
+      const packed = JSON.parse(execFileSync('npm', ['pack', '--json', '--ignore-scripts'], { cwd: path.resolve(__dirname, '../..'), encoding: 'utf8', env: npmEnvironment })) as Array<{ filename: string }>
+      tarball = path.resolve(__dirname, '../../', packed[0].filename)
+      const packageRoot = path.join(consumer, 'node_modules', '@vectalon-dev', 'rn')
+      mkdirSync(packageRoot, { recursive: true })
+      execFileSync('tar', ['-xzf', tarball, '--strip-components=1', '-C', packageRoot])
+      // This mirrors the production package's declared runtime dependency
+      // closure while keeping the tested RN/Core modules outside this checkout.
+      const workspaceModules = path.resolve(__dirname, '../../../../node_modules')
+      for (const dependency of ['ajv', 'fast-deep-equal', 'fast-uri', 'json-schema-traverse', 'require-from-string']) {
+        cpSync(path.join(workspaceModules, dependency), path.join(consumer, 'node_modules', dependency), { recursive: true })
+      }
+
+      const installed = createRequire(path.join(consumer, 'package.json'))
+      const lifecycle = installed('@vectalon-dev/rn/dist/auth/licenseLifecycle.js') as typeof import('../../src/auth/licenseLifecycle')
+      const store = new lifecycle.LicenseLifecycleStore({ directory: path.join(consumer, 'config'), legacyPaths: [] })
+      const verify = lifecycle.createCustomerLicenseVerifier({ keys: [key], now: () => now })
+      expect(store.save(credential, verify, now)).toEqual({ ok: true })
+      expect(lifecycle.evaluateCustomerTier('pro', { store, verify, now: () => now })).toMatchObject({ allowed: true, currentTier: 'team' })
+    } finally {
+      if (tarball && existsSync(tarball)) rmSync(tarball, { force: true })
+      rmSync(consumer, { recursive: true, force: true })
+    }
   })
 })

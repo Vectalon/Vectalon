@@ -3,6 +3,7 @@ import { generateKeyPairSync, sign } from 'crypto'
 import { join } from 'path'
 import {
   createCustomerLicenseVerifier,
+  evaluateCustomerTier,
   LicenseLifecycleStore,
   describeLicenseStatus,
   type LicenseCredentialVerifier,
@@ -123,6 +124,13 @@ describe('versioned customer credential policy', () => {
     const record = expected === 'offline_lease_expired' ? { lastTrustedTime: NOW, lastOnlineAt: NOW - 35 * DAY - 1 } : undefined
     const verify = createCustomerLicenseVerifier({ keys: [f.key], now: () => NOW })
     expect(verify(f.token(patch), record)).toEqual(expect.objectContaining({ ok: false, code: expected }))
+  })
+
+  it('retains the signed terminal lifecycle state when Core denies a revoked credential', () => {
+    const f = v2Fixture()
+    const verify = createCustomerLicenseVerifier({ keys: [f.key], now: () => NOW })
+
+    expect(verify(f.token({ state: 'revoked' }))).toEqual({ ok: false, code: 'inactive_lifecycle', lifecycle: 'revoked' })
   })
 
   it.each([
@@ -261,23 +269,52 @@ describe('license lifecycle UX', () => {
     }
   })
 
-  it.each(['revoked', 'superseded'] as const)('reports a %s refresh safely and keeps the old credential', async lifecycle => {
+  it.each(['suspended', 'expired', 'canceled', 'refunded', 'revoked', 'superseded'] as const)('quarantines local and recoverable credentials after an authoritative %s refresh denial', async lifecycle => {
     const temp = createTempProject({})
     const store = new LicenseLifecycleStore({ directory: temp, legacyPaths: [] })
     try {
-      const verify: LicenseCredentialVerifier = token => token === 'credential-two'
-        ? { ok: false, code: 'inactive_lifecycle', lifecycle }
-        : accepted(token)
-      expect(store.save('credential-one', verify, NOW)).toEqual({ ok: true })
-      await authCommand({ refresh: true }, { store, verify, gateway: { refresh: async () => ({ ok: true, credential: 'credential-two' }) } })
-      expect(store.read()).toMatchObject({ ok: true, record: { token: 'credential-one', revision: 1 } })
+      expect(store.save('credential-one', accepted, NOW)).toEqual({ ok: true })
+      expect(store.save('credential-two', accepted, NOW + 1)).toEqual({ ok: true })
+      await authCommand({ refresh: true }, { store, verify: accepted, gateway: { refresh: async () => ({ ok: false as const, code: 'invalid_transition' as const, retryable: false, lifecycle }) } })
+      expect(store.readVerified(accepted)).toEqual({ ok: false, code: 'inactive_lifecycle', check: { ok: false, code: 'inactive_lifecycle', lifecycle } })
+      expect(evaluateCustomerTier('pro', { store, verify: accepted, now: () => NOW })).toMatchObject({ allowed: false })
       const output = getLogLines().join('\n')
       expect(output).toContain(`License refresh rejected: ${lifecycle}`)
+      expect(output).not.toContain('credential-one')
       expect(output).not.toContain('credential-two')
     } finally {
       process.exitCode = undefined
       cleanup(temp)
     }
+  })
+
+  it.each(['suspended', 'canceled', 'refunded', 'revoked', 'superseded'] as const)('renders the signed %s state instead of falling through to free tier', async state => {
+    const f = v2Fixture()
+    const verify = createCustomerLicenseVerifier({ keys: [f.key], now: () => NOW })
+    const temp = createTempProject({})
+    const priorConfig = process.env.RN_VECTALON_CONFIG_DIR
+    try {
+      process.env.RN_VECTALON_CONFIG_DIR = temp
+      const store = new LicenseLifecycleStore({ directory: temp, legacyPaths: [] })
+      expect(store.save(f.token({ state }), accepted, NOW)).toEqual({ ok: true })
+      await authCommand({ status: true }, { store, verify })
+      expect(getLogLines().join('\n')).toContain(`License: ${state}`)
+    } finally { process.env.RN_VECTALON_CONFIG_DIR = priorConfig; cleanup(temp) }
+  })
+
+  it('renders the real signed expired state instead of falling through to free tier', async () => {
+    const f = v2Fixture()
+    const temp = createTempProject({})
+    const priorConfig = process.env.RN_VECTALON_CONFIG_DIR
+    try {
+      process.env.RN_VECTALON_CONFIG_DIR = temp
+      const store = new LicenseLifecycleStore({ directory: temp, legacyPaths: [] })
+      const expiredToken = f.token({ exp: (NOW + DAY) / 1000 })
+      expect(store.save(expiredToken, accepted, NOW)).toEqual({ ok: true })
+      const verify = createCustomerLicenseVerifier({ keys: [f.key], now: () => NOW + 2 * DAY })
+      await authCommand({ status: true }, { store, verify })
+      expect(getLogLines().join('\n')).toContain('License: expired')
+    } finally { process.env.RN_VECTALON_CONFIG_DIR = priorConfig; cleanup(temp) }
   })
 
 })

@@ -6,7 +6,7 @@
 import { resolve } from 'path'
 import { existsSync, accessSync, constants } from 'fs'
 import { trialDaysRemaining, trialStatus } from '../../auth/trialState'
-import { currentCustomerLicense } from '../../auth/licenseLifecycle'
+import { currentCustomerLicense, describeLicenseStatus } from '../../auth/licenseLifecycle'
 import { reportError } from '../../utils/safe'
 import { spawnSync } from 'child_process'
 import pc from 'picocolors'
@@ -465,6 +465,9 @@ export async function doctorCommand(directory: string, options: DoctorOptions): 
   if (license.ok) {
     const days = Math.max(0, Math.ceil((license.check.expiresAt - Date.now()) / 86_400_000))
     logger.info(`✅ License active (${days} days remaining)`)
+  } else if (license.check) {
+    const status = describeLicenseStatus(license.check)
+    logger.info(`⛔ License ${status.state} — ${status.message}`)
   } else if (trial.status === 'active') {
     logger.info(`🔄 Trial active (${trialDaysRemaining(trial)} days remaining)`)
   } else {

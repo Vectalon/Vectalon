@@ -80,6 +80,17 @@ describe('in-process Admin lifecycle adapter', () => {
     await expect(verifyCredential(token(), keys, () => now)).resolves.toMatchObject({ jti: record.id })
     await expect(verifyCredential(token({ iss: 'https://licenses.vectalon.in' }), keys, () => now)).resolves.toBeNull()
     await expect(verifyCredential(token({ exp: (now - 1) / 1000 }), keys, () => now)).resolves.toBeNull()
+    await expect(verifyCredential(token({ state: 'revoked' }), keys, () => now)).resolves.toEqual({ denied: 'revoked' })
+    const terminalAdapter = createInProcessLifecycleAdapter({
+      repository: new InMemoryLicenseRepository([record]),
+      signer: { keyId: 'key-current', signClaims: async () => 'never' },
+      credentialVerifier: value => verifyCredential(value, keys, () => now),
+      now: () => now,
+    })
+    await expect(terminalAdapter.execute({ action: 'refresh', credential: token({ state: 'revoked' }) })).resolves.toEqual({
+      contractVersion: '1.0.0', ok: false,
+      error: { code: 'invalid_transition', message: 'license is revoked', retryable: false, lifecycle: 'revoked' },
+    })
     const retired = environmentVerificationKeys({ VECTALON_LICENSE_VERIFICATION_KEYS: JSON.stringify([{ id: 'overlap-key', algorithm: 'RS256', status: 'retired', publicKey: pair.publicKey.export({ type: 'spki', format: 'pem' }).toString() }]) })
     await expect(verifyCredential(token(), retired, () => now)).resolves.toBeNull()
   })
