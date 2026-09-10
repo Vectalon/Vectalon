@@ -69,13 +69,12 @@ export function configuredInProcessLifecycleAdapter() {
 let pool: Pool | undefined
 function lifecyclePool(): Pool {
   if (pool) return pool
-  const connectionString = process.env.DATABASE_URL
+  const connectionString = process.env.VECTALON_LICENSE_DATABASE_URL ?? process.env.DATABASE_URL
   if (!connectionString) throw new Error('license-database-unavailable')
   const host = new URL(connectionString).hostname
   const local = host === 'localhost' || host === '127.0.0.1' || host === '::1'
   const ca = process.env.VECTALON_LICENSE_DATABASE_SSL_CA
-  if (!local && !ca) throw new Error('license-database-tls-unconfigured')
-  const options: PoolConfig = { connectionString, max: 2, ...(local ? {} : { ssl: { rejectUnauthorized: true, ca } }) }
+  const options: PoolConfig = { connectionString, max: 2, ...(local ? {} : { ssl: { rejectUnauthorized: true, ...(ca ? { ca } : {}) } }) }
   return pool = new Pool(options)
 }
 

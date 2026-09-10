@@ -15,9 +15,9 @@ on:
 
 env:
   CI: true
-  # Step 08 release input: a reviewed Core revision, not an unreviewed moving
-  # branch. Update deliberately after Core contract/security review.
-  VECTALON_CORE_RELEASE_REF: 98aee264a9d9139c058fd11d3e312b384deb2e40
+  # Always resolve the latest reviewed Core main at release start. The gate
+  # freezes that SHA and publishing reuses it, preventing mid-run drift.
+  VECTALON_CORE_RELEASE_REF: main
 
 jobs:
   # P1-11: the release regression gate. Runs the deterministic benchmark
