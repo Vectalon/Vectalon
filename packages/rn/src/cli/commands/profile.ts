@@ -9,7 +9,7 @@
 
 import { existsSync, readFileSync } from 'fs'
 import { join, resolve } from 'path'
-import { requireTier } from '@vectalon-dev/core'
+import { requireTier } from '../../auth/licenseLifecycle'
 import { logger } from '../logger'
 import { analyzeHermesRuntime, renderPerfReport } from '../../perf'
 import { recordPerfBaseline, getLatestPerfBaseline, compareToBaseline, renderBaselineComparison } from '../../perf'

@@ -57,6 +57,21 @@ export interface LicenseClaims {
   seatQuantity?: number
 }
 
+export interface LicenseClaimsV2 {
+  license_version: 2
+  jti: string
+  iss: string
+  aud: string | string[]
+  sub: string
+  product: string[]
+  tier: string
+  seats: number
+  state: 'pending' | 'active' | 'grace' | 'suspended' | 'expired' | 'canceled' | 'refunded' | 'revoked' | 'superseded'
+  iat: number
+  nbf: number
+  exp: number
+}
+
 export interface ProductDefinition {
   contractVersion: '1.0.0'
   schemaVersion?: number

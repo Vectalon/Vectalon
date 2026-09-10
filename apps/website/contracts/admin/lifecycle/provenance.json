@@ -1,0 +1,39 @@
+{
+  "adapterVersion": 1,
+  "source": "vectalon-admin",
+  "sourceCommit": "999567f22f7f91ccf95d3f58c11c2d3346939b0e",
+  "files": {
+    "lib/admin-lifecycle/generated/types.ts": {
+      "source": "lib/licenses/types.ts",
+      "sha256": "b5349a27e68e10162f91546be4ab05d460bfc2a733828181efa24cf4842a7fc8"
+    },
+    "lib/admin-lifecycle/generated/lifecycle.ts": {
+      "source": "lib/licenses/lifecycle.ts",
+      "sha256": "4f07ab592f7e1a3fe8ea575688dc9f70f4ee8c99b7ca0e2c308b84579b706b9c"
+    },
+    "lib/admin-lifecycle/generated/repository.ts": {
+      "source": "lib/licenses/repository.ts",
+      "sha256": "6648cc15326a4e044ccb43e3260b6c4b23555c3e3ceb9a371a783b493802d3d6"
+    },
+    "lib/admin-lifecycle/generated/signer.ts": {
+      "source": "lib/licenses/signer.ts",
+      "sha256": "f9b9d0fa4580fadb461666a71da6d0cb207240bc5ef0b6fb7b6f45afafadde56"
+    },
+    "lib/admin-lifecycle/generated/keys.ts": {
+      "source": "lib/licenses/keys.ts",
+      "sha256": "a5513e0b454c8bf873cec6b82dfef8d6703a0a4bb8b6e0d3cda555098baa6217"
+    },
+    "lib/admin-lifecycle/generated/postgres.ts": {
+      "source": "lib/licenses/postgres.ts",
+      "sha256": "3ab4a3cbae384980f6e85fe473430297ee951864edd4b243fc2287055408f637"
+    },
+    "lib/admin-lifecycle/generated/service.ts": {
+      "source": "lib/licenses/service.ts",
+      "sha256": "5ec9ad1bac957f209fbd3307105d3d86961c959d7b338cc7e7550993c1388bf0"
+    },
+    "contracts/admin/lifecycle/LicenseCommandV1Response.schema.json": {
+      "source": "contracts/schemas/LicenseCommandV1Response.schema.json",
+      "sha256": "b3393a91bcec32b0e5235d2557ddf483bfd8ea5c8e4fc012816ffc1b5bf56b18"
+    }
+  }
+}

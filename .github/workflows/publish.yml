@@ -15,6 +15,9 @@ on:
 
 env:
   CI: true
+  # Always resolve the latest reviewed Core main at release start. The gate
+  # freezes that SHA and publishing reuses it, preventing mid-run drift.
+  VECTALON_CORE_RELEASE_REF: main
 
 jobs:
   # P1-11: the release regression gate. Runs the deterministic benchmark
@@ -56,7 +59,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: Vectalon/core
-          ref: main
+          ref: ${{ env.VECTALON_CORE_RELEASE_REF }}
           fetch-depth: 1
           path: packages/core/src
           token: ${{ secrets.CORE_REPO_PAT }}
@@ -76,6 +79,12 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install and build frozen Core checkout
+        run: |
+          npm ci --prefix packages/core/src
+          npm run build --prefix packages/core/src
+          node packages/rn/scripts/generate-license-keyset.js packages/core/src "${{ steps.core-revision.outputs.sha }}" packages/core/src/license-keyset.json
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -86,6 +95,11 @@ jobs:
 
       - name: Build
         run: pnpm turbo run build --filter=@vectalon-dev/rn
+        env:
+          CORE_REPO_DIR: packages/core/src
+
+      - name: Verify packed Core and key provenance
+        run: pnpm --filter @vectalon-dev/rn test -- --runInBand __tests__/contracts/productDefinition.test.ts
 
       - name: Benchmark regression gate
         run: node packages/rn/bin/rn-vectalon.js bench --baseline packages/rn/bench/baseline.json
@@ -141,6 +155,12 @@ jobs:
           node-version: 22
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Install and build frozen Core checkout
+        run: |
+          npm ci --prefix packages/core/src
+          npm run build --prefix packages/core/src
+          node packages/rn/scripts/generate-license-keyset.js packages/core/src "${{ needs.bench-gate.outputs.core-sha }}" packages/core/src/license-keyset.json
+
       - name: Configure npm auth
         run: |
           echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
@@ -152,6 +172,11 @@ jobs:
 
       - name: Build
         run: pnpm turbo run build --filter=@vectalon-dev/rn
+        env:
+          CORE_REPO_DIR: packages/core/src
+
+      - name: Verify packed Core and key provenance
+        run: pnpm --filter @vectalon-dev/rn test -- --runInBand __tests__/contracts/productDefinition.test.ts
 
       - name: Validate product and pinned Core contracts
         run: pnpm product:check && pnpm contracts:check && node scripts/capability-catalog.mjs check . --base HEAD^

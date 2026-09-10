@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyLicenseToken = verifyLicenseToken;
-const crypto_1 = require("crypto");
-const LicenseParser_1 = require("./LicenseParser");
+const LicenseKeySource_1 = require("./LicenseKeySource");
+const LicenseSignature_1 = require("./LicenseSignature");
 const TrustedClaims_1 = require("./TrustedClaims");
 const messages = {
     invalid_token: 'License token is malformed',
@@ -22,42 +22,19 @@ function failure(code) {
 function verifyLicenseToken(raw, key, now) {
     if (!Number.isSafeInteger(now) || now < 0)
         return failure('invalid_verification_time');
-    const parsed = (0, LicenseParser_1.parseLicenseToken)(raw);
-    if (!parsed.ok)
-        return failure('invalid_token');
-    const { header, payload, signature, signingInput } = parsed.token;
-    if (header.alg !== 'RS256' || key.algorithm !== 'RS256') {
-        return failure('unsupported_algorithm');
-    }
-    if (typeof header.kid !== 'string' || header.kid.length === 0)
-        return failure('missing_key_id');
     if (typeof key.id !== 'string' || key.id.length === 0)
         return failure('invalid_key');
-    if (header.kid !== key.id)
-        return failure('key_mismatch');
-    let publicKey;
-    try {
-        if (key.publicKey instanceof crypto_1.KeyObject && key.publicKey.type !== 'public') {
-            return failure('invalid_key');
-        }
-        publicKey = key.publicKey instanceof crypto_1.KeyObject ? key.publicKey : (0, crypto_1.createPublicKey)(key.publicKey);
-        if (publicKey.asymmetricKeyType !== 'rsa' ||
-            (publicKey.asymmetricKeyDetails?.modulusLength ?? 0) < 2048) {
-            return failure('invalid_key');
-        }
-    }
-    catch {
-        return failure('invalid_key');
-    }
-    try {
-        if (!(0, crypto_1.verify)('RSA-SHA256', Buffer.from(signingInput, 'ascii'), publicKey, signature)) {
-            return failure('invalid_signature');
-        }
-    }
-    catch {
-        return failure('invalid_signature');
-    }
-    const claims = normalizeClaims(payload);
+    if (key.algorithm !== 'RS256')
+        return failure('unsupported_algorithm');
+    const signature = (0, LicenseSignature_1.verifyLicenseSignature)(raw, new LicenseKeySource_1.StaticLicenseKeySource([{
+            id: key.id,
+            algorithm: key.algorithm,
+            status: 'active',
+            publicKey: key.publicKey,
+        }]));
+    if (!signature.ok)
+        return failure(legacySignatureCode(signature.code));
+    const claims = normalizeClaims(signature.payload);
     if (!claims)
         return failure('invalid_claims');
     if (now < claims.issuedAt)
@@ -65,6 +42,17 @@ function verifyLicenseToken(raw, key, now) {
     if (now >= claims.expiresAt)
         return failure('expired');
     return { ok: true, claims: (0, TrustedClaims_1.createTrustedClaims)(claims) };
+}
+function legacySignatureCode(code) {
+    switch (code) {
+        case 'unknown_key': return 'key_mismatch';
+        case 'invalid_token':
+        case 'unsupported_algorithm':
+        case 'missing_key_id':
+        case 'invalid_key':
+        case 'invalid_signature': return code;
+        default: return 'invalid_key';
+    }
 }
 function normalizeClaims(payload) {
     const { sub, tier, product, iat, exp, capabilities, seats } = payload;

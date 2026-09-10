@@ -1,0 +1,14 @@
+{
+  "license_version": 2,
+  "jti": "license-v2-boundary",
+  "iss": "https://licenses.vectalon.dev",
+  "aud": ["vectalon-cli"],
+  "sub": "customer-redacted",
+  "product": ["rn"],
+  "tier": "team",
+  "seats": 1,
+  "state": "active",
+  "iat": 1767312000,
+  "nbf": 1767312000,
+  "exp": 1767225600
+}

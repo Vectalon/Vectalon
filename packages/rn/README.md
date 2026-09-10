@@ -4,7 +4,7 @@
 
 Project-aware SDLC intelligence for any agent — CLI, MCP server, VS Code extension, benchmark suite, and fine-tuning pipeline in one package.
 
-Current release: <!-- product-fact:rn-version -->0.19.2<!-- /product-fact --> ·
+Current release: <!-- product-fact:rn-version -->0.20.0<!-- /product-fact --> ·
 benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
 deterministic agents: <!-- product-fact:deterministic-commands -->44<!-- /product-fact --> ·
 MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact -->
@@ -144,7 +144,7 @@ Run `npx vectalon <command> --help` for detailed options.
 | `ecosystem [dir]` | Browse/enable MCP servers, skills, tools, hooks — enabling an MCP verifies its npm package exists first (fail-fast; offline proceeds with a warning) | `--category <mcp\|skill\|tool\|hook>`, `--flavor <expo\|rn-cli>`, `--enable <id>`, `--force`, `--disable <id>`, `--export`, `--json` |
 | `refresh [dir]` | Refresh knowledge from web sources + improvement suggestions, and re-seed the repo-derived knowledge-base artifacts (idempotent) | `--force` |
 | `suggestions [dir]` | List improvement suggestions from the knowledge refresh (outdated dependencies), severity-grouped — and act on them: `--apply <id>` installs the latest version (gated behind confirmation), `--open` renders a self-contained HTML dashboard | `--json`, `--limit <n>`, `--apply <id>`, `--yes`, `--open`, `--out <dir>` |
-| `auth` | Manage license/trial, activate keys, GitHub OAuth | `--license <key>`, `--github`, `--status`, `--logout` |
+| `auth` | Manage license/trial with atomic credential storage, explicit lifecycle status, legacy-file migration, and local recovery | `--license <key>`, `--github`, `--status`, `--refresh`, `--recover`, `--logout` |
 | `policy [dir]` | Manage project-specific guardrail policy | `--init`, `--check <file>` |
 | `pull [preset]` | Download a local model preset — usage tier (`fast\|balanced\|quality`) or model id (`qwen2.5-coder-1.5b\|3b\|7b`); defaults to the tier auto-selected for this machine's RAM | `[tier-or-model-id]` |
 | `models` | List usage tiers (with the auto-selected one for this machine), downloaded GGUF models, and the WASM model | — |

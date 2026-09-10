@@ -17,6 +17,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated demo and outcomes pages to use semantic color tokens for
   proper theme adaptation.
 
+## [0.20.0] - 2026-09-10
+
+### Added
+
+- Add activation, status, online refresh, and recovery flows backed by the
+  versioned V2 license lifecycle and bounded offline leases.
+- Preserve exact Core 0.10.0 source, public-key set, and contract provenance in
+  the packed RN artifact.
+
+### Security
+
+- Fail paid gates closed for authoritative suspended, expired, canceled,
+  refunded, revoked, or superseded lifecycle responses while retaining a valid
+  bounded lease during retryable connectivity failures.
+- Fetch the latest Core `main` at every RN release start, freeze its exact SHA,
+  and reuse that verified revision throughout build and publish.
+
 ## [0.19.2] - 2026-09-05
 
 ### Fixed

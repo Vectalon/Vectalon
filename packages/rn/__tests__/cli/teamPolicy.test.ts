@@ -8,7 +8,7 @@ import { ORG_POLICY_REMOTE_PATH } from '../../src/knowledge/orgPolicySync'
 import { createTempProject, cleanup } from '../helpers/tmp'
 import type { CommandResult } from '../../src/adapters/runCommand'
 
-jest.mock('@vectalon-dev/core', () => ({
+jest.mock('../../src/auth/licenseLifecycle', () => ({
   requireTier: () => ({ allowed: true, currentTier: 'team', requiredTier: 'team', canTrial: false }),
 }))
 

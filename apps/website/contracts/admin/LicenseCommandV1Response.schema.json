@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.vectalon.dev/admin/LicenseCommandV1Response.schema.json",
+  "title": "Admin License Command V1 response",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contractVersion", "ok", "replayed", "license", "audit"],
+      "properties": {
+        "contractVersion": { "const": "1.0.0" }, "ok": { "const": true }, "replayed": { "type": "boolean" },
+        "license": { "$ref": "#/$defs/license" }, "replacement": { "$ref": "#/$defs/license" }, "credential": { "type": "string", "minLength": 1 },
+        "audit": { "$ref": "#/$defs/audit" }, "replacementAudit": { "$ref": "#/$defs/audit" }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contractVersion", "ok", "error"],
+      "properties": {
+        "contractVersion": { "const": "1.0.0" }, "ok": { "const": false },
+        "error": { "type": "object", "additionalProperties": false, "required": ["code", "message", "retryable"], "properties": { "code": { "enum": ["unauthorized", "invalid_command", "not_found", "invalid_transition", "revision_conflict", "idempotency_conflict", "signing_unavailable", "service_unavailable"] }, "message": { "type": "string", "minLength": 1 }, "retryable": { "type": "boolean" }, "currentRevision": { "type": "integer", "minimum": 1 }, "lifecycle": { "enum": ["suspended", "expired", "canceled", "refunded", "revoked", "superseded"] } } }
+      }
+    }
+  ],
+  "$defs": {
+    "license": { "type": "object", "additionalProperties": false, "required": ["id", "subjectId", "audience", "product", "tier", "seats", "state", "revision", "issuedAt", "notBefore", "expiresAt", "keyId", "supersedesId", "effectiveAt"], "properties": { "id": { "type": "string" }, "subjectId": { "type": "string" }, "audience": { "type": "string" }, "product": { "type": "array", "items": { "type": "string" } }, "tier": { "enum": ["pro", "team", "enterprise"] }, "seats": { "type": "integer", "minimum": 1 }, "state": { "enum": ["pending", "active", "grace", "suspended", "expired", "canceled", "refunded", "revoked", "superseded"] }, "revision": { "type": "integer", "minimum": 1 }, "issuedAt": { "type": "integer" }, "notBefore": { "type": "integer" }, "expiresAt": { "type": "integer" }, "keyId": { "type": "string" }, "supersedesId": { "type": ["string", "null"] }, "effectiveAt": { "type": "integer" } } },
+    "audit": { "type": "object", "additionalProperties": false, "required": ["id", "licenseId", "action", "actorId", "idempotencyKey", "fromState", "toState", "priorRevision", "revision", "occurredAt", "reason", "metadata"], "properties": { "id": { "type": "string" }, "licenseId": { "type": "string" }, "action": { "type": "string" }, "actorId": { "type": "string" }, "idempotencyKey": { "type": "string" }, "fromState": { "type": ["string", "null"] }, "toState": { "type": "string" }, "priorRevision": { "type": ["integer", "null"] }, "revision": { "type": "integer", "minimum": 1 }, "occurredAt": { "type": "integer" }, "reason": { "type": ["string", "null"] }, "metadata": { "type": "object", "additionalProperties": { "type": ["string", "number", "boolean", "null"] } } } }
+  }
+}

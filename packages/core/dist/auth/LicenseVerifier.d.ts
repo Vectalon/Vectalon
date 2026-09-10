@@ -1,4 +1,4 @@
-import { KeyObject } from 'crypto';
+import type { KeyObject } from 'crypto';
 import { type TrustedClaims } from './TrustedClaims';
 export type VerificationErrorCode = 'invalid_token' | 'unsupported_algorithm' | 'missing_key_id' | 'key_mismatch' | 'invalid_verification_time' | 'invalid_claims' | 'not_yet_valid' | 'expired' | 'invalid_key' | 'invalid_signature';
 export interface TrustedVerificationKey {

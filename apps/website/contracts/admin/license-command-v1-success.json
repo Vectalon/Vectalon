@@ -1,0 +1,11 @@
+{
+  "description": "Non-secret Admin lifecycle success response fixture. The credential is a redacted structural stand-in and is never forwarded by the public website.",
+  "response": {
+    "contractVersion": "1.0.0",
+    "ok": true,
+    "replayed": false,
+    "license": { "id": "license-example-001", "subjectId": "customer-example-001", "audience": "vectalon-cli", "product": ["rn"], "tier": "team", "seats": 4, "state": "active", "revision": 1, "issuedAt": 1800000000000, "notBefore": 1800000000000, "expiresAt": 1803024000000, "keyId": "redacted", "supersedesId": null, "effectiveAt": 1800000000000 },
+    "credential": "eyJhbGciOiJSUzI1NiIsImtpZCI6InJlZGFjdGVkIiwidHlwIjoidmVjdGFsb24tbGljZW5zZStqd3QifQ.eyJsaWNlbnNlX3ZlcnNpb24iOjJ9.redacted-signature",
+    "audit": { "id": "audit-example-001", "licenseId": "license-example-001", "action": "activate", "actorId": "admin-example-001", "idempotencyKey": "idempotency-example-0001", "fromState": "pending", "toState": "active", "priorRevision": 0, "revision": 1, "occurredAt": 1800000000000, "reason": null, "metadata": {} }
+  }
+}

@@ -9,7 +9,9 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "jest",
-    "sync:reports": "node scripts/sync-reports.mjs"
+    "sync:reports": "node scripts/sync-reports.mjs",
+    "sync:admin-lifecycle": "node scripts/sync-admin-lifecycle.mjs",
+    "check:admin-lifecycle": "node scripts/sync-admin-lifecycle.mjs --check"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.7",

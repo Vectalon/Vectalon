@@ -19,7 +19,7 @@
 
 import { existsSync, readFileSync } from 'fs'
 import { relative, resolve } from 'path'
-import { requireTier } from '@vectalon-dev/core'
+import { requireTier } from '../../auth/licenseLifecycle'
 import { logger } from '../logger'
 import { renderInSandbox, renderRenderResult } from '../../render'
 import type { RenderFile } from '../../render'

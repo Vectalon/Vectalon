@@ -15,8 +15,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import pkg from '../../package.json'
-import { LicenseStore, LicenseValidator } from '@vectalon-dev/core'
 import { hasActiveTrial } from '../auth/trialState'
+import { currentCustomerLicense } from '../auth/licenseLifecycle'
 import { configDirPath } from '../config'
 import { reportError } from '../utils/safe'
 import type { ErrorReport } from './types'
@@ -184,11 +184,7 @@ export function recordHeartbeatPing(root: string | undefined, kind: string): voi
 /** True when a license or an active trial is present. */
 export function hasActiveLicense(): boolean {
   try {
-    const license = LicenseStore.read()
-    if (license?.key) {
-      const validation = LicenseValidator.validate(license.key)
-      if (validation.valid) return true
-    }
+    if (currentCustomerLicense().ok) return true
     // isActive() (not daysRemaining()) — a cleared/empty trial record has no
     // expiresAt and must not count as an active license.
     return hasActiveTrial()

@@ -1,5 +1,5 @@
 {
-  "productVersion": "0.19.2",
+  "productVersion": "0.20.0",
   "counts": {
     "api": {
       "declared": 356,
@@ -52,7 +52,7 @@
       "conditional": 0
     },
     "route": {
-      "declared": 31,
+      "declared": 35,
       "enabledByDefault": 3,
       "conditional": 0
     }

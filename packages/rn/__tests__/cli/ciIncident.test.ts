@@ -4,7 +4,7 @@ import { ciIncidentCommand } from '../../src/cli/commands/ciIncident'
 import { ArtifactStore } from '../../src/knowledge/ArtifactStore'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
-jest.mock('@vectalon-dev/core', () => ({
+jest.mock('../../src/auth/licenseLifecycle', () => ({
   requireTier: () => ({ allowed: true, currentTier: 'pro', requiredTier: 'pro', canTrial: false }),
 }))
 

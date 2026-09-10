@@ -1,0 +1,398 @@
+{
+  "schemaVersion": "1.0.0",
+  "description": "Fixed non-secret RS256 interoperability corpus. Private signing keys are generated once for this artifact and are never committed.",
+  "seatDomainVectors": [
+    {
+      "id": "maximum-safe-integer",
+      "seats": 9007199254740991,
+      "accepted": true
+    },
+    {
+      "id": "safe-integer-overflow",
+      "seats": 9007199254740992,
+      "accepted": false
+    },
+    {
+      "id": "safe-integer-underflow",
+      "seats": -9007199254740992,
+      "accepted": false
+    }
+  ],
+  "verificationTime": 1800000000000,
+  "policy": {
+    "issuer": "https://licenses.vectalon.dev",
+    "audience": "vectalon-cli",
+    "product": "rn",
+    "allowedTiers": [
+      "pro",
+      "team",
+      "enterprise"
+    ]
+  },
+  "keys": {
+    "old": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3mcF2X4ltehO6J/OZMYf\nG/JzveDDmNeX6IwojmhBFpjVzRMh1alU+Q2GkVLkc8RASt/q8LA62xt5Viqfsal5\nVn1A493l1vp/HcOVfDzwbjc7Iv1twYfQB0Z81kDWqGa+qVn8i35x7MaYyhyhLQ0z\nQrnzXUAsyN4JM3VvkTd5fssIhRNNqefFN16VwFiMwUfHCru7KL9vGdbpoBHrDF1/\nk2/AzWZbzL5ju/J9ypZk17HqTGzghbkuwBmLRuwoOxqecoRdX0ShGzVOv036fzYR\n6rC+3tVZ+aQtlZElsopCZKCBZzvSWFQI7uFAUFSqTTOzxvXR+fo1GSg0+uNy6eBS\nswIDAQAB\n-----END PUBLIC KEY-----\n",
+    "new": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1CxASoWWybB2LR7HWM+U\nlfRyEDBunRp8X4C5S7rxAzFHCGKN8fIG2GXoUvlNjUa3qVmptzjoTWjKlfriQRd6\nSFWOa/Q6+/HGa/6cu7zErtCy+Otthy1dEmO5wVVypJiwojvvKtuBPZgwtlHysDHh\ni+0mf4RPEUtL5obb4mchbiPY/rAtLndDYV9jiYvSoipt7UvAkcIA8hzOhuLSupOB\nNvG3L/DTI6qp1zikq7BXoV53cYSW6YtRGgQXgq87WSIFMZLN6iiMj42BbuRde8iF\nkDUyDkSlct41btv5RW9fYX07cfs3tFrvSUpF+0x9JrtX65LFdpktWgzEv9c9PvYu\n9wIDAQAB\n-----END PUBLIC KEY-----\n",
+    "expired": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1WZyazBzskx/Qcd9rOkI\nzxMUoos5ksmHXrb+LITDgPvzq3WiHSiOH4j8OVolQN+ngjCXi36PEkFSL2tmWchH\nhdn+xNCRcjvYD+L+Lp3a7Bem9TmtWEZcb73SrWA03wQXmPNEgcAT9a6fqUtmfIvm\nKrMczEmtLgx+xHPH22rwwqjDwlGhbIKHaEg40MWYKTpK8JH5L1huvvi9XiS4Uifb\nBO1Zn963qPVzsUNDpHgIBcBjwF3QlZmgGqP3AiXXCsrdC7nrapX9Fh5e7VfxKOS3\n+oEsH9r3S3KJhN0SCstEEsKJ5/7Vh+7PeJBF5TgepmevJ+x17IobgtAKykMhDK62\nmQIDAQAB\n-----END PUBLIC KEY-----\n",
+    "boundary": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0r2FAr4f4NdtKvYX8c+j\nmmazvZSDJfG8kOwV5b94PWqAT8/Tv0V2a1I75zZlEL69i86c4AxydKJeT2yexuun\nQFrXk2yU3aqkH5TgoF+2wKEp+NgiTXRdrAQGNJkbIHfKShd6Ql+nsJqRDL+MBxiM\nELx3ivy7xsaUn82LCCmfgZBOxOIDvoPmpgW7Tc+tudtm4iE9c8sTCb+KCpXNQ8M3\nUaMlRORRjuD6g1njwz4A+Uh4bFlaCdduMo9qy6NeWNT0EDY6LwWpRicHSpXylmnt\nFELq4KYl7lEXMwGpjOJwPJNdhx6l+Ha5klsrTdW/Tu3ijeG7qwxFao/a7z9tG0Dq\nEwIDAQAB\n-----END PUBLIC KEY-----\n"
+  },
+  "vectors": [
+    {
+      "id": "valid-old",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6Im9sZCIsInR5cCI6InZlY3RhbG9uLWxpY2Vuc2Urand0In0.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1saWNlbnNlLTAwMSIsImlzcyI6Imh0dHBzOi8vbGljZW5zZXMudmVjdGFsb24uZGV2IiwiYXVkIjoidmVjdGFsb24tY2xpIiwic3ViIjoiZ29sZGVuLWN1c3RvbWVyIiwicHJvZHVjdCI6WyJybiJdLCJ0aWVyIjoidGVhbSIsInNlYXRzIjo0LCJzdGF0ZSI6ImFjdGl2ZSIsImlhdCI6MTgwMDAwMDAwMCwibmJmIjoxODAwMDAwMDAwLCJleHAiOjE4MDAwODY0MDB9.A4X1KqNByuqu8Roc8zwau72HDD5bHtXoC9T1Kreg0cDI798D-bE188q1Rg665_20MLMcMnVCCc6aIbVWiyBZldUiA6D1zP_N5VWO66h7ciyvBJ3-HVY8HJ2n7NY5v1CrzKnIs2k5toMGDD3SAdT4ENBMO6bawi2Qrji0xNA8EnrIsTqXdBzEUq6QO8ke-WKLHBb4VLwHGlRuRGulSSSn9LK69-4te017EfgNu3A4X1HaYPImcIARjgMeMTmCRL0zLUiHab3NYOLjqrA4kyKmclpN5Xqhw-yz78f3LXbOYHwfnefvTo5QQxH7i0Etfj9qHt5uk3777tA2g6n81BbwxA",
+      "expected": {
+        "ok": true,
+        "claims": {
+          "licenseVersion": 2,
+          "licenseId": "golden-license-001",
+          "issuer": "https://licenses.vectalon.dev",
+          "audience": [
+            "vectalon-cli"
+          ],
+          "subject": "golden-customer",
+          "product": [
+            "rn"
+          ],
+          "tier": "team",
+          "seats": 4,
+          "state": "active",
+          "issuedAt": 1800000000000,
+          "notBefore": 1800000000000,
+          "expiresAt": 1800086400000
+        }
+      }
+    },
+    {
+      "id": "valid-new",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6Im5ldyIsInR5cCI6InZlY3RhbG9uLWxpY2Vuc2Urand0In0.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1saWNlbnNlLTAwMSIsImlzcyI6Imh0dHBzOi8vbGljZW5zZXMudmVjdGFsb24uZGV2IiwiYXVkIjoidmVjdGFsb24tY2xpIiwic3ViIjoiZ29sZGVuLWN1c3RvbWVyIiwicHJvZHVjdCI6WyJybiJdLCJ0aWVyIjoidGVhbSIsInNlYXRzIjo0LCJzdGF0ZSI6ImFjdGl2ZSIsImlhdCI6MTgwMDAwMDAwMCwibmJmIjoxODAwMDAwMDAwLCJleHAiOjE4MDAwODY0MDB9.Ar8RU0KOvPUbuyLfeDQecRUvldCoycEgmg8BLsNc-yqRBISyAaX2hKzLXwv_vmS7qMLNt-PHtzHLD_hmQZUAC_1I4gvSqGTF_FHOYT5FyRF0rTBRHjSKYEzejylF4t1LsmEAUxFFoUfkFM9ZIYesZIDFEVPRHf6RFp2ByfW5648icEcb-HcD0JMjhHGuACYCYIChp-4hB9eX61GxDOtKh3eZRAkZ90ultmF4ICNmR1y35vcO0AxSEDwqCDhrrU7d7GY5MBk9pvwnx09KAfGSNIowm2l7V6JouqS8ABnmxa61b1dOxknXMVQk3wNSFTyo1ttJ1qiRgunKgfVEeKdM1w",
+      "expected": {
+        "ok": true,
+        "claims": {
+          "licenseVersion": 2,
+          "licenseId": "golden-license-001",
+          "issuer": "https://licenses.vectalon.dev",
+          "audience": [
+            "vectalon-cli"
+          ],
+          "subject": "golden-customer",
+          "product": [
+            "rn"
+          ],
+          "tier": "team",
+          "seats": 4,
+          "state": "active",
+          "issuedAt": 1800000000000,
+          "notBefore": 1800000000000,
+          "expiresAt": 1800086400000
+        }
+      }
+    },
+    {
+      "id": "wrong-issuer",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6Im9sZCIsInR5cCI6InZlY3RhbG9uLWxpY2Vuc2Urand0In0.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1saWNlbnNlLTAwMSIsImlzcyI6Imh0dHBzOi8vYXR0YWNrZXIuZXhhbXBsZSIsImF1ZCI6InZlY3RhbG9uLWNsaSIsInN1YiI6ImdvbGRlbi1jdXN0b21lciIsInByb2R1Y3QiOlsicm4iXSwidGllciI6InRlYW0iLCJzZWF0cyI6NCwic3RhdGUiOiJhY3RpdmUiLCJpYXQiOjE4MDAwMDAwMDAsIm5iZiI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDg2NDAwfQ.HAP0mH3vstg8Uox9dVOMOERhteQ_-mQR-vXfIjHeviFWyfQtAgZzjrAxtZamrc32SwwSz7tyS9KfI3_rD1hxRUkocDB9RGRZP60ViThZ7b3LQWYZz03BhX5eWaWOwRxcbTBfzw_8CVKDJxqIZpYgGu5x89pYIsyLaLbOcf2Lc0bHn9GaAisA1MSGRMT38E_y0yVCb4J5MKAjXI7MxbdrHL3TyWm4bAZFPmKvIvTMUpm8y5QcWwJHkPFSP-YIfP-19FmZhBU_JT6YlqqohOuxnRqlerJa6rx_d47qU4f5j9jNG4IrLBeYNMpCgdc-Gc7KMoqVmXif3LfBCR6ZyqPQUg",
+      "expected": {
+        "ok": false,
+        "code": "wrong_issuer"
+      }
+    },
+    {
+      "id": "wrong-audience",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6Im9sZCIsInR5cCI6InZlY3RhbG9uLWxpY2Vuc2Urand0In0.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1saWNlbnNlLTAwMSIsImlzcyI6Imh0dHBzOi8vbGljZW5zZXMudmVjdGFsb24uZGV2IiwiYXVkIjoiYW5vdGhlci1jbGllbnQiLCJzdWIiOiJnb2xkZW4tY3VzdG9tZXIiLCJwcm9kdWN0IjpbInJuIl0sInRpZXIiOiJ0ZWFtIiwic2VhdHMiOjQsInN0YXRlIjoiYWN0aXZlIiwiaWF0IjoxODAwMDAwMDAwLCJuYmYiOjE4MDAwMDAwMDAsImV4cCI6MTgwMDA4NjQwMH0.pzTXsttEBCWAkN1_ubODGT-UEHkEcDEDwjecp0TKi9GTS1sGd5u0-_rmjIJl7Zq3kutaXjv8CqwvBFPDX5ip_HbYGTwP6uOkc58IFmx8qohM23Zgdo8ZtC-YlJZtIZpMoztP7pP7eclxPTXNlXvhQPIBMjWXdIveZwQKA4gOgVCnlZch6_-tgFRCWCX0PsegoHrLfCnMLOb4Sw2TuU9Io3kKRfyGDtB0qHewB60MIyH3IWlksGYMXp-EUZZ1xUVCIR4256AWf_p_FJHNejtrdi7pPfeCew6S4e56iqs7pMIJuCOJWxUarxeMB8q3HXgyl41Jaa8cU4peD7AxBVFwAg",
+      "expected": {
+        "ok": false,
+        "code": "wrong_audience"
+      }
+    },
+    {
+      "id": "wrong-product",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6Im9sZCIsInR5cCI6InZlY3RhbG9uLWxpY2Vuc2Urand0In0.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1saWNlbnNlLTAwMSIsImlzcyI6Imh0dHBzOi8vbGljZW5zZXMudmVjdGFsb24uZGV2IiwiYXVkIjoidmVjdGFsb24tY2xpIiwic3ViIjoiZ29sZGVuLWN1c3RvbWVyIiwicHJvZHVjdCI6WyJweXRob24iXSwidGllciI6InRlYW0iLCJzZWF0cyI6NCwic3RhdGUiOiJhY3RpdmUiLCJpYXQiOjE4MDAwMDAwMDAsIm5iZiI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDg2NDAwfQ.E6_iYr2WkzSxLLWvdpquKl-aU7tPrT2xlEfKJVP9-2kGIQpQwDdBPMBTRRY1Y--dVwX3dUF8NsdDD_CVSbm4S_fVpqMldQbI81BlK939ss9jOPiDToi6yI8cRvzz9uUhr_2UO9fMbqSB34ttGTIrY8trzmbEAXj7yfxKuYlf2Y39idd7lrpqrIKEFe_CfzFVmt2oTB_Z9GD0YXdB_Z58GIZc2ZMIW70eckHj6fYv10BDKHOlTI5vrY4hauKjP6GmrJIV6avKjjnnEFnbcPqAQQhDbMQ2HRGXfbiPe1jckGKFLjUcfC_IhPwlStmi6NeHVo5riy3pzuD_1naOinlkaQ",
+      "expected": {
+        "ok": false,
+        "code": "wrong_product"
+      }
+    },
+    {
+      "id": "wrong-tier",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6Im9sZCIsInR5cCI6InZlY3RhbG9uLWxpY2Vuc2Urand0In0.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1saWNlbnNlLTAwMSIsImlzcyI6Imh0dHBzOi8vbGljZW5zZXMudmVjdGFsb24uZGV2IiwiYXVkIjoidmVjdGFsb24tY2xpIiwic3ViIjoiZ29sZGVuLWN1c3RvbWVyIiwicHJvZHVjdCI6WyJybiJdLCJ0aWVyIjoidW5saW1pdGVkIiwic2VhdHMiOjQsInN0YXRlIjoiYWN0aXZlIiwiaWF0IjoxODAwMDAwMDAwLCJuYmYiOjE4MDAwMDAwMDAsImV4cCI6MTgwMDA4NjQwMH0.t0G22IQHkdnYq8QKN79NCZSCKPokSccaA9ugWoJWanomUiPlEbEfbwp6R-szqK06OMcYKRG4Ylx6WWXdgtNf4Ks5hSFQY-WrIl8vdCbaiBAYbuM5TLp1BPXDAaHaGp86XStlPrwtGsw7CXPQhEqrbnIsOD_gflDVaMwUKH9QsIQ5M6LF0FdzIOwq6-0ggzyunhNuZ5aKt4v-qIMfKU1ZOqJzCTdgH6TivcxEGyKPN3MUmu5XkHHzI72eAlsJ_k42Fm0ajiKqF8eGTqS6lCe6a8rPp38eDgiCY5uDIlpLzcgcvTl7-cyeWcosJKA0IcL8eH-VDDCqo6KUoMc1DMNobw",
+      "expected": {
+        "ok": false,
+        "code": "invalid_tier"
+      }
+    },
+    {
+      "id": "zero-seats",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6Im9sZCIsInR5cCI6InZlY3RhbG9uLWxpY2Vuc2Urand0In0.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1saWNlbnNlLTAwMSIsImlzcyI6Imh0dHBzOi8vbGljZW5zZXMudmVjdGFsb24uZGV2IiwiYXVkIjoidmVjdGFsb24tY2xpIiwic3ViIjoiZ29sZGVuLWN1c3RvbWVyIiwicHJvZHVjdCI6WyJybiJdLCJ0aWVyIjoidGVhbSIsInNlYXRzIjowLCJzdGF0ZSI6ImFjdGl2ZSIsImlhdCI6MTgwMDAwMDAwMCwibmJmIjoxODAwMDAwMDAwLCJleHAiOjE4MDAwODY0MDB9.tiFQPWE3rhKmKEM96wCGTzidMtXYL9fZAlz-Du-ZrfF2dTloKrX8eouqX4FA3TaBQ2NmcQdhXcxknFJW6VJfaKdQmR3NmO8ICRb9T5seoLjCjcb0WWOICurKOLki7unHrKroRZ0-i0wzWzaivs0iZRLBt0yvaI1oM8xjQCLo4vzJZwiSiY3Zf3MqUftdlD4OeQu0hgyNGXYo0Or_Sof0NAvqQ8hEQeoeNbWOp0fu6yyzqTs6GrHEYYv6OPmyDfxrbiRzzAp1Whao4gnBOVVlV4T8m55ziReACB4iMVgpqjV2D7YGBm8k_MPEVs1QlOysgVSo3m_oB-L9V6AwiyQAUg",
+      "expected": {
+        "ok": false,
+        "code": "invalid_seats"
+      }
+    },
+    {
+      "id": "not-yet-valid",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6Im9sZCIsInR5cCI6InZlY3RhbG9uLWxpY2Vuc2Urand0In0.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1saWNlbnNlLTAwMSIsImlzcyI6Imh0dHBzOi8vbGljZW5zZXMudmVjdGFsb24uZGV2IiwiYXVkIjoidmVjdGFsb24tY2xpIiwic3ViIjoiZ29sZGVuLWN1c3RvbWVyIiwicHJvZHVjdCI6WyJybiJdLCJ0aWVyIjoidGVhbSIsInNlYXRzIjo0LCJzdGF0ZSI6ImFjdGl2ZSIsImlhdCI6MTgwMDAwMDAwMCwibmJmIjoxODAwMDAwMzAxLCJleHAiOjE4MDAwODY0MDB9.c34WyWssoDf46pjdej_r_IudReh_CmFzMLehCkREZ02QSS9PsG0ERkDHNcuCSNjknchwIcnYZlzBMjZqGMH4xktFcQ0coG4N49tOCTx3xzhzSx_mnAiN8_LL2agYd7GazoMUXF0uQ-ZX6X8TLEC2JqB3gUpQQPahOO7Fc5NTvynYAcNBWqaH2r18KTl_McXQNrNi7CwbmBhJyGHNlXsg1k12AdAQ03UZmdevZ7sDKHaYgLJwOVy4YUoSfe5z5aSrqt_gTL5TsLLRJqiB7ZeijS3lYF0WSiR2MU7qUSKI6kPUYxzwWFAsFp9Nru_P2b621Q_WmxeZWqSqXjeOc5fCZA",
+      "expected": {
+        "ok": false,
+        "code": "not_yet_valid"
+      }
+    },
+    {
+      "id": "expired",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImV4cGlyZWQiLCJ0eXAiOiJ2ZWN0YWxvbi1saWNlbnNlK2p3dCJ9.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1leHBpcmVkLTAwMSIsImlzcyI6Imh0dHBzOi8vbGljZW5zZXMudmVjdGFsb24uZGV2IiwiYXVkIjoidmVjdGFsb24tY2xpIiwic3ViIjoiZ29sZGVuLWN1c3RvbWVyIiwicHJvZHVjdCI6WyJybiJdLCJ0aWVyIjoidGVhbSIsInNlYXRzIjo0LCJzdGF0ZSI6ImFjdGl2ZSIsImlhdCI6MTc5OTgyNzIwMCwibmJmIjoxNzk5ODI3MjAwLCJleHAiOjE3OTk5OTk3MDB9.d0z9rqEIMdmqD6ZZPR219aOVH5asQIWoaLaTapNG10iNBaR6RXNeOE5y_zlTYLkOgpxXFBMia3A02sEQX4UKMA5llEt4O65THEE2hX_j9SL_nCvFEYE7MdWMW2PG0evKrKu_2g6Dx7MpBXAaLecx1AeilefsZ92vayJvLgMLAyMNOgWWVscXU907Gc8a84OF23LHmeOUc1e-1Or-pviqIQ2X4iVMzP4nLwUUstohTCh7vP4Z_d3CbQ2gI9_XD9sA9hOqFdvmlzpWHrGvMdD8Zeupo7axm9F1MzZo4wzEh3cL6VSwvMPX2FzrusllKf2q4AHh-8XC-N9ancg2nQwjNA",
+      "expected": {
+        "ok": false,
+        "code": "expired"
+      }
+    },
+    {
+      "id": "malformed-claims",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6Im9sZCIsInR5cCI6InZlY3RhbG9uLWxpY2Vuc2Urand0In0.eyJqdGkiOiJnb2xkZW4tbGljZW5zZS0wMDEiLCJpc3MiOiJodHRwczovL2xpY2Vuc2VzLnZlY3RhbG9uLmRldiIsImF1ZCI6InZlY3RhbG9uLWNsaSIsInN1YiI6ImdvbGRlbi1jdXN0b21lciIsInByb2R1Y3QiOlsicm4iXSwidGllciI6InRlYW0iLCJzZWF0cyI6NCwic3RhdGUiOiJhY3RpdmUiLCJpYXQiOjE4MDAwMDAwMDAsIm5iZiI6MTgwMDAwMDAwMCwiZXhwIjoxODAwMDg2NDAwfQ.t0OCR0OXi3CX4VyFyqu3_QrBKpk7oYewP0HOOlr7lLq3ObzgVOC4k9g8PGFCCPIIj6zpZk_IkjggWg7aCGT8XhetkicvCDOoy5NLx0B6MMOraCiaRhv-3JjBM1zibTLg00kUOxG7zny5odaUmGtTxqrM3QIBClZnOo2SvyXoq_kSaBcCUrcbFbb73lWZIrqfD3ba6f6ldYouy-6T8H7nX8AbR4JspYi7mJfZx0kx5XMMEAFgh83tc38BSLZ3eQRYdMAQj0NkJweCkzHb7T8AVSroJktVRWHuPraT-melGdAaZvtbD-lwvCv4Zq7g5axpK884aLsSREAscGi_z6c-8Q",
+      "expected": {
+        "ok": false,
+        "code": "invalid_claims"
+      }
+    },
+    {
+      "id": "malformed-token",
+      "token": "not-a-token",
+      "expected": {
+        "ok": false,
+        "code": "invalid_token"
+      }
+    },
+    {
+      "id": "unknown-key",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6InVua25vd24iLCJ0eXAiOiJ2ZWN0YWxvbi1saWNlbnNlK2p3dCJ9.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1saWNlbnNlLTAwMSIsImlzcyI6Imh0dHBzOi8vbGljZW5zZXMudmVjdGFsb24uZGV2IiwiYXVkIjoidmVjdGFsb24tY2xpIiwic3ViIjoiZ29sZGVuLWN1c3RvbWVyIiwicHJvZHVjdCI6WyJybiJdLCJ0aWVyIjoidGVhbSIsInNlYXRzIjo0LCJzdGF0ZSI6ImFjdGl2ZSIsImlhdCI6MTgwMDAwMDAwMCwibmJmIjoxODAwMDAwMDAwLCJleHAiOjE4MDAwODY0MDB9.Xzqc_i4N8wVmux-R31zx3pxbOWfxpyprMe3asosMs6brtKKZDxOUeovWS7rGxB4T76qJSV6OXX_JWt_OpHueU3dSzWjP-ay4EoXy5jxnrc-7wW9ZKiIJGhD4AsqJCsDxBMj107wk1z9nghC7gqo_Qs3BKqF12lE198kZpb76BTRMAXxa9vO4RdZMTx0BL2R-owo9q9TxdyushxkQnhfc8so-rGBwE9HfrmGIX1y4JlN6obEqOE08fpcbzepk8afJCuI37H0APyJQicI2PX7oI8TM67M7_GlzjIeGukKWEYFKVYH7llTMBkoXQBYVJk7SoHdWQN_9-6gpa2zN8xg7Xg",
+      "expected": {
+        "ok": false,
+        "code": "unknown_key"
+      }
+    },
+    {
+      "id": "retired-key",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6Im9sZCIsInR5cCI6InZlY3RhbG9uLWxpY2Vuc2Urand0In0.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1saWNlbnNlLTAwMSIsImlzcyI6Imh0dHBzOi8vbGljZW5zZXMudmVjdGFsb24uZGV2IiwiYXVkIjoidmVjdGFsb24tY2xpIiwic3ViIjoiZ29sZGVuLWN1c3RvbWVyIiwicHJvZHVjdCI6WyJybiJdLCJ0aWVyIjoidGVhbSIsInNlYXRzIjo0LCJzdGF0ZSI6ImFjdGl2ZSIsImlhdCI6MTgwMDAwMDAwMCwibmJmIjoxODAwMDAwMDAwLCJleHAiOjE4MDAwODY0MDB9.A4X1KqNByuqu8Roc8zwau72HDD5bHtXoC9T1Kreg0cDI798D-bE188q1Rg665_20MLMcMnVCCc6aIbVWiyBZldUiA6D1zP_N5VWO66h7ciyvBJ3-HVY8HJ2n7NY5v1CrzKnIs2k5toMGDD3SAdT4ENBMO6bawi2Qrji0xNA8EnrIsTqXdBzEUq6QO8ke-WKLHBb4VLwHGlRuRGulSSSn9LK69-4te017EfgNu3A4X1HaYPImcIARjgMeMTmCRL0zLUiHab3NYOLjqrA4kyKmclpN5Xqhw-yz78f3LXbOYHwfnefvTo5QQxH7i0Etfj9qHt5uk3777tA2g6n81BbwxA",
+      "expected": {
+        "ok": false,
+        "code": "retired_key"
+      },
+      "keyStatus": {
+        "id": "old",
+        "status": "retired"
+      }
+    },
+    {
+      "id": "compromised-key",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6Im9sZCIsInR5cCI6InZlY3RhbG9uLWxpY2Vuc2Urand0In0.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1saWNlbnNlLTAwMSIsImlzcyI6Imh0dHBzOi8vbGljZW5zZXMudmVjdGFsb24uZGV2IiwiYXVkIjoidmVjdGFsb24tY2xpIiwic3ViIjoiZ29sZGVuLWN1c3RvbWVyIiwicHJvZHVjdCI6WyJybiJdLCJ0aWVyIjoidGVhbSIsInNlYXRzIjo0LCJzdGF0ZSI6ImFjdGl2ZSIsImlhdCI6MTgwMDAwMDAwMCwibmJmIjoxODAwMDAwMDAwLCJleHAiOjE4MDAwODY0MDB9.A4X1KqNByuqu8Roc8zwau72HDD5bHtXoC9T1Kreg0cDI798D-bE188q1Rg665_20MLMcMnVCCc6aIbVWiyBZldUiA6D1zP_N5VWO66h7ciyvBJ3-HVY8HJ2n7NY5v1CrzKnIs2k5toMGDD3SAdT4ENBMO6bawi2Qrji0xNA8EnrIsTqXdBzEUq6QO8ke-WKLHBb4VLwHGlRuRGulSSSn9LK69-4te017EfgNu3A4X1HaYPImcIARjgMeMTmCRL0zLUiHab3NYOLjqrA4kyKmclpN5Xqhw-yz78f3LXbOYHwfnefvTo5QQxH7i0Etfj9qHt5uk3777tA2g6n81BbwxA",
+      "expected": {
+        "ok": false,
+        "code": "compromised_key"
+      },
+      "keyStatus": {
+        "id": "old",
+        "status": "compromised"
+      }
+    },
+    {
+      "id": "algorithm-confusion",
+      "token": "eyJhbGciOiJIUzI1NiIsImtpZCI6Im9sZCIsInR5cCI6InZlY3RhbG9uLWxpY2Vuc2Urand0In0.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1saWNlbnNlLTAwMSIsImlzcyI6Imh0dHBzOi8vbGljZW5zZXMudmVjdGFsb24uZGV2IiwiYXVkIjoidmVjdGFsb24tY2xpIiwic3ViIjoiZ29sZGVuLWN1c3RvbWVyIiwicHJvZHVjdCI6WyJybiJdLCJ0aWVyIjoidGVhbSIsInNlYXRzIjo0LCJzdGF0ZSI6ImFjdGl2ZSIsImlhdCI6MTgwMDAwMDAwMCwibmJmIjoxODAwMDAwMDAwLCJleHAiOjE4MDAwODY0MDB9.gCcnOKwkM1bswArs3hDI2whmv23MXFwgBUzeZVUTj3G_JwCJBYOv1pkboBivebEk3xA6NLdEwx8mVutvTax1Bz2aGb5KqS6U3XcGvgFxo8hLv8B-geA2VDvdeKrk_yl25k3k7xzb8lHlOtY9NI7zB7rdFPakMbUG6tgVe5H1-SaQBc_xMzwi-4opiFrwIPKWmhjdSPtrKciCBffFw1Yiku8CXZjrwrNFt63-ekZD883hv795YcgckF_Y4AJ5yP49fyUYEcbvG6p9LwG9k9YFdkCigDWdY_R7nqE5A-p4tbIp7Hd4KUnxx0KWQKV5LZSDgpGsLYA-nmqMxfA0Fwou9w",
+      "expected": {
+        "ok": false,
+        "code": "unsupported_algorithm"
+      }
+    },
+    {
+      "id": "not-before-at-exact-skew",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImJvdW5kYXJ5IiwidHlwIjoidmVjdGFsb24tbGljZW5zZStqd3QifQ.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1ib3VuZGFyeS0wMDEiLCJpc3MiOiJodHRwczovL2xpY2Vuc2VzLnZlY3RhbG9uLmRldiIsImF1ZCI6InZlY3RhbG9uLWNsaSIsInN1YiI6ImdvbGRlbi1jdXN0b21lciIsInByb2R1Y3QiOlsicm4iXSwidGllciI6InRlYW0iLCJzZWF0cyI6NCwic3RhdGUiOiJhY3RpdmUiLCJpYXQiOjE4MDAwMDAwMDAsIm5iZiI6MTgwMDAwMDMwMCwiZXhwIjoxODAwMDg2NDAwfQ.G0Py4i6SvcKJoHgRuSBEOM336KshhzINC9A96GYc1f-WSkP4DieXkr7CmkBptriBgA5DUOlKv7KJDY6d5k3HIQOBGJBm475rJuZBk5XFvGcMBupbE_bLA7hMJ_nIRZVa4A2wT2szdlkB_SL-seqpzp9sRD8y0cCD-F6FAoHgonC0kKQZDCNKFaCSYElp2NZblv8PD1KRqWv2Vi9nsY7tMXJY40teGm5adOyUr51qcc680rzz0_K-LC0zlqFpypS9gAirNKa49iUUkJdcOhHhOo5Rct25mTrpsLyoqKrpgVBqFubWxCSuzgO4qVwp-8zfl5JBouwC6jDY9UmS3NPKKw",
+      "expected": {
+        "ok": true,
+        "claims": {
+          "licenseVersion": 2,
+          "licenseId": "golden-boundary-001",
+          "issuer": "https://licenses.vectalon.dev",
+          "audience": [
+            "vectalon-cli"
+          ],
+          "subject": "golden-customer",
+          "product": [
+            "rn"
+          ],
+          "tier": "team",
+          "seats": 4,
+          "state": "active",
+          "issuedAt": 1800000000000,
+          "notBefore": 1800000300000,
+          "expiresAt": 1800086400000
+        }
+      }
+    },
+    {
+      "id": "not-before-one-second-past-skew",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImJvdW5kYXJ5IiwidHlwIjoidmVjdGFsb24tbGljZW5zZStqd3QifQ.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1ib3VuZGFyeS0wMDEiLCJpc3MiOiJodHRwczovL2xpY2Vuc2VzLnZlY3RhbG9uLmRldiIsImF1ZCI6InZlY3RhbG9uLWNsaSIsInN1YiI6ImdvbGRlbi1jdXN0b21lciIsInByb2R1Y3QiOlsicm4iXSwidGllciI6InRlYW0iLCJzZWF0cyI6NCwic3RhdGUiOiJhY3RpdmUiLCJpYXQiOjE4MDAwMDAwMDAsIm5iZiI6MTgwMDAwMDMwMSwiZXhwIjoxODAwMDg2NDAwfQ.qwT2RvC5dVzVYS9XS5YXu_PAzNOcyR-8tyw6CBLRCX8mpjq9tIz9Rt0fH3uPQr3ShxaEv0XOTCWSw0aWaMbGajKv_7oRmGWXi9sEgsCxV7iFYRyrfhl3zj-dBW9eJ9ZSCe9WV_8zSI0xxK5HLWCIuZ8fDR24huvBYyyRWDGtfkd_b0S28XmWwSpmI7YHE4RrKkM9M_A8nbN4zcL9EhVj18JIX3Qj0VgYayT-6NgkrHuihWNy-DU__0OKny_jG0xzoWUrcxbkkDHq0LJt7wVW_55Dcg4HVkIXQ3TDcPrunFB8vBxU9KDE-CIRvO979e_e_2n5yYoz1ofXsQQ6Glg-jA",
+      "expected": {
+        "ok": false,
+        "code": "not_yet_valid"
+      }
+    },
+    {
+      "id": "maximum-lifetime-exact",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImJvdW5kYXJ5IiwidHlwIjoidmVjdGFsb24tbGljZW5zZStqd3QifQ.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1ib3VuZGFyeS0wMDEiLCJpc3MiOiJodHRwczovL2xpY2Vuc2VzLnZlY3RhbG9uLmRldiIsImF1ZCI6InZlY3RhbG9uLWNsaSIsInN1YiI6ImdvbGRlbi1jdXN0b21lciIsInByb2R1Y3QiOlsicm4iXSwidGllciI6InRlYW0iLCJzZWF0cyI6NCwic3RhdGUiOiJhY3RpdmUiLCJpYXQiOjE4MDAwMDAwMDAsIm5iZiI6MTgwMDAwMDAwMCwiZXhwIjoxODAzMDI0MDAwfQ.dB_dmgCFBb-i_gY4vUYO5iuYzYKkM_gA_EQY8gxkurxhIz8B2larj2qBIz6AZCk1gs0nyqPt5XXXiX9iKoz8SYvFKdJoN5zGvliUMPmgw1ZWfXAM7sLOSoJPO789ROfcS4FbgEIECQUSiv-cDrOLY1GWS8pboi3dtSMeP9ihez4ueZlCr0cgcEiOkmpYU20BL286xGsCjdTFfbTHeAwBWKss8GRNJPqlj9JaLgMfOjSq_4-IBAHdftRq99XtK3Ti7kMt22JIPYOwFCcW9fzliSD_cepV4DjGW7FMMELuDSJPVDbIOOGRu00qMhAZXhndZQ0wTokfXDkR1tAoERw8qA",
+      "expected": {
+        "ok": true,
+        "claims": {
+          "licenseVersion": 2,
+          "licenseId": "golden-boundary-001",
+          "issuer": "https://licenses.vectalon.dev",
+          "audience": [
+            "vectalon-cli"
+          ],
+          "subject": "golden-customer",
+          "product": [
+            "rn"
+          ],
+          "tier": "team",
+          "seats": 4,
+          "state": "active",
+          "issuedAt": 1800000000000,
+          "notBefore": 1800000000000,
+          "expiresAt": 1803024000000
+        }
+      }
+    },
+    {
+      "id": "maximum-lifetime-one-second-overflow",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImJvdW5kYXJ5IiwidHlwIjoidmVjdGFsb24tbGljZW5zZStqd3QifQ.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1ib3VuZGFyeS0wMDEiLCJpc3MiOiJodHRwczovL2xpY2Vuc2VzLnZlY3RhbG9uLmRldiIsImF1ZCI6InZlY3RhbG9uLWNsaSIsInN1YiI6ImdvbGRlbi1jdXN0b21lciIsInByb2R1Y3QiOlsicm4iXSwidGllciI6InRlYW0iLCJzZWF0cyI6NCwic3RhdGUiOiJhY3RpdmUiLCJpYXQiOjE4MDAwMDAwMDAsIm5iZiI6MTgwMDAwMDAwMCwiZXhwIjoxODAzMDI0MDAxfQ.J8lwCho_-BM1xJSLtICZzCG4DDHZ0t0nYmggTIsWf0RUKatIHEeAYjhkq1p02o-mlE-w6FUrzGKtM0iC74-XQU4T2mYIwTUPzF1RL1erIGZJcew10kbnFUqsxL10MDJDm8dUgFKbYXV0K1Y7a4n41KKsqHiaxVD7l2bSSN8S6lnKszp12Zth50VUx-s4LszHF7N4nxEklEaz6aplRs-SK1TunNRD5u0foeqZ-lD-8ayY8Eksf2iTzz2TN8y4cAAE1lvNZavqX67ts8JFAroK0v58Z0hVq_Kp4vmUIPyJk2GmxvVZyf3Dw_xcbnAjPHnUwL7plK8cVV2ggqw6LFQe-w",
+      "expected": {
+        "ok": false,
+        "code": "invalid_lifetime"
+      }
+    },
+    {
+      "id": "offline-lease-exact",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImJvdW5kYXJ5IiwidHlwIjoidmVjdGFsb24tbGljZW5zZStqd3QifQ.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1ib3VuZGFyeS0wMDEiLCJpc3MiOiJodHRwczovL2xpY2Vuc2VzLnZlY3RhbG9uLmRldiIsImF1ZCI6InZlY3RhbG9uLWNsaSIsInN1YiI6ImdvbGRlbi1jdXN0b21lciIsInByb2R1Y3QiOlsicm4iXSwidGllciI6InRlYW0iLCJzZWF0cyI6NCwic3RhdGUiOiJhY3RpdmUiLCJpYXQiOjE4MDAwMDAwMDAsIm5iZiI6MTgwMDAwMDAwMCwiZXhwIjoxODAzMDI0MDAwfQ.dB_dmgCFBb-i_gY4vUYO5iuYzYKkM_gA_EQY8gxkurxhIz8B2larj2qBIz6AZCk1gs0nyqPt5XXXiX9iKoz8SYvFKdJoN5zGvliUMPmgw1ZWfXAM7sLOSoJPO789ROfcS4FbgEIECQUSiv-cDrOLY1GWS8pboi3dtSMeP9ihez4ueZlCr0cgcEiOkmpYU20BL286xGsCjdTFfbTHeAwBWKss8GRNJPqlj9JaLgMfOjSq_4-IBAHdftRq99XtK3Ti7kMt22JIPYOwFCcW9fzliSD_cepV4DjGW7FMMELuDSJPVDbIOOGRu00qMhAZXhndZQ0wTokfXDkR1tAoERw8qA",
+      "lastOnlineAt": 1796976000000,
+      "expected": {
+        "ok": true,
+        "claims": {
+          "licenseVersion": 2,
+          "licenseId": "golden-boundary-001",
+          "issuer": "https://licenses.vectalon.dev",
+          "audience": [
+            "vectalon-cli"
+          ],
+          "subject": "golden-customer",
+          "product": [
+            "rn"
+          ],
+          "tier": "team",
+          "seats": 4,
+          "state": "active",
+          "issuedAt": 1800000000000,
+          "notBefore": 1800000000000,
+          "expiresAt": 1803024000000
+        }
+      }
+    },
+    {
+      "id": "offline-lease-one-millisecond-overflow",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImJvdW5kYXJ5IiwidHlwIjoidmVjdGFsb24tbGljZW5zZStqd3QifQ.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1ib3VuZGFyeS0wMDEiLCJpc3MiOiJodHRwczovL2xpY2Vuc2VzLnZlY3RhbG9uLmRldiIsImF1ZCI6InZlY3RhbG9uLWNsaSIsInN1YiI6ImdvbGRlbi1jdXN0b21lciIsInByb2R1Y3QiOlsicm4iXSwidGllciI6InRlYW0iLCJzZWF0cyI6NCwic3RhdGUiOiJhY3RpdmUiLCJpYXQiOjE4MDAwMDAwMDAsIm5iZiI6MTgwMDAwMDAwMCwiZXhwIjoxODAzMDI0MDAwfQ.dB_dmgCFBb-i_gY4vUYO5iuYzYKkM_gA_EQY8gxkurxhIz8B2larj2qBIz6AZCk1gs0nyqPt5XXXiX9iKoz8SYvFKdJoN5zGvliUMPmgw1ZWfXAM7sLOSoJPO789ROfcS4FbgEIECQUSiv-cDrOLY1GWS8pboi3dtSMeP9ihez4ueZlCr0cgcEiOkmpYU20BL286xGsCjdTFfbTHeAwBWKss8GRNJPqlj9JaLgMfOjSq_4-IBAHdftRq99XtK3Ti7kMt22JIPYOwFCcW9fzliSD_cepV4DjGW7FMMELuDSJPVDbIOOGRu00qMhAZXhndZQ0wTokfXDkR1tAoERw8qA",
+      "lastOnlineAt": 1796975999999,
+      "expected": {
+        "ok": false,
+        "code": "offline_lease_expired"
+      }
+    },
+    {
+      "id": "clock-rollback-at-exact-skew",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImJvdW5kYXJ5IiwidHlwIjoidmVjdGFsb24tbGljZW5zZStqd3QifQ.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1ib3VuZGFyeS0wMDEiLCJpc3MiOiJodHRwczovL2xpY2Vuc2VzLnZlY3RhbG9uLmRldiIsImF1ZCI6InZlY3RhbG9uLWNsaSIsInN1YiI6ImdvbGRlbi1jdXN0b21lciIsInByb2R1Y3QiOlsicm4iXSwidGllciI6InRlYW0iLCJzZWF0cyI6NCwic3RhdGUiOiJhY3RpdmUiLCJpYXQiOjE4MDAwMDAwMDAsIm5iZiI6MTgwMDAwMDAwMCwiZXhwIjoxODAzMDI0MDAwfQ.dB_dmgCFBb-i_gY4vUYO5iuYzYKkM_gA_EQY8gxkurxhIz8B2larj2qBIz6AZCk1gs0nyqPt5XXXiX9iKoz8SYvFKdJoN5zGvliUMPmgw1ZWfXAM7sLOSoJPO789ROfcS4FbgEIECQUSiv-cDrOLY1GWS8pboi3dtSMeP9ihez4ueZlCr0cgcEiOkmpYU20BL286xGsCjdTFfbTHeAwBWKss8GRNJPqlj9JaLgMfOjSq_4-IBAHdftRq99XtK3Ti7kMt22JIPYOwFCcW9fzliSD_cepV4DjGW7FMMELuDSJPVDbIOOGRu00qMhAZXhndZQ0wTokfXDkR1tAoERw8qA",
+      "lastTrustedTime": 1800000300000,
+      "expected": {
+        "ok": true,
+        "claims": {
+          "licenseVersion": 2,
+          "licenseId": "golden-boundary-001",
+          "issuer": "https://licenses.vectalon.dev",
+          "audience": [
+            "vectalon-cli"
+          ],
+          "subject": "golden-customer",
+          "product": [
+            "rn"
+          ],
+          "tier": "team",
+          "seats": 4,
+          "state": "active",
+          "issuedAt": 1800000000000,
+          "notBefore": 1800000000000,
+          "expiresAt": 1803024000000
+        }
+      }
+    },
+    {
+      "id": "clock-rollback-one-millisecond-overflow",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImJvdW5kYXJ5IiwidHlwIjoidmVjdGFsb24tbGljZW5zZStqd3QifQ.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1ib3VuZGFyeS0wMDEiLCJpc3MiOiJodHRwczovL2xpY2Vuc2VzLnZlY3RhbG9uLmRldiIsImF1ZCI6InZlY3RhbG9uLWNsaSIsInN1YiI6ImdvbGRlbi1jdXN0b21lciIsInByb2R1Y3QiOlsicm4iXSwidGllciI6InRlYW0iLCJzZWF0cyI6NCwic3RhdGUiOiJhY3RpdmUiLCJpYXQiOjE4MDAwMDAwMDAsIm5iZiI6MTgwMDAwMDAwMCwiZXhwIjoxODAzMDI0MDAwfQ.dB_dmgCFBb-i_gY4vUYO5iuYzYKkM_gA_EQY8gxkurxhIz8B2larj2qBIz6AZCk1gs0nyqPt5XXXiX9iKoz8SYvFKdJoN5zGvliUMPmgw1ZWfXAM7sLOSoJPO789ROfcS4FbgEIECQUSiv-cDrOLY1GWS8pboi3dtSMeP9ihez4ueZlCr0cgcEiOkmpYU20BL286xGsCjdTFfbTHeAwBWKss8GRNJPqlj9JaLgMfOjSq_4-IBAHdftRq99XtK3Ti7kMt22JIPYOwFCcW9fzliSD_cepV4DjGW7FMMELuDSJPVDbIOOGRu00qMhAZXhndZQ0wTokfXDkR1tAoERw8qA",
+      "lastTrustedTime": 1800000300001,
+      "expected": {
+        "ok": false,
+        "code": "clock_rollback"
+      }
+    },
+    {
+      "id": "issued-after-not-before",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImJvdW5kYXJ5IiwidHlwIjoidmVjdGFsb24tbGljZW5zZStqd3QifQ.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1ib3VuZGFyeS0wMDEiLCJpc3MiOiJodHRwczovL2xpY2Vuc2VzLnZlY3RhbG9uLmRldiIsImF1ZCI6InZlY3RhbG9uLWNsaSIsInN1YiI6ImdvbGRlbi1jdXN0b21lciIsInByb2R1Y3QiOlsicm4iXSwidGllciI6InRlYW0iLCJzZWF0cyI6NCwic3RhdGUiOiJhY3RpdmUiLCJpYXQiOjE4MDAwMDAwMDAsIm5iZiI6MTc5OTk5OTk5OSwiZXhwIjoxODAwMDAwMDAxfQ.b2JiPYFvvpoTs-MDrKdV45Kbga29UktvgpOdF4C7dM8XQQ-smeFDV6885-hftg2j_qoMITX-rlvkD0-NXWJATz1YeXBla2uEiBSG5dfCgC6dIR0RHRcW0nnu8om6DQDqWf6VxKTTO5wrnr9i9cF3vqRNnDVcw0qttpNBajcD_3E-AmYa6DdG19XBWNxFNXayaj879I8KYOLVPY7Hf0FTmY4rQoYyEqGYU6m_1ucXLGH6FJCrB3Z-tCfjj0wsXhkf0RmwUo8YOaXFS9oB47PIjicw6ZiamOtU7rPjtpvfna_IMdCYewXLVlt_sjvz-xQAdOjM6DKiOMLHkS44YzWD8g",
+      "expected": {
+        "ok": false,
+        "code": "invalid_claims"
+      }
+    },
+    {
+      "id": "not-before-equals-expiry",
+      "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6ImJvdW5kYXJ5IiwidHlwIjoidmVjdGFsb24tbGljZW5zZStqd3QifQ.eyJsaWNlbnNlX3ZlcnNpb24iOjIsImp0aSI6ImdvbGRlbi1ib3VuZGFyeS0wMDEiLCJpc3MiOiJodHRwczovL2xpY2Vuc2VzLnZlY3RhbG9uLmRldiIsImF1ZCI6InZlY3RhbG9uLWNsaSIsInN1YiI6ImdvbGRlbi1jdXN0b21lciIsInByb2R1Y3QiOlsicm4iXSwidGllciI6InRlYW0iLCJzZWF0cyI6NCwic3RhdGUiOiJhY3RpdmUiLCJpYXQiOjE4MDAwMDAwMDAsIm5iZiI6MTgwMDAwMDAwMSwiZXhwIjoxODAwMDAwMDAxfQ.PQJTYV5nv65I1LQ6rQ7lYF7qfbjUwQAvLPu67p6O4CYF40FejQpvToHpsnsNIA4rz95L34K90OAbGMdl3FFDohpuxqrxnJsxHUo17n8auanpYSEBRwsnrYzcONwUAvOK0mye2sEWzAT-Sbnwjakl9Oq3mDzIhPSr4zYGLwaPzZUEUJE7-_vcXO2HsWkaih64MuoIux6babzkKAR3v9kfGiG8JIn_CsM6SoBG7csya6fXfV5-UP4D4EYYrTUEy-n_8zXX8ewi6bLkJ2zZ4ov2V88Dg-iY2smomxkOLN3Z97a3H7pYByKlqxjCpjVt_P0aCl6-u4LHG1TdPvqPgNh8PQ",
+      "expected": {
+        "ok": false,
+        "code": "invalid_claims"
+      }
+    }
+  ],
+  "storageVectors": [
+    {
+      "id": "corrupt-current-recovers-previous",
+      "current": "{corrupt",
+      "previous": "{\"version\":1,\"revision\":1,\"token\":\"previous-valid\",\"lastTrustedTime\":1800000000000,\"lastOnlineAt\":1800000000000}",
+      "expected": {
+        "ok": true,
+        "recovered": true,
+        "record": {
+          "token": "previous-valid"
+        }
+      }
+    },
+    {
+      "id": "same-revision-different-record-is-rollback",
+      "current": "{\"version\":1,\"revision\":1,\"token\":\"substituted\",\"lastTrustedTime\":1800000000000,\"lastOnlineAt\":1800000000000}",
+      "previous": "{\"version\":1,\"revision\":1,\"token\":\"previous-valid\",\"lastTrustedTime\":1800000000000,\"lastOnlineAt\":1800000000000}",
+      "expected": {
+        "ok": false,
+        "code": "rollback_detected"
+      }
+    },
+    {
+      "id": "interrupted-backup-publish-is-recoverable",
+      "current": "{\"version\":1,\"revision\":1,\"token\":\"previous-valid\",\"lastTrustedTime\":1800000000000,\"lastOnlineAt\":1800000000000}",
+      "previous": "{\"version\":1,\"revision\":1,\"token\":\"previous-valid\",\"lastTrustedTime\":1800000000000,\"lastOnlineAt\":1800000000000}",
+      "expected": {
+        "ok": true,
+        "recovered": false,
+        "record": {
+          "token": "previous-valid"
+        }
+      }
+    },
+    {
+      "id": "lower-revision-current-is-rollback",
+      "current": "{\"version\":1,\"revision\":1,\"token\":\"older\",\"lastTrustedTime\":1800000000000,\"lastOnlineAt\":1800000000000}",
+      "previous": "{\"version\":1,\"revision\":2,\"token\":\"newer\",\"lastTrustedTime\":1800000000001,\"lastOnlineAt\":1800000000001}",
+      "expected": {
+        "ok": false,
+        "code": "rollback_detected"
+      }
+    }
+  ]
+}

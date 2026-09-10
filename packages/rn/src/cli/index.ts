@@ -288,6 +288,8 @@ export function createProgram(): Command {
     .option('--license <key>', 'Activate a license key')
     .option('--github', 'Authenticate with GitHub for trial')
     .option('--status', 'Show current authentication status')
+    .option('--refresh', 'Refresh the current license through the authenticated customer gateway')
+    .option('--recover', 'Recover a valid previous local license record or migrate a compatible legacy record')
     .option('--logout', 'Clear license and revert to free tier')
     .action(authCommand)
 

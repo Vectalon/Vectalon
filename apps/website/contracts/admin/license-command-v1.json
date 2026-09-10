@@ -1,0 +1,25 @@
+{
+  "description": "Non-secret, schema-conformant Admin lifecycle command fixture. Server actor and clock are intentionally absent.",
+  "request": {
+    "contractVersion": "1.0.0",
+    "action": "issue",
+    "licenseId": "license-example-001",
+    "idempotencyKey": "idempotency-example-0001",
+    "issue": {
+      "id": "license-example-001",
+      "subjectId": "customer-example-001",
+      "audience": "vectalon-cli",
+      "product": ["rn"],
+      "tier": "team",
+      "seats": 4,
+      "issuedAt": 1800000000000,
+      "notBefore": 1800000000000,
+      "expiresAt": 1803024000000
+    }
+  },
+  "response": {
+    "contractVersion": "1.0.0",
+    "ok": false,
+    "error": { "code": "invalid_command", "message": "unsupported contract version or invalid lifecycle command", "retryable": false }
+  }
+}

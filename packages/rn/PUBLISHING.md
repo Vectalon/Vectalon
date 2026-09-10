@@ -1,11 +1,12 @@
 # Publishing
 
-Current release inputs: RN <!-- product-fact:rn-version -->0.19.2<!-- /product-fact --> ·
-core <!-- product-fact:core-version -->0.9.1<!-- /product-fact -->
+Current release inputs: RN <!-- product-fact:rn-version -->0.20.0<!-- /product-fact --> ·
+core <!-- product-fact:core-version -->0.10.0<!-- /product-fact -->
 
 `@vectalon-dev/rn` is the only independently published npm package. Its build
-bundles the private core runtime, including the exact core Git revision, into
-the RN tarball.
+bundles the private core runtime into the RN tarball. The artifact records the
+exact Core Git revision and a public key-provenance manifest (permitted key ID,
+algorithm, status, and public-key SHA-256); it contains no signing material.
 
 ## Release workflow
 
@@ -13,11 +14,13 @@ The guarded [Publish Packages workflow](../../.github/workflows/publish.yml)
 runs only for a manual RN dispatch or a push whose commit message contains
 `[publish-rn]`. Every release:
 
-1. Requires `CORE_REPO_PAT` and checks out the latest `Vectalon/core` `main`.
+1. Requires `CORE_REPO_PAT` and checks out the reviewed Core release revision
+   pinned in the publish workflow.
 2. Records the fetched core SHA in `packages/core/core-source-revision.txt`.
 3. Installs with the frozen pnpm lockfile.
 4. Runs the deterministic benchmark regression gate.
-5. Builds, tests, lints, and typechecks the RN package.
+5. Builds, tests, lints, and typechecks the RN package, including a packed
+   artifact check for Core revision and allowed public-key provenance.
 6. Publishes `@vectalon-dev/rn` to npm.
 7. Attempts the matching VS Code Marketplace release without allowing a
    Marketplace outage to invalidate an npm publication.

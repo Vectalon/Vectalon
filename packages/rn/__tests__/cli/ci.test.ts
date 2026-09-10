@@ -3,7 +3,7 @@ import { join } from 'path'
 import { ciCommand } from '../../src/cli/commands/ci'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
-jest.mock('@vectalon-dev/core', () => ({
+jest.mock('../../src/auth/licenseLifecycle', () => ({
   requireTier: () => ({ allowed: true, currentTier: 'pro', requiredTier: 'pro', canTrial: false }),
 }))
 

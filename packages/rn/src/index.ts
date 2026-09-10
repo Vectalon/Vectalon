@@ -7,7 +7,7 @@
 
 // Re-export core interfaces for convenience
 export type { Tier, TierCheck, Product, Feature } from '@vectalon-dev/core'
-export { requireTier } from '@vectalon-dev/core'
+export { requireTier } from './auth/licenseLifecycle'
 export { capabilityCatalog, surfaceCapability, surfaceAvailability, capabilityLabel } from './capabilities'
 export type { CapabilityDeclaration, CapabilityCatalog } from '@vectalon-dev/core'
 

@@ -5,7 +5,7 @@
 
 import { existsSync, readdirSync } from 'fs'
 import { join, resolve, basename, sep } from 'path'
-import { requireTier } from '@vectalon-dev/core'
+import { requireTier } from '../../auth/licenseLifecycle'
 import { logger } from '../logger'
 import { ReferenceStore, visualBaselineDir, isValidReferenceKey } from '../../utils/referenceStore'
 import type { ReferenceEntry } from '../../utils/referenceStore'

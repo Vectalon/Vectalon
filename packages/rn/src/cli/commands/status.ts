@@ -18,8 +18,8 @@ import { ArtifactStore } from '../../knowledge/ArtifactStore'
 import { ContextEngine } from '../../harness/ContextEngine'
 import { ModelRouter } from '../../model/ModelRouter'
 import { MCPServer } from '../../protocol/MCPServer'
-import { LicenseStore, LicenseValidator } from '@vectalon-dev/core'
 import { trialDaysRemaining, trialStatus } from '../../auth/trialState'
+import { currentCustomerLicense, describeLicenseStatus } from '../../auth/licenseLifecycle'
 import { resolveProjectModelProvider, resolveProjectModelConfig } from '../../projectManifest'
 import { activeModelLabel, isRemoteKeyMissing, detectModelAvailability } from '../../model/setup'
 import { checkHeartbeatStaleness } from '../../diagnostics/alerts'
@@ -154,18 +154,20 @@ function printRefresh(root: string): void {
 
 function printLicense(): void {
   try {
-    const license = LicenseStore.read()
-    if (license?.key) {
-      const validation = LicenseValidator.validate(license.key)
-      if (validation.valid && validation.license) {
-        const days = LicenseValidator.daysRemaining(validation.license)
-        const exp = new Date(validation.license.expiresAt).toISOString().split('T')[0]
-        logger.info(`License: ${pc.green('active')} (${days} days remaining, expires ${exp})`)
-        return
-      }
-      logger.info(`License: ${pc.yellow('invalid')} — run \`vectalon auth --license <key>\` with a valid key`)
+    const license = currentCustomerLicense()
+    if (license.ok) {
+      const days = Math.max(0, Math.ceil((license.check.expiresAt - Date.now()) / 86_400_000))
+      const exp = new Date(license.check.expiresAt).toISOString().split('T')[0]
+      const status = describeLicenseStatus(license.check)
+      logger.info(`License: ${status.access === 'granted' ? pc.green(status.state) : pc.yellow(status.state)} (${days} days remaining, expires ${exp})`)
       return
     }
+    if (license.check) {
+      const status = describeLicenseStatus(license.check)
+      logger.info(`License: ${pc.yellow(status.state)} — ${status.message}`)
+      return
+    }
+    if (license.code !== 'not_found') logger.info(`License: ${pc.yellow('invalid')} — run \`vectalon auth --license <key>\` with a valid key`)
     const trial = trialStatus()
     if (trial.status === 'active') {
       const days = trialDaysRemaining(trial)

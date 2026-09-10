@@ -13,7 +13,7 @@
 
 import { existsSync, readFileSync } from 'fs'
 import { join, resolve } from 'path'
-import { requireTier } from '@vectalon-dev/core'
+import { requireTier } from '../../auth/licenseLifecycle'
 import { logger } from '../logger'
 import { PolicyEngine } from '../../guardrails/PolicyEngine'
 import type { PolicyConfig } from '../../guardrails/PolicyEngine'

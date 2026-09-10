@@ -2,7 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ENTITLEMENT_POLICY_VERSION = void 0;
 exports.evaluateEntitlement = evaluateEntitlement;
+exports.evaluateLicenseEntitlement = evaluateLicenseEntitlement;
 const TrustedClaims_1 = require("../auth/TrustedClaims");
+const LicensePolicyVerifier_1 = require("../auth/LicensePolicyVerifier");
 const TierResolver_1 = require("./TierResolver");
 exports.ENTITLEMENT_POLICY_VERSION = '2026-09-03.1';
 const messages = {
@@ -77,4 +79,43 @@ function evaluateEntitlement(request) {
         return decision('degraded', 'degraded_revocation_stale', request, tier, claims.expiresAt);
     }
     return decision('allow', 'allowed_license', request, tier, claims.expiresAt);
+}
+/** Verifies a signed credential and evaluates its entitlement without exposing a claims constructor. */
+function evaluateLicenseEntitlement(raw, request) {
+    let now;
+    try {
+        now = request.verification.clock.now();
+    }
+    catch {
+        now = Number.NaN;
+    }
+    const entitlement = {
+        requiredTier: request.requiredTier,
+        product: request.product,
+        capabilityId: request.capabilityId,
+        requestedSeats: request.requestedSeats,
+        revocation: request.revocation,
+        now,
+        lastTrustedTime: request.verification.lastTrustedTime,
+    };
+    if (!Number.isSafeInteger(now) || now < 0)
+        return evaluateEntitlement(entitlement);
+    const verified = (0, LicensePolicyVerifier_1.verifyLicenseWithPolicy)(raw, {
+        ...request.verification,
+        clock: { now: () => now },
+    });
+    if (!verified.ok)
+        return evaluateEntitlement(entitlement);
+    return evaluateEntitlement({
+        ...entitlement,
+        claims: (0, TrustedClaims_1.createTrustedClaims)({
+            schemaVersion: 1,
+            subject: verified.claims.subject,
+            tier: verified.claims.tier,
+            product: verified.claims.product,
+            issuedAt: verified.claims.issuedAt,
+            expiresAt: verified.claims.expiresAt,
+            seats: verified.claims.seats,
+        }),
+    });
 }

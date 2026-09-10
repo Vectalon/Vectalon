@@ -10,7 +10,7 @@
  * (the Phase 6 acceptance: team knowledge searchable via semantic queries).
  */
 
-import { requireTier } from '@vectalon-dev/core'
+import { requireTier } from '../../auth/licenseLifecycle'
 import { resolve } from 'path'
 import pc from 'picocolors'
 import { logger } from '../logger'
