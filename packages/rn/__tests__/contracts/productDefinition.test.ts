@@ -94,9 +94,9 @@ describe('shipped ProductDefinition contract', () => {
       execFileSync('tar', ['-xzf', tarball, '--strip-components=1', '-C', packageRoot])
       // This mirrors the production package's declared runtime dependency
       // closure while keeping the tested RN/Core modules outside this checkout.
-      const workspaceModules = path.resolve(__dirname, '../../../../node_modules')
       for (const dependency of ['ajv', 'fast-deep-equal', 'fast-uri', 'json-schema-traverse', 'require-from-string']) {
-        cpSync(path.join(workspaceModules, dependency), path.join(consumer, 'node_modules', dependency), { recursive: true })
+        const dependencyRoot = path.dirname(requireArtifact.resolve(`${dependency}/package.json`))
+        cpSync(dependencyRoot, path.join(consumer, 'node_modules', dependency), { recursive: true })
       }
 
       const installed = createRequire(path.join(consumer, 'package.json'))
