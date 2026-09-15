@@ -18,6 +18,7 @@
  */
 import { createHmac, timingSafeEqual } from 'crypto'
 import type { AdminStore, License, Tier } from './admin-store'
+import { verifyCheckoutAttribution, type CheckoutAttribution } from './commercial-checkout'
 
 export type ProductId = 'rn' | 'ios' | 'android' | 'flutter'
 export type LsTier = 'pro' | 'all-access' | 'team' | 'enterprise'
@@ -91,19 +92,21 @@ export interface LsWebhookEvent {
   eventId: string
   eventName: string
   attributes: Record<string, unknown>
+  customData?: Record<string, unknown>
+  resourceId?: string
 }
 
 export function parseWebhookEvent(body: string): LsWebhookEvent {
   const parsed = JSON.parse(body) as {
-    meta?: { event_name?: string; event_id?: string }
-    data?: { attributes?: Record<string, unknown> }
+    meta?: { event_name?: string; event_id?: string; custom_data?: Record<string, unknown> }
+    data?: { id?: string | number; attributes?: Record<string, unknown> }
   }
   const eventName = parsed.meta?.event_name
   const eventId = parsed.meta?.event_id
   if (!eventName || !eventId) {
     throw new Error('malformed webhook payload: missing meta.event_name or meta.event_id')
   }
-  return { eventId, eventName, attributes: parsed.data?.attributes ?? {} }
+  return { eventId, eventName, attributes: parsed.data?.attributes ?? {}, customData: parsed.meta?.custom_data, resourceId: parsed.data?.id === undefined ? undefined : String(parsed.data.id) }
 }
 
 export interface LsHandlerResult {
@@ -138,25 +141,30 @@ export async function handleLemonSqueezyEvent(
     status?: string
     ends_at?: string | null
     renews_at?: string | null
-    first_order_item?: { variant_id?: string; product_name?: string; variant_name?: string }
+    first_order_item?: { variant_id?: string; product_name?: string; variant_name?: string; quantity?: number }
   }
   const email = attrs.customer_email?.trim().toLowerCase()
   const variantId = attrs.first_order_item?.variant_id
+  const providerQuantity = attrs.first_order_item?.quantity
   const mapped = variantId ? tierForVariantId(variantId) : null
+  const attribution = checkoutAttribution(event.customData)
 
   switch (event.eventName) {
     case 'order_created': {
       if (!email) return { handled: false, skipped: 'no customer email' }
       if (!mapped) return { handled: false, skipped: 'manual-review: unknown variant' }
       if (mapped.product !== 'rn') return { handled: false, skipped: 'manual-review: product not available' }
-      if (mapped.tier === 'team') return { handled: false, skipped: 'manual-review: trusted Team seat quantity required' }
+      if ((process.env.VECTALON_CHECKOUT_ATTRIBUTION_SECRET || process.env.LEMONSQUEEZY_WEBHOOK_SECRET) && !attribution) return { handled: false, skipped: 'manual-review: checkout attribution invalid' }
+      if (attribution && (attribution.tier !== mapped.tier || attribution.productScope.length !== 1 || attribution.productScope[0] !== mapped.product)) return { handled: false, skipped: 'manual-review: checkout attribution mismatch' }
+      if (mapped.tier === 'team' && (!attribution || attribution.seats < 2 || !Number.isSafeInteger(providerQuantity) || providerQuantity !== attribution.seats)) return { handled: false, skipped: 'manual-review: trusted Team seat quantity required' }
       const tier = mapped.tier as Tier
       const product = mapped.product
+      const seats = attribution?.seats ?? 1
       const fulfillment = await store.issueLicenseForWebhook(event.eventId, {
         tier,
         email,
         product,
-        seats: 1,
+        seats,
         days: INITIAL_LICENSE_DAYS,
       })
       if (fulfillment.created) {
@@ -164,8 +172,8 @@ export async function handleLemonSqueezyEvent(
           email,
           tier,
           product,
-          seats: 1,
-          mrrCents: TIER_MRR_CENTS[mapped.tier],
+          seats,
+          mrrCents: TIER_MRR_CENTS[mapped.tier] * seats,
         })
       }
       if (!fulfillment.emailSent) {
@@ -216,6 +224,14 @@ export async function handleLemonSqueezyEvent(
       await store.markWebhookEvent(event.eventId)
       return { handled: true, skipped: `unhandled: ${event.eventName}` }
   }
+}
+
+function checkoutAttribution(customData: Record<string, unknown> | undefined): CheckoutAttribution | null {
+  if (!customData) return null
+  const seats = Number(customData.seats)
+  if (typeof customData.correlation_id !== 'string' || typeof customData.catalog_version !== 'string' || typeof customData.plan_id !== 'string' || typeof customData.product_scope !== 'string' || typeof customData.tier !== 'string' || typeof customData.attribution_signature !== 'string' || !Number.isSafeInteger(seats)) return null
+  const candidate = { correlationId: customData.correlation_id, catalogVersion: customData.catalog_version, planId: customData.plan_id, productScope: customData.product_scope.split(',').filter(Boolean), tier: customData.tier, seats, signature: customData.attribution_signature } as CheckoutAttribution
+  return verifyCheckoutAttribution(candidate)
 }
 
 /**

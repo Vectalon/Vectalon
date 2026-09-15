@@ -5,6 +5,20 @@
  * © 2026 Bhishak Sanyal. Commercial use requires a paid license.
  * See LICENSE for details.
  */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FileMatchDetector = exports.RegexDetector = exports.EngineGuardrail = exports.violationsToPrompt = exports.violationToPrompt = exports.violationsFromJSON = exports.violationsToJSON = exports.violationDeserialize = exports.violationSerialize = exports.violationFromJSON = exports.violationToJSON = exports.createViolation = exports.CURRENT_SCHEMA_VERSION = exports.EngineeringProfile = exports.validateCapabilityTransition = exports.checkCapabilityAvailability = exports.validateCapabilityCatalog = exports.validateContract = exports.findBreakingSchemaChanges = exports.generateRegistryManifest = exports.generateContractTypes = exports.CONTRACT_SCHEMAS = exports.CONTRACT_REVISION = exports.CONTRACT_NAMES = exports.VectalonConfig = exports.UsageReporter = exports.ENTITLEMENT_POLICY_VERSION = exports.evaluateLicenseEntitlement = exports.evaluateEntitlement = exports.requireTier = exports.FeatureGates = exports.TierResolver = exports.isTrustedClaims = exports.isVerifiedTrialCredential = exports.verifyTrialToken = exports.TrialTracker = exports.AtomicLicenseStorage = exports.verifyLicenseWithPolicy = exports.isLicenseLifecycleState = exports.evaluateLicenseLifecycle = exports.LICENSE_LIFECYCLE_STATES = exports.parseVersionedLicenseClaims = exports.evaluateLicensePolicy = exports.MAX_OFFLINE_LEASE_MS = exports.DEFAULT_LICENSE_CLOCK_SKEW_MS = exports.verifyLicenseSignature = exports.StaticLicenseKeySource = exports.verifyLicenseToken = exports.LicenseValidator = exports.LicenseStore = void 0;
 exports.createCoreHarness = exports.DEFAULT_PRECEDENCE = exports.LAYER_ORDER = exports.composeProfiles = exports.CompositionEngine = exports.androidDefinition = exports.iosDefinition = exports.platformProfiles = exports.PlatformProfileRegistry = exports.reactDefinition = exports.frameworkProfiles = exports.FrameworkProfileRegistry = exports.typescriptDefinition = exports.isManualRemediation = exports.isSnippetRemediation = exports.isGuidanceRemediation = exports.isAutoFixRemediation = exports.isCompositeDetection = exports.isTestCoverageDetection = exports.isBuildConfigDetection = exports.isStaticAnalysisDetection = exports.isRegexDetection = exports.isASTDetection = exports.createRule = exports.languageProfiles = exports.LanguageProfileRegistry = exports.ruleRegistry = exports.RuleRegistry = exports.createToolCaller = exports.createAlwaysResponds = exports.FakeModelProvider = exports.modelProviders = exports.ModelRateLimitError = exports.ModelProviderError = exports.ModelProviderRegistry = exports.buildRepairPrompt = exports.RepairLoop = void 0;
@@ -152,3 +166,5 @@ Object.defineProperty(exports, "DEFAULT_PRECEDENCE", { enumerable: true, get: fu
 // Product-neutral engineering harness
 var CoreHarness_1 = require("./profiles/CoreHarness");
 Object.defineProperty(exports, "createCoreHarness", { enumerable: true, get: function () { return CoreHarness_1.createCoreHarness; } });
+// Provider-neutral commercial state and entitlement policy.
+__exportStar(require("./commercial"), exports);

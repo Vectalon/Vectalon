@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.21.0] - 2026-09-15
+
+- Route paid checkout through a server-created, manifest-derived session with
+  signed plan, product, and seat attribution.
+- Require verified attribution for new production orders; unknown variants,
+  mismatched products, and unverified Team quantities enter manual review.
+- Persist a redacted, immutable commercial event before fulfillment and expose
+  a customer-safe status that only reports active after reconciliation.
+- Bundle Core 0.11.0 with its provider-neutral deterministic commercial state
+  machine and fail-closed entitlement policy.
+
 All notable changes to rn-vectalon will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
