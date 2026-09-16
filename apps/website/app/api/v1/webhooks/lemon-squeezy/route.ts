@@ -5,6 +5,7 @@ import {
   handleLemonSqueezyEvent,
 } from '../../../../../lib/lemon-squeezy'
 import { defaultAdminStore } from '../../../../../lib/admin-store'
+import { normalizeLemonEvent, persistCommercialEvent } from '../../../../../lib/commercial-ingestion'
 
 export const runtime = 'nodejs'
 
@@ -37,6 +38,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: 'malformed payload' }, { status: 400 })
   }
 
-  const result = await handleLemonSqueezyEvent(event, defaultAdminStore())
-  return NextResponse.json({ ok: true, ...result })
+  try {
+    const ingestion = await persistCommercialEvent(normalizeLemonEvent(event, raw, secret))
+    const result = await handleLemonSqueezyEvent(event, defaultAdminStore())
+    return NextResponse.json({ ok: true, ingestion, ...result })
+  } catch (error) {
+    const code = error instanceof Error ? error.message : 'commercial-ingestion-failed'
+    return NextResponse.json({ ok: false, code }, { status: code === 'commercial-event-conflict' ? 409 : 503 })
+  }
 }

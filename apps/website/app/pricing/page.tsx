@@ -89,8 +89,9 @@ function PlanCta({ plan }: { plan: (typeof PLANS)[number] }) {
   }
   const url = plan.tier ? checkoutUrlFor(plan.tier) : null
   if (url) {
+    const seats = plan.id === 'team' ? 2 : 1
     return (
-      <a href={url} target="_blank" rel="noreferrer" className={`mt-6 w-full ${plan.highlight ? 'btn-primary' : 'btn-ghost'}`}>
+      <a href={`/api/v1/checkout?plan=${plan.id}&seats=${seats}`} className={`mt-6 w-full ${plan.highlight ? 'btn-primary' : 'btn-ghost'}`}>
         {plan.cta}
       </a>
     )

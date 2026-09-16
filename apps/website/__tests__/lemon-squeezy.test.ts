@@ -24,6 +24,7 @@ const ENV_KEYS = [
   'LEMONSQUEEZY_STORE_ID',
   'LEMONSQUEEZY_WEBHOOK_SECRET',
   'LEMONSQUEEZY_CHECKOUT_PRO_RN',
+  'LEMONSQUEEZY_CHECKOUT_TEAM_RN',
   'LEMONSQUEEZY_CHECKOUT_ALL_ACCESS_RN',
   'LEMONSQUEEZY_CHECKOUT_PRO_IOS',
   'LEMONSQUEEZY_VARIANT_PRO_RN',
@@ -31,6 +32,7 @@ const ENV_KEYS = [
   'LEMONSQUEEZY_VARIANT_TEAM_RN',
   'LEMONSQUEEZY_VARIANT_PRO_IOS',
   'RESEND_API_KEY',
+  'VECTALON_CHECKOUT_ATTRIBUTION_SECRET',
 ]
 
 describe('lemon-squeezy webhook security', () => {
@@ -100,7 +102,7 @@ describe('lemon-squeezy license lifecycle', () => {
       eventName: 'order_created',
       attributes: {
         customer_email: email,
-        first_order_item: { variant_id: variantId, variant_name: 'Pro' },
+        first_order_item: { variant_id: variantId, variant_name: 'Pro', quantity: 1 },
       },
     }
   }
@@ -155,6 +157,32 @@ describe('lemon-squeezy license lifecycle', () => {
     const { store, dir } = makeStore()
     const result = await handleLemonSqueezyEvent(orderEvent('var_aa', 'team@x.dev', 'evt_aa'), store)
     expect(result.license?.tier).toBe('all-access')
+    rmSync(dir, { recursive: true, force: true })
+  })
+
+  it('requires signed attribution in production configuration and accepts verified Team seats', async () => {
+    process.env.VECTALON_CHECKOUT_ATTRIBUTION_SECRET = 'a'.repeat(32)
+    process.env.LEMONSQUEEZY_STORE_ID = 'vectalon'
+    process.env.LEMONSQUEEZY_CHECKOUT_TEAM_RN = 'checkout-team'
+    process.env.LEMONSQUEEZY_VARIANT_TEAM_RN = 'var-team'
+    const { createCheckoutSession } = await import('../lib/commercial-checkout')
+    const session = createCheckoutSession({ planId: 'team', seats: 3 }, process.env, () => 'correlation-team')
+    const customData = {
+      correlation_id: session.attribution.correlationId,
+      catalog_version: session.attribution.catalogVersion,
+      plan_id: session.attribution.planId,
+      product_scope: session.attribution.productScope.join(','),
+      tier: session.attribution.tier,
+      seats: String(session.attribution.seats),
+      attribution_signature: session.attribution.signature,
+    }
+    const { store, dir } = makeStore()
+    expect((await handleLemonSqueezyEvent(orderEvent('var-team', 'team@x.dev', 'evt-unsigned'), store)).skipped).toMatch(/manual-review/)
+    const signedOrder = orderEvent('var-team', 'team@x.dev', 'evt-signed')
+    signedOrder.attributes.first_order_item = { variant_id: 'var-team', variant_name: 'Team', quantity: 3 }
+    const verified = await handleLemonSqueezyEvent({ ...signedOrder, customData }, store)
+    expect(verified.license?.seats).toBe(3)
+    expect((await store.getData()).customers.find(customer => customer.email === 'team@x.dev')?.mrrCents).toBe(14700)
     rmSync(dir, { recursive: true, force: true })
   })
 

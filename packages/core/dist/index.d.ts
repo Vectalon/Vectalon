@@ -76,3 +76,4 @@ export { CompositionEngine, composeProfiles, LAYER_ORDER, DEFAULT_PRECEDENCE } f
 export type { CompositionLayer, PrecedenceMap, CompositionInput, CompositionConflict, RuleProvenance, CompositionOptions, CompositionResult, } from './profiles/CompositionEngine';
 export { createCoreHarness } from './profiles/CoreHarness';
 export type { CoreHarness, HarnessAdapters, HarnessChange, HarnessClock, HarnessConfig, HarnessDiscoveryDiagnostic, HarnessDiscoveryResult, HarnessReason, HarnessRequest, HarnessRuleViolation, HarnessRun, HarnessSafeDiagnostic, HarnessSafeResult, HarnessStatus, ProjectDiscoveryAdapter, RuleExecutionAdapter, } from './profiles/CoreHarness';
+export * from './commercial';

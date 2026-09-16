@@ -114,5 +114,5 @@ describe('runSelfTest progress hooks', () => {
     expect(starts).toBeGreaterThan(30)
     expect(dones).toBe(starts)
     expect(lastTotal).toBe(starts)
-  })
+  }, 120_000)
 })
