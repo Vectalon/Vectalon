@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const website = resolve(here, '..')
-const expectedCommit = 'e5618e7e3ab7c978818e9804d420103e1c78bcba'
+const expectedCommit = '7173daa87cb5897e015681f947002d064e4cb603'
 const files = [
   ['lib/licenses/types.ts', 'lib/admin-lifecycle/generated/types.ts'],
   ['lib/licenses/lifecycle.ts', 'lib/admin-lifecycle/generated/lifecycle.ts'],

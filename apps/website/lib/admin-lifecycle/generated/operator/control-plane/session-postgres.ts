@@ -6,7 +6,9 @@ import { OPERATOR_POLICY_VERSION } from "./access"
 import { authorizeSession, type OperatorSession, type OperatorDecision } from "./session-policy"
 export async function authorizeStoredOperator(pool: Pick<Pool, "connect">, hash: string, input: Omit<Parameters<typeof authorizeSession>[1], "now">): Promise<OperatorDecision | { ok: false; code: "service-unavailable" }> {
   if (!/^[a-f0-9]{64}$/.test(hash)) return { ok: false, code: "unauthorized" }
+  for (let attempt = 0; attempt < 2; attempt++) {
   let client: PoolClient | undefined
+  let committing = false
   try {
     client = await pool.connect()
     await client.query("begin isolation level serializable")
@@ -23,12 +25,16 @@ export async function authorizeStoredOperator(pool: Pick<Pool, "connect">, hash:
       (actor_subject,action,target_subject,reason,correlation_id,result,policy_version)
       values ($1,$2,$1,$3,$4,'allowed',$5)`, [result.actor.id,`authorization:${input.permission}`,input.reason!.trim(),randomUUID(),OPERATOR_POLICY_VERSION])
     await client.query("update vectalon_private.operator_sessions set last_seen_at=clock_timestamp() where token_hash=$1", [hash])
+    committing = true
     await client.query("commit")
     return result
-  } catch {
+  } catch (error) {
     if (client) await client.query("rollback").catch(() => undefined)
+    if (!committing && attempt === 0 && (error as { code?: string })?.code === "40001") continue
     return { ok: false, code: "service-unavailable" }
   } finally { client?.release() }
+  }
+  return { ok: false, code: "service-unavailable" }
 }
 export async function createStoredOperatorSession(pool: Pick<Pool, "connect">, identity: VerifiedProviderIdentity, input: { expectedOrigin: string; origin?: string; challengeBound: boolean; challengeHash: string }): Promise<{ ok: true; token: string; csrf: string; expiresAt: number } | { ok: false; code: "unauthorized" | "service-unavailable" }> {
   if (!/^[a-f0-9]{64}$/.test(input.challengeHash)) return { ok: false, code: "unauthorized" }
