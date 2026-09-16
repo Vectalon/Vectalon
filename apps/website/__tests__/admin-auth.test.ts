@@ -1,9 +1,7 @@
-import {
-  DEFAULT_ADMIN_PASSWORD,
-  adminPassword,
-  adminSessionToken,
-  isAdminToken,
-} from '../lib/admin-auth'
+import { isAdmin } from '../lib/admin-auth'
+import { operatorAuthorization } from '../lib/operator-host'
+jest.mock('../lib/operator-host', () => ({ operatorAuthorization: jest.fn() }))
+const authorize = jest.mocked(operatorAuthorization)
 
 describe('production admin authentication', () => {
   afterEach(() => {
@@ -12,26 +10,24 @@ describe('production admin authentication', () => {
     delete process.env.VERCEL_ENV
   })
 
-  it('fails closed in production when no admin password is configured', () => {
+  it('fails closed when durable session authorization is unavailable', async () => {
     process.env.VERCEL_ENV = 'production'
 
-    expect(adminPassword()).toBeNull()
-    expect(adminSessionToken()).toBeNull()
-    expect(isAdminToken(undefined)).toBe(false)
+    authorize.mockResolvedValue({ ok: false, code: 'service-unavailable' })
+    expect(await isAdmin()).toBe(false)
   })
 
-  it('accepts only the configured production credential', () => {
+  it('never allows configured legacy passwords to bypass durable production sessions', async () => {
     process.env.VERCEL_ENV = 'production'
     process.env.ADMIN_PASSWORD = 'configured-secret'
     process.env.ADMIN_SESSION_SECRET = 'independent-session-secret'
 
-    const token = adminSessionToken()
-    expect(adminPassword()).toBe('configured-secret')
-    expect(token).not.toBeNull()
-    expect(isAdminToken(token ?? undefined)).toBe(true)
+    authorize.mockResolvedValue({ ok: false, code: 'unauthorized' })
+    expect(await isAdmin()).toBe(false)
   })
 
-  it('retains the default only for local development and tests', () => {
-    expect(adminPassword()).toBe(DEFAULT_ADMIN_PASSWORD)
+  it('allows only current provider-backed operator authorization', async () => {
+    authorize.mockResolvedValue({ ok: true, actor: { id: 'github:26772694', permissions: ['license:read'] } })
+    expect(await isAdmin()).toBe(true)
   })
 })

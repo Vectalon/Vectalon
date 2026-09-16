@@ -1,13 +1,15 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { operatorMutationHeaders } from '../../../lib/operator-client'
 
 export function LogoutButton() {
   const router = useRouter()
   return (
     <button
       onClick={async () => {
-        await fetch('/api/admin/logout', { method: 'POST' })
+        const response=await fetch('/api/admin/logout', { method: 'POST',headers:operatorMutationHeaders() })
+        if (!response.ok) { alert('Sign-out failed. Please retry; your session was not confirmed revoked.');return }
         router.push('/')
         router.refresh()
       }}

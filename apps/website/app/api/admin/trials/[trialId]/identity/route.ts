@@ -1,14 +1,15 @@
 import { NextResponse } from 'next/server'
-import { isAdmin } from '../../../../../../lib/admin-auth'
+import { operatorAuthorization } from '../../../../../../lib/operator-host'
 import { eraseTrialIdentity } from '../../../../../../lib/trial-operations'
 
 export const runtime = 'nodejs'
 
 export async function DELETE(request: Request, props: { params: Promise<{ trialId: string }> }) {
-  if (!await isAdmin()) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   try {
     const body = await request.json() as { reason?: unknown }
     if (typeof body.reason !== 'string') return NextResponse.json({ error: 'invalid_request' }, { status: 400 })
+    const authorization = await operatorAuthorization('license:revoke', request, body.reason)
+    if (!authorization.ok) return NextResponse.json({ error: authorization.code }, { status: authorization.code === 'unauthorized' ? 401 : authorization.code === 'service-unavailable' ? 503 : 403 })
     const { trialId } = await props.params
     return await eraseTrialIdentity(trialId, body.reason)
       ? NextResponse.json({ status: 'erased' })

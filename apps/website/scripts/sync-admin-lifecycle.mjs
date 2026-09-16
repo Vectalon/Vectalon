@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const website = resolve(here, '..')
-const expectedCommit = '999567f22f7f91ccf95d3f58c11c2d3346939b0e'
+const expectedCommit = 'e5618e7e3ab7c978818e9804d420103e1c78bcba'
 const files = [
   ['lib/licenses/types.ts', 'lib/admin-lifecycle/generated/types.ts'],
   ['lib/licenses/lifecycle.ts', 'lib/admin-lifecycle/generated/lifecycle.ts'],
@@ -25,6 +25,13 @@ const files = [
   ['lib/licenses/postgres.ts', 'lib/admin-lifecycle/generated/postgres.ts'],
   ['lib/licenses/service.ts', 'lib/admin-lifecycle/generated/service.ts'],
   ['contracts/schemas/LicenseCommandV1Response.schema.json', 'contracts/admin/lifecycle/LicenseCommandV1Response.schema.json'],
+  ...[
+    'control-plane/access.ts', 'control-plane/database.ts', 'control-plane/session-policy.ts',
+    'control-plane/session-issuance.ts', 'control-plane/session-postgres.ts',
+    'control-plane/sdk-access.ts', 'control-plane/sdk-postgres.ts',
+    'control-plane/browser-challenge.ts', 'control-plane/github-device.ts', 'control-plane/membership-postgres.ts', 'control-plane/login-budget.ts',
+    'licenses/types.ts', 'licenses/signer.ts', 'licenses/database.ts', 'trials/issuance.ts',
+  ].map(path => [`lib/${path}`, `lib/admin-lifecycle/generated/operator/${path}`]),
 ]
 
 function sha256(path) { return createHash('sha256').update(readFileSync(path)).digest('hex') }

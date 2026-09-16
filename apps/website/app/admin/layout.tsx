@@ -3,6 +3,7 @@ import { LogoutButton } from './components/LogoutButton'
 
 const LINKS = [
   { href: '/admin', label: 'Overview', icon: '◉' },
+  { href: '/admin/access', label: 'Operator access', icon: '◈' },
   { href: '/admin/licenses', label: 'Licenses', icon: '🔑' },
   { href: '/admin/trials', label: 'Trials', icon: '🧪' },
   { href: '/admin/customers', label: 'Customers', icon: '👤' },
