@@ -15,7 +15,7 @@ describe('platform SDK access endpoint', () => {
     const response = await POST(request())
     expect(response.status).toBe(200)
     expect(response.headers.get('cache-control')).toBe('no-store')
-    expect(issue).toHaveBeenCalledWith(expect.anything(), expect.stringMatching(/^[a-f0-9]{64}$/), expect.objectContaining({ reason: 'Internal SDK verification', csrf: 'browser-csrf', origin: 'https://vectalon.in', expectedOrigin: 'https://vectalon.in', issuer: 'https://vectalon.in', leaseId: expect.stringMatching(/^operator-/) }), expect.anything())
+    expect(issue).toHaveBeenCalledWith(expect.anything(), expect.stringMatching(/^[a-f0-9]{64}$/), expect.objectContaining({ reason: 'Internal SDK verification', csrf: 'browser-csrf', origin: 'https://vectalon.in', expectedOrigin: 'https://vectalon.in', issuer: 'https://licenses.vectalon.dev', leaseId: expect.stringMatching(/^operator-/) }), expect.anything())
   })
   it('rejects cross-origin and denied transactions without returning credentials', async () => {
     expect((await POST(request('https://attacker.test'))).status).toBe(403)
