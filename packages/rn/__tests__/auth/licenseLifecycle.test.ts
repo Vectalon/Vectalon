@@ -4,6 +4,7 @@ import { join } from 'path'
 import {
   createCustomerLicenseVerifier,
   evaluateCustomerTier,
+  createOperatorLicenseVerifier,
   LicenseLifecycleStore,
   describeLicenseStatus,
   type LicenseCredentialVerifier,
@@ -101,6 +102,32 @@ describe('versioned license lifecycle storage', () => {
 })
 
 describe('versioned customer credential policy', () => {
+  it('prefers a separately verified internal lease across all tier gates without overwriting the customer license', () => {
+    const f = v2Fixture()
+    const temp = createTempProject({})
+    try {
+      const store = new LicenseLifecycleStore({ directory: join(temp, 'customer'), legacyPaths: [] })
+      const internalStore = new LicenseLifecycleStore({ directory: join(temp, 'operator'), legacyPaths: [] })
+      let time = NOW
+      const verify = createCustomerLicenseVerifier({ keys: [f.key], now: () => time })
+      const operatorVerify = createOperatorLicenseVerifier({ keys: [f.key], now: () => time })
+      const customer = f.token({ tier: 'pro' })
+      expect(store.save(customer, verify, NOW)).toEqual({ ok: true })
+      expect(internalStore.save(f.token({ jti: 'operator-lease-123', sub: 'github:26772694', tier: 'enterprise', exp: (NOW + 300_000) / 1000 }), operatorVerify, NOW)).toEqual({ ok: true })
+      for (const tier of ['free', 'pro', 'team', 'enterprise'] as const) expect(evaluateCustomerTier(tier, { store, verify, internalStore, operatorVerify, now: () => time }).allowed).toBe(true)
+      expect(store.read()).toMatchObject({ ok: true, record: { token: customer } })
+      time = NOW + 300_000
+      expect(evaluateCustomerTier('team', { store, verify, internalStore, operatorVerify, now: () => time }).allowed).toBe(false)
+      expect(evaluateCustomerTier('pro', { store, verify, internalStore, operatorVerify, now: () => time }).allowed).toBe(true)
+    } finally { cleanup(temp) }
+  })
+
+  it('refuses customer, long-lived, wrong-product and unsigned credentials in the internal lease store', () => {
+    const f = v2Fixture()
+    const verify = createOperatorLicenseVerifier({ keys: [f.key], now: () => NOW })
+    for (const patch of [{}, { jti: 'operator-lease-123', sub: 'github:26772694', tier: 'enterprise' }, { jti: 'operator-lease-123', sub: 'github:26772694', tier: 'enterprise', product: ['python'], exp: (NOW + 300_000) / 1000 }]) expect(verify(f.token(patch)).ok).toBe(false)
+    expect(verify('forged-token').ok).toBe(false)
+  })
   it('activates a verified V2 credential through the auth command and leaves it authoritative for recovery', async () => {
     const f = v2Fixture()
     const verify = createCustomerLicenseVerifier({ keys: [f.key], now: () => NOW })
@@ -152,6 +179,29 @@ describe('versioned customer credential policy', () => {
 })
 
 describe('license lifecycle UX', () => {
+  it('activates an internal lease from a private file, preserves the paid key and clears both on logout', async () => {
+    const f = v2Fixture()
+    const temp = createTempProject({})
+    try {
+      const store = new LicenseLifecycleStore({ directory: join(temp, 'customer'), legacyPaths: [] })
+      const operatorStore = new LicenseLifecycleStore({ directory: join(temp, 'operator'), legacyPaths: [] })
+      const verify = createCustomerLicenseVerifier({ keys: [f.key], now: () => NOW })
+      const operatorVerify = createOperatorLicenseVerifier({ keys: [f.key], now: () => NOW })
+      const paid = f.token()
+      const internal = f.token({ jti: 'operator-lease-123', sub: 'github:26772694', tier: 'enterprise', exp: (NOW + 300_000) / 1000 })
+      const file = join(temp, 'operator.key')
+      writeFileSync(file, internal, { mode: 0o600 })
+      jest.spyOn(Date, 'now').mockReturnValue(NOW)
+      expect(store.save(paid, verify, NOW)).toEqual({ ok: true })
+      await authCommand({ operatorLicenseFile: file }, { store, verify, operatorStore, operatorVerify })
+      expect(operatorStore.readVerified(operatorVerify)).toMatchObject({ ok: true, check: { tier: 'enterprise' } })
+      expect(store.read()).toMatchObject({ ok: true, record: { token: paid } })
+      expect(getLogLines().join('\n')).not.toContain(internal)
+      await authCommand({ logout: true }, { store, verify, operatorStore, operatorVerify })
+      expect(operatorStore.read().ok).toBe(false)
+      expect(store.read().ok).toBe(false)
+    } finally { cleanup(temp) }
+  })
   it('does not silently grant access when a paid credential is stale, revoked, or inactive', () => {
     expect(describeLicenseStatus({ ok: false, code: 'offline_lease_expired' })).toMatchObject({ access: 'blocked', state: 'stale' })
     expect(describeLicenseStatus({ ok: false, code: 'inactive_lifecycle', lifecycle: 'revoked' })).toMatchObject({ access: 'blocked', state: 'revoked' })

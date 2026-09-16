@@ -209,6 +209,26 @@ export function createCustomerLicenseVerifier(options: Readonly<{ keys: readonly
   return verify
 }
 
+export function createOperatorLicenseVerifier(options: Readonly<{ keys: readonly LicenseVerificationKey[]; now?: () => number }> = { keys: bundledVerificationKeys() }): LicenseCredentialVerifier {
+  const customer = createCustomerLicenseVerifier(options)
+  const verifier = ((token, record) => {
+    const checked = customer(token, record)
+    if (!checked.ok) return checked
+    try {
+      // Inspect scope only after Core has authenticated the complete payload.
+      const claims = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString('utf8'))
+      if (checked.legacy || claims.license_version !== 2 || claims.tier !== 'enterprise' || claims.state !== 'active'
+        || !/^github:[1-9][0-9]{0,19}$/.test(claims.sub) || !/^operator-[A-Za-z0-9._:-]{1,191}$/.test(claims.jti)
+        || !Array.isArray(claims.product) || claims.product.length !== 1 || claims.product[0] !== 'rn'
+        || !Number.isSafeInteger(claims.iat) || !Number.isSafeInteger(claims.exp)
+        || claims.exp <= claims.iat || claims.exp - claims.iat > 300) return { ok: false as const, code: 'invalid_operator_scope' }
+      return checked
+    } catch { return { ok: false as const, code: 'invalid_operator_scope' } }
+  }) as LicenseCredentialVerifier
+  verifier.evaluateEntitlement = customer.evaluateEntitlement
+  return verifier
+}
+
 /**
  * Recognize V2 before policy evaluation: a V2 credential never falls through
  * to the permissive legacy verifier after any V2 policy/key/signature error.
@@ -260,11 +280,18 @@ export function currentCustomerLicense(): VerifiedCustomerLicense {
  */
 export function evaluateCustomerTier(
   requiredTier: Tier,
-  options: Readonly<{ store?: LicenseLifecycleStore; verify?: LicenseCredentialVerifier; now?: () => number }> = {},
+  options: Readonly<{ store?: LicenseLifecycleStore; verify?: LicenseCredentialVerifier; internalStore?: LicenseLifecycleStore; operatorVerify?: LicenseCredentialVerifier; now?: () => number }> = {},
 ): TierCheck {
   const store = options.store ?? customerLicenseStore()
   const verify: LicenseCredentialVerifier = options.verify ?? createCustomerLicenseVerifier({ keys: bundledVerificationKeys() })
   const now = (options.now ?? Date.now)()
+  const internalStore = options.internalStore ?? operatorLicenseStore()
+  const operatorVerify = options.operatorVerify ?? createOperatorLicenseVerifier({ keys: bundledVerificationKeys(), now: () => now })
+  const internal = internalStore.readVerified(operatorVerify)
+  if (internal.ok) {
+    const decision = operatorVerify.evaluateEntitlement?.(internal.record.token, internal.record, requiredTier, now)
+    if (decision?.allowed) return tierCheck(decision)
+  }
   const migration = store.migrateLegacy(verify, now)
   const selected = migration.ok ? store.readVerified(verify) : { ok: false as const, code: migration.code }
   if (!selected.ok || !selected.check.ok) return unavailableTierCheck(requiredTier)
@@ -296,6 +323,12 @@ export function describeLicenseStatus(check: LicenseCredentialCheck): Readonly<{
 export function customerLicenseStore(): LicenseLifecycleStore {
   const directory = process.env.RN_VECTALON_CONFIG_DIR || join(homedir(), '.config', 'rn-vectalon')
   return new LicenseLifecycleStore({ directory })
+}
+
+/** Internal leases never replace a purchased customer credential or migrate legacy files. */
+export function operatorLicenseStore(): LicenseLifecycleStore {
+  const root = process.env.RN_VECTALON_CONFIG_DIR || join(homedir(), '.config', 'rn-vectalon')
+  return new LicenseLifecycleStore({ directory: join(root, 'operator'), legacyPaths: [] })
 }
 
 function keySource(): StaticLicenseKeySource {

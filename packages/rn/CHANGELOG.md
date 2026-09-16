@@ -18,6 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Separate signed platform-admin RN leases and private-file activation, preserving
+  purchased customer credentials. Internal Enterprise access retains Core
+  signature/product/expiry verification and existing capability safety checks.
+- Internal lease expiry falls back to the customer license; logout removes both.
+  Production issuance remains gated on completion of the Step 10 control plane.
+
 ### Changed
 
 - Redesigned website with earthy terracotta theme: brand `#E35336`, surface
