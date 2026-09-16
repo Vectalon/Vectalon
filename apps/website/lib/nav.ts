@@ -7,5 +7,4 @@ export const NAV = [
   { href: '/agents', label: 'Agents' },
   { href: '/reports', label: 'Reports' },
   { href: '/docs', label: 'Docs' },
-  { href: '/changelog', label: 'Changelog' },
 ]
