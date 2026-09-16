@@ -10,7 +10,7 @@ const provenancePath = resolve(website, 'contracts/admin/lifecycle/provenance.js
 describe('pinned Admin lifecycle snapshot', () => {
   it('records the approved Admin revision and passes self-contained snapshot verification', () => {
     const provenance = JSON.parse(readFileSync(provenancePath, 'utf8')) as { sourceCommit: string; files: Record<string, { sha256: string }> }
-    expect(provenance.sourceCommit).toBe('7173daa87cb5897e015681f947002d064e4cb603')
+    expect(provenance.sourceCommit).toBe('250305c27f100ca05473606fce3ac46c92a1d205')
     expect(Object.keys(provenance.files)).toEqual(expect.arrayContaining([
       'lib/admin-lifecycle/generated/service.ts',
       'lib/admin-lifecycle/generated/repository.ts',
