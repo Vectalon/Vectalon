@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.22.0] - 2026-09-16
+
+- Add separately stored, signed RN access for approved platform administrators,
+  preserving purchased customer credentials and all capability safety checks.
+- Activate internal credentials from private files; expire them strictly within
+  five minutes and fall back to the existing customer license.
+- Connect GitHub-backed admin sessions, membership management, durable logout,
+  CSRF protection, and immutable authorization audits at `vectalon.in/admin`.
+
 ## [0.21.0] - 2026-09-15
 
 - Route paid checkout through a server-created, manifest-derived session with
@@ -20,11 +29,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Separate signed platform-admin RN leases and private-file activation, preserving
-  purchased customer credentials. Internal Enterprise access retains Core
-  signature/product/expiry verification and existing capability safety checks.
-- Internal lease expiry falls back to the customer license; logout removes both.
-  Production issuance remains gated on completion of the Step 10 control plane.
 
 ### Changed
 

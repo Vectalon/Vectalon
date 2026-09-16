@@ -102,6 +102,17 @@ describe('versioned license lifecycle storage', () => {
 })
 
 describe('versioned customer credential policy', () => {
+  it('expires internal credentials exactly at their five-minute boundary without changing customer clock tolerance', () => {
+    const f = v2Fixture()
+    const token = f.token({ jti: 'operator-lease-boundary', sub: 'github:26772694', tier: 'enterprise', exp: (NOW + 300_000) / 1000 })
+    const customer = createCustomerLicenseVerifier({ keys: [f.key], now: () => NOW + 300_001 })
+    expect(customer(token).ok).toBe(true)
+    for (const time of [NOW + 300_000, NOW + 300_001]) {
+      const verify = createOperatorLicenseVerifier({ keys: [f.key], now: () => time })
+      expect(verify(token)).toMatchObject({ ok: false, code: 'expired' })
+    }
+    expect(createOperatorLicenseVerifier({ keys: [f.key], now: () => NOW + 299_999 })(token).ok).toBe(true)
+  })
   it('prefers a separately verified internal lease across all tier gates without overwriting the customer license', () => {
     const f = v2Fixture()
     const temp = createTempProject({})

@@ -1,7 +1,7 @@
 {
   "adapterVersion": 1,
   "source": "vectalon-admin",
-  "sourceCommit": "250305c27f100ca05473606fce3ac46c92a1d205",
+  "sourceCommit": "88cf692ae725ba5293d39a5782e566185d9af832",
   "files": {
     "lib/admin-lifecycle/generated/types.ts": {
       "source": "lib/licenses/types.ts",

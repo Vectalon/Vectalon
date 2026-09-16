@@ -214,6 +214,9 @@ export function createOperatorLicenseVerifier(options: Readonly<{ keys: readonly
   const verifier = ((token, record) => {
     const checked = customer(token, record)
     if (!checked.ok) return checked
+    const now = (options.now ?? Date.now)()
+    if (!Number.isSafeInteger(now) || now < 0) return { ok: false as const, code: 'invalid_verification_time' }
+    if (now >= checked.expiresAt) return { ok: false as const, code: 'expired' }
     try {
       // Inspect scope only after Core has authenticated the complete payload.
       const claims = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString('utf8'))

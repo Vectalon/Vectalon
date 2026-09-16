@@ -29,11 +29,11 @@ pnpm add -D @vectalon-dev/rn
 
 Node.js `>=20.12.0` required.
 
-### Internal platform-admin access (unreleased)
+### Internal platform-admin access
 
 Step 10 adds a separate, signed internal RN lease for active platform admins. It unlocks all RN commercial tier gates without a subscription and preserves any purchased customer license. Availability, experimental opt-in, safety checks, and external-provider limits still apply. Security leases expire within five minutes.
 
-After the admin control plane is deployed, download an internal lease into a private file, restrict it to your account (`chmod 600 <path>` on macOS/Linux), then activate it with `vectalon auth --operator-license-file <path>`. Do not put credentials directly in command arguments. `vectalon auth --logout` clears internal and customer credentials. Production issuance is not yet activated; this is not included in release 0.21.0.
+Sign in at `https://vectalon.in/admin/login`, open Operator access, and download an internal lease into a private file. Restrict it to your account (`chmod 600 <path>` on macOS/Linux), then activate it with `vectalon auth --operator-license-file <path>`. Do not put credentials directly in command arguments. Renew through the admin console after expiry. `vectalon auth --logout` clears internal and customer credentials.
 
 ### Shortcut: `vc`
 

@@ -45,7 +45,7 @@ subscription webhooks rotate the credential through the next renewal date and
 email the replacement; cancellation and refunds revoke online access while the
 last signed credential ages out within that bounded window.
 
-## Operator dashboard (Step 10, release pending)
+## Operator dashboard
 
 The Admin-owned control plane is hosted only at `/admin`; no separate Admin deployment is needed.
 Configure `GITHUB_OAUTH_CLIENT_ID` with device flow enabled, `VECTALON_OPERATOR_ORIGIN=https://vectalon.in`,
