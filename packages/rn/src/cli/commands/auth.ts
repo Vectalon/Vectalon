@@ -4,13 +4,15 @@
  */
 
 import { LicenseStore, type StoredLicenseRecord } from '@vectalon-dev/core'
+import { closeSync, constants, fstatSync, openSync, readFileSync } from 'fs'
 import { logger } from '../logger'
 import { pollTrialDeviceFlow, startTrialDeviceFlow } from '../../auth/trialDeviceFlow'
 import { activateTrial, clearTrial, trialDaysRemaining, trialStatus } from '../../auth/trialState'
-import { customerLicenseStore, describeLicenseStatus, verifyCustomerLicense, type LicenseCredentialVerifier, type LicenseLifecycleStore } from '../../auth/licenseLifecycle'
+import { createOperatorLicenseVerifier, operatorLicenseStore, customerLicenseStore, describeLicenseStatus, verifyCustomerLicense, type LicenseCredentialVerifier, type LicenseLifecycleStore } from '../../auth/licenseLifecycle'
 import { AUTHORITATIVE_LIFECYCLE_DENIAL_STATES, LicenseGatewayClient } from '../../auth/licenseGateway'
 
 interface AuthOptions {
+  operatorLicenseFile?: string
   license?: string
   github?: boolean
   status?: boolean
@@ -20,6 +22,8 @@ interface AuthOptions {
 }
 
 export interface AuthCommandDependencies {
+  operatorStore?: LicenseLifecycleStore
+  operatorVerify?: LicenseCredentialVerifier
   store?: LicenseLifecycleStore
   verify?: LicenseCredentialVerifier
   gateway?: Pick<LicenseGatewayClient, 'refresh'>
@@ -28,6 +32,25 @@ export interface AuthCommandDependencies {
 export async function authCommand(options: AuthOptions, dependencies: AuthCommandDependencies = {}): Promise<void> {
   const store = dependencies.store ?? customerLicenseStore()
   const verify = dependencies.verify ?? verifyCustomerLicense
+  const internalStore = dependencies.operatorStore ?? operatorLicenseStore()
+  const operatorVerify = dependencies.operatorVerify ?? createOperatorLicenseVerifier()
+  if (options.operatorLicenseFile) {
+    let descriptor: number | undefined
+    try {
+      if (options.license || options.github || options.logout || options.refresh || options.recover || options.status) throw new Error('conflicting-auth-actions')
+      descriptor = openSync(options.operatorLicenseFile, constants.O_RDONLY | constants.O_NOFOLLOW)
+      const info = fstatSync(descriptor)
+      if (!info.isFile() || info.size < 1 || info.size > 16_384 || (process.platform !== 'win32' && (info.mode & 0o077) !== 0)) throw new Error('private-file-required')
+      const token = readFileSync(descriptor, 'utf8').trim()
+      const result = internalStore.save(token, operatorVerify)
+      if (!result.ok) throw new Error('invalid-operator-lease')
+      logger.success('Internal RN access activated. Security lease expires within five minutes; renew through the admin console.')
+    } catch {
+      logger.error('Internal access activation failed. Use a private, valid operator lease file and no other auth action.')
+      process.exitCode = 1
+    } finally { if (descriptor !== undefined) closeSync(descriptor) }
+    return
+  }
   if (options.license) {
     const stored = store.save(options.license, verify)
     if (stored.ok) {
@@ -46,6 +69,7 @@ export async function authCommand(options: AuthOptions, dependencies: AuthComman
 
   if (options.logout) {
     store.clear()
+    internalStore.clear()
     LicenseStore.clear()
     clearTrial()
     logger.info('👋 Logged out. Reverted to free tier.')
@@ -95,6 +119,8 @@ export async function authCommand(options: AuthOptions, dependencies: AuthComman
 
   logger.info('📊 Authentication Status')
   logger.info('')
+  const internal = internalStore.readVerified(operatorVerify)
+  if (internal.ok) logger.info(`Internal RN access: active; security expiry ${new Date(internal.check.expiresAt).toISOString()}`)
 
   if (!migration.ok) {
     logger.warn(`License storage needs recovery: ${migration.code}`)
@@ -122,6 +148,7 @@ export async function authCommand(options: AuthOptions, dependencies: AuthComman
   logger.info('')
   logger.info('Commands:')
   logger.info('  vectalon auth --license <key>    Activate license')
+  logger.info('  vectalon auth --operator-license-file <path>  Activate internal RN access')
   logger.info('  vectalon auth --status           Show explicit license lifecycle status')
   logger.info('  vectalon auth --refresh          Refresh license while online')
   logger.info('  vectalon auth --recover          Recover a prior local license record')

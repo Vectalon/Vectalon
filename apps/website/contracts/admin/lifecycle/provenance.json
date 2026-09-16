@@ -1,7 +1,7 @@
 {
   "adapterVersion": 1,
   "source": "vectalon-admin",
-  "sourceCommit": "999567f22f7f91ccf95d3f58c11c2d3346939b0e",
+  "sourceCommit": "88cf692ae725ba5293d39a5782e566185d9af832",
   "files": {
     "lib/admin-lifecycle/generated/types.ts": {
       "source": "lib/licenses/types.ts",
@@ -34,6 +34,66 @@
     "contracts/admin/lifecycle/LicenseCommandV1Response.schema.json": {
       "source": "contracts/schemas/LicenseCommandV1Response.schema.json",
       "sha256": "b3393a91bcec32b0e5235d2557ddf483bfd8ea5c8e4fc012816ffc1b5bf56b18"
+    },
+    "lib/admin-lifecycle/generated/operator/control-plane/access.ts": {
+      "source": "lib/control-plane/access.ts",
+      "sha256": "a979d8a66bafca17a2b0f38d47f1c23ff0b9ce629b110e47089bc9a2bf45d6ec"
+    },
+    "lib/admin-lifecycle/generated/operator/control-plane/database.ts": {
+      "source": "lib/control-plane/database.ts",
+      "sha256": "cc4892c1d94d25e4b770db1693bb4b6188172fd14ad554d450e8b1f0e24d00b1"
+    },
+    "lib/admin-lifecycle/generated/operator/control-plane/session-policy.ts": {
+      "source": "lib/control-plane/session-policy.ts",
+      "sha256": "4054cd2766c3d91078d9e65c5dd15c2a2a82569b806be3784d8492c7a4a3593a"
+    },
+    "lib/admin-lifecycle/generated/operator/control-plane/session-issuance.ts": {
+      "source": "lib/control-plane/session-issuance.ts",
+      "sha256": "f4dd25b2d9e73fe05c52cb6df59e348cbbbe4a1c05d6c1a622c0c25c961aff15"
+    },
+    "lib/admin-lifecycle/generated/operator/control-plane/session-postgres.ts": {
+      "source": "lib/control-plane/session-postgres.ts",
+      "sha256": "e86718df5070339e02496ccd5fb6f174f89306506a6579766c7863660d0e74ba"
+    },
+    "lib/admin-lifecycle/generated/operator/control-plane/sdk-access.ts": {
+      "source": "lib/control-plane/sdk-access.ts",
+      "sha256": "60a9c031ea3b1f4d11b08ff64cb1f31765c89249312c8d0f4efa727c8e03aa65"
+    },
+    "lib/admin-lifecycle/generated/operator/control-plane/sdk-postgres.ts": {
+      "source": "lib/control-plane/sdk-postgres.ts",
+      "sha256": "88f7fe8c4c9e07f11a42d99dfc61fa514d0d97504d95b43155232ca4b9ab175b"
+    },
+    "lib/admin-lifecycle/generated/operator/control-plane/browser-challenge.ts": {
+      "source": "lib/control-plane/browser-challenge.ts",
+      "sha256": "34058a493579d5a23314d37cb0dde03e85d4ffa56f4be3a3df40c5ceac762cc9"
+    },
+    "lib/admin-lifecycle/generated/operator/control-plane/github-device.ts": {
+      "source": "lib/control-plane/github-device.ts",
+      "sha256": "e1644b622e963ac57f84934288db0ca7cf3f1a81715dad61e898e5abc1948bdd"
+    },
+    "lib/admin-lifecycle/generated/operator/control-plane/membership-postgres.ts": {
+      "source": "lib/control-plane/membership-postgres.ts",
+      "sha256": "944757e8f62305102cbbdaad5b8d465d88daee3cb3c438533e280212ca8b60ff"
+    },
+    "lib/admin-lifecycle/generated/operator/control-plane/login-budget.ts": {
+      "source": "lib/control-plane/login-budget.ts",
+      "sha256": "0b957f31f4e5ae3c7dc4d5e5fb5d6355b4f360c8f699b1209016b8e858d402ab"
+    },
+    "lib/admin-lifecycle/generated/operator/licenses/types.ts": {
+      "source": "lib/licenses/types.ts",
+      "sha256": "b5349a27e68e10162f91546be4ab05d460bfc2a733828181efa24cf4842a7fc8"
+    },
+    "lib/admin-lifecycle/generated/operator/licenses/signer.ts": {
+      "source": "lib/licenses/signer.ts",
+      "sha256": "f9b9d0fa4580fadb461666a71da6d0cb207240bc5ef0b6fb7b6f45afafadde56"
+    },
+    "lib/admin-lifecycle/generated/operator/licenses/database.ts": {
+      "source": "lib/licenses/database.ts",
+      "sha256": "56ccf07c1506d27681dd4b755f92c57b610ac718a32378e1eae1b6160cd1d99d"
+    },
+    "lib/admin-lifecycle/generated/operator/trials/issuance.ts": {
+      "source": "lib/trials/issuance.ts",
+      "sha256": "1c1e70834655da2078fca2bbe22bcd474aa7d0b788693a2d11a4d755765b050b"
     }
   }
 }

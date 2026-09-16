@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { isAdmin } from '../../../../lib/admin-auth'
+import { operatorAuthorization } from '../../../../lib/operator-host'
 import { defaultAdminStore, type Tier } from '../../../../lib/admin-store'
 
 export const runtime = 'nodejs'
@@ -15,9 +16,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!(await isAdmin())) {
-    return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
-  }
+  const authorization = await operatorAuthorization('license:sign', request)
+  if (!authorization.ok) return NextResponse.json({ ok: false, error: authorization.code }, { status: authorization.code === 'unauthorized' ? 401 : authorization.code === 'service-unavailable' ? 503 : 403 })
   let body: { tier?: string; email?: string; githubUsername?: string; seats?: number; days?: number; product?: string; capabilityIds?: string[]; experimentalOptIn?: boolean }
   try {
     body = await request.json()

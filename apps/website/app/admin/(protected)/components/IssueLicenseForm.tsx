@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { operatorMutationHeaders } from '../../../../lib/operator-client'
 
 export function IssueLicenseForm() {
   const router = useRouter()
@@ -9,6 +10,7 @@ export function IssueLicenseForm() {
   const [email, setEmail] = useState('')
   const [seats, setSeats] = useState(1)
   const [days, setDays] = useState(365)
+  const [reason,setReason]=useState('')
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
@@ -21,7 +23,7 @@ export function IssueLicenseForm() {
     try {
       const res = await fetch('/api/admin/licenses', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: operatorMutationHeaders(reason),
         body: JSON.stringify({ tier, email, seats, days }),
       })
       const data = await res.json()
@@ -80,6 +82,7 @@ export function IssueLicenseForm() {
           className="input w-24"
         />
       </div>
+      <label className="flex-1 text-xs text-slate-400">Audit reason<input required minLength={3} maxLength={500} value={reason} onChange={event=>setReason(event.target.value)} className="input" /></label>
       <button type="submit" disabled={busy} className="btn-primary shrink-0 disabled:opacity-50">
         {busy ? 'Issuing…' : 'Issue license'}
       </button>

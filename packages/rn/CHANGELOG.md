@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.22.0] - 2026-09-16
+
+- Add separately stored, signed RN access for approved platform administrators,
+  preserving purchased customer credentials and all capability safety checks.
+- Activate internal credentials from private files; expire them strictly within
+  five minutes and fall back to the existing customer license.
+- Connect GitHub-backed admin sessions, membership management, durable logout,
+  CSRF protection, and immutable authorization audits at `vectalon.in/admin`.
+
 ## [0.21.0] - 2026-09-15
 
 - Route paid checkout through a server-created, manifest-derived session with
@@ -17,6 +26,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Added
+
 
 ### Changed
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { operatorMutationHeaders } from '../../../../lib/operator-client'
 
 export function RevokeButton({ licenseKey, email }: { licenseKey: string; email: string }) {
   const router = useRouter()
@@ -10,11 +11,14 @@ export function RevokeButton({ licenseKey, email }: { licenseKey: string; email:
 
   async function revoke() {
     if (!confirm(`Revoke the license for ${email}? This is instant and cannot be undone.`)) return
+    const reason=prompt('Reason for revocation (required for security audit):')
+    if (!reason || reason.trim().length<3 || reason.length>500) return
     setBusy(true)
     setErr(null)
     try {
       const res = await fetch(`/api/admin/licenses/${encodeURIComponent(licenseKey)}/revoke`, {
         method: 'POST',
+        headers:operatorMutationHeaders(reason),
       })
       if (!res.ok) {
         setErr('failed to revoke')

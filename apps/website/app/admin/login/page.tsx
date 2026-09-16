@@ -1,71 +1,49 @@
 'use client'
-
-import { useState } from 'react'
+import { useEffect,useState } from 'react'
 import { useRouter } from 'next/navigation'
-
+type Challenge={ userCode:string; interval:number; expiresAt:number }
 export default function AdminLoginPage() {
-  const router = useRouter()
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault()
-    setBusy(true)
-    setError(null)
-    try {
-      const res = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
-      })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setError(data.error ?? 'invalid password')
-        setBusy(false)
-        return
-      }
-      router.push('/admin')
-      router.refresh()
-    } catch {
-      setError('network error')
-      setBusy(false)
+  const router=useRouter()
+  const [challenge,setChallenge]=useState<Challenge|null>(null)
+  const [error,setError]=useState('')
+  const [busy,setBusy]=useState(false)
+  useEffect(()=>{
+    if (!challenge) return
+    let canceled=false
+    let timer:ReturnType<typeof setTimeout>
+    async function poll() {
+      if (canceled) return
+      if (Date.now()>=challenge!.expiresAt) { setError('Authorization expired. Start again.');setChallenge(null);return }
+      try {
+        const response=await fetch('/api/admin/login/poll',{ method:'POST',credentials:'same-origin',cache:'no-store' })
+        const body=await response.json()
+        if (canceled) return
+        if (response.ok && body.status==='complete') { router.replace('/admin/access');router.refresh();return }
+        if (response.status===202 || response.status===429) {
+          const interval=response.status===429 ? Math.max(challenge!.interval,Number(body.interval)||Number(response.headers.get('retry-after'))||10) : challenge!.interval
+          timer=setTimeout(poll,Math.min(900,interval)*1000);return
+        }
+        setError(response.status===403?'GitHub authorization denied or this account has no active admin access.':body.error??'Sign-in failed. Please retry.')
+        setChallenge(null)
+      } catch { if (!canceled) { setError('Connection failed. Please retry.');setChallenge(null) } }
     }
+    timer=setTimeout(poll,challenge.interval*1000)
+    return ()=>{ canceled=true;clearTimeout(timer) }
+  },[challenge,router])
+  async function start() {
+    setBusy(true);setError('');setChallenge(null)
+    try {
+      const response=await fetch('/api/admin/login',{ method:'POST',credentials:'same-origin',cache:'no-store' })
+      const body=await response.json()
+      if (!response.ok) { setError(body.error??'Sign-in unavailable.');return }
+      setChallenge({ userCode:body.userCode,interval:body.interval,expiresAt:Date.now()+body.expiresIn*1000 })
+    } catch { setError('Connection failed. Please retry.') } finally { setBusy(false) }
   }
-
-  return (
-    <div className="mx-auto max-w-sm px-4 py-24">
-      <div className="card">
-        <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-xl bg-brand text-xl text-on-brand">▣</div>
-          <h1 className="text-xl font-bold text-slate-50">Admin dashboard</h1>
-          <p className="mt-1 text-sm text-slate-500">vectalon.in — license operations</p>
-        </div>
-        <form onSubmit={submit} className="space-y-4">
-          <div>
-            <label htmlFor="pw" className="mb-1.5 block text-sm font-medium text-slate-300">
-              Password
-            </label>
-            <input
-              id="pw"
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
-              autoFocus
-              className="input"
-            />
-          </div>
-          {error && (
-            <p className="rounded-lg border border-red-600/30 bg-red-600/10 px-4 py-2.5 text-sm text-red-500">
-              {error}
-            </p>
-          )}
-          <button type="submit" disabled={busy} className="btn-primary w-full disabled:opacity-50">
-            {busy ? 'Signing in…' : 'Sign in'}
-          </button>
-        </form>
-      </div>
-    </div>
-  )
+  return <div className="mx-auto max-w-sm px-4 py-24"><div className="card space-y-5">
+    <h1 className="text-xl font-bold text-slate-50">Admin sign-in</h1>
+    <p className="text-sm text-slate-400">Sign in with GitHub. Only active, approved operator accounts can access this dashboard.</p>
+    {challenge?<div className="space-y-3" aria-live="polite"><p className="text-sm text-slate-300">Enter this code on GitHub:</p><code className="block text-center text-2xl text-brand">{challenge.userCode}</code><a href="https://github.com/login/device" target="_blank" rel="noopener noreferrer" className="btn-primary block text-center">Authorize on GitHub</a><p className="text-xs text-slate-500">Waiting for approval. Only approve the code shown here.</p></div>:<button onClick={start} disabled={busy} className="btn-primary w-full">{busy?'Connecting…':'Sign in with GitHub'}</button>}
+    {error&&<p role="alert" className="text-sm text-red-300">{error}</p>}
+    <p className="text-xs text-slate-500">Sessions expire after eight hours or 15 minutes idle. Privileged actions require a sign-in within five minutes.</p>
+  </div></div>
 }

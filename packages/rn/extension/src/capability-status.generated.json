@@ -1,7 +1,7 @@
 {
   "vectalon.archiveBuild": {
     "capabilityId": "rn.build-distribution",
-    "capabilityVersion": "1.0.0",
+    "capabilityVersion": "1.0.2",
     "lifecycle": "experimental",
     "implemented": true,
     "plans": [
@@ -15,7 +15,7 @@
   },
   "vectalon.checkGuardrails": {
     "capabilityId": "rn.policy.check",
-    "capabilityVersion": "1.0.0",
+    "capabilityVersion": "1.0.2",
     "lifecycle": "beta",
     "implemented": true,
     "plans": [
@@ -29,7 +29,7 @@
   },
   "vectalon.distributeBuild": {
     "capabilityId": "rn.build-distribution",
-    "capabilityVersion": "1.0.0",
+    "capabilityVersion": "1.0.2",
     "lifecycle": "experimental",
     "implemented": true,
     "plans": [
@@ -43,7 +43,7 @@
   },
   "vectalon.generateComponent": {
     "capabilityId": "rn.model-generation",
-    "capabilityVersion": "1.0.0",
+    "capabilityVersion": "1.0.2",
     "lifecycle": "experimental",
     "implemented": true,
     "plans": [
@@ -57,7 +57,7 @@
   },
   "vectalon.generatePortal": {
     "capabilityId": "rn.build-distribution",
-    "capabilityVersion": "1.0.0",
+    "capabilityVersion": "1.0.2",
     "lifecycle": "experimental",
     "implemented": true,
     "plans": [
@@ -71,7 +71,7 @@
   },
   "vectalon.openArtifact": {
     "capabilityId": "rn.knowledge",
-    "capabilityVersion": "1.0.0",
+    "capabilityVersion": "1.0.2",
     "lifecycle": "experimental",
     "implemented": true,
     "plans": [
@@ -85,7 +85,7 @@
   },
   "vectalon.projectContext": {
     "capabilityId": "rn.project.inspect",
-    "capabilityVersion": "1.0.0",
+    "capabilityVersion": "1.0.2",
     "lifecycle": "beta",
     "implemented": true,
     "plans": [
@@ -99,7 +99,7 @@
   },
   "vectalon.refreshKnowledge": {
     "capabilityId": "rn.knowledge",
-    "capabilityVersion": "1.0.0",
+    "capabilityVersion": "1.0.2",
     "lifecycle": "experimental",
     "implemented": true,
     "plans": [
@@ -113,7 +113,7 @@
   },
   "vectalon.restartServer": {
     "capabilityId": "rn.project.inspect",
-    "capabilityVersion": "1.0.0",
+    "capabilityVersion": "1.0.2",
     "lifecycle": "beta",
     "implemented": true,
     "plans": [
@@ -127,7 +127,7 @@
   },
   "vectalon.reviewCode": {
     "capabilityId": "rn.analysis",
-    "capabilityVersion": "1.0.0",
+    "capabilityVersion": "1.0.2",
     "lifecycle": "experimental",
     "implemented": true,
     "plans": [
@@ -141,7 +141,7 @@
   },
   "vectalon.runFeatureWorkflow": {
     "capabilityId": "rn.feature.workflow",
-    "capabilityVersion": "1.0.0",
+    "capabilityVersion": "1.0.2",
     "lifecycle": "beta",
     "implemented": true,
     "plans": [
@@ -155,7 +155,7 @@
   },
   "vectalon.searchKnowledge": {
     "capabilityId": "rn.knowledge",
-    "capabilityVersion": "1.0.0",
+    "capabilityVersion": "1.0.2",
     "lifecycle": "experimental",
     "implemented": true,
     "plans": [
@@ -169,7 +169,7 @@
   },
   "vectalon.shareBuild": {
     "capabilityId": "rn.build-distribution",
-    "capabilityVersion": "1.0.0",
+    "capabilityVersion": "1.0.2",
     "lifecycle": "experimental",
     "implemented": true,
     "plans": [
@@ -183,7 +183,7 @@
   },
   "vectalon.startServer": {
     "capabilityId": "rn.project.inspect",
-    "capabilityVersion": "1.0.0",
+    "capabilityVersion": "1.0.2",
     "lifecycle": "beta",
     "implemented": true,
     "plans": [
@@ -197,7 +197,7 @@
   },
   "vectalon.stopServer": {
     "capabilityId": "rn.project.inspect",
-    "capabilityVersion": "1.0.0",
+    "capabilityVersion": "1.0.2",
     "lifecycle": "beta",
     "implemented": true,
     "plans": [

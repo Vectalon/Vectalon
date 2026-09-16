@@ -4,7 +4,7 @@
 
 Project-aware SDLC intelligence for any agent — CLI, MCP server, VS Code extension, benchmark suite, and fine-tuning pipeline in one package.
 
-Current release: <!-- product-fact:rn-version -->0.21.0<!-- /product-fact --> ·
+Current release: <!-- product-fact:rn-version -->0.22.0<!-- /product-fact --> ·
 benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
 deterministic agents: <!-- product-fact:deterministic-commands -->44<!-- /product-fact --> ·
 MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact -->
@@ -28,6 +28,12 @@ pnpm add -D @vectalon-dev/rn
 ```
 
 Node.js `>=20.12.0` required.
+
+### Internal platform-admin access
+
+Step 10 adds a separate, signed internal RN lease for active platform admins. It unlocks all RN commercial tier gates without a subscription and preserves any purchased customer license. Availability, experimental opt-in, safety checks, and external-provider limits still apply. Security leases expire within five minutes.
+
+Sign in at `https://vectalon.in/admin/login`, open Operator access, and download an internal lease into a private file. Restrict it to your account (`chmod 600 <path>` on macOS/Linux), then activate it with `vectalon auth --operator-license-file <path>`. Do not put credentials directly in command arguments. Renew through the admin console after expiry. `vectalon auth --logout` clears internal and customer credentials.
 
 ### Shortcut: `vc`
 

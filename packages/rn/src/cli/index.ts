@@ -286,6 +286,7 @@ export function createProgram(): Command {
     .command('auth')
     .description('Manage Vectalon license and trial')
     .option('--license <key>', 'Activate a license key')
+    .option('--operator-license-file <path>', 'Activate a private internal platform-admin lease file')
     .option('--github', 'Authenticate with GitHub for trial')
     .option('--status', 'Show current authentication status')
     .option('--refresh', 'Refresh the current license through the authenticated customer gateway')
