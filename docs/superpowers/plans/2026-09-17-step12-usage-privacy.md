@@ -19,7 +19,7 @@
 
 ### Task 1: Core UsageReporter privacy boundary
 
-Files in Core checkout packages/core/src: modify telemetry/UsageReporter.ts, add __tests__/telemetry.test.ts; change package.json/CHANGELOG.md only for a reviewed Core0.11.1 patch preparation. No root/RN consumer changes by this implementer.
+Files in Core checkout packages/core/src: modify telemetry/UsageReporter.ts, add __tests__/telemetry.test.ts; change package.json/CHANGELOG.md and only the two root package-lock.json version metadata entries for a reviewed Core0.11.1 patch preparation. No dependency-resolution changes or root/RN consumer changes by this implementer.
 
 Consumes existing track(event:string,product:string,feature?:string,metadata?:Record<string,unknown>):void and flush():Promise<void>; preserves these interfaces. Produces consent-current bounded legacy TelemetryEvent records: event telemetry_ingest, product rn, no feature, tier unknown, timestamp, random reporter-session sessionId, literal deviceId redacted, numeric allowlisted metadata only. No new public API or contract-schema changes.
 
