@@ -4,9 +4,10 @@
  *
  * Replaces the anonymous opt-in UsageReporter with a structured error reporter:
  * crash dumps, stack traces, and CLI command context are queued to a local JSON
- * file and POSTed to the Vectalon error endpoint. Errors-only and opt-out:
+ * file and POSTed to the Vectalon error endpoint. Errors-only and opt-in:
  * usage/feature tracking is NOT collected, and `telemetry.enabled=false` or
- * `telemetry.errors=false` in the user config disables everything. Captures are
+ * `telemetry.errors=false` disables error reporting. Explicit
+ * `telemetry.errors=true` consent is required. Captures are
  * silent on failure — a broken reporter must never mask the original error.
  *
  * Endpoint is overridable with RN_VECTALON_TELEMETRY_URL (used by the self-test
@@ -36,22 +37,22 @@ export interface CaptureErrorOptions {
   queuePath?: string
   /** Include the full stack trace (default: true outside dev/test mode). */
   includeStack?: boolean
-  /** Force capture on/off (tests use this to bypass the NODE_ENV gate). */
+  /** Test injection; never overrides explicit configuration opt-out. */
   enabled?: boolean
   /** Pass through to the queue file (round-trip verification in tests). */
   _now?: number
 }
 
-/** Whether error telemetry is active: opt-out, disabled in dev/test mode. */
-export function errorsEnabled(): boolean {
+/** Explicit error consent, disabled in dev/test unless injected. */
+export function errorsEnabled(enabled?: boolean): boolean {
+  if (getConfig('telemetry.enabled') === false || getConfig('telemetry.errors') === false) return false
+  if (enabled !== undefined) return enabled
   if (process.env.NODE_ENV === 'test') return false
   if (process.env.VECTALON_DEV_MODE === '1') return false
-  if (getConfig('telemetry.enabled') === false) return false
-  if (getConfig('telemetry.errors') === false) return false
-  return true
+  return getConfig('telemetry.errors') === true
 }
 
-/** Opt-out toggle for error reporting (setConfig-backed, testable). */
+/** Explicit consent toggle for error reporting. */
 export function setErrorsEnabled(enabled: boolean): void {
   setConfig('telemetry.errors', enabled)
 }
@@ -135,7 +136,7 @@ export function writeErrorQueue(queuePath: string, events: ErrorReport[]): void 
  * recent occurrence), cap the queue, and persist. Never throws.
  */
 export function captureError(error: unknown, command: string, context?: string, options: CaptureErrorOptions = {}): ErrorReport | null {
-  if (options.enabled === false || (options.enabled === undefined && !errorsEnabled())) return null
+  if (!errorsEnabled(options.enabled)) return null
   const err = error instanceof Error ? error : new Error(String(error))
   const includeStack = options.includeStack ?? (errorsEnabled() && process.env.VECTALON_DEV_MODE !== '1')
   const report: ErrorReport = {
@@ -168,7 +169,7 @@ export interface FlushErrorQueueOptions {
   queuePath?: string
   /** Injectable fetch (tests + self-test point this at a local server). */
   fetchFn?: typeof fetch
-  /** Force the flush on/off (bypasses the errorsEnabled gate for tests). */
+  /** Test injection; never overrides explicit configuration opt-out. */
   enabled?: boolean
   endpoint?: string
   _now?: number
@@ -180,7 +181,7 @@ export interface FlushErrorQueueOptions {
  * events flushed. Never throws.
  */
 export async function flushErrorQueue(options: FlushErrorQueueOptions = {}): Promise<number> {
-  if (options.enabled === false || (options.enabled === undefined && !errorsEnabled())) return 0
+  if (!errorsEnabled(options.enabled)) return 0
   const queuePath = options.queuePath || queuePathFor()
   const queue = readErrorQueue(queuePath)
   if (queue.length === 0) return 0

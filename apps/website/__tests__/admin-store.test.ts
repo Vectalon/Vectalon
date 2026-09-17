@@ -3,7 +3,19 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 import { generateKeyPairSync } from 'crypto'
 import { verifyLicenseToken } from '@vectalon-dev/core'
-import { AdminStore, FilePersistence } from '../lib/admin-store'
+import { AdminStore, FilePersistence, defaultAdminStore } from '../lib/admin-store'
+
+describe('production store configuration', () => {
+  const originalEnv = process.env
+  beforeEach(() => { process.env = { ...originalEnv }; delete process.env.DATABASE_URL })
+  afterEach(() => { process.env = originalEnv })
+
+  it.each(['NODE_ENV', 'VERCEL_ENV'])('requires durable storage when %s is production', marker => {
+    process.env[marker] = 'production'
+    process.env.DATA_DIR = join(tmpdir(), 'must-not-be-used')
+    expect(() => defaultAdminStore()).toThrow('admin-database-not-configured')
+  })
+})
 
 function makeStore(): { store: AdminStore; dir: string } {
   const dir = mkdtempSync(join(tmpdir(), 'vectalon-admin-'))

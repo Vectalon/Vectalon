@@ -61,7 +61,7 @@ const MCP_CLIENTS = ['claude code', 'cursor', 'copilot', 'codex', 'gemini', 'zed
 const FAQ: Array<{ q: string; a: string }> = [
   {
     q: 'What do I need to run Vectalon?',
-    a: 'Node.js ≥ 20.12 on macOS or Linux. npx vectalon init scans your repo and builds the knowledge graph; vectalon serve starts the MCP server your agent connects to.',
+    a: `Node.js ≥ 20.12 on macOS or Linux. ${PUBLIC_INSTALL_COMMAND} scans your repo and builds the knowledge graph; after installing @vectalon-dev/rn in your project, npx vectalon serve starts the MCP server your agent connects to.`,
   },
   {
     q: 'Does it need a model?',

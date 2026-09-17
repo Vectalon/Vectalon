@@ -13,6 +13,8 @@ import { FEATURE_CATALOG, listFeatureChecks, categorizeChecks } from './catalog'
 import { ActivityTracer, Sandbox, createTracedRunner } from './trace'
 import type { CheckRun, CheckResult, FeatureCheck, SelfTestOptions, SelfTestReport, SelfTestTotals } from './types'
 import pkg from '../../package.json'
+import { join } from 'path'
+import { clearConfigCache } from '../config'
 
 /**
  * Live progress hooks. `onStart` fires just before a check begins (for the
@@ -40,6 +42,13 @@ export async function runOneCheck(
   const trace = new ActivityTracer()
   const sandbox = new Sandbox(trace)
   const runCommand = createTracedRunner(trace, sandbox.root, realRunCommand)
+  const previousConfigDir = process.env.RN_VECTALON_CONFIG_DIR
+  const isolatedDiagnostics = check.category === 'diagnostics' && !['diagnostics-bundle', 'diagnostics-health'].includes(check.id)
+  // ponytail: sequential checks use process-global env; parallel checks need per-check config.
+  if (isolatedDiagnostics) {
+    process.env.RN_VECTALON_CONFIG_DIR = join(sandbox.root, 'config')
+    clearConfigCache()
+  }
 
   let result: CheckResult = { status: 'fail', detail: 'check did not return a result' }
   let error: string | undefined
@@ -49,6 +58,11 @@ export async function runOneCheck(
     error = err instanceof Error ? `${err.message}\n${err.stack || ''}` : String(err)
     result = { status: 'fail', detail: err instanceof Error ? err.message : String(err) }
   } finally {
+    if (isolatedDiagnostics) {
+      if (previousConfigDir === undefined) delete process.env.RN_VECTALON_CONFIG_DIR
+      else process.env.RN_VECTALON_CONFIG_DIR = previousConfigDir
+      clearConfigCache()
+    }
     sandbox.cleanup()
   }
 

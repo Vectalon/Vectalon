@@ -6,8 +6,11 @@ export const config = { runtime: 'nodejs20.x' }
 const app = createApp()
 
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
-  const response = await app.handle({ method: req.method || 'GET', url: req.url || '/v1/heartbeat', body: await readVercelBody(req) })
+  const response = await app.handle({ method: req.method || 'GET', url: req.url || '/v1/heartbeat', body: await readVercelBody(req), headers: req.headers })
   res.status(response.status)
   for (const [key, value] of Object.entries(response.headers)) res.setHeader(key, value)
-  res.send(response.body)
+  res.setHeader('Content-Type', 'application/json; charset=utf-8')
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  if (response.status === 204) res.end()
+  else res.json(JSON.parse(response.body))
 }

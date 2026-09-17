@@ -178,7 +178,7 @@ export async function serveCommand(options: {
     logger.info(`HTTP server listening on http://localhost:${boundPort}`)
   }
 
-  // Liveness heartbeat (every 5 min, opt-out via telemetry.enabled=false).
+  // Liveness heartbeat (every 5 min, only with explicit telemetry consent).
   heartbeat = startHeartbeat({
     kind: 'serve',
     root,

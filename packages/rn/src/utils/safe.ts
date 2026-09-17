@@ -42,7 +42,7 @@ export function reportError(error: unknown, context: string, level: 'debug' | 'w
     if (level === 'warn') {
       logger.warn(message)
       // Warn-level failures are genuinely exceptional — queue them for the
-      // error telemetry pipeline (opt-out, errors only; captureError never
+      // error telemetry pipeline (explicit opt-in, errors only; captureError never
       // throws). Debug-level probe noise stays out of the queue.
       safe(() => captureError(error, process.argv.slice(2)[0] || 'vectalon', context))
     } else {

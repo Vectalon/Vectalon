@@ -21,6 +21,7 @@ const server = createServer(async (req, res) => {
       method: req.method || 'GET',
       url: req.url || '/',
       body: Buffer.concat(chunks),
+      headers: req.headers,
     })
     res.writeHead(response.status, response.headers)
     res.end(response.body)

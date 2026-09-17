@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.22.1] - 2026-09-17
+
+- Require explicit consent before collecting or sending generic error telemetry
+  and liveness heartbeats; keep local crash-export ingestion independent.
+- Publish bounded consent and privacy guidance for this Step 12 launch slice,
+  without claiming completion of broader privacy governance.
+- Bootstrap new-customer activation with the published `@vectalon-dev/rn`
+  package, without requiring a prior project installation.
+
 ## [0.22.0] - 2026-09-16
 
 - Add separately stored, signed RN access for approved platform administrators,

@@ -10,7 +10,7 @@ export default function TrialPage() {
       <div className="card space-y-5">
         <div>
           <p className="text-sm font-medium text-slate-300">Run this in your project</p>
-          <code className="mt-2 block rounded-lg code-bg px-4 py-3 font-mono text-sm text-emerald-600">npx vectalon auth --github</code>
+          <code className="mt-2 block rounded-lg code-bg px-4 py-3 font-mono text-sm text-emerald-600">npx --yes --package=@vectalon-dev/rn@latest vectalon auth --github</code>
         </div>
         <ol className="list-decimal space-y-2 pl-5 text-sm text-slate-400">
           <li>Open the GitHub verification link shown by the CLI.</li>

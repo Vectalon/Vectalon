@@ -1,7 +1,7 @@
 # @vectalon-dev/telemetry
 
 The Vectalon telemetry backend — the endpoint the `@vectalon-dev/rn` diagnostics
-pipeline (P0) posts to. **Errors-only, opt-out client-side**, liveness
+pipeline (P0) posts to. **Explicit-consent client telemetry**, liveness
 heartbeats, and support-bundle uploads that get emailed to the support address.
 
 Zero runtime dependencies (Node `>=20`, TypeScript). Runs on **Vercel**
@@ -14,9 +14,10 @@ Zero runtime dependencies (Node `>=20`, TypeScript). Runs on **Vercel**
 | `/v1/errors` | `POST` | `{ schemaVersion, events: ErrorReport[] }` — store structured errors (capped at 200/request, 500 total) |
 | `/v1/heartbeat` | `POST` | `HeartbeatPayload` — liveness ping from `vectalon serve` / `vectalon daemon` |
 | `/v1/support` | `POST` | gzipped `SupportBundle` JSON (`Content-Encoding: gzip`, or plain JSON) — stored + emailed |
-| `/v1/health` | `GET` | `{ status, now, counts, activeClients }` |
-| `/v1/errors` · `/v1/heartbeat` · `/v1/support` | `GET` | recent lists (`?limit=`), used by the dashboard |
-| `/` | `GET` | **Health dashboard** — counts, latest errors, active clients, support delivery status (auto-refresh 30s) |
+| `/v1/health` | `GET` | Public `{ status }` only |
+| `/v1/errors` · `/v1/heartbeat` · `/v1/support` | `GET` | Bearer-protected recent lists (`?limit=`) |
+| `/v1/admin/errors` | `GET` | Bearer-protected error list (up to 500), used by website admin |
+| `/` | `GET` | Bearer-protected **health dashboard** — counts, latest errors, active clients, support delivery status (auto-refresh 30s); other verbs return `405` except empty `OPTIONS` |
 
 Every JSON response carries permissive CORS headers. Bodies are capped
 (1 MiB errors / 128 KiB heartbeat / 8 MiB support), malformed events are
@@ -66,7 +67,7 @@ Smoke test:
 curl -X POST localhost:8787/v1/errors -d '{"events":[{"message":"boom","command":"serve"}]}'
 curl -X POST localhost:8787/v1/heartbeat -d '{"kind":"serve","pid":1,"timestamp":'$(date +%s000)'}'
 curl localhost:8787/v1/health
-curl localhost:8787/                       # dashboard
+curl -H "Authorization: Bearer $TELEMETRY_ADMIN_TOKEN" localhost:8787/ # dashboard
 ```
 
 ## Deploy to Vercel
@@ -96,8 +97,16 @@ or update `DEFAULT_TELEMETRY_BASE_URL` in
 
 ## Security notes
 
-- Endpoints are intentionally anonymous (the client is opt-out privacy-first).
-- The dashboard is public by default — gate it behind Vercel auth/CF Access if
-  you do not want it exposed.
+- POST ingestion remains anonymous and bounded; RN generic telemetry requires
+  explicit client consent. Customer-directed support uploads are separate.
+- Every GET of the dashboard and raw telemetry/support lists requires
+  `Authorization: Bearer <TELEMETRY_ADMIN_TOKEN>` using the existing server
+  configuration. Missing server token returns `503`; missing, malformed or
+  wrong bearer headers return `401`. Query-string tokens are not accepted;
+  never put credentials in URLs. A browser dashboard request must supply the
+  bearer header (for example through an authenticated gateway).
+- Public health exposes status only, and `OPTIONS` responses are empty.
+- This is launch-slice access-control hardening, not completion of payload
+  minimisation, deletion or retention governance. Existing storage is unchanged.
 - There is no rate limiting; add an edge middleware (Vercel WAF) if you expect
   hostile traffic.

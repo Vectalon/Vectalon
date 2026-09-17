@@ -4,7 +4,7 @@
 
 Project-aware SDLC intelligence for any agent — CLI, MCP server, VS Code extension, benchmark suite, and fine-tuning pipeline in one package.
 
-Current release: <!-- product-fact:rn-version -->0.22.0<!-- /product-fact --> ·
+Current release: <!-- product-fact:rn-version -->0.22.1<!-- /product-fact --> ·
 benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
 deterministic agents: <!-- product-fact:deterministic-commands -->44<!-- /product-fact --> ·
 MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact -->
@@ -730,7 +730,7 @@ Enable items with `vectalon ecosystem --enable <id>`.
 
 ## Diagnostics & Error Telemetry
 
-Production visibility without usage tracking — **errors only, opt-out**.
+Automatic RN diagnostics are **explicit opt-in**, with separate consent for errors and heartbeats. These diagnostics do not track feature usage; optional Core usage telemetry has its own opt-in.
 
 | Capability | How it works |
 |------------|--------------|
@@ -740,10 +740,15 @@ Production visibility without usage tracking — **errors only, opt-out**.
 | **Deep `/health`** | `vectalon serve --protocol http` → `GET /health` returns `healthy \| degraded \| critical` + `checks[]`: model provider reachable, artifact store writable, sub-MCP responsive, init config valid. The VS Code status bar tooltip shows it. |
 | **`support --upload`** | Sanitized bundle (logs, error queue, crash report, package.json, `.vectalon` state) → gzipped upload with a `RN-XXXXXXXX` token; secrets redacted recursively. |
 
-Privacy: all telemetry is **opt-out** — set `telemetry.enabled=false` (or
-`telemetry.errors=false`) in `~/.config/rn-vectalon/config.json`. Tests never
-send anything. Override the endpoint with
-`RN_VECTALON_TELEMETRY_URL`.
+Automatic error capture, queue uploads, and heartbeats are off by default.
+To consent, set the flat key `"telemetry.errors": true` and/or the separate
+`"telemetry.heartbeat": true` in `~/.config/rn-vectalon/config.json`.
+`"telemetry.enabled": false` overrides both; per-feature `false` disables that
+feature. Opting out retains existing local diagnostic files without uploading
+them. Tests/selftests use isolated configuration and injected local endpoints.
+Override the endpoint with `RN_VECTALON_TELEMETRY_URL`.
+Customer-directed local crash-export ingestion, `--diagnostics`, and explicit
+`support --upload` remain separate features.
 
 ---
 

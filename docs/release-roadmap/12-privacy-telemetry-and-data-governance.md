@@ -6,6 +6,12 @@ Make telemetry demonstrably privacy-preserving, consent-aware, schema-controlled
 
 ## Product view
 
+## Execution status — 2026-09-17
+
+Active launch phase after the owner deferred Step 11 recovery operations. First implementation slice reconciles RN telemetry consent with the advertised opt-in default. This is not completion of privacy governance: generic error payload minimisation, backend access controls, retention, export/deletion drills, and legal review still require evidence.
+
+Core follow-up: shared privacy-safe event projection and immediately effective consent changes in the legacy UsageReporter. Vectalon: default-off diagnostics, separate heartbeat consent, matching website/README, and protected ingestion/read paths. Admin: least-privilege operational access and audited retention/export/deletion controls. Do not release privacy claims beyond tested behavior.
+
 Trust is part of Vectalon's local/private value proposition. Observability must prove product health without undermining that promise.
 
 ## Planned repository changes
