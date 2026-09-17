@@ -18,8 +18,15 @@ function post(app: ReturnType<typeof createApp>, path: string, body: Buffer | ob
 }
 
 function get(app: ReturnType<typeof createApp>, path: string): Promise<TelemetryResponse> {
-  return app.handle({ method: 'GET', url: path, body: Buffer.alloc(0) })
+  return app.handle({ method: 'GET', url: path, body: Buffer.alloc(0), headers: { authorization: 'Bearer secret-token' } })
 }
+
+const originalAdminToken = process.env.TELEMETRY_ADMIN_TOKEN
+before(() => { process.env.TELEMETRY_ADMIN_TOKEN = 'secret-token' })
+after(() => {
+  if (originalAdminToken === undefined) delete process.env.TELEMETRY_ADMIN_TOKEN
+  else process.env.TELEMETRY_ADMIN_TOKEN = originalAdminToken
+})
 
 const EMAILED: { bundle?: SupportBundle } = {}
 function fakeEmail(bundle: SupportBundle): Promise<{ sent: boolean; error?: string }> {
@@ -125,14 +132,10 @@ describe('telemetry app', () => {
     assert.equal(healthPost.status, 405)
   })
 
-  test('GET /v1/health reports counts and active clients', async () => {
-    const res = await get(app, '/v1/health')
+  test('GET /v1/health exposes only public status', async () => {
+    const res = await app.handle({ method: 'GET', url: '/v1/health', body: Buffer.alloc(0) })
     assert.equal(res.status, 200)
-    const health = JSON.parse(res.body) as { status: string; counts: { errors: number; heartbeats: number; support: number }; activeClients: number }
-    assert.equal(health.status, 'ok')
-    assert.equal(health.counts.errors, 2)
-    assert.equal(health.counts.support, 2)
-    assert.ok(health.activeClients >= 1) // the daemon heartbeat above is fresh
+    assert.deepEqual(JSON.parse(res.body), { status: 'ok' })
   })
 
   test('GET / renders the dashboard HTML', async () => {
@@ -210,6 +213,59 @@ describe('telemetry admin errors route', () => {
   })
 })
 
+describe('protected read surfaces', () => {
+  const paths = ['/', '/v1/errors', '/v1/heartbeat', '/v1/support', '/v1/admin/errors']
+  const app = createApp({ store: new MemoryStore(), sendEmail: fakeEmail })
+  const request = (url: string, authorization?: string | string[], method = 'GET') =>
+    app.handle({ method, url, body: Buffer.alloc(0), headers: { authorization } })
+
+  before(async () => {
+    await post(app, '/v1/errors', { events: [{ message: 'private-customer-marker' }] })
+    await post(app, '/v1/heartbeat', { kind: 'daemon', pid: 9876, timestamp: Date.now(), clientId: 'private-customer-marker' })
+    await post(app, '/v1/support', sampleBundle('private-customer-marker'))
+  })
+
+  test('every read fails closed without configuration', async () => {
+    delete process.env.TELEMETRY_ADMIN_TOKEN
+    try {
+      for (const path of paths) {
+        const res = await request(path, 'Bearer secret-token')
+        assert.equal(res.status, 503, path)
+        assert.doesNotMatch(res.body, /private-customer-marker|<!doctype|Latest errors/i)
+      }
+    } finally { process.env.TELEMETRY_ADMIN_TOKEN = 'secret-token' }
+  })
+
+  test('every read rejects missing, malformed, wrong and query-only credentials', async () => {
+    process.env.TELEMETRY_ADMIN_TOKEN = 'secret-token'
+    for (const path of paths) {
+      for (const auth of [undefined, 'Bearer nope', 'Bearer secret-tokeN', 'secret-token', ['Bearer secret-token']]) {
+        const res = await request(`${path}?token=secret-token`, auth)
+        assert.equal(res.status, 401, `${path}: ${String(auth)}`)
+        assert.doesNotMatch(res.body, /private-customer-marker|<!doctype|Latest errors/i)
+      }
+      const res = await request(path, 'Bearer secret-token')
+      assert.equal(res.status, 200, path)
+      assert.match(res.body, /private-customer-marker/, path)
+    }
+  })
+
+  test('dashboard alternative verbs never return data; OPTIONS remains empty', async () => {
+    for (const path of paths) {
+      const preflight = await request(path, undefined, 'OPTIONS')
+      assert.equal(preflight.status, 204, path)
+      assert.equal(preflight.body, '', path)
+    }
+    for (const method of ['POST', 'HEAD', 'PUT', 'PATCH', 'DELETE', 'TRACE']) {
+      for (const auth of [undefined, 'Bearer secret-token']) {
+        const res = await request('/', auth, method)
+        assert.equal(res.status, 405, method)
+        assert.doesNotMatch(res.body, /private-customer-marker|<!doctype|Latest errors/i)
+      }
+    }
+  })
+})
+
 describe('store backends', () => {
   test('FileStore persists across instances', async () => {
     const dir = mkdtempSync(join(tmpdir(), 'vectalon-tel-'))
@@ -280,13 +336,13 @@ describe('email forwarding', () => {
   })
 
   test('surfaces an invalid Resend key as not-sent (offline-safe)', async () => {
-    // No network dependency: without a real key the sender must report a
-    // failure with a message, whether the request 401s or fetch itself fails.
-    const result = await sendSupportEmail(sampleBundle('RN-TEST0004'), {
-      apiKey: 're_test_invalid',
-    })
-    assert.equal(result.sent, false)
-    assert.ok(result.error && result.error.length > 0)
+    const prevFetch = globalThis.fetch
+    globalThis.fetch = (async () => new Response('{"message":"invalid key"}', { status: 401 })) as typeof fetch
+    try {
+      const result = await sendSupportEmail(sampleBundle('RN-TEST0004'), { apiKey: 're_test_invalid' })
+      assert.equal(result.sent, false)
+      assert.ok(result.error && result.error.length > 0)
+    } finally { globalThis.fetch = prevFetch }
   })
 
   test('delivery address comes from config, never from the bundle', async () => {

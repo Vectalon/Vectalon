@@ -9,16 +9,16 @@
  *   POST /v1/errors     { schemaVersion, events: ErrorReport[] }
  *   POST /v1/heartbeat  HeartbeatPayload
  *   POST /v1/support    gzipped (or plain) SupportBundle JSON
- *   GET  /v1/health     { status, counts, activeClients }
- *   GET  /v1/errors|/v1/heartbeat|/v1/support   recent lists
- *   GET  /              dashboard HTML
+ *   GET  /v1/health     { status } (public)
+ *   GET  /v1/errors|/v1/heartbeat|/v1/support   protected recent lists
+ *   GET  /              protected dashboard HTML
  */
 import { gunzipSync } from 'zlib'
+import { timingSafeEqual } from 'node:crypto'
 import { sendSupportEmail, DEFAULT_SUPPORT_TO } from './email'
 import { renderDashboard } from './dashboard'
 import { defaultStore } from './store'
 import {
-  activeHeartbeats,
   isErrorEvent,
   isHeartbeat,
   isSupportBundle,
@@ -32,7 +32,7 @@ export interface TelemetryRequest {
   method: string
   url: string
   body: Buffer
-  /** Node-style headers (lowercased keys) — optional, used by admin routes. */
+  /** Node-style headers (lowercased keys), required for protected reads. */
   headers?: Record<string, string | string[] | undefined>
 }
 
@@ -164,13 +164,7 @@ export function createApp(options: AppOptions = {}) {
   }
 
   async function handleHealth(): Promise<TelemetryResponse> {
-    const [counts, beats] = await Promise.all([store.counts(), store.listHeartbeats(200)])
-    return json(200, {
-      status: 'ok',
-      now: now(),
-      counts,
-      activeClients: activeHeartbeats(beats, now()).length,
-    })
+    return json(200, { status: 'ok' })
   }
 
   async function handleDashboard(): Promise<TelemetryResponse> {
@@ -180,29 +174,12 @@ export function createApp(options: AppOptions = {}) {
 
   /**
    * Admin-only error listing — GET /v1/admin/errors?limit=500.
-   * Authenticated with `Authorization: Bearer <TELEMETRY_ADMIN_TOKEN>` (or
-   * `?token=…` for tooling that can't set headers). Powers the admin error
-   * dashboard in the website app.
+   * Protected by the shared bearer guard. Powers the website admin dashboard.
    */
   async function handleAdminErrors(
-    method: string,
-    url: string,
-    headers?: TelemetryRequest['headers']
+    method: string
   ): Promise<TelemetryResponse> {
     if (method !== 'GET') return json(405, { error: `method ${method} not allowed` })
-    const token = process.env.TELEMETRY_ADMIN_TOKEN
-    if (!token) return json(503, { error: 'TELEMETRY_ADMIN_TOKEN not configured' })
-    let provided = ''
-    const auth = headers?.authorization
-    if (typeof auth === 'string') provided = auth.replace(/^Bearer\s+/i, '').trim()
-    if (!provided) {
-      try {
-        provided = new URL(url, 'http://localhost').searchParams.get('token') ?? ''
-      } catch {
-        // fall through
-      }
-    }
-    if (!provided || provided !== token) return json(401, { error: 'unauthorized' })
     const errors = await store.listErrors(500)
     return json(200, { errors })
   }
@@ -210,13 +187,26 @@ export function createApp(options: AppOptions = {}) {
   async function handle(request: TelemetryRequest): Promise<TelemetryResponse> {
     const path = pathOf(request.url)
     try {
+      if (request.method === 'OPTIONS') return text(204, '', JSON_HEADERS)
+      if (request.method === 'GET' && ['/', '/v1/errors', '/v1/heartbeat', '/v1/support', '/v1/admin/errors'].includes(path)) {
+        const token = process.env.TELEMETRY_ADMIN_TOKEN
+        if (!token) return json(503, { error: 'TELEMETRY_ADMIN_TOKEN not configured' })
+        const auth = request.headers?.authorization
+        const provided = typeof auth === 'string' ? /^Bearer\s+(\S+)$/i.exec(auth)?.[1] : undefined
+        const expected = Buffer.from(token)
+        const supplied = Buffer.from(provided ?? '')
+        if (!provided || supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
+          return json(401, { error: 'unauthorized' })
+        }
+      }
       switch (path) {
         case '/':
+          if (request.method !== 'GET') return json(405, { error: `method ${request.method} not allowed` })
           return await handleDashboard()
         case '/v1/errors':
           return await handleErrors(request.method, request.url, request.body)
         case '/v1/admin/errors':
-          return await handleAdminErrors(request.method, request.url, request.headers)
+          return await handleAdminErrors(request.method)
         case '/v1/heartbeat':
           return await handleHeartbeat(request.method, request.url, request.body)
         case '/v1/support':
