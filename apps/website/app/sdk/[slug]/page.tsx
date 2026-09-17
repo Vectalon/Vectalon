@@ -34,7 +34,7 @@ const SDK_DATA: Record<string, SdkData> = {
       { title: 'Deterministic command catalog — experimental', body: `${PRODUCT_MANIFEST.capabilities.deterministicCommands} commands are registered across the package. Lifecycle, evidence, model use, network access, and availability are evaluated per owning capability.` },
       { title: 'Executive dashboard — experimental', body: 'Opt-in report aggregation can build a local dashboard from available report artifacts; sample output is not customer-workflow qualification.' },
     ],
-    install: 'npx vectalon init',
+    install: 'npx --yes --package=@vectalon-dev/rn@latest vectalon init',
     note: 'Free includes the qualified capabilities listed by the released catalog. Experimental commands require opt-in and are not guaranteed plan outcomes.',
   },
   ios: {

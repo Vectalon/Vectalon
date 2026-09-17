@@ -83,7 +83,7 @@ const STEPS = [
   {
     n: '01',
     title: 'Install & init',
-    code: 'npx vectalon init',
+    code: 'npm install --save-dev @vectalon-dev/rn && npx vectalon init',
     body: 'Scans the repo, seeds the knowledge base, and enables the ecosystem items your project needs. No config files to write — Vectalon owns its own knowledge.',
   },
   {

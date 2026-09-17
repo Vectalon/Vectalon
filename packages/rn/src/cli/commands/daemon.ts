@@ -90,7 +90,7 @@ export async function daemonCommand(options: DaemonCommandOptions): Promise<void
     if (options.telemetryWatch) watching.push('telemetry exports (.vectalon/telemetry)')
     logger.info(`Watching: ${watching.join(', ')}`)
     logger.info('Stop with: vectalon daemon --stop')
-    // Liveness heartbeat (every 5 min, opt-out). The daemon process lives
+    // Liveness heartbeat (every 5 min, explicit opt-in). The daemon process lives
     // until --stop/SIGTERM, so the unref'd interval dies with the process.
     startHeartbeat({
       kind: 'daemon',

@@ -248,7 +248,7 @@ export async function sendLicenseEmail(input: {
   const apiKey = process.env.RESEND_API_KEY
   if (!apiKey) return { sent: false, skipped: true }
   const from = process.env.RESEND_FROM || 'Vectalon <licenses@vectalon.in>'
-  const activate = `npx vectalon auth --license ${input.license.key}`
+  const activate = `npx --yes --package=@vectalon-dev/rn@latest vectalon auth --license ${input.license.key}`
   const html = `
     <div style="font-family: ui-monospace, Menlo, monospace; color: #FAF6E9; line-height: 1.6">
       <p>Thanks for upgrading to Vectalon!</p>

@@ -274,4 +274,21 @@ describe('lemon-squeezy license lifecycle', () => {
     expect(result.sent).toBe(false)
     rmSync(dir, { recursive: true, force: true })
   })
+
+  it('delivers a scoped bootstrap activation command to a newly licensed customer', async () => {
+    process.env.RESEND_API_KEY = 'test-only-resend-key'
+    const { store, dir } = makeStore()
+    const license = await store.issueLicense({ tier: 'pro', email: 'a@b.dev' })
+    const transport = jest.spyOn(global, 'fetch').mockResolvedValue({ ok: true } as Response)
+    try {
+      const result = await sendLicenseEmail({ email: 'a@b.dev', license, tier: 'pro', product: 'rn' })
+      expect(result).toEqual({ sent: true })
+      const message = JSON.parse(String(transport.mock.calls[0][1]?.body))
+      expect(message.html).toContain(`npx --yes --package=@vectalon-dev/rn@latest vectalon auth --license ${license.key}`)
+      expect(message.html).not.toContain('npx vectalon auth')
+    } finally {
+      transport.mockRestore()
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
 })

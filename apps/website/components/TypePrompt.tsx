@@ -28,7 +28,7 @@ export type TypePromptHeadline = { label: string; tag: string }
 
 export function TypePrompt({
   headlines = [],
-  command = 'npx vectalon init',
+  command = 'npx --yes --package=@vectalon-dev/rn@latest vectalon init',
 }: {
   headlines?: TypePromptHeadline[]
   command?: string
