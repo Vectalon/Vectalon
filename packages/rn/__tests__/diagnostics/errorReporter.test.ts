@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { createServer } from 'http'
 import { createTempProject, cleanup } from '../helpers/tmp'
+import { resetConfig } from '../../src/config'
 import {
   captureError,
   flushErrorQueue,
@@ -13,13 +14,21 @@ import {
 describe('error telemetry pipeline (P0-1)', () => {
   let root: string
   let queuePath: string
+  let configDir: string | undefined
 
   beforeEach(() => {
     root = createTempProject({ 'package.json': '{}' })
     queuePath = queuePathFor(root)
+    configDir = process.env.RN_VECTALON_CONFIG_DIR
+    process.env.RN_VECTALON_CONFIG_DIR = join(root, 'config')
+    resetConfig()
   })
 
   afterEach(() => {
+    process.env.RN_VECTALON_CONFIG_DIR = join(root, 'config')
+    resetConfig()
+    if (configDir === undefined) delete process.env.RN_VECTALON_CONFIG_DIR
+    else process.env.RN_VECTALON_CONFIG_DIR = configDir
     cleanup(root)
   })
 
@@ -155,6 +164,5 @@ describe('error telemetry pipeline (P0-1)', () => {
     process.env.RN_VECTALON_CONFIG_DIR = join(root, 'config')
     const fallback = queuePathFor()
     expect(fallback.endsWith(join('config', 'telemetry-queue.json'))).toBe(true)
-    delete process.env.RN_VECTALON_CONFIG_DIR
   })
 })

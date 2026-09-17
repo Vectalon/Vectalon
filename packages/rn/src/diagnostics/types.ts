@@ -2,7 +2,7 @@
  * Diagnostics & error telemetry — shared types.
  * Business Source License 1.1 (BSL-1.1)
  *
- * P0 telemetry: structured error reporting (opt-out), --diagnostics bundles,
+ * P0 telemetry: structured error reporting (explicit opt-in), --diagnostics bundles,
  * liveness heartbeats, deep /health checks, and support-bundle uploads.
  */
 

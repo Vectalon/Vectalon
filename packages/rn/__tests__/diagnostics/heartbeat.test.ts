@@ -1,5 +1,7 @@
 import { createServer } from 'http'
 import { createTempProject, cleanup } from '../helpers/tmp'
+import { join } from 'path'
+import { resetConfig } from '../../src/config'
 import {
   buildHeartbeatPayload,
   sendHeartbeat,
@@ -9,14 +11,21 @@ import {
 
 describe('liveness heartbeat (P0-3)', () => {
   let root: string
+  let configDir: string | undefined
 
   beforeEach(() => {
     root = createTempProject({
       'package.json': JSON.stringify({ dependencies: { 'react-native': '0.72.0' } }),
     })
+    configDir = process.env.RN_VECTALON_CONFIG_DIR
+    process.env.RN_VECTALON_CONFIG_DIR = join(root, 'config')
+    resetConfig()
   })
 
   afterEach(() => {
+    resetConfig()
+    if (configDir === undefined) delete process.env.RN_VECTALON_CONFIG_DIR
+    else process.env.RN_VECTALON_CONFIG_DIR = configDir
     cleanup(root)
   })
 
@@ -95,7 +104,7 @@ describe('liveness heartbeat (P0-3)', () => {
     expect(sent).toBe(false)
   })
 
-  it('respects the opt-out gate by default (no enabled override)', async () => {
+  it('requires consent by default (no enabled override)', async () => {
     const sent = await sendHeartbeat({
       kind: 'serve',
       root,

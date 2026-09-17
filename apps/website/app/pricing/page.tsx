@@ -75,7 +75,7 @@ const FAQ = [
   },
   {
     q: 'Do you store my code?',
-    a: 'No. Everything runs locally; the knowledge base lives in your project. Telemetry is opt-in and errors-only. The cloud only handles licensing, trials, and support bundles you choose to upload.',
+    a: 'Your knowledge base is stored locally. Automatic RN diagnostics are off by default: error reports and liveness heartbeats require separate consent. Optional usage telemetry has its own opt-in. Remote model providers receive the context you choose to send; licensing, trials, and support uploads also use cloud services.',
   },
 ]
 

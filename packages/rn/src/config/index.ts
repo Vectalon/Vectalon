@@ -57,7 +57,12 @@ export function setConfig(key: string, value: unknown): void {
   save()
 }
 
-export function resetConfig(): void {
+/** Forget cached settings without modifying customer files. */
+export function clearConfigCache(): void {
   cache = null
+}
+
+export function resetConfig(): void {
+  clearConfigCache()
   rmSync(configDir(), { recursive: true, force: true })
 }

@@ -1840,7 +1840,7 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
     id: 'diagnostics-error-queue',
     name: 'Error telemetry pipeline (queue → flush)',
     category: 'diagnostics',
-    description: 'captureError persists a structured report to the queue file; flushErrorQueue POSTs it to the endpoint and clears the queue on success (errors-only, opt-out).',
+    description: 'captureError persists a structured report to the queue file; flushErrorQueue POSTs it to the endpoint and clears the queue on success (errors-only, explicit opt-in; isolated test injection).',
     async run(ctx) {
       const queuePath = join(ctx.sandbox.root, 'telemetry-queue.json')
       const captured = captureError(new Error('selftest boom'), 'selftest', 'diagnostics check', {

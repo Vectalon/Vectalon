@@ -5,14 +5,16 @@
  * Every 5 minutes `vectalon serve` and `vectalon daemon` POST a lightweight
  * health ping (version, uptime, active model provider, OS, project type) to
  * the telemetry endpoint. This is NOT usage tracking — it is liveness: a
- * broken release is visible within one interval. Disabled alongside error
- * telemetry via `telemetry.enabled=false` and always off in dev/test mode.
+ * broken release is visible within one interval. Requires separate explicit
+ * `telemetry.heartbeat=true` consent; `telemetry.enabled=false` disables it.
+ * Always off in dev/test mode unless explicitly injected for testing.
  */
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import pkg from '../../package.json'
 import { platform, release, arch } from 'os'
-import { HEARTBEAT_ENDPOINT, errorsEnabled } from './errorReporter'
+import { HEARTBEAT_ENDPOINT } from './errorReporter'
+import { getConfig } from '../config'
 import { recordHeartbeatPing } from './alerts'
 import { reportError } from '../utils/safe'
 import type { HeartbeatPayload } from './types'
@@ -34,7 +36,7 @@ export interface HeartbeatOptions {
   fetchFn?: typeof fetch
   /** Endpoint override (tests). */
   endpoint?: string
-  /** Force send on/off (bypasses the errorsEnabled opt-out gate for tests). */
+  /** Test injection; never overrides explicit configuration opt-out. */
   enabled?: boolean
   startedAt?: number
 }
@@ -68,11 +70,17 @@ export function buildHeartbeatPayload(options: HeartbeatOptions): HeartbeatPaylo
   }
 }
 
+/** Heartbeat consent is independent of error-report consent. */
+function heartbeatEnabled(enabled?: boolean): boolean {
+  if (getConfig('telemetry.enabled') === false || getConfig('telemetry.heartbeat') === false) return false
+  if (enabled !== undefined) return enabled
+  if (process.env.NODE_ENV === 'test' || process.env.VECTALON_DEV_MODE === '1') return false
+  return getConfig('telemetry.heartbeat') === true
+}
+
 /** Send one heartbeat; returns true when the endpoint accepted it. Never throws. */
 export async function sendHeartbeat(options: HeartbeatOptions): Promise<boolean> {
-  // Self-gate on the same opt-out as error telemetry so a direct API caller
-  // cannot bypass telemetry.enabled=false; tests pass enabled:true explicitly.
-  if (options.enabled === false || (options.enabled === undefined && !errorsEnabled())) return false
+  if (!heartbeatEnabled(options.enabled)) return false
   const payload = buildHeartbeatPayload(options)
   const fetchFn = options.fetchFn || globalThis.fetch
   const endpoint = options.endpoint || HEARTBEAT_ENDPOINT
@@ -110,12 +118,12 @@ export function startHeartbeat(options: HeartbeatOptions): HeartbeatHandle {
   const startedAt = options.startedAt ?? Date.now()
 
   // Immediately signal liveness at startup.
-  if (errorsEnabled()) {
+  if (heartbeatEnabled(options.enabled)) {
     void sendHeartbeat({ ...options, startedAt })
   }
 
   const interval = setInterval(() => {
-    if (errorsEnabled()) {
+    if (heartbeatEnabled(options.enabled)) {
       void sendHeartbeat({ ...options, startedAt })
     }
   }, intervalMs)
