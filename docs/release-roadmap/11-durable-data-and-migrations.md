@@ -4,6 +4,14 @@
 
 Create a production data model and operational lifecycle for customers, identities, trials, subscriptions, licenses, entitlements, usage summaries, webhooks, and audit events—with migrations, backups, and restore drills.
 
+## Execution status — 2026-09-17
+
+Deferred by owner: paid database upgrades, point-in-time recovery, off-site backup automation, and the independent restore drill. Remain on Supabase Free until product usage justifies cost. This step is **not complete**; launch-ready functionality and delivery of advertised capabilities take priority, and work proceeds to Step 12.
+
+The production missing-database guard has passed 130 website tests but is not yet deployed. Concurrent-write protection for the legacy dashboard JSON record remains open. No customer records or database credentials were changed. Before accepting paying customers, revisit backup coverage and the recoverability of purchases, licenses, and operator access; provider replay alone cannot reconstruct every record.
+
+Repository follow-up: Admin owns backup/restore operations and database transaction protection; Vectalon owns fail-closed hosting configuration and stable unavailable responses; Core remains storage-neutral and requires no database upgrade.
+
 ## Product view
 
 Commercial correctness depends on durable history. Mutable current-state tables alone cannot explain why a customer was granted or denied access, nor recover safely from provider or operator mistakes.

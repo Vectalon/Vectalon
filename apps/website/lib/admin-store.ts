@@ -615,10 +615,13 @@ export class AdminStore {
   }
 }
 
-/** Store dir: env override (Vercel writable dir) or ./.data */
+/** Durable production storage; file storage is development-only. */
 export function defaultAdminStore(): AdminStore {
   const dbUrl = process.env.DATABASE_URL
   if (dbUrl) return new AdminStore(new PostgresPersistence(dbUrl))
+  if (process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production') {
+    throw new Error('admin-database-not-configured')
+  }
   return new AdminStore(new FilePersistence(process.env.DATA_DIR || join(process.cwd(), '.data')))
 }
 

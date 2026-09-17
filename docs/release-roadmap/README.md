@@ -41,6 +41,8 @@ Legal, tax, accounting, and privacy claims require qualified professional review
 
 ## Sequencing and parallelism
 
+2026-09-17 owner decision: Step 11 recovery operations are deferred, not completed. Supabase stays on Free; next work is Step 12 and launch-critical functionality. See Step 11's execution status for remaining data-loss risks and repository ownership.
+
 - Step 03 starts first. Step 04 can proceed after its contract subset stabilizes.
 - Step 05 may inventory surfaces in parallel with Step 03, but plan/claim enforcement waits for capability contracts.
 - Steps 06 and 07 follow the relevant Step 03 schemas; Step 08 follows both. Their Core/client work may proceed before Admin is production-ready, but server-side grants, trials, signing, and mutations wait for Steps 10–11.
