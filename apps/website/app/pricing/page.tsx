@@ -16,7 +16,7 @@ const PLAN_PRESENTATION: Record<ProductPlanId, {
     href: '/sdk/react-native',
   },
   individual: {
-    blurb: 'Local AI + project intelligence + diagnostics. Your source never leaves your machine.',
+    blurb: 'Local-first AI, project intelligence, and diagnostics.',
     cta: 'Buy Individual',
     fallback: 'Launching soon',
   },

@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.22.2] - 2026-09-18
+
+- Bundle reviewed Core 0.11.1: optional usage sends only five bounded numeric
+  ingestion counts, with a random reporter session and no machine fingerprint.
+- Recheck usage consent before collection and upload; preserve opt-out queues
+  and customer-directed local crash-export analysis.
+- Verify the shipped Core privacy boundary through its bundled runtime, without
+  claiming raw RN diagnostics, support retention, or deletion are governed.
+
 ## [0.22.1] - 2026-09-17
 
 - Require explicit consent before collecting or sending generic error telemetry
