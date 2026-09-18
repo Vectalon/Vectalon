@@ -14,6 +14,40 @@ const { CONTRACT_REVISION, validateContract } = bundledCore
 const coreDist = path.join(bundledCoreRoot, 'contracts')
 
 describe('shipped ProductDefinition contract', () => {
+  test('bundled optional usage uploads only nonidentifying operational counts', () => {
+    const isolatedHome = mkdtempSync(path.join(tmpdir(), 'vectalon-packed-usage-'))
+    try {
+      const output = execFileSync(process.execPath, ['-e', `
+        require('node:os').homedir = () => process.argv[1];
+        const { UsageReporter } = require(process.argv[2]);
+        const uploads = [];
+        global.fetch = async (_url, options) => {
+          uploads.push(JSON.parse(options.body));
+          return { ok: true };
+        };
+        UsageReporter.enable();
+        const reporter = new UsageReporter();
+        reporter.track('telemetry_ingest', 'rn', undefined, {
+          filesScanned: 5, eventsIngested: 9, crashes: 2, traces: 3, analytics: 4,
+          source: 'private-source-marker', secret: 'private-secret-marker',
+        });
+        reporter.flush().then(() => process.stdout.write(JSON.stringify(uploads)));
+      `, isolatedHome, path.join(bundledCoreRoot, 'index.js')], { encoding: 'utf8' })
+      const uploads = JSON.parse(output)
+      expect(uploads).toHaveLength(1)
+      expect(uploads[0].events).toHaveLength(1)
+      expect(uploads[0].events[0]).toEqual({
+        event: 'telemetry_ingest', product: 'rn', tier: 'unknown',
+        timestamp: expect.any(Number),
+        sessionId: expect.stringMatching(/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/),
+        deviceId: 'redacted',
+        metadata: { filesScanned: 5, eventsIngested: 9, crashes: 2, traces: 3, analytics: 4 },
+      })
+      expect(output).not.toContain('private-source-marker')
+      expect(output).not.toContain('private-secret-marker')
+    } finally { rmSync(isolatedHome, { recursive: true, force: true }) }
+  })
+
   test('reads the supported Core fixture from the package artifact', () => {
     const payload: ProductDefinition = JSON.parse(
       readFileSync(path.join(coreDist, 'fixtures/ProductDefinition/valid.json'), 'utf8'),

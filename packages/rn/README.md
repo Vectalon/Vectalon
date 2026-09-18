@@ -4,7 +4,7 @@
 
 Project-aware SDLC intelligence for any agent — CLI, MCP server, VS Code extension, benchmark suite, and fine-tuning pipeline in one package.
 
-Current release: <!-- product-fact:rn-version -->0.22.1<!-- /product-fact --> ·
+Current release: <!-- product-fact:rn-version -->0.22.2<!-- /product-fact --> ·
 benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
 deterministic agents: <!-- product-fact:deterministic-commands -->44<!-- /product-fact --> ·
 MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact -->
@@ -732,13 +732,15 @@ Enable items with `vectalon ecosystem --enable <id>`.
 
 Automatic RN diagnostics are **explicit opt-in**, with separate consent for errors and heartbeats. These diagnostics do not track feature usage; optional Core usage telemetry has its own opt-in.
 
+Optional Core usage telemetry collects only local ingestion counts (`filesScanned`, `eventsIngested`, `crashes`, `traces`, `analytics`), with a random reporter-session identifier and no machine fingerprint. Collection and upload recheck current consent; opting out leaves its existing local queue untouched. This boundary does not sanitize raw opt-in RN errors/heartbeats or govern support retention and deletion.
+
 | Capability | How it works |
 |------------|--------------|
 | **Error pipeline** | Structured crash dumps (stack, CLI command, version, OS) queue to `<config>/telemetry-queue.json` and POST to the Vectalon error endpoint. `reportError(…, 'warn')`, uncaught exceptions, and unhandled rejections feed it. |
 | **`--diagnostics`** | `vectalon <command> --diagnostics` writes `.vectalon/diagnostics-bundle.json` — Node/OS, RN/Expo versions, model provider, last 5000 log lines, sanitized `.vectalon` listing, full stack on failure. Paste it into a support ticket. |
-| **Heartbeats** | `serve` and `daemon` POST a liveness ping every 5 min (version, uptime, model provider, OS, project type). A broken release is visible within one interval. |
+| **Heartbeats** | With consent, `serve` and `daemon` attempt a liveness ping every 5 min (version, uptime, model provider, OS, project type). Visibility requires a configured, deployed receiver; the default receiver is not verified. |
 | **Deep `/health`** | `vectalon serve --protocol http` → `GET /health` returns `healthy \| degraded \| critical` + `checks[]`: model provider reachable, artifact store writable, sub-MCP responsive, init config valid. The VS Code status bar tooltip shows it. |
-| **`support --upload`** | Sanitized bundle (logs, error queue, crash report, package.json, `.vectalon` state) → gzipped upload with a `RN-XXXXXXXX` token; secrets redacted recursively. |
+| **`support --upload`** | Explicit customer-directed gzipped upload (logs, error queue, crash report, package.json, `.vectalon` state) with a `RN-XXXXXXXX` token. Only package.json is sanitized; logs, errors, and state may contain private information. Inspect the bundle before uploading. |
 
 Automatic error capture, queue uploads, and heartbeats are off by default.
 To consent, set the flat key `"telemetry.errors": true` and/or the separate
