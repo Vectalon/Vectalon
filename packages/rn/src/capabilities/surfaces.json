@@ -3156,7 +3156,7 @@
     "kind": "claims",
     "name": "apps/website/components/HeroHeadline.tsx",
     "source": "apps/website/components/HeroHeadline.tsx",
-    "digest": "sha256:5ddb2ebe7d7482fd58bdf0632302c63afeafa3007008996dbf969c3a71bfaf59",
+    "digest": "sha256:872196e839942304af51ded0c6a793b68e8b283d20724b2a556859b0cb3c2175",
     "historical": false,
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",

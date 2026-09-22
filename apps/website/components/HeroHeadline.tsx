@@ -61,8 +61,8 @@ export default function HeroHeadline() {
         data-ab-bucket={variant}
       >
         {variant === 'b'
-          ? 'Local MCP agent plus 44 deterministic agents. Compile-checked, fully offline. No source leaves your machine.'
-          : 'A living knowledge graph, 44 deterministic agents. No model needed, no cloud required.'}
+          ? 'Local-first MCP harness with deterministic commands. Model providers and support uploads are optional.'
+          : 'Project intelligence and deterministic checks run locally; AI workflows use the provider you configure.'}
       </p>
     </>
   )

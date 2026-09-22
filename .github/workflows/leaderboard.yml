@@ -12,6 +12,8 @@ permissions:
 jobs:
   bench:
     runs-on: ubuntu-latest
+    env:
+      VECTALON_EXPERIMENTAL: '1'
     strategy:
       fail-fast: false
       matrix:
@@ -94,6 +96,8 @@ jobs:
 
   leaderboard:
     runs-on: ubuntu-latest
+    env:
+      VECTALON_EXPERIMENTAL: '1'
     needs: bench
     if: always()
     permissions:

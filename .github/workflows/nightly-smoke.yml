@@ -17,6 +17,8 @@ permissions:
 jobs:
   smoke:
     runs-on: ubuntu-latest
+    env:
+      VECTALON_EXPERIMENTAL: '1'
     strategy:
       fail-fast: false
       matrix:

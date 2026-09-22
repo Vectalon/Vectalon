@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   icons: { icon: '/favicon.svg', apple: '/favicon.svg' },
   title: 'Vectalon — Adaptive AI harness for developers',
   description:
-    'An engineering control plane that understands, reviews, diagnoses, upgrades, and validates code. 44 deterministic agents, zero model calls, no source leaves your machine.',
+    'A local-first engineering harness for React Native. Deterministic checks run locally; AI workflows use your configured model provider.',
 }
 
 const themeScript = `
