@@ -738,7 +738,7 @@ Optional Core usage telemetry collects only local ingestion counts (`filesScanne
 |------------|--------------|
 | **Error pipeline** | Detailed errors queue locally in `<config>/telemetry-queue.json`; automatic opt-in POSTs include only a coarse fixed message, approved command, timestamp, version, and OS family. `reportError(…, 'warn')`, uncaught exceptions, and unhandled rejections feed the local queue. |
 | **`--diagnostics`** | `vectalon <command> --diagnostics` writes `.vectalon/diagnostics-bundle.json` — Node/OS, RN/Expo versions, model provider, last 5000 log lines, sanitized `.vectalon` listing, full stack on failure. Paste it into a support ticket. |
-| **Heartbeats** | With consent, `serve` and `daemon` attempt a liveness ping every 5 min (version, uptime, model provider, OS, project type). Visibility requires a configured, deployed receiver; the default receiver is not verified. |
+| **Heartbeats** | With consent, `serve` and `daemon` attempt a liveness ping every 5 min (version, OS family, project type; no provider/model or process identifier). Visibility requires a configured, deployed receiver; the default receiver is not verified. |
 | **Deep `/health`** | `vectalon serve --protocol http` → `GET /health` returns `healthy \| degraded \| critical` + `checks[]`: model provider reachable, artifact store writable, sub-MCP responsive, init config valid. The VS Code status bar tooltip shows it. |
 | **`support --upload`** | Explicit customer-directed gzipped upload (logs, error queue, crash report, package.json, `.vectalon` state) with a `RN-XXXXXXXX` token. Only package.json is sanitized; logs, errors, and state may contain private information. Inspect the bundle before uploading. |
 
