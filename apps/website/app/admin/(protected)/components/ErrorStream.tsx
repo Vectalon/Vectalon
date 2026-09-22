@@ -34,7 +34,7 @@ interface ClientGroup {
 function groupByClient(errors: TelemetryError[]): ClientGroup[] {
   const map = new Map<string, ClientGroup>()
   for (const e of errors) {
-    const id = e.clientId || '(no client id)'
+    const id = e.clientId || '(anonymous reports)'
     const g = map.get(id) ?? { clientId: id, project: e.project, count: 0, lastSeen: 0, errors: [] }
     g.count++
     g.lastSeen = Math.max(g.lastSeen, e.timestamp ?? 0)
@@ -74,10 +74,10 @@ export function ErrorStream({ errors }: { errors: TelemetryError[] }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[300px_1fr]">
-      {/* Client list */}
+      {/* Legacy clients and anonymous reports */}
       <div className="card !p-2">
         <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
-          clients ({visible.length})
+          sources ({visible.length})
         </div>
         {visible.length === 0 && (
           <div className="px-3 py-6 text-center text-sm text-slate-500">
@@ -99,7 +99,7 @@ export function ErrorStream({ errors }: { errors: TelemetryError[] }) {
                   <span className="badge badge-danger !px-1.5 !py-0 text-[10px]">{g.count}</span>
                 </div>
                 <div className="mt-0.5 text-[11px] text-slate-500">
-                  {g.project || 'no project'} — {fmtTime(g.lastSeen).slice(5, 16)}
+                  {g.project || 'project withheld'} — {fmtTime(g.lastSeen).slice(5, 16)}
                 </div>
               </button>
             </li>
@@ -114,11 +114,11 @@ export function ErrorStream({ errors }: { errors: TelemetryError[] }) {
         </button>
       </div>
 
-      {/* Error stream for the selected client */}
+      {/* Error stream for the selected source */}
       <div className="card !p-0 overflow-hidden">
         {!selectedGroup && (
           <div className="px-5 py-12 text-center text-sm text-slate-500">
-            Select a client to inspect its error stream.
+            Select a source to inspect its error stream.
           </div>
         )}
         {selectedGroup && (

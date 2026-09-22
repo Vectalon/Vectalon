@@ -126,6 +126,20 @@ describe('admin alert webhook (P2-19)', () => {
     expect(body.content).toContain('withheld')
   })
 
+  it('does not send or dedupe an error alert before explicit consent', async () => {
+    const { setConfig } = await import('../../src/config')
+    setConfig('telemetry.errors', false)
+    const events = Array.from({ length: 5 }, (_, i) => event(`private ${i}`) as never)
+    alerts.checkErrorClusterAlert(events, now)
+    await new Promise(r => setTimeout(r, 10))
+    expect(fetchMock).not.toHaveBeenCalled()
+    setConfig('telemetry.errors', true)
+    alerts.checkErrorClusterAlert(events, now)
+    await new Promise(r => setTimeout(r, 10))
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(JSON.stringify(fetchMock.mock.calls[0][1])).not.toContain('private')
+  })
+
   it('does not alert below the threshold', async () => {
     const events = Array.from({ length: 4 }, (_, i) => event(`boom ${i}`) as never)
     alerts.checkErrorClusterAlert(events, now)

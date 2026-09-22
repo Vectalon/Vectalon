@@ -3,7 +3,7 @@ import { ErrorStream } from '../components/ErrorStream'
 
 export const dynamic = 'force-dynamic'
 
-/** Per-client error dashboard — reads the telemetry backend's admin endpoint. */
+/** Error dashboard — reads the telemetry backend's admin endpoint. */
 export default async function AdminErrorsPage() {
   const data = await fetchTelemetryErrors()
 
@@ -25,8 +25,8 @@ export default async function AdminErrorsPage() {
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-slate-50">Client errors</h2>
         <p className="mt-1 text-sm text-slate-400">
-          Errors reported by installed SDKs, grouped per client install. Dismissed rows are
-          remembered in this browser so noise can be cleared without losing history.
+          RN 0.22.3+ sends coarse, anonymous automatic errors. Older records may retain
+          client identifiers and stacks. Dismissed rows are remembered in this browser.
         </p>
       </div>
       <ErrorStream errors={data.errors} />

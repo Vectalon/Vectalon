@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.22.3] - 2026-09-22
+
+- Limit automatic RN error uploads to coarse command, timestamp,
+  package/Node version, OS family, and a fixed message. Detailed local queues
+  remain available for customer-directed support; legacy queues are sanitized
+  at upload time.
+- Heartbeats omit process, provider/model, and precise OS details. Admin alerts
+  require the corresponding explicit telemetry consent and withhold stack
+  fingerprints and customer-supplied labels.
+- No changes to existing licenses, subscriptions, or Core 0.11.1.
+
 ## [0.22.2] - 2026-09-18
 
 - Bundle reviewed Core 0.11.1: optional usage sends only five bounded numeric
