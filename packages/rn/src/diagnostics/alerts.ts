@@ -106,7 +106,19 @@ export async function sendAdminAlert(payload: Record<string, unknown>): Promise<
   if (payload.type === 'heartbeat-stale' && getConfig('telemetry.heartbeat') !== true) return false
   if (payload.type !== 'error-cluster' && payload.type !== 'heartbeat-stale') return false
   try {
-    const text = buildAlertText(payload)
+    const safe = payload.type === 'error-cluster'
+      ? {
+          type: 'error-cluster', fingerprint: 'withheld',
+          count: Number.isFinite(payload.count) ? payload.count : 0,
+          affectedVersions: [pkg.version], osCounts: {}, commands: [],
+        }
+      : {
+          type: 'heartbeat-stale',
+          kind: payload.kind === 'daemon' ? 'daemon' : 'serve',
+          lastPingAt: Number.isFinite(payload.lastPingAt) ? payload.lastPingAt : Date.now(),
+          version: pkg.version,
+        }
+    const text = buildAlertText(safe)
     const res = await fetch(ALERT_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
