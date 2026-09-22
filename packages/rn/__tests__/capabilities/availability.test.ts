@@ -4,6 +4,7 @@ import { MCPServer } from '../../src/protocol/MCPServer'
 import { ContextEngine } from '../../src/harness/ContextEngine'
 import { ModelRouter } from '../../src/model/ModelRouter'
 import * as publicApi from '../../dist/index.js'
+import pkg from '../../package.json'
 
 describe('public lifecycle boundaries', () => {
   afterEach(() => { process.env.VECTALON_EXPERIMENTAL = '1' })
@@ -17,7 +18,7 @@ describe('public lifecycle boundaries', () => {
   })
 
   it('exports the canonical catalog and read-only availability projection', () => {
-    expect(publicApi.capabilityCatalog).toMatchObject({ productId: 'rn', productVersion: '0.22.2' })
+    expect(publicApi.capabilityCatalog).toMatchObject({ productId: 'rn', productVersion: pkg.version })
     expect(publicApi.surfaceAvailability('cli:policy')).toEqual({ available: true, reason: 'available' })
   })
 

@@ -97,7 +97,8 @@ describe('error telemetry pipeline (P0-1)', () => {
     expect(receivedPath).toBe('/v1/errors')
     const body = JSON.parse(Buffer.concat(chunks).toString('utf-8'))
     expect(body.events).toHaveLength(1)
-    expect(body.events[0].message).toBe('flush me')
+    expect(body.events[0].message).toBe('Diagnostic error; details retained locally')
+    expect(Object.keys(body.events[0]).sort()).toEqual(['command', 'message', 'nodeVersion', 'os', 'schemaVersion', 'timestamp', 'version'])
     expect(existsSync(queuePath)).toBe(false)
   })
 
@@ -122,6 +123,20 @@ describe('error telemetry pipeline (P0-1)', () => {
     expect(flushed).toBe(0)
     expect(existsSync(queuePath)).toBe(true)
     expect(readErrorQueue(queuePath)).toHaveLength(1)
+  })
+
+  it('projects a poisoned legacy queue to coarse fields before upload', async () => {
+    mkdirSync(join(queuePath, '..'), { recursive: true })
+    writeFileSync(queuePath, JSON.stringify([{ message: 'secret-key', command: 'serve --token secret-key', stack: 'private/path', context: 'secret-key', clientId: 'private-id', project: 'private-project', os: 'private-host', version: 'fake', timestamp: 1 }]))
+    let body = ''
+    const fetchFn = (async (_url: unknown, options: { body: string }) => {
+      body = options.body
+      return { ok: true }
+    }) as typeof fetch
+    expect(await flushErrorQueue({ queuePath, enabled: true, fetchFn })).toBe(1)
+    expect(body).not.toContain('secret-key')
+    expect(body).not.toContain('private-')
+    expect(JSON.parse(body).events[0].command).toBe('serve')
   })
 
   it('respects the enabled=false gate', () => {

@@ -51,6 +51,9 @@ describe('admin alert webhook (P2-19)', () => {
     process.env.VECTALON_ALERT_WEBHOOK = 'https://discord.example/webhook'
     jest.resetModules()
     jest.doMock('../../src/auth/trialState', () => ({ hasActiveTrial: () => activeTrial }))
+    const { setConfig } = await import('../../src/config')
+    setConfig('telemetry.errors', true)
+    setConfig('telemetry.heartbeat', true)
     alerts = (await import('../../src/diagnostics/alerts')) as unknown as AlertsModule
 
     fetchMock = jest.fn(async () => ({ ok: true, status: 200 }))
@@ -119,7 +122,22 @@ describe('admin alert webhook (P2-19)', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1)
     const body = JSON.parse(fetchMock.mock.calls[0][1].body)
     expect(body.content).toContain('error cluster')
-    expect(body.content).toContain('a.ts:1:1')
+    expect(body.content).not.toContain('a.ts:1:1')
+    expect(body.content).toContain('withheld')
+  })
+
+  it('does not send or dedupe an error alert before explicit consent', async () => {
+    const { setConfig } = await import('../../src/config')
+    setConfig('telemetry.errors', false)
+    const events = Array.from({ length: 5 }, (_, i) => event(`private ${i}`) as never)
+    alerts.checkErrorClusterAlert(events, now)
+    await new Promise(r => setTimeout(r, 10))
+    expect(fetchMock).not.toHaveBeenCalled()
+    setConfig('telemetry.errors', true)
+    alerts.checkErrorClusterAlert(events, now)
+    await new Promise(r => setTimeout(r, 10))
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(JSON.stringify(fetchMock.mock.calls[0][1])).not.toContain('private')
   })
 
   it('does not alert below the threshold', async () => {

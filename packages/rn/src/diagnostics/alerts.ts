@@ -17,7 +17,7 @@ import { join } from 'path'
 import pkg from '../../package.json'
 import { hasActiveTrial } from '../auth/trialState'
 import { currentCustomerLicense } from '../auth/licenseLifecycle'
-import { configDirPath } from '../config'
+import { configDirPath, getConfig } from '../config'
 import { reportError } from '../utils/safe'
 import type { ErrorReport } from './types'
 
@@ -101,8 +101,24 @@ export function buildAlertText(payload: Record<string, unknown>): string {
 /** POST an alert to the webhook (Discord + Slack compatible). Best-effort. */
 export async function sendAdminAlert(payload: Record<string, unknown>): Promise<boolean> {
   if (!ALERT_WEBHOOK_URL) return false
+  if (getConfig('telemetry.enabled') === false) return false
+  if (payload.type === 'error-cluster' && getConfig('telemetry.errors') !== true) return false
+  if (payload.type === 'heartbeat-stale' && getConfig('telemetry.heartbeat') !== true) return false
+  if (payload.type !== 'error-cluster' && payload.type !== 'heartbeat-stale') return false
   try {
-    const text = buildAlertText(payload)
+    const safe = payload.type === 'error-cluster'
+      ? {
+          type: 'error-cluster', fingerprint: 'withheld',
+          count: Number.isFinite(payload.count) ? payload.count : 0,
+          affectedVersions: [pkg.version], osCounts: {}, commands: [],
+        }
+      : {
+          type: 'heartbeat-stale',
+          kind: payload.kind === 'daemon' ? 'daemon' : 'serve',
+          lastPingAt: Number.isFinite(payload.lastPingAt) ? payload.lastPingAt : Date.now(),
+          version: pkg.version,
+        }
+    const text = buildAlertText(safe)
     const res = await fetch(ALERT_WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -124,6 +140,7 @@ export async function sendAdminAlert(payload: Record<string, unknown>): Promise<
  */
 export function checkErrorClusterAlert(events: ErrorReport[], now = Date.now()): void {
   if (!ALERT_WEBHOOK_URL) return
+  if (getConfig('telemetry.enabled') === false || getConfig('telemetry.errors') !== true) return
   if (!Array.isArray(events) || events.length === 0) return
 
   const windowed = events.filter(e => now - (e.timestamp || 0) < ERROR_CLUSTER_WINDOW_MS)
@@ -143,12 +160,12 @@ export function checkErrorClusterAlert(events: ErrorReport[], now = Date.now()):
     if (last && now - last.alertedAt < ERROR_CLUSTER_WINDOW_MS) continue // already alerted this window
     void sendAdminAlert({
       type: 'error-cluster',
-      fingerprint,
+      fingerprint: 'withheld',
       count: group.length,
       windowMs: ERROR_CLUSTER_WINDOW_MS,
-      affectedVersions: [...new Set(group.map(e => e.version).filter(Boolean))],
-      osCounts: countBy(group, e => e.os || 'unknown'),
-      commands: [...new Set(group.map(e => e.command).filter(Boolean))],
+      affectedVersions: [pkg.version],
+      osCounts: countBy(group, () => 'withheld'),
+      commands: ['withheld'],
     })
     // Mark as alerted synchronously (single write below) — dedupe is about
     // not spamming the webhook within a window, not about retry-on-failure.
@@ -201,6 +218,7 @@ export function hasActiveLicense(): boolean {
  */
 export function checkHeartbeatStaleness(root: string, now = Date.now()): void {
   if (!ALERT_WEBHOOK_URL) return
+  if (getConfig('telemetry.enabled') === false || getConfig('telemetry.heartbeat') !== true) return
   if (!hasActiveLicense()) return
   let state: { kind?: string; lastPingAt?: number; alertedAt?: number }
   try {

@@ -1864,7 +1864,7 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
       if (flushed !== 1) return fail(`expected 1 flushed event, got ${flushed}`)
       const body = JSON.parse((await server.body).toString('utf-8')) as { events: Array<{ message: string }> }
       server.close()
-      if (!Array.isArray(body.events) || body.events[0].message !== 'selftest boom') return fail('uploaded body does not carry the event')
+      if (!Array.isArray(body.events) || body.events[0].message !== 'Diagnostic error; details retained locally') return fail('uploaded body is not coarse')
       if (ctx.sandbox.exists('telemetry-queue.json')) return fail('queue was not cleared after a successful flush')
       return ok('capture → queue file → POST → queue cleared (1 event, errors-only)')
     },
@@ -1942,8 +1942,8 @@ export const FEATURE_CATALOG: FeatureCheck[] = [
     async run(ctx) {
       const payload = buildHeartbeatPayload({ kind: 'serve', root: ctx.sandbox.root, modelProvider: 'openai (gpt-4o)' })
       if (payload.kind !== 'serve') return fail('payload kind mismatch')
-      if (!payload.version || !payload.pid || !payload.os) return fail('payload missing version/pid/os')
-      if (payload.activeModelProvider !== 'openai (gpt-4o)') return fail('payload missing the active model provider')
+      if (!payload.version || !payload.os || payload.pid !== 0) return fail('payload missing version or process ID leaked')
+      if (payload.activeModelProvider !== 'not disclosed') return fail('payload leaked the active model provider')
       const server = await capturePostBody()
       const url = await server.url
       const sent = await sendHeartbeat({
