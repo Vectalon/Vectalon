@@ -1,67 +1,23 @@
-# Vectalon release roadmap — execution index
+# Launch checklist
 
-This index turns the ratified Step 02 architecture into the next ten implementation steps. The audience is the technical lead and maintainers of Core, Vectalon, and Admin. These are implementation specifications and reviewer gates; this branch contains no product implementation.
+Goal: a sellable **React Native beta** that delivers its published capabilities to a real customer. iOS, Android, Flutter, and other language SDKs remain separate future products; do not imply they are available now. This checklist replaces the old per-step release plans. A green unit test or a merged PR is not proof of a working purchase or launch.
 
-## Architectural invariants
+Core owns reusable contracts, entitlement policy, and harness primitives. Vectalon owns the RN package, adapters, website, checkout entry point, and deployed `vectalon.in/admin` UI. The Admin repo owns authoritative commercial and operator behavior. Keep the three repos consistent without duplicating policy.
 
-1. Core owns reusable contracts, verification, entitlement policy, engineering profiles, and generic guardrail primitives. It is a library, not a server or database.
-2. Vectalon owns the public product manifest, RN/CLI/native adapters, website, customer-facing gateway, packages, and release evidence.
-3. Admin owns authoritative customers, purchases, subscriptions, trials, license issuance/revocation, audit, support, and operational reporting.
-4. Admin and Vectalon share no code or database. Runtime coordination uses authenticated, versioned HTTP/events. Consumers pin a verified Core revision.
-5. No claim becomes `available` or paid until customer-shaped evidence proves it supportable.
+## Major items
 
-## Monetisation findings to resolve
+- [ ] **Distribution is real.** Verify the current RN version is installable from npm under `latest`, its packed Core SHA matches the reviewed Core release, the CLI runs in a fresh project, and the live website/README describe that exact artifact. A successful publish job alone is insufficient. **Core:** reviewed pin. **Vectalon:** package, registry, website. **Admin:** no package release needed.
+- [ ] **The promised harness works for a customer.** In a clean RN app, exercise setup, project inspection, a qualified deterministic workflow, a configured model workflow, guardrails, and a useful result for each advertised Free/Individual/Team path. Remove or label any command that cannot deliver. Repair the scheduled smoke/benchmark experimental opt-in without weakening customer gates. **Core:** shared behavior/contracts. **Vectalon:** RN workflows and packaged tests. **Admin:** entitlement fixtures.
+- [ ] **Purchase to access works end to end.** Test Lemon Squeezy checkout → signed webhook → durable order/subscription → correct seats and capabilities → license delivery → RN activation/refresh → cancellation/refund. Replay and out-of-order events must not double-issue or silently grant access; unknown products and unverified Team seats stay in review. **Core:** deterministic entitlement decisions. **Vectalon:** checkout, status, activation. **Admin:** authoritative state, reconciliation, audited interventions.
+- [ ] **Diagnostics and support are safe and usable.** Either deploy and verify the consented telemetry receiver or disable the unverified upload path. Explicit support uploads need preview/redaction, access control, retention, export, and deletion behavior; automatic payload minimisation does not make raw support bundles safe. **Core:** bounded consent-aware usage. **Vectalon:** RN and website privacy flows. **Admin:** access, retention, deletion audit.
+- [ ] **Commercial data can be recovered.** Prove a repeatable backup/export and restore of orders, licenses, webhook history, and operator access before accepting paying customers. Fix concurrent writes and migration failure paths. The owner has deferred a paid Supabase upgrade; that is a cost decision, not evidence that recovery is complete. **Core:** storage-neutral contracts. **Vectalon:** fail-closed degraded responses. **Admin:** transaction integrity and recovery drill.
+- [ ] **Launch surfaces tell the truth.** Reconcile pricing, capability catalog, onboarding, README, website, legal/privacy, and support instructions with tested behavior. Verify checkout, install, login, accessibility basics, security checks, and rollback in production-shaped conditions. **Core:** contract tests. **Vectalon:** customer journey and public copy. **Admin:** operator and fulfillment checks.
+- [ ] **Limited customer canary succeeds.** Run a real purchase/activation/support drill with a small cohort, monitor errors and payment/license mismatches, record rollback triggers, fix findings, and repeat. A skipped provider/native/model lane is not proof of that lane.
 
-| Finding | Required resolution | Owning step |
-|---|---|---|
-| Public copy promises a Free plan, but the manifest contains only three paid plans | Add structured Free plan and entitlements or remove the promise | 03, 05 |
-| Product is marked `available` and “monetization is live” while Admin remains a static prototype | Use an honest beta lifecycle until purchase-to-support gates pass | 03, 05, 09, 10 |
-| Team is `$49/developer/month` and also “up to 50 seats” | Define quantity/bundle and enforcement rules | 05, 09 |
-| “All current and future products” creates open-ended commercial scope | Define subscription/product-family/version rights | 05, 08, 09 |
-| “Refunds revoke instantly” conflicts with offline cached validation | Publish and test a bounded revocation SLA | 08, 09 |
-| BSL free commercial use for teams up to three is conflated with the product Free tier | Define legal grant versus entitlement representation | 05, 06 |
-| Enterprise promises SSO, audit, air-gap, private models, and multi-repository intelligence before qualification | Mark planned/beta until security and deployment evidence exists | 05, 10 |
+## Releases
 
-Legal, tax, accounting, and privacy claims require qualified professional review before GA; engineering tests cannot substitute for it.
+- [ ] **Next consolidated release — sellable RN beta.** Batch the major-item fixes above; review all three repos together. Merge and deploy tested changes as needed, but publish a new RN/Core version only when the customer journey and release gates are green. Verify the npm artifact, live website, and rollback after publication.
+- [ ] **Later GA release.** Require sustained canary evidence, demonstrated commercial recovery, governed support data, security/accessibility/performance checks, legal and tax review of claims, and an incident response/rollback drill. Enterprise features and additional SDKs need their own qualification; they are not implicit GA promises.
+Urgent patch exception: release outside the batch only for a security issue, data-loss risk, broken checkout/access, or another critical customer outage, with focused regression and rollback checks.
 
-## Ordered steps
-
-| Step | Outcome | Blocks |
-|---|---|---|
-| [03](./03-versioned-cross-language-contracts.md) | Versioned contracts and one proven seam | All later shared work |
-| [04](./04-core-harness-rn-integration.md) | Real Core-driven RN workflow with duplication deleted | Product architecture proof |
-| [05](./05-capability-freeze-and-evidence-ledger.md) | Honest capability/plan catalog and claim evidence | GA scope and offers |
-| [06](./06-secure-entitlement-boundary.md) | One fail-closed decision seam, no shipped bypass | Paid access |
-| [07](./07-identity-and-trial-integrity.md) | Verified identity and server-owned trials | Trial conversion |
-| [08](./08-license-lifecycle-and-cryptography.md) | Secure, recoverable license lifecycle | Paid operation |
-| [09](./09-payments-subscriptions-and-reconciliation.md) | Replayable commercial ledger and correct entitlements | Revenue |
-| [10](./10-admin-control-plane-foundation.md) | Authenticated, authorized, audited control plane | Operations |
-| [11](./11-durable-data-and-migrations.md) | Durable history, migrations, backup and restore | Production data |
-| [12](./12-privacy-telemetry-and-data-governance.md) | Proven privacy and governed observability | Customer trust |
-
-## Sequencing and parallelism
-
-2026-09-17 owner decision: Step 11 recovery operations are deferred, not completed. Supabase stays on Free; next work is Step 12 and launch-critical functionality. See Step 11's execution status for remaining data-loss risks and repository ownership.
-
-- Step 03 starts first. Step 04 can proceed after its contract subset stabilizes.
-- Step 05 may inventory surfaces in parallel with Step 03, but plan/claim enforcement waits for capability contracts.
-- Steps 06 and 07 follow the relevant Step 03 schemas; Step 08 follows both. Their Core/client work may proceed before Admin is production-ready, but server-side grants, trials, signing, and mutations wait for Steps 10–11.
-- Step 10 foundation can begin after Step 03 while Step 09 offer/state design proceeds, but production payment ingestion and entitlement mutations require Steps 08, 10, and 11 controls.
-- Step 12 inventory begins immediately; enforcement and deletion drills require the Step 11 data model.
-
-## Technical-lead review protocol
-
-For every step, the reviewer must:
-
-1. Trace every requirement to an owner, code path, test, operational runbook, and customer-visible behavior.
-2. Review the three repositories together, including generated artifacts and deployed boundaries—not three isolated PRs.
-3. Demand negative-path, concurrency, upgrade/rollback, packaged-artifact, and production-shaped evidence.
-4. Independently reproduce critical evidence and inspect what the tests actually cover.
-5. Reject duplicated policy, unverifiable claims, unaudited privilege, hidden production fallbacks, and “temporary” bridges without deletion dates.
-6. Record residual risk, rollback criteria, observability, support ownership, and an explicit go/no-go decision.
-
-“Best” means secure, correct, comprehensible, operable, accessible, privacy-preserving, and honest under failure—not maximum feature count.
-
-## Completion rule
-
-A step is complete only when every reviewer gate and required-evidence item in its document is satisfied in current code and production-shaped environments. A green narrow test does not prove a broad requirement. Uncertain or indirect evidence counts as incomplete.
+No release per roadmap item. The `[publish-rn]` marker is reserved for the consolidated milestone or urgent patch; ordinary docs and feature PRs must not trigger package publication. Keep this one checklist current instead of creating another numbered plan or speculative spec.

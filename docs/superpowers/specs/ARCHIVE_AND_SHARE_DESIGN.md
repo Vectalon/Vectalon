@@ -1,6 +1,6 @@
 # Vectalon Archive & Share — Architecture Design Document
 
-**Status:** Draft v1.0  
+**Status:** Historical draft; not a current launch commitment. The code and capability catalog govern shipped behavior.
 **Date:** 2026-08-15  
 **Scope:** End-to-end build artifact archive, distribution, and sharing for React Native, iOS, and Android projects.
 
