@@ -31,6 +31,21 @@ export const SUPPORT_ENDPOINT = `${TELEMETRY_BASE_URL}/v1/support`
 export const SUPPORT_RECIPIENT = 'neofaceless22@gmail.com'
 
 export const MAX_QUEUED_ERRORS = 50
+const SAFE_COMMANDS = new Set(['init', 'serve', 'daemon', 'status', 'doctor', 'test', 'build', 'deploy', 'login', 'logout', 'license', 'models', 'config', 'support'])
+
+/** Only this coarse projection may leave the machine automatically. */
+export function outboundError(event: ErrorReport): ErrorReport {
+  const command = typeof event.command === 'string' ? event.command.split(/\s+/)[0] : ''
+  return {
+    schemaVersion: 1,
+    timestamp: Number.isFinite(event.timestamp) ? event.timestamp : Date.now(),
+    command: SAFE_COMMANDS.has(command) ? command : 'unknown',
+    message: 'Diagnostic error; details retained locally',
+    version: pkg.version,
+    nodeVersion: process.version,
+    os: platform(),
+  }
+}
 
 export interface CaptureErrorOptions {
   /** Write the queue here (default: <config-dir>/telemetry-queue.json). */
@@ -196,7 +211,7 @@ export async function flushErrorQueue(options: FlushErrorQueueOptions = {}): Pro
     const res = await fetchFn(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ schemaVersion: 1, events: queue }),
+      body: JSON.stringify({ schemaVersion: 1, events: queue.map(outboundError) }),
       signal: AbortSignal.timeout(10_000),
     })
     if (res.ok) {

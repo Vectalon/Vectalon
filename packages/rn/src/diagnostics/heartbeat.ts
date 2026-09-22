@@ -12,7 +12,7 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import pkg from '../../package.json'
-import { platform, release, arch } from 'os'
+import { platform } from 'os'
 import { HEARTBEAT_ENDPOINT } from './errorReporter'
 import { getConfig } from '../config'
 import { recordHeartbeatPing } from './alerts'
@@ -60,12 +60,14 @@ export function buildHeartbeatPayload(options: HeartbeatOptions): HeartbeatPaylo
     schemaVersion: 1,
     kind: options.kind,
     version: pkg.version,
-    startedAt: options.startedAt ?? Date.now(),
+    startedAt: 0,
     timestamp: Date.now(),
-    activeModelProvider: options.modelProvider || 'not configured',
-    os: `${platform()} ${release()} ${arch()}`,
-    projectType: options.projectType || (options.root ? detectProjectType(options.root) : 'unknown'),
-    pid: process.pid,
+    activeModelProvider: 'not disclosed',
+    os: platform(),
+    projectType: ['expo', 'rn-cli'].includes(options.projectType || '')
+      ? options.projectType!
+      : (options.root ? detectProjectType(options.root) : 'unknown'),
+    pid: 0,
     ...(process.env.NODE_ENV !== 'test' ? { production: true } : {}),
   }
 }
