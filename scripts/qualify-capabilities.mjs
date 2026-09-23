@@ -75,7 +75,6 @@ for (const [id, definition] of Object.entries(definitions)) {
       if (!existing || existing.lifecycle === 'experimental') entry.lifecycle = 'beta'
     }
     entry.evidence = [...new Map(entry.evidence.map(evidence => [evidence.reference, evidence])).values()]
-      .filter(evidence => evidence.productVersion !== productVersion || evidence.capabilityVersion === entry.version)
   }
   capabilities.push(entry)
 }

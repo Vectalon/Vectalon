@@ -3,7 +3,7 @@
  * Business Source License 1.1 (BSL-1.1)
  *
  * `vectalon support [directory] --upload` collects a sanitized support bundle
- * (logs, error queue, crash report, package.json, .vectalon state), stamps it
+ * (logs, error queue, package.json, .vectalon state), stamps it
  * with a support token, and uploads it to the Vectalon support endpoint which
  * routes it to the support address. The token lets the user reference the
  * upload in a ticket instead of pasting logs manually.
@@ -30,14 +30,14 @@ export async function supportCommand(directory: string, options: SupportCommandO
   if (!options.upload) {
     logger.info('vectalon support — collect a structured bug report for the Vectalon team')
     logger.info('')
-    logger.info('  Upload a sanitized support bundle (logs, error queue, crash report,')
+    logger.info('  Upload a support bundle (logs, error queue,')
     logger.info(`  package.json, .vectalon state) to our support pipeline (→ ${SUPPORT_RECIPIENT}):`)
     logger.info('')
     logger.info('    vectalon support --upload')
     logger.info('')
     logger.info('  You get a support token to paste into your ticket — no log-dump emails.')
     logger.info('  The bundle is written locally to .vectalon/support-bundle.json as well.')
-    logger.info('  Privacy: secrets (API keys, tokens, credentials) are redacted before upload.')
+    logger.info('  Privacy: known credential patterns are redacted. Inspect the local bundle before upload.')
     return
   }
 

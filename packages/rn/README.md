@@ -4,7 +4,7 @@
 
 Project-aware SDLC intelligence for any agent — CLI, MCP server, VS Code extension, benchmark suite, and fine-tuning pipeline in one package.
 
-Current release: <!-- product-fact:rn-version -->0.22.3<!-- /product-fact --> ·
+Current release: <!-- product-fact:rn-version -->0.22.4<!-- /product-fact --> ·
 benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
 deterministic agents: <!-- product-fact:deterministic-commands -->44<!-- /product-fact --> ·
 MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact -->
@@ -154,7 +154,7 @@ Run `npx vectalon <command> --help` for detailed options.
 | `policy [dir]` | Manage project-specific guardrail policy | `--init`, `--check <file>` |
 | `pull [preset]` | Download a local model preset — usage tier (`fast\|balanced\|quality`) or model id (`qwen2.5-coder-1.5b\|3b\|7b`); defaults to the tier auto-selected for this machine's RAM | `[tier-or-model-id]` |
 | `models` | List usage tiers (with the auto-selected one for this machine), downloaded GGUF models, and the WASM model | — |
-| `support [dir]` | Collect + upload a sanitized support bundle (logs, error queue, crash report, package.json, `.vectalon` state) with a support token | `--upload`, `--out <path>` |
+| `support [dir]` | Collect a local support bundle (logs, error queue, sanitized package.json, `.vectalon` file listing) with known credential patterns redacted; inspect before optional upload | `--upload`, `--out <path>` |
 
 ### Global flags
 
@@ -740,7 +740,7 @@ Optional Core usage telemetry collects only local ingestion counts (`filesScanne
 | **`--diagnostics`** | `vectalon <command> --diagnostics` writes `.vectalon/diagnostics-bundle.json` — Node/OS, RN/Expo versions, model provider, last 5000 log lines, sanitized `.vectalon` listing, full stack on failure. Paste it into a support ticket. |
 | **Heartbeats** | With consent, `serve` and `daemon` attempt a liveness ping every 5 min (version, OS family, project type; no provider/model or process identifier). Visibility requires a configured, deployed receiver; the default receiver is not verified. |
 | **Deep `/health`** | `vectalon serve --protocol http` → `GET /health` returns `healthy \| degraded \| critical` + `checks[]`: model provider reachable, artifact store writable, sub-MCP responsive, init config valid. The VS Code status bar tooltip shows it. |
-| **`support --upload`** | Explicit customer-directed gzipped upload (logs, error queue, crash report, package.json, `.vectalon` state) with a `RN-XXXXXXXX` token. Only package.json is sanitized; logs, errors, and state may contain private information. Inspect the bundle before uploading. |
+| **`support --upload`** | Explicit customer-directed gzipped upload (logs, error queue, package.json, `.vectalon` file listing) with a `RN-XXXXXXXX` token. Sensitive keys and known credential patterns are redacted across the bundle, but logs and errors may still contain private information. Inspect the bundle before uploading. |
 
 Automatic error capture, queue uploads, and heartbeats are off by default.
 To consent, set the flat key `"telemetry.errors": true` and/or the separate

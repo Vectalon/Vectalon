@@ -45,6 +45,8 @@ describe('support bundle upload (P0-5)', () => {
     expect(sanitize('sk-test-1234567890abcdef')).toBe('sk-[REDACTED]')
     // Credentials embedded in URLs are redacted.
     expect(sanitize('https://user:hunter2@example.com/repo.git')).toBe('https://user:[REDACTED]@example.com/repo.git')
+    expect(sanitize('Authorization: Bearer abcdefghijklmnop')).toBe('Authorization: Bearer [REDACTED]')
+    expect(sanitize('password=hunter2')).toBe('password=[REDACTED]')
   })
 
   it('generates tokens that round-trip with tokenForRoot', () => {
@@ -62,6 +64,7 @@ describe('support bundle upload (P0-5)', () => {
     // The config-dir queue (where reportError captures land) is merged in too.
     const configQueue = queuePathFor()
     captureError(new Error('config dir boom'), 'selftest', undefined, { queuePath: configQueue, enabled: true })
+    captureError(new Error('Authorization: Bearer abcdefghijklmnop'), 'selftest', undefined, { queuePath: configQueue, enabled: true })
     const token = tokenForRoot(root)
     const bundle = buildSupportBundle({ root, token })
     expect(bundle.token).toBe(token)
@@ -71,6 +74,7 @@ describe('support bundle upload (P0-5)', () => {
     const messages = bundle.errorQueue.map(e => e.message)
     expect(messages).toContain('support boom')
     expect(messages).toContain('config dir boom')
+    expect(messages).toContain('Authorization: Bearer [REDACTED]')
     expect(Array.isArray(bundle.logs)).toBe(true)
   })
 

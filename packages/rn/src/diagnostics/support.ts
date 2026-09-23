@@ -23,7 +23,15 @@ import type { SupportBundle } from './types'
 
 const SENSITIVE_KEY = /api[\s_-]?key|secret|token|password|passwd|private[\s_-]?key|_auth|authorization/i
 
-/** Recursively sanitize a value: redact sensitive keys and secret-looking strings. */
+function sanitizeString(value: string): string {
+  return value
+    .replace(/(sk-|ghp_|AKIA|xox[baprs]-)[A-Za-z0-9_-]{12,}/g, '$1[REDACTED]')
+    .replace(/(:\/\/[^/\s:@]+):[^/\s@]+@/g, '$1:[REDACTED]@')
+    .replace(/\b(Bearer\s+)[A-Za-z0-9._~+\/-]{12,}/gi, '$1[REDACTED]')
+    .replace(/\b(api[_ -]?key|secret|token|password|passwd)\s*[:=]\s*([^\s,;]+)/gi, '$1=[REDACTED]')
+}
+
+/** Recursively sanitize a value: redact sensitive keys and known credential patterns. */
 export function sanitize(value: unknown, key = ''): unknown {
   if (Array.isArray(value)) return value.map(v => sanitize(v))
   if (value && typeof value === 'object') {
@@ -34,13 +42,7 @@ export function sanitize(value: unknown, key = ''): unknown {
     return out
   }
   if (typeof value === 'string' && SENSITIVE_KEY.test(key)) return '[REDACTED]'
-  if (typeof value === 'string' && /(sk-|ghp_|AKIA|xox[baprs]-)[A-Za-z0-9_-]{12,}/.test(value)) {
-    return value.replace(/(sk-|ghp_|AKIA|xox[baprs]-)[A-Za-z0-9_-]{12,}/g, '$1[REDACTED]')
-  }
-  // Credentials embedded in URLs (https://user:pass@host) are redacted too.
-  if (typeof value === 'string' && /:\/\/[^/\s:@]+:[^/\s@]+@/.test(value)) {
-    return value.replace(/(:\/\/[^/\s:@]+):[^/\s@]+@/g, '$1:[REDACTED]@')
-  }
+  if (typeof value === 'string') return sanitizeString(value)
   return value
 }
 
@@ -89,8 +91,8 @@ export function buildSupportBundle(options: SupportBundleOptions): SupportBundle
     nodeVersion: process.version,
     os: `${platform()} ${release()} ${arch()}`,
     packageJson: readSanitizedPackageJson(options.root),
-    logs: getLogLines(2000),
-    errorQueue,
+    logs: sanitize(getLogLines(2000)) as string[],
+    errorQueue: sanitize(errorQueue) as typeof errorQueue,
     vectalonState: listVectalonState(options.root, 200),
     recipient: SUPPORT_RECIPIENT,
   }

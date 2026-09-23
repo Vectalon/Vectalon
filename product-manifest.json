@@ -10,7 +10,7 @@
   "packages": {
     "reactNative": {
       "name": "@vectalon-dev/rn",
-      "version": "0.22.3",
+      "version": "0.22.4",
       "status": "beta"
     },
     "core": {

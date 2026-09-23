@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.22.4] - Unreleased
+
+### Fixed
+
+- Route diagnostics and customer-directed support uploads through the production website instead of the undeployed telemetry hostname.
+- Redact known credential patterns across support logs and queued errors, and make CLI, README, and pricing promises match released capability evidence.
+
 ## [0.22.3] - 2026-09-22
 
 - Limit automatic RN error uploads to coarse command, timestamp,

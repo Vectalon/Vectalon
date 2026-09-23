@@ -510,7 +510,7 @@ export function createProgram(): Command {
 
   program
     .command('plan')
-    .description('The commercial plan surface — Individual $19/dev/mo (Local AI + project intelligence + diagnostics), Team $49/dev/mo (Team Brain, shared policies, PR review, CI, shared knowledge, dashboards), Enterprise custom (self-hosted, SSO, audit, private models, org-wide policies, multi-repo intelligence). Shows your current plan from the active license or trial, everything each tier includes, and where to buy — deterministic and offline')
+    .description('Show your current plan and the released capability scope for each tier. Paid plans grant commercial use and only capabilities qualified in the released catalog; Enterprise scope is confirmed in a signed order before purchase.')
     .option('--json', 'Print machine-readable output')
     .action((options: { json?: boolean }) => planCommand(options))
 
@@ -816,7 +816,7 @@ export function createProgram(): Command {
 
   program
     .command('support [directory]')
-    .description('Collect a structured support bundle — sanitized logs, error queue, crash report, package.json, and .vectalon state — and upload it to the Vectalon support pipeline (you get a token to paste into a ticket)')
+    .description('Collect a structured support bundle — logs, error queue, sanitized package.json, and a .vectalon file listing — with known credential patterns redacted; inspect it locally before optional upload')
     .option('--upload', 'Upload the sanitized bundle and print the support token')
     .option('--out <path>', 'Write the bundle to a custom path (default .vectalon/support-bundle.json)')
     .action(supportCommand)
@@ -1167,7 +1167,7 @@ async function runInteractive(): Promise<void> {
       { value: 'mode', label: 'Show the deployment mode', hint: 'Cloud / Private / Air-gapped — where your source runs' },
       { value: 'demo', label: 'Run the flagship workflow demo', hint: 'Requirement → … → PR + the self-healing loop (zero model calls)' },
       { value: 'brain', label: 'Ask the Team Brain', hint: '“Why Zustand?” → the decision card · “Who owns auth?” → the expertise tree' },
-      { value: 'plan', label: 'Show the commercial plan', hint: 'Individual $19 · Team $49 · Enterprise custom — what you pay for, and what each tier includes' },
+      { value: 'plan', label: 'Show the commercial plan', hint: 'Current tier, price, and released qualified capability scope' },
       { value: 'outcomes', label: 'Show engineering outcomes', hint: 'Issues detected / fixed, PR issues caught, build failures resolved, hours + $ saved — not feature counts' },
       { value: 'feature', label: 'Run feature workflow', hint: 'Generate a feature end-to-end' },
       { value: 'refresh', label: 'Force refresh knowledge', hint: refreshHint },

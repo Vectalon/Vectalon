@@ -20,7 +20,7 @@ export interface TelemetryError {
 export async function fetchTelemetryErrors(): Promise<{ errors: TelemetryError[] } | null> {
   const token = process.env.TELEMETRY_ADMIN_TOKEN
   if (!token) return null
-  const base = process.env.TELEMETRY_URL || 'https://telemetry.vectalon.dev'
+  const base = process.env.TELEMETRY_URL || 'https://vectalon.in/api/telemetry'
   try {
     const res = await fetch(`${base}/v1/admin/errors`, {
       headers: { Authorization: `Bearer ${token}` },

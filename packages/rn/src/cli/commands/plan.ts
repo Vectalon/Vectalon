@@ -109,7 +109,7 @@ export async function planCommand(options: PlanCommandOptions): Promise<void> {
     root,
     done:
       tier === 'free'
-        ? 'Free tier: every deterministic agent works with zero model calls. Upgrade to Individual ($19/dev/mo) for local AI + diagnostics.'
+        ? 'Free tier includes the capabilities qualified for Free in this release. Experimental commands are previews, not purchased promises.'
         : tier === 'enterprise'
           ? `Enterprise — ${PLAN_BY_ID.enterprise.tagline} Contact sales@vectalon.in.`
           : `Your ${current.name} plan unlocks engine tier ${PLAN_BY_ID[current.id].engineTier}.`,

@@ -22,7 +22,7 @@ import { reportError } from '../utils/safe'
 import { checkErrorClusterAlert } from './alerts'
 import type { ErrorReport } from './types'
 
-export const DEFAULT_TELEMETRY_BASE_URL = 'https://telemetry.vectalon.dev'
+export const DEFAULT_TELEMETRY_BASE_URL = 'https://vectalon.in/api/telemetry'
 export const TELEMETRY_BASE_URL = process.env.RN_VECTALON_TELEMETRY_URL || DEFAULT_TELEMETRY_BASE_URL
 export const ERROR_ENDPOINT = `${TELEMETRY_BASE_URL}/v1/errors`
 export const HEARTBEAT_ENDPOINT = `${TELEMETRY_BASE_URL}/v1/heartbeat`

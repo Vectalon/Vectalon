@@ -16,12 +16,12 @@ const PLAN_PRESENTATION: Record<ProductPlanId, {
     href: '/sdk/react-native',
   },
   individual: {
-    blurb: 'Local-first AI, project intelligence, and diagnostics.',
+    blurb: 'Commercial use for one developer plus Individual capabilities qualified in the released catalog.',
     cta: 'Buy Individual',
     fallback: 'Launching soon',
   },
   team: {
-    blurb: 'Team Brain, shared policies, PR review, CI, shared knowledge, dashboards.',
+    blurb: 'Commercial use per purchased seat plus Team capabilities qualified in the released catalog.',
     cta: 'Buy Team',
     fallback: 'Coming soon',
     highlight: true,

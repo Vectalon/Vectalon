@@ -5,10 +5,10 @@
     "mcp": ["get_project_context", "get_learned_patterns"],
     "extension": ["vectalon.startServer", "vectalon.restartServer", "vectalon.stopServer", "vectalon.projectContext"],
     "claims": ["README.md", "packages/rn/README.md", "apps/website/app/page.tsx", "apps/website/app/docs/page.tsx", "apps/website/components/FeatureIcon.tsx", "apps/website/components/GlobalParticles.tsx", "apps/website/components/HeroHeadline.tsx", "apps/website/components/HeroMotion.tsx"],
-    "route": ["/", "/docs", "/api/v1/health"],
+    "route": ["/", "/docs", "/api/v1/health", "/api/telemetry/[...path]"],
     "plan-feature": ["free/Local project setup and diagnostics"],
     "sources": ["packages/rn/src/cli/commands/init.ts", "packages/rn/src/protocol/MCPServer.ts", "packages/rn/src/cli/commands/doctor.ts", "packages/rn/src/cli/commands/support.ts", "packages/rn/src/cli/commands/status.ts"],
-    "workflows": ["__tests__/cli/index.test.ts", "__tests__/cli/doctor.test.ts", "__tests__/diagnostics/health.test.ts"],
+    "workflows": ["__tests__/cli/index.test.ts", "__tests__/cli/doctor.test.ts", "__tests__/diagnostics/health.test.ts", "__tests__/diagnostics/support.test.ts"],
     "limitations": "Host-toolchain checker doubles isolate diagnostics formatting. No claim of native builds, remote providers, SSO, certification, or model quality."
   },
   "rn.policy.check": {
