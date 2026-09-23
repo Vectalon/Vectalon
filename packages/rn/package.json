@@ -92,7 +92,7 @@
   },
   "optionalDependencies": {
     "better-sqlite3": "^13.0.3",
-    "node-llama-cpp": "^3.19.1",
+    "node-llama-cpp": "^3.20.0",
     "sqlite-vec": "^0.1.6"
   },
   "devDependencies": {
