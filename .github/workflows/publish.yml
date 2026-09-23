@@ -193,7 +193,7 @@ jobs:
         run: pnpm turbo run typecheck --filter=@vectalon-dev/rn
 
       - name: Publish @vectalon-dev/rn
-        run: pnpm publish --filter=@vectalon-dev/rn --access public --no-git-checks
+        run: pnpm --filter @vectalon-dev/rn publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -231,8 +231,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a ${{ steps.version.outputs.tag }} -m "Release ${{ steps.version.outputs.tag }}"
-          git push origin ${{ steps.version.outputs.tag }}
+          TAG=${{ steps.version.outputs.tag }}
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            git merge-base --is-ancestor "$(git rev-list -n 1 "$TAG")" "$GITHUB_SHA"
+          else
+            git tag -a "$TAG" -m "Release $TAG"
+            git push origin "$TAG"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -245,8 +250,9 @@ jobs:
 
       - name: Create GitHub Release
         run: |
-          gh release create ${{ steps.version.outputs.tag }} \
-            --title "Release ${{ steps.version.outputs.tag }}" \
-            --notes-file /tmp/release-notes.md
+          gh release view ${{ steps.version.outputs.tag }} >/dev/null 2>&1 || \
+            gh release create ${{ steps.version.outputs.tag }} \
+              --title "Release ${{ steps.version.outputs.tag }}" \
+              --notes-file /tmp/release-notes.md
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
