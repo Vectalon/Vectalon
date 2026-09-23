@@ -317,7 +317,22 @@ npx vectalon smoke --full         # + feature workflow, bench, full selftest, mo
 npx vectalon smoke --json         # machine-readable report (CI gates)
 npx vectalon smoke --only impact,coverage
 npx vectalon --experimental smoke --matrix --open
-npx vectalon --experimental smoke --matrix --model local --open
+npx vectalon --experimental smoke . --matrix --full --model local --timeout 180000 --open
+```
+
+When testing the package from this monorepo rather than an installed npm
+release, build it first and invoke its checked-in binary directly:
+
+```bash
+pnpm --filter @vectalon-dev/rn build
+node packages/rn/bin/rn-vectalon.js --experimental smoke . --matrix --full --model local --timeout 180000 --open
+```
+
+Before requiring local-model evidence, confirm that a model is available:
+
+```bash
+node packages/rn/bin/rn-vectalon.js models
+node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model is downloaded
 ```
 
 - **Every top-level command is catalogued**; a test compares the Commander
@@ -332,9 +347,20 @@ npx vectalon --experimental smoke --matrix --model local --open
   fallback stub fails), then runs generated code through the committed RN
   benchmark. PASS means 100% guardrail score and at least 80% adherence; exact
   scores, scenario output, and benchmark JSON remain in the report directory.
+- **Interpret model results separately** — `inference: pass` proves the local
+  GGUF executed. `model local: fail` means the generated files missed the
+  quality gate; it does not mean inference failed. `inference: fail` indicates
+  a missing model or a local runtime/backend failure. Inspect the model output
+  and per-scenario scores before changing code or model settings.
 - **Full captured output** per command lands in `report.log` (readable),
-  `report.json` (CI), and an HTML dashboard; the terminal streams each check
-  live and prints a summary table
+  `report.json` (CI), and an HTML dashboard under `.vectalon/demo-matrix/` for
+  matrix runs (`.vectalon/smoke/` for single-project runs). The model benchmark
+  is saved as `model-local-benchmark.json`; the terminal streams each check
+  live and prints a summary table.
+- **`--full` is intentionally slow** because it includes model-heavy and
+  workflow checks across all ten fixtures. Use `--apps <id,...>` or
+  `--only <check,...>` while diagnosing one failure, then rerun the complete
+  command before release.
 - **Production entitlement behavior** — Pro/Team commands run only with a valid
   license; otherwise they are reported as tier-gated skips. Commands that need
   inputs a project lacks stay `skip` with reasons.

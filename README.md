@@ -132,6 +132,22 @@ npx vectalon init    # Scan project, build context
 npx vectalon serve   # Start MCP server for agents
 ```
 
+### Verify the complete React Native command surface locally
+
+From this repository, build the package and run every command against ten
+different React Native/Expo fixture configurations, including real local-model
+inference and guardrail/adherence scoring:
+
+```bash
+pnpm --filter @vectalon-dev/rn build
+node packages/rn/bin/rn-vectalon.js --experimental smoke . --matrix --full --model local --timeout 180000 --open
+```
+
+Reports are written to `.vectalon/demo-matrix/report.{json,log,html}` and the
+model benchmark to `.vectalon/demo-matrix/model-local-benchmark.json`. See the
+[RN post-release verification guide](packages/rn/README.md#post-release-verification-vectalon-smoke)
+for model setup, focused reruns, and result interpretation.
+
 ### Free — $0
 - Project scanning and context building
 - Available and beta capabilities shown by `npx vectalon capabilities`
