@@ -145,6 +145,22 @@ describe('bench model generate seam (M5)', () => {
     expect(await gen(validScenario())).toEqual([])
   })
 
+  it('regenerates malformed local-model output once without using deterministic files', async () => {
+    let calls = 0
+    const router = {
+      generate: async () => {
+        calls++
+        return calls === 1
+          ? { content: 'not json', provider: 'test' }
+          : { content: '{"files":[{"path":"src/Recovered.tsx","content":"export const Recovered = () => null"}]}', provider: 'test' }
+      },
+    } as unknown as ModelGenerateOptions['modelRouter']
+
+    const files = await createModelGenerate({ modelRouter: router })(validScenario())
+    expect(calls).toBe(2)
+    expect(files.map(file => file.path)).toEqual(['src/Recovered.tsx'])
+  })
+
   it('forwards onTextChunk to the model router generate call', async () => {
     const chunks: string[] = []
     const gen = createModelGenerate({
@@ -194,6 +210,27 @@ describe('bench model generate seam (M5)', () => {
     // The model must see the current fixtures so it can return the changed files.
     expect(captured?.context).toContain('ios/Podfile')
     expect(captured?.context).toContain("pod 'AppCenter'")
+  })
+
+  it('gives small local models explicit adherence and exact-fix acceptance criteria', async () => {
+    let captured = ''
+    const router = {
+      generate: async (req: { context: string }) => {
+        captured = req.context
+        return { content: '{}', provider: 'test' }
+      },
+    } as unknown as ModelGenerateOptions['modelRouter']
+    const gen = createModelGenerate({ modelRouter: router })
+    await gen(validScenario({
+      id: 'rn-42-debug-ts-regression',
+      fixtures: { 'src/utils/format.ts': 'export const format = value => value' },
+      fixEdits: [{ file: 'src/utils/format.ts', find: 'value =>', replace: '(value: string) =>' }],
+    }))
+
+    expect(captured).toContain('Acceptance criteria for the final files')
+    expect(captured).toContain('loading, empty, and user-visible error states')
+    expect(captured).toContain('src/utils/format.ts: replace "value =>" with "(value: string) =>"')
+    expect(captured.trimEnd()).toMatch(/Output only one valid JSON object:/)
   })
 
   it('parses native removal files (Podfile, xml manifest, pbxproj) from path-fenced output', () => {

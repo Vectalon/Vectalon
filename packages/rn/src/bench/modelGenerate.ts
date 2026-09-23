@@ -65,25 +65,49 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
           .map(([path, content]) => `--- ${path} ---\n${content}`)
           .join('\n\n')
       : ''
-    const context =
-      `Project: rn-bench-app, React Native 0.74.0` +
-      (fixtureBlock ? `\n\nCurrent project files (return each changed file with its complete new content):\n${fixtureBlock}` : '')
+    const requiredEdits = (scenario.fixEdits || [])
+      .map(edit => `- ${edit.file}: replace ${JSON.stringify(edit.find)} with ${JSON.stringify(edit.replace)}`)
+      .join('\n')
+    const context = [
+      'Project: rn-bench-app, React Native 0.74.0',
+      '',
+      'Acceptance criteria for the final files (apply each item that is relevant):',
+      '- Full screens use SafeAreaView/useSafeAreaInsets; input screens also use KeyboardAvoidingView.',
+      '- Interactive controls have accessibility labels/roles; long collections use FlatList/SectionList.',
+      '- Styles use StyleSheet.create and theme/design tokens, without inline objects or hardcoded colors.',
+      '- Async and fetched data expose loading, empty, and user-visible error states and use try/catch.',
+      '- Hooks have correct dependency arrays; state updates are immutable; expensive work is memoized.',
+      '- Navigation params are typed and deep links use a routing table.',
+      '- Return complete runnable files, not explanations, snippets, TODOs, or placeholders.',
+      ...(requiredEdits ? ['', 'Required repairs (all are mandatory and exact):', requiredEdits] : []),
+      ...(fixtureBlock ? ['', 'Current project files (return each changed file with its complete new content):', fixtureBlock] : []),
+      '',
+      'Output only one valid JSON object: {"files":[{"path":"...","content":"..."}]}',
+    ].join('\n')
 
-    const response = await modelRouter.generate({
+    const request = {
       systemPrompt,
       prompt,
       context,
       maxTokens,
       temperature,
       ...(onTextChunk ? { onTextChunk } : {}),
-    })
+    }
+    const response = await modelRouter.generate(request)
 
     const content = response?.content || ''
     if (!content || content.includes('[Local model fallback') || content.includes('no downloaded model')) {
       return []
     }
 
-    const parsed = parseModelOutput(content)
+    // Small local models occasionally answer with prose or truncated JSON.
+    // One clean regeneration is cheaper and more useful than scoring the
+    // scenario N/A; never substitute deterministic output for model evidence.
+    const parsed = parseModelOutput(content) || parseModelOutput((await modelRouter.generate({
+      ...request,
+      prompt: `${prompt}\n\nYour previous response was not parseable. Regenerate the complete answer as one valid JSON object only.`,
+      temperature: 0,
+    })).content || '')
     if (!parsed || parsed.files.length === 0) return []
 
     return parsed.files
