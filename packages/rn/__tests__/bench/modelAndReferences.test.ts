@@ -161,6 +161,32 @@ describe('bench model generate seam (M5)', () => {
     expect(files.map(file => file.path)).toEqual(['src/Recovered.tsx'])
   })
 
+  it('feeds failed adherence checks back once and keeps the improved model output', async () => {
+    let calls = 0
+    const weak = JSON.stringify({
+      files: [{ path: 'src/LoginScreen.tsx', content: 'export function LoginScreen() { return null }' }],
+    })
+    const improved = JSON.stringify({
+      files: [{
+        path: 'src/LoginScreen.tsx',
+        content: "import { SafeAreaView } from 'react-native'\nexport function LoginScreen() { return <SafeAreaView /> }",
+      }],
+    })
+    let repairPrompt = ''
+    const router = {
+      generate: async (req: { prompt: string }) => {
+        calls++
+        repairPrompt = req.prompt
+        return { content: calls === 1 ? weak : improved, provider: 'test' }
+      },
+    } as unknown as ModelGenerateOptions['modelRouter']
+
+    const files = await createModelGenerate({ modelRouter: router })(validScenario())
+    expect(calls).toBe(2)
+    expect(repairPrompt).toContain('Screen does not use SafeAreaView')
+    expect(files[0].content).toContain('SafeAreaView')
+  })
+
   it('forwards onTextChunk to the model router generate call', async () => {
     const chunks: string[] = []
     const gen = createModelGenerate({

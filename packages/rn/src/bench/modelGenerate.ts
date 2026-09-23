@@ -13,6 +13,9 @@ import type { ModelRouter } from '../model'
 import { buildImplementationPrompt, parseModelOutput } from '../workflows/phases/implementationPhase'
 import { isFixScenario } from './fix'
 import { benchmarkSnapshot } from './snapshot'
+import { guardrailPassRate } from './scoring'
+import { runRubric } from './rubric'
+import { runGuardrails } from '../guardrails'
 import type { BenchGeneratedFile, BenchScenario } from './types'
 
 export interface ModelGenerateOptions {
@@ -32,6 +35,37 @@ export interface ModelGenerateOptions {
    * "generating…" line.
    */
   onTextChunk?: (text: string) => void
+}
+
+function quality(files: BenchGeneratedFile[], scenario: BenchScenario): { adherence: number | null; guardrails: number | null; score: number } {
+  const adherence = runRubric(files, {
+    removedDependencies: scenario.removedDependencies,
+    fixEdits: scenario.fixEdits,
+  }).overall
+  const guardrails = guardrailPassRate(files)
+  const values = [adherence, guardrails].filter((value): value is number => value !== null)
+  return { adherence, guardrails, score: values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0 }
+}
+
+function repairFeedback(files: BenchGeneratedFile[], scenario: BenchScenario): string {
+  const rubric = runRubric(files, {
+    removedDependencies: scenario.removedDependencies,
+    fixEdits: scenario.fixEdits,
+  })
+  const failures = rubric.files.flatMap(file => file.checks
+    .filter(check => !check.passed)
+    .map(check => `- ${file.filePath}: ${check.message || check.name}`))
+  for (const file of files) {
+    const result = runGuardrails({
+      filePath: file.path,
+      content: file.content,
+      conventions: { hasTypeScript: true, usesStyleSheet: true, hasNavigation: false },
+    })
+    failures.push(...result.findings
+      .filter(finding => !finding.passed)
+      .map(finding => `- ${file.path}: ${finding.message || finding.rule}`))
+  }
+  return [...new Set(failures)].join('\n') || '- Apply every acceptance criterion.'
 }
 
 /** Build a generate seam that drives the real model for a scenario. */
@@ -110,8 +144,29 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
     })).content || '')
     if (!parsed || parsed.files.length === 0) return []
 
-    return parsed.files
+    const files = parsed.files
       .filter(f => typeof f.path === 'string' && f.path.length > 0 && typeof f.content === 'string')
       .map(f => ({ path: f.path as string, content: f.content }))
+    const firstQuality = quality(files, scenario)
+    if (firstQuality.guardrails === 1 && (firstQuality.adherence === null || firstQuality.adherence >= 0.8)) return files
+
+    const repaired = parseModelOutput((await modelRouter.generate({
+      ...request,
+      prompt: [
+        prompt,
+        '',
+        'Repair the generated files below. Return every final file with complete content as valid JSON only.',
+        'The deterministic review found these specific failures:',
+        repairFeedback(files, scenario),
+        '',
+        JSON.stringify({ files }),
+      ].join('\n'),
+      temperature: 0,
+    })).content || '')
+    if (!repaired) return files
+    const repairedFiles = repaired.files
+      .filter(f => typeof f.path === 'string' && f.path.length > 0 && typeof f.content === 'string')
+      .map(f => ({ path: f.path as string, content: f.content }))
+    return quality(repairedFiles, scenario).score > firstQuality.score ? repairedFiles : files
   }
 }
