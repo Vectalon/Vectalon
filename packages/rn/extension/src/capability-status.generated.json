@@ -85,7 +85,7 @@
   },
   "vectalon.projectContext": {
     "capabilityId": "rn.project.inspect",
-    "capabilityVersion": "1.0.5",
+    "capabilityVersion": "1.0.6",
     "lifecycle": "beta",
     "implemented": true,
     "plans": [
@@ -113,7 +113,7 @@
   },
   "vectalon.restartServer": {
     "capabilityId": "rn.project.inspect",
-    "capabilityVersion": "1.0.5",
+    "capabilityVersion": "1.0.6",
     "lifecycle": "beta",
     "implemented": true,
     "plans": [
@@ -183,7 +183,7 @@
   },
   "vectalon.startServer": {
     "capabilityId": "rn.project.inspect",
-    "capabilityVersion": "1.0.5",
+    "capabilityVersion": "1.0.6",
     "lifecycle": "beta",
     "implemented": true,
     "plans": [
@@ -197,7 +197,7 @@
   },
   "vectalon.stopServer": {
     "capabilityId": "rn.project.inspect",
-    "capabilityVersion": "1.0.5",
+    "capabilityVersion": "1.0.6",
     "lifecycle": "beta",
     "implemented": true,
     "plans": [

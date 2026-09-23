@@ -27,7 +27,7 @@ function sanitizeString(value: string): string {
   return value
     .replace(/(sk-|ghp_|AKIA|xox[baprs]-)[A-Za-z0-9_-]{12,}/g, '$1[REDACTED]')
     .replace(/(:\/\/[^/\s:@]+):[^/\s@]+@/g, '$1:[REDACTED]@')
-    .replace(/\b(Bearer\s+)[A-Za-z0-9._~+\/-]{12,}/gi, '$1[REDACTED]')
+    .replace(/\b(Bearer\s+)[A-Za-z0-9._~+/-]{12,}/gi, '$1[REDACTED]')
     .replace(/\b(api[_ -]?key|secret|token|password|passwd)\s*[:=]\s*([^\s,;]+)/gi, '$1=[REDACTED]')
 }
 
