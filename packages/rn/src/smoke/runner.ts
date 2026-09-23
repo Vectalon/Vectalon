@@ -71,8 +71,8 @@ export function totalsFor(runs: SmokeRun[]): SmokeTotals {
   return totals
 }
 
-function classify(check: SmokeCheck, exitCode: number | null, output: string, timedOut: boolean): { status: SmokeStatus; reason?: string } {
-  if (timedOut) return { status: 'timeout', reason: `exceeded the ${check.timeoutMs ?? 'default'}ms timeout` }
+function classify(check: SmokeCheck, exitCode: number | null, output: string, timedOut: boolean, timeoutMs: number): { status: SmokeStatus; reason?: string } {
+  if (timedOut) return { status: 'timeout', reason: `exceeded the ${timeoutMs}ms timeout` }
   if (exitCode === null) return { status: 'fail', reason: 'process did not exit cleanly' }
   if (check.okExits?.includes(exitCode) || exitCode === 0) return { status: 'pass' }
   if (TIER_GATE.test(output)) {
@@ -203,7 +203,7 @@ async function runCheck(check: SmokeCheck, ctx: SmokeContext, opts: SmokeRunnerO
 
   const timeoutMs = check.timeoutMs ?? opts.timeoutMs ?? 60000
   const { exitCode, output, timedOut } = await spawnCli(args, ctx, timeoutMs)
-  const { status, reason } = classify(check, exitCode, output, timedOut)
+  const { status, reason } = classify(check, exitCode, output, timedOut, timeoutMs)
   return {
     check,
     status,

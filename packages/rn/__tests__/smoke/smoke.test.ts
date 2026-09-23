@@ -4,7 +4,7 @@
  */
 import { tmpdir } from 'os'
 import { join } from 'path'
-import { writeFileSync, mkdirSync, existsSync } from 'fs'
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'fs'
 import { listSmokeChecks, getSmokeCheck } from '../../src/smoke/catalog'
 import {
   runSmoke,
@@ -20,6 +20,7 @@ import {
   renderHtmlReport,
 } from '../../src/smoke/reporters'
 import type { SmokeRun } from '../../src/smoke/types'
+import { DEMO_APPS, materializeDemoApp, renderMatrixHtml } from '../../src/smoke/matrix'
 
 /** A tiny fake CLI that echoes its args and exits with a configurable code. */
 function writeFakeCli(code: number, output: string): string {
@@ -94,6 +95,13 @@ describe('smoke catalog', () => {
       'bench',
       'selftest',
       'pull',
+      'upgrade',
+      'pr',
+      'sales-demo',
+      'rnbench',
+      'gh-app',
+      'share',
+      'smoke',
     ]) {
       expect(ids).toContain(expected)
     }
@@ -108,9 +116,40 @@ describe('smoke catalog', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 
+  it('covers every top-level CLI command', () => {
+    const ids = new Set(listSmokeChecks().map(check => check.id))
+    const source = readFileSync(join(__dirname, '../../src/cli/index.ts'), 'utf8')
+    const commands = [...source.matchAll(/\.command\('([^ '[\]]+)/g)].map(match => match[1])
+    const missing = commands.filter(command => !ids.has(command))
+    expect(missing).toEqual([])
+  })
+
   it('profile and sync declare skip reasons', () => {
     expect(getSmokeCheck('profile')!.skipWhen!({} as never)).toContain('input file')
     expect(getSmokeCheck('sync')!.skipWhen!({ root: tmpdir() } as never)).toContain('sync remote')
+  })
+})
+
+describe('demo matrix', () => {
+  it('materializes ten distinct RN/Expo app configurations and renders the command grid', () => {
+    expect(DEMO_APPS).toHaveLength(10)
+    expect(new Set(DEMO_APPS.map(app => app.id)).size).toBe(10)
+    const base = join(tmpdir(), `vectalon-demo-matrix-${Math.random().toString(36).slice(2)}`)
+    const roots = DEMO_APPS.map(app => materializeDemoApp(base, app))
+    expect(roots.every(root => existsSync(join(root, 'package.json')) && existsSync(join(root, 'App.tsx')))).toBe(true)
+    expect(new Set(roots.map(root => detectFlavor(root)))).toEqual(new Set(['expo', 'rn-cli']))
+
+    const run = fakeRun('pass')
+    const html = renderMatrixHtml({
+      generatedAt: '2026-09-23T00:00:00.000Z',
+      durationMs: 10,
+      totals: totalsFor([run]),
+      apps: [{ app: DEMO_APPS[0], root: roots[0], report: { version: '0.22.4', flavor: 'expo', generatedAt: '2026-09-23T00:00:00.000Z', durationMs: 10, totals: totalsFor([run]), runs: [run] } }],
+      model: { provider: 'local', inference: 'pass', guardrails: 1, adherence: 0.9, verdict: 'pass', output: 'real output' },
+    })
+    expect(html).toContain('Local model evidence')
+    expect(html).toContain('100%')
+    expect(html).toContain('vectalon x')
   })
 })
 

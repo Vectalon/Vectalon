@@ -139,7 +139,7 @@ Run `npx vectalon <command> --help` for detailed options.
 | `intel [dir]` | **Project Intelligence Core (Roadmap 001-010)** — one deterministic pass: versioned project manifest + validation, workspace/monorepo discovery (pnpm/yarn/npm/turbo/lerna/nx), file→file dependency graph with circular-import cycles, AST parse-rate stats, incremental repository index (content fingerprints), component + navigation graphs, native module registry (pods/podspecs/gradle/TurboModule specs), and ranked knowledge retrieval with a sub-second benchmark — repository-wide in monorepos, writes `docs/vectalon/intel/report.{json,md}` | `--json`, `--graph <deps\|components\|navigation\|native\|manifest>`, `--search <q>`, `--bench` |
 | `perf [dir]` | **Static performance scan (Roadmap Phase 4, items 021-023/027/029)** — one deterministic pass over source: render-phase `setState` (021), inline handler/literal props + unmemoized context values that defeat `React.memo` (022), heavyweight module-scope imports + entry-file side effects that delay first render (023), legacy bridge traffic (`NativeModules` / `requireNativeComponent` / `TurboModuleRegistry`) (027), and a severity-ranked, deduped recommendation engine (029) — with a markdown report to `docs/vectalon/perf/` | `--json` |
 | `coverage [dir]` | Render the **coverage dashboard** (`docs/vectalon/coverage/coverage-gaps.md`) — a per-screen E2E + a11y gap summary with links to the open follow-up tasks | `--json`, `--limit <n>` |
-| `smoke [dir]` | **Post-release verification** — run every CLI command against the project with production entitlement checks, capture output, and report pass/warn/skip/fail; exits non-zero on failures | `--list`, `--only <ids>`, `--skip <ids>`, `--full`, `--json`, `--out <dir>`, `--timeout <ms>` |
+| `smoke [dir]` | **Post-release verification** — run every CLI command against one project or a generated ten-app RN/Expo demo matrix, capture output, and report pass/warn/skip/fail; optional real-model guardrail/adherence proof | `--matrix`, `--apps <ids>`, `--model <provider>`, `--list`, `--only <ids>`, `--skip <ids>`, `--full`, `--json`, `--out <dir>`, `--timeout <ms>` |
 | `bench` | RN coding-test benchmark (deterministic baseline or real-model) | `--model <provider>`, `--suite <id>`, `--live`, `--install`, `--json`, `-o <path>`, `--baseline <file>`, `--tolerance <n>` |
 | `leaderboard [dir]` | Merge benchmark results into `BENCHMARK_RESULTS.md` | `--out <path>`, `--json`, `--timestamp`, `--pr-comment` |
 | `archive [dir]` | **Build Archive Agent** — build (or ingest) IPA/APK/AAB, SHA-256 checksum, typed BuildManifest with full provenance (git, flavor, environment), stored under `.vectalon/builds/`; zero-config flavor detection from Gradle `productFlavors`, Xcode schemes, and `eas.json` | `--flavor`, `--platform`, `--environment`, `--env-file`, `--build-number`, `--no-build`, `--artifact`, `--list`, `--init`, `--dry-run`, `--json` |
@@ -316,14 +316,22 @@ npx vectalon smoke                # every fast check → .vectalon/smoke/report.
 npx vectalon smoke --full         # + feature workflow, bench, full selftest, model pull
 npx vectalon smoke --json         # machine-readable report (CI gates)
 npx vectalon smoke --only impact,coverage
+npx vectalon --experimental smoke --matrix --open
+npx vectalon --experimental smoke --matrix --model local --open
 ```
 
-- **37 checks** cover the whole surface — version/help, init, status, models,
-  auth, policy, refresh, suggestions, ecosystem, doctor, impact, coverage,
-  intel, diagnostics, generate, perf, telemetry, bundle, profile, sandbox,
-  render, ci, release, leaderboard, visual-ci, visual-baseline, ci-incident,
-  serve (boot-probed then killed), daemon, sync, team-policy, support;
-  `--full` adds feature, bench, selftest, pull
+- **Every top-level command is catalogued**; a test compares the Commander
+  surface to the smoke catalog so newly added commands cannot silently escape.
+  Input-bound server commands use their help/boot probe instead of causing an
+  external side effect; `--full` adds slow/model-heavy executions.
+- **Ten-app matrix** generates Expo managed, Expo dev-client, bare RN legacy,
+  bare New Architecture, monorepo, observability, commerce, accessibility,
+  native-module, and offline-first fixtures. One HTML grid shows every app ×
+  command status; expand any cell for exact argv and complete output.
+- **Model proof** with `--model local` first requires genuine inference (a
+  fallback stub fails), then runs generated code through the committed RN
+  benchmark. PASS means 100% guardrail score and at least 80% adherence; exact
+  scores, scenario output, and benchmark JSON remain in the report directory.
 - **Full captured output** per command lands in `report.log` (readable),
   `report.json` (CI), and an HTML dashboard; the terminal streams each check
   live and prints a summary table

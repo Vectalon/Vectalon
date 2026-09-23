@@ -73,6 +73,12 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['suggestions'],
   },
   {
+    id: 'upgrade',
+    name: 'RN / Expo upgrade plan (dry-run)',
+    category: 'analysis',
+    args: () => ['upgrade', '--dry-run', '--json'],
+  },
+  {
     id: 'ecosystem',
     name: 'Ecosystem catalog',
     category: 'setup',
@@ -450,6 +456,32 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     args: () => ['gh-pr', '--json'],
   },
   {
+    id: 'pr',
+    name: 'Single PR review (fixture diff)',
+    category: 'analysis',
+    args: () => ['pr', '--diff', 'diff --git a/App.tsx b/App.tsx\n+console.log("probe")', '--json'],
+  },
+  {
+    id: 'sales-demo',
+    name: 'Sales demo narrative',
+    category: 'e2e',
+    slow: true,
+    timeoutMs: 180_000,
+    args: () => ['sales-demo', '--json'],
+  },
+  {
+    id: 'rnbench',
+    name: 'Published RN engineering benchmark',
+    category: 'e2e',
+    args: () => ['rnbench', '--json'],
+  },
+  {
+    id: 'gh-app',
+    name: 'GitHub App command surface',
+    category: 'e2e',
+    args: () => ['gh-app', '--help'],
+  },
+  {
     id: 'gh-issue',
     name: 'GitHub issue intelligence',
     category: 'analysis',
@@ -539,6 +571,18 @@ export const SMOKE_CHECKS: SmokeCheck[] = [
     name: 'Portal generation (SSG, temp output)',
     category: 'release',
     args: () => ['portal', '--generate', '--out', '.vectalon/smoke-portal', '--json'],
+  },
+  {
+    id: 'share',
+    name: 'Build sharing command surface',
+    category: 'release',
+    args: () => ['share', '--help'],
+  },
+  {
+    id: 'smoke',
+    name: 'Smoke command surface (non-recursive)',
+    category: 'e2e',
+    args: () => ['smoke', '--help'],
   },
   // ---- Slow / model-heavy (only with --full) ----
   {

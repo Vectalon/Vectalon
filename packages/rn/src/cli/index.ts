@@ -904,6 +904,9 @@ export function createProgram(): Command {
   program
     .command('smoke [directory]')
     .description('Post-release verification: run every CLI command against the project, capture the full output of each, and report pass/warn/skip/fail — exit non-zero on any failure (runs after a release to verify everything is in order)')
+    .option('--matrix', 'Generate ten RN/Expo demo apps and run the command catalog against each')
+    .option('--apps <ids>', 'Matrix only: comma-separated demo app ids (default all ten)')
+    .option('--model <provider>', 'Matrix only: require real model inference and score guardrail/adherence evidence')
     .option('--list', 'List all checks and exit')
     .option('--only <ids>', 'Run only these check ids (comma-separated)')
     .option('--skip <ids>', 'Skip these check ids (comma-separated)')

@@ -28,6 +28,7 @@ import {
   renderTerminalSummary,
   listSmokeChecks,
 } from '../../smoke'
+import { runMatrix, writeMatrixReport } from '../../smoke/matrix'
 
 export interface SmokeOptions {
   list?: boolean
@@ -39,12 +40,39 @@ export interface SmokeOptions {
   open?: boolean
   out?: string
   timeoutMs?: number
+  timeout?: number
+  matrix?: boolean
+  apps?: string
+  model?: string
 }
 
 export async function smokeCommand(directory: string, options: SmokeOptions): Promise<void> {
   const root = resolve(directory || process.cwd())
   const only = options.only ? options.only.split(',').map(s => s.trim()).filter(Boolean) : undefined
   const skip = options.skip ? options.skip.split(',').map(s => s.trim()).filter(Boolean) : undefined
+
+  if (options.matrix) {
+    const outDir = resolve(root, options.out || '.vectalon/demo-matrix')
+    const report = await runMatrix({
+      root,
+      outDir,
+      apps: options.apps?.split(',').map(value => value.trim()).filter(Boolean),
+      only,
+      skip,
+      full: options.full,
+      timeoutMs: options.timeoutMs ?? options.timeout,
+      model: options.model,
+      onRun: (app, completed, total) => logger.info(`[${completed}/${total}] ${app.name} complete`),
+    })
+    const paths = writeMatrixReport(report, outDir)
+    logger.success(`Demo matrix written to ${pc.dim(paths.html)}`)
+    if (options.open) openInBrowser(paths.html)
+    const failed = report.totals.fail + report.totals.timeout
+    process.stdout.write(`${report.apps.length} apps · ${report.totals.total} runs · ${report.totals.pass} passed · ${report.totals.warn} warned · ${report.totals.skip} skipped · ${failed} failed\n`)
+    if (report.model) process.stdout.write(`model ${report.model.provider}: ${report.model.verdict} · guardrails ${report.model.guardrails === null ? 'n/a' : `${Math.round(report.model.guardrails * 100)}%`} · adherence ${report.model.adherence === null ? 'n/a' : `${Math.round(report.model.adherence * 100)}%`}\n`)
+    if (failed > 0 || report.model?.verdict === 'fail') process.exit(1)
+    return
+  }
 
   if (options.list) {
     const checks = listSmokeChecks()
@@ -69,7 +97,7 @@ export async function smokeCommand(directory: string, options: SmokeOptions): Pr
       flavor: detectFlavor(root),
       srcFiles: detectSourceFiles(root),
     },
-    { only, skip, full: options.full, timeoutMs: options.timeoutMs },
+    { only, skip, full: options.full, timeoutMs: options.timeoutMs ?? options.timeout },
     // Live stream each check as it finishes.
     {
       onDone: run => {

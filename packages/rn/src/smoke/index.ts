@@ -25,3 +25,5 @@ export type {
   SmokeFlavor,
   SmokeProbe,
 } from './types'
+export { DEMO_APPS, materializeDemoApp, runMatrix, renderMatrixHtml, renderMatrixLog, writeMatrixReport } from './matrix'
+export type { DemoApp, MatrixReport, MatrixAppRun, MatrixOptions, ModelEvidence } from './matrix'
