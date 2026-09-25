@@ -7,10 +7,7 @@
       "suite": "forms-security",
       "scaffoldable": true,
       "generatedFiles": [
-        "src/components/CreateLoginScreenEmailPassword.tsx",
-        "src/components/CreateLoginScreenEmailPassword.styles.tsx",
-        "src/screens/LoginScreen.tsx",
-        "src/App.js"
+        "src/components/CreateLoginScreenEmailPassword.tsx"
       ],
       "guardrail": [
         {
@@ -19,35 +16,14 @@
           "failed": 3,
           "skipped": 9,
           "ok": false
-        },
-        {
-          "path": "src/components/CreateLoginScreenEmailPassword.styles.tsx",
-          "passed": 25,
-          "failed": 0,
-          "skipped": 11,
-          "ok": true
-        },
-        {
-          "path": "src/screens/LoginScreen.tsx",
-          "passed": 25,
-          "failed": 1,
-          "skipped": 10,
-          "ok": false
-        },
-        {
-          "path": "src/App.js",
-          "passed": 16,
-          "failed": 0,
-          "skipped": 20,
-          "ok": true
         }
       ],
       "axes": {
         "correctness": 0.5,
         "adherence": 0.6666666666666666,
-        "guardrails": 0.9574468085106383
+        "guardrails": 0.8888888888888888
       },
-      "composite": 0.6872340425531915,
+      "composite": 0.6666666666666667,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -67,8 +43,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0.9166666666666666,
-          "guardrails": 1.0009671179883946,
-          "composite": 0.8162920787134152
+          "guardrails": 0.9292929292929292,
+          "composite": 0.7918622848200314
         }
       }
     },
@@ -78,8 +54,7 @@
       "suite": "data-flow",
       "scaffoldable": true,
       "generatedFiles": [
-        "src/screens/CreateScreenThatFetchesPaginated.tsx",
-        "src/api-client.ts"
+        "src/screens/CreateScreenThatFetchesPaginated.tsx"
       ],
       "guardrail": [
         {
@@ -88,21 +63,14 @@
           "failed": 1,
           "skipped": 11,
           "ok": false
-        },
-        {
-          "path": "src/api-client.ts",
-          "passed": 16,
-          "failed": 2,
-          "skipped": 18,
-          "ok": false
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.3333333333333333,
-        "guardrails": 0.9302325581395349
+        "adherence": 0.5,
+        "guardrails": 0.96
       },
-      "composite": 0.5790697674418605,
+      "composite": 0.6379999999999999,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -120,9 +88,9 @@
         "composite": 0.9093406593406593,
         "relative": {
           "correctness": null,
-          "adherence": 0.3888888888888889,
-          "guardrails": 0.9674418604651163,
-          "composite": 0.6368017986369704
+          "adherence": 0.5833333333333334,
+          "guardrails": 0.9984,
+          "composite": 0.701607250755287
         }
       }
     },
@@ -184,22 +152,22 @@
       "guardrail": [
         {
           "path": "src/navigation/CreateSettingsNavigationStackU.tsx",
-          "passed": 24,
-          "failed": 1,
+          "passed": 25,
+          "failed": 0,
           "skipped": 11,
-          "ok": false
+          "ok": true
         }
       ],
       "axes": {
         "correctness": 0.75,
         "adherence": null,
-        "guardrails": 0.96
+        "guardrails": 1
       },
-      "composite": 0.8400000000000002,
+      "composite": 0.8571428571428573,
       "correctnessDetails": [
         "- Tests: passed",
-        "- Type check: passed",
-        "- Lint: failed (exit 1)"
+        "- Type check: failed (exit 2)",
+        "- Lint: passed"
       ],
       "reference": {
         "files": [
@@ -216,8 +184,8 @@
         "relative": {
           "correctness": null,
           "adherence": null,
-          "guardrails": 0.96,
-          "composite": 0.8400000000000002
+          "guardrails": 1,
+          "composite": 0.8571428571428573
         }
       }
     },
@@ -227,27 +195,27 @@
       "suite": "forms-security",
       "scaffoldable": true,
       "generatedFiles": [
-        "src/components/CreateMultiFieldFormClient.tsx"
+        "src/CreateMultiFieldFormClient.test.ts"
       ],
       "guardrail": [
         {
-          "path": "src/components/CreateMultiFieldFormClient.tsx",
-          "passed": 24,
-          "failed": 3,
-          "skipped": 9,
-          "ok": false
+          "path": "src/CreateMultiFieldFormClient.test.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
         }
       ],
       "axes": {
-        "correctness": 0.75,
-        "adherence": 0.2857142857142857,
-        "guardrails": 0.8888888888888888
+        "correctness": 0,
+        "adherence": null,
+        "guardrails": 1
       },
-      "composite": 0.6523809523809524,
+      "composite": 0.4285714285714286,
       "correctnessDetails": [
-        "- Tests: passed",
+        "- Tests: failed (exit 1)",
         "- Type check: failed (exit 2)",
-        "- Lint: passed"
+        "- Lint: failed (exit 1)"
       ],
       "reference": {
         "files": [
@@ -262,9 +230,9 @@
         "composite": 0.8565217391304347,
         "relative": {
           "correctness": null,
-          "adherence": 0.3571428571428571,
-          "guardrails": 0.9735449735449736,
-          "composite": 0.7616630408508582
+          "adherence": null,
+          "guardrails": 1.0952380952380953,
+          "composite": 0.5003625815808558
         }
       }
     },
@@ -274,25 +242,25 @@
       "suite": "data-flow",
       "scaffoldable": true,
       "generatedFiles": [
-        "src/CreateOfflineFirstActionQueue.test.tsx"
+        "src/CreateOfflineFirstActionQueue.ts"
       ],
       "guardrail": [
         {
-          "path": "src/CreateOfflineFirstActionQueue.test.tsx",
-          "passed": 23,
-          "failed": 2,
-          "skipped": 11,
+          "path": "src/CreateOfflineFirstActionQueue.ts",
+          "passed": 14,
+          "failed": 4,
+          "skipped": 18,
           "ok": false
         }
       ],
       "axes": {
-        "correctness": 0,
-        "adherence": 0,
-        "guardrails": 0.92
+        "correctness": 0.5,
+        "adherence": 0.25,
+        "guardrails": 0.7777777777777778
       },
-      "composite": 0.276,
+      "composite": 0.5083333333333333,
       "correctnessDetails": [
-        "- Tests: failed (exit 1)",
+        "- Tests: passed",
         "- Type check: failed (exit 2)",
         "- Lint: failed (exit 1)"
       ],
@@ -309,9 +277,9 @@
         "composite": 0.6772727272727274,
         "relative": {
           "correctness": null,
-          "adherence": 0,
-          "guardrails": 0.9638095238095238,
-          "composite": 0.40751677852348994
+          "adherence": 0.625,
+          "guardrails": 0.8148148148148148,
+          "composite": 0.750559284116331
         }
       }
     },
@@ -321,27 +289,27 @@
       "suite": "perf",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/CreatePerformantImageFeedFlatl.tsx"
+        "src/CreatePerformantImageFeedFlatl.tsx"
       ],
       "guardrail": [
         {
-          "path": "src/components/CreatePerformantImageFeedFlatl.tsx",
-          "passed": 23,
-          "failed": 2,
+          "path": "src/CreatePerformantImageFeedFlatl.tsx",
+          "passed": 24,
+          "failed": 1,
           "skipped": 11,
           "ok": false
         }
       ],
       "axes": {
-        "correctness": 0.5,
-        "adherence": 0.8,
-        "guardrails": 0.92
+        "correctness": 1,
+        "adherence": 0.5,
+        "guardrails": 0.96
       },
-      "composite": 0.716,
+      "composite": 0.8380000000000001,
       "correctnessDetails": [
         "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "- Type check: passed",
+        "- Lint: passed"
       ],
       "reference": {
         "files": [
@@ -356,9 +324,9 @@
         "composite": 0.8137254901960783,
         "relative": {
           "correctness": null,
-          "adherence": 1.2000000000000002,
-          "guardrails": 0.9575510204081633,
-          "composite": 0.8799036144578314
+          "adherence": 0.75,
+          "guardrails": 0.9991836734693876,
+          "composite": 1.029831325301205
         }
       }
     },
@@ -368,34 +336,34 @@
       "suite": "core-ui",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/CreateTypedFeatureflagComponent.tsx",
-        "src/hooks/useFeatureFlag.tsx"
+        "src/components/FeatureFlag.tsx",
+        "src/hooks/useFeatureFlag.ts"
       ],
       "guardrail": [
         {
-          "path": "src/components/CreateTypedFeatureflagComponent.tsx",
-          "passed": 24,
-          "failed": 1,
+          "path": "src/components/FeatureFlag.tsx",
+          "passed": 23,
+          "failed": 2,
           "skipped": 11,
           "ok": false
         },
         {
-          "path": "src/hooks/useFeatureFlag.tsx",
-          "passed": 25,
+          "path": "src/hooks/useFeatureFlag.ts",
+          "passed": 18,
           "failed": 0,
-          "skipped": 11,
+          "skipped": 18,
           "ok": true
         }
       ],
       "axes": {
-        "correctness": 0.75,
-        "adherence": 1,
-        "guardrails": 0.98
+        "correctness": 0.5,
+        "adherence": 0.25,
+        "guardrails": 0.9534883720930233
       },
-      "composite": 0.8940000000000001,
+      "composite": 0.561046511627907,
       "correctnessDetails": [
         "- Tests: passed",
-        "- Type check: passed",
+        "- Type check: failed (exit 2)",
         "- Lint: failed (exit 1)"
       ],
       "reference": {
@@ -413,8 +381,8 @@
         "relative": {
           "correctness": null,
           "adherence": null,
-          "guardrails": 0.98,
-          "composite": 0.8940000000000001
+          "guardrails": 0.9534883720930233,
+          "composite": 0.561046511627907
         }
       }
     },
@@ -424,27 +392,27 @@
       "suite": "a11y",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/onboarding/CreateFullyAccessibleOnboardin.test.tsx"
+        "src/onboarding/CreateFullyAccessibleOnboardin.tsx"
       ],
       "guardrail": [
         {
-          "path": "src/onboarding/CreateFullyAccessibleOnboardin.test.tsx",
-          "passed": 25,
-          "failed": 0,
-          "skipped": 11,
-          "ok": true
+          "path": "src/onboarding/CreateFullyAccessibleOnboardin.tsx",
+          "passed": 23,
+          "failed": 4,
+          "skipped": 9,
+          "ok": false
         }
       ],
       "axes": {
-        "correctness": 0,
-        "adherence": null,
-        "guardrails": 1
+        "correctness": 0.75,
+        "adherence": 0.6,
+        "guardrails": 0.8518518518518519
       },
-      "composite": 0.4285714285714286,
+      "composite": 0.7355555555555555,
       "correctnessDetails": [
-        "- Tests: failed (exit 1)",
+        "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "- Lint: passed"
       ],
       "reference": {
         "files": [
@@ -458,9 +426,9 @@
         "composite": 0.9017857142857144,
         "relative": {
           "correctness": null,
-          "adherence": null,
-          "guardrails": 1.0769230769230769,
-          "composite": 0.4752475247524752
+          "adherence": 0.6857142857142857,
+          "guardrails": 0.9173789173789173,
+          "composite": 0.8156655665566556
         }
       }
     },
@@ -593,15 +561,14 @@
       "scaffoldable": true,
       "generatedFiles": [
         "src/AddNotificationsScreenThatFetc.tsx",
-        "src/AddNotificationsScreenThatFetc.test.tsx",
-        "src/AddNotificationsScreenThatFetc.native.tsx"
+        "src/AddNotificationsScreenThatFetc.test.tsx"
       ],
       "guardrail": [
         {
           "path": "src/AddNotificationsScreenThatFetc.tsx",
-          "passed": 22,
-          "failed": 3,
-          "skipped": 11,
+          "passed": 24,
+          "failed": 2,
+          "skipped": 10,
           "ok": false
         },
         {
@@ -610,21 +577,14 @@
           "failed": 0,
           "skipped": 11,
           "ok": true
-        },
-        {
-          "path": "src/AddNotificationsScreenThatFetc.native.tsx",
-          "passed": 25,
-          "failed": 0,
-          "skipped": 11,
-          "ok": true
         }
       ],
       "axes": {
         "correctness": 0,
-        "adherence": 0.8333333333333334,
-        "guardrails": 0.96
+        "adherence": 0.42857142857142855,
+        "guardrails": 0.9607843137254902
       },
-      "composite": 0.538,
+      "composite": 0.4168067226890756,
       "correctnessDetails": [
         "- Tests: failed (exit 1)",
         "- Type check: failed (exit 2)",
@@ -643,9 +603,9 @@
         "composite": 0.888888888888889,
         "relative": {
           "correctness": null,
-          "adherence": 1.0714285714285714,
-          "guardrails": 0.96,
-          "composite": 0.60525
+          "adherence": 0.5510204081632653,
+          "guardrails": 0.9607843137254902,
+          "composite": 0.46890756302521003
         }
       }
     },
@@ -702,31 +662,39 @@
       "suite": "e-commerce",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/BuildCheckoutFlowCartSummary.tsx",
-        "src/BuildCheckoutFlowShippingAddressForm.tsx"
+        "src/components/CheckoutFlowCartSummary/index.tsx",
+        "src/components/CheckoutFlowShippingAddress/index.tsx",
+        "src/components/CheckoutFlowOrderConfirmation/index.tsx"
       ],
       "guardrail": [
         {
-          "path": "src/BuildCheckoutFlowCartSummary.tsx",
-          "passed": 26,
-          "failed": 0,
-          "skipped": 10,
-          "ok": true
+          "path": "src/components/CheckoutFlowCartSummary/index.tsx",
+          "passed": 24,
+          "failed": 1,
+          "skipped": 11,
+          "ok": false
         },
         {
-          "path": "src/BuildCheckoutFlowShippingAddressForm.tsx",
+          "path": "src/components/CheckoutFlowShippingAddress/index.tsx",
           "passed": 24,
           "failed": 3,
           "skipped": 9,
+          "ok": false
+        },
+        {
+          "path": "src/components/CheckoutFlowOrderConfirmation/index.tsx",
+          "passed": 24,
+          "failed": 1,
+          "skipped": 11,
           "ok": false
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.8,
-        "guardrails": 0.9433962264150944
+        "adherence": 0.7777777777777778,
+        "guardrails": 0.935064935064935
       },
-      "composite": 0.7230188679245283,
+      "composite": 0.7138528138528139,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -745,9 +713,9 @@
         "composite": 0.8423913043478259,
         "relative": {
           "correctness": null,
-          "adherence": 1.0666666666666667,
-          "guardrails": 1.0092145677928916,
-          "composite": 0.858293365794279
+          "adherence": 1.037037037037037,
+          "guardrails": 1.0003020235578375,
+          "composite": 0.8474123725736631
         }
       }
     },
@@ -757,25 +725,25 @@
       "suite": "e-commerce",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/screens/CreateProductCatalogScreenDebo.test.tsx"
+        "src/components/CreateProductCatalogScreenDebo.tsx"
       ],
       "guardrail": [
         {
-          "path": "src/screens/CreateProductCatalogScreenDebo.test.tsx",
-          "passed": 23,
-          "failed": 2,
-          "skipped": 11,
+          "path": "src/components/CreateProductCatalogScreenDebo.tsx",
+          "passed": 20,
+          "failed": 7,
+          "skipped": 9,
           "ok": false
         }
       ],
       "axes": {
-        "correctness": 0,
-        "adherence": 0,
-        "guardrails": 0.92
+        "correctness": 0.5,
+        "adherence": 0.25,
+        "guardrails": 0.7407407407407407
       },
-      "composite": 0.276,
+      "composite": 0.49722222222222223,
       "correctnessDetails": [
-        "- Tests: failed (exit 1)",
+        "- Tests: passed",
         "- Type check: failed (exit 2)",
         "- Lint: failed (exit 1)"
       ],
@@ -792,9 +760,9 @@
         "composite": 0.8206521739130433,
         "relative": {
           "correctness": null,
-          "adherence": 0,
-          "guardrails": 1.0321951219512195,
-          "composite": 0.3363178807947021
+          "adherence": 0.3333333333333333,
+          "guardrails": 0.8310749774164409,
+          "composite": 0.6058866813833702
         }
       }
     },
@@ -804,31 +772,31 @@
       "suite": "social-chat",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/screens/BuildChatThreadScreenMessage.tsx",
-        "src/screens/BuildChatThreadScreenMessage.types.ts"
+        "src/components/BuildChatThreadScreenMessage.tsx",
+        "src/screens/BuildChatThreadScreen.tsx"
       ],
       "guardrail": [
         {
-          "path": "src/screens/BuildChatThreadScreenMessage.tsx",
-          "passed": 24,
-          "failed": 3,
+          "path": "src/components/BuildChatThreadScreenMessage.tsx",
+          "passed": 25,
+          "failed": 2,
           "skipped": 9,
           "ok": false
         },
         {
-          "path": "src/screens/BuildChatThreadScreenMessage.types.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
-          "ok": true
+          "path": "src/screens/BuildChatThreadScreen.tsx",
+          "passed": 24,
+          "failed": 3,
+          "skipped": 9,
+          "ok": false
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.42857142857142855,
-        "guardrails": 0.9333333333333333
+        "adherence": 0.5714285714285714,
+        "guardrails": 0.9074074074074074
       },
-      "composite": 0.6085714285714285,
+      "composite": 0.6436507936507936,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -847,9 +815,9 @@
         "composite": 0.8904682274247493,
         "relative": {
           "correctness": null,
-          "adherence": 0.5064935064935064,
-          "guardrails": 0.9984496124031007,
-          "composite": 0.6834285714285713
+          "adherence": 0.6753246753246753,
+          "guardrails": 0.970714900947459,
+          "composite": 0.722822863104553
         }
       }
     },
@@ -859,34 +827,42 @@
       "suite": "social-chat",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/BuildSocialFeedScreenPosts/index.tsx",
-        "src/components/BuildSocialFeedScreenPosts/CommentDetail.tsx"
+        "src/components/BuildSocialFeedScreenPosts.js",
+        "src/components/BuildSocialFeedScreenPost.js",
+        "src/screens/BuildSocialFeedScreen.js"
       ],
       "guardrail": [
         {
-          "path": "src/components/BuildSocialFeedScreenPosts/index.tsx",
-          "passed": 21,
-          "failed": 5,
-          "skipped": 10,
+          "path": "src/components/BuildSocialFeedScreenPosts.js",
+          "passed": 15,
+          "failed": 1,
+          "skipped": 20,
           "ok": false
         },
         {
-          "path": "src/components/BuildSocialFeedScreenPosts/CommentDetail.tsx",
-          "passed": 25,
+          "path": "src/components/BuildSocialFeedScreenPost.js",
+          "passed": 16,
           "failed": 0,
-          "skipped": 11,
+          "skipped": 20,
+          "ok": true
+        },
+        {
+          "path": "src/screens/BuildSocialFeedScreen.js",
+          "passed": 16,
+          "failed": 0,
+          "skipped": 20,
           "ok": true
         }
       ],
       "axes": {
-        "correctness": 0.5,
-        "adherence": 0.5,
-        "guardrails": 0.9019607843137255
+        "correctness": 0.75,
+        "adherence": 1,
+        "guardrails": 0.9791666666666666
       },
-      "composite": 0.6205882352941177,
+      "composite": 0.89375,
       "correctnessDetails": [
         "- Tests: passed",
-        "- Type check: failed (exit 2)",
+        "- Type check: passed",
         "- Lint: failed (exit 1)"
       ],
       "reference": {
@@ -902,9 +878,9 @@
         "composite": 0.8666666666666667,
         "relative": {
           "correctness": null,
-          "adherence": 0.625,
-          "guardrails": 0.9663865546218487,
-          "composite": 0.7160633484162896
+          "adherence": 1.25,
+          "guardrails": 1.0491071428571428,
+          "composite": 1.03125
         }
       }
     },
@@ -914,23 +890,23 @@
       "suite": "booking-payments",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/app/components/CreateAppointmentBookingScreen.tsx"
+        "src/components/CreateAppointmentBookingScreen.tsx"
       ],
       "guardrail": [
         {
-          "path": "src/app/components/CreateAppointmentBookingScreen.tsx",
-          "passed": 23,
-          "failed": 4,
+          "path": "src/components/CreateAppointmentBookingScreen.tsx",
+          "passed": 24,
+          "failed": 3,
           "skipped": 9,
           "ok": false
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.5714285714285714,
-        "guardrails": 0.8518518518518519
+        "adherence": 0.7142857142857143,
+        "guardrails": 0.8888888888888888
       },
-      "composite": 0.626984126984127,
+      "composite": 0.680952380952381,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -949,9 +925,9 @@
         "composite": 0.8055555555555555,
         "relative": {
           "correctness": null,
-          "adherence": 0.8163265306122449,
-          "guardrails": 0.9349593495934959,
-          "composite": 0.7783251231527094
+          "adherence": 1.0204081632653061,
+          "guardrails": 0.975609756097561,
+          "composite": 0.8453201970443351
         }
       }
     },
@@ -961,31 +937,23 @@
       "suite": "booking-payments",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/BuildPaymentScreenCardNumber/styles.tsx",
-        "src/screens/Success/index.tsx"
+        "src/components/BuildPaymentScreenCardNumber.tsx"
       ],
       "guardrail": [
         {
-          "path": "src/components/BuildPaymentScreenCardNumber/styles.tsx",
+          "path": "src/components/BuildPaymentScreenCardNumber.tsx",
           "passed": 24,
-          "failed": 1,
-          "skipped": 11,
-          "ok": false
-        },
-        {
-          "path": "src/screens/Success/index.tsx",
-          "passed": 21,
-          "failed": 5,
-          "skipped": 10,
+          "failed": 3,
+          "skipped": 9,
           "ok": false
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.3333333333333333,
-        "guardrails": 0.8823529411764706
+        "adherence": 0.5,
+        "guardrails": 0.8888888888888888
       },
-      "composite": 0.5647058823529412,
+      "composite": 0.6166666666666667,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -1004,9 +972,9 @@
         "composite": 0.8764822134387351,
         "relative": {
           "correctness": null,
-          "adherence": 0.4074074074074074,
-          "guardrails": 0.9439124487004104,
-          "composite": 0.644286756416208
+          "adherence": 0.611111111111111,
+          "guardrails": 0.9509043927648578,
+          "composite": 0.7035700864336716
         }
       }
     },
@@ -1016,9 +984,7 @@
       "suite": "booking-payments",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/CreateOrderTrackingScreenStatus.tsx",
-        "src/components/CreateOrderTrackingScreenDetails.tsx",
-        "src/screens/CreateOrderTrackingScreen.tsx"
+        "src/components/CreateOrderTrackingScreenStatus.tsx"
       ],
       "guardrail": [
         {
@@ -1027,28 +993,14 @@
           "failed": 3,
           "skipped": 10,
           "ok": false
-        },
-        {
-          "path": "src/components/CreateOrderTrackingScreenDetails.tsx",
-          "passed": 25,
-          "failed": 1,
-          "skipped": 10,
-          "ok": false
-        },
-        {
-          "path": "src/screens/CreateOrderTrackingScreen.tsx",
-          "passed": 26,
-          "failed": 0,
-          "skipped": 10,
-          "ok": true
         }
       ],
       "axes": {
         "correctness": 0.75,
-        "adherence": 0.6153846153846154,
-        "guardrails": 0.9487179487179487
+        "adherence": 0.5,
+        "guardrails": 0.8846153846153846
       },
-      "composite": 0.7692307692307693,
+      "composite": 0.7153846153846155,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -1067,9 +1019,9 @@
         "composite": 0.8106060606060606,
         "relative": {
           "correctness": null,
-          "adherence": 0.9230769230769231,
-          "guardrails": 0.9938949938949938,
-          "composite": 0.9489575844716033
+          "adherence": 0.75,
+          "guardrails": 0.9267399267399267,
+          "composite": 0.8825305535585911
         }
       }
     },
@@ -1085,9 +1037,9 @@
       "guardrail": [
         {
           "path": "src/BuildHealthDashboardThreeActiv.tsx",
-          "passed": 22,
-          "failed": 3,
-          "skipped": 11,
+          "passed": 24,
+          "failed": 2,
+          "skipped": 10,
           "ok": false
         },
         {
@@ -1100,10 +1052,10 @@
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.5714285714285714,
-        "guardrails": 0.9302325581395349
+        "adherence": 0.6666666666666666,
+        "guardrails": 0.9545454545454546
       },
-      "composite": 0.650498338870432,
+      "composite": 0.6863636363636364,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -1122,9 +1074,9 @@
         "composite": 0.8106060606060606,
         "relative": {
           "correctness": null,
-          "adherence": 0.8571428571428571,
-          "guardrails": 0.9745293466223698,
-          "composite": 0.8024839320644581
+          "adherence": 1,
+          "guardrails": 1,
+          "composite": 0.8467289719626169
         }
       }
     },
@@ -1134,43 +1086,27 @@
       "suite": "health-fitness",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/IntervalWorkoutTimerStar.test.tsx",
-        "src/IntervalWorkoutTimerStar.constants.ts",
-        "src/IntervalWorkoutTimerStar.types.ts"
+        "src/components/IntervalWorkoutTimerStar.styles.js"
       ],
       "guardrail": [
         {
-          "path": "src/IntervalWorkoutTimerStar.test.tsx",
-          "passed": 25,
+          "path": "src/components/IntervalWorkoutTimerStar.styles.js",
+          "passed": 16,
           "failed": 0,
-          "skipped": 11,
-          "ok": true
-        },
-        {
-          "path": "src/IntervalWorkoutTimerStar.constants.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
-          "ok": true
-        },
-        {
-          "path": "src/IntervalWorkoutTimerStar.types.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
+          "skipped": 20,
           "ok": true
         }
       ],
       "axes": {
-        "correctness": 0.25,
-        "adherence": null,
+        "correctness": 0.75,
+        "adherence": 0.5,
         "guardrails": 1
       },
-      "composite": 0.5714285714285715,
+      "composite": 0.75,
       "correctnessDetails": [
-        "- Tests: failed (exit 1)",
-        "- Type check: failed (exit 2)",
-        "- Lint: passed"
+        "- Tests: passed",
+        "- Type check: passed",
+        "- Lint: failed (exit 1)"
       ],
       "reference": {
         "files": [
@@ -1185,9 +1121,9 @@
         "composite": 0.888888888888889,
         "relative": {
           "correctness": null,
-          "adherence": null,
+          "adherence": 0.625,
           "guardrails": 1.0227272727272727,
-          "composite": 0.6428571428571429
+          "composite": 0.8437499999999999
         }
       }
     },
@@ -1197,19 +1133,19 @@
       "suite": "media",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/BuildMusicPlayerScreenPlaylist.tsx",
-        "src/screens/BuildMusicPlayerScreen.tsx"
+        "src/components/BuildMusicPlayerScreenAlbum.styles.tsx",
+        "src/screens/BuildMusicPlayerScreenAlbum.tsx"
       ],
       "guardrail": [
         {
-          "path": "src/components/BuildMusicPlayerScreenPlaylist.tsx",
-          "passed": 25,
-          "failed": 1,
+          "path": "src/components/BuildMusicPlayerScreenAlbum.styles.tsx",
+          "passed": 26,
+          "failed": 0,
           "skipped": 10,
-          "ok": false
+          "ok": true
         },
         {
-          "path": "src/screens/BuildMusicPlayerScreen.tsx",
+          "path": "src/screens/BuildMusicPlayerScreenAlbum.tsx",
           "passed": 25,
           "failed": 1,
           "skipped": 10,
@@ -1218,10 +1154,10 @@
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0,
-        "guardrails": 0.9615384615384616
+        "adherence": null,
+        "guardrails": 0.9807692307692307
       },
-      "composite": 0.48846153846153845,
+      "composite": 0.7060439560439561,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -1240,9 +1176,9 @@
         "composite": 0.8555555555555555,
         "relative": {
           "correctness": null,
-          "adherence": 0,
-          "guardrails": 1.0302197802197803,
-          "composite": 0.570929070929071
+          "adherence": null,
+          "guardrails": 1.0508241758241759,
+          "composite": 0.8252461823890396
         }
       }
     },
@@ -1252,27 +1188,27 @@
       "suite": "media",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/screens/CreateVideoDetailScreen16.tsx"
+        "src/components/ImageComponent.tsx"
       ],
       "guardrail": [
         {
-          "path": "src/screens/CreateVideoDetailScreen16.tsx",
-          "passed": 21,
-          "failed": 5,
-          "skipped": 10,
-          "ok": false
+          "path": "src/components/ImageComponent.tsx",
+          "passed": 25,
+          "failed": 0,
+          "skipped": 11,
+          "ok": true
         }
       ],
       "axes": {
-        "correctness": 0.75,
-        "adherence": 0.5555555555555556,
-        "guardrails": 0.8076923076923077
+        "correctness": 0.5,
+        "adherence": 0.5,
+        "guardrails": 1
       },
-      "composite": 0.708974358974359,
+      "composite": 0.6499999999999999,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: passed"
+        "- Lint: failed (exit 1)"
       ],
       "reference": {
         "files": [
@@ -1287,9 +1223,9 @@
         "composite": 0.8666666666666667,
         "relative": {
           "correctness": null,
-          "adherence": 0.7142857142857143,
-          "guardrails": 0.8452593917710196,
-          "composite": 0.8180473372781065
+          "adherence": 0.6428571428571428,
+          "guardrails": 1.0465116279069766,
+          "composite": 0.7499999999999999
         }
       }
     },
@@ -1299,11 +1235,19 @@
       "suite": "profile-onboarding",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/navigation/AppNavigator.tsx"
+        "src/components/BuildProfileEditScreenAvatar/index.tsx",
+        "src/components/BuildProfileEditScreenAvatar/iconPicker.tsx"
       ],
       "guardrail": [
         {
-          "path": "src/navigation/AppNavigator.tsx",
+          "path": "src/components/BuildProfileEditScreenAvatar/index.tsx",
+          "passed": 21,
+          "failed": 6,
+          "skipped": 9,
+          "ok": false
+        },
+        {
+          "path": "src/components/BuildProfileEditScreenAvatar/iconPicker.tsx",
           "passed": 24,
           "failed": 1,
           "skipped": 11,
@@ -1312,10 +1256,10 @@
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": null,
-        "guardrails": 0.96
+        "adherence": 0.375,
+        "guardrails": 0.8653846153846154
       },
-      "composite": 0.6971428571428572,
+      "composite": 0.5721153846153846,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -1334,9 +1278,9 @@
         "composite": 0.8656126482213439,
         "relative": {
           "correctness": null,
-          "adherence": null,
-          "guardrails": 1.0514285714285714,
-          "composite": 0.8053750815394651
+          "adherence": 0.4583333333333333,
+          "guardrails": 0.9478021978021979,
+          "composite": 0.6609369511766772
         }
       }
     },
@@ -1346,39 +1290,31 @@
       "suite": "profile-onboarding",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/CreateMultiStepOnboardingWizard/index.tsx",
-        "src/components/CreateMultiStepOnboardingWizard/styles.tsx",
-        "src/screens/FinalScreen/index.tsx"
+        "src/multiStepOnboardingWizard/index.tsx",
+        "src/multiStepOnboardingWizard/styles.ts"
       ],
       "guardrail": [
         {
-          "path": "src/components/CreateMultiStepOnboardingWizard/index.tsx",
-          "passed": 23,
-          "failed": 3,
+          "path": "src/multiStepOnboardingWizard/index.tsx",
+          "passed": 24,
+          "failed": 2,
           "skipped": 10,
           "ok": false
         },
         {
-          "path": "src/components/CreateMultiStepOnboardingWizard/styles.tsx",
-          "passed": 24,
-          "failed": 1,
-          "skipped": 11,
-          "ok": false
-        },
-        {
-          "path": "src/screens/FinalScreen/index.tsx",
-          "passed": 24,
-          "failed": 1,
-          "skipped": 11,
-          "ok": false
+          "path": "src/multiStepOnboardingWizard/styles.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.5,
-        "guardrails": 0.9342105263157895
+        "adherence": 0.2,
+        "guardrails": 0.9545454545454546
       },
-      "composite": 0.6302631578947369,
+      "composite": 0.5463636363636364,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -1397,9 +1333,9 @@
         "composite": 0.8166666666666667,
         "relative": {
           "correctness": null,
-          "adherence": 0.7142857142857143,
-          "guardrails": 1.0009398496240602,
-          "composite": 0.7717508055853921
+          "adherence": 0.28571428571428575,
+          "guardrails": 1.0227272727272727,
+          "composite": 0.6690166975881262
         }
       }
     },
@@ -1409,7 +1345,9 @@
       "suite": "security",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/BuildAppLockGateMount.tsx"
+        "src/components/BuildAppLockGateMount.tsx",
+        "src/components/BuildAppLockGatePinPad.tsx",
+        "src/components/BuildAppLockGateErrorScreen.tsx"
       ],
       "guardrail": [
         {
@@ -1418,14 +1356,28 @@
           "failed": 2,
           "skipped": 10,
           "ok": false
+        },
+        {
+          "path": "src/components/BuildAppLockGatePinPad.tsx",
+          "passed": 26,
+          "failed": 1,
+          "skipped": 9,
+          "ok": false
+        },
+        {
+          "path": "src/components/BuildAppLockGateErrorScreen.tsx",
+          "passed": 25,
+          "failed": 1,
+          "skipped": 10,
+          "ok": false
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.75,
-        "guardrails": 0.9230769230769231
+        "adherence": 0.6428571428571429,
+        "guardrails": 0.9493670886075949
       },
-      "composite": 0.7019230769230769,
+      "composite": 0.6776672694394213,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -1444,9 +1396,9 @@
         "composite": 0.8777777777777778,
         "relative": {
           "correctness": null,
-          "adherence": 0.9375,
-          "guardrails": 0.9660107334525939,
-          "composite": 0.7996592015579357
+          "adherence": 0.8035714285714286,
+          "guardrails": 0.9935236973800411,
+          "composite": 0.7720260031588344
         }
       }
     },
@@ -1457,70 +1409,30 @@
       "scaffoldable": false,
       "generatedFiles": [
         "src/components/DocumentLibraryScreenList.tsx",
-        "src/components/DocumentIcon.tsx",
-        "src/components/TagFilterChip.tsx",
-        "src/components/SearchBar.tsx",
-        "src/components/LoadingIndicator.tsx",
-        "src/components/EmptyState.tsx",
-        "src/components/ErrorState.tsx"
+        "src/screens/DocumentsScreenList.js"
       ],
       "guardrail": [
         {
           "path": "src/components/DocumentLibraryScreenList.tsx",
-          "passed": 24,
-          "failed": 1,
-          "skipped": 11,
-          "ok": false
-        },
-        {
-          "path": "src/components/DocumentIcon.tsx",
           "passed": 25,
           "failed": 0,
           "skipped": 11,
           "ok": true
         },
         {
-          "path": "src/components/TagFilterChip.tsx",
-          "passed": 25,
-          "failed": 1,
-          "skipped": 10,
-          "ok": false
-        },
-        {
-          "path": "src/components/SearchBar.tsx",
-          "passed": 24,
-          "failed": 2,
-          "skipped": 10,
-          "ok": false
-        },
-        {
-          "path": "src/components/LoadingIndicator.tsx",
-          "passed": 25,
+          "path": "src/screens/DocumentsScreenList.js",
+          "passed": 16,
           "failed": 0,
-          "skipped": 11,
-          "ok": true
-        },
-        {
-          "path": "src/components/EmptyState.tsx",
-          "passed": 25,
-          "failed": 0,
-          "skipped": 11,
-          "ok": true
-        },
-        {
-          "path": "src/components/ErrorState.tsx",
-          "passed": 25,
-          "failed": 0,
-          "skipped": 11,
+          "skipped": 20,
           "ok": true
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.631578947368421,
-        "guardrails": 0.9774011299435028
+        "adherence": 1,
+        "guardrails": 1
       },
-      "composite": 0.6826940231935772,
+      "composite": 0.8,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -1539,9 +1451,9 @@
         "composite": 0.8092885375494071,
         "relative": {
           "correctness": null,
-          "adherence": 0.8684210526315789,
-          "guardrails": 1.0965963896927104,
-          "composite": 0.8435730787202688
+          "adherence": 1.375,
+          "guardrails": 1.1219512195121952,
+          "composite": 0.9885225885225886
         }
       }
     },
@@ -1552,7 +1464,8 @@
       "scaffoldable": false,
       "generatedFiles": [
         "src/components/BuildTaskBoardScreenThree.js",
-        "src/components/BuildTaskBoardScreenThree.styles.js"
+        "src/components/BuildTaskBoardScreenThree.styles.js",
+        "src/screens/Tasks.js"
       ],
       "guardrail": [
         {
@@ -1568,14 +1481,21 @@
           "failed": 0,
           "skipped": 20,
           "ok": true
+        },
+        {
+          "path": "src/screens/Tasks.js",
+          "passed": 14,
+          "failed": 2,
+          "skipped": 20,
+          "ok": false
         }
       ],
       "axes": {
         "correctness": 0.75,
-        "adherence": 0.25,
-        "guardrails": 0.9375
+        "adherence": 0.3,
+        "guardrails": 0.9166666666666666
       },
-      "composite": 0.65625,
+      "composite": 0.665,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: passed",
@@ -1594,9 +1514,9 @@
         "composite": 0.8166666666666667,
         "relative": {
           "correctness": null,
-          "adherence": 0.35714285714285715,
-          "guardrails": 1.0044642857142856,
-          "composite": 0.8035714285714286
+          "adherence": 0.4285714285714286,
+          "guardrails": 0.9821428571428571,
+          "composite": 0.8142857142857144
         }
       }
     },
@@ -1606,33 +1526,25 @@
       "suite": "commerce-subscriptions",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/CreateSubscriptionScreenThreeP.tsx",
-        "src/CreateSubscriptionScreenThreeP.test.tsx"
+        "src/CreateSubscriptionScreenThreeP.styles.ts"
       ],
       "guardrail": [
         {
-          "path": "src/CreateSubscriptionScreenThreeP.tsx",
-          "passed": 23,
-          "failed": 3,
-          "skipped": 10,
-          "ok": false
-        },
-        {
-          "path": "src/CreateSubscriptionScreenThreeP.test.tsx",
-          "passed": 24,
-          "failed": 1,
-          "skipped": 11,
-          "ok": false
+          "path": "src/CreateSubscriptionScreenThreeP.styles.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true
         }
       ],
       "axes": {
-        "correctness": 0,
+        "correctness": 0.5,
         "adherence": 0.5,
-        "guardrails": 0.9215686274509803
+        "guardrails": 1
       },
-      "composite": 0.42647058823529405,
+      "composite": 0.6499999999999999,
       "correctnessDetails": [
-        "- Tests: failed (exit 1)",
+        "- Tests: passed",
         "- Type check: failed (exit 2)",
         "- Lint: failed (exit 1)"
       ],
@@ -1650,8 +1562,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0.7142857142857143,
-          "guardrails": 1.011477761836442,
-          "composite": 0.5294117647058824
+          "guardrails": 1.0975609756097562,
+          "composite": 0.8068965517241379
         }
       }
     },
@@ -1661,23 +1573,31 @@
       "suite": "travel-weather",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/BuildNearbyPlacesScreenFetch.tsx"
+        "src/components/BuildNearbyPlacesScreenFetch/styles.tsx",
+        "src/hooks/useLocation.ts"
       ],
       "guardrail": [
         {
-          "path": "src/components/BuildNearbyPlacesScreenFetch.tsx",
-          "passed": 21,
-          "failed": 5,
-          "skipped": 10,
+          "path": "src/components/BuildNearbyPlacesScreenFetch/styles.tsx",
+          "passed": 24,
+          "failed": 1,
+          "skipped": 11,
+          "ok": false
+        },
+        {
+          "path": "src/hooks/useLocation.ts",
+          "passed": 17,
+          "failed": 1,
+          "skipped": 18,
           "ok": false
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.42857142857142855,
-        "guardrails": 0.8076923076923077
+        "adherence": 0.6666666666666666,
+        "guardrails": 0.9534883720930233
       },
-      "composite": 0.5708791208791208,
+      "composite": 0.686046511627907,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -1696,9 +1616,9 @@
         "composite": 0.8303030303030303,
         "relative": {
           "correctness": null,
-          "adherence": 0.5892857142857142,
-          "guardrails": 0.8653846153846154,
-          "composite": 0.6875551455843426
+          "adherence": 0.9166666666666666,
+          "guardrails": 1.021594684385382,
+          "composite": 0.8262603972160923
         }
       }
     },
@@ -1708,23 +1628,39 @@
       "suite": "travel-weather",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/BuildWeatherScreenCurrentCondi.tsx"
+        "src/components/BuildWeatherScreenCurrentCondi.tsx",
+        "src/components/BuildWeatherScreenCurrentCondi.HourlyForecast.tsx",
+        "src/components/BuildWeatherScreenCurrentCondi.SummaryList.tsx"
       ],
       "guardrail": [
         {
           "path": "src/components/BuildWeatherScreenCurrentCondi.tsx",
-          "passed": 23,
-          "failed": 3,
+          "passed": 22,
+          "failed": 4,
           "skipped": 10,
+          "ok": false
+        },
+        {
+          "path": "src/components/BuildWeatherScreenCurrentCondi.HourlyForecast.tsx",
+          "passed": 24,
+          "failed": 1,
+          "skipped": 11,
+          "ok": false
+        },
+        {
+          "path": "src/components/BuildWeatherScreenCurrentCondi.SummaryList.tsx",
+          "passed": 24,
+          "failed": 1,
+          "skipped": 11,
           "ok": false
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.75,
-        "guardrails": 0.8846153846153846
+        "adherence": 0.42857142857142855,
+        "guardrails": 0.9210526315789473
       },
-      "composite": 0.6903846153846154,
+      "composite": 0.6048872180451128,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -1743,9 +1679,9 @@
         "composite": 0.8666666666666667,
         "relative": {
           "correctness": null,
-          "adherence": 0.9375,
-          "guardrails": 0.9478021978021978,
-          "composite": 0.7965976331360947
+          "adherence": 0.5357142857142857,
+          "guardrails": 0.9868421052631579,
+          "composite": 0.6979467900520532
         }
       }
     },
@@ -1755,35 +1691,51 @@
       "suite": "settings",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/BuildPrivacySettingsScreenTogg.js",
-        "src/components/BuildPrivacySettingsScreenTogg.test.js"
+        "src/components/BuildPrivacySettingsScreenTogg.tsx",
+        "src/components/BuildPrivacySettingsScreenTogg.test.tsx",
+        "src/screens/BuildPrivacySettingsScreen.js",
+        "src/screens/BuildPrivacySettingsScreen.test.js"
       ],
       "guardrail": [
         {
-          "path": "src/components/BuildPrivacySettingsScreenTogg.js",
+          "path": "src/components/BuildPrivacySettingsScreenTogg.tsx",
+          "passed": 24,
+          "failed": 2,
+          "skipped": 10,
+          "ok": false
+        },
+        {
+          "path": "src/components/BuildPrivacySettingsScreenTogg.test.tsx",
+          "passed": 24,
+          "failed": 1,
+          "skipped": 11,
+          "ok": false
+        },
+        {
+          "path": "src/screens/BuildPrivacySettingsScreen.js",
           "passed": 15,
           "failed": 1,
           "skipped": 20,
           "ok": false
         },
         {
-          "path": "src/components/BuildPrivacySettingsScreenTogg.test.js",
-          "passed": 16,
-          "failed": 0,
+          "path": "src/screens/BuildPrivacySettingsScreen.test.js",
+          "passed": 15,
+          "failed": 1,
           "skipped": 20,
-          "ok": true
+          "ok": false
         }
       ],
       "axes": {
-        "correctness": 0.5,
-        "adherence": 0,
-        "guardrails": 0.96875
+        "correctness": 0,
+        "adherence": 0.6,
+        "guardrails": 0.9397590361445783
       },
-      "composite": 0.490625,
+      "composite": 0.4619277108433735,
       "correctnessDetails": [
         "- Tests: failed (exit 1)",
-        "- Type check: passed",
-        "- Lint: passed"
+        "- Type check: failed (exit 2)",
+        "- Lint: failed (exit 1)"
       ],
       "reference": {
         "files": [
@@ -1798,9 +1750,9 @@
         "composite": 0.8055555555555555,
         "relative": {
           "correctness": null,
-          "adherence": 0,
-          "guardrails": 1.0632621951219512,
-          "composite": 0.6090517241379311
+          "adherence": 0.8571428571428572,
+          "guardrails": 1.0314428445489274,
+          "composite": 0.573427503115912
         }
       }
     },
@@ -1810,23 +1762,47 @@
       "suite": "refactor",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/RemoveSentryReactNativePackage.ts"
+        "src/RemoveSentryReactNativePackage.ts",
+        "ios/Podfile",
+        "ios/Info.plist",
+        "ios/vectalon.xcodeproj/project.pbxproj"
       ],
       "guardrail": [
         {
           "path": "src/RemoveSentryReactNativePackage.ts",
-          "passed": 17,
-          "failed": 1,
+          "passed": 16,
+          "failed": 2,
           "skipped": 18,
           "ok": false
+        },
+        {
+          "path": "ios/Podfile",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 23,
+          "ok": true
+        },
+        {
+          "path": "ios/Info.plist",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 23,
+          "ok": true
+        },
+        {
+          "path": "ios/vectalon.xcodeproj/project.pbxproj",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 23,
+          "ok": true
         }
       ],
       "axes": {
         "correctness": null,
-        "adherence": null,
-        "guardrails": 0.9444444444444444
+        "adherence": 0.3333333333333333,
+        "guardrails": 0.9649122807017544
       },
-      "composite": 0.9444444444444444,
+      "composite": 0.6491228070175439,
       "reference": {
         "files": [
           "package.json",
@@ -1845,9 +1821,9 @@
         "composite": 0.9890109890109888,
         "relative": {
           "correctness": null,
-          "adherence": null,
-          "guardrails": 0.9656679151061174,
-          "composite": 0.9549382716049384
+          "adherence": 0.3333333333333333,
+          "guardrails": 0.9865957027399961,
+          "composite": 0.6563352826510722
         }
       }
     },
@@ -1857,23 +1833,31 @@
       "suite": "refactor",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/RemoveReactNativeFirebaseApp.tsx"
+        "src/remove-dependency/RemoveReactNativeFirebaseApp.ts",
+        "src/remove-dependency/RemoveReactNativeFirebaseMessaging.ts"
       ],
       "guardrail": [
         {
-          "path": "src/components/RemoveReactNativeFirebaseApp.tsx",
-          "passed": 25,
+          "path": "src/remove-dependency/RemoveReactNativeFirebaseApp.ts",
+          "passed": 18,
           "failed": 0,
-          "skipped": 11,
+          "skipped": 18,
+          "ok": true
+        },
+        {
+          "path": "src/remove-dependency/RemoveReactNativeFirebaseMessaging.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
           "ok": true
         }
       ],
       "axes": {
         "correctness": null,
-        "adherence": 0.5,
+        "adherence": null,
         "guardrails": 1
       },
-      "composite": 0.75,
+      "composite": 1,
       "reference": {
         "files": [
           "package.json",
@@ -1890,9 +1874,9 @@
         "composite": 0.9923076923076923,
         "relative": {
           "correctness": null,
-          "adherence": 0.5,
+          "adherence": null,
           "guardrails": 1.015625,
-          "composite": 0.7558139534883721
+          "composite": 1.0077519379844961
         }
       }
     },
@@ -1902,7 +1886,8 @@
       "suite": "upgrades",
       "scaffoldable": false,
       "generatedFiles": [
-        "android/app/build.gradle"
+        "android/app/build.gradle",
+        "src/AfterUpgradingThisProjectReact.ts"
       ],
       "guardrail": [
         {
@@ -1910,6 +1895,13 @@
           "passed": 13,
           "failed": 0,
           "skipped": 23,
+          "ok": true
+        },
+        {
+          "path": "src/AfterUpgradingThisProjectReact.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
           "ok": true
         }
       ],
@@ -2075,8 +2067,7 @@
       "suite": "debugging",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/theme/tokens.ts",
-        "src/screens/HomeScreen.tsx"
+        "src/theme/tokens.ts"
       ],
       "guardrail": [
         {
@@ -2085,21 +2076,14 @@
           "failed": 0,
           "skipped": 18,
           "ok": true
-        },
-        {
-          "path": "src/screens/HomeScreen.tsx",
-          "passed": 24,
-          "failed": 2,
-          "skipped": 10,
-          "ok": false
         }
       ],
       "axes": {
         "correctness": null,
-        "adherence": 0.3333333333333333,
-        "guardrails": 0.9545454545454546
+        "adherence": null,
+        "guardrails": 1
       },
-      "composite": 0.6439393939393939,
+      "composite": 1,
       "reference": {
         "files": [
           "src/screens/HomeScreen.tsx"
@@ -2112,9 +2096,9 @@
         "composite": 1,
         "relative": {
           "correctness": null,
-          "adherence": 0.3333333333333333,
-          "guardrails": 0.9545454545454546,
-          "composite": 0.6439393939393939
+          "adherence": null,
+          "guardrails": 1,
+          "composite": 1
         }
       }
     },
@@ -2124,22 +2108,22 @@
       "suite": "debugging",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/App.tsx",
-        "android/app/build.gradle"
+        "src/ReleaseBuildCrashesStartupHerm/android/app/build.gradle",
+        "src/ReleaseBuildCrashesStartupHerm/babel.config.js"
       ],
       "guardrail": [
         {
-          "path": "src/App.tsx",
-          "passed": 25,
-          "failed": 0,
-          "skipped": 11,
-          "ok": true
-        },
-        {
-          "path": "android/app/build.gradle",
+          "path": "src/ReleaseBuildCrashesStartupHerm/android/app/build.gradle",
           "passed": 13,
           "failed": 0,
           "skipped": 23,
+          "ok": true
+        },
+        {
+          "path": "src/ReleaseBuildCrashesStartupHerm/babel.config.js",
+          "passed": 16,
+          "failed": 0,
+          "skipped": 20,
           "ok": true
         }
       ],
@@ -2179,18 +2163,18 @@
       "guardrail": [
         {
           "path": "src/services/cart.ts",
-          "passed": 18,
-          "failed": 0,
+          "passed": 17,
+          "failed": 1,
           "skipped": 18,
-          "ok": true
+          "ok": false
         }
       ],
       "axes": {
         "correctness": null,
-        "adherence": 0,
-        "guardrails": 1
+        "adherence": 1,
+        "guardrails": 0.9444444444444444
       },
-      "composite": 0.5,
+      "composite": 0.9722222222222221,
       "reference": {
         "files": [
           "src/services/cart.ts"
@@ -2203,9 +2187,9 @@
         "composite": 1,
         "relative": {
           "correctness": null,
-          "adherence": 0,
-          "guardrails": 1,
-          "composite": 0.5
+          "adherence": 1,
+          "guardrails": 0.9444444444444444,
+          "composite": 0.9722222222222221
         }
       }
     },
@@ -2268,8 +2252,8 @@
         "rn-05-form-validation",
         "rn-13-account-delete-screen"
       ],
-      "composite": 0.7132049983113813,
-      "guardrails": 0.9487785657998424
+      "composite": 0.6317460317460318,
+      "guardrails": 0.9629629629629629
     },
     {
       "suite": "data-flow",
@@ -2278,8 +2262,8 @@
         "rn-06-offline-queue",
         "rn-12-notifications-screen"
       ],
-      "composite": 0.4643565891472868,
-      "guardrails": 0.9367441860465116
+      "composite": 0.5210466853408029,
+      "guardrails": 0.899520697167756
     },
     {
       "suite": "core-ui",
@@ -2287,32 +2271,32 @@
         "rn-03-dark-mode-component",
         "rn-08-feature-flags"
       ],
-      "composite": 0.8970000000000001,
-      "guardrails": 0.99
+      "composite": 0.7305232558139536,
+      "guardrails": 0.9767441860465116
     },
     {
       "suite": "navigation",
       "scenarioIds": [
         "rn-04-typed-navigation"
       ],
-      "composite": 0.8400000000000002,
-      "guardrails": 0.96
+      "composite": 0.8571428571428573,
+      "guardrails": 1
     },
     {
       "suite": "perf",
       "scenarioIds": [
         "rn-07-image-feed"
       ],
-      "composite": 0.716,
-      "guardrails": 0.92
+      "composite": 0.8380000000000001,
+      "guardrails": 0.96
     },
     {
       "suite": "a11y",
       "scenarioIds": [
         "rn-09-accessible-form"
       ],
-      "composite": 0.4285714285714286,
-      "guardrails": 1
+      "composite": 0.7355555555555555,
+      "guardrails": 0.8518518518518519
     },
     {
       "suite": "refactor",
@@ -2322,8 +2306,8 @@
         "rn-34-remove-sentry-sdk",
         "rn-35-remove-firebase-sdk"
       ],
-      "composite": 0.8878968253968254,
-      "guardrails": 0.9861111111111112
+      "composite": 0.8765664160401003,
+      "guardrails": 0.9912280701754386
     },
     {
       "suite": "e-commerce",
@@ -2331,8 +2315,8 @@
         "rn-14-checkout-flow",
         "rn-15-product-search"
       ],
-      "composite": 0.49950943396226416,
-      "guardrails": 0.9316981132075473
+      "composite": 0.605537518037518,
+      "guardrails": 0.8379028379028379
     },
     {
       "suite": "social-chat",
@@ -2340,8 +2324,8 @@
         "rn-16-chat-thread",
         "rn-17-social-feed"
       ],
-      "composite": 0.6145798319327731,
-      "guardrails": 0.9176470588235295
+      "composite": 0.7687003968253968,
+      "guardrails": 0.943287037037037
     },
     {
       "suite": "booking-payments",
@@ -2350,8 +2334,8 @@
         "rn-19-payment-methods",
         "rn-20-order-tracking"
       ],
-      "composite": 0.6536402595226125,
-      "guardrails": 0.8943075805820904
+      "composite": 0.671001221001221,
+      "guardrails": 0.8874643874643874
     },
     {
       "suite": "health-fitness",
@@ -2359,8 +2343,8 @@
         "rn-21-health-dashboard",
         "rn-22-workout-timer"
       ],
-      "composite": 0.6109634551495018,
-      "guardrails": 0.9651162790697674
+      "composite": 0.7181818181818183,
+      "guardrails": 0.9772727272727273
     },
     {
       "suite": "media",
@@ -2368,8 +2352,8 @@
         "rn-23-music-player",
         "rn-24-video-detail"
       ],
-      "composite": 0.5987179487179487,
-      "guardrails": 0.8846153846153846
+      "composite": 0.6780219780219781,
+      "guardrails": 0.9903846153846154
     },
     {
       "suite": "profile-onboarding",
@@ -2377,16 +2361,16 @@
         "rn-25-profile-edit",
         "rn-26-onboarding-wizard"
       ],
-      "composite": 0.6637030075187971,
-      "guardrails": 0.9471052631578947
+      "composite": 0.5592395104895105,
+      "guardrails": 0.909965034965035
     },
     {
       "suite": "security",
       "scenarioIds": [
         "rn-27-biometric-gate"
       ],
-      "composite": 0.7019230769230769,
-      "guardrails": 0.9230769230769231
+      "composite": 0.6776672694394213,
+      "guardrails": 0.9493670886075949
     },
     {
       "suite": "productivity",
@@ -2394,16 +2378,16 @@
         "rn-28-document-list",
         "rn-29-task-board"
       ],
-      "composite": 0.6694720115967886,
-      "guardrails": 0.9574505649717514
+      "composite": 0.7325,
+      "guardrails": 0.9583333333333333
     },
     {
       "suite": "commerce-subscriptions",
       "scenarioIds": [
         "rn-30-subscription-plans"
       ],
-      "composite": 0.42647058823529405,
-      "guardrails": 0.9215686274509803
+      "composite": 0.6499999999999999,
+      "guardrails": 1
     },
     {
       "suite": "travel-weather",
@@ -2411,16 +2395,16 @@
         "rn-31-places-nearby",
         "rn-32-weather-forecast"
       ],
-      "composite": 0.6306318681318681,
-      "guardrails": 0.8461538461538461
+      "composite": 0.6454668648365098,
+      "guardrails": 0.9372705018359853
     },
     {
       "suite": "settings",
       "scenarioIds": [
         "rn-33-privacy-settings"
       ],
-      "composite": 0.490625,
-      "guardrails": 0.96875
+      "composite": 0.4619277108433735,
+      "guardrails": 0.9397590361445783
     },
     {
       "suite": "upgrades",
@@ -2441,12 +2425,12 @@
         "rn-42-debug-ts-regression",
         "rn-43-debug-linking"
       ],
-      "composite": 0.6609848484848485,
-      "guardrails": 0.9886363636363636
+      "composite": 0.8680555555555556,
+      "guardrails": 0.9861111111111112
     }
   ],
-  "overallComposite": 0.6695368040098918,
-  "overallGuardrails": 0.9473145672064998,
+  "overallComposite": 0.7133653699127092,
+  "overallGuardrails": 0.9498971236085726,
   "overallReferenceComposite": 0.8938238685420926,
-  "overallRelativeComposite": 0.7455214287119869
+  "overallRelativeComposite": 0.7968988552460444
 }
