@@ -85,6 +85,31 @@ describe('dataset: runDatasetScan', () => {
     dir = createTempProject({ 'package.json': '{}' })
     const report = runDatasetScan(dir)
     expect(report.findings.some(f => f.id === 'no-dataset')).toBe(true)
+    expect(report.verdict).toBe('needs-attention')
+  })
+
+  it.each(['', '\n  \n', 'not json', '{}'])('does not approve unusable dataset content %j', content => {
+    dir = createTempProject({ '.vectalon/dataset/train.jsonl': content })
+    const report = runDatasetScan(dir)
+    expect(report.verdict).toBe('needs-attention')
+    expect(report.findings.some(f => f.id === 'empty')).toBe(true)
+  })
+
+  it('does not approve a dataset directory without JSONL files', () => {
+    dir = createTempProject({ '.vectalon/dataset/README.md': 'No examples yet.' })
+    expect(runDatasetScan(dir).verdict).toBe('needs-attention')
+  })
+
+  it('does not hide unreadable or empty inputs beside valid data', () => {
+    dir = createTempProject({
+      '.vectalon/dataset/good.jsonl': JSON.stringify({ instruction: 'sum', output: '2' }),
+      '.vectalon/dataset/empty.jsonl': '',
+      '.vectalon/dataset/not-a-file.jsonl/child.txt': 'not a dataset',
+    })
+    const report = runDatasetScan(dir)
+    expect(report.stats.entries).toBe(1)
+    expect(report.verdict).toBe('needs-attention')
+    expect(report.findings.map(f => f.id)).toEqual(expect.arrayContaining(['empty', 'unreadable']))
   })
 
   it('writes report.md and report.json', () => {

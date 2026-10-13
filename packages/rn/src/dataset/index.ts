@@ -83,32 +83,34 @@ export function runDatasetScan(root: string, dirOverride?: string): DatasetRepor
 
   if (!dir) {
     findings.push({
-      id: 'no-dataset', severity: 'info',
+      id: 'no-dataset', severity: 'warning',
       message: 'No dataset directory found (.vectalon/dataset, dataset, or training-data).',
       suggestion: 'Export training examples as JSONL into one of those directories so this agent can validate the dataset.',
     })
     const emptyStats: DatasetStat = { entries: 0, files: 0, formats: {}, medianLength: 0, maxLength: 0, duplicates: 0, labels: {} }
-    return { scannedAt, root, filesScanned: 0, entries: [], stats: emptyStats, findings, verdict: 'approved', summary: { total: 1, bySeverity: { info: 1 } } }
+    return { scannedAt, root, filesScanned: 0, entries: [], stats: emptyStats, findings, verdict: 'needs-attention', summary: { total: 1, bySeverity: { warning: 1 } } }
   }
 
   const files = readdirSync(dir).filter(f => f.endsWith('.jsonl')).sort()
   fileCount = files.length
   for (const file of files) {
     const path = join(dir, file)
-    let stat: ReturnType<typeof statSync>
-    try {
-      stat = statSync(path)
-    } catch {
-      continue
-    }
-    if (stat.size === 0) continue
     let content = ''
     try {
+      if (!statSync(path).isFile()) throw new Error('not-a-file')
       content = readFileSync(path, 'utf-8')
     } catch {
+      findings.push({
+        id: 'unreadable', severity: 'warning',
+        message: `Could not read dataset file ${file}.`,
+        suggestion: 'Make every JSONL input a readable file and rerun validation.',
+      })
       continue
     }
     filesScanned++
+    if (!content.trim()) {
+      findings.push({ id: 'empty', severity: 'warning', message: `Empty dataset file ${file}.`, suggestion: 'Add examples or remove the empty input.' })
+    }
     const lines = content.split(/\r?\n/).filter(l => l.trim().length > 0)
     for (let i = 0; i < lines.length; i++) {
       const entry = parseDatasetLine(lines[i], i + 1)
@@ -136,6 +138,14 @@ export function runDatasetScan(root: string, dirOverride?: string): DatasetRepor
       }
       entries.push(entry)
     }
+  }
+
+  if (!entries.some(entry => entry.text.length > 0)) {
+    findings.push({
+      id: 'empty', severity: 'warning',
+      message: 'No non-empty examples were checked in the dataset.',
+      suggestion: 'Provide readable JSONL examples before using this report as training-readiness evidence.',
+    })
   }
 
   // Schema consistency.

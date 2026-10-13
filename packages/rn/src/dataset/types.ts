@@ -20,7 +20,7 @@ export interface DatasetEntry {
 }
 
 export interface DatasetFinding {
-  id: 'no-dataset' | 'malformed' | 'empty' | 'pii' | 'mixed-schema' | 'duplicates' | 'length-outliers' | 'label-imbalance'
+  id: 'no-dataset' | 'unreadable' | 'malformed' | 'empty' | 'pii' | 'mixed-schema' | 'duplicates' | 'length-outliers' | 'label-imbalance'
   severity: 'warning' | 'info'
   line?: number
   message: string
