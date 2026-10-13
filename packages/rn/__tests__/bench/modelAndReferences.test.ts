@@ -41,6 +41,20 @@ function stubRouter(content: string): ModelGenerateOptions['modelRouter'] {
 }
 
 describe('bench reference solutions (M6)', () => {
+  it('counts failed model generation as zero rather than excluding it from averages', async () => {
+    const summary = await runBenchmark([validScenario()], { generate: async () => [] })
+    expect(summary.runs[0].axes).toEqual({ correctness: null, adherence: 0, guardrails: 0 })
+    expect(summary.overallComposite).toBe(0)
+    expect(summary.overallGuardrails).toBe(0)
+  })
+
+  it('does not award live fixture correctness when the model produced no code', async () => {
+    const runCommand = jest.fn()
+    const run = await runScenario(validScenario(), { generate: async () => [], live: true, runCommand })
+    expect(run.axes).toEqual({ correctness: 0, adherence: 0, guardrails: 0 })
+    expect(runCommand).not.toHaveBeenCalled()
+  })
+
   it('loads all 43 shipped references without problems', () => {
     const { references, problems } = loadReferences(defaultReferencesDir())
     expect(problems).toEqual([])
@@ -238,12 +252,14 @@ describe('bench model generate seam (M5)', () => {
     expect(captured?.context).toContain("pod 'AppCenter'")
   })
 
-  it('gives small local models explicit adherence and exact-fix acceptance criteria', async () => {
+  it('provides general guidance and fixtures without leaking reference repairs into model prompts', async () => {
     let captured = ''
+    const requests: string[] = []
     const router = {
-      generate: async (req: { context: string }) => {
+      generate: async (req: { context: string; prompt: string }) => {
         captured = req.context
-        return { content: '{}', provider: 'test' }
+        requests.push(req.context + req.prompt)
+        return { content: JSON.stringify({ files: [{ path: 'src/utils/format.ts', content: 'export const format = value => value' }] }), provider: 'test' }
       },
     } as unknown as ModelGenerateOptions['modelRouter']
     const gen = createModelGenerate({ modelRouter: router })
@@ -255,7 +271,9 @@ describe('bench model generate seam (M5)', () => {
 
     expect(captured).toContain('Acceptance criteria for the final files')
     expect(captured).toContain('loading, empty, and user-visible error states')
-    expect(captured).toContain('src/utils/format.ts: replace "value =>" with "(value: string) =>"')
+    expect(captured).toContain('export const format = value => value')
+    expect(requests.join('\n')).not.toContain('(value: string) =>')
+    expect(requests.join('\n')).not.toContain('Required repairs (all are mandatory and exact)')
     expect(captured.trimEnd()).toMatch(/Output only one valid JSON object:/)
   })
 

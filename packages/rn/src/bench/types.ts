@@ -98,7 +98,7 @@ export interface BenchScenarioRun {
   axes: BenchAxisScores
   /** Renormalized weighted composite over the available axes (0–1). */
   composite: number | null
-  /** Per-check correctness detail lines (only present in live runs). */
+  /** Live correctness details or a failed-generation explanation. */
   correctnessDetails?: string[]
   /** Human reference score + relative-to-human (M6); absent when no reference. */
   reference?: BenchReferenceScore

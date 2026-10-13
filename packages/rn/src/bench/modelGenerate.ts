@@ -5,8 +5,8 @@
  * the implementation phase's prompt builder and model-output parser so the
  * benchmark measures exactly what the harness would produce for a scenario —
  * not a second, drifting prompt. With no model or a failed/fallback response it
- * returns no files (the run scores as N/A rather than poisoning the leaderboard
- * with scaffold output).
+ * returns no files (the runner counts failed generation as zero, never as
+ * successful scaffold output or an omitted N/A result).
  */
 
 import type { ModelRouter } from '../model'
@@ -50,7 +50,6 @@ function quality(files: BenchGeneratedFile[], scenario: BenchScenario): { adhere
 function repairFeedback(files: BenchGeneratedFile[], scenario: BenchScenario): string {
   const rubric = runRubric(files, {
     removedDependencies: scenario.removedDependencies,
-    fixEdits: scenario.fixEdits,
   })
   const failures = rubric.files.flatMap(file => file.checks
     .filter(check => !check.passed)
@@ -99,9 +98,6 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
           .map(([path, content]) => `--- ${path} ---\n${content}`)
           .join('\n\n')
       : ''
-    const requiredEdits = (scenario.fixEdits || [])
-      .map(edit => `- ${edit.file}: replace ${JSON.stringify(edit.find)} with ${JSON.stringify(edit.replace)}`)
-      .join('\n')
     const context = [
       'Project: rn-bench-app, React Native 0.74.0',
       '',
@@ -113,7 +109,6 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       '- Hooks have correct dependency arrays; state updates are immutable; expensive work is memoized.',
       '- Navigation params are typed and deep links use a routing table.',
       '- Return complete runnable files, not explanations, snippets, TODOs, or placeholders.',
-      ...(requiredEdits ? ['', 'Required repairs (all are mandatory and exact):', requiredEdits] : []),
       ...(fixtureBlock ? ['', 'Current project files (return each changed file with its complete new content):', fixtureBlock] : []),
       '',
       'Output only one valid JSON object: {"files":[{"path":"...","content":"..."}]}',

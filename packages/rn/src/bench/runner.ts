@@ -118,14 +118,15 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
     options.generate ||
     (isRemovalScenario(scenario) ? removalGenerate : isFixScenario(scenario) ? fixGenerate : deterministicGenerate)
   const files = await generate(scenario)
+  const generationFailed = Boolean(options.generate) && !files.some(file => file.content.trim().length > 0)
   const removedDependencies = scenario.removedDependencies
 
   const guardrail = guardrailPerFile(files)
-  const guardrails = guardrailPassRate(files)
+  const guardrails = generationFailed ? 0 : guardrailPassRate(files)
 
-  let correctness: number | null = null
-  let correctnessDetails: string[] = []
-  if (options.live) {
+  let correctness: number | null = generationFailed && options.live ? 0 : null
+  let correctnessDetails: string[] = generationFailed ? ['Model generation produced no non-empty files.'] : []
+  if (options.live && !generationFailed) {
     const temp = createTempProject(scenario.fixtures)
     try {
       for (const file of files) {
@@ -145,8 +146,8 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
     }
   }
 
-  let adherence: number | null = null
-  if (files.length > 0) {
+  let adherence: number | null = generationFailed ? 0 : null
+  if (files.length > 0 && !generationFailed) {
     adherence = options.rubric
       ? options.rubric(files)
       : rubricAdherence(files, { removedDependencies, fixEdits: scenario.fixEdits })
