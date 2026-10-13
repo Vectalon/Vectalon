@@ -16,6 +16,11 @@ describe('commercial checkout attribution', () => {
     expect(verifyCheckoutAttribution(session.attribution, env)).toEqual(session.attribution)
   })
 
+  it('creates configured entitlement checkouts without claiming capability qualification', () => {
+    expect(() => createCheckoutSession({ planId: 'individual', seats: 1 }, env)).not.toThrow()
+    expect(() => createCheckoutSession({ planId: 'team', seats: 2 }, env)).not.toThrow()
+  })
+
   it('rejects unknown offers, unverified Team quantity, and tampering', () => {
     expect(() => createCheckoutSession({ planId: 'future', seats: 1 }, env)).toThrow('checkout-plan-unavailable')
     expect(() => createCheckoutSession({ planId: 'team', seats: 1 }, env)).toThrow('checkout-seat-quantity-invalid')

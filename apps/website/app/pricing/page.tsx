@@ -16,12 +16,12 @@ const PLAN_PRESENTATION: Record<ProductPlanId, {
     href: '/sdk/react-native',
   },
   individual: {
-    blurb: 'Commercial use for one developer plus Individual capabilities qualified in the released catalog.',
+    blurb: 'For one developer using the React Native harness. Availability and prerequisites vary by capability.',
     cta: 'Buy Individual',
     fallback: 'Launching soon',
   },
   team: {
-    blurb: 'Commercial use per purchased seat plus Team capabilities qualified in the released catalog.',
+    blurb: 'Per-seat React Native access for teams. Shared knowledge and policy workflows remain experimental.',
     cta: 'Buy Team',
     fallback: 'Coming soon',
     highlight: true,
@@ -121,8 +121,8 @@ export default function PricingPage() {
         </p>
         <p className="mx-auto mt-2 max-w-2xl font-mono text-xs text-slate-500">
           we're optimizing for the <span className="text-brand">first 5 paying teams</span> — not
-          for pricing page psychology. <span className="text-brand">$</span> vectalon plan shows
-          your current plan
+          for pricing page psychology. A paid license does not make experimental capabilities production-ready.{' '}
+          <span className="text-brand">$</span> vectalon plan shows your current plan
         </p>
       </div>
 

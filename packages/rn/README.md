@@ -2,7 +2,7 @@
 
 **The AI engineering control plane for React Native.** Give it a repository and it continuously understands, reviews, diagnoses, upgrades, and validates the application.
 
-Project-aware SDLC intelligence for any agent — CLI, MCP server, VS Code extension, benchmark suite, and fine-tuning pipeline in one package.
+Project-aware SDLC intelligence — CLI, MCP server, VS Code extension, benchmark suite, dataset validation, and LoRA readiness checks. Vectalon does not currently execute model training.
 
 Current release: <!-- product-fact:rn-version -->0.22.4<!-- /product-fact --> ·
 benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
@@ -146,7 +146,9 @@ Run `npx vectalon <command> --help` for detailed options.
 | `distribute [dir]` | **Distribution Agent** — deploy an archived build to TestFlight, Google Play, the SaaS portal, or a generated white-label portal; credentials never stored (delegates to fastlane/EAS/Expo or direct API env vars) | `--build`, `--latest`, `--flavor`, `--platform`, `--target <testflight\|play-store\|saas\|portal>`, `--track`, `--domain`, `--list-targets`, `--dry-run`, `--json` |
 | `share [dir]` | **Local Share Agent** — ephemeral static install page for an archived build, optional tunnel (ngrok/localtunnel), optional QR, auto-shutdown after `--expires` | `--build`, `--latest`, `--flavor`, `--platform`, `--port`, `--host`, `--tunnel`, `--qr`, `--expires <30m\|2h>`, `--json` |
 | `portal [dir]` | **White-label Portal Agent** — generate a self-contained static build portal (SSG) from the archive store with per-build install pages + embedded `builds.json` | `--generate`, `--out <dir>`, `--domain`, `--branding`, `--deploy <static\|vercel\|netlify>`, `--json` |
-| `train [dir]` | Curate fine-tuning dataset from benchmark references + LoRA plan | `--build`, `--plan`, `--out <dir>`, `--base <model>`, `--scenarios <dir>`, `--references <dir>`, `--json` |
+| `train [dir]` | Read-only release planning across workspace repositories; does not train model weights | `--json` |
+| `dataset [dir]` | Validate JSONL examples for schema, duplicates, balance and possible sensitive data; warnings are not a privacy guarantee | `--json` |
+| `lora [dir]` | Check training configuration and estimate VRAM; does not execute a trainer or produce an adapter | `--config <path>`, `--json` |
 | `ecosystem [dir]` | Browse/enable MCP servers, skills, tools, hooks — enabling an MCP verifies its npm package exists first (fail-fast; offline proceeds with a warning) | `--category <mcp\|skill\|tool\|hook>`, `--flavor <expo\|rn-cli>`, `--enable <id>`, `--force`, `--disable <id>`, `--export`, `--json` |
 | `refresh [dir]` | Refresh knowledge from web sources + improvement suggestions, and re-seed the repo-derived knowledge-base artifacts (idempotent) | `--force` |
 | `suggestions [dir]` | List improvement suggestions from the knowledge refresh (outdated dependencies), severity-grouped — and act on them: `--apply <id>` installs the latest version (gated behind confirmation), `--open` renders a self-contained HTML dashboard | `--json`, `--limit <n>`, `--apply <id>`, `--yes`, `--open`, `--out <dir>` |
@@ -844,9 +846,15 @@ to see your current plan and what each tier includes.
 
 | Plan | Price | Features |
 |------|-------|----------|
-| **Free** | $0 | Available and beta capabilities identified by the released catalog; experimental capabilities require opt-in |
-| **Individual** | $19/developer/month | Commercial-use license for Vectalon React Native for one developer, plus qualified Individual capabilities |
-| **Team** | $49/developer/month | Commercial-use license for the purchased developer quantity, plus qualified Team capabilities; no tier-wide seat cap |
+| **Free** | $0 | BSL commercial grant for teams up to 3 developers; setup, inspection, diagnostics, basic policy/guardrails, benchmarks, smoke tests, and local reports |
+| **Individual** | $19/developer/month | Everything in Free; one-developer commercial license; qualified feature-workflow beta access. Upgrade, CI, bundle, profile, sandbox, render, visual-regression and model workflows remain experimental and require explicit opt-in |
+| **Team** | $49/developer/month | Everything in Individual; commercial seats for the purchased quantity. Team Brain, local shared knowledge, Git-backed sync and shared policies remain experimental, require explicit opt-in, and are not qualified paid outcomes |
+
+The gate is cumulative: Team includes Individual, and Individual includes Free.
+Experimental commands always require explicit opt-in regardless of plan; a
+paid license does not turn an experimental capability into a supported promise.
+Current purchases cover the React Native harness only—planned iOS, Android,
+Flutter, and Python SDKs are not included.
 
 Start a 14-day free trial: `npx vectalon auth --github`
 

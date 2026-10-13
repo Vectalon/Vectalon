@@ -24,18 +24,23 @@ describe('commercial plans', () => {
     expect(PLAN_BY_ID.enterprise.engineTier).toBe('enterprise')
   })
 
-  it('Individual promises only released qualified RN scope and separately labelled beta access', () => {
+  it('Individual distinguishes experimental workflows from qualified beta access', () => {
     const features = PLAN_BY_ID.individual.features.join(' ').toLowerCase()
     expect(features).toContain('vectalon react native for one developer')
-    expect(features).toContain('qualified individual capabilities from the released catalog')
-    expect(features).toContain('separately labelled beta access')
+    expect(features).toContain('upgrade, ci, bundle, profile, sandbox, render, and visual-regression')
+    expect(features).toContain('qualified feature-workflow beta access')
+    expect(features).toContain('experimental upgrade')
+    expect(features).toContain('require explicit opt-in')
   })
 
-  it('Team is per purchased developer seat and promises only qualified released scope', () => {
+  it('Team does not mislabel experimental shared workflows as qualified beta outcomes', () => {
     const features = PLAN_BY_ID.team.features.join(' ').toLowerCase()
     expect(features).toContain('each purchased developer seat')
-    expect(features).toContain('qualified team capabilities from the released catalog')
-    expect(features).toContain('separately labelled beta access')
+    expect(features).toContain('team brain')
+    expect(features).toContain('git-backed knowledge sync and shared team policies')
+    expect(features).toContain('experimental team brain')
+    expect(features).toContain('not qualified paid outcomes')
+    expect(features).not.toContain('remain labelled beta')
   })
 
   it('qualifies Enterprise deployment and governance capabilities as contracted scope', () => {

@@ -149,19 +149,27 @@ model benchmark to `.vectalon/demo-matrix/model-local-benchmark.json`. See the
 for model setup, focused reruns, and result interpretation.
 
 ### Free — $0
-- Project scanning and context building
-- Available and beta capabilities shown by `npx vectalon capabilities`
+- Commercial use for individuals and teams of up to 3 developers under the BSL grant
+- Project setup, inspection, diagnostics, basic policy checks, and guardrails
+- Local benchmarks, smoke tests, evaluation reports, and support reports
 - Experimental capabilities require `--experimental` and are not part of a paid promise
 
 ### Individual — <!-- product-fact:individual-price -->$19<!-- /product-fact -->/developer/month
 - Commercial-use license for Vectalon React Native for one developer
-- Qualified capabilities for this plan, as listed by the released capability catalog
-- Beta access is labelled separately and is not a guaranteed purchased outcome
+- Everything in Free
+- Experimental upgrade, CI, bundle, profile, sandbox, render, and visual-regression workflows require explicit opt-in
+- Qualified feature-workflow beta access; model workflows remain experimental and require review
 
 ### Team — <!-- product-fact:team-price -->$49<!-- /product-fact -->/developer/month
 - Commercial-use license for Vectalon React Native for the purchased developer quantity
-- Qualified Team capabilities, as listed by the released capability catalog
+- Everything in Individual
+- Experimental Team Brain, local shared knowledge, Git-backed sync, and shared team policies
+- Experimental capabilities require explicit opt-in and are not qualified paid outcomes
 - No tier-wide 50-seat cap; each developer requires a purchased seat
+
+Plans are cumulative and currently cover the React Native harness only. A paid
+license never bypasses explicit experimental opt-in, availability checks, or
+human review of generated changes. Planned SDKs are not silently included.
 
 See your current plan and what each tier unlocks with `npx vectalon plan`, and
 the engineering outcomes your reports produce with `npx vectalon outcomes`.

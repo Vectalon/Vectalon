@@ -46,8 +46,10 @@
       "productScope": ["rn"],
       "checkout": "none",
       "features": [
-        "Local project setup and diagnostics",
-        "Basic React Native guardrails",
+        "Commercial use for individuals and teams of up to 3 developers under the BSL grant",
+        "Project setup, inspection, status, doctor, and support reports",
+        "Basic policy checks and React Native guardrails",
+        "Experimental benchmarks, smoke tests, and evaluation reports require explicit opt-in",
         "No payment method required"
       ]
     },
@@ -65,8 +67,11 @@
       "checkout": "checkout",
       "features": [
         "Commercial-use license for Vectalon React Native for one developer",
-        "Qualified Individual capabilities from the released catalog",
-        "Separately labelled beta access"
+        "Everything in Free",
+        "Experimental upgrade, CI, bundle, profile, sandbox, render, and visual-regression workflows require explicit opt-in",
+        "Advanced guardrails and bounded generated-file repair",
+        "Experimental local and configured remote model workflows; model costs and prerequisites are separate",
+        "Qualified feature-workflow beta access; generated changes require review"
       ]
     },
     {
@@ -83,8 +88,10 @@
       "checkout": "checkout",
       "features": [
         "Commercial-use license for Vectalon React Native for each purchased developer seat",
-        "Qualified Team capabilities from the released catalog",
-        "Separately labelled beta access"
+        "Everything in Individual",
+        "Experimental Team Brain and local shared project knowledge",
+        "Experimental Git-backed knowledge sync and shared team policies",
+        "Experimental capabilities require explicit opt-in and are not qualified paid outcomes"
       ]
     },
     {
