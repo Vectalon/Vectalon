@@ -13,13 +13,13 @@ exports.TIER_CONFIGS = {
     },
     pro: {
         name: 'pro',
-        features: ['upgrade', 'ci', 'bundle', 'advanced-guardrails'],
-        products: ['rn', 'ios', 'android', 'python'],
+        features: ['init', 'serve', 'doctor', 'basic-feature', 'upgrade', 'ci', 'bundle', 'advanced-guardrails'],
+        products: ['rn'],
     },
     team: {
         name: 'team',
-        features: ['sync', 'custom-model', 'priority-inference', 'team-brain'],
-        products: ['rn', 'ios', 'android', 'python'],
+        features: ['init', 'serve', 'doctor', 'basic-feature', 'upgrade', 'ci', 'bundle', 'advanced-guardrails', 'sync', 'custom-model', 'priority-inference', 'team-brain'],
+        products: ['rn'],
     },
     enterprise: {
         name: 'enterprise',
