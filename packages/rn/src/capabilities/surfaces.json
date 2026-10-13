@@ -2949,7 +2949,7 @@
     "capabilityId": "rn.analysis",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.analysis.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.analysis.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -2957,12 +2957,12 @@
     "kind": "claims",
     "name": "apps/website/app/benchmarks/page.tsx",
     "source": "apps/website/app/benchmarks/page.tsx",
-    "digest": "sha256:e4e181143d1bf56f1399fda050afb54d0d7e007e45aab20d69e9ef9d64ed97e3",
+    "digest": "sha256:17d0f7afc517c529bcdb053fbbaba36753edb130f61dcaca4d5423a47eb143a9",
     "historical": false,
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -2970,12 +2970,12 @@
     "kind": "claims",
     "name": "apps/website/app/changelog/page.tsx",
     "source": "apps/website/app/changelog/page.tsx",
-    "digest": "sha256:49cf2b5ade375b614f649edf3115cb9b8ef099d1a2b3edae8f0579d401552986",
+    "digest": "sha256:f79ee329c0c5337f9fa4674edebc9c17e537200b64485f5aa4e31148ffb056b4",
     "historical": true,
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -2983,12 +2983,12 @@
     "kind": "claims",
     "name": "apps/website/app/demo/page.tsx",
     "source": "apps/website/app/demo/page.tsx",
-    "digest": "sha256:fbd649e35034cf280ec78a3064290326b81b966c17d907d6766060402a98c817",
+    "digest": "sha256:03d8e8f412abb628ccb0d4eb7da42632a1bfb40073a9a43a903b9285ffa989be",
     "historical": false,
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -2996,13 +2996,13 @@
     "kind": "claims",
     "name": "apps/website/app/docs/page.tsx",
     "source": "apps/website/app/docs/page.tsx",
-    "digest": "sha256:95e1f85b501c68895cb4cacf697299dc07ccb71188c093777b88848f8c1267c1",
+    "digest": "sha256:9cea8c7af3f63ed0b7945d89ec640586c9172ec2bfc18f7af6ec0e30c8c59ce1",
     "historical": false,
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.implementation.json"
     ]
   },
   {
@@ -3010,12 +3010,12 @@
     "kind": "claims",
     "name": "apps/website/app/outcomes/page.tsx",
     "source": "apps/website/app/outcomes/page.tsx",
-    "digest": "sha256:a32b1a973e6c81c0133df21885595b842e315a9565b492319a96253057bd48cc",
+    "digest": "sha256:2d1787c4b662f6c163d78d83d171b8aa8182c66c64f43e510b2a29ed92782de6",
     "historical": false,
     "capabilityId": "rn.analysis",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.analysis.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.analysis.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -3023,13 +3023,13 @@
     "kind": "claims",
     "name": "apps/website/app/page.tsx",
     "source": "apps/website/app/page.tsx",
-    "digest": "sha256:b371357e5f8c03687eec10988280df1e2de6bf6a05dd8e07c42ea7a87615d304",
+    "digest": "sha256:567415850fbafde02980155353c7bc209eac6a1cff59694f67c303619cec6614",
     "historical": false,
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.implementation.json"
     ]
   },
   {
@@ -3037,7 +3037,7 @@
     "kind": "claims",
     "name": "apps/website/app/pricing/page.tsx",
     "source": "apps/website/app/pricing/page.tsx",
-    "digest": "sha256:f264c8f5d72ebe80fce46889f4fbbbbc0868338c3a766bae3c5c843c5946587a",
+    "digest": "sha256:a51b9fc1ece45a6c56d306f64335f364d70bf81aa65a298fa66ec5d2cad53ad7",
     "historical": false,
     "capabilityId": "rn.commercial-information",
     "capabilityLifecycle": "experimental",
@@ -3055,7 +3055,7 @@
     "capabilityId": "rn.analysis",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.analysis.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.analysis.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -3063,7 +3063,7 @@
     "kind": "claims",
     "name": "apps/website/app/sdk/[slug]/page.tsx",
     "source": "apps/website/app/sdk/[slug]/page.tsx",
-    "digest": "sha256:4dbebe6c26e530f537eebfc661c1b5b5529b718435126e71feb8e8e8909bfc50",
+    "digest": "sha256:4ffd60e911543c9026fd4dfda38d18c9ad748e9cbfc7a53b3636401444ad358f",
     "historical": false,
     "capabilityId": "rn.commercial-information",
     "capabilityLifecycle": "experimental",
@@ -3094,7 +3094,7 @@
     "capabilityId": "rn.analysis",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.analysis.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.analysis.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -3107,7 +3107,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -3120,8 +3120,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.implementation.json"
     ]
   },
   {
@@ -3134,7 +3134,7 @@
     "capabilityId": "rn.knowledge",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.knowledge.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.knowledge.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -3147,8 +3147,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.implementation.json"
     ]
   },
   {
@@ -3161,8 +3161,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.implementation.json"
     ]
   },
   {
@@ -3175,8 +3175,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.implementation.json"
     ]
   },
   {
@@ -3215,7 +3215,7 @@
     "capabilityId": "rn.analysis",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.analysis.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.analysis.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -3254,7 +3254,7 @@
     "capabilityId": "rn.model-generation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.model-generation.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.model-generation.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -3280,7 +3280,7 @@
     "capabilityId": "rn.analysis",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.analysis.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.analysis.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -3301,13 +3301,13 @@
     "kind": "claims",
     "name": "packages/rn/README.md",
     "source": "packages/rn/README.md",
-    "digest": "sha256:80010a2b5dc53444ef6d76545357250da1a0526114e18beb5dcd74fa28e4f264",
+    "digest": "sha256:b2fc9834f273755b9686b572a0b1d5d76115eb7badab9afdeec2057268aabd0c",
     "historical": false,
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.implementation.json"
     ]
   },
   {
@@ -3315,13 +3315,13 @@
     "kind": "claims",
     "name": "README.md",
     "source": "README.md",
-    "digest": "sha256:2a212e73a6597fec10132c86d6962afbf9680899ec2679c9b84e8a4d363de47a",
+    "digest": "sha256:604d47ec9989bddbdae80ee8ff33788bb7fbd5cd8109f759cb9db03743fdf27b",
     "historical": false,
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.implementation.json"
     ]
   },
   {
@@ -4825,9 +4825,9 @@
     ]
   },
   {
-    "key": "plan-feature:free/Basic React Native guardrails",
+    "key": "plan-feature:free/Basic policy checks and React Native guardrails",
     "kind": "plan-feature",
-    "name": "free/Basic React Native guardrails",
+    "name": "free/Basic policy checks and React Native guardrails",
     "source": "product-manifest.json",
     "capabilityId": "rn.policy.check",
     "capabilityLifecycle": "beta",
@@ -4837,15 +4837,25 @@
     ]
   },
   {
-    "key": "plan-feature:free/Local project setup and diagnostics",
+    "key": "plan-feature:free/Commercial use for individuals and teams of up to 3 developers under the BSL grant",
     "kind": "plan-feature",
-    "name": "free/Local project setup and diagnostics",
+    "name": "free/Commercial use for individuals and teams of up to 3 developers under the BSL grant",
     "source": "product-manifest.json",
-    "capabilityId": "rn.project.inspect",
-    "capabilityLifecycle": "beta",
+    "capabilityId": "rn.commercial-information",
+    "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.implementation.json"
+      "capabilities/evidence/rn.commercial-information.1.2.5.0.22.4.implementation.json"
+    ]
+  },
+  {
+    "key": "plan-feature:free/Experimental benchmarks, smoke tests, and evaluation reports require explicit opt-in",
+    "kind": "plan-feature",
+    "name": "free/Experimental benchmarks, smoke tests, and evaluation reports require explicit opt-in",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.evaluation",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.evaluation.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -4860,6 +4870,30 @@
     ]
   },
   {
+    "key": "plan-feature:free/Project setup, inspection, status, doctor, and support reports",
+    "kind": "plan-feature",
+    "name": "free/Project setup, inspection, status, doctor, and support reports",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.project.inspect",
+    "capabilityLifecycle": "beta",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.implementation.json"
+    ]
+  },
+  {
+    "key": "plan-feature:individual/Advanced guardrails and bounded generated-file repair",
+    "kind": "plan-feature",
+    "name": "individual/Advanced guardrails and bounded generated-file repair",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.generated-file.repair",
+    "capabilityLifecycle": "beta",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.generated-file.repair.1.0.5.0.22.4.customer-workflow.json",
+      "capabilities/evidence/rn.generated-file.repair.1.0.5.0.22.4.implementation.json"
+    ]
+  },
+  {
     "key": "plan-feature:individual/Commercial-use license for Vectalon React Native for one developer",
     "kind": "plan-feature",
     "name": "individual/Commercial-use license for Vectalon React Native for one developer",
@@ -4871,9 +4905,9 @@
     ]
   },
   {
-    "key": "plan-feature:individual/Qualified Individual capabilities from the released catalog",
+    "key": "plan-feature:individual/Everything in Free",
     "kind": "plan-feature",
-    "name": "individual/Qualified Individual capabilities from the released catalog",
+    "name": "individual/Everything in Free",
     "source": "product-manifest.json",
     "capabilityId": "rn.commercial-information",
     "capabilityLifecycle": "experimental",
@@ -4882,14 +4916,37 @@
     ]
   },
   {
-    "key": "plan-feature:individual/Separately labelled beta access",
+    "key": "plan-feature:individual/Experimental local and configured remote model workflows; model costs and prerequisites are separate",
     "kind": "plan-feature",
-    "name": "individual/Separately labelled beta access",
+    "name": "individual/Experimental local and configured remote model workflows; model costs and prerequisites are separate",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.model-generation",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.model-generation.1.0.5.0.22.4.implementation.json"
+    ]
+  },
+  {
+    "key": "plan-feature:individual/Experimental upgrade, CI, bundle, profile, sandbox, render, and visual-regression workflows require explicit opt-in",
+    "kind": "plan-feature",
+    "name": "individual/Experimental upgrade, CI, bundle, profile, sandbox, render, and visual-regression workflows require explicit opt-in",
     "source": "product-manifest.json",
     "capabilityId": "rn.commercial-information",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
       "capabilities/evidence/rn.commercial-information.1.2.5.0.22.4.implementation.json"
+    ]
+  },
+  {
+    "key": "plan-feature:individual/Qualified feature-workflow beta access; generated changes require review",
+    "kind": "plan-feature",
+    "name": "individual/Qualified feature-workflow beta access; generated changes require review",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.feature.workflow",
+    "capabilityLifecycle": "beta",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.feature.workflow.1.0.5.0.22.4.customer-workflow.json",
+      "capabilities/evidence/rn.feature.workflow.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -4904,9 +4961,9 @@
     ]
   },
   {
-    "key": "plan-feature:team/Qualified Team capabilities from the released catalog",
+    "key": "plan-feature:team/Everything in Individual",
     "kind": "plan-feature",
-    "name": "team/Qualified Team capabilities from the released catalog",
+    "name": "team/Everything in Individual",
     "source": "product-manifest.json",
     "capabilityId": "rn.commercial-information",
     "capabilityLifecycle": "experimental",
@@ -4915,14 +4972,36 @@
     ]
   },
   {
-    "key": "plan-feature:team/Separately labelled beta access",
+    "key": "plan-feature:team/Experimental capabilities require explicit opt-in and are not qualified paid outcomes",
     "kind": "plan-feature",
-    "name": "team/Separately labelled beta access",
+    "name": "team/Experimental capabilities require explicit opt-in and are not qualified paid outcomes",
     "source": "product-manifest.json",
     "capabilityId": "rn.commercial-information",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
       "capabilities/evidence/rn.commercial-information.1.2.5.0.22.4.implementation.json"
+    ]
+  },
+  {
+    "key": "plan-feature:team/Experimental Git-backed knowledge sync and shared team policies",
+    "kind": "plan-feature",
+    "name": "team/Experimental Git-backed knowledge sync and shared team policies",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.knowledge",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.knowledge.1.0.5.0.22.4.implementation.json"
+    ]
+  },
+  {
+    "key": "plan-feature:team/Experimental Team Brain and local shared project knowledge",
+    "kind": "plan-feature",
+    "name": "team/Experimental Team Brain and local shared project knowledge",
+    "source": "product-manifest.json",
+    "capabilityId": "rn.knowledge",
+    "capabilityLifecycle": "experimental",
+    "capabilityEvidence": [
+      "capabilities/evidence/rn.knowledge.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -4973,8 +5052,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.implementation.json"
     ]
   },
   {
@@ -5073,7 +5152,7 @@
     "capabilityId": "rn.analysis",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.analysis.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.analysis.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -5205,8 +5284,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.implementation.json"
     ]
   },
   {
@@ -5239,8 +5318,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.implementation.json"
     ]
   },
   {
@@ -5339,7 +5418,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -5350,7 +5429,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -5361,7 +5440,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -5372,8 +5451,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.6.0.22.4.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.7.0.22.4.implementation.json"
     ]
   },
   {
@@ -5384,7 +5463,7 @@
     "capabilityId": "rn.analysis",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.analysis.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.analysis.1.0.5.0.22.4.implementation.json"
     ]
   },
   {
@@ -5406,7 +5485,7 @@
     "capabilityId": "rn.analysis",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.analysis.1.0.4.0.22.4.implementation.json"
+      "capabilities/evidence/rn.analysis.1.0.5.0.22.4.implementation.json"
     ]
   },
   {

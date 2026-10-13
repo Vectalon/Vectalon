@@ -42,8 +42,8 @@
       "conditional": 9
     },
     "plan-feature": {
-      "declared": 11,
-      "enabledByDefault": 2,
+      "declared": 18,
+      "enabledByDefault": 4,
       "conditional": 0
     },
     "platform": {
