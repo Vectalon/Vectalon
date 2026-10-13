@@ -1,6 +1,13 @@
 import { readdirSync } from 'fs'
 import { join } from 'path'
 
+/** Benchmark packs use normalized, portable paths beneath a fresh temp root. */
+export function isBenchmarkPath(file: string): boolean {
+  // eslint-disable-next-line no-control-regex -- Reject NUL and control characters in untrusted paths.
+  return typeof file === 'string' && !/[\\:\x00-\x1f]/.test(file)
+    && file.split('/').every(part => part.length > 0 && part !== '.' && part !== '..')
+}
+
 /**
  * Recursively collect every `*.json` file under `dir` (sorted, depth-first), so
  * custom scenario/reference packs can nest files in subdirectories (e.g.

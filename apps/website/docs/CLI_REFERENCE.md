@@ -970,6 +970,12 @@ scored. A successful command exit means the benchmark completed, not that the
 model passed the smoke quality gate. Reports list failed guardrail rules and
 missing required files for diagnosis.
 
+**Live execution boundary:** fixture/generated paths must be normalized relative
+paths. Absolute paths, traversal, backslashes, and drive-qualified paths are
+rejected before writes. `--live` executes project code; `--install` installs its
+dependencies and may execute their scripts. The temporary directory is not a
+security sandbox. Use reviewed inputs in a disposable, credential-free environment.
+
 | Option | Description |
 |---|---|
 | `--model <provider>` | `local` \| `wasm` \| `openai` \| `anthropic` \| `azure-openai` \| `groq` \| `ollama` \| `vllm` — run the real-model pass |

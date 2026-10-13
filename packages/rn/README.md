@@ -360,6 +360,11 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   Deterministic baselines compare rubric/guardrail behavior only; they do not
   prove task completeness or model quality. Without `--live`,
   correctness is not scored. A completed benchmark is not a quality-gate pass.
+- **Live benchmark safety** — custom fixture and generated paths must be
+  normalized relative paths; traversal and absolute paths are rejected before
+  file writes. `bench --live` executes project code, and `--install` executes
+  dependency installation. A temporary directory is not process isolation:
+  use reviewed inputs in a disposable, credential-free environment.
 - **Full captured output** per command lands in `report.log` (readable),
   `report.json` (CI), and an HTML dashboard under `.vectalon/demo-matrix/` for
   matrix runs (`.vectalon/smoke/` for single-project runs). The model benchmark

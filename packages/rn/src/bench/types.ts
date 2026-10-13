@@ -7,6 +7,8 @@
  * can evolve without silently breaking the runner.
  */
 
+import { isBenchmarkPath } from './fs'
+
 export const SCENARIO_SPEC_VERSION = 1
 
 /** The three scored axes from docs/BENCHMARK_PLAN.md. */
@@ -189,6 +191,7 @@ export function validateScenario(raw: unknown): string[] {
   } else {
     for (const [path, content] of Object.entries(s.fixtures as Record<string, unknown>)) {
       if (typeof content !== 'string') problems.push(`fixture "${path}" must be a string`)
+      if (!isBenchmarkPath(path)) problems.push('fixture path must be a normalized relative file path')
     }
   }
 
@@ -198,6 +201,7 @@ export function validateScenario(raw: unknown): string[] {
     } else {
       for (const edit of s.fixEdits as Array<Record<string, unknown>>) {
         if (typeof edit.file !== 'string' || !edit.file.trim()) problems.push('fixEdits entry missing string field: file')
+        else if (!isBenchmarkPath(edit.file)) problems.push('fixEdits path must be a normalized relative file path')
         if (typeof edit.find !== 'string') problems.push(`fixEdits ${String(edit.file)} missing string field: find`)
         if (typeof edit.replace !== 'string') problems.push(`fixEdits ${String(edit.file)} missing string field: replace`)
       }
@@ -210,6 +214,8 @@ export function validateScenario(raw: unknown): string[] {
   } else {
     if (!Array.isArray(expect.files) || expect.files.some(f => typeof f !== 'string')) {
       problems.push('expect.files must be a string array')
+    } else if (expect.files.some(file => !isBenchmarkPath(file))) {
+      problems.push('expect.files must contain normalized relative file paths')
     }
     if (!Array.isArray(expect.behaviors) || expect.behaviors.some(b => typeof b !== 'string')) {
       problems.push('expect.behaviors must be a string array')

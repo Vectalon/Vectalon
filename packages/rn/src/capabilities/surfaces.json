@@ -2962,7 +2962,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.7.0.22.4.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.8.0.22.4.implementation.json"
     ]
   },
   {
@@ -2975,7 +2975,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.7.0.22.4.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.8.0.22.4.implementation.json"
     ]
   },
   {
@@ -2988,7 +2988,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.7.0.22.4.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.8.0.22.4.implementation.json"
     ]
   },
   {
@@ -3107,7 +3107,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.7.0.22.4.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.8.0.22.4.implementation.json"
     ]
   },
   {
@@ -3301,7 +3301,7 @@
     "kind": "claims",
     "name": "packages/rn/README.md",
     "source": "packages/rn/README.md",
-    "digest": "sha256:0e750e8b303c87f94e9d68507aaeafd73be9c8e6adcd7e96c730883cde2c8b9a",
+    "digest": "sha256:2619ba260f22ac843c05015a4a63d7dc1b5faa50b44402dc54c6b0b57daf75c1",
     "historical": false,
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
@@ -4855,7 +4855,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.7.0.22.4.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.8.0.22.4.implementation.json"
     ]
   },
   {
@@ -5418,7 +5418,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.7.0.22.4.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.8.0.22.4.implementation.json"
     ]
   },
   {
@@ -5429,7 +5429,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.7.0.22.4.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.8.0.22.4.implementation.json"
     ]
   },
   {
@@ -5440,7 +5440,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.7.0.22.4.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.8.0.22.4.implementation.json"
     ]
   },
   {

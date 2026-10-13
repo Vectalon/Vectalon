@@ -17,6 +17,7 @@ import {
 } from '../../src/bench'
 import type { BenchScenario } from '../../src/bench'
 import { createTempProject, cleanup } from '../helpers/tmp'
+import fs from 'fs'
 
 function validScenario(overrides: Partial<BenchScenario> = {}): BenchScenario {
   return {
@@ -37,6 +38,12 @@ function validScenario(overrides: Partial<BenchScenario> = {}): BenchScenario {
 }
 
 describe('bench scenario spec validation', () => {
+  it.each(['../escape.ts', '/tmp/escape.ts', 'C:/escape.ts', 'src\\escape.ts', '.', '', 'src/../escape.ts', 'src/escape.ts\0'])('rejects unsafe fixture, expected, and fix paths: %s', path => {
+    expect(validateScenario(validScenario({ fixtures: { [path]: 'x' } }))).toContain('fixture path must be a normalized relative file path')
+    expect(validateScenario(validScenario({ expect: { files: [path], behaviors: [] } }))).toContain('expect.files must contain normalized relative file paths')
+    expect(validateScenario(validScenario({ fixEdits: [{ file: path, find: 'x', replace: 'y' }] })).length).toBeGreaterThan(0)
+  })
+
   it('accepts a fully valid scenario', () => {
     expect(validateScenario(validScenario())).toEqual([])
   })
@@ -190,6 +197,44 @@ describe('bench scoring', () => {
 })
 
 describe('bench deterministic baseline runner', () => {
+  it.each(['../escape.ts', '/tmp/escape.ts', 'C:/escape.ts', 'src\\escape.ts', '.', '', 'src/../escape.ts', 'src/escape.ts\0'])('refuses unsafe live generated paths before executing anything: %s', path => {
+    const execute = jest.fn()
+    return expect(runScenario(validScenario(), {
+      live: true,
+      install: true,
+      generate: () => [{ path, content: 'export const value = 1' }],
+      runCommand: execute,
+    })).rejects.toThrow('Unsafe benchmark file').then(() => {
+      expect(execute).not.toHaveBeenCalled()
+    })
+  })
+
+  it('validates fixture paths even when called directly without the loader', async () => {
+    const execute = jest.fn()
+    await expect(runScenario(validScenario({ fixtures: { '../escape.ts': 'x' } }), {
+      live: true,
+      runCommand: execute,
+    })).rejects.toThrow('Unsafe benchmark file')
+    expect(execute).not.toHaveBeenCalled()
+  })
+
+  it('cleans up its newly owned temp project when fixture materialization fails', async () => {
+    const dir = createTempProject({})
+    const temp = jest.spyOn(fs, 'mkdtempSync').mockReturnValueOnce(dir)
+    const execute = jest.fn()
+    try {
+      await expect(runScenario(validScenario({ fixtures: { conflict: 'file', 'conflict/child.ts': 'x' } }), {
+        live: true,
+        runCommand: execute,
+      })).rejects.toThrow()
+      expect(execute).not.toHaveBeenCalled()
+      expect(fs.existsSync(dir)).toBe(false)
+    } finally {
+      temp.mockRestore()
+      cleanup(dir)
+    }
+  })
+
   it('reports failed rule identifiers and unscored axes without including generated source', async () => {
     const run = await runScenario(validScenario(), {
       generate: () => [{ path: 'src/Bad.ts', content: 'console.log("private diagnostic content");' }],

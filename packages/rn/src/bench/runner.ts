@@ -5,6 +5,7 @@ import { generateAddFeatureImplementation } from '../workflows/phases/implementa
 import { benchmarkSnapshot } from './snapshot'
 import { compositeScore, guardrailPassRate, guardrailPerFile, missingRequiredFiles, CORRECTNESS_WEIGHTS } from './scoring'
 import { loadScenarios, defaultScenariosDir } from './loader'
+import { isBenchmarkPath } from './fs'
 import { loadReferences, defaultReferencesDir } from './references'
 import { createModelGenerate } from './modelGenerate'
 import { rubricAdherence } from './rubric'
@@ -40,12 +41,21 @@ interface TempProject {
   cleanup: () => void
 }
 
-function createTempProject(fixtures: Record<string, string>): TempProject {
+function createTempProject(fixtures: Record<string, string>, files: BenchGeneratedFile[]): TempProject {
+  const entries = [...Object.entries(fixtures), ...files.map(file => [file.path, file.content])]
+  if (entries.some(([file, content]) => !isBenchmarkPath(file) || typeof content !== 'string')) {
+    throw new Error('Unsafe benchmark file: expected a normalized relative path and string content')
+  }
   const dir = mkdtempSync(join(tmpdir(), 'vectalon-bench-'))
-  for (const [relPath, content] of Object.entries(fixtures)) {
-    const fullPath = join(dir, relPath)
-    mkdirSync(dirname(fullPath), { recursive: true })
-    writeFileSync(fullPath, content)
+  try {
+    for (const [relPath, content] of entries) {
+      const fullPath = join(dir, relPath)
+      mkdirSync(dirname(fullPath), { recursive: true })
+      writeFileSync(fullPath, content)
+    }
+  } catch (error) {
+    rmSync(dir, { recursive: true, force: true })
+    throw error
   }
   return {
     dir,
@@ -129,13 +139,8 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
   let correctness: number | null = generationFailed && options.live ? 0 : null
   let correctnessDetails: string[] = generationFailed ? ['Model generation produced no non-empty files.'] : []
   if (options.live && !generationFailed) {
-    const temp = createTempProject(scenario.fixtures)
+    const temp = createTempProject(scenario.fixtures, files)
     try {
-      for (const file of files) {
-        const fullPath = join(temp.dir, file.path)
-        mkdirSync(dirname(fullPath), { recursive: true })
-        writeFileSync(fullPath, file.content)
-      }
       const executor = options.runCommand || runCommand
       if (options.install) {
         await executor('npm', ['install', '--no-audit', '--no-fund'], { cwd: temp.dir })
