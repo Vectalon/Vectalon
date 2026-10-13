@@ -337,8 +337,19 @@ export const rules: GuardrailRule[] = [
         /from\s+['"]react-native['"]\s*;?[\s\S]*?\bAsyncStorage\b/,
         /\bAlertIOS\b/,
         /\bStatusBarIOS\b/,
-        /\bNavigator\b/,
+        /\b(?:import|export)\s*\{[^}]*\bNavigator\b[^}]*\}\s*from\s*['"]react-native['"]/,
+        /\b(?:const|let|var)\s*\{[^}]*\bNavigator\b[^}]*\}\s*=\s*require\s*\(\s*['"]react-native['"]\s*\)/,
+        /require\s*\(\s*['"]react-native['"]\s*\)\s*\.\s*Navigator\b/,
       ]
+      // Navigator is only deprecated on react-native, not React Navigation stacks.
+      const namespaces = [
+        ...content.matchAll(/\bimport\s+(?:\*\s+as\s+)?([\w$]+)\s+from\s*['"]react-native['"]/g),
+        ...content.matchAll(/\b(?:const|let|var)\s+([\w$]+)\s*=\s*require\s*\(\s*['"]react-native['"]\s*\)/g),
+      ]
+      for (const binding of namespaces) {
+        const name = binding[1].replace(/\$/g, '\\$')
+        deprecated.push(new RegExp(`\\b${name}\\s*(?:\\.\\s*Navigator\\b|\\[\\s*['"]Navigator['"]\\s*\\])`))
+      }
       for (const pattern of deprecated) {
         const match = content.match(pattern)
         if (match) {

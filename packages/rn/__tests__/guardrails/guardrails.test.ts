@@ -156,6 +156,26 @@ describe('guardrails', () => {
     expect(finding?.passed).toBe(false)
   })
 
+  it.each([
+    "import { Navigator as Legacy } from 'react-native';",
+    "import * as RN from 'react-native'; RN.Navigator;",
+    "import RN from 'react-native'; RN['Navigator'];",
+    "const { Navigator: Legacy } = require('react-native');",
+    "const RN = require('react-native'); RN.Navigator;",
+    "require('react-native').Navigator;",
+  ])('flags deprecated native Navigator bindings: %s', content => {
+    const result = runGuardrails({ filePath: 'src/navigation.tsx', content })
+    expect(result.findings.find(f => f.rule === 'No deprecated React Native APIs')?.passed).toBe(false)
+  })
+
+  it('allows React Navigation stack Navigator components', () => {
+    const result = runGuardrails({
+      filePath: 'src/navigation.tsx',
+      content: "import { createNativeStackNavigator } from '@react-navigation/native-stack'; const Stack = createNativeStackNavigator(); export const Routes = () => <Stack.Navigator />;",
+    })
+    expect(result.findings.find(f => f.rule === 'No deprecated React Native APIs')?.passed).toBe(true)
+  })
+
   it('flags var declaration', () => {
     const result = runGuardrails({
       filePath: 'src/legacy.ts',

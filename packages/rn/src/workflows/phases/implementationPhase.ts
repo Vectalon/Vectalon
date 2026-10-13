@@ -454,7 +454,7 @@ export function buildImplementationPrompt(ctx: {
     failureSection,
     blastRadiusSection,
     'Generate the files for this request.',
-    `Use "${featureName}" as the base name for the generated modules.`,
+    `Only when the request, context, and existing tests specify no module name, use "${featureName}" as a suggested base name. Preserve required file paths and exported symbols.`,
   ].join('\n')
 
   return { systemPrompt, prompt: projectContext }

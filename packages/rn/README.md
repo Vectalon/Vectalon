@@ -356,7 +356,9 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   and per-scenario scores before changing code or model settings.
 - **Benchmark limits** — scores can include one repair attempt, not just the
   first response. Empty model output or missing required files fails adherence;
-  human references must satisfy the same required-file check. Without `--live`,
+  in model-backed runs, human references satisfy the same required-file check.
+  Deterministic baselines compare rubric/guardrail behavior only; they do not
+  prove task completeness or model quality. Without `--live`,
   correctness is not scored. A completed benchmark is not a quality-gate pass.
 - **Full captured output** per command lands in `report.log` (readable),
   `report.json` (CI), and an HTML dashboard under `.vectalon/demo-matrix/` for

@@ -154,12 +154,13 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
       ? options.rubric(files)
       : rubricAdherence(files, { removedDependencies, fixEdits: scenario.fixEdits })
   }
-  const missingFiles = options.generate
-    ? missingRequiredFiles(files, scenario.expect.files)
-    : []
+  const missingFiles = options.generate ? missingRequiredFiles(files, scenario.expect.files) : []
   if (missingFiles.length > 0) {
     adherence = 0
     correctnessDetails.push(`Missing required output files: ${missingFiles.join(', ')}`)
+  }
+  if (!options.generate) {
+    correctnessDetails.push('Deterministic scaffold baseline: required-file completeness is not evaluated; not model or task-success evidence.')
   }
 
   const axes = { correctness, adherence, guardrails }
@@ -169,7 +170,7 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
   const referenceFiles = options.references?.[scenario.id]
   let reference: BenchScenarioRun['reference']
   if (referenceFiles && referenceFiles.length > 0) {
-    const ref = scoreFilesOffline(referenceFiles, options, scenario.expect.files, removedDependencies, scenario.fixEdits)
+    const ref = scoreFilesOffline(referenceFiles, options, options.generate ? scenario.expect.files : [], removedDependencies, scenario.fixEdits)
     const relative = relativeToReference(axes, composite, ref.axes, ref.composite)
     reference = {
       files: referenceFiles.map(f => f.path),

@@ -962,8 +962,10 @@ scenario also announces the model-engine warm-up (the GGUF load that used to
 look like a freeze).
 
 Scores can include one repair attempt; they are not first-attempt success rates.
-Empty model output or missing required files fails adherence. Human references
-must satisfy the same required-file check. Without `--live`, correctness is not
+Empty model output or missing required files fails adherence. In model-backed
+runs, human references satisfy the same required-file check. Deterministic
+baselines compare rubric/guardrail behavior only for both sides; they do not
+prove task completeness or model quality. Without `--live`, correctness is not
 scored. A successful command exit means the benchmark completed, not that the
 model passed the smoke quality gate. Reports list failed guardrail rules and
 missing required files for diagnosis.

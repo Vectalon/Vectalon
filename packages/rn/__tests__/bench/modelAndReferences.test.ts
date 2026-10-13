@@ -61,6 +61,17 @@ describe('bench reference solutions (M6)', () => {
     expect(run.reference?.axes.adherence).toBe(0)
   })
 
+  it('labels the deterministic baseline as rubric-only and compares references on the same basis', async () => {
+    const scenario = validScenario({ expect: { files: ['src/Required.ts'], behaviors: [] } })
+    const run = await runScenario(scenario, {
+      rubric: () => 1,
+      references: { [scenario.id]: [{ path: 'src/Other.ts', content: 'export const value = 1' }] },
+    })
+    expect(run.axes.adherence).toBe(1)
+    expect(run.reference?.axes.adherence).toBe(1)
+    expect(run.correctnessDetails).toContain('Deterministic scaffold baseline: required-file completeness is not evaluated; not model or task-success evidence.')
+  })
+
   it('counts failed model generation as zero rather than excluding it from averages', async () => {
     const summary = await runBenchmark([validScenario()], { generate: async () => [] })
     expect(summary.runs[0].axes).toEqual({ correctness: null, adherence: 0, guardrails: 0 })
