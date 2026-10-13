@@ -824,6 +824,7 @@ export function createProgram(): Command {
   program
     .command('bench')
     .description('Run the RN coding tests benchmark (deterministic baseline or real-model leaderboard)')
+    .option('--include-generated', 'Include final generated source in --json reports (may contain sensitive code)')
     .option('--model <provider>', 'Model provider (local|wasm|openai|anthropic|azure-openai|ollama|vllm|groq) — run the real-model leaderboard pass')
     .option('--preset <id>', 'Local model preset for --model local: usage tier (fast|balanced|quality) or model id (qwen2.5-coder-3b|qwen2.5-coder-7b); defaults to the tier auto-selected for this machine\'s RAM')
     .option('--suite <id>', 'Only run scenarios in the given suite (core-ui, data-flow, forms-security, navigation, a11y, perf, refactor)')

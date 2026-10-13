@@ -365,6 +365,12 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   file writes. `bench --live` executes project code, and `--install` executes
   dependency installation. A temporary directory is not process isolation:
   use reviewed inputs in a disposable, credential-free environment.
+- **Inspect generated source (unreleased, source checkout)** — from the repository
+  root, build with `pnpm --filter @vectalon-dev/rn build`, then run
+  `node packages/rn/bin/rn-vectalon.js --experimental bench --model local --preset fast --suite navigation --json --include-generated -o navigation.json`.
+  Each scenario's `generatedArtifacts` contains final selected filenames and
+  source, not reference answers or earlier attempts. Default reports omit source.
+  Review/redact the JSON before sharing; custom tasks can include private code.
 - **Full captured output** per command lands in `report.log` (readable),
   `report.json` (CI), and an HTML dashboard under `.vectalon/demo-matrix/` for
   matrix runs (`.vectalon/smoke/` for single-project runs). The model benchmark

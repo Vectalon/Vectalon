@@ -191,6 +191,7 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
     suite: scenario.suite,
     scaffoldable: scenario.scaffoldable,
     generatedFiles: files.map(f => f.path),
+    ...(options.includeGenerated ? { generatedArtifacts: files.map(({ path, content }) => ({ path, content })) } : {}),
     guardrail,
     axes,
     composite,

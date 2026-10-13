@@ -21,6 +21,20 @@ describe('benchCommand', () => {
     expect(exit).toHaveBeenCalledWith(1)
   })
 
+  it('requires JSON for generated-source export', async () => {
+    const exit = jest.spyOn(process, 'exit').mockImplementation(() => { throw new Error('exit') })
+    await expect(benchCommand({ includeGenerated: true })).rejects.toThrow('exit')
+    expect(exit).toHaveBeenCalledWith(1)
+  })
+
+  it('wires explicit generated-source export into JSON reports', async () => {
+    await benchCommand({ json: true, includeGenerated: true })
+    const output = (process.stdout.write as jest.Mock).mock.calls.map(call => call[0]).join('').trim()
+    const report = JSON.parse(output)
+    expect(report.runs[0].generatedArtifacts.length).toBeGreaterThan(0)
+    expect(typeof report.runs[0].generatedArtifacts[0].content).toBe('string')
+  })
+
   it('runs the deterministic baseline and prints a markdown report', async () => {
     await expect(benchCommand({})).resolves.toBeUndefined()
 

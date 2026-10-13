@@ -41,6 +41,21 @@ function stubRouter(content: string): ModelGenerateOptions['modelRouter'] {
 }
 
 describe('bench reference solutions (M6)', () => {
+  it('includes only final generated source on explicit opt-in, never reference source', async () => {
+    const files = [{ path: 'src/Output.ts', content: 'export const generated = 1' }]
+    const scenario = validScenario()
+    const options = {
+      generate: () => files,
+      references: { [scenario.id]: [{ path: 'src/Reference.ts', content: 'private reference answer' }] },
+    }
+    const normal = await runScenario(scenario, options)
+    expect(normal.generatedArtifacts).toBeUndefined()
+    expect(JSON.stringify(normal)).not.toContain('export const generated')
+    const included = await runScenario(scenario, { ...options, includeGenerated: true })
+    expect(included.generatedArtifacts).toEqual(files)
+    expect(JSON.stringify(included)).not.toContain('private reference answer')
+  })
+
   it('fails adherence when generated output omits a required file', async () => {
     const run = await runScenario(validScenario({ expect: { files: ['src/Required.tsx'], behaviors: [] } }), {
       generate: async () => [{ path: 'src/Other.ts', content: 'export const value = 1' }],

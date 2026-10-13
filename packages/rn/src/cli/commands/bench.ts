@@ -36,6 +36,8 @@ export interface BenchCommandOptions {
   install?: boolean
   /** Print the summary as JSON instead of markdown. */
   json?: boolean
+  /** Include final generated source in JSON reports; explicit opt-in. */
+  includeGenerated?: boolean
   /** Write the report to a file instead of stdout. */
   output?: string
   /** Override the scenarios directory (default: bench/scenarios). */
@@ -49,6 +51,10 @@ export interface BenchCommandOptions {
 }
 
 export async function benchCommand(options: BenchCommandOptions): Promise<void> {
+  if (options.includeGenerated && !options.json) {
+    logger.error('--include-generated requires --json; review generated source before sharing the report')
+    process.exit(1)
+  }
   if (options.model && !isModelSetupProvider(options.model)) {
     logger.error(`Unknown model provider: ${options.model}`)
     logger.info(`Available providers: ${MODEL_PROVIDERS.join(', ')}`)
@@ -129,6 +135,7 @@ export async function benchCommand(options: BenchCommandOptions): Promise<void> 
   let lastSuite: string | null = null
   let headerPrinted = false
   const { summary, problems, referenceProblems } = await runBenchmarkFromDir({
+    includeGenerated: options.includeGenerated,
     generate,
     live: options.live,
     install: options.install,

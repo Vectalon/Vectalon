@@ -98,6 +98,8 @@ export interface BenchScenarioRun {
   suite: string
   scaffoldable: boolean
   generatedFiles: string[]
+  /** Opt-in final generated source for local diagnosis; may contain sensitive content. */
+  generatedArtifacts?: BenchGeneratedFile[]
   guardrail: ScenarioGuardrailFile[]
   axes: BenchAxisScores
   /** Renormalized weighted composite over the available axes (0–1). */
@@ -128,6 +130,8 @@ export interface BenchSummary {
 }
 
 export interface BenchRunOptions {
+  /** Include final generated source in JSON results. Off by default. */
+  includeGenerated?: boolean
   /** Directory containing the scenario JSON files. */
   scenariosDir?: string
   /** Directory containing human reference solutions (M6); default bench/references. */
