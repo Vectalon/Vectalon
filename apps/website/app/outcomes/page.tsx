@@ -166,7 +166,7 @@ export default function SavingsPage() {
             See your own ledger — it takes as long as the agents you&apos;ve already run:
           </p>
           <div className="mt-3 font-mono text-sm text-fg-dim">
-            <span className="text-brand">$</span> npx vectalon outcomes --rate 75
+            <span className="text-brand">$</span> npx --package @vectalon-dev/rn vectalon outcomes --rate 75
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
             <Link

@@ -218,7 +218,7 @@ async function runTarget(
           dryRun: true,
           plan: [
             `Generate a white-label portal for ${build.projectId} (${build.flavor} builds).`,
-            '  npx vectalon portal --generate --out ./portal-site',
+            '  npx --package @vectalon-dev/rn vectalon portal --generate --out ./portal-site',
             `  Deploy: --deploy --target vercel|netlify|static, domain: ${options.domain ?? 'builds.mycompany.com'}`,
           ],
         }

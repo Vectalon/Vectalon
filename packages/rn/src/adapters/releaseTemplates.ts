@@ -170,7 +170,7 @@ export function generateGithubReleaseWorkflow(root: string, options: ReleaseTemp
     '    runs-on: ubuntu-latest',
     '    steps:',
     ...steps.slice(0, 3).map(s => `      ${s}`),
-    '      - run: npx vectalon release --monitor --telemetry .vectalon/telemetry || true',
+    '      - run: npx --package @vectalon-dev/rn vectalon release --monitor --telemetry .vectalon/telemetry || true',
     '',
   ].join('\n')
 }
@@ -226,7 +226,7 @@ export function generateEasReleaseWorkflow(root: string, _options: ReleaseTempla
     '    name: 24h crash-rate monitor',
     '    steps:',
     ...steps.slice(0, 1).map(s => `      ${s}`),
-    '      - run: npx vectalon release --monitor --telemetry .vectalon/telemetry || true',
+    '      - run: npx --package @vectalon-dev/rn vectalon release --monitor --telemetry .vectalon/telemetry || true',
     '',
   ].join('\n')
 }

@@ -1,10 +1,22 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdtemp, mkdir, readFile, writeFile, readdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
 
 import { renderRnPlanProjection, validateProductManifest } from './product-manifest.mjs'
+
+test('public commands resolve the published scoped package, not the missing vectalon package', async () => {
+  const root = new URL('../', import.meta.url)
+  const files = ['README.md', 'packages/rn/README.md']
+  for (const directory of ['apps/website/app', 'apps/website/components', 'apps/website/docs', 'packages/rn/src']) {
+    const entries = await readdir(new URL(`${directory}/`, root), { recursive: true })
+    files.push(...entries.filter(file => /\.(md|tsx?)$/.test(file)).map(file => `${directory}/${file}`))
+  }
+  for (const file of files) {
+    assert.doesNotMatch(await readFile(new URL(file, root), 'utf8'), /\bnpx vectalon\b/, `${file}: select @vectalon-dev/rn explicitly`)
+  }
+})
 
 async function fixture(overrides = {}) {
   const root = await mkdtemp(path.join(tmpdir(), 'vectalon-product-manifest-'))

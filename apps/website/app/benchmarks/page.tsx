@@ -635,7 +635,7 @@ export default function BenchmarksPage() {
               SDK, no pbxproj or plist — trace of the removed packages remains.
             </p>
             <pre className="term-body mt-4 rounded-[4px] border bg-[rgb(var(--term))] p-3 text-[12px]" style={{ borderColor: 'rgb(var(--term-border))' }}>
-              <span className="text-term-brand">$</span> npx vectalon bench --baseline bench/baseline.json{'\\n'}
+              <span className="text-term-brand">$</span> npx --package @vectalon-dev/rn vectalon bench --baseline bench/baseline.json{'\\n'}
               <span className="text-slate-500"># exit 1 on any axis regression</span>
             </pre>
           </div>
@@ -663,7 +663,7 @@ export default function BenchmarksPage() {
           re-run all 100 scenarios and fail the build if either target slips.
         </p>
         <pre className="term-body mt-6 rounded-[4px] border bg-[rgb(var(--term))] p-4 text-[13px]" style={{ borderColor: 'rgb(var(--term-border))' }}>
-          <span className="text-term-brand">$</span> npx vectalon fix-bench{'\n'}
+          <span className="text-term-brand">$</span> npx --package @vectalon-dev/rn vectalon fix-bench{'\n'}
           <span className="text-slate-500">┌─ vc fix-bench — 100 real RN failures, measured ──────────────┐</span>{'\n'}
           <span className="text-slate-300">  Diagnosis accuracy</span>            <span className="text-emerald-500">100.0%</span>   <span className="text-slate-500">target 80.0% ✓</span>{'\n'}
           <span className="text-slate-300">  Fix accuracy (auto, no human)</span> <span className="text-emerald-500">70.0%</span>    <span className="text-slate-500">target 50.0% ✓</span>{'\n'}
@@ -751,7 +751,7 @@ export default function BenchmarksPage() {
           cherry-picked number.
         </p>
         <pre className="term-body mt-6 rounded-[4px] border bg-[rgb(var(--term))] p-4 text-[13px]" style={{ borderColor: 'rgb(var(--term-border))' }}>
-          <span className="text-term-brand">$</span> npx vectalon rnbench{'\n'}
+          <span className="text-term-brand">$</span> npx --package @vectalon-dev/rn vectalon rnbench{'\n'}
           <span className="text-slate-500">┌─ vectalon rnbench — Vectalon RN Engineering Benchmark ─────┐</span>{'\n'}
           <span className="text-slate-300">  Architecture (6) · Native integration (3) · Dependency mgmt (3) ·</span>{'\n'}
           <span className="text-slate-300">  Testing (9) · Performance (10) · Security (4) · Upgrades (4) ·</span>{'\n'}
@@ -801,16 +801,16 @@ export default function BenchmarksPage() {
             correctness axis for real, the way these numbers were produced.
           </p>
           <pre className="term-body mt-4 rounded-[4px] border bg-[rgb(var(--term))] p-4 text-[13px]" style={{ borderColor: 'rgb(var(--term-border))' }}>
-            <span className="text-term-brand">$</span> npx vectalon bench                          <span className="text-slate-500"># 1 · deterministic baseline (offline)</span>{'\\n'}
-            <span className="text-term-brand">$</span> npx vectalon bench --model local --live --install  <span className="text-slate-500"># 1 · model leaderboard, correctness scored (all 35)</span>{'\\n'}
-            <span className="text-term-brand">$</span> npx vectalon bench --suite forms-security   <span className="text-slate-500"># 2 · one suite</span>{'\\n'}
-            <span className="text-term-brand">$</span> npx vectalon bench --live --install         <span className="text-slate-500"># real tests/typecheck/lint → correctness axis</span>{'\\n'}
-            <span className="text-term-brand">$</span> npx vectalon leaderboard                    <span className="text-slate-500"># merge model passes → BENCHMARK_RESULTS.md</span>{'\\n'}
-            <span className="text-term-brand">$</span> npx vectalon bench --baseline bench/baseline.json  <span className="text-slate-500"># 4 · CI regression gate</span>{'\\n'}
-            <span className="text-term-brand">$</span> npx vectalon fix-bench                    <span className="text-slate-500"># 5 · 100 real failures, diagnosed + auto-fixed</span>{'\\n'}
-            <span className="text-term-brand">$</span> npx vectalon rnbench                      <span className="text-slate-500"># 6 · the RN engineering benchmark, 8 dimensions</span>{'\\n'}
-            <span className="text-term-brand">$</span> npx vectalon rnbench --export ./bundle  <span className="text-slate-500"># 6 · run a competitor through the same protocol</span>{'\\n'}
-            <span className="text-term-brand">$</span> npx vectalon bench --scenarios ./my-evals --references ./my-refs  <span className="text-slate-500"># your own eval pack</span>
+            <span className="text-term-brand">$</span> npx --package @vectalon-dev/rn vectalon bench                          <span className="text-slate-500"># 1 · deterministic baseline (offline)</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx --package @vectalon-dev/rn vectalon bench --model local --live --install  <span className="text-slate-500"># 1 · model leaderboard, correctness scored (all 35)</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx --package @vectalon-dev/rn vectalon bench --suite forms-security   <span className="text-slate-500"># 2 · one suite</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx --package @vectalon-dev/rn vectalon bench --live --install         <span className="text-slate-500"># real tests/typecheck/lint → correctness axis</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx --package @vectalon-dev/rn vectalon leaderboard                    <span className="text-slate-500"># merge model passes → BENCHMARK_RESULTS.md</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx --package @vectalon-dev/rn vectalon bench --baseline bench/baseline.json  <span className="text-slate-500"># 4 · CI regression gate</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx --package @vectalon-dev/rn vectalon fix-bench                    <span className="text-slate-500"># 5 · 100 real failures, diagnosed + auto-fixed</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx --package @vectalon-dev/rn vectalon rnbench                      <span className="text-slate-500"># 6 · the RN engineering benchmark, 8 dimensions</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx --package @vectalon-dev/rn vectalon rnbench --export ./bundle  <span className="text-slate-500"># 6 · run a competitor through the same protocol</span>{'\\n'}
+            <span className="text-term-brand">$</span> npx --package @vectalon-dev/rn vectalon bench --scenarios ./my-evals --references ./my-refs  <span className="text-slate-500"># your own eval pack</span>
           </pre>
         </div>
       </section>

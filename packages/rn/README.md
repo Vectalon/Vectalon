@@ -57,7 +57,7 @@ npx vc smoke --full    # npx resolves your local install first
 ## Quick Start — the 15-minute proof of value
 
 ```bash
-npx vectalon init      # or: vc init
+npx --package @vectalon-dev/rn vectalon init      # or: vc init
 ```
 
 That single command is the whole commercial experience. It scans the
@@ -93,16 +93,16 @@ Top problems Vectalon found:
 Then, when you're ready to go further:
 
 ```bash
-npx vectalon serve     # or: vc serve — start the MCP server for agents
-npx vectalon score     # or: vc score — the full 8-dimension scorecard + delta
-npx vectalon           # or: vc — the interactive menu
+npx --package @vectalon-dev/rn vectalon serve     # or: vc serve — start the MCP server for agents
+npx --package @vectalon-dev/rn vectalon score     # or: vc score — the full 8-dimension scorecard + delta
+npx --package @vectalon-dev/rn vectalon           # or: vc — the interactive menu
 ```
 
 ---
 
 ## CLI Commands
 
-Run `npx vectalon <command> --help` for detailed options.
+Run `npx --package @vectalon-dev/rn vectalon <command> --help` for detailed options.
 
 | Command | Description | Key Options |
 |---------|-------------|-------------|
@@ -188,7 +188,7 @@ share them — three ways to read them:
 
 ## Interactive Mode
 
-Run `npx vectalon` with no arguments (Node `>=20.12`, TTY required) to launch an interactive menu powered by `@clack/prompts`:
+Run `npx --package @vectalon-dev/rn vectalon` with no arguments (Node `>=20.12`, TTY required) to launch an interactive menu powered by `@clack/prompts`:
 
 ```
 ? What would you like to do?
@@ -314,12 +314,12 @@ Run **every CLI command** against the project and capture the full output of
 each one, so a release can be verified end-to-end before it ships:
 
 ```bash
-npx vectalon smoke                # every fast check → .vectalon/smoke/report.{json,log,html}
-npx vectalon smoke --full         # + feature workflow, bench, full selftest, model pull
-npx vectalon smoke --json         # machine-readable report (CI gates)
-npx vectalon smoke --only impact,coverage
-npx vectalon --experimental smoke --matrix --open
-npx vectalon --experimental smoke . --matrix --full --model local --timeout 180000 --open
+npx --package @vectalon-dev/rn vectalon smoke                # every fast check → .vectalon/smoke/report.{json,log,html}
+npx --package @vectalon-dev/rn vectalon smoke --full         # + feature workflow, bench, full selftest, model pull
+npx --package @vectalon-dev/rn vectalon smoke --json         # machine-readable report (CI gates)
+npx --package @vectalon-dev/rn vectalon smoke --only impact,coverage
+npx --package @vectalon-dev/rn vectalon --experimental smoke --matrix --open
+npx --package @vectalon-dev/rn vectalon --experimental smoke . --matrix --full --model local --timeout 180000 --open
 ```
 
 When testing the package from this monorepo rather than an installed npm
@@ -388,10 +388,10 @@ changed files), component + navigation graphs, a native module registry
 knowledge retrieval** with a sub-second benchmark:
 
 ```bash
-npx vectalon intel --bench                 # full report + retrieval benchmark
-npx vectalon intel --search "login screen" # ranked retrieval with timings
-npx vectalon intel --graph deps            # export the dependency graph as JSON
-npx vectalon intel --model                 # the application digest (see below)
+npx --package @vectalon-dev/rn vectalon intel --bench                 # full report + retrieval benchmark
+npx --package @vectalon-dev/rn vectalon intel --search "login screen" # ranked retrieval with timings
+npx --package @vectalon-dev/rn vectalon intel --graph deps            # export the dependency graph as JSON
+npx --package @vectalon-dev/rn vectalon intel --model                 # the application digest (see below)
 ```
 
 ### Intel is the foundation of everything
@@ -428,9 +428,9 @@ One deterministic pass (Roadmap Phase 2, items 011-015) that validates the
 build/toolchain surface and suggests a **concrete fix for every finding**:
 
 ```bash
-npx vectalon diagnostics                          # full report → docs/vectalon/diagnostics/
-npx vectalon diagnostics --gradle-log build.log   # classify a Gradle failure's root cause + fix
-npx vectalon diagnostics --xcode-log build.log    # classify an Xcode failure's root cause + fix
+npx --package @vectalon-dev/rn vectalon diagnostics                          # full report → docs/vectalon/diagnostics/
+npx --package @vectalon-dev/rn vectalon diagnostics --gradle-log build.log   # classify a Gradle failure's root cause + fix
+npx --package @vectalon-dev/rn vectalon diagnostics --xcode-log build.log    # classify an Xcode failure's root cause + fix
 ```
 
 - **Metro (011)** — config shape, alias targets resolve? watchFolders in
@@ -455,12 +455,12 @@ Deterministic templates (Roadmap Phase 2, items 016-020) written into the
 project — or previewed with `--dry-run`:
 
 ```bash
-npx vectalon generate component UserCard                 # → src/components/UserCard.tsx
-npx vectalon generate screen Profile                     # → src/screens/Profile.tsx (navigation wired)
-npx vectalon generate test UserCard                      # → __tests__/user-card.test.tsx (Jest RTL)
-npx vectalon generate test UserCard --framework detox    # Detox E2E instead
-npx vectalon generate native-module CameraScanner --spec '{"moduleName":"CameraScanner"}'
-npx vectalon generate api OrdersApi --spec openapi.json  # typed client + apiBase.ts
+npx --package @vectalon-dev/rn vectalon generate component UserCard                 # → src/components/UserCard.tsx
+npx --package @vectalon-dev/rn vectalon generate screen Profile                     # → src/screens/Profile.tsx (navigation wired)
+npx --package @vectalon-dev/rn vectalon generate test UserCard                      # → __tests__/user-card.test.tsx (Jest RTL)
+npx --package @vectalon-dev/rn vectalon generate test UserCard --framework detox    # Detox E2E instead
+npx --package @vectalon-dev/rn vectalon generate native-module CameraScanner --spec '{"moduleName":"CameraScanner"}'
+npx --package @vectalon-dev/rn vectalon generate api OrdersApi --spec openapi.json  # typed client + apiBase.ts
 ```
 
 - **Component (016)** — functional TS + StyleSheet (`--no-typescript`, `--no-styles`, `--navigation`)
@@ -475,8 +475,8 @@ One deterministic pass (Roadmap Phase 4, items 021-023, 027, 029) over the
 project's source — no build, no device, no model calls:
 
 ```bash
-npx vectalon perf                      # findings + markdown report → docs/vectalon/perf/
-npx vectalon perf --json               # machine-readable report (CI)
+npx --package @vectalon-dev/rn vectalon perf                      # findings + markdown report → docs/vectalon/perf/
+npx --package @vectalon-dev/rn vectalon perf --json               # machine-readable report (CI)
 ```
 
 - **Render profiler / re-render detector (021-022)** — render-phase
@@ -504,10 +504,10 @@ Parse Hermes `.cpuprofile` and heap snapshots to surface **measured** runtime
 problems and track them over time (**Pro tier**):
 
 ```bash
-npx vectalon profile --profile app.cpuprofile                # JS-thread blocking + hot functions
-npx vectalon profile --heap app.heapsnapshot                  # retained objects + leak candidates
-npx vectalon profile --profile app.cpuprofile --save-baseline # store a baseline in the knowledge base
-npx vectalon profile --profile app.cpuprofile                 # compare against the stored baseline
+npx --package @vectalon-dev/rn vectalon profile --profile app.cpuprofile                # JS-thread blocking + hot functions
+npx --package @vectalon-dev/rn vectalon profile --heap app.heapsnapshot                  # retained objects + leak candidates
+npx --package @vectalon-dev/rn vectalon profile --profile app.cpuprofile --save-baseline # store a baseline in the knowledge base
+npx --package @vectalon-dev/rn vectalon profile --profile app.cpuprofile                 # compare against the stored baseline
 ```
 
 - **JS-thread blocking** — contiguous sample runs where the JS thread stays
@@ -531,10 +531,10 @@ ambient authority** — the trust foundation for auto-executed code
 (**Pro tier**):
 
 ```bash
-npx vectalon sandbox -- node -e 'console.log("hello")'        # run inside the project dir
-npx vectalon sandbox --root /tmp/scratch -- npm test           # confine to a scratch dir
-npx vectalon sandbox --timeout 5000 -- node run-tests.js       # bound execution
-npx vectalon sandbox --cpu 10 --memory 512 -- jest             # CPU + memory caps
+npx --package @vectalon-dev/rn vectalon sandbox -- node -e 'console.log("hello")'        # run inside the project dir
+npx --package @vectalon-dev/rn vectalon sandbox --root /tmp/scratch -- npm test           # confine to a scratch dir
+npx --package @vectalon-dev/rn vectalon sandbox --timeout 5000 -- node run-tests.js       # bound execution
+npx --package @vectalon-dev/rn vectalon sandbox --cpu 10 --memory 512 -- jest             # CPU + memory caps
 ```
 
 - **Environment scrubbing** — deny-by-default: only PATH, HOME, TMPDIR, and
@@ -561,10 +561,10 @@ Beyond the fixed ratio check, the release monitor now runs **statistical
 anomaly detection** on the crash-rate time series (**Pro tier**):
 
 ```bash
-npx vectalon release --monitor                          # z-score anomaly detection (24h window)
-npx vectalon release --monitor --telemetry telemetry/   # point at the exports dir
-npx vectalon release --monitor --zscore 4               # tighter gate: baseline + 4σ
-npx vectalon release --monitor --baseline 2.5           # classic ratio check instead
+npx --package @vectalon-dev/rn vectalon release --monitor                          # z-score anomaly detection (24h window)
+npx --package @vectalon-dev/rn vectalon release --monitor --telemetry telemetry/   # point at the exports dir
+npx --package @vectalon-dev/rn vectalon release --monitor --zscore 4               # tighter gate: baseline + 4σ
+npx --package @vectalon-dev/rn vectalon release --monitor --baseline 2.5           # classic ratio check instead
 ```
 
 - **Time series** — crashes with timestamps (Sentry / Crashlytics exports)
@@ -593,9 +593,9 @@ headlessly** inside the V-1 sandbox — reading console logs, the render tree,
 and runtime errors **before presenting a diff to the user** (**Pro tier**):
 
 ```bash
-npx vectalon render --entry src/App.tsx                    # render a project file
-npx vectalon render --entry src/App.tsx --file src/Header.tsx  # compile siblings too
-npx vectalon render --entry src/App.tsx --json             # structured result
+npx --package @vectalon-dev/rn vectalon render --entry src/App.tsx                    # render a project file
+npx --package @vectalon-dev/rn vectalon render --entry src/App.tsx --file src/Header.tsx  # compile siblings too
+npx --package @vectalon-dev/rn vectalon render --entry src/App.tsx --json             # structured result
 ```
 
 - **Transpile** — project Babel with TS/React presets (the exact Metro
@@ -623,10 +623,10 @@ breaking-change impact analysis, and New Architecture migration awareness
 (**Pro tier**):
 
 ```bash
-npx vectalon upgrade --to 0.76            # dry-run plan + impact analysis
-npx vectalon upgrade --to 0.76 --apply    # execute codemods + verify
-npx vectalon upgrade --to 0.76 --apply --force  # also apply review steps
-npx vectalon upgrade --to 0.86.2 --diff   # + official rn-diff-purge template diff
+npx --package @vectalon-dev/rn vectalon upgrade --to 0.76            # dry-run plan + impact analysis
+npx --package @vectalon-dev/rn vectalon upgrade --to 0.76 --apply    # execute codemods + verify
+npx --package @vectalon-dev/rn vectalon upgrade --to 0.76 --apply --force  # also apply review steps
+npx --package @vectalon-dev/rn vectalon upgrade --to 0.86.2 --diff   # + official rn-diff-purge template diff
 ```
 
 The pipeline is **Detect → Catalog → Impact → Plan → Codemods → Verify**:
@@ -841,7 +841,7 @@ packages/rn/
 
 Two commercial plans on top of the deterministic engine gating (`free` /
 `pro` / `team`). Pricing is deliberately simple — the goal is
-the first paying teams, not pricing-page psychology. Run `npx vectalon plan`
+the first paying teams, not pricing-page psychology. Run `npx --package @vectalon-dev/rn vectalon plan`
 to see your current plan and what each tier includes.
 
 | Plan | Price | Features |
@@ -856,7 +856,7 @@ paid license does not turn an experimental capability into a supported promise.
 Current purchases cover the React Native harness only—planned iOS, Android,
 Flutter, and Python SDKs are not included.
 
-Start a 14-day free trial: `npx vectalon auth --github`
+Start a 14-day free trial: `npx --package @vectalon-dev/rn vectalon auth --github`
 
 ---
 

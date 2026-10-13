@@ -60,7 +60,7 @@ export async function portalCommand(directory: string, options: PortalCommandOpt
       `Builds:  ${result.builds} archived build(s) embedded`,
       `Files:   ${result.fileCount}`,
       '',
-      `Deploy:  npx vectalon portal --deploy --target vercel   (or netlify / static)`,
+      `Deploy:  npx --package @vectalon-dev/rn vectalon portal --deploy --target vercel   (or netlify / static)`,
       `Domain:  ${options.domain ?? 'builds.mycompany.com (pass --domain to set)'}`,
     ]
     printCarbonReport({

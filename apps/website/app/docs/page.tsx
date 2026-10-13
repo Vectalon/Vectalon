@@ -83,19 +83,19 @@ const STEPS = [
   {
     n: '01',
     title: 'Install & init',
-    code: 'npm install --save-dev @vectalon-dev/rn && npx vectalon init',
+    code: 'npm install --save-dev @vectalon-dev/rn && npx --package @vectalon-dev/rn vectalon init',
     body: 'Scans the repo, seeds the knowledge base, and enables the ecosystem items your project needs. No config files to write — Vectalon owns its own knowledge.',
   },
   {
     n: '02',
     title: 'Serve the agent',
-    code: 'npx vectalon serve',
+    code: 'npx --package @vectalon-dev/rn vectalon serve',
     body: `Boots the MCP server. The package registers ${PRODUCT_MANIFEST.capabilities.mcpTools} project-aware tools and ${PRODUCT_MANIFEST.capabilities.deterministicCommands} deterministic commands, but availability follows the released lifecycle catalog. Beta onboarding and policy surfaces are enabled by default; experimental analysis, knowledge, model, and integration commands require opt-in and may need configured models, credentials, or network services.`,
   },
   {
     n: '03',
     title: 'Use it',
-    code: 'npx vectalon feature "login screen with auth API"',
+    code: 'npx --package @vectalon-dev/rn vectalon feature "login screen with auth API"',
     body: 'PRD → stories → acceptance criteria → implementation → tests → review. Every fix is compile-checked before it lands, and the terminal explains itself — live phase progress, a command feed, and parsed failure cards on failure.',
   },
 ]
@@ -167,9 +167,9 @@ export default function DocsPage() {
           {/* SYNOPSIS */}
           <ManH>synopsis</ManH>
           <pre className="mt-3 overflow-x-auto font-mono text-sm leading-relaxed text-slate-300">
-            <span className="text-brand">$</span> npx vectalon &lt;command&gt; [options]
+            <span className="text-brand">$</span> npx --package @vectalon-dev/rn vectalon &lt;command&gt; [options]
             {'\n'}
-            <span className="text-slate-600">$</span> npx vectalon feature "login screen with auth API"
+            <span className="text-slate-600">$</span> npx --package @vectalon-dev/rn vectalon feature "login screen with auth API"
           </pre>
 
           {/* QUICKSTART */}
@@ -306,7 +306,7 @@ export default function DocsPage() {
           {/* TRIAL CTA — the prompt line */}
           <div className="mt-10 rounded-[3px] border border-ink-700 code-bg px-4 py-3.5">
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-sm text-slate-300">
-              <span className="text-brand">vectalon@main:~$</span> npx vectalon trial --14-days
+              <span className="text-brand">vectalon@main:~$</span> npx --package @vectalon-dev/rn vectalon trial --14-days
               <span className="caret" />
             </p>
             <p className="mt-1.5 font-mono text-[11px] text-slate-500">

@@ -52,7 +52,7 @@ const SDK_DATA: Record<string, SdkData> = {
       { title: 'Simulator control', body: 'Boot, screenshot, tap, swipe, deep links, and VoiceOver tree dumps.' },
       { title: 'New Architecture templates', body: 'Deterministic TurboModule scaffolding with codegen wiring.' },
     ],
-    install: 'npx vectalon init --platform ios',
+    install: 'npx --package @vectalon-dev/rn vectalon init --platform ios',
     note: 'On the waitlist? We’ll email the moment the beta opens.',
   },
   android: {
@@ -70,7 +70,7 @@ const SDK_DATA: Record<string, SdkData> = {
       { title: 'TalkBack verification', body: 'Dump the accessibility tree and verify announcements end-to-end.' },
       { title: 'New Architecture templates', body: 'Deterministic TurboModule + codegen scaffolding in Kotlin.' },
     ],
-    install: 'npx vectalon init --platform android',
+    install: 'npx --package @vectalon-dev/rn vectalon init --platform android',
     note: 'On the waitlist? We’ll email the moment the beta opens.',
   },
   flutter: {
@@ -88,7 +88,7 @@ const SDK_DATA: Record<string, SdkData> = {
       { title: 'Hot-reload-safe refactors', body: 'Refactor suggestions scoped so the running app stays consistent.' },
       { title: 'Accessibility checks', body: 'Semantics tree verification against the a11y ruleset.' },
     ],
-    install: 'npx vectalon init --platform flutter',
+    install: 'npx --package @vectalon-dev/rn vectalon init --platform flutter',
     note: 'On the waitlist? We’ll email the moment the beta opens.',
   },
 }

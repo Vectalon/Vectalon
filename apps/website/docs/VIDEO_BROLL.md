@@ -47,11 +47,11 @@ in `docs/vectalon/` is the footage.
 
 ```bash
 npm install -D @vectalon-dev/rn
-npx vectalon init
+npx --package @vectalon-dev/rn vectalon init
 ```
 
 > Optional second take for the "choose a provider" beat:
-> `npx vectalon init --model openai`
+> `npx --package @vectalon-dev/rn vectalon init --model openai`
 
 ### Expected output (annotate the beats)
 
@@ -94,13 +94,13 @@ npx vectalon init
 ### Commands (left pane: doctor; right pane: selftest)
 
 ```bash
-npx vectalon doctor
-npx vectalon doctor --fix      # (optional beat: a MISSING check flips to OK)
+npx --package @vectalon-dev/rn vectalon doctor
+npx --package @vectalon-dev/rn vectalon doctor --fix      # (optional beat: a MISSING check flips to OK)
 ```
 
 ```bash
-npx vectalon selftest          # right pane — let it run to completion
-npx vectalon selftest --list   # (optional beat: show the check inventory)
+npx --package @vectalon-dev/rn vectalon selftest          # right pane — let it run to completion
+npx --package @vectalon-dev/rn vectalon selftest --list   # (optional beat: show the check inventory)
 ```
 
 ### Expected output — doctor
@@ -137,7 +137,7 @@ final statuses):
    a helper tool) so the flip is real, then restore it.
 2. Record `selftest` in the right pane **without narration** — it's the
    longest clip; keep the final summary + `report.html` on screen for 5 s.
-3. Open the HTML dashboard (`npx vectalon selftest --open`) as a separate
+3. Open the HTML dashboard (`npx --package @vectalon-dev/rn vectalon selftest --open`) as a separate
    quick clip: per-check cards, green statuses, expandable activity traces.
 4. **Region:** split screen (doctor left / selftest right), then full-screen
    dashboard for the last 5 s.
@@ -158,7 +158,7 @@ stream of check results, the final `42/42` summary, the HTML dashboard.
 ### Command
 
 ```bash
-npx vectalon feature "create a login screen with email + password and hook it to the auth API" --heal-interactive
+npx --package @vectalon-dev/rn vectalon feature "create a login screen with email + password and hook it to the auth API" --heal-interactive
 ```
 
 > Optional beats: re-run with `--dry-run` for the preview beat, and
@@ -219,7 +219,7 @@ diff, a guardrail finding being fixed, the docs tree.
 ### Command
 
 ```bash
-npx vectalon bundle --static
+npx --package @vectalon-dev/rn vectalon bundle --static
 ```
 
 ### Expected output
@@ -233,7 +233,7 @@ npx vectalon bundle --static
 ```
 
 > Optional beat — the knowledge-base snapshot delta (requires a prior real
-> `npx vectalon bundle` build):
+> `npx --package @vectalon-dev/rn vectalon bundle` build):
 > `Bundle grew +80 KB vs previous snapshot (platform: ios)`
 
 **Capture notes**
@@ -259,7 +259,7 @@ npx vectalon bundle --static
 ### Command
 
 ```bash
-npx vectalon profile --profile app.cpuprofile
+npx --package @vectalon-dev/rn vectalon profile --profile app.cpuprofile
 ```
 
 ### Expected output
@@ -273,7 +273,7 @@ npx vectalon profile --profile app.cpuprofile
 ✔ Baseline: none stored — pass --save-baseline to track regressions
 ```
 
-> Optional beat: `npx vectalon profile --profile app.cpuprofile --save-baseline`
+> Optional beat: `npx --package @vectalon-dev/rn vectalon profile --profile app.cpuprofile --save-baseline`
 > then re-run to show `✔ No regression vs baseline`.
 
 **Capture notes**
@@ -300,9 +300,9 @@ npx vectalon profile --profile app.cpuprofile
 ### Commands (in order)
 
 ```bash
-npx vectalon release                       # plan: bump + changelog
-npx vectalon release --submit              # write the release workflow
-npx vectalon release --monitor --telemetry telemetry/   # crash-rate monitor
+npx --package @vectalon-dev/rn vectalon release                       # plan: bump + changelog
+npx --package @vectalon-dev/rn vectalon release --submit              # write the release workflow
+npx --package @vectalon-dev/rn vectalon release --monitor --telemetry telemetry/   # crash-rate monitor
 ```
 
 ### Expected output — plan

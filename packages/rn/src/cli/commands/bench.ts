@@ -93,7 +93,7 @@ export async function benchCommand(options: BenchCommandOptions): Promise<void> 
   const baseline = options.baseline ? loadBaselineFile(options.baseline) : null
   if (options.baseline && !baseline) {
     logger.error(`Could not load baseline file: ${options.baseline}`)
-    logger.info('Generate one with: npx vectalon bench --json -o bench/baseline.json')
+    logger.info('Generate one with: npx --package @vectalon-dev/rn vectalon bench --json -o bench/baseline.json')
     process.exit(1)
   }
 

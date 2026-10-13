@@ -48,7 +48,7 @@ export async function sandboxCommand(command: string, args: string[], options: S
     if (check.canTrial) {
       logger.info('')
       logger.info('🔄 Start 14-day Pro trial?')
-      logger.info('   Run: npx vectalon auth --github')
+      logger.info('   Run: npx --package @vectalon-dev/rn vectalon auth --github')
       logger.info('   Or visit: https://vectalon.in/trial?product=rn')
     }
     logger.info('')

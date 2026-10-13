@@ -1,16 +1,16 @@
 # vectalon CLI Reference
 
 Complete reference for the `vectalon` command-line interface. Every command is
-available as `npx vectalon <command>` (or `vectalon <command>` when installed
+available as `npx --package @vectalon-dev/rn vectalon <command>` (or `vectalon <command>` when installed
 globally or linked).
 
 The package also installs the **shortcut `vc`** — same CLI, same commands.
 In a project where `@vectalon-dev/rn` is installed, `npx vc status` and
-`vc status` are equivalent to `npx vectalon status`. (`vc` is also an
+`vc status` are equivalent to `npx --package @vectalon-dev/rn vectalon status`. (`vc` is also an
 unrelated npm package, so the bare name resolves to your local install only
 when the package is installed; `npx` prefers the local binary.)
 
-Running `npx vectalon` with no arguments opens an **interactive menu** covering
+Running `npx --package @vectalon-dev/rn vectalon` with no arguments opens an **interactive menu** covering
 the most common actions (init, feature, refresh, suggestions, bundle, status,
 daemon, telemetry, impact, coverage, intel, diagnostics, generate, perf,
 smoke, ci, release, ecosystem, doctor, selftest, bench, leaderboard, sync,
@@ -43,16 +43,16 @@ fallback) runs silently underneath, and the summary itself is zero model
 calls.
 
 ```bash
-npx vectalon init                  # scan cwd, create .vectalon/, and show the score + top problems
-npx vectalon init ./my-app         # scan a specific directory
-npx vectalon init --model local    # use the local Qwen2.5-Coder provider
-npx vectalon init --model wasm     # zero-config ONNX/WASM provider (downloads on first use)
-npx vectalon init --model openai   # remote OpenAI provider (reads OPENAI_API_KEY)
-npx vectalon init --model anthropic  # remote Anthropic provider (ANTHROPIC_API_KEY)
-npx vectalon init --model azure-openai  # Azure OpenAI deployments (AZURE_OPENAI_API_KEY)
-npx vectalon init --model groq     # Groq fast inference (GROQ_API_KEY)
-npx vectalon init --model ollama   # local Ollama server — no API key
-npx vectalon init --model vllm     # local vLLM server — no API key
+npx --package @vectalon-dev/rn vectalon init                  # scan cwd, create .vectalon/, and show the score + top problems
+npx --package @vectalon-dev/rn vectalon init ./my-app         # scan a specific directory
+npx --package @vectalon-dev/rn vectalon init --model local    # use the local Qwen2.5-Coder provider
+npx --package @vectalon-dev/rn vectalon init --model wasm     # zero-config ONNX/WASM provider (downloads on first use)
+npx --package @vectalon-dev/rn vectalon init --model openai   # remote OpenAI provider (reads OPENAI_API_KEY)
+npx --package @vectalon-dev/rn vectalon init --model anthropic  # remote Anthropic provider (ANTHROPIC_API_KEY)
+npx --package @vectalon-dev/rn vectalon init --model azure-openai  # Azure OpenAI deployments (AZURE_OPENAI_API_KEY)
+npx --package @vectalon-dev/rn vectalon init --model groq     # Groq fast inference (GROQ_API_KEY)
+npx --package @vectalon-dev/rn vectalon init --model ollama   # local Ollama server — no API key
+npx --package @vectalon-dev/rn vectalon init --model vllm     # local vLLM server — no API key
 ```
 
 The proof-of-value window is exactly the commercial surface:
@@ -145,10 +145,10 @@ Start the MCP server so any agent (Claude Code, OpenCode, Codex CLI, Cursor,
 Windsurf) can connect for project-aware assistance.
 
 ```bash
-npx vectalon serve                    # MCP over stdio (default)
-npx vectalon serve --protocol stdio   # stdio
-npx vectalon serve --protocol http --port 8931   # HTTP for Codex CLI etc.
-npx vectalon serve --model openai     # override the model provider for this run
+npx --package @vectalon-dev/rn vectalon serve                    # MCP over stdio (default)
+npx --package @vectalon-dev/rn vectalon serve --protocol stdio   # stdio
+npx --package @vectalon-dev/rn vectalon serve --protocol http --port 8931   # HTTP for Codex CLI etc.
+npx --package @vectalon-dev/rn vectalon serve --model openai     # override the model provider for this run
 ```
 
 **Options**
@@ -235,12 +235,12 @@ it learns: Metro build events (bundle size + build errors) and Hermes JS-thread
 health.
 
 ```bash
-npx vectalon daemon                    # start the background daemon
-npx vectalon daemon --status           # show whether it is running (pid, port, health)
-npx vectalon daemon --stop             # stop a running daemon
-npx vectalon daemon --once             # single probe pass, then exit (CI-friendly)
-npx vectalon daemon --wire-metro       # also patch metro.config.js to use the reporter
-npx vectalon daemon --no-device-probe  # disable the Hermes JS-thread probe loop
+npx --package @vectalon-dev/rn vectalon daemon                    # start the background daemon
+npx --package @vectalon-dev/rn vectalon daemon --status           # show whether it is running (pid, port, health)
+npx --package @vectalon-dev/rn vectalon daemon --stop             # stop a running daemon
+npx --package @vectalon-dev/rn vectalon daemon --once             # single probe pass, then exit (CI-friendly)
+npx --package @vectalon-dev/rn vectalon daemon --wire-metro       # also patch metro.config.js to use the reporter
+npx --package @vectalon-dev/rn vectalon daemon --no-device-probe  # disable the Hermes JS-thread probe loop
 ```
 
 **Options**
@@ -291,14 +291,14 @@ Run the end-to-end feature-development SDLC workflow from a single prompt — or
 headlessly from a PM ticket with `--ticket`.
 
 ```bash
-npx vectalon feature "create a login screen and integrate the auth API"
-npx vectalon feature "remove unused imports" --dry-run     # safe preview
-npx vectalon feature "remove unused imports" --push        # commit, push, open PR
-npx vectalon feature "add login screen" --device           # include iOS/Android builds
-npx vectalon feature "fix all lint issues" --heal-attempts 5
-npx vectalon feature "fix all lint issues" --heal-interactive
-npx vectalon feature "add login screen" --resume <state-id> --from implementation
-npx vectalon feature --ticket MOB-123 --push   # ticket-to-PR: read the ticket, run the
+npx --package @vectalon-dev/rn vectalon feature "create a login screen and integrate the auth API"
+npx --package @vectalon-dev/rn vectalon feature "remove unused imports" --dry-run     # safe preview
+npx --package @vectalon-dev/rn vectalon feature "remove unused imports" --push        # commit, push, open PR
+npx --package @vectalon-dev/rn vectalon feature "add login screen" --device           # include iOS/Android builds
+npx --package @vectalon-dev/rn vectalon feature "fix all lint issues" --heal-attempts 5
+npx --package @vectalon-dev/rn vectalon feature "fix all lint issues" --heal-interactive
+npx --package @vectalon-dev/rn vectalon feature "add login screen" --resume <state-id> --from implementation
+npx --package @vectalon-dev/rn vectalon feature --ticket MOB-123 --push   # ticket-to-PR: read the ticket, run the
                                                # workflow, open a real PR with a review comment
 ```
 
@@ -366,14 +366,14 @@ Browse and manage the external tooling catalog — MCP servers, agent skills,
 developer tools, and git hooks for React Native / Expo.
 
 ```bash
-npx vectalon ecosystem                      # list the full catalog
-npx vectalon ecosystem --category mcp       # only MCP servers
-npx vectalon ecosystem --flavor expo        # only Expo-flavored items
-npx vectalon ecosystem --enable metro-mcp   # enable an item (verified on npm first)
-npx vectalon ecosystem --enable metro-mcp --force  # ... skip the registry check
-npx vectalon ecosystem --disable maestro    # disable an item
-npx vectalon ecosystem --export             # emit MCP client config fragment
-npx vectalon ecosystem --export --json      # ... as JSON
+npx --package @vectalon-dev/rn vectalon ecosystem                      # list the full catalog
+npx --package @vectalon-dev/rn vectalon ecosystem --category mcp       # only MCP servers
+npx --package @vectalon-dev/rn vectalon ecosystem --flavor expo        # only Expo-flavored items
+npx --package @vectalon-dev/rn vectalon ecosystem --enable metro-mcp   # enable an item (verified on npm first)
+npx --package @vectalon-dev/rn vectalon ecosystem --enable metro-mcp --force  # ... skip the registry check
+npx --package @vectalon-dev/rn vectalon ecosystem --disable maestro    # disable an item
+npx --package @vectalon-dev/rn vectalon ecosystem --export             # emit MCP client config fragment
+npx --package @vectalon-dev/rn vectalon ecosystem --export --json      # ... as JSON
 ```
 
 **Options**
@@ -408,13 +408,13 @@ outputs a wrapping table (no truncation — every Detail and Hint is fully
 visible), and each missing check comes with a numbered fix step.
 
 ```bash
-npx vectalon doctor                         # human-readable report
-npx vectalon doctor --json                  # machine-readable report
-npx vectalon doctor --fix                   # auto-install missing items, then re-check
-npx vectalon doctor --enable metro-mcp      # quick-toggle an item on
-npx vectalon doctor --disable maestro       # quick-toggle an item off
-npx vectalon doctor ./my-app                # check a specific project
-npx vectalon doctor --selftest              # verify the doctor's own probes work
+npx --package @vectalon-dev/rn vectalon doctor                         # human-readable report
+npx --package @vectalon-dev/rn vectalon doctor --json                  # machine-readable report
+npx --package @vectalon-dev/rn vectalon doctor --fix                   # auto-install missing items, then re-check
+npx --package @vectalon-dev/rn vectalon doctor --enable metro-mcp      # quick-toggle an item on
+npx --package @vectalon-dev/rn vectalon doctor --disable maestro       # quick-toggle an item off
+npx --package @vectalon-dev/rn vectalon doctor ./my-app                # check a specific project
+npx --package @vectalon-dev/rn vectalon doctor --selftest              # verify the doctor's own probes work
 ```
 
 **Options**
@@ -503,13 +503,13 @@ so clients can see exactly what the package does: every step, every shell
 command, and every file created or modified.
 
 ```bash
-npx vectalon selftest               # run all checks, write report + dashboard
-npx vectalon selftest --list        # list every check id and exit
-npx vectalon selftest --category knowledge   # only the knowledge category
-npx vectalon selftest --only sdlc-git-derivation  # a single check
-npx vectalon selftest --json        # print the JSON report to stdout (CI)
-npx vectalon selftest --open        # open the HTML dashboard in the browser
-npx vectalon selftest --out ./reports  # write artifacts elsewhere
+npx --package @vectalon-dev/rn vectalon selftest               # run all checks, write report + dashboard
+npx --package @vectalon-dev/rn vectalon selftest --list        # list every check id and exit
+npx --package @vectalon-dev/rn vectalon selftest --category knowledge   # only the knowledge category
+npx --package @vectalon-dev/rn vectalon selftest --only sdlc-git-derivation  # a single check
+npx --package @vectalon-dev/rn vectalon selftest --json        # print the JSON report to stdout (CI)
+npx --package @vectalon-dev/rn vectalon selftest --open        # open the HTML dashboard in the browser
+npx --package @vectalon-dev/rn vectalon selftest --out ./reports  # write artifacts elsewhere
 ```
 
 **Live progress.** Results stream to stderr as each check finishes — a
@@ -569,7 +569,7 @@ instead of killing the report — and a silent heartbeat (>30 min, active
 license) surfaces the admin alert path too.
 
 ```bash
-npx vectalon status
+npx --package @vectalon-dev/rn vectalon status
 ```
 
 **Options** — none; runs against the current working directory.
@@ -591,10 +591,10 @@ no model calls. Static checks always run against the project on disk; a real
 base and warns when it grows vs the previous snapshot.
 
 ```bash
-npx vectalon bundle                         # build iOS bundle + run all budgets
-npx vectalon bundle --platform android      # build the Android bundle instead
-npx vectalon bundle --open                  # …and open the HTML treemap dashboard
-npx vectalon bundle --static                # on-disk static checks only (no build)
+npx --package @vectalon-dev/rn vectalon bundle                         # build iOS bundle + run all budgets
+npx --package @vectalon-dev/rn vectalon bundle --platform android      # build the Android bundle instead
+npx --package @vectalon-dev/rn vectalon bundle --open                  # …and open the HTML treemap dashboard
+npx --package @vectalon-dev/rn vectalon bundle --static                # on-disk static checks only (no build)
 ```
 
 **What it checks**
@@ -649,8 +649,8 @@ branch — the first step of the self-healing CI pipeline. Idempotent: an
 existing workflow is never overwritten.
 
 ```bash
-npx vectalon ci            # EAS Workflows for Expo, GitHub Actions for bare RN CLI
-npx vectalon ci ./my-app
+npx --package @vectalon-dev/rn vectalon ci            # EAS Workflows for Expo, GitHub Actions for bare RN CLI
+npx --package @vectalon-dev/rn vectalon ci ./my-app
 ```
 
 **What it does**
@@ -691,14 +691,14 @@ the report on the PR, and exit with a gating code — the visual half of the
 self-healing CI pipeline.
 
 ```bash
-npx vectalon visual-ci                          # diff changed screens vs origin/main
-npx vectalon visual-ci --base main              # use a different base ref
-npx vectalon visual-ci --screens LoginScreen,ProfileScreen   # explicit screens
-npx vectalon visual-ci --verdict strict         # fail on any visual diff
-npx vectalon visual-ci --pr 123 --push          # post the report as a PR comment
-npx vectalon visual-ci --json                   # machine-readable outcome
-npx vectalon visual-ci --dry-run                # describe the plan, touch nothing
-npx vectalon visual-ci --incident               # file a triaged incident on regression
+npx --package @vectalon-dev/rn vectalon visual-ci                          # diff changed screens vs origin/main
+npx --package @vectalon-dev/rn vectalon visual-ci --base main              # use a different base ref
+npx --package @vectalon-dev/rn vectalon visual-ci --screens LoginScreen,ProfileScreen   # explicit screens
+npx --package @vectalon-dev/rn vectalon visual-ci --verdict strict         # fail on any visual diff
+npx --package @vectalon-dev/rn vectalon visual-ci --pr 123 --push          # post the report as a PR comment
+npx --package @vectalon-dev/rn vectalon visual-ci --json                   # machine-readable outcome
+npx --package @vectalon-dev/rn vectalon visual-ci --dry-run                # describe the plan, touch nothing
+npx --package @vectalon-dev/rn vectalon visual-ci --incident               # file a triaged incident on regression
 ```
 
 **Options**
@@ -736,11 +736,11 @@ rollback suggestion — for a failed CI gate into the knowledge base, so every
 CI failure becomes something the team brain learns from.
 
 ```bash
-npx vectalon ci-incident --gate bundle-budget --step quality --exit 1
-npx vectalon ci-incident --gate visual-regression --commit abc1234 --severity sev1
-npx vectalon ci-incident --command "vectalon bench --baseline" --output "$(cat fail.log)"
-npx vectalon ci-incident --telemetry telemetry/ --json   # data-driven triage
-npx vectalon ci-incident --dry-run                       # analyze + print, don't persist
+npx --package @vectalon-dev/rn vectalon ci-incident --gate bundle-budget --step quality --exit 1
+npx --package @vectalon-dev/rn vectalon ci-incident --gate visual-regression --commit abc1234 --severity sev1
+npx --package @vectalon-dev/rn vectalon ci-incident --command "vectalon bench --baseline" --output "$(cat fail.log)"
+npx --package @vectalon-dev/rn vectalon ci-incident --telemetry telemetry/ --json   # data-driven triage
+npx --package @vectalon-dev/rn vectalon ci-incident --dry-run                       # analyze + print, don't persist
 ```
 
 **Options**
@@ -776,13 +776,13 @@ that `visual-ci` diffs against: list, capture, update, prune, and quarantine
 them.
 
 ```bash
-npx vectalon visual-baseline --list
-npx vectalon visual-baseline --capture LoginScreen --from login.png --platform ios
-npx vectalon visual-baseline --update LoginScreen --from login-new.png
-npx vectalon visual-baseline --quarantine LoginScreen --reason "flaky dark mode"
-npx vectalon visual-baseline --unquarantine LoginScreen
-npx vectalon visual-baseline --prune --dry-run        # see what would be removed
-npx vectalon visual-baseline --tolerance '{"driftThreshold":0.05}'
+npx --package @vectalon-dev/rn vectalon visual-baseline --list
+npx --package @vectalon-dev/rn vectalon visual-baseline --capture LoginScreen --from login.png --platform ios
+npx --package @vectalon-dev/rn vectalon visual-baseline --update LoginScreen --from login-new.png
+npx --package @vectalon-dev/rn vectalon visual-baseline --quarantine LoginScreen --reason "flaky dark mode"
+npx --package @vectalon-dev/rn vectalon visual-baseline --unquarantine LoginScreen
+npx --package @vectalon-dev/rn vectalon visual-baseline --prune --dry-run        # see what would be removed
+npx --package @vectalon-dev/rn vectalon visual-baseline --tolerance '{"driftThreshold":0.05}'
 ```
 
 **Options**
@@ -821,14 +821,14 @@ device farm + store submission), and monitor the crash rate after the release
 ships.
 
 ```bash
-npx vectalon release                          # plan: version bump + changelog
-npx vectalon release --changelog              # print only the changelog
-npx vectalon release --submit                 # write the release workflow
-npx vectalon release --monitor                # monitor crash rate (24h window)
-npx vectalon release --monitor --telemetry telemetry/ --zscore 4   # tighter gate
-npx vectalon release --monitor --telemetry telemetry/ --baseline 2.5  # ratio check
-npx vectalon release --version 2.1.0          # explicit current version
-npx vectalon release --json                   # release plan as JSON
+npx --package @vectalon-dev/rn vectalon release                          # plan: version bump + changelog
+npx --package @vectalon-dev/rn vectalon release --changelog              # print only the changelog
+npx --package @vectalon-dev/rn vectalon release --submit                 # write the release workflow
+npx --package @vectalon-dev/rn vectalon release --monitor                # monitor crash rate (24h window)
+npx --package @vectalon-dev/rn vectalon release --monitor --telemetry telemetry/ --zscore 4   # tighter gate
+npx --package @vectalon-dev/rn vectalon release --monitor --telemetry telemetry/ --baseline 2.5  # ratio check
+npx --package @vectalon-dev/rn vectalon release --version 2.1.0          # explicit current version
+npx --package @vectalon-dev/rn vectalon release --json                   # release plan as JSON
 ```
 
 **Options**
@@ -886,14 +886,14 @@ performance traces, analytics JSON/JSONL) into the knowledge base as telemetry
 artifacts, then run data-driven crash / incident / KPI analysis.
 
 ```bash
-npx vectalon telemetry                          # ingest .vectalon/telemetry or telemetry/
-npx vectalon telemetry --path ./exports          # ingest a specific dir or file
-npx vectalon telemetry --no-analyze              # ingest only, skip analysis
-npx vectalon telemetry --fixtures                # write sample exports + ingest them (see the pipeline end-to-end)
-npx vectalon telemetry --format crashlytics      # force a format instead of auto-detecting
-npx vectalon telemetry --formats                 # print the accepted formats guide
-npx vectalon telemetry --watch                   # keep watching the directory; ingest new exports as they land
-npx vectalon telemetry --watch --interval 5000   # poll every 5 s (default 10000 ms)
+npx --package @vectalon-dev/rn vectalon telemetry                          # ingest .vectalon/telemetry or telemetry/
+npx --package @vectalon-dev/rn vectalon telemetry --path ./exports          # ingest a specific dir or file
+npx --package @vectalon-dev/rn vectalon telemetry --no-analyze              # ingest only, skip analysis
+npx --package @vectalon-dev/rn vectalon telemetry --fixtures                # write sample exports + ingest them (see the pipeline end-to-end)
+npx --package @vectalon-dev/rn vectalon telemetry --format crashlytics      # force a format instead of auto-detecting
+npx --package @vectalon-dev/rn vectalon telemetry --formats                 # print the accepted formats guide
+npx --package @vectalon-dev/rn vectalon telemetry --watch                   # keep watching the directory; ingest new exports as they land
+npx --package @vectalon-dev/rn vectalon telemetry --watch --interval 5000   # poll every 5 s (default 10000 ms)
 ```
 
 **Options**
@@ -940,19 +940,19 @@ exports are found it offers **Specify a path**, **Generate sample exports**, or
 Score the harness — or any model — on the RN coding tests benchmark.
 
 ```bash
-npx vectalon bench                          # deterministic baseline (offline)
-npx vectalon bench --suite data-flow        # only the data-flow suite
-npx vectalon bench --live                   # run real tests/typecheck/lint
-npx vectalon bench --live --install         # ... installing deps in each temp project first
-npx vectalon bench --model local            # real-model leaderboard (all 13)
-npx vectalon bench --model local --preset balanced   # ... with the 3B tier (fast|balanced|quality)
-npx vectalon bench --model local --preset balanced --live --install -o bench/results/local-3b.json  # live-scored, saved for the leaderboard
-npx vectalon bench --model wasm             # zero-config WASM model pass
-npx vectalon bench --model openai --json    # JSON summary for tooling
-npx vectalon bench -o report.md             # write the report to a file
-npx vectalon bench --scenarios ./my-evals   # run your own custom eval pack
-npx vectalon bench --scenarios ./my-evals --references ./my-refs  # + custom human baselines
-npx vectalon bench --baseline bench/baseline.json  # CI regression gate (exit 1 on regression)
+npx --package @vectalon-dev/rn vectalon bench                          # deterministic baseline (offline)
+npx --package @vectalon-dev/rn vectalon bench --suite data-flow        # only the data-flow suite
+npx --package @vectalon-dev/rn vectalon bench --live                   # run real tests/typecheck/lint
+npx --package @vectalon-dev/rn vectalon bench --live --install         # ... installing deps in each temp project first
+npx --package @vectalon-dev/rn vectalon bench --model local            # real-model leaderboard (all 13)
+npx --package @vectalon-dev/rn vectalon bench --model local --preset balanced   # ... with the 3B tier (fast|balanced|quality)
+npx --package @vectalon-dev/rn vectalon bench --model local --preset balanced --live --install -o bench/results/local-3b.json  # live-scored, saved for the leaderboard
+npx --package @vectalon-dev/rn vectalon bench --model wasm             # zero-config WASM model pass
+npx --package @vectalon-dev/rn vectalon bench --model openai --json    # JSON summary for tooling
+npx --package @vectalon-dev/rn vectalon bench -o report.md             # write the report to a file
+npx --package @vectalon-dev/rn vectalon bench --scenarios ./my-evals   # run your own custom eval pack
+npx --package @vectalon-dev/rn vectalon bench --scenarios ./my-evals --references ./my-refs  # + custom human baselines
+npx --package @vectalon-dev/rn vectalon bench --baseline bench/baseline.json  # CI regression gate (exit 1 on regression)
 ```
 
 Model-backed passes (`--model`) report **live per-scenario progress** — each
@@ -991,7 +991,7 @@ this on every PR (`.github/workflows/ci.yml`). Regenerate the baseline after
 intentional improvements with:
 
 ```bash
-npx vectalon bench --json -o bench/baseline.json
+npx --package @vectalon-dev/rn vectalon bench --json -o bench/baseline.json
 ```
 **What it does**
 
@@ -1017,11 +1017,11 @@ Merge per-model benchmark results into a timestamped `BENCHMARK_RESULTS.md`
 leaderboard — the public scenario × model × axis comparison table.
 
 ```bash
-npx vectalon leaderboard bench/results                # merge bench/results/*.json
-npx vectalon leaderboard bench/results --out LEADERBOARD.md
-npx vectalon leaderboard bench/results --json         # merged runs as JSON
-npx vectalon leaderboard bench/results --timestamp 2026-08-03T03:00:00.000Z
-npx vectalon leaderboard bench/results --pr-comment   # compact PR comment to stdout
+npx --package @vectalon-dev/rn vectalon leaderboard bench/results                # merge bench/results/*.json
+npx --package @vectalon-dev/rn vectalon leaderboard bench/results --out LEADERBOARD.md
+npx --package @vectalon-dev/rn vectalon leaderboard bench/results --json         # merged runs as JSON
+npx --package @vectalon-dev/rn vectalon leaderboard bench/results --timestamp 2026-08-03T03:00:00.000Z
+npx --package @vectalon-dev/rn vectalon leaderboard bench/results --pr-comment   # compact PR comment to stdout
 ```
 
 **What it does**
@@ -1075,9 +1075,9 @@ which workspace packages consume them, which screens re-render, which
 navigation stacks are affected, and which Maestro E2E flows must run.
 
 ```bash
-npx vectalon impact --changed packages/ui/src/Button.tsx
-npx vectalon impact --changed packages/ui/src/Button.tsx --pr 123 --push
-npx vectalon impact --changed "packages/ui/src/Button.tsx,packages/core/src/hooks.ts" --json
+npx --package @vectalon-dev/rn vectalon impact --changed packages/ui/src/Button.tsx
+npx --package @vectalon-dev/rn vectalon impact --changed packages/ui/src/Button.tsx --pr 123 --push
+npx --package @vectalon-dev/rn vectalon impact --changed "packages/ui/src/Button.tsx,packages/core/src/hooks.ts" --json
 ```
 
 **Options**
@@ -1124,9 +1124,9 @@ that the close phase of each feature workflow run appends to — as a
 follow-up tasks.
 
 ```bash
-npx vectalon coverage                        # per-screen gap summary table
-npx vectalon coverage --json                 # machine-readable summary (CI/agents)
-npx vectalon coverage --limit 10             # cap the number of screens listed
+npx --package @vectalon-dev/rn vectalon coverage                        # per-screen gap summary table
+npx --package @vectalon-dev/rn vectalon coverage --json                 # machine-readable summary (CI/agents)
+npx --package @vectalon-dev/rn vectalon coverage --limit 10             # cap the number of screens listed
 ```
 
 **Options**
@@ -1165,12 +1165,12 @@ deterministic pass over the project that produces the full intelligence
 picture, from canonical manifest to sub-second knowledge retrieval:
 
 ```bash
-npx vectalon intel                  # full report → docs/vectalon/intel/report.{json,md}
-npx vectalon intel --bench          # + sub-second retrieval benchmark
-npx vectalon intel --search "nav screen"  # ranked retrieval over the indexed project
-npx vectalon intel --graph deps     # export one graph as JSON
-npx vectalon intel --model          # the application digest — screens, navigation, state, native modules, deps, architecture
-npx vectalon intel --json           # full machine-readable report on stdout
+npx --package @vectalon-dev/rn vectalon intel                  # full report → docs/vectalon/intel/report.{json,md}
+npx --package @vectalon-dev/rn vectalon intel --bench          # + sub-second retrieval benchmark
+npx --package @vectalon-dev/rn vectalon intel --search "nav screen"  # ranked retrieval over the indexed project
+npx --package @vectalon-dev/rn vectalon intel --graph deps     # export one graph as JSON
+npx --package @vectalon-dev/rn vectalon intel --model          # the application digest — screens, navigation, state, native modules, deps, architecture
+npx --package @vectalon-dev/rn vectalon intel --json           # full machine-readable report on stdout
 ```
 
 `intel` is **the foundation of everything**: `docs/vectalon/intel/report.json`
@@ -1210,10 +1210,10 @@ pass that validates the build/toolchain surface of a React Native project and
 suggests a concrete fix for every finding:
 
 ```bash
-npx vectalon diagnostics                    # full report → docs/vectalon/diagnostics/report.{json,md}
-npx vectalon diagnostics --json             # machine-readable report on stdout
-npx vectalon diagnostics --gradle-log build.log   # classify a Gradle failure's root cause
-npx vectalon diagnostics --xcode-log build.log    # classify an Xcode failure's root cause
+npx --package @vectalon-dev/rn vectalon diagnostics                    # full report → docs/vectalon/diagnostics/report.{json,md}
+npx --package @vectalon-dev/rn vectalon diagnostics --json             # machine-readable report on stdout
+npx --package @vectalon-dev/rn vectalon diagnostics --gradle-log build.log   # classify a Gradle failure's root cause
+npx --package @vectalon-dev/rn vectalon diagnostics --xcode-log build.log    # classify an Xcode failure's root cause
 ```
 
 **Categories (011-015)**
@@ -1242,13 +1242,13 @@ for the pieces every RN app needs, written into the project (or previewed with
 `--dry-run`):
 
 ```bash
-npx vectalon generate component UserCard          # → src/components/UserCard.tsx
-npx vectalon generate screen Profile              # → src/screens/Profile.tsx (with navigation)
-npx vectalon generate test UserCard               # → __tests__/user-card.test.tsx (Jest RTL)
-npx vectalon generate test UserCard --framework detox
-npx vectalon generate native-module CameraScanner --spec '{"moduleName":"CameraScanner","methods":[...]}'
-npx vectalon generate api OrdersApi --spec openapi.json   # typed services + apiBase
-npx vectalon generate component PaymentSheet --dry-run    # preview without writing
+npx --package @vectalon-dev/rn vectalon generate component UserCard          # → src/components/UserCard.tsx
+npx --package @vectalon-dev/rn vectalon generate screen Profile              # → src/screens/Profile.tsx (with navigation)
+npx --package @vectalon-dev/rn vectalon generate test UserCard               # → __tests__/user-card.test.tsx (Jest RTL)
+npx --package @vectalon-dev/rn vectalon generate test UserCard --framework detox
+npx --package @vectalon-dev/rn vectalon generate native-module CameraScanner --spec '{"moduleName":"CameraScanner","methods":[...]}'
+npx --package @vectalon-dev/rn vectalon generate api OrdersApi --spec openapi.json   # typed services + apiBase
+npx --package @vectalon-dev/rn vectalon generate component PaymentSheet --dry-run    # preview without writing
 ```
 
 **Generators (016-020)**
@@ -1275,8 +1275,8 @@ startup hazards `profile`/`bundle` only see after you build or profile. No
 build, no device, no model calls.
 
 ```bash
-npx vectalon perf                      # findings + markdown report → docs/vectalon/perf/
-npx vectalon perf --json               # machine-readable report (CI)
+npx --package @vectalon-dev/rn vectalon perf                      # findings + markdown report → docs/vectalon/perf/
+npx --package @vectalon-dev/rn vectalon perf --json               # machine-readable report (CI)
 ```
 
 **Options**
@@ -1323,12 +1323,12 @@ pass / warn / skip / fail. Exit non-zero when anything fails — the thing to
 run after a release to verify everything is in order.
 
 ```bash
-npx vectalon smoke                       # every fast check, dev mode, report to .vectalon/smoke/
-npx vectalon smoke --full                # + slow/model-heavy checks (feature, bench, selftest, pull)
-npx vectalon smoke --json                # machine-readable report on stdout (CI)
-npx vectalon smoke --only impact,coverage # targeted subset
-npx vectalon smoke --list                # show all 37 checks
-npx vectalon smoke --no-dev              # respect the real tier — Pro/Team commands report as skips
+npx --package @vectalon-dev/rn vectalon smoke                       # every fast check, dev mode, report to .vectalon/smoke/
+npx --package @vectalon-dev/rn vectalon smoke --full                # + slow/model-heavy checks (feature, bench, selftest, pull)
+npx --package @vectalon-dev/rn vectalon smoke --json                # machine-readable report on stdout (CI)
+npx --package @vectalon-dev/rn vectalon smoke --only impact,coverage # targeted subset
+npx --package @vectalon-dev/rn vectalon smoke --list                # show all 37 checks
+npx --package @vectalon-dev/rn vectalon smoke --no-dev              # respect the real tier — Pro/Team commands report as skips
 ```
 
 **Options**
@@ -1390,14 +1390,14 @@ optional verification loop (doctor + typecheck + bundle budget gate).
 Requires the **Pro tier**.
 
 ```bash
-npx vectalon upgrade                     # dry-run plan for the latest known RN
-npx vectalon upgrade --to 0.76           # plan the 0.72 → 0.76 migration
-npx vectalon upgrade --to 0.76 --json    # plan as JSON (CI-friendly)
-npx vectalon upgrade --to 0.76 --dry-run # explicit dry-run: no writes
-npx vectalon upgrade --to 0.76 --apply   # execute safe codemods + verify
-npx vectalon upgrade --to 0.76 --apply --force  # also apply risky review steps
-npx vectalon upgrade --to 0.86.2 --diff  # also print the official rn-diff-purge template diff
-npx vectalon upgrade --to 53 --apply     # Expo SDK target
+npx --package @vectalon-dev/rn vectalon upgrade                     # dry-run plan for the latest known RN
+npx --package @vectalon-dev/rn vectalon upgrade --to 0.76           # plan the 0.72 → 0.76 migration
+npx --package @vectalon-dev/rn vectalon upgrade --to 0.76 --json    # plan as JSON (CI-friendly)
+npx --package @vectalon-dev/rn vectalon upgrade --to 0.76 --dry-run # explicit dry-run: no writes
+npx --package @vectalon-dev/rn vectalon upgrade --to 0.76 --apply   # execute safe codemods + verify
+npx --package @vectalon-dev/rn vectalon upgrade --to 0.76 --apply --force  # also apply risky review steps
+npx --package @vectalon-dev/rn vectalon upgrade --to 0.86.2 --diff  # also print the official rn-diff-purge template diff
+npx --package @vectalon-dev/rn vectalon upgrade --to 53 --apply     # Expo SDK target
 ```
 
 **Options**
@@ -1455,10 +1455,10 @@ objects, and leak candidates — and track them over time with knowledge-base
 baselines. Deterministic (no model calls). Requires the **Pro tier**.
 
 ```bash
-npx vectalon profile --profile app.cpuprofile
-npx vectalon profile --heap app.heapsnapshot
-npx vectalon profile --profile app.cpuprofile --save-baseline
-npx vectalon profile --profile app.cpuprofile --baseline release --json
+npx --package @vectalon-dev/rn vectalon profile --profile app.cpuprofile
+npx --package @vectalon-dev/rn vectalon profile --heap app.heapsnapshot
+npx --package @vectalon-dev/rn vectalon profile --profile app.cpuprofile --save-baseline
+npx --package @vectalon-dev/rn vectalon profile --profile app.cpuprofile --baseline release --json
 ```
 
 **Options**
@@ -1506,12 +1506,12 @@ by default, and the run is bounded by a wall-clock timeout plus optional CPU /
 memory limits. Requires the **Pro tier**.
 
 ```bash
-npx vectalon sandbox -- node -e 'console.log("hello")'        # run inside the project dir
-npx vectalon sandbox --root /tmp/scratch -- npm test           # confine to a scratch dir
-npx vectalon sandbox --timeout 5000 -- node run-tests.js       # bound execution
-npx vectalon sandbox --cpu 10 --memory 512 -- jest             # CPU + memory caps
-npx vectalon sandbox --allow-env NODE_ENV -- npm run build     # keep one ambient var
-npx vectalon sandbox --json -- node -e 'process.exit(3)'       # structured result
+npx --package @vectalon-dev/rn vectalon sandbox -- node -e 'console.log("hello")'        # run inside the project dir
+npx --package @vectalon-dev/rn vectalon sandbox --root /tmp/scratch -- npm test           # confine to a scratch dir
+npx --package @vectalon-dev/rn vectalon sandbox --timeout 5000 -- node run-tests.js       # bound execution
+npx --package @vectalon-dev/rn vectalon sandbox --cpu 10 --memory 512 -- jest             # CPU + memory caps
+npx --package @vectalon-dev/rn vectalon sandbox --allow-env NODE_ENV -- npm run build     # keep one ambient var
+npx --package @vectalon-dev/rn vectalon sandbox --json -- node -e 'process.exit(3)'       # structured result
 ```
 
 **Options**
@@ -1565,10 +1565,10 @@ The flagship "agent that ships" capability: agents self-correct on JSX/TS
 errors instead of only being lint-aware. Requires the **Pro tier**.
 
 ```bash
-npx vectalon render --entry src/App.tsx                 # render a project file
-npx vectalon render --entry src/App.tsx --file src/Header.tsx  # compile siblings too
-npx vectalon render --entry src/App.tsx --json          # structured result
-npx vectalon render ./my-app --entry src/screens/Home.tsx
+npx --package @vectalon-dev/rn vectalon render --entry src/App.tsx                 # render a project file
+npx --package @vectalon-dev/rn vectalon render --entry src/App.tsx --file src/Header.tsx  # compile siblings too
+npx --package @vectalon-dev/rn vectalon render --entry src/App.tsx --json          # structured result
+npx --package @vectalon-dev/rn vectalon render ./my-app --entry src/screens/Home.tsx
 ```
 
 **Options**
@@ -1618,9 +1618,9 @@ render tree, logs, and errors).
 Manage project-specific guardrail policy (`.vectalon/policy.json`).
 
 ```bash
-npx vectalon policy --init                    # create a default policy file
-npx vectalon policy                           # show the current policy
-npx vectalon policy --check src/screens/Home.tsx   # run policy against a file
+npx --package @vectalon-dev/rn vectalon policy --init                    # create a default policy file
+npx --package @vectalon-dev/rn vectalon policy                           # show the current policy
+npx --package @vectalon-dev/rn vectalon policy --check src/screens/Home.tsx   # run policy against a file
 ```
 
 **Options**
@@ -1645,8 +1645,8 @@ npx vectalon policy --check src/screens/Home.tsx   # run policy against a file
 Refresh knowledge from web sources and generate improvement suggestions.
 
 ```bash
-npx vectalon refresh              # refresh only if the cache is stale
-npx vectalon refresh --force      # refresh regardless
+npx --package @vectalon-dev/rn vectalon refresh              # refresh only if the cache is stale
+npx --package @vectalon-dev/rn vectalon refresh --force      # refresh regardless
 ```
 
 **Options**
@@ -1694,12 +1694,12 @@ outdated-dependency suggestions, applies one with a single command, and can
 render an HTML dashboard.
 
 ```bash
-npx vectalon suggestions                       # severity-grouped list
-npx vectalon suggestions --json                # raw store for CI/agents
-npx vectalon suggestions --limit 5             # cap the listing
-npx vectalon suggestions --apply lodash --yes  # npm install lodash@^<latest>
-npx vectalon suggestions --apply <id>          # ... asks for confirmation in a TTY
-npx vectalon suggestions --open                # write + open the HTML dashboard
+npx --package @vectalon-dev/rn vectalon suggestions                       # severity-grouped list
+npx --package @vectalon-dev/rn vectalon suggestions --json                # raw store for CI/agents
+npx --package @vectalon-dev/rn vectalon suggestions --limit 5             # cap the listing
+npx --package @vectalon-dev/rn vectalon suggestions --apply lodash --yes  # npm install lodash@^<latest>
+npx --package @vectalon-dev/rn vectalon suggestions --apply <id>          # ... asks for confirmation in a TTY
+npx --package @vectalon-dev/rn vectalon suggestions --open                # write + open the HTML dashboard
 ```
 
 **Options**
@@ -1742,11 +1742,11 @@ npx vectalon suggestions --open                # write + open the HTML dashboard
 Sync the team brain (`.vectalon/knowledge/`) to a hosted git remote.
 
 ```bash
-npx vectalon sync --init --remote git@github.com:org/team-brain.git
-npx vectalon sync --push                       # push the local brain
-npx vectalon sync --pull                       # pull the remote brain
-npx vectalon sync --push --branch release      # different branch
-npx vectalon sync --push --force               # run even if disabled in config
+npx --package @vectalon-dev/rn vectalon sync --init --remote git@github.com:org/team-brain.git
+npx --package @vectalon-dev/rn vectalon sync --push                       # push the local brain
+npx --package @vectalon-dev/rn vectalon sync --pull                       # pull the remote brain
+npx --package @vectalon-dev/rn vectalon sync --push --branch release      # different branch
+npx --package @vectalon-dev/rn vectalon sync --push --force               # run even if disabled in config
 ```
 
 **Options**
@@ -1777,12 +1777,12 @@ shared bundle budgets through the sync remote, and pull the org policy into
 `.vectalon/team/` — so one policy change gates every project that follows it.
 
 ```bash
-npx vectalon team-policy --push                 # publish policy + budgets as the org policy
-npx vectalon team-policy --pull                 # fetch the org policy into .vectalon/team
-npx vectalon team-policy --show                 # print the effective policy + budget settings
-npx vectalon team-policy --check src/App.tsx    # run the effective (org + local) policy
-npx vectalon team-policy --budget '{"largeLibBytes":65536}'   # local budget override
-npx vectalon team-policy --remove               # stop following the org policy
+npx --package @vectalon-dev/rn vectalon team-policy --push                 # publish policy + budgets as the org policy
+npx --package @vectalon-dev/rn vectalon team-policy --pull                 # fetch the org policy into .vectalon/team
+npx --package @vectalon-dev/rn vectalon team-policy --show                 # print the effective policy + budget settings
+npx --package @vectalon-dev/rn vectalon team-policy --check src/App.tsx    # run the effective (org + local) policy
+npx --package @vectalon-dev/rn vectalon team-policy --budget '{"largeLibBytes":65536}'   # local budget override
+npx --package @vectalon-dev/rn vectalon team-policy --remove               # stop following the org policy
 ```
 
 **Options**
@@ -1814,10 +1814,10 @@ npx vectalon team-policy --remove               # stop following the org policy
 Download a local model preset. Accepts a **usage tier** (`fast` \| `balanced` \| `quality`) or a model id; with no argument it downloads the tier auto-selected for this machine's RAM — the same model `init` picked.
 
 ```bash
-npx vectalon pull              # download the auto-selected tier for this machine (~1–5 GB)
-npx vectalon pull balanced     # the 3B tier (16 GB RAM class)
-npx vectalon pull quality      # the 7B flagship tier (32 GB RAM class)
-npx vectalon pull qwen2.5-coder-3b   # or a raw model id
+npx --package @vectalon-dev/rn vectalon pull              # download the auto-selected tier for this machine (~1–5 GB)
+npx --package @vectalon-dev/rn vectalon pull balanced     # the 3B tier (16 GB RAM class)
+npx --package @vectalon-dev/rn vectalon pull quality      # the 7B flagship tier (32 GB RAM class)
+npx --package @vectalon-dev/rn vectalon pull qwen2.5-coder-3b   # or a raw model id
 ```
 
 **Exit codes**
@@ -1840,10 +1840,10 @@ recursively before upload; the bundle is stamped with a support token
 
 ```bash
 # Print usage / what the upload includes
-npx vectalon support
+npx --package @vectalon-dev/rn vectalon support
 
 # Upload the bundle (offline → bundle is saved locally, retry later)
-npx vectalon support --upload
+npx --package @vectalon-dev/rn vectalon support --upload
 ```
 
 | Option | Description |
@@ -1868,7 +1868,7 @@ GGUF models actually downloaded, and the zero-config WASM tier (whether its
 weights are cached).
 
 ```bash
-npx vectalon models
+npx --package @vectalon-dev/rn vectalon models
 ```
 
 **Exit codes**
@@ -1888,9 +1888,9 @@ verifies the configured model provider is inside it, and lays out the whole
 privacy ladder.
 
 ```bash
-npx vectalon mode                  # current mode + the full ladder
-npx vectalon mode --json           # machine-readable: mode, provider, compliance
-npx vectalon mode --set air-gapped # declare a mode (refuses an outside provider)
+npx --package @vectalon-dev/rn vectalon mode                  # current mode + the full ladder
+npx --package @vectalon-dev/rn vectalon mode --json           # machine-readable: mode, provider, compliance
+npx --package @vectalon-dev/rn vectalon mode --set air-gapped # declare a mode (refuses an outside provider)
 ```
 
 Three explicit modes, mapping the ModelRouter's providers (local / WASM /
@@ -1935,8 +1935,8 @@ current plan (from the active license or trial on this machine), and the
 full tier ladder.
 
 ```bash
-npx vectalon plan          # current plan + what each tier includes
-npx vectalon plan --json   # machine-readable: current tier, plan, all plans
+npx --package @vectalon-dev/rn vectalon plan          # current plan + what each tier includes
+npx --package @vectalon-dev/rn vectalon plan --json   # machine-readable: current tier, plan, all plans
 ```
 
 | Plan | Price | Engine tier | What it includes |
@@ -1975,9 +1975,9 @@ tests generated, performance regressions detected — then estimates the
 developer hours and dollars saved.
 
 ```bash
-npx vectalon outcomes             # the Acme-style ledger + savings estimate
-npx vectalon outcomes --json      # counts, hours, savings, per-outcome hours
-npx vectalon outcomes --rate 100  # override the blended rate ($/hour)
+npx --package @vectalon-dev/rn vectalon outcomes             # the Acme-style ledger + savings estimate
+npx --package @vectalon-dev/rn vectalon outcomes --json      # counts, hours, savings, per-outcome hours
+npx --package @vectalon-dev/rn vectalon outcomes --rate 100  # override the blended rate ($/hour)
 ```
 
 Every number is derived from real artifacts, never estimated from thin air:
@@ -2031,8 +2031,8 @@ the healing loop are rendered. To run the workflow for real, use
 `vectalon feature "<prompt>"`.
 
 ```bash
-npx vectalon demo          # the flagship workflow, from a real prior run when present
-npx vectalon demo --json   # pipeline + healing loop + prior run as JSON
+npx --package @vectalon-dev/rn vectalon demo          # the flagship workflow, from a real prior run when present
+npx --package @vectalon-dev/rn vectalon demo --json   # pipeline + healing loop + prior run as JSON
 ```
 
 **Exit codes**
@@ -2073,10 +2073,10 @@ so the money shot works with zero setup and no network. With `--log` or
 `--issue`, it runs against the salesperson's own real failure instead.
 
 ```bash
-npx vectalon sales-demo                          # the whole meeting, one command
-npx vectalon sales-demo --log build.log          # bring your own real failure
-npx vectalon sales-demo --question "Why Redux?"  # your own brain question
-npx vectalon sales-demo --json                   # the five acts as JSON
+npx --package @vectalon-dev/rn vectalon sales-demo                          # the whole meeting, one command
+npx --package @vectalon-dev/rn vectalon sales-demo --log build.log          # bring your own real failure
+npx --package @vectalon-dev/rn vectalon sales-demo --question "Why Redux?"  # your own brain question
+npx --package @vectalon-dev/rn vectalon sales-demo --json                   # the five acts as JSON
 ```
 
 **Options**
@@ -2096,14 +2096,14 @@ npx vectalon sales-demo --json                   # the five acts as JSON
 organizational infrastructure. Ask a question and get the answer as a card:
 
 ```bash
-npx vectalon brain "Why are we using Zustand instead of Redux?"
+npx --package @vectalon-dev/rn vectalon brain "Why are we using Zustand instead of Redux?"
 # Decision: adr-017 — Use Zustand for state management
 # Reason:   Use Zustand instead of Redux — performance + simplicity
 # Approved by: Architecture Team
 # Related:  Checkout, Payments, Profile
 # Reviewed: March 2026
 
-npx vectalon brain "Who understands our authentication architecture?"
+npx --package @vectalon-dev/rn vectalon brain "Who understands our authentication architecture?"
 # authentication — Owner: Team A · Experts: John, Priya
 #   ├── ADRs: 3
 #   ├── Services: 7
@@ -2140,10 +2140,10 @@ Manage your license and trial: activate a license key, authenticate with
 GitHub (to start a trial), log out, or show the current auth status.
 
 ```bash
-npx vectalon auth                     # show current auth status (default)
-npx vectalon auth --license <key>     # activate a license key
-npx vectalon auth --github            # authenticate with GitHub (starts a 14-day trial)
-npx vectalon auth --logout            # clear the license and revert to the free tier
+npx --package @vectalon-dev/rn vectalon auth                     # show current auth status (default)
+npx --package @vectalon-dev/rn vectalon auth --license <key>     # activate a license key
+npx --package @vectalon-dev/rn vectalon auth --github            # authenticate with GitHub (starts a 14-day trial)
+npx --package @vectalon-dev/rn vectalon auth --logout            # clear the license and revert to the free tier
 ```
 
 **Options**
@@ -2172,11 +2172,11 @@ seeded into the knowledge base and written to `docs/vectalon/team/`.
 `--search` queries the team knowledge base across projects.
 
 ```bash
-npx vectalon team                          # build the team knowledge base
-npx vectalon team --search "navigation patterns"  # semantic/lexical search
-npx vectalon team --project my-app --type adr --search "codegen"
-npx vectalon team --projects               # list registered projects
-npx vectalon team --json                   # machine-readable output
+npx --package @vectalon-dev/rn vectalon team                          # build the team knowledge base
+npx --package @vectalon-dev/rn vectalon team --search "navigation patterns"  # semantic/lexical search
+npx --package @vectalon-dev/rn vectalon team --project my-app --type adr --search "codegen"
+npx --package @vectalon-dev/rn vectalon team --projects               # list registered projects
+npx --package @vectalon-dev/rn vectalon team --json                   # machine-readable output
 ```
 
 **Options**
@@ -2208,10 +2208,10 @@ or `--base <ref>`) with deterministic rules plus the team-brain coding
 standards, and an optional LLM pass. Report to `docs/vectalon/review/`.
 
 ```bash
-npx vectalon review                        # review the uncommitted diff
-npx vectalon review --base main            # review commits since main
-npx vectalon review --model openai         # LLM pass override
-npx vectalon review --json
+npx --package @vectalon-dev/rn vectalon review                        # review the uncommitted diff
+npx --package @vectalon-dev/rn vectalon review --base main            # review commits since main
+npx --package @vectalon-dev/rn vectalon review --model openai         # LLM pass override
+npx --package @vectalon-dev/rn vectalon review --json
 ```
 
 **Options**
@@ -2241,9 +2241,9 @@ orphans, and deep nesting — with a verdict and severity-ranked
 recommendations. Report to `docs/vectalon/arch/`.
 
 ```bash
-npx vectalon arch                          # analyze src/ by default
-npx vectalon arch --src lib                # analyze a different source dir
-npx vectalon arch --max-fanout 15 --json
+npx --package @vectalon-dev/rn vectalon arch                          # analyze src/ by default
+npx --package @vectalon-dev/rn vectalon arch --src lib                # analyze a different source dir
+npx --package @vectalon-dev/rn vectalon arch --max-fanout 15 --json
 ```
 
 **Options**
@@ -2275,9 +2275,9 @@ TLS, cleartext HTTP, SQL concatenation, weak crypto), and best-effort
 recommendations. Report to `docs/vectalon/sec/`.
 
 ```bash
-npx vectalon sec                           # full pass incl. npm audit
-npx vectalon sec --no-audit                # skip the audit (fast, offline)
-npx vectalon sec --json
+npx --package @vectalon-dev/rn vectalon sec                           # full pass incl. npm audit
+npx --package @vectalon-dev/rn vectalon sec --no-audit                # skip the audit (fast, offline)
+npx --package @vectalon-dev/rn vectalon sec --json
 ```
 
 **Options**
@@ -2306,9 +2306,9 @@ standard fix, and corroborating failures are listed as a fix plan. Report to
 `docs/vectalon/build-fix/`.
 
 ```bash
-npx vectalon build-fix --log gradle.log    # auto-detect the build kind
-npx vectalon build-fix --log build.log --metro   # force Metro
-npx vectalon build-fix --json
+npx --package @vectalon-dev/rn vectalon build-fix --log gradle.log    # auto-detect the build kind
+npx --package @vectalon-dev/rn vectalon build-fix --log build.log --metro   # force Metro
+npx --package @vectalon-dev/rn vectalon build-fix --json
 ```
 
 **Options**
@@ -2341,11 +2341,11 @@ your own words (or attach a failing build log with `--log`). Report to
 `docs/vectalon/fix/`.
 
 ```bash
-npx vectalon fix "Android build started failing after upgrading RN"
-npx vectalon fix "Android build started failing after upgrading RN" --log gradle.log
-npx vectalon fix "iOS build is failing after pod install" --log xcode.log
-npx vectalon fix "..." --apply        # write the verified edits to your tree
-npx vectalon fix "..." --json
+npx --package @vectalon-dev/rn vectalon fix "Android build started failing after upgrading RN"
+npx --package @vectalon-dev/rn vectalon fix "Android build started failing after upgrading RN" --log gradle.log
+npx --package @vectalon-dev/rn vectalon fix "iOS build is failing after pod install" --log xcode.log
+npx --package @vectalon-dev/rn vectalon fix "..." --apply        # write the verified edits to your tree
+npx --package @vectalon-dev/rn vectalon fix "..." --json
 ```
 
 The verdict is one structured block:
@@ -2404,9 +2404,9 @@ project must stay quiet (false-positive axis), every scenario is a
 CI-safe. Report to `docs/vectalon/fix-bench/report.txt`.
 
 ```bash
-npx vectalon fix-bench                     # full 100-scenario scorecard
-npx vectalon fix-bench --filter kotlin     # one suite (kotlin, metro, …)
-npx vectalon fix-bench --json              # machine-readable results
+npx --package @vectalon-dev/rn vectalon fix-bench                     # full 100-scenario scorecard
+npx --package @vectalon-dev/rn vectalon fix-bench --filter kotlin     # one suite (kotlin, metro, …)
+npx --package @vectalon-dev/rn vectalon fix-bench --json              # machine-readable results
 ```
 
 The scorecard is one carbon window: the aggregate diagnosis/fix/build
@@ -2462,8 +2462,8 @@ Performance (perf-scan), Security (secrets/unsafe/audit), Accessibility
 calls. Report + history to `docs/vectalon/score/`.
 
 ```bash
-npx vectalon score                # the full scorecard — overall + 8 dimensions
-npx vectalon score --json         # machine-readable report
+npx --package @vectalon-dev/rn vectalon score                # the full scorecard — overall + 8 dimensions
+npx --package @vectalon-dev/rn vectalon score --json         # machine-readable report
 ```
 
 The scorecard is the sellable number:
@@ -2539,9 +2539,9 @@ standard fix, and corroborating failures are listed as a fix plan. Report to
 `docs/vectalon/test-repair/`.
 
 ```bash
-npx vectalon test-repair --log jest.log     # auto-detect the runner
-npx vectalon test-repair --log out.log --maestro  # force Maestro
-npx vectalon test-repair --json
+npx --package @vectalon-dev/rn vectalon test-repair --log jest.log     # auto-detect the runner
+npx --package @vectalon-dev/rn vectalon test-repair --log out.log --maestro  # force Maestro
+npx --package @vectalon-dev/rn vectalon test-repair --json
 ```
 
 **Options**
@@ -2575,8 +2575,8 @@ and complexity — line-pinned with suggestions. Report to
 `docs/vectalon/refactor/`.
 
 ```bash
-npx vectalon refactor                      # full refactor scan
-npx vectalon refactor --json
+npx --package @vectalon-dev/rn vectalon refactor                      # full refactor scan
+npx --package @vectalon-dev/rn vectalon refactor --json
 ```
 
 **Options**
@@ -2604,9 +2604,9 @@ best-effort `npm audit` (critical → error, high → warning) with `npm audit
 fix` guidance. Report to `docs/vectalon/deps/`.
 
 ```bash
-npx vectalon deps                          # full pass incl. npm audit
-npx vectalon deps --no-audit               # skip the audit (fast, offline)
-npx vectalon deps --json
+npx --package @vectalon-dev/rn vectalon deps                          # full pass incl. npm audit
+npx --package @vectalon-dev/rn vectalon deps --no-audit               # skip the audit (fast, offline)
+npx --package @vectalon-dev/rn vectalon deps --json
 ```
 
 **Options**
@@ -2634,8 +2634,8 @@ TextInputs, and undersized touch targets — line-pinned with fixes. Report to
 `docs/vectalon/a11y/`.
 
 ```bash
-npx vectalon a11y                          # accessibility scan
-npx vectalon a11y --json
+npx --package @vectalon-dev/rn vectalon a11y                          # accessibility scan
+npx --package @vectalon-dev/rn vectalon a11y --json
 ```
 
 **Options**
@@ -2662,8 +2662,8 @@ workflows, lockfile, tests configured, secrets hygiene, and TODO/FIXME
 triage. Read-only git. Report to `docs/vectalon/release-ready/`.
 
 ```bash
-npx vectalon release-ready                 # ship / no-ship verdict
-npx vectalon release-ready --json
+npx --package @vectalon-dev/rn vectalon release-ready                 # ship / no-ship verdict
+npx --package @vectalon-dev/rn vectalon release-ready --json
 ```
 
 **Options**
@@ -2690,10 +2690,10 @@ removal and var→const — with `--apply` (refusing a dirty git tree unless
 `--force`). Dry-run by default. Report to `docs/vectalon/bug-fix/`.
 
 ```bash
-npx vectalon bug-fix                       # dry-run: propose fixes only
-npx vectalon bug-fix --apply               # apply the safe fixes (clean tree)
-npx vectalon bug-fix --apply --force       # allow a dirty working tree
-npx vectalon bug-fix --json
+npx --package @vectalon-dev/rn vectalon bug-fix                       # dry-run: propose fixes only
+npx --package @vectalon-dev/rn vectalon bug-fix --apply               # apply the safe fixes (clean tree)
+npx --package @vectalon-dev/rn vectalon bug-fix --apply --force       # allow a dirty working tree
+npx --package @vectalon-dev/rn vectalon bug-fix --json
 ```
 
 **Options**
@@ -2722,9 +2722,9 @@ steps. Platform is auto-detected or forced with
 `--platform ios|android|javascript`. Report to `docs/vectalon/crash/`.
 
 ```bash
-npx vectalon crash --log crash.log         # auto-detect the platform
-npx vectalon crash --log crash.log --platform ios
-npx vectalon crash --json
+npx --package @vectalon-dev/rn vectalon crash --log crash.log         # auto-detect the platform
+npx --package @vectalon-dev/rn vectalon crash --log crash.log --platform ios
+npx --package @vectalon-dev/rn vectalon crash --json
 ```
 
 **Options**
@@ -2753,8 +2753,8 @@ nesting depth — with a grade and top improvements. Report to
 `docs/vectalon/arch-score/`.
 
 ```bash
-npx vectalon arch-score                    # score src/ by default
-npx vectalon arch-score --src lib --json
+npx --package @vectalon-dev/rn vectalon arch-score                    # score src/ by default
+npx --package @vectalon-dev/rn vectalon arch-score --src lib --json
 ```
 
 **Options**
@@ -2782,8 +2782,8 @@ secrets in inline env, deploy steps without a test gate, missing
 `workflow_dispatch`. Report to `docs/vectalon/cicd/`.
 
 ```bash
-npx vectalon cicd                          # scan .github/workflows
-npx vectalon cicd --json
+npx --package @vectalon-dev/rn vectalon cicd                          # scan .github/workflows
+npx --package @vectalon-dev/rn vectalon cicd --json
 ```
 
 **Options**
@@ -2810,8 +2810,8 @@ package.json, app icons, iOS privacy manifest, Android permissions,
 cleartext posture. Report to `docs/vectalon/app-store/`.
 
 ```bash
-npx vectalon app-store                     # store-readiness checklist
-npx vectalon app-store --json
+npx --package @vectalon-dev/rn vectalon app-store                     # store-readiness checklist
+npx --package @vectalon-dev/rn vectalon app-store --json
 ```
 
 **Options**
@@ -2838,8 +2838,8 @@ control, audit logging, encryption, backups, incident response, vendor
 management, privacy policy. Report to `docs/vectalon/soc2/`.
 
 ```bash
-npx vectalon soc2                          # evidence checklist
-npx vectalon soc2 --json
+npx --package @vectalon-dev/rn vectalon soc2                          # evidence checklist
+npx --package @vectalon-dev/rn vectalon soc2 --json
 ```
 
 **Options**
@@ -2866,8 +2866,8 @@ colors that should be tokens, and duplicate token values. Report to
 `docs/vectalon/tokens/`.
 
 ```bash
-npx vectalon tokens                        # token drift scan
-npx vectalon tokens --json
+npx --package @vectalon-dev/rn vectalon tokens                        # token drift scan
+npx --package @vectalon-dev/rn vectalon tokens --json
 ```
 
 **Options**
@@ -2893,8 +2893,8 @@ analytics — commit cadence, author distribution, bus factor, category mix,
 change velocity. Read-only git. Report to `docs/vectalon/team-stats/`.
 
 ```bash
-npx vectalon team-stats                    # git analytics
-npx vectalon team-stats --json
+npx --package @vectalon-dev/rn vectalon team-stats                    # git analytics
+npx --package @vectalon-dev/rn vectalon team-stats --json
 ```
 
 **Options**
@@ -2920,8 +2920,8 @@ npx vectalon team-stats --json
 grants and credentials in config. Report to `docs/vectalon/perms/`.
 
 ```bash
-npx vectalon perms                         # permissions audit
-npx vectalon perms --json
+npx --package @vectalon-dev/rn vectalon perms                         # permissions audit
+npx --package @vectalon-dev/rn vectalon perms --json
 ```
 
 **Options**
@@ -2952,12 +2952,12 @@ regenerating them (and the HTML) on a schedule until Ctrl-C, so the
 dashboard stays fresh while you work. Report to `docs/vectalon/dashboard/`.
 
 ```bash
-npx vectalon dashboard                     # aggregate existing reports
-npx vectalon dashboard --run               # regenerate fast reports first
-npx vectalon dashboard --cron              # regenerate every 5 min until Ctrl-C
-npx vectalon dashboard --cron --interval 60
-npx vectalon dashboard --open              # open the HTML dashboard
-npx vectalon dashboard --json
+npx --package @vectalon-dev/rn vectalon dashboard                     # aggregate existing reports
+npx --package @vectalon-dev/rn vectalon dashboard --run               # regenerate fast reports first
+npx --package @vectalon-dev/rn vectalon dashboard --cron              # regenerate every 5 min until Ctrl-C
+npx --package @vectalon-dev/rn vectalon dashboard --cron --interval 60
+npx --package @vectalon-dev/rn vectalon dashboard --open              # open the HTML dashboard
+npx --package @vectalon-dev/rn vectalon dashboard --json
 ```
 
 **Reading your reports** — reports never leave your project unless you share
@@ -3005,8 +3005,8 @@ source component, text styles with no font usage. Report to
 `docs/vectalon/figma/`.
 
 ```bash
-npx vectalon figma                # check design↔code drift
-npx vectalon figma --json
+npx --package @vectalon-dev/rn vectalon figma                # check design↔code drift
+npx --package @vectalon-dev/rn vectalon figma --json
 ```
 
 **Options**
@@ -3034,8 +3034,8 @@ root-cause verdict per class, and flags release regressions. Report to
 `docs/vectalon/sentry/`.
 
 ```bash
-npx vectalon sentry               # rank crash classes from telemetry
-npx vectalon sentry --json
+npx --package @vectalon-dev/rn vectalon sentry               # rank crash classes from telemetry
+npx --package @vectalon-dev/rn vectalon sentry --json
 ```
 
 **Options**
@@ -3062,8 +3062,8 @@ breadcrumbs, performance tracing) and flags slow traces/spans from
 telemetry exports. Report to `docs/vectalon/observability/`.
 
 ```bash
-npx vectalon observability        # audit instrumentation + slow traces
-npx vectalon observability --json
+npx --package @vectalon-dev/rn vectalon observability        # audit instrumentation + slow traces
+npx --package @vectalon-dev/rn vectalon observability --json
 ```
 
 **Options**
@@ -3090,8 +3090,8 @@ template, lockfile/SBOM, Dependabot, CI. Report to
 `docs/vectalon/governance/`.
 
 ```bash
-npx vectalon governance           # governance evidence checklist
-npx vectalon governance --json
+npx --package @vectalon-dev/rn vectalon governance           # governance evidence checklist
+npx --package @vectalon-dev/rn vectalon governance --json
 ```
 
 **Options**
@@ -3118,8 +3118,8 @@ secret hygiene — and summarizes activity by actor and action. Report to
 `docs/vectalon/audit/`.
 
 ```bash
-npx vectalon audit                # validate the audit trail
-npx vectalon audit --json
+npx --package @vectalon-dev/rn vectalon audit                # validate the audit trail
+npx --package @vectalon-dev/rn vectalon audit --json
 ```
 
 **Options**
@@ -3145,8 +3145,8 @@ npx vectalon audit --json
 git checkout, with a memory store. Report to `docs/vectalon/repos/`.
 
 ```bash
-npx vectalon repos                # verify the workspace manifest
-npx vectalon repos --json
+npx --package @vectalon-dev/rn vectalon repos                # verify the workspace manifest
+npx --package @vectalon-dev/rn vectalon repos --json
 ```
 
 **Options**
@@ -3173,8 +3173,8 @@ staleness, breaking changes, author breadth in the release window. Report
 to `docs/vectalon/release-predict/`.
 
 ```bash
-npx vectalon release-predict      # predict release risk
-npx vectalon release-predict --json
+npx --package @vectalon-dev/rn vectalon release-predict      # predict release risk
+npx --package @vectalon-dev/rn vectalon release-predict --json
 ```
 
 **Options**
@@ -3202,8 +3202,8 @@ levels, signing, and measured listing assets (icon, feature graphic,
 screenshots, listing text). Report to `docs/vectalon/play-store/`.
 
 ```bash
-npx vectalon play-store           # deep Play readiness checklist
-npx vectalon play-store --json
+npx --package @vectalon-dev/rn vectalon play-store           # deep Play readiness checklist
+npx --package @vectalon-dev/rn vectalon play-store --json
 ```
 
 **Options**
@@ -3230,8 +3230,8 @@ label balance, length outliers, PII leakage. Report to
 `docs/vectalon/dataset/`.
 
 ```bash
-npx vectalon dataset              # validate training data
-npx vectalon dataset --json
+npx --package @vectalon-dev/rn vectalon dataset              # validate training data
+npx --package @vectalon-dev/rn vectalon dataset --json
 ```
 
 **Options**
@@ -3257,9 +3257,9 @@ npx vectalon dataset --json
 r/alpha/quantization, output dir. Report to `docs/vectalon/lora/`.
 
 ```bash
-npx vectalon lora                 # LoRA training readiness
-npx vectalon lora --config .vectalon/lora/config.yaml
-npx vectalon lora --json
+npx --package @vectalon-dev/rn vectalon lora                 # LoRA training readiness
+npx --package @vectalon-dev/rn vectalon lora --config .vectalon/lora/config.yaml
+npx --package @vectalon-dev/rn vectalon lora --json
 ```
 
 **Options**
@@ -3289,9 +3289,9 @@ or a `--file` export with the same shape; degrades to an explicit
 no-data verdict when neither exists. Report to `docs/vectalon/gh-pr/`.
 
 ```bash
-npx vectalon gh-pr               # triage open PRs via the gh CLI
-npx vectalon gh-pr --file prs.json
-npx vectalon gh-pr --json
+npx --package @vectalon-dev/rn vectalon gh-pr               # triage open PRs via the gh CLI
+npx --package @vectalon-dev/rn vectalon gh-pr --file prs.json
+npx --package @vectalon-dev/rn vectalon gh-pr --json
 ```
 
 **Options**
@@ -3333,11 +3333,11 @@ score after the PR's findings (`82 → 79`): base comes from
 is base minus the deterministic penalty (error −10, warning −5, info −2).
 
 ```bash
-npx vectalon pr                    # review the current branch's PR (gh) or origin/main…HEAD
-npx vectalon pr 482                # review PR #482 via `gh pr diff`
-npx vectalon pr --diff-file pr.diff # review an offline unified diff
-npx vectalon pr 482 --comment      # post (or marker-upsert) the 🤖 review as a bot comment
-npx vectalon pr --diff-file pr.diff --json
+npx --package @vectalon-dev/rn vectalon pr                    # review the current branch's PR (gh) or origin/main…HEAD
+npx --package @vectalon-dev/rn vectalon pr 482                # review PR #482 via `gh pr diff`
+npx --package @vectalon-dev/rn vectalon pr --diff-file pr.diff # review an offline unified diff
+npx --package @vectalon-dev/rn vectalon pr 482 --comment      # post (or marker-upsert) the 🤖 review as a bot comment
+npx --package @vectalon-dev/rn vectalon pr --diff-file pr.diff --json
 ```
 
 `--comment` posts the review through `upsertPullRequestComment` (marker
@@ -3386,9 +3386,9 @@ app's own installation token. The only runtime is Node ≥ 20 — built-in
 dependencies.
 
 ```bash
-npx vectalon gh-app --listen           # run the webhook server (default)
-npx vectalon gh-app --process webhook.json   # replay one webhook payload and exit
-npx vectalon gh-app --listen --port 4567 --dir .vectalon/ghapp
+npx --package @vectalon-dev/rn vectalon gh-app --listen           # run the webhook server (default)
+npx --package @vectalon-dev/rn vectalon gh-app --process webhook.json   # replay one webhook payload and exit
+npx --package @vectalon-dev/rn vectalon gh-app --listen --port 4567 --dir .vectalon/ghapp
 ```
 
 **Configuration (env)** — `GITHUB_APP_ID`, `GITHUB_APP_PRIVATE_KEY` (path to
@@ -3445,9 +3445,9 @@ lint + tests actually run; adherence = the RN craft checklist; guardrails =
 the bans) — and a competitor's committed result renders in the leaderboard.
 
 ```bash
-npx vectalon rnbench                       # the leaderboard window
-npx vectalon rnbench --export ./bundle     # the competitor-run bundle
-npx vectalon rnbench --json                # machine-readable matrix
+npx --package @vectalon-dev/rn vectalon rnbench                       # the leaderboard window
+npx --package @vectalon-dev/rn vectalon rnbench --export ./bundle     # the competitor-run bundle
+npx --package @vectalon-dev/rn vectalon rnbench --json                # machine-readable matrix
 ```
 
 **Options**
@@ -3473,9 +3473,9 @@ explicit no-data verdict when neither exists. Report to
 `docs/vectalon/gh-issue/`.
 
 ```bash
-npx vectalon gh-issue              # triage the open issue backlog
-npx vectalon gh-issue --file issues.json
-npx vectalon gh-issue --json
+npx --package @vectalon-dev/rn vectalon gh-issue              # triage the open issue backlog
+npx --package @vectalon-dev/rn vectalon gh-issue --file issues.json
+npx --package @vectalon-dev/rn vectalon gh-issue --json
 ```
 
 **Options**
@@ -3506,9 +3506,9 @@ export with the same shape; degrades to an explicit no-data verdict when
 neither exists. Report to `docs/vectalon/gh-ci/`.
 
 ```bash
-npx vectalon gh-ci                 # analyze recent workflow runs
-npx vectalon gh-ci --file runs.json
-npx vectalon gh-ci --json
+npx --package @vectalon-dev/rn vectalon gh-ci                 # analyze recent workflow runs
+npx --package @vectalon-dev/rn vectalon gh-ci --file runs.json
+npx --package @vectalon-dev/rn vectalon gh-ci --json
 ```
 
 **Options**
@@ -3539,9 +3539,9 @@ degrades to an explicit no-data verdict when neither exists. Report to
 `docs/vectalon/gh-sec/`.
 
 ```bash
-npx vectalon gh-sec                # scan the security posture
-npx vectalon gh-sec --file sec.json
-npx vectalon gh-sec --json
+npx --package @vectalon-dev/rn vectalon gh-sec                # scan the security posture
+npx --package @vectalon-dev/rn vectalon gh-sec --file sec.json
+npx --package @vectalon-dev/rn vectalon gh-sec --json
 ```
 
 **Options**
@@ -3569,8 +3569,8 @@ executive view — crash classes (sentry), instrumentation + slow traces
 and raw `.vectalon/telemetry` events. Report to `docs/vectalon/monitor/`.
 
 ```bash
-npx vectalon monitor               # fold telemetry into one executive view
-npx vectalon monitor --json
+npx --package @vectalon-dev/rn vectalon monitor               # fold telemetry into one executive view
+npx --package @vectalon-dev/rn vectalon monitor --json
 ```
 
 **Options**
@@ -3597,9 +3597,9 @@ exactly (`exact` / `includes` / `regex` matchers) from
 previous run when one exists. Report to `docs/vectalon/evals/`.
 
 ```bash
-npx vectalon evals                  # score .vectalon/evals/cases.json
-npx vectalon evals --cases my-cases.json
-npx vectalon evals --json
+npx --package @vectalon-dev/rn vectalon evals                  # score .vectalon/evals/cases.json
+npx --package @vectalon-dev/rn vectalon evals --cases my-cases.json
+npx --package @vectalon-dev/rn vectalon evals --json
 ```
 
 **Options**
@@ -3627,9 +3627,9 @@ results are ranked by hit density and file relevance. Report to
 `docs/vectalon/search/`.
 
 ```bash
-npx vectalon search --query "memoized list"
-npx vectalon search --query "perf" --limit 50
-npx vectalon search --query "theme" --json
+npx --package @vectalon-dev/rn vectalon search --query "memoized list"
+npx --package @vectalon-dev/rn vectalon search --query "perf" --limit 50
+npx --package @vectalon-dev/rn vectalon search --query "theme" --json
 ```
 
 **Options**
@@ -3658,9 +3658,9 @@ recent commits, release risk, and next steps. Report to
 `docs/vectalon/incident/`.
 
 ```bash
-npx vectalon incident --log crash.log
-npx vectalon incident               # uses the latest crash report
-npx vectalon incident --json
+npx --package @vectalon-dev/rn vectalon incident --log crash.log
+npx --package @vectalon-dev/rn vectalon incident               # uses the latest crash report
+npx --package @vectalon-dev/rn vectalon incident --json
 ```
 
 **Options**
@@ -3688,8 +3688,8 @@ clean tree, and a suggested semver bump. Read-only; nothing is modified.
 Report to `docs/vectalon/train/`.
 
 ```bash
-npx vectalon train                  # plan the release train
-npx vectalon train --json
+npx --package @vectalon-dev/rn vectalon train                  # plan the release train
+npx --package @vectalon-dev/rn vectalon train --json
 ```
 
 **Options**
@@ -3716,8 +3716,8 @@ processing, model endpoints — with explicit rate assumptions. All figures
 are labeled as estimates, never actuals. Report to `docs/vectalon/cost/`.
 
 ```bash
-npx vectalon cost                   # estimate project spend
-npx vectalon cost --json
+npx --package @vectalon-dev/rn vectalon cost                   # estimate project spend
+npx --package @vectalon-dev/rn vectalon cost --json
 ```
 
 **Options**
@@ -3744,8 +3744,8 @@ strict types, changelog, onboarding, and source complexity — with a grade
 and the top improvements. Report to `docs/vectalon/dx/`.
 
 ```bash
-npx vectalon dx                     # score the developer experience
-npx vectalon dx --json
+npx --package @vectalon-dev/rn vectalon dx                     # score the developer experience
+npx --package @vectalon-dev/rn vectalon dx --json
 ```
 
 **Options**
@@ -3774,13 +3774,13 @@ Gradle `productFlavors`, Xcode schemes, and `eas.json` build profiles.
 Credentials are never stored. Reports to `docs/vectalon/archive/`.
 
 ```bash
-npx vectalon archive                        # archive default flavor, current platform
-npx vectalon archive --flavor staging       # archive the staging flavor
-npx vectalon archive --list                 # list archived builds
-npx vectalon archive --init                 # write flavors.json (auto-detected)
-npx vectalon archive --no-build --artifact ./app.apk   # ingest a pre-built artifact
-npx vectalon archive --dry-run              # plan without side effects
-npx vectalon archive --json
+npx --package @vectalon-dev/rn vectalon archive                        # archive default flavor, current platform
+npx --package @vectalon-dev/rn vectalon archive --flavor staging       # archive the staging flavor
+npx --package @vectalon-dev/rn vectalon archive --list                 # list archived builds
+npx --package @vectalon-dev/rn vectalon archive --init                 # write flavors.json (auto-detected)
+npx --package @vectalon-dev/rn vectalon archive --no-build --artifact ./app.apk   # ingest a pre-built artifact
+npx --package @vectalon-dev/rn vectalon archive --dry-run              # plan without side effects
+npx --package @vectalon-dev/rn vectalon archive --json
 ```
 
 **Options**
@@ -3819,12 +3819,12 @@ or prints actionable instructions. `--dry-run` produces the exact plan with
 zero side effects. Reports to `docs/vectalon/distribute/`.
 
 ```bash
-npx vectalon distribute --target testflight --dry-run   # plan a TestFlight upload
-npx vectalon distribute --target play-store --track internal
-npx vectalon distribute --target saas --latest           # push latest build to SaaS
-npx vectalon distribute --target portal --deploy static  # generate + deploy a portal
-npx vectalon distribute --list-targets                   # list distribution targets
-npx vectalon distribute --json
+npx --package @vectalon-dev/rn vectalon distribute --target testflight --dry-run   # plan a TestFlight upload
+npx --package @vectalon-dev/rn vectalon distribute --target play-store --track internal
+npx --package @vectalon-dev/rn vectalon distribute --target saas --latest           # push latest build to SaaS
+npx --package @vectalon-dev/rn vectalon distribute --target portal --deploy static  # generate + deploy a portal
+npx --package @vectalon-dev/rn vectalon distribute --list-targets                   # list distribution targets
+npx --package @vectalon-dev/rn vectalon distribute --json
 ```
 
 **Options**
@@ -3861,10 +3861,10 @@ auto-shutdown after `--expires`. Free tier, nothing leaves your machine
 unless you enable the tunnel. Reports to `docs/vectalon/share/`.
 
 ```bash
-npx vectalon share                        # serve the latest build locally
-npx vectalon share --tunnel --qr           # tunnel + QR code for phone installs
-npx vectalon share --expires 2h            # auto-shutdown after 2 hours
-npx vectalon share --port 8787 --json
+npx --package @vectalon-dev/rn vectalon share                        # serve the latest build locally
+npx --package @vectalon-dev/rn vectalon share --tunnel --qr           # tunnel + QR code for phone installs
+npx --package @vectalon-dev/rn vectalon share --expires 2h            # auto-shutdown after 2 hours
+npx --package @vectalon-dev/rn vectalon share --port 8787 --json
 ```
 
 **Options**
@@ -3901,9 +3901,9 @@ page plus per-build detail pages with install instructions and an embedded
 to `docs/vectalon/portal/`.
 
 ```bash
-npx vectalon portal --generate --out ./portal   # build the static portal
-npx vectalon portal --deploy static --domain builds.example.com
-npx vectalon portal --deploy vercel --json
+npx --package @vectalon-dev/rn vectalon portal --generate --out ./portal   # build the static portal
+npx --package @vectalon-dev/rn vectalon portal --deploy static --domain builds.example.com
+npx --package @vectalon-dev/rn vectalon portal --deploy vercel --json
 ```
 
 **Options**
@@ -3932,8 +3932,8 @@ npx vectalon portal --deploy vercel --json
 `--diagnostics` works on **every** command (before or after the subcommand):
 
 ```bash
-npx vectalon init --diagnostics
-npx vectalon serve --protocol http --diagnostics
+npx --package @vectalon-dev/rn vectalon init --diagnostics
+npx --package @vectalon-dev/rn vectalon serve --protocol http --diagnostics
 ```
 
 It captures Node/OS versions, RN/Expo versions, the model provider used, the

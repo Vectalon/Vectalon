@@ -51,7 +51,7 @@ export async function teamCommand(directory: string, options: TeamOptions): Prom
     if (check.canTrial) {
       logger.info('')
       logger.info('🔄 Start 14-day Team trial?')
-      logger.info('   Run: npx vectalon auth --github')
+      logger.info('   Run: npx --package @vectalon-dev/rn vectalon auth --github')
       logger.info('   Or visit: https://vectalon.in/trial?product=rn')
     }
 

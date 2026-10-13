@@ -42,11 +42,11 @@ export function renderOnboarding(input: OnboardingInput): string {
   }
   lines.push('## Quick start')
   lines.push('')
-  lines.push('- `npx vectalon init` — initialize the harness (or re-scan)')
-  lines.push('- `npx vectalon status` — daemon, model, refresh, license at a glance')
-  lines.push('- `npx vectalon doctor` — verify toolchain + ecosystem items')
-  lines.push('- `npx vectalon serve` — expose project-aware MCP tools to agents')
-  lines.push('- `npx vectalon team` — regenerate this Team Brain')
+  lines.push('- `npx --package @vectalon-dev/rn vectalon init` — initialize the harness (or re-scan)')
+  lines.push('- `npx --package @vectalon-dev/rn vectalon status` — daemon, model, refresh, license at a glance')
+  lines.push('- `npx --package @vectalon-dev/rn vectalon doctor` — verify toolchain + ecosystem items')
+  lines.push('- `npx --package @vectalon-dev/rn vectalon serve` — expose project-aware MCP tools to agents')
+  lines.push('- `npx --package @vectalon-dev/rn vectalon team` — regenerate this Team Brain')
   lines.push('')
 
   lines.push('## Vocabulary (glossary)')

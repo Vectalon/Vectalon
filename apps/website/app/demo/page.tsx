@@ -317,11 +317,11 @@ export default function DemoPage() {
             Run it on your own repo — the workflow, the docs, and the healing loop are yours:
           </p>
           <div className="mt-3 font-mono text-sm text-fg-dim">
-            <span className="text-brand">$</span> npx vectalon feature &quot;Build a Login
+            <span className="text-brand">$</span> npx --package @vectalon-dev/rn vectalon feature &quot;Build a Login
             feature.&quot;
           </div>
           <div className="mt-1 font-mono text-sm text-fg-dim">
-            <span className="text-brand">$</span> npx vectalon sales-demo
+            <span className="text-brand">$</span> npx --package @vectalon-dev/rn vectalon sales-demo
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
             <Link

@@ -6,7 +6,7 @@
  * tolerance. The baseline file is a committed `BenchSummary` JSON (the same
  * shape `--json -o` writes), so teams regenerate it with:
  *
- *   npx vectalon bench --json -o bench/baseline.json
+ *   npx --package @vectalon-dev/rn vectalon bench --json -o bench/baseline.json
  */
 
 import { existsSync, readFileSync } from 'fs'

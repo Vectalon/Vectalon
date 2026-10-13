@@ -64,10 +64,10 @@ timings per section, narration written verbatim, and production notes.
 
 **Visual:** Terminal in an empty RN/Expo project. Commands appear as typed.
 
-**Chyron (on each command):** `npm install -D @vectalon-dev/rn` → `npx vectalon init`
+**Chyron (on each command):** `npm install -D @vectalon-dev/rn` → `npx --package @vectalon-dev/rn vectalon init`
 
 **Narration:**
-> "Everything starts with one install and one command. `npm install --save-dev @vectalon-dev/rn` — then `npx vectalon init`. Vectalon scans the project and builds a `.vectalon` workspace: it detects whether you're on Expo or bare React Native CLI, snapshots your codebase into a context file, and picks a model provider. If you want to choose the provider up front, pass it: `npx vectalon init --model openai` for a remote model, or `--model local` to run fully offline."
+> "Everything starts with one install and one command. `npm install --save-dev @vectalon-dev/rn` — then `npx --package @vectalon-dev/rn vectalon init`. Vectalon scans the project and builds a `.vectalon` workspace: it detects whether you're on Expo or bare React Native CLI, snapshots your codebase into a context file, and picks a model provider. If you want to choose the provider up front, pass it: `npx --package @vectalon-dev/rn vectalon init --model openai` for a remote model, or `--model local` to run fully offline."
 
 **Visual:** Zoom on `.vectalon/` tree in the file explorer: `snapshot.json`, `context.md`, `memory.json`, `rn-vectalon.json`.
 
@@ -80,16 +80,16 @@ timings per section, narration written verbatim, and production notes.
 
 ## Section 4 — Verification: `doctor` + `selftest` (2:30–4:00)
 
-**Visual:** Left pane runs `npx vectalon doctor`. Right pane waits.
+**Visual:** Left pane runs `npx --package @vectalon-dev/rn vectalon doctor`. Right pane waits.
 
-**Chyron:** `npx vectalon doctor`
+**Chyron:** `npx --package @vectalon-dev/rn vectalon doctor`
 
 **Narration:**
 > "Before we trust the harness, we verify it. `vectalon doctor` checks the toolchain — Node, JDK, Android SDK, Xcode, Metro — plus every ecosystem item the project enabled. If something's missing, it tells you exactly how to fix it, and `--fix` auto-installs what it safely can."
 
-**Visual:** Run `npx vectalon doctor --fix`, show a missing check flipping to OK.
+**Visual:** Run `npx --package @vectalon-dev/rn vectalon doctor --fix`, show a missing check flipping to OK.
 
-**Chyron:** `npx vectalon selftest`
+**Chyron:** `npx --package @vectalon-dev/rn vectalon selftest`
 
 **Narration:**
 > "Then the big one: `vectalon selftest`. This runs a real check against every feature of the package — CLI commands, the SDLC modules, guardrails, the knowledge base, the MCP server, workflows, even the sandbox. Results stream live, and when it finishes you get a dashboard showing every check by category. If selftest passes, the package works on your machine. Period. You can run a single check with `--only`, or list them all with `--list`."
@@ -115,10 +115,10 @@ timings per section, narration written verbatim, and production notes.
 
 **Visual:** Terminal, fresh prompt.
 
-**Chyron:** `npx vectalon feature "create a login screen with email + password and hook it to the auth API"`
+**Chyron:** `npx --package @vectalon-dev/rn vectalon feature "create a login screen with email + password and hook it to the auth API"`
 
 **Narration:**
-> "This is the whole product in one line: `npx vectalon feature`, followed by the feature you want. Behind it runs a thirteen-phase pipeline — product requirements, scope, design, architecture, task breakdown, tests written first, implementation, review, verification, readiness, pull request, documentation, and close."
+> "This is the whole product in one line: `npx --package @vectalon-dev/rn vectalon feature`, followed by the feature you want. Behind it runs a thirteen-phase pipeline — product requirements, scope, design, architecture, task breakdown, tests written first, implementation, review, verification, readiness, pull request, documentation, and close."
 
 **Visual:** Show `docs/vectalon/feature-development/<run>/` with phase files appearing.
 
@@ -150,16 +150,16 @@ timings per section, narration written verbatim, and production notes.
 **Narration:**
 > "Here's where Vectalon earns its keep. After implementation, it reviews its own code — static rules plus measured evidence. It finds issues, fixes them, and re-reviews, up to three rounds by default. You can push it to five with `--heal-attempts 5`, or control severity with `--heal-severity`."
 
-**Visual:** Run `npx vectalon bundle --static` — show a large-library warning.
+**Visual:** Run `npx --package @vectalon-dev/rn vectalon bundle --static` — show a large-library warning.
 
-**Chyron:** `npx vectalon bundle --static`
+**Chyron:** `npx --package @vectalon-dev/rn vectalon bundle --static`
 
 **Narration:**
 > "Review isn't just linting. `vectalon bundle` enforces performance budgets — libraries over a hundred kilobytes, missing tree-shaking flags, oversized images. It snapshots each build, so you see growth over time."
 
-**Visual:** Run `npx vectalon profile --profile app.cpuprofile` — show a JS-thread blocking event.
+**Visual:** Run `npx --package @vectalon-dev/rn vectalon profile --profile app.cpuprofile` — show a JS-thread blocking event.
 
-**Chyron:** `npx vectalon profile --profile app.cpuprofile`
+**Chyron:** `npx --package @vectalon-dev/rn vectalon profile --profile app.cpuprofile`
 
 **Narration:**
 > "And `vectalon profile` brings measured runtime data into the review: JS-thread blocking times, retained heap, leak candidates — the difference between 'this looks fine' and 'this effect blocks the JS thread for five hundred milliseconds, move it to a worklet.'"
@@ -177,21 +177,21 @@ timings per section, narration written verbatim, and production notes.
 
 **Visual:** Terminal, `git` state on screen.
 
-**Chyron:** `npx vectalon release`
+**Chyron:** `npx --package @vectalon-dev/rn vectalon release`
 
 **Narration:**
 > "When the PR lands, shipping is one command. `vectalon release` reads your git history, detects the semantic version bump — breaking changes mean a major, features a minor, fixes a patch — and writes the changelog with the same categorizer your release notes use."
 
 **Visual:** Show the generated changelog scrolling.
 
-**Chyron:** `npx vectalon release --submit`
+**Chyron:** `npx --package @vectalon-dev/rn vectalon release --submit`
 
 **Narration:**
 > "`--submit` generates the full release workflow: quality checks, Maestro E2E flows on a device farm when you have them, store submission to App Store Connect or Play Console. The workflow is written to your repo — idempotent, never overwrites."
 
 **Visual:** Chart of hourly crash rate; a spike crossing the threshold line; incident card + rollback button.
 
-**Chyron:** `npx vectalon release --monitor`
+**Chyron:** `npx --package @vectalon-dev/rn vectalon release --monitor`
 
 **Narration:**
 > "And the part that saves your weekend: `--monitor`. It ingests Sentry or Crashlytics exports, buckets crashes hourly, and builds a statistical baseline. If a window crosses baseline plus three standard deviations, it files an incident and suggests a rollback — automatically. Healthy windows teach the baseline, so the gate only gets smarter."
@@ -207,7 +207,7 @@ timings per section, narration written verbatim, and production notes.
 **Narration:**
 > "That's the loop: initialize, verify, build, review, release. One command each, every result visible, every step guardrailed. When something feels off, remember the golden rule — run `vectalon doctor --fix`, then `vectalon selftest --only` on the feature that's acting up. You now know the tool your team is shipping with. Go build something."
 
-**End card:** vectalon.in · `npx vectalon init` · "Start your 14-day trial: `vectalon auth --github`"
+**End card:** vectalon.in · `npx --package @vectalon-dev/rn vectalon init` · "Start your 14-day trial: `vectalon auth --github`"
 
 ---
 

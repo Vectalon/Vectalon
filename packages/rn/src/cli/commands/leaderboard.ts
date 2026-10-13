@@ -26,7 +26,7 @@ export function leaderboardCommand(options: LeaderboardCommandOptions): void {
   if (runs.length === 0) {
     logger.error(`No benchmark result files found in ${dir}`)
     logger.info('Run per-model passes first, e.g.:')
-    logger.dim('  npx vectalon bench --model openai --live --json -o bench/results/openai.json')
+    logger.dim('  npx --package @vectalon-dev/rn vectalon bench --model openai --live --json -o bench/results/openai.json')
     process.exit(1)
   }
 

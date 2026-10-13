@@ -128,8 +128,8 @@ pnpm publish:rn
 ### React Native
 
 ```bash
-npx vectalon init    # Scan project, build context
-npx vectalon serve   # Start MCP server for agents
+npx --package @vectalon-dev/rn vectalon init    # Scan project, build context
+npx --package @vectalon-dev/rn vectalon serve   # Start MCP server for agents
 ```
 
 ### Verify the complete React Native command surface locally
@@ -171,8 +171,8 @@ Plans are cumulative and currently cover the React Native harness only. A paid
 license never bypasses explicit experimental opt-in, availability checks, or
 human review of generated changes. Planned SDKs are not silently included.
 
-See your current plan and what each tier unlocks with `npx vectalon plan`, and
-the engineering outcomes your reports produce with `npx vectalon outcomes`.
+See your current plan and what each tier unlocks with `npx --package @vectalon-dev/rn vectalon plan`, and
+the engineering outcomes your reports produce with `npx --package @vectalon-dev/rn vectalon outcomes`.
 
 ---
 
