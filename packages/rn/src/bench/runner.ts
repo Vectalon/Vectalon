@@ -3,7 +3,7 @@ import { tmpdir } from 'os'
 import { join, dirname } from 'path'
 import { generateAddFeatureImplementation } from '../workflows/phases/implementationPhase'
 import { benchmarkSnapshot } from './snapshot'
-import { compositeScore, guardrailPassRate, guardrailPerFile, CORRECTNESS_WEIGHTS } from './scoring'
+import { compositeScore, guardrailPassRate, guardrailPerFile, missingRequiredFiles, CORRECTNESS_WEIGHTS } from './scoring'
 import { loadScenarios, defaultScenariosDir } from './loader'
 import { loadReferences, defaultReferencesDir } from './references'
 import { createModelGenerate } from './modelGenerate'
@@ -93,6 +93,7 @@ async function runLiveCorrectness(
 function scoreFilesOffline(
   files: BenchGeneratedFile[],
   options: BenchRunOptions,
+  requiredFiles: string[],
   removedDependencies?: string[],
   fixEdits?: Array<{ file: string; find: string; replace: string }>
 ): { axes: BenchAxisScores; composite: number | null } {
@@ -103,6 +104,7 @@ function scoreFilesOffline(
       ? options.rubric(files)
       : rubricAdherence(files, { removedDependencies, fixEdits })
   }
+  if (missingRequiredFiles(files, requiredFiles).length > 0) adherence = 0
   const axes = { correctness: null, adherence, guardrails }
   return { axes, composite: compositeScore(axes) }
 }
@@ -152,6 +154,13 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
       ? options.rubric(files)
       : rubricAdherence(files, { removedDependencies, fixEdits: scenario.fixEdits })
   }
+  const missingFiles = options.generate
+    ? missingRequiredFiles(files, scenario.expect.files)
+    : []
+  if (missingFiles.length > 0) {
+    adherence = 0
+    correctnessDetails.push(`Missing required output files: ${missingFiles.join(', ')}`)
+  }
 
   const axes = { correctness, adherence, guardrails }
   const composite = compositeScore(axes)
@@ -160,7 +169,7 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
   const referenceFiles = options.references?.[scenario.id]
   let reference: BenchScenarioRun['reference']
   if (referenceFiles && referenceFiles.length > 0) {
-    const ref = scoreFilesOffline(referenceFiles, options, removedDependencies, scenario.fixEdits)
+    const ref = scoreFilesOffline(referenceFiles, options, scenario.expect.files, removedDependencies, scenario.fixEdits)
     const relative = relativeToReference(axes, composite, ref.axes, ref.composite)
     reference = {
       files: referenceFiles.map(f => f.path),

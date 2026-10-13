@@ -13,7 +13,7 @@ import type { ModelRouter } from '../model'
 import { buildImplementationPrompt, parseModelOutput } from '../workflows/phases/implementationPhase'
 import { isFixScenario } from './fix'
 import { benchmarkSnapshot } from './snapshot'
-import { guardrailPassRate } from './scoring'
+import { guardrailPassRate, guardrailPerFile, missingRequiredFiles } from './scoring'
 import { runRubric } from './rubric'
 import { runGuardrails } from '../guardrails'
 import type { BenchGeneratedFile, BenchScenario } from './types'
@@ -37,14 +37,15 @@ export interface ModelGenerateOptions {
   onTextChunk?: (text: string) => void
 }
 
-function quality(files: BenchGeneratedFile[], scenario: BenchScenario): { adherence: number | null; guardrails: number | null; score: number } {
-  const adherence = runRubric(files, {
+function quality(files: BenchGeneratedFile[], scenario: BenchScenario): { adherence: number | null; guardrails: number | null; failures: string[]; score: number } {
+  const adherence = missingRequiredFiles(files, scenario.expect.files).length > 0 ? 0 : runRubric(files, {
     removedDependencies: scenario.removedDependencies,
     fixEdits: scenario.fixEdits,
   }).overall
   const guardrails = guardrailPassRate(files)
+  const failures = guardrailPerFile(files).flatMap(file => (file.failedRules || []).map(rule => `${file.path}: ${rule}`))
   const values = [adherence, guardrails].filter((value): value is number => value !== null)
-  return { adherence, guardrails, score: values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0 }
+  return { adherence, guardrails, failures, score: values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0 }
 }
 
 function repairFeedback(files: BenchGeneratedFile[], scenario: BenchScenario): string {
@@ -54,6 +55,7 @@ function repairFeedback(files: BenchGeneratedFile[], scenario: BenchScenario): s
   const failures = rubric.files.flatMap(file => file.checks
     .filter(check => !check.passed)
     .map(check => `- ${file.filePath}: ${check.message || check.name}`))
+  failures.push(...missingRequiredFiles(files, scenario.expect.files).map(path => `- Missing required output file: ${path}`))
   for (const file of files) {
     const result = runGuardrails({
       filePath: file.path,
@@ -81,7 +83,6 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
     // repaired.
     const isRemoval = (scenario.removedDependencies?.length ?? 0) > 0
     const isFix = isFixScenario(scenario)
-    const needsFixtures = isRemoval || isFix
     const intent = isRemoval
       ? { type: 'remove-dependency' as const, dependency: (scenario.removedDependencies || []).join(', '), description: scenario.prompt }
       : isFix
@@ -93,11 +94,9 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       intent,
     })
 
-    const fixtureBlock = needsFixtures
-      ? Object.entries(scenario.fixtures || {})
-          .map(([path, content]) => `--- ${path} ---\n${content}`)
-          .join('\n\n')
-      : ''
+    const fixtureBlock = Object.entries(scenario.fixtures || {})
+      .map(([path, content]) => `--- ${path} ---\n${content}`)
+      .join('\n\n')
     const context = [
       'Project: rn-bench-app, React Native 0.74.0',
       '',
@@ -109,6 +108,8 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       '- Hooks have correct dependency arrays; state updates are immutable; expensive work is memoized.',
       '- Navigation params are typed and deep links use a routing table.',
       '- Return complete runnable files, not explanations, snippets, TODOs, or placeholders.',
+      ...scenario.expect.files.map(path => `- Required output file: ${path}`),
+      ...scenario.expect.behaviors.map(behavior => `- Required behavior: ${behavior}`),
       ...(fixtureBlock ? ['', 'Current project files (return each changed file with its complete new content):', fixtureBlock] : []),
       '',
       'Output only one valid JSON object: {"files":[{"path":"...","content":"..."}]}',
@@ -162,6 +163,9 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
     const repairedFiles = repaired.files
       .filter(f => typeof f.path === 'string' && f.path.length > 0 && typeof f.content === 'string')
       .map(f => ({ path: f.path as string, content: f.content }))
-    return quality(repairedFiles, scenario).score > firstQuality.score ? repairedFiles : files
+    const repairedQuality = quality(repairedFiles, scenario)
+    return (repairedQuality.guardrails ?? 0) >= (firstQuality.guardrails ?? 0)
+      && repairedQuality.failures.every(failure => firstQuality.failures.includes(failure))
+      && repairedQuality.score > firstQuality.score ? repairedFiles : files
   }
 }

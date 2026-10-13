@@ -1,6 +1,10 @@
 import { BenchAxisScores, BenchGeneratedFile, ScenarioGuardrailFile } from './types'
 import { runGuardrails } from '../guardrails'
 
+export function missingRequiredFiles(files: BenchGeneratedFile[], required: string[]): string[] {
+  return required.filter(path => !files.some(file => file.path === path && file.content.trim().length > 0))
+}
+
 /** Axis weights from docs/BENCHMARK_PLAN.md. */
 export const AXIS_WEIGHTS: Record<keyof BenchAxisScores, number> = {
   correctness: 0.4,
@@ -66,6 +70,7 @@ export function guardrailPerFile(files: BenchGeneratedFile[]): ScenarioGuardrail
       failed: result.failed,
       skipped: result.skipped,
       ok: result.ok,
+      failedRules: [...new Set(result.findings.filter(finding => !finding.passed).map(finding => finding.rule))],
     }
   })
 }

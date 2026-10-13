@@ -190,6 +190,17 @@ describe('bench scoring', () => {
 })
 
 describe('bench deterministic baseline runner', () => {
+  it('reports failed rule identifiers and unscored axes without including generated source', async () => {
+    const run = await runScenario(validScenario(), {
+      generate: () => [{ path: 'src/Bad.ts', content: 'console.log("private diagnostic content");' }],
+    })
+    expect(run.guardrail[0].failedRules?.length).toBeGreaterThan(0)
+    const report = formatScenarioSection(run)
+    expect(report).toContain('correctness not scored')
+    for (const rule of run.guardrail[0].failedRules || []) expect(report).toContain(rule)
+    expect(report).not.toContain('private diagnostic content')
+  })
+
   it('generates a scaffold for a scaffoldable scenario', () => {
     const files = deterministicGenerate(validScenario({ prompt: 'create a login screen' }))
     expect(files.length).toBeGreaterThan(0)
@@ -386,6 +397,7 @@ describe('bench deterministic baseline runner', () => {
       suite: 'refactor',
       scaffoldable: false,
       removedDependencies: ['appcenter'],
+      expect: { files: ['ios/Podfile'], behaviors: [] },
     })
 
     // A generator that leaves the pod behind → the native-traces check fails.
@@ -401,7 +413,7 @@ describe('bench deterministic baseline runner', () => {
     expect(clean.axes.adherence).toBe(1)
 
     // Without removedDependencies the check is N/A and cannot tank adherence.
-    const noDeps = await runScenario(validScenario({ id: 'rn-no-deps', scaffoldable: false }), {
+    const noDeps = await runScenario(validScenario({ id: 'rn-no-deps', scaffoldable: false, expect: { files: ['ios/Podfile'], behaviors: [] } }), {
       generate: () => [{ path: 'ios/Podfile', content: "pod 'AppCenter'\n" }],
     })
     expect(noDeps.axes.adherence).not.toBe(0)

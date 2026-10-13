@@ -41,6 +41,26 @@ function stubRouter(content: string): ModelGenerateOptions['modelRouter'] {
 }
 
 describe('bench reference solutions (M6)', () => {
+  it('fails adherence when generated output omits a required file', async () => {
+    const run = await runScenario(validScenario({ expect: { files: ['src/Required.tsx'], behaviors: [] } }), {
+      generate: async () => [{ path: 'src/Other.ts', content: 'export const value = 1' }],
+      rubric: () => 1,
+    })
+    expect(run.axes.adherence).toBe(0)
+    expect(run.correctnessDetails?.join(' ')).toContain('src/Required.tsx')
+  })
+
+  it('applies required-file checks to human references too', async () => {
+    const scenario = validScenario({ expect: { files: ['src/Required.ts'], behaviors: [] } })
+    const run = await runScenario(scenario, {
+      generate: () => [{ path: 'src/Required.ts', content: 'export const value = 1' }],
+      rubric: () => 1,
+      references: { [scenario.id]: [{ path: 'src/Other.ts', content: 'export const value = 1' }] },
+    })
+    expect(run.axes.adherence).toBe(1)
+    expect(run.reference?.axes.adherence).toBe(0)
+  })
+
   it('counts failed model generation as zero rather than excluding it from averages', async () => {
     const summary = await runBenchmark([validScenario()], { generate: async () => [] })
     expect(summary.runs[0].axes).toEqual({ correctness: null, adherence: 0, guardrails: 0 })
@@ -129,6 +149,31 @@ describe('bench reference solutions (M6)', () => {
 })
 
 describe('bench model generate seam (M5)', () => {
+  it('repairs missing required output even when other checks pass', async () => {
+    const generate = jest.fn()
+      .mockResolvedValueOnce({ content: JSON.stringify({ files: [{ path: 'src/Other.ts', content: 'export const value = 1' }] }) })
+      .mockResolvedValueOnce({ content: JSON.stringify({ files: [{ path: 'src/Required.ts', content: 'export const value = 1' }] }) })
+    const files = await createModelGenerate({ modelRouter: { generate } as unknown as ModelGenerateOptions['modelRouter'] })(
+      validScenario({ expect: { files: ['src/Required.ts'], behaviors: [] } })
+    )
+    expect(generate).toHaveBeenCalledTimes(2)
+    expect(generate.mock.calls[1][0].prompt).toContain('Missing required output file: src/Required.ts')
+    expect(files[0].path).toBe('src/Required.ts')
+  })
+
+  it('does not trade guardrail safety for higher repair adherence', async () => {
+    const initial = [{ path: 'src/LoginScreen.tsx', content: 'export function LoginScreen() { return null }' }]
+    const generate = jest.fn()
+      .mockResolvedValueOnce({ content: JSON.stringify({ files: initial }) })
+      .mockResolvedValueOnce({ content: JSON.stringify({ files: [{
+        path: 'src/LoginScreen.tsx',
+        content: "import { SafeAreaView, AlertIOS } from 'react-native'\nexport function LoginScreen() { AlertIOS.alert('test'); return <SafeAreaView /> }",
+      }] }) })
+    const files = await createModelGenerate({ modelRouter: { generate } as unknown as ModelGenerateOptions['modelRouter'] })(validScenario())
+    expect(generate).toHaveBeenCalledTimes(2)
+    expect(files).toEqual(initial)
+  })
+
   it('parses model JSON output into files', async () => {
     const gen = createModelGenerate({
       modelRouter: stubRouter(
@@ -275,6 +320,23 @@ describe('bench model generate seam (M5)', () => {
     expect(requests.join('\n')).not.toContain('(value: string) =>')
     expect(requests.join('\n')).not.toContain('Required repairs (all are mandatory and exact)')
     expect(captured.trimEnd()).toMatch(/Output only one valid JSON object:/)
+  })
+
+  it('includes existing project files and deliverables for ordinary generation tasks', async () => {
+    const requests: string[] = []
+    const router = {
+      generate: async (request: { context: string }) => {
+        requests.push(request.context)
+        return { content: '{}', provider: 'test' }
+      },
+    } as unknown as ModelGenerateOptions['modelRouter']
+    await createModelGenerate({ modelRouter: router })(validScenario({
+      fixtures: { 'src/navigation/types.ts': 'export type Routes = { Home: undefined }' },
+      expect: { files: ['src/navigation/Stack.tsx'], behaviors: ['typed route params'] },
+    }))
+    expect(requests[0]).toContain('export type Routes')
+    expect(requests[0]).toContain('Required output file: src/navigation/Stack.tsx')
+    expect(requests[0]).toContain('Required behavior: typed route params')
   })
 
   it('parses native removal files (Podfile, xml manifest, pbxproj) from path-fenced output', () => {

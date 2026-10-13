@@ -961,6 +961,13 @@ a long leaderboard run shows movement instead of a silent hang. The first
 scenario also announces the model-engine warm-up (the GGUF load that used to
 look like a freeze).
 
+Scores can include one repair attempt; they are not first-attempt success rates.
+Empty model output or missing required files fails adherence. Human references
+must satisfy the same required-file check. Without `--live`, correctness is not
+scored. A successful command exit means the benchmark completed, not that the
+model passed the smoke quality gate. Reports list failed guardrail rules and
+missing required files for diagnosis.
+
 | Option | Description |
 |---|---|
 | `--model <provider>` | `local` \| `wasm` \| `openai` \| `anthropic` \| `azure-openai` \| `groq` \| `ollama` \| `vllm` — run the real-model pass |

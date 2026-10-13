@@ -2,9 +2,9 @@ import { BenchScenarioRun, BenchSummary } from './types'
 
 function axisLine(axes: BenchScenarioRun['axes']): string {
   const parts: string[] = []
-  if (axes.correctness !== null) parts.push(`correctness ${(axes.correctness * 100).toFixed(0)}%`)
-  if (axes.adherence !== null) parts.push(`adherence ${(axes.adherence * 100).toFixed(0)}%`)
-  if (axes.guardrails !== null) parts.push(`guardrails ${(axes.guardrails * 100).toFixed(0)}%`)
+  parts.push(axes.correctness === null ? 'correctness not scored' : `correctness ${(axes.correctness * 100).toFixed(0)}%`)
+  parts.push(axes.adherence === null ? 'adherence not scored' : `adherence ${(axes.adherence * 100).toFixed(0)}%`)
+  parts.push(axes.guardrails === null ? 'guardrails not scored' : `guardrails ${(axes.guardrails * 100).toFixed(0)}%`)
   return parts.length > 0 ? parts.join(' · ') : 'no axes scored'
 }
 
@@ -21,6 +21,7 @@ export function formatScenarioSection(run: BenchScenarioRun): string {
   lines.push(`### ${run.id} — ${run.title}`)
   lines.push('')
   lines.push(`Composite: **${composite}** · ${axisLine(run.axes)}`)
+  for (const detail of run.correctnessDetails || []) lines.push(detail)
   if (run.reference) {
     const refComposite = run.reference.composite !== null ? `${(run.reference.composite * 100).toFixed(0)}%` : 'n/a'
     const relComposite =
@@ -39,6 +40,7 @@ export function formatScenarioSection(run: BenchScenarioRun): string {
     lines.push('Guardrail failures:')
     for (const g of failures) {
       lines.push(`- \`${g.path}\`: ${g.failed} failed, ${g.passed} passed, ${g.skipped} skipped`)
+      for (const rule of g.failedRules || []) lines.push(`  - ${rule}`)
     }
   }
   return lines.join('\n')

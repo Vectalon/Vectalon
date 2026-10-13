@@ -67,6 +67,8 @@ export interface ScenarioGuardrailFile {
   failed: number
   skipped: number
   ok: boolean
+  /** Rule identifiers only; no generated source or potentially sensitive snippets. */
+  failedRules?: string[]
 }
 
 /** Score per axis; `null` means N/A for that run (e.g. correctness in

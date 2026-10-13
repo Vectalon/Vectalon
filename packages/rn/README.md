@@ -354,6 +354,10 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   quality gate; it does not mean inference failed. `inference: fail` indicates
   a missing model or a local runtime/backend failure. Inspect the model output
   and per-scenario scores before changing code or model settings.
+- **Benchmark limits** — scores can include one repair attempt, not just the
+  first response. Empty model output or missing required files fails adherence;
+  human references must satisfy the same required-file check. Without `--live`,
+  correctness is not scored. A completed benchmark is not a quality-gate pass.
 - **Full captured output** per command lands in `report.log` (readable),
   `report.json` (CI), and an HTML dashboard under `.vectalon/demo-matrix/` for
   matrix runs (`.vectalon/smoke/` for single-project runs). The model benchmark
