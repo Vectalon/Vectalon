@@ -1,8 +1,28 @@
 import { LocalProvider } from '../../src/model/providers/LocalProvider'
 import { createChatSessionOptions } from '../../src/model/local/inference'
+import * as inference from '../../src/model/local/inference'
+import * as modelStore from '../../src/model/local/ModelStore'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
 describe('LocalProvider', () => {
+  it.each([undefined, 'Required output file: src/Settings.tsx'])('forwards task context to real inference (%s)', async context => {
+    const downloaded = jest.spyOn(modelStore, 'hasDownloadedModel').mockReturnValue(true)
+    const run = jest.spyOn(inference, 'runInference').mockResolvedValue({ content: 'real model output' } as Awaited<ReturnType<typeof inference.runInference>>)
+    try {
+      const provider = new LocalProvider({ nativeProbe: async () => true })
+      const result = await provider.generate({ prompt: 'Create settings', systemPrompt: 'Use TypeScript', context })
+      expect(run).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
+        systemPrompt: 'Use TypeScript',
+        prompt: context ? `\nContext:\n${context}\nCreate settings` : 'Create settings',
+      }))
+      expect(result.content).toBe('real model output')
+      expect(provider.isFallback()).toBe(false)
+    } finally {
+      run.mockRestore()
+      downloaded.mockRestore()
+    }
+  })
+
   it('is not ready before initialization', () => {
     const provider = new LocalProvider()
     expect(provider.isReady()).toBe(false)

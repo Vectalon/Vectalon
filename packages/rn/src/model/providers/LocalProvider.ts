@@ -124,7 +124,7 @@ export class LocalProvider {
       try {
         const result = await runInference(preset.id, {
           systemPrompt,
-          prompt: request.prompt,
+          prompt: request.context ? `\nContext:\n${request.context}\n${request.prompt}` : request.prompt,
           temperature: request.temperature ?? 0.2,
           maxTokens: request.maxTokens || 2048,
           // Tool-enabled requests run in JSON mode so the model can only emit
