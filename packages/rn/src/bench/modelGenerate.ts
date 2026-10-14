@@ -165,7 +165,11 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       .filter(f => typeof f.path === 'string' && f.path.length > 0 && typeof f.content === 'string')
       .map(f => ({ path: f.path as string, content: f.content }))
     const repairedQuality = quality(repairedFiles, scenario)
+    const initiallyMissing = missingRequiredFiles(files, scenario.expect.files)
+    const repairedMissing = missingRequiredFiles(repairedFiles, scenario.expect.files)
     return (repairedQuality.guardrails ?? 0) >= (firstQuality.guardrails ?? 0)
+      && repairedMissing.every(path => initiallyMissing.includes(path))
+      && (repairedQuality.adherence ?? 0) >= (firstQuality.adherence ?? 0)
       && repairedQuality.failures.every(failure => firstQuality.failures.includes(failure))
       && repairedQuality.score > firstQuality.score ? repairedFiles : files
   }

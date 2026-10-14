@@ -213,6 +213,21 @@ describe('bench model generate seam (M5)', () => {
     expect(files).toEqual(initial)
   })
 
+  it('does not improve guardrail averages by dropping an already generated required file', async () => {
+    const initial = [
+      { path: 'src/First.ts', content: 'export const first = 1' },
+      { path: 'src/Second.ts', content: "import { AlertIOS } from 'react-native'\nexport const second = () => AlertIOS.alert('test')" },
+    ]
+    const generate = jest.fn()
+      .mockResolvedValueOnce({ content: JSON.stringify({ files: initial }) })
+      .mockResolvedValueOnce({ content: JSON.stringify({ files: [initial[0]] }) })
+    const files = await createModelGenerate({ modelRouter: { generate } as unknown as ModelGenerateOptions['modelRouter'] })(
+      validScenario({ expect: { files: ['src/First.ts', 'src/Second.ts', 'src/Third.ts'], behaviors: [] } })
+    )
+    expect(generate).toHaveBeenCalledTimes(2)
+    expect(files).toEqual(initial)
+  })
+
   it('parses model JSON output into files', async () => {
     const gen = createModelGenerate({
       modelRouter: stubRouter(
