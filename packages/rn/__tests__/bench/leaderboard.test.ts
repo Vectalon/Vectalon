@@ -116,14 +116,16 @@ describe('leaderboard rendering', () => {
 
   it('renders the relative-to-human section when references exist', () => {
     const md = renderLeaderboard(runs, 't')
-    expect(md).toContain('## Relative to human (overall)')
+    expect(md).toContain('## Relative to reference (overall)')
+    expect(md).toContain('Reference authorship and independent review are unverified.')
+    expect(md).not.toContain('Relative to human')
     expect(md).toContain('| openai | 96% | 92% |')
   })
 
   it('omits the relative section when no run has references', () => {
     const noRefs = [{ model: 'openai', summary: summary({ overallReferenceComposite: null, overallRelativeComposite: null }) }]
     const md = renderLeaderboard(noRefs, 't')
-    expect(md).not.toContain('Relative to human')
+    expect(md).not.toContain('Relative to reference')
   })
 
   it('writeLeaderboard writes the rendered markdown to disk', () => {
@@ -159,7 +161,9 @@ describe('leaderboard PR comment', () => {
     expect(comment).toContain('Generated: 2026-08-03T03:00:00.000Z')
     expect(comment).toContain('2 model(s)')
     expect(comment).toContain('1 scenario(s)')
-    expect(comment).toContain('| Model | Overall | Guardrails | vs Human |')
+    expect(comment).toContain('| Model | Overall | Guardrails | vs Reference |')
+    expect(comment).toContain('Reference authorship and independent review are unverified.')
+    expect(comment).not.toContain('vs Human')
     expect(comment).toContain('| openai | 88% | 100% | 96% |')
     expect(comment).toContain('| local | 70% | 65% | 76% |')
     // Links the full leaderboard rather than duplicating it
@@ -170,7 +174,7 @@ describe('leaderboard PR comment', () => {
     const noRefs = [{ model: 'openai', summary: summary({ overallReferenceComposite: null, overallRelativeComposite: null }) }]
     const comment = renderLeaderboardPrComment(noRefs, 't')
     expect(comment).toContain('| Model | Overall | Guardrails |')
-    expect(comment).not.toContain('| Model | Overall | Guardrails | vs Human |')
+    expect(comment).not.toContain('| Model | Overall | Guardrails | vs Reference |')
     expect(comment).not.toContain('| openai | 88% | 100% | 96% |')
     expect(comment).toContain('| openai | 88% | 100% |')
   })

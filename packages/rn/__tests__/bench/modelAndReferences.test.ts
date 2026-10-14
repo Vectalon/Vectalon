@@ -163,7 +163,7 @@ describe('bench reference solutions (M6)', () => {
     expect(run.reference?.axes.adherence).toBe(0)
     expect(run.reference?.missingRequiredFiles).toEqual(['src/Required.ts'])
     expect(run.reference?.relative).toEqual({ correctness: null, adherence: null, guardrails: null, composite: null })
-    expect(formatScenarioSection(run)).toContain('Human reference incomplete; relative comparison unavailable.')
+    expect(formatScenarioSection(run)).toContain('Reference incomplete; relative comparison unavailable.')
   })
 
   it('labels the deterministic baseline as rubric-only and compares references on the same basis', async () => {
@@ -632,7 +632,9 @@ describe('bench relative-to-human scoring (M6)', () => {
     expect(summary.overallReferenceComposite).not.toBeNull()
     expect(summary.overallRelativeComposite).not.toBeNull()
     const report = formatBenchmarkReport(summary)
-    expect(report).toContain('Relative to human reference')
+    expect(report).toContain('Relative to reference')
+    expect(report).toContain('Reference authorship and independent review are unverified.')
+    expect(report).not.toContain('Relative to human')
   })
 
   it('runBenchmarkFromDir builds a model seam when modelRouter is provided', async () => {

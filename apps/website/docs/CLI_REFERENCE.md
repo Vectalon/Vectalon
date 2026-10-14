@@ -963,7 +963,11 @@ look like a freeze).
 
 Scores can include one repair attempt; they are not first-attempt success rates.
 Empty model output or missing required files fails adherence. In model-backed
-runs, human references satisfy the same required-file check. Deterministic
+runs, reference solutions satisfy the same required-file check. References include
+assistant-authored repairs and are not independently qualified human baselines.
+Relative percentages compare rubric scores, not human performance or launch
+readiness. Source reports now say “reference”; published 0.22.5 and older reports
+may still say “human.” Deterministic
 baselines compare rubric/guardrail behavior only for both sides; they do not
 prove task completeness or model quality. Without `--live`, correctness is not
 scored. A successful command exit means the benchmark completed, not that the

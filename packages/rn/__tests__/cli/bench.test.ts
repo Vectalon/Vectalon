@@ -144,7 +144,8 @@ describe('benchCommand', () => {
         .map((call: unknown[]) => (typeof call[0] === 'string' ? call[0] : ''))
         .join('')
 
-      expect(report).toContain('Relative to human reference')
+      expect(report).toContain('Relative to reference')
+      expect(report).toContain('not human performance or launch readiness')
     } finally {
       cleanup(scenariosDir)
       cleanup(referencesDir)

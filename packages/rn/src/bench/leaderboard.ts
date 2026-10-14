@@ -14,6 +14,7 @@ import { basename, resolve } from 'path'
 import { collectJsonFiles } from './fs'
 import type { BenchScenarioRun, BenchSummary } from './types'
 import { reportError } from '../utils/safe'
+import { REFERENCE_COMPARISON_NOTICE } from './report'
 
 /** One model pass: the provider id (from the filename) + its scored summary. */
 export interface LeaderboardRun {
@@ -92,7 +93,7 @@ export function renderLeaderboardPrComment(runs: LeaderboardRun[], timestamp: st
   )
   lines.push('')
   if (hasReferences) {
-    lines.push('| Model | Overall | Guardrails | vs Human |')
+    lines.push('| Model | Overall | Guardrails | vs Reference |')
     lines.push('| --- | --- | --- | --- |')
     for (const run of runs) {
       lines.push(
@@ -110,8 +111,9 @@ export function renderLeaderboardPrComment(runs: LeaderboardRun[], timestamp: st
   lines.push('')
   lines.push(
     'The nightly workflow benchmarks each provider on the RN coding-test suite; higher is better. ' +
-      '“vs Human” is the generated composite relative to the human reference solutions (M6).'
+      '“vs Reference” is the generated composite relative to the reference solutions (M6).'
   )
+  if (hasReferences) lines.push(REFERENCE_COMPARISON_NOTICE)
   return lines.join('\n')
 }
 
@@ -192,7 +194,9 @@ export function renderLeaderboard(runs: LeaderboardRun[], timestamp: string): st
 
   const hasReferences = runs.some(r => (r.summary.runs || []).length > 0 && r.summary.overallReferenceComposite !== null)
   if (hasReferences) {
-    lines.push('## Relative to human (overall)')
+    lines.push('## Relative to reference (overall)')
+    lines.push('')
+    lines.push(REFERENCE_COMPARISON_NOTICE)
     lines.push('')
     lines.push('| Model | Relative composite | Reference composite |')
     lines.push('| --- | --- | --- |')

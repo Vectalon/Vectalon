@@ -1,10 +1,10 @@
 /**
- * Phase V-5 benchmark — human reference solutions (M6).
+ * Phase V-5 benchmark — reference solutions (M6).
  *
- * Each scenario ships with a human-authored reference solution in
+ * Each scenario ships with a reference solution in
  * bench/references/<scenario-id>.json. The runner scores the reference with the
- * same axes as generated code, then reports the generated score relative to it
- * (e.g. "generated code is 92% of human best-practice adherence").
+ * same axes as generated code, then reports the generated score relative to it.
+ * Authorship and independent review are not verified by this loader.
  */
 
 import { existsSync, readFileSync } from 'fs'

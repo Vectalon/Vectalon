@@ -1,5 +1,7 @@
 import { BenchScenarioRun, BenchSummary } from './types'
 
+export const REFERENCE_COMPARISON_NOTICE = 'Reference authorship and independent review are unverified. Ratios compare rubric scores, not human performance or launch readiness.'
+
 function axisLine(axes: BenchScenarioRun['axes']): string {
   const parts: string[] = []
   parts.push(axes.correctness === null ? 'correctness not scored' : `correctness ${(axes.correctness * 100).toFixed(0)}%`)
@@ -24,14 +26,15 @@ export function formatScenarioSection(run: BenchScenarioRun): string {
   for (const detail of run.correctnessDetails || []) lines.push(detail)
   if (run.reference) {
     if (run.reference.missingRequiredFiles?.length) {
-      lines.push(`Human reference incomplete; relative comparison unavailable. Missing: ${run.reference.missingRequiredFiles.join(', ')}`)
+      lines.push(`Reference incomplete; relative comparison unavailable. Missing: ${run.reference.missingRequiredFiles.join(', ')}`)
     }
     const refComposite = run.reference.composite !== null ? `${(run.reference.composite * 100).toFixed(0)}%` : 'n/a'
     const relComposite =
       run.reference.relative.composite !== null
         ? `${(run.reference.relative.composite * 100).toFixed(0)}%`
         : 'n/a'
-    lines.push(`Relative to human reference: **${relComposite}** (reference composite: ${refComposite})`)
+    lines.push(`Relative to reference: **${relComposite}** (reference composite: ${refComposite})`)
+    lines.push(REFERENCE_COMPARISON_NOTICE)
   }
   if (run.generatedFiles.length > 0) {
     lines.push('')
@@ -66,8 +69,9 @@ export function formatBenchmarkOverall(summary: BenchSummary): string {
     lines.push(`Reference comparisons available: ${compared}/${summary.runs.length} scenarios`)
     lines.push(
       `Overall reference composite: ${summary.overallReferenceComposite !== null ? `${(summary.overallReferenceComposite * 100).toFixed(0)}%` : 'n/a'}` +
-        ` · Overall relative to human: ${summary.overallRelativeComposite !== null ? `${(summary.overallRelativeComposite * 100).toFixed(0)}%` : 'n/a'}`
+        ` · Overall relative to reference: ${summary.overallRelativeComposite !== null ? `${(summary.overallRelativeComposite * 100).toFixed(0)}%` : 'n/a'}`
     )
+    lines.push(REFERENCE_COMPARISON_NOTICE)
   }
   return lines.join('\n')
 }
