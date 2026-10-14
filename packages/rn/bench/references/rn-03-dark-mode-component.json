@@ -2,12 +2,8 @@
   "id": "rn-03-dark-mode-component",
   "files": [
     {
-      "path": "src/theme/tokens.ts",
-      "content": "export const tokens = {\n  colors: {\n    background: '#FFFFFF',\n    surface: '#F2F2F7',\n    surfaceDark: '#1C1C1E',\n    text: '#1C1C1E',\n    textOnDark: '#F2F2F7',\n    primary: '#007AFF',\n    border: '#C7C7CC',\n  },\n  spacing: {\n    sm: 8,\n    md: 16,\n    lg: 24,\n  },\n  radius: { md: 12 },\n} as const;\n"
-    },
-    {
-      "path": "src/components/ThemeCard.tsx",
-      "content": "import { View, Text, StyleSheet } from 'react-native';\nimport { tokens } from '../theme/tokens';\n\nexport interface ThemeCardProps {\n  title: string;\n  body: string;\n  dark?: boolean;\n}\n\nexport function ThemeCard({ title, body, dark = false }: ThemeCardProps): JSX.Element {\n  const palette = dark ? tokens.colors.surfaceDark : tokens.colors.surface;\n  const textColor = dark ? tokens.colors.textOnDark : tokens.colors.text;\n  return (\n    <View\n      style={[styles.card, { backgroundColor: palette }]}\n      accessibilityLabel={`${title}: ${body}`}\n    >\n      <Text style={[styles.title, { color: textColor }]}>{title}</Text>\n      <Text style={[styles.body, { color: textColor }]}>{body}</Text>\n    </View>\n  );\n}\n\nconst styles = StyleSheet.create({\n  card: {\n    borderRadius: tokens.radius.md,\n    padding: tokens.spacing.md,\n    margin: tokens.spacing.sm,\n    borderWidth: 1,\n    borderColor: tokens.colors.border,\n  },\n  title: { fontSize: 18, fontWeight: '700', marginBottom: tokens.spacing.sm },\n  body: { fontSize: 14 },\n});\n"
+      "path": "src/components/Card.tsx",
+      "content": "import { View, Text, StyleSheet } from 'react-native';\nimport { useTheme } from '../theme';\nimport { colors } from '../theme/tokens';\n\nexport interface CardProps {\n  title: string;\n  body: string;\n}\n\nexport function Card({ title, body }: CardProps): JSX.Element {\n  const { isDark } = useTheme();\n  const surface = isDark ? styles.darkSurface : styles.lightSurface;\n  const text = isDark ? styles.darkText : styles.lightText;\n  return (\n    <View style={[styles.card, surface]} accessible accessibilityLabel={`${title}: ${body}`}>\n      <Text style={[styles.title, text]}>{title}</Text>\n      <Text style={text}>{body}</Text>\n    </View>\n  );\n}\n\nconst styles = StyleSheet.create({\n  card: { padding: 16, borderRadius: 12 },\n  title: { fontSize: 18, fontWeight: '700', marginBottom: 8 },\n  lightSurface: { backgroundColor: colors.surface.light },\n  darkSurface: { backgroundColor: colors.surface.dark },\n  lightText: { color: colors.text.light },\n  darkText: { color: colors.text.dark },\n});\n"
     }
   ]
 }

@@ -44,6 +44,18 @@ function stubRouter(content: string): ModelGenerateOptions['modelRouter'] {
 }
 
 describe('bench reference solutions (M6)', () => {
+  it('dark-mode reference preserves the fixture theme and uses its automatic color-scheme hook', async () => {
+    const scenario = loadScenarios(defaultScenariosDir()).scenarios.find(item => item.id === 'rn-03-dark-mode-component')!
+    const files = loadReferences(defaultReferencesDir()).references.get(scenario.id)!
+    expect(files.map(file => file.path)).toEqual(['src/components/Card.tsx'])
+    expect(files[0].content).toContain('useTheme()')
+    expect(files[0].content).toContain('colors.surface.dark')
+    expect(files[0].content).toContain('colors.text.light')
+    expect(files[0].content).not.toMatch(/dark\??:/)
+    const result = await runScenario(scenario, { generate: () => files })
+    expect(result.axes).toEqual({ correctness: null, adherence: 1, guardrails: 1 })
+  })
+
   it('navigation reference fulfills the scenario contract with resolvable source imports', async () => {
     const scenario = loadScenarios(defaultScenariosDir()).scenarios.find(item => item.id === 'rn-04-typed-navigation')!
     const files = loadReferences(defaultReferencesDir()).references.get(scenario.id)!
