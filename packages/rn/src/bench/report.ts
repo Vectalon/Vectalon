@@ -23,6 +23,9 @@ export function formatScenarioSection(run: BenchScenarioRun): string {
   lines.push(`Composite: **${composite}** · ${axisLine(run.axes)}`)
   for (const detail of run.correctnessDetails || []) lines.push(detail)
   if (run.reference) {
+    if (run.reference.missingRequiredFiles?.length) {
+      lines.push(`Human reference incomplete; relative comparison unavailable. Missing: ${run.reference.missingRequiredFiles.join(', ')}`)
+    }
     const refComposite = run.reference.composite !== null ? `${(run.reference.composite * 100).toFixed(0)}%` : 'n/a'
     const relComposite =
       run.reference.relative.composite !== null
@@ -59,6 +62,8 @@ export function formatBenchmarkOverall(summary: BenchSummary): string {
       ` · Overall guardrails: ${summary.overallGuardrails !== null ? `${(summary.overallGuardrails * 100).toFixed(0)}%` : 'n/a'}`
   )
   if (summary.overallReferenceComposite !== null || summary.overallRelativeComposite !== null) {
+    const compared = summary.runs.filter(run => run.reference?.relative.composite != null).length
+    lines.push(`Reference comparisons available: ${compared}/${summary.runs.length} scenarios`)
     lines.push(
       `Overall reference composite: ${summary.overallReferenceComposite !== null ? `${(summary.overallReferenceComposite * 100).toFixed(0)}%` : 'n/a'}` +
         ` · Overall relative to human: ${summary.overallRelativeComposite !== null ? `${(summary.overallRelativeComposite * 100).toFixed(0)}%` : 'n/a'}`

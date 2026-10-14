@@ -14,6 +14,7 @@ import { createServer } from 'http'
 import { join } from 'path'
 import pkg from '../../package.json'
 import { logger } from '../cli/logger'
+import { isModelFallback } from '../model/fallback'
 import { supportCommand } from '../cli/commands/support'
 import { initCommand } from '../cli/commands/init'
 import { serveCommand } from '../cli/commands/serve'
@@ -168,13 +169,6 @@ function fail(detail: string): CheckResult {
 
 function warn(detail: string): CheckResult {
   return { status: 'warn', detail }
-}
-
-/** True when a model response is the deterministic fallback stub, not real output. */
-function isModelFallback(content: string): boolean {
-  // LocalProvider/WasmProvider degrade to '[Local model fallback: …]';
-  // ModelRouter's P0-7 fallback chain degrades to '[Model fallback: …]'.
-  return content.includes('[Local model fallback:') || content.includes('[Model fallback:')
 }
 
 /** Minimal React Native project fixture used by several checks. */

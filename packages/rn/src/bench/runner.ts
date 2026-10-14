@@ -176,9 +176,13 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
   let reference: BenchScenarioRun['reference']
   if (referenceFiles && referenceFiles.length > 0) {
     const ref = scoreFilesOffline(referenceFiles, options, options.generate ? scenario.expect.files : [], removedDependencies, scenario.fixEdits)
-    const relative = relativeToReference(axes, composite, ref.axes, ref.composite)
+    const missing = options.generate ? missingRequiredFiles(referenceFiles, scenario.expect.files) : []
+    const relative = missing.length > 0
+      ? { correctness: null, adherence: null, guardrails: null, composite: null }
+      : relativeToReference(axes, composite, ref.axes, ref.composite)
     reference = {
       files: referenceFiles.map(f => f.path),
+      ...(missing.length > 0 ? { missingRequiredFiles: missing } : {}),
       axes: ref.axes,
       composite: ref.composite,
       relative,

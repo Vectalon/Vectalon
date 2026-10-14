@@ -418,6 +418,7 @@ describe('bench deterministic baseline runner', () => {
     expect(overall.startsWith('---')).toBe(true)
     expect(overall).toContain('Overall composite:')
     expect(overall).toContain('Overall guardrails:')
+    expect(overall).toContain('Reference comparisons available:')
   })
 
   it('runBenchmarkFromDir runs every scenario when a generate seam is provided', async () => {

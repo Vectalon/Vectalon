@@ -1,5 +1,6 @@
 import pc from 'picocolors'
 import type { ModelRouter } from '../model/ModelRouter'
+import { isModelFallback } from '../model/fallback'
 import { reportError } from '../utils/safe'
 
 export type ReviewSeverity = 'error' | 'warning' | 'info'
@@ -152,7 +153,7 @@ export async function reviewCodeWithLLM(
       temperature: 0,
     })
     const content = response?.content || ''
-    if (content.includes('[Local model fallback') || content.includes('no downloaded model')) {
+    if (isModelFallback(content)) {
       return null
     }
     const review = parseLLMReview(content)
@@ -241,7 +242,7 @@ export async function fixCodeWithLLM(
       temperature: 0.1,
     })
     const content = response?.content || ''
-    if (content.includes('[Local model fallback') || content.includes('no downloaded model')) {
+    if (isModelFallback(content)) {
       return null
     }
     return extractFixedCode(content)

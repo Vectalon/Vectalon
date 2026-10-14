@@ -95,4 +95,14 @@ describe('model-inference check', () => {
     expect(run.status).toBe('fail')
     expect(run.detail).toContain('OpenAI API error')
   })
+
+  it.each(['Local model fallback', 'Wasm model fallback', 'Model fallback'])('does not count %s as real inference', async marker => {
+    process.env.OPENAI_API_KEY = 'sk-test'
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ choices: [{ message: { content: `[${marker}: unavailable]\nvectalon` } }] }),
+    }) as unknown as typeof fetch
+    const run = await runOneCheck(inferenceCheck!, { modelProvider: 'openai', requireModel: true }, '/tmp/vectalon-selftest-fixture')
+    expect(run.status).toBe('fail')
+  })
 })

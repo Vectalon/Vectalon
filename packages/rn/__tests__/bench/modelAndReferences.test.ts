@@ -9,6 +9,7 @@ import {
   runBenchmark,
   runBenchmarkFromDir,
   formatBenchmarkReport,
+  formatScenarioSection,
 } from '../../src/bench'
 import { parseModelOutput } from '../../src/workflows/phases/implementationPhase'
 import type { BenchScenario, ModelGenerateOptions } from '../../src/bench'
@@ -74,6 +75,9 @@ describe('bench reference solutions (M6)', () => {
     })
     expect(run.axes.adherence).toBe(1)
     expect(run.reference?.axes.adherence).toBe(0)
+    expect(run.reference?.missingRequiredFiles).toEqual(['src/Required.ts'])
+    expect(run.reference?.relative).toEqual({ correctness: null, adherence: null, guardrails: null, composite: null })
+    expect(formatScenarioSection(run)).toContain('Human reference incomplete; relative comparison unavailable.')
   })
 
   it('labels the deterministic baseline as rubric-only and compares references on the same basis', async () => {
@@ -175,6 +179,15 @@ describe('bench reference solutions (M6)', () => {
 })
 
 describe('bench model generate seam (M5)', () => {
+  it.each(['Local model fallback', 'Wasm model fallback', 'Model fallback'])('rejects %s even when it echoes valid generated-file JSON', async marker => {
+    const content = `[${marker}: unavailable]\n${JSON.stringify({ files: [{ path: 'src/Output.ts', content: 'export const value = 1' }] })}`
+    expect(parseModelOutput(content)).toBeNull()
+    const generate = jest.fn().mockResolvedValue({ content, provider: 'local' })
+    const files = await createModelGenerate({ modelRouter: { generate } as unknown as ModelGenerateOptions['modelRouter'] })(validScenario())
+    expect(files).toEqual([])
+    expect(generate).toHaveBeenCalledTimes(1)
+  })
+
   it('repairs missing required output even when other checks pass', async () => {
     const generate = jest.fn()
       .mockResolvedValueOnce({ content: JSON.stringify({ files: [{ path: 'src/Other.ts', content: 'export const value = 1' }] }) })

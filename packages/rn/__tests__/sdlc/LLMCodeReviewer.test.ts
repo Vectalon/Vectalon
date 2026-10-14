@@ -86,8 +86,8 @@ describe('reviewCodeWithLLM', () => {
     expect(await reviewCodeWithLLM({} as ModelRouter, { code: 'x', fileName: 'a.ts' })).toBeNull()
   })
 
-  it('returns null for the local-model fallback marker', async () => {
-    const router = mockRouter('[Local model fallback: no downloaded model or inference failed.]')
+  it.each(['Local model fallback', 'Wasm model fallback', 'Model fallback'])('returns null for the %s marker', async marker => {
+    const router = mockRouter(`[${marker}: unavailable]`)
     expect(await reviewCodeWithLLM(router, { code: 'x', fileName: 'a.ts' })).toBeNull()
   })
 

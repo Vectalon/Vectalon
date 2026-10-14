@@ -85,6 +85,8 @@ export interface BenchAxisScores {
 export interface BenchReferenceScore {
   /** Reference files scored. */
   files: string[]
+  /** Incomplete references cannot support a relative-to-human comparison. */
+  missingRequiredFiles?: string[]
   axes: BenchAxisScores
   /** Renormalized composite of the reference solution itself. */
   composite: number | null

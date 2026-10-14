@@ -3,6 +3,7 @@ import { join, relative } from 'path'
 import { reportError } from '../../utils/safe'
 import type { WorkflowPhase, WorkflowArtifact, TestRunnerAdapter, TestResult } from '../../adapters/types'
 import { isSafeProjectPath, isSelfPackageRepo, writeProjectFile, GENERATED_OUTPUT_DIR } from './fileOutput'
+import { isModelFallback as isFallbackResponse } from '../../model/fallback'
 import type { ContextSnapshot } from '../../harness/types'
 import type { ModelRouter } from '../../model/ModelRouter'
 import { removeUnusedImportsFromProject, findSourceFiles } from '../../utils/unusedImports'
@@ -162,10 +163,6 @@ function findUsages(snapshot: ContextSnapshot | null, dependency: string): { fil
   return usages
 }
 
-function isFallbackResponse(content: string): boolean {
-  return content.includes('[Local model fallback') || content.includes('no downloaded model')
-}
-
 function selectFixCheck(
   area: string,
   runner: TestRunnerAdapter
@@ -309,7 +306,7 @@ function extractPathFenceFiles(content: string): GeneratedFile[] | null {
 
 export function parseModelOutput(content: string): GeneratedImplementation | null {
   const trimmed = content.trim()
-  if (!trimmed) return null
+  if (!trimmed || isFallbackResponse(content)) return null
 
   const jsonResult = extractJsonFiles(content)
   if (jsonResult) return jsonResult

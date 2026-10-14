@@ -1,6 +1,7 @@
 import type { WorkflowContext } from '../../adapters/types'
 import type { ContextSnapshot } from '../../harness/types'
 import type { ModelRouter } from '../../model/ModelRouter'
+import { isModelFallback } from '../../model/fallback'
 import { detectConventions } from './helpers'
 import { reportError } from '../../utils/safe'
 
@@ -296,7 +297,7 @@ export async function predictIntent(
       temperature: 0,
     })
     const content = response?.content || ''
-    if (content.includes('[Local model fallback') || content.includes('no downloaded model')) {
+    if (isModelFallback(content)) {
       return unknown
     }
     const parsed = parseIntentPrediction(content)
@@ -326,7 +327,7 @@ export async function predictIntent(
       temperature: 0,
     })
     const repairContent = repairResponse?.content || ''
-    if (repairContent.includes('[Local model fallback') || repairContent.includes('no downloaded model')) {
+    if (isModelFallback(repairContent)) {
       return unknown
     }
     return parseIntentPrediction(repairContent) ?? unknown

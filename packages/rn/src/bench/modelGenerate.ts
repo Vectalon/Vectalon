@@ -10,6 +10,7 @@
  */
 
 import type { ModelRouter } from '../model'
+import { isModelFallback } from '../model/fallback'
 import { buildImplementationPrompt, parseModelOutput } from '../workflows/phases/implementationPhase'
 import { isFixScenario } from './fix'
 import { benchmarkSnapshot } from './snapshot'
@@ -126,7 +127,7 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
     const response = await modelRouter.generate(request)
 
     const content = response?.content || ''
-    if (!content || content.includes('[Local model fallback') || content.includes('no downloaded model')) {
+    if (!content || isModelFallback(content)) {
       return []
     }
 
