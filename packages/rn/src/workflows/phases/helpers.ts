@@ -49,7 +49,8 @@ export function detectConventions(snapshot: import('../../harness/types').Contex
   const project = snapshot?.project
   return {
     hasTypeScript: !!project?.hasTypeScript,
-    hasNavigation: components.some(c => c.usesNavigation),
+    hasNavigation: components.some(c => c.usesNavigation)
+      || Boolean(project?.dependencies['@react-navigation/native'] || project?.devDependencies['@react-navigation/native']),
     usesStyleSheet: components.some(c => c.usesStyleSheet),
     packageName: project?.name || 'app',
     platforms: project?.platforms || [],

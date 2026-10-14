@@ -28,7 +28,7 @@ import {
  * phase falls back to with no model. */
 export function deterministicGenerate(scenario: BenchScenario): BenchGeneratedFile[] {
   const result = generateAddFeatureImplementation(undefined, {
-    snapshot: benchmarkSnapshot(),
+    snapshot: benchmarkSnapshot(scenario.fixtures),
     prompt: scenario.prompt,
   })
   return result.artifacts

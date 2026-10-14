@@ -75,7 +75,7 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
   const { modelRouter, temperature = 0.2, maxTokens = 8192, onTextChunk } = options
 
   return async (scenario: BenchScenario): Promise<BenchGeneratedFile[]> => {
-    const snapshot = benchmarkSnapshot()
+    const snapshot = benchmarkSnapshot(scenario.fixtures)
     // Removal scenarios (rn-11/34/35) invert the scaffold: the model must
     // DELETE a package and its native traces, so it gets a remove-dependency
     // intent — and the current fixture files, which it must return changed
@@ -99,7 +99,7 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       .map(([path, content]) => `--- ${path} ---\n${content}`)
       .join('\n\n')
     const context = [
-      'Project: rn-bench-app, React Native 0.74.0',
+      `Project: ${snapshot.project.name}, React Native ${snapshot.project.reactNativeVersion}`,
       '',
       'Acceptance criteria for the final files (apply each item that is relevant):',
       '- Full screens use SafeAreaView/useSafeAreaInsets; input screens also use KeyboardAvoidingView.',

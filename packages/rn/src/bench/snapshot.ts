@@ -8,23 +8,34 @@
 
 import type { ContextSnapshot } from '../harness/types'
 
-export function benchmarkSnapshot(): ContextSnapshot {
+export function benchmarkSnapshot(fixtures: Record<string, string> = {}): ContextSnapshot {
+  let manifest: Record<string, unknown> = {}
+  try {
+    const parsed: unknown = JSON.parse(fixtures['package.json'] || '{}')
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) manifest = parsed as Record<string, unknown>
+  } catch { /* Malformed fixture metadata must not crash offline evaluation. */ }
+  const strings = (value: unknown): Record<string, string> => value && typeof value === 'object' && !Array.isArray(value)
+    ? Object.fromEntries(Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === 'string'))
+    : {}
+  const dependencies = strings(manifest.dependencies)
+  const devDependencies = strings(manifest.devDependencies)
+  const hasExpo = Boolean(dependencies.expo || devDependencies.expo)
   return {
     project: {
       root: '',
-      name: 'rn-bench-app',
-      version: '1.0.0',
-      reactNativeVersion: '0.74.0',
-      dependencies: {},
-      devDependencies: {},
-      scripts: {},
+      name: typeof manifest.name === 'string' ? manifest.name : 'rn-bench-app',
+      version: typeof manifest.version === 'string' ? manifest.version : '1.0.0',
+      reactNativeVersion: dependencies['react-native'] || devDependencies['react-native'] || '0.74.0',
+      dependencies,
+      devDependencies,
+      scripts: strings(manifest.scripts),
       platforms: ['ios', 'android'],
       hasTypeScript: true,
       hasMetro: true,
-      hasExpo: false,
-      tooling: 'rn-cli',
-      expoSdkVersion: '',
-      reactVersion: '18.2.0',
+      hasExpo,
+      tooling: hasExpo ? 'expo' : 'rn-cli',
+      expoSdkVersion: dependencies.expo || devDependencies.expo || '',
+      reactVersion: dependencies.react || devDependencies.react || '18.2.0',
     },
     structure: [],
     components: [],
