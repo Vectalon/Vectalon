@@ -3,15 +3,23 @@
   "files": [
     {
       "path": "src/navigation/types.ts",
-      "content": "export type RootStackParamList = {\n  Home: undefined;\n  Settings: { userId: string; from?: 'onboarding' };\n};\n"
+      "content": "export type SettingsStackParamList = {\n  SettingsHome: undefined;\n  SettingsDetail: { id: string; title: string };\n};\n"
     },
     {
       "path": "src/navigation/linking.ts",
-      "content": "import type { LinkingOptions } from '@react-navigation/native';\nimport type { RootStackParamList } from './types';\n\nexport const linking: LinkingOptions<RootStackParamList> = {\n  prefixes: ['myapp://'],\n  config: {\n    screens: {\n      Home: 'home',\n      Settings: 'settings/:userId',\n    },\n  },\n};\n"
+      "content": "import type { LinkingOptions } from '@react-navigation/native';\nimport type { SettingsStackParamList } from './types';\n\nexport const linking: LinkingOptions<SettingsStackParamList> = {\n  prefixes: ['myapp://'],\n  config: {\n    screens: {\n      SettingsHome: 'settings',\n      SettingsDetail: 'settings/detail/:id',\n    },\n  },\n};\n"
+    },
+    {
+      "path": "src/navigation/SettingsStack.tsx",
+      "content": "import { NavigationContainer } from '@react-navigation/native';\nimport { createNativeStackNavigator } from '@react-navigation/native-stack';\nimport { SafeAreaProvider } from 'react-native-safe-area-context';\nimport { SettingsScreen } from '../screens/SettingsScreen';\nimport { SettingsDetailScreen } from '../screens/SettingsDetailScreen';\nimport { linking } from './linking';\nimport type { SettingsStackParamList } from './types';\n\nconst Stack = createNativeStackNavigator<SettingsStackParamList>();\n\nexport function SettingsStack(): JSX.Element {\n  return (\n    <SafeAreaProvider>\n      <NavigationContainer linking={linking}>\n        <Stack.Navigator initialRouteName=\"SettingsHome\">\n          <Stack.Screen name=\"SettingsHome\" component={SettingsScreen} />\n          <Stack.Screen name=\"SettingsDetail\" component={SettingsDetailScreen} />\n        </Stack.Navigator>\n      </NavigationContainer>\n    </SafeAreaProvider>\n  );\n}\n"
     },
     {
       "path": "src/screens/SettingsScreen.tsx",
-      "content": "import type { NativeStackScreenProps } from '@react-navigation/native-stack';\nimport { View, Text, StyleSheet } from 'react-native';\nimport { SafeAreaView } from 'react-native-safe-area-context';\nimport type { RootStackParamList } from '../navigation/types';\n\ntype Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;\n\nexport function SettingsScreen({ route }: Props): JSX.Element {\n  const { userId, from } = route.params;\n  return (\n    <SafeAreaView style={styles.safe}>\n      <View style={styles.container}>\n        <Text style={styles.title}>Settings for {userId}</Text>\n        {from !== undefined && <Text>Arrived from {from}</Text>}\n      </View>\n    </SafeAreaView>\n  );\n}\n\nconst styles = StyleSheet.create({\n  safe: { flex: 1 },\n  container: { padding: 24 },\n  title: { fontSize: 20, fontWeight: '700' },\n});\n"
+      "content": "import type { NativeStackScreenProps } from '@react-navigation/native-stack';\nimport { Text, Pressable, StyleSheet } from 'react-native';\nimport { SafeAreaView } from 'react-native-safe-area-context';\nimport type { SettingsStackParamList } from '../navigation/types';\n\ntype Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsHome'>;\n\nexport function SettingsScreen({ navigation }: Props): JSX.Element {\n  return (\n    <SafeAreaView style={styles.container}>\n      <Text style={styles.title}>Settings</Text>\n      <Pressable accessibilityRole=\"button\" accessibilityLabel=\"Open profile settings\"\n        onPress={() => navigation.navigate('SettingsDetail', { id: 'profile', title: 'Profile' })}>\n        <Text>Profile settings</Text>\n      </Pressable>\n    </SafeAreaView>\n  );\n}\n\nconst styles = StyleSheet.create({\n  container: { flex: 1, padding: 24 },\n  title: { fontSize: 20, fontWeight: '700' },\n});\n"
+    },
+    {
+      "path": "src/screens/SettingsDetailScreen.tsx",
+      "content": "import type { NativeStackScreenProps } from '@react-navigation/native-stack';\nimport { Text, StyleSheet } from 'react-native';\nimport { SafeAreaView } from 'react-native-safe-area-context';\nimport type { SettingsStackParamList } from '../navigation/types';\n\ntype Props = NativeStackScreenProps<SettingsStackParamList, 'SettingsDetail'>;\n\nexport function SettingsDetailScreen({ route }: Props): JSX.Element {\n  const { id, title } = route.params;\n  return (\n    <SafeAreaView style={styles.container}>\n      <Text style={styles.title}>{title || 'Settings detail'}</Text>\n      <Text>Settings for {id}</Text>\n    </SafeAreaView>\n  );\n}\n\nconst styles = StyleSheet.create({\n  container: { flex: 1, padding: 24 },\n  title: { fontSize: 20, fontWeight: '700' },\n});\n"
     }
   ]
 }

@@ -12,6 +12,8 @@ import {
   formatScenarioSection,
 } from '../../src/bench'
 import { parseModelOutput } from '../../src/workflows/phases/implementationPhase'
+import { posix } from 'path'
+import ts from 'typescript'
 import type { BenchScenario, ModelGenerateOptions } from '../../src/bench'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
@@ -42,6 +44,31 @@ function stubRouter(content: string): ModelGenerateOptions['modelRouter'] {
 }
 
 describe('bench reference solutions (M6)', () => {
+  it('navigation reference fulfills the scenario contract with resolvable source imports', async () => {
+    const scenario = loadScenarios(defaultScenariosDir()).scenarios.find(item => item.id === 'rn-04-typed-navigation')!
+    const files = loadReferences(defaultReferencesDir()).references.get(scenario.id)!
+    const sources = { ...scenario.fixtures, ...Object.fromEntries(files.map(file => [file.path, file.content])) }
+    expect(JSON.parse(scenario.fixtures['package.json']).dependencies['react-native-screens']).toBe('3.31.1')
+    for (const path of scenario.expect.files) expect(sources[path]?.trim()).toBeTruthy()
+    expect(sources['src/navigation/types.ts']).toBe(scenario.fixtures['src/navigation/types.ts'] + '\n')
+    expect(sources['src/navigation/SettingsStack.tsx']).toContain('createNativeStackNavigator<SettingsStackParamList>')
+    expect(sources['src/navigation/SettingsStack.tsx']).toContain('NavigationContainer linking={linking}')
+    expect(sources['src/screens/SettingsDetailScreen.tsx']).toContain("NativeStackScreenProps<SettingsStackParamList, 'SettingsDetail'>")
+    expect(sources['src/navigation/linking.ts']).toContain("SettingsDetail: 'settings/detail/:id'")
+    for (const file of files) {
+      const source = ts.createSourceFile(file.path, file.content, ts.ScriptTarget.Latest, true)
+      for (const statement of source.statements) {
+        if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue
+        const specifier = statement.moduleSpecifier.text
+        if (!specifier.startsWith('.')) continue
+        const target = posix.normalize(posix.join(posix.dirname(file.path), specifier))
+        expect(['.ts', '.tsx', '/index.ts', '/index.tsx'].some(extension => sources[target + extension] !== undefined)).toBe(true)
+      }
+    }
+    const result = await runScenario(scenario, { generate: () => files })
+    expect(result.axes).toEqual({ correctness: null, adherence: 1, guardrails: 1 })
+  })
+
   it('includes only final generated source on explicit opt-in, never reference source', async () => {
     const files = [{ path: 'src/Output.ts', content: 'export const generated = 1' }]
     const scenario = validScenario()

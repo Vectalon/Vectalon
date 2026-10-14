@@ -2520,7 +2520,7 @@
     "kind": "benchmark",
     "name": "packages/rn/bench/scenarios/rn-04-typed-navigation.json",
     "source": "packages/rn/bench/scenarios/rn-04-typed-navigation.json",
-    "digest": "sha256:d1fe6c2dbe1cbcf363776ca8ec178ac1ba2b10388d57a5162a924af9d6aa1e3d",
+    "digest": "sha256:aec380e0e191860483f030907d5ca17b2797ca17a62e77718e180af3aa6d6b39",
     "capabilityId": "rn.evaluation"
   },
   {
