@@ -4,7 +4,7 @@
 
 Project-aware SDLC intelligence — CLI, MCP server, VS Code extension, benchmark suite, dataset validation, and LoRA readiness checks. Vectalon does not currently execute model training.
 
-Current release: <!-- product-fact:rn-version -->0.22.4<!-- /product-fact --> ·
+Current release: <!-- product-fact:rn-version -->0.22.5<!-- /product-fact --> ·
 benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
 deterministic agents: <!-- product-fact:deterministic-commands -->44<!-- /product-fact --> ·
 MCP tools: <!-- product-fact:mcp-tools -->64<!-- /product-fact -->
@@ -365,7 +365,7 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   file writes. `bench --live` executes project code, and `--install` executes
   dependency installation. A temporary directory is not process isolation:
   use reviewed inputs in a disposable, credential-free environment.
-- **Inspect generated source (unreleased, source checkout)** — from the repository
+- **Inspect generated source (0.22.5+)** — from the repository
   root, build with `pnpm --filter @vectalon-dev/rn build`, then run
   `node packages/rn/bin/rn-vectalon.js --experimental bench --model local --preset fast --suite navigation --json --include-generated -o navigation.json`.
   Each scenario's `generatedArtifacts` contains final selected filenames and

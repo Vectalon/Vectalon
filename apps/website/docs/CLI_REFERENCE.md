@@ -987,12 +987,12 @@ security sandbox. Use reviewed inputs in a disposable, credential-free environme
 | `-o, --output <path>` | Write the report to a file |
 | `--scenarios <dir>` | Override the scenarios directory (default `bench/scenarios`) |
 | `--references <dir>` | Override the human reference-solutions directory (default `bench/references`) |
-| `--include-generated` | Unreleased/source checkout only. Requires `--json`; include final selected files in each scenario's `generatedArtifacts`. Off by default. Does not include reference source or earlier attempts; review/redact before sharing private code. |
+| `--include-generated` | Available in 0.22.5+. Requires `--json`; include final selected files in each scenario's `generatedArtifacts`. Off by default. Does not include reference source or earlier attempts; review/redact before sharing private code. |
 | `--baseline <file>` | Compare the deterministic run against a stored baseline JSON and **exit 1 on any axis regression** — the CI gate. Pass `bench/baseline.json` to run the gate; without the flag the gate does not run |
 | `--tolerance <fraction>` | Max allowed axis drop before a regression is flagged (default `0.01`). Cannot be combined with `--model` |
 
 **Custom scenario packs** — teams can author their own RN evals without a PR.
-For unreleased generated-source export, build the source checkout and run from
+For generated-source export from a source checkout, build and run from
 the repository root (the published `0.22.4` does not include this flag):
 
 ```bash

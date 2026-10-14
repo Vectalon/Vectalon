@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.22.5] - 2026-10-14
+
+### Fixed
+
+- Preserve project context during local inference and derive benchmark context from scenario fixtures.
+- Reject provider fallback echoes and empty model output as successful generation evidence.
+- Check required output files, withhold comparisons against incomplete human references, and prevent repair selection from dropping required files or reducing adherence.
+- Validate benchmark paths before materializing temporary projects and clean up failed fixture writes.
+- Reject missing, empty, or unreadable dataset inputs; correct installation and training-related documentation.
+- Bundle reviewed Core main `7762e8d6565019e7877cfd6c640e9887e5905215` (Core 0.11.1).
+
+### Added
+
+- Opt-in `bench --json --include-generated` exports final generated source for review. Default reports remain source-free; reference source is not exported.
+
+### Known limitations
+
+- Local model generation remains experimental and does not meet the launch gate consistently. A focused navigation run scored 93.5% guardrails and 71.4% adherence; another omitted a required file.
+- Benchmark rule scores do not prove compilation, native-app correctness, or security. Generated code requires review before execution. Nine human reference scenarios remain incomplete.
+- No capability promotion, paid-launch certification, or changes to existing customer licenses and subscriptions.
+
 ## [0.22.4] - 2026-09-23
 
 ### Fixed
