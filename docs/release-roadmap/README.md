@@ -1,8 +1,41 @@
 # Vectalon: step-by-step product and launch plan
 
-Goal: a sellable **React Native beta** that delivers its published capabilities to a real customer. iOS, Android, Flutter, and other language SDKs remain separate future products; do not imply they are available now. This checklist replaces the old per-step release plans. A green unit test or a merged PR is not proof of a working purchase or launch.
+Product goal: an adaptive engineering harness that measurably reduces the effort needed to complete verified development tasks, starting with React Native, expanding across mobile, then into other development ecosystems. The first release milestone is a sellable **React Native beta**, not universal SDK or model support. This checklist replaces the old per-step release plans. A green unit test or a merged PR is not proof of a working purchase or launch.
 
 Core owns reusable contracts, entitlement policy, and harness primitives. Vectalon owns the RN package, adapters, website, checkout/webhook ingress, and deployed `vectalon.in/admin` routes. Admin owns canonical lifecycle/operator policy, migrations, trials, and private projections; the website executes an explicitly pinned copy of that server-only source in-process. Do not create a second writer or duplicate admin deployment.
+
+## Product direction and expansion gates — agreed 2026-10-14
+
+Problem: developers spend too much effort supplying project context, correcting incompatible AI changes, and finding out whether generated code actually works. Promise a scoped, reviewable change with verification evidence and unresolved issues—not perfect code, universal training, or autonomous expertise.
+
+| Phase | Deliverable | Gate before expansion |
+|---|---|---|
+| 1. Prove RN/Expo value | Small feature implementation, reproducible bug fixing, and change review on a named compatibility matrix | Controlled same-model comparison on unseen tasks; working native verification; external developer acceptance |
+| 2. Cover native mobile | Qualify Swift/SwiftUI and Kotlin/Compose adapters one at a time; choose first from customer demand and toolchain availability | Each adapter demonstrates its own task-success improvement, safety, build/device checks and support boundaries |
+| 3. Broaden mobile | Qualify Flutter/Dart and further mobile stacks as demand justifies; include integration, performance and release workflows | Cross-platform evidence remains separate by stack, version and workflow; no inherited RN qualification |
+| 4. Expand beyond mobile | Add one demanded ecosystem at a time, such as web or backend, using proven shared primitives | Repeat the same independent qualification and customer acceptance process; “all development” is the direction, not a current claim |
+
+Architecture rule: keep model/provider contracts, context provenance, scoped tool execution and evaluation semantics reusable in Core. Keep language/framework rules, extraction, build tools and native tests in SDK adapters. Extract abstractions from demonstrated needs; do not build a universal plugin framework before the second real adapter needs it. Admin owns authorized access, entitlements and commercial lifecycle, not language-specific scoring. Do not change grants or sell future SDK access implicitly.
+
+### RN outcome milestone and next execution slices
+
+Target, not achieved evidence: 30 held-out tasks across 10 installed RN/Expo apps, covering feature/fix/review workflows. Start with three tasks in one installed app to validate the method before scaling. Predeclare task acceptance and model/environment lanes; repeat each task/condition at least three times. Freeze task splits before optimization and keep evaluation answers out of model context and training exports.
+
+Compare task plus necessary project files versus the same model with Vectalon context, then Vectalon context plus verification/repair. Keep model versions and total resource caps comparable; separately report first attempts and repair-assisted results. Retain every failure, timeout, skip and source artifact. Public benchmark tasks can serve development checks, not the only unseen evaluation set.
+
+- [ ] **A. Record attempt evidence.** Extend the existing benchmark generation/result path to retain initial, repair and selected outcomes, actual attempt count, model/settings, durations and source/config identifiers. Default reports must not expose generated source; retain the existing opt-in. Verification: stubbed success, parse retry, rejected repair and provider-failure cases in benchmark tests; RN typecheck. Scope: RN benchmark types/generator/runner and focused tests; Core/Admin unchanged unless a real shared contract is missing.
+- [ ] **B. Run one paired RN experiment.** After A, use one installed app and three unseen feature/fix/review tasks with equal task inputs and declared budgets. Run actual task tests and required native builds in an isolated, credential-free environment. Verification: reproduce each accepted result, retain unsuccessful runs, and manually inspect scoped diffs. Scope: experiment runner/config and task acceptance tests in Vectalon; do not put answers in inference context or training exports.
+- [ ] **C. Show the improvement matrix.** After B, extend existing benchmark reports with model × stack/version × skill × condition rows, task completion, first-pass/repaired results, safety failures, human correction time, latency/cost, sample counts and uncertainty. Unsupported/unrun cells stay unverified. Verification: report fixtures with positive, zero and negative improvement, failed/skipped checks and missing metadata. Scope: existing RN report/HTML surfaces and their tests; no Admin dashboard duplication.
+
+Checkpoint after A–C: an inspectable before/after result for one real app, not just improved rubric scores. Then scale to 10 apps/30 tasks, fix the largest measured failure category, repeat on fresh held-out tasks, and complete commercial launch gates below.
+
+Slice A progress: repository entry points (`AGENTS.md`, `CLAUDE.md`, Copilot instructions) now link here. Source benchmark results retain source-free initial/parse-retry/repair records, selected candidate, provider, temperature/token limit, elapsed time and offline scores. Provider failures remain visible without raw error disclosure, and rejected repairs retain the prior candidate. This does not complete A: immutable model/artifact identity, task/config identifiers and reproducible experiment metadata remain open. No native or real-model improvement experiment is implied.
+
+RN launch targets: at least 80% verified task completion in each advertised workflow/model/environment lane, plus either a 15-percentage-point completion improvement or 25% less developer correction time against the controlled baseline. Report uncertainty; inconclusive samples do not justify improvement claims. A high-performing baseline may qualify through effort reduction. No observed critical safety violations in the acceptance suite, no hidden regressions, and three external developers completing a useful workflow without us operating the tool. These targets supplement—not replace—the existing 100% tested-guardrail and ≥80% adherence gates, payment/fulfillment tests and recovery requirements. They are not universal safety guarantees.
+
+Training remains conditional: use context, tools and repair first. Implement one compatible model/trainer/runtime integration only when a measured residual failure justifies it; require unseen-task improvement and regression checks before distributing an adapter. Supporting inference for a model does not mean supporting its training.
+
+Release policy: one consolidated qualified RN milestone first; later SDK milestones only after their own gates. Do not publish per task or promote capability lifecycle based on planning, fixture tests or inherited scores.
 
 ## Current state — audited 2026-10-14
 
@@ -370,7 +403,7 @@ Bhishak owns the release decision. Each checked item needs an artifact or report
 
 ## Next action and audit boundary
 
-Next: **Step 2**. Use the reconciled main baseline, inspect the current Admin lifecycle implementation and website snapshots, and settle the supported offer before changing tier gates. Preserve unfinished changes and record evidence and blockers here.
+Next: **RN outcome slice A**, then B and C above, advancing the existing evaluation and real-model steps 6–8. Preserve the commercial/offer gates in Step 2; do not change tier grants while building evidence. The priority is a visible, reproducible improvement experiment, not additional commands or speculative SDKs.
 
 This planning change modifies only this document. It does not run the planned test suites, native builds, real inference, live checkout, production recovery, or registry/deployment verification. Earlier local test/build successes do not close the candidate release gates.
 
