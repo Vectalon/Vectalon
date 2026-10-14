@@ -14,6 +14,7 @@ import {
 import { parseModelOutput } from '../../src/workflows/phases/implementationPhase'
 import { posix } from 'path'
 import ts from 'typescript'
+import { runInNewContext } from 'vm'
 import type { BenchScenario, ModelGenerateOptions } from '../../src/bench'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
@@ -44,6 +45,52 @@ function stubRouter(content: string): ModelGenerateOptions['modelRouter'] {
 }
 
 describe('bench reference solutions (M6)', () => {
+  it('onboarding reference validates, focuses invalid input, and submits actual preferences', () => {
+    const files = loadReferences(defaultReferencesDir()).references.get('rn-09-accessible-form')!
+    expect(files.map(file => file.path)).toEqual(['src/screens/OnboardingFormScreen.tsx'])
+    const focus = jest.fn()
+    const dismiss = jest.fn()
+    const onComplete = jest.fn()
+    const state: unknown[] = []
+    let cursor = 0
+    const element = (type: string, props: Record<string, unknown>): unknown => ({ type, props })
+    const mocks: Record<string, unknown> = {
+      react: {
+        useRef: () => ({ current: { focus } }),
+        useState: (initial: unknown) => {
+          const index = cursor++
+          if (state.length <= index) state[index] = initial
+          return [state[index], (value: unknown) => { state[index] = value }]
+        },
+      },
+      'react/jsx-runtime': { jsx: element, jsxs: element },
+      'react-native': { Text: 'Text', TextInput: 'TextInput', Switch: 'Switch', Pressable: 'Pressable',
+        KeyboardAvoidingView: 'KeyboardAvoidingView', Platform: { OS: 'ios' }, Keyboard: { dismiss },
+        StyleSheet: { create: (value: unknown) => value } },
+      'react-native-safe-area-context': { SafeAreaView: 'SafeAreaView' },
+    }
+    // Execute only this checked-in reference, with native primitives and hooks mocked.
+    const module = { exports: {} as { OnboardingFormScreen: (props: { onComplete: typeof onComplete }) => { props: { children: { props: { children: Array<{ type: string; props: Record<string, unknown> }> } } } } } }
+    const code = ts.transpileModule(files[0].content, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText
+    runInNewContext(code, { module, exports: module.exports, require: (id: string) => {
+      if (!(id in mocks)) throw new Error(`Unexpected reference dependency: ${id}`)
+      return mocks[id]
+    } })
+    const render = () => { cursor = 0; return module.exports.OnboardingFormScreen({ onComplete }).props.children.props.children }
+    const find = (type: string) => render().find(child => child?.type === type)!.props
+    ;(find('Pressable').onPress as () => void)()
+    expect(focus).toHaveBeenCalledTimes(1)
+    expect(onComplete).not.toHaveBeenCalled()
+    expect(state[2]).toBe('Enter your name before continuing.')
+    ;(find('TextInput').onChangeText as (value: string) => void)('  Ada  ')
+    ;(find('Switch').onValueChange as (value: boolean) => void)(true)
+    expect(find('Switch').accessibilityState).toEqual({ checked: true, disabled: false })
+    ;(find('TextInput').onSubmitEditing as () => void)()
+    expect(onComplete).toHaveBeenCalledWith({ name: 'Ada', notifications: true })
+    expect(dismiss).toHaveBeenCalledTimes(1)
+    expect(state[2]).toBe('')
+  })
+
   it('dark-mode reference preserves the fixture theme and uses its automatic color-scheme hook', async () => {
     const scenario = loadScenarios(defaultScenariosDir()).scenarios.find(item => item.id === 'rn-03-dark-mode-component')!
     const files = loadReferences(defaultReferencesDir()).references.get(scenario.id)!
