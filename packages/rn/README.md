@@ -355,7 +355,12 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   a missing model or a local runtime/backend failure. Inspect the model output
   and per-scenario scores before changing code or model settings.
 - **Benchmark limits** — scores can include one repair attempt, not just the
-  first response. Empty model output or missing required files fails adherence;
+  first response. Unreleased source reports now include `attempts`: initial,
+  parse-retry and repair calls, selected candidate, provider, generation settings,
+  elapsed time and offline scores. These are not per-attempt native correctness
+  checks or proof of improvement; model artifact identity and paired runs remain
+  to be added. Attempt records omit generated source and provider error messages.
+  Empty model output or missing required files fails adherence;
   in model-backed runs, reference solutions satisfy the same required-file check.
   References include assistant-authored repairs and are not independently
   qualified human baselines. Relative percentages compare rubric scores, not

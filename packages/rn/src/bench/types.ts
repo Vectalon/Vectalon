@@ -102,6 +102,8 @@ export interface BenchScenarioRun {
   generatedFiles: string[]
   /** Opt-in final generated source for local diagnosis; may contain sensitive content. */
   generatedArtifacts?: BenchGeneratedFile[]
+  /** Model-call evidence only; correctness is never inferred from these offline scores. */
+  attempts?: BenchGenerationAttempt[]
   guardrail: ScenarioGuardrailFile[]
   axes: BenchAxisScores
   /** Renormalized weighted composite over the available axes (0–1). */
@@ -110,6 +112,20 @@ export interface BenchScenarioRun {
   correctnessDetails?: string[]
   /** Human reference score + relative-to-human (M6); absent when no reference. */
   reference?: BenchReferenceScore
+}
+
+export interface BenchGenerationAttempt {
+  index: number
+  kind: 'initial' | 'parse-retry' | 'repair'
+  status: 'parsed' | 'empty' | 'fallback' | 'invalid' | 'error'
+  selected: boolean
+  durationMs: number
+  provider?: string
+  temperature: number
+  maxTokens: number
+  fileCount: number
+  adherence: number | null
+  guardrails: number | null
 }
 
 export interface BenchSuiteSummary {
@@ -148,7 +164,7 @@ export interface BenchRunOptions {
   /** Rubric seam (M2): score RN best-practice adherence for generated files. */
   rubric?: (files: BenchGeneratedFile[]) => number | null
   /** Override the deterministic scaffold generator (e.g. a real model). */
-  generate?: (scenario: BenchScenario) => BenchGeneratedFile[] | Promise<BenchGeneratedFile[]>
+  generate?: (scenario: BenchScenario, onAttempts?: (attempts: BenchGenerationAttempt[]) => void) => BenchGeneratedFile[] | Promise<BenchGeneratedFile[]>
   /** When set (M5), runBenchmarkFromDir builds a ModelRouter-backed generate seam. */
   modelRouter?: import('../model/ModelRouter').ModelRouter
   /** scenario id → reference files (M6); runScenario uses the entry for its scenario. */

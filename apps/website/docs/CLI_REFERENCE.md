@@ -962,6 +962,11 @@ scenario also announces the model-engine warm-up (the GGUF load that used to
 look like a freeze).
 
 Scores can include one repair attempt; they are not first-attempt success rates.
+Unreleased source reports include `attempts` for initial, parse-retry and repair
+calls, selected candidate, provider, settings, elapsed time and offline scores.
+These are not per-attempt native correctness checks or a controlled improvement
+comparison. Model artifact identity and paired runs remain to be added. Attempt
+records omit generated source and provider error messages.
 Empty model output or missing required files fails adherence. In model-backed
 runs, reference solutions satisfy the same required-file check. References include
 assistant-authored repairs and are not independently qualified human baselines.

@@ -24,6 +24,12 @@ export function formatScenarioSection(run: BenchScenarioRun): string {
   lines.push('')
   lines.push(`Composite: **${composite}** · ${axisLine(run.axes)}`)
   for (const detail of run.correctnessDetails || []) lines.push(detail)
+  if (run.attempts) {
+    lines.push(`Model calls: ${run.attempts.length}. Attempt scores are offline checks, not verified task completion.`)
+    for (const attempt of run.attempts) {
+      lines.push(`- Attempt ${attempt.index} (${attempt.kind}): ${attempt.status}${attempt.selected ? ' · selected' : ''} · ${attempt.durationMs}ms · ${axisLine({ correctness: null, adherence: attempt.adherence, guardrails: attempt.guardrails })}`)
+    }
+  }
   if (run.reference) {
     if (run.reference.missingRequiredFiles?.length) {
       lines.push(`Reference incomplete; relative comparison unavailable. Missing: ${run.reference.missingRequiredFiles.join(', ')}`)

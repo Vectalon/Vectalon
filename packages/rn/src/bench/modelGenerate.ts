@@ -17,7 +17,7 @@ import { benchmarkSnapshot } from './snapshot'
 import { guardrailPassRate, guardrailPerFile, missingRequiredFiles } from './scoring'
 import { runRubric } from './rubric'
 import { runGuardrails } from '../guardrails'
-import type { BenchGeneratedFile, BenchScenario } from './types'
+import type { BenchGeneratedFile, BenchScenario, BenchGenerationAttempt } from './types'
 
 export interface ModelGenerateOptions {
   modelRouter: ModelRouter
@@ -71,10 +71,10 @@ function repairFeedback(files: BenchGeneratedFile[], scenario: BenchScenario): s
 }
 
 /** Build a generate seam that drives the real model for a scenario. */
-export function createModelGenerate(options: ModelGenerateOptions): (scenario: BenchScenario) => Promise<BenchGeneratedFile[]> {
+export function createModelGenerate(options: ModelGenerateOptions): (scenario: BenchScenario, onAttempts?: (attempts: BenchGenerationAttempt[]) => void) => Promise<BenchGeneratedFile[]> {
   const { modelRouter, temperature = 0.2, maxTokens = 8192, onTextChunk } = options
 
-  return async (scenario: BenchScenario): Promise<BenchGeneratedFile[]> => {
+  return async (scenario: BenchScenario, onAttempts): Promise<BenchGeneratedFile[]> => {
     const snapshot = benchmarkSnapshot(scenario.fixtures)
     // Removal scenarios (rn-11/34/35) invert the scaffold: the model must
     // DELETE a package and its native traces, so it gets a remove-dependency
@@ -124,30 +124,58 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       temperature,
       ...(onTextChunk ? { onTextChunk } : {}),
     }
-    const response = await modelRouter.generate(request)
-
-    const content = response?.content || ''
-    if (!content || isModelFallback(content)) {
-      return []
+    const attempts: BenchGenerationAttempt[] = []
+    async function attempt(kind: BenchGenerationAttempt['kind'], input: typeof request): Promise<BenchGeneratedFile[] | null> {
+      const started = Date.now()
+      const record: BenchGenerationAttempt = { index: attempts.length + 1, kind, status: 'error', selected: false,
+        durationMs: 0, temperature: input.temperature, maxTokens: input.maxTokens, fileCount: 0, adherence: 0, guardrails: 0 }
+      attempts.push(record)
+      try {
+        const response = await modelRouter.generate(input)
+        record.provider = response?.provider
+        const content = response?.content || ''
+        if (!content) { record.status = 'empty'; return null }
+        if (isModelFallback(content)) { record.status = 'fallback'; return null }
+        const parsed = parseModelOutput(content)
+        if (!parsed) { record.status = 'invalid'; return null }
+        const files = parsed.files.filter(file => typeof file.path === 'string' && file.path.length > 0 && typeof file.content === 'string')
+          .map(file => ({ path: file.path, content: file.content }))
+        if (!files.some(file => file.content.trim())) { record.status = 'empty'; return null }
+        record.status = 'parsed'
+        record.fileCount = files.length
+        const scores = quality(files, scenario)
+        record.adherence = scores.adherence
+        record.guardrails = scores.guardrails
+        return files
+      } catch {
+        // Error messages may contain credentials or model output; retain only the failure category.
+        record.status = 'error'
+        return null
+      } finally {
+        record.durationMs = Date.now() - started
+      }
     }
+    function finish(files: BenchGeneratedFile[], selected?: number): BenchGeneratedFile[] {
+      if (selected !== undefined) attempts[selected].selected = true
+      onAttempts?.(attempts)
+      return files
+    }
+    let files = await attempt('initial', request)
 
     // Small local models occasionally answer with prose or truncated JSON.
     // One clean regeneration is cheaper and more useful than scoring the
     // scenario N/A; never substitute deterministic output for model evidence.
-    const parsed = parseModelOutput(content) || parseModelOutput((await modelRouter.generate({
+    if (!files && attempts[0].status === 'invalid') files = await attempt('parse-retry', {
       ...request,
       prompt: `${prompt}\n\nYour previous response was not parseable. Regenerate the complete answer as one valid JSON object only.`,
       temperature: 0,
-    })).content || '')
-    if (!parsed || parsed.files.length === 0) return []
-
-    const files = parsed.files
-      .filter(f => typeof f.path === 'string' && f.path.length > 0 && typeof f.content === 'string')
-      .map(f => ({ path: f.path as string, content: f.content }))
+    })
+    if (!files) return finish([])
+    const firstIndex = attempts.length - 1
     const firstQuality = quality(files, scenario)
-    if (firstQuality.guardrails === 1 && (firstQuality.adherence === null || firstQuality.adherence >= 0.8)) return files
+    if (firstQuality.guardrails === 1 && (firstQuality.adherence === null || firstQuality.adherence >= 0.8)) return finish(files, firstIndex)
 
-    const repaired = parseModelOutput((await modelRouter.generate({
+    const repairedFiles = await attempt('repair', {
       ...request,
       prompt: [
         prompt,
@@ -159,18 +187,16 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
         JSON.stringify({ files }),
       ].join('\n'),
       temperature: 0,
-    })).content || '')
-    if (!repaired) return files
-    const repairedFiles = repaired.files
-      .filter(f => typeof f.path === 'string' && f.path.length > 0 && typeof f.content === 'string')
-      .map(f => ({ path: f.path as string, content: f.content }))
+    })
+    if (!repairedFiles) return finish(files, firstIndex)
     const repairedQuality = quality(repairedFiles, scenario)
     const initiallyMissing = missingRequiredFiles(files, scenario.expect.files)
     const repairedMissing = missingRequiredFiles(repairedFiles, scenario.expect.files)
-    return (repairedQuality.guardrails ?? 0) >= (firstQuality.guardrails ?? 0)
+    const acceptRepair = (repairedQuality.guardrails ?? 0) >= (firstQuality.guardrails ?? 0)
       && repairedMissing.every(path => initiallyMissing.includes(path))
       && (repairedQuality.adherence ?? 0) >= (firstQuality.adherence ?? 0)
       && repairedQuality.failures.every(failure => firstQuality.failures.includes(failure))
-      && repairedQuality.score > firstQuality.score ? repairedFiles : files
+      && repairedQuality.score > firstQuality.score
+    return finish(acceptRepair ? repairedFiles : files, acceptRepair ? attempts.length - 1 : firstIndex)
   }
 }

@@ -5,6 +5,7 @@ export type {
   BenchScenarioExpect,
   BenchScenarioCorrectness,
   BenchGeneratedFile,
+  BenchGenerationAttempt,
   ScenarioGuardrailFile,
   BenchAxisScores,
   BenchScenarioRun,

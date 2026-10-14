@@ -15,6 +15,7 @@ import { runCommand } from '../adapters/runCommand'
 import {
   BenchAxisScores,
   BenchGeneratedFile,
+  BenchGenerationAttempt,
   BenchReferenceScore,
   BenchRunOptions,
   BenchScenario,
@@ -129,7 +130,8 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
   const generate =
     options.generate ||
     (isRemovalScenario(scenario) ? removalGenerate : isFixScenario(scenario) ? fixGenerate : deterministicGenerate)
-  const files = await generate(scenario)
+  let attempts: BenchGenerationAttempt[] | undefined
+  const files = await generate(scenario, evidence => { attempts = evidence })
   const generationFailed = Boolean(options.generate) && !files.some(file => file.content.trim().length > 0)
   const removedDependencies = scenario.removedDependencies
 
@@ -195,6 +197,7 @@ export async function runScenario(scenario: BenchScenario, options: BenchRunOpti
     suite: scenario.suite,
     scaffoldable: scenario.scaffoldable,
     generatedFiles: files.map(f => f.path),
+    ...(attempts ? { attempts } : {}),
     ...(options.includeGenerated ? { generatedArtifacts: files.map(({ path, content }) => ({ path, content })) } : {}),
     guardrail,
     axes,
