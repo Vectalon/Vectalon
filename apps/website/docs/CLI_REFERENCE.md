@@ -967,6 +967,13 @@ Node/platform/architecture and requested execution modes in JSON and the closing
 report section. Hostnames, paths and environment variables are omitted. Matching
 fingerprints do not establish pinned dependencies, equal budgets or task success;
 older reports without metadata remain unrecorded.
+Source experiment code can use `createModelGenerate({ modelRouter, maxAttempts: 1,
+providerCallLimit: 1 })` to retain first-attempt-only results. The attempt cap is
+1–3 (default 3), with parse recovery consuming an attempt. The optional positive
+integer provider cap includes router retries/fallbacks per attempt. Caps are
+recorded, but do not pin the provider or bound time, input tokens, cost or
+provider-internal work. These are programmatic options, not CLI flags; CLI
+defaults are unchanged.
 Unreleased source reports include `attempts` for initial, parse-retry and repair
 calls, selected candidate, provider, settings, elapsed time and offline scores.
 Records also include the responding provider's configured model ID and SHA-256

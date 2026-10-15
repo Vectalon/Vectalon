@@ -368,6 +368,13 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   duration, including retries/fallbacks. Missing traces say unrecorded; circuit
   skips and router stubs are not calls. Tokens, cost and provider-internal work
   are not measured by this trace.
+  Source experiment code can pass `maxAttempts: 1` and `providerCallLimit: 1`
+  to `createModelGenerate` for first-attempt-only generation. `maxAttempts`
+  accepts 1–3 (default 3); parse recovery consumes an attempt. The optional
+  positive-integer provider cap includes router retries/fallbacks per attempt.
+  Both caps are reported; they do not pin the provider or limit elapsed time,
+  input tokens, cost or provider-internal work. These are programmatic options,
+  not new CLI flags; existing CLI defaults remain unchanged.
   Local GGUF inference records `artifact` (SHA-256 and byte size) from a streamed
   read before loading; the cache retains that observation and rejects file
   metadata changes during load, reuse or inference. Restart after replacing

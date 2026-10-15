@@ -68,6 +68,24 @@ describe('ModelRouter', () => {
     })
   })
 
+  it.each([1, 2])('caps provider invocations at %s without loading a fallback runtime', async providerCallLimit => {
+    global.fetch = jest.fn().mockRejectedValue(new Error('down'))
+    const loader = jest.fn()
+    const router = new ModelRouter({ zeroConfigEnabled: true,
+      wasmProvider: new WasmProvider({ loadTransformers: loader }) })
+    router.initialize({ provider: 'openai' })
+    const response = await router.generate({ prompt: 'test', providerCallLimit })
+    expect(global.fetch).toHaveBeenCalledTimes(providerCallLimit)
+    expect(response.providerCalls).toHaveLength(providerCallLimit)
+    expect(response.content).toContain('Provider invocation limit exhausted')
+    expect(loader).not.toHaveBeenCalled()
+  })
+
+  it.each([0, -1, 1.5, NaN, Infinity])('rejects invalid provider invocation caps %s', async providerCallLimit => {
+    const router = new ModelRouter()
+    await expect(router.generate({ prompt: 'test', providerCallLimit })).rejects.toThrow('providerCallLimit')
+  })
+
   it('retains failed retries before success and isolates each call trace', async () => {
     global.fetch = jest.fn().mockRejectedValueOnce(new Error('private failure'))
       .mockResolvedValue({ ok: true, json: async () => ({ choices: [{ message: { content: 'reply' } }] }) })

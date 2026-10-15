@@ -133,6 +133,8 @@ export interface BenchGenerationAttempt {
   requestDigest: string
   temperature: number
   maxTokens: number
+  maxAttempts?: number
+  providerCallLimit?: number
   fileCount: number
   adherence: number | null
   guardrails: number | null

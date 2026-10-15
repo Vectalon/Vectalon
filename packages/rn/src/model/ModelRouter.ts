@@ -96,6 +96,10 @@ export class ModelRouter {
    * short-circuits it for 5 minutes).
    */
   async generate(request: ModelRequest): Promise<ModelResponse> {
+    const limit = request.providerCallLimit ?? Infinity
+    if (request.providerCallLimit !== undefined && (!Number.isSafeInteger(limit) || limit < 1)) {
+      throw new Error('providerCallLimit must be a positive safe integer')
+    }
     const errors: string[] = []
     const providerCalls: ModelProviderCall[] = []
     const primary = this.provider
@@ -105,7 +109,7 @@ export class ModelRouter {
       errors.push(`${primary} is short-circuited (circuit open) — skipping`)
     } else {
       const attempts = this.circuitStateKnown(primary) ? 1 : 2
-      for (let attempt = 1; attempt <= attempts; attempt++) {
+      for (let attempt = 1; attempt <= attempts && providerCalls.length < limit; attempt++) {
         const outcome = await this.tryPrimary(request, providerCalls)
         if (outcome.ok) {
           this.circuit.recordSuccess(primary)
@@ -113,15 +117,16 @@ export class ModelRouter {
         }
         this.circuit.recordFailure(primary)
         errors.push(outcome.error)
-        if (attempt < attempts) {
+        if (attempt < attempts && providerCalls.length < limit) {
           logger.debug(`ModelRouter: ${primary} attempt ${attempt} failed (${outcome.error}) — retrying`)
         }
       }
     }
 
     // 2. Fallback chain: local native → WASM → deterministic stub.
-    const fallbacks = await this.buildFallbackAttempts(request)
+    const fallbacks = providerCalls.length < limit ? await this.buildFallbackAttempts(request) : []
     for (const fallback of fallbacks) {
+      if (providerCalls.length >= limit) break
       if (this.circuit.isOpen(fallback.id)) {
         errors.push(`${fallback.id} is short-circuited (circuit open) — skipping`)
         continue
@@ -136,6 +141,7 @@ export class ModelRouter {
     }
 
     // 3. Last rung — the deterministic stub. Clear, honest, never throws.
+    if (providerCalls.length >= limit) errors.push('Provider invocation limit exhausted')
     reportError(new Error(errors.join('; ')), 'ModelRouter: all providers failed, returning deterministic stub', 'warn')
     return { ...this.stubResponse(request, errors), providerCalls }
   }

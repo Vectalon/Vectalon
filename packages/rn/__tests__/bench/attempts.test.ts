@@ -11,16 +11,43 @@ const scenario: BenchScenario = {
 const source = 'export const privateFixtureValue = 42;'
 const answer = (path = 'src/value.ts') => JSON.stringify({ files: [{ path, content: source }] })
 
-function generator(responses: Array<string | Error>) {
+function generator(responses: Array<string | Error>, options: Partial<ModelGenerateOptions> = {}) {
   const generate = jest.fn().mockImplementation(async () => {
     const response = responses.shift()
     if (response instanceof Error) throw response
     return { content: response || '', provider: 'test' }
   })
-  return { generate, seam: createModelGenerate({ modelRouter: { generate } as unknown as ModelGenerateOptions['modelRouter'] }) }
+  return { generate, seam: createModelGenerate({ ...options, modelRouter: { generate } as unknown as ModelGenerateOptions['modelRouter'] }) }
 }
 
 describe('model attempt evidence', () => {
+  it.each(['not JSON', answer('src/wrong.ts')])('retains the first outcome without retry or repair when capped at one', async response => {
+    const { generate, seam } = generator([response, answer()], { maxAttempts: 1, providerCallLimit: 1 })
+    const run = await runScenario(scenario, { generate: seam })
+    expect(generate).toHaveBeenCalledTimes(1)
+    expect(generate.mock.calls[0][0].providerCallLimit).toBe(1)
+    expect(run.attempts).toHaveLength(1)
+    expect(run.attempts![0]).toMatchObject({ maxAttempts: 1, providerCallLimit: 1 })
+    expect(run.axes.adherence).toBe(0)
+    expect(formatScenarioSection(run)).toContain('1 generation attempts · 1 provider calls per attempt')
+  })
+
+  it('counts parse recovery against the total attempt cap', async () => {
+    const { generate, seam } = generator(['not JSON', answer('src/wrong.ts'), answer()], { maxAttempts: 2 })
+    const run = await runScenario(scenario, { generate: seam })
+    expect(generate).toHaveBeenCalledTimes(2)
+    expect(run.attempts?.map(attempt => attempt.kind)).toEqual(['initial', 'parse-retry'])
+    expect(run.axes.adherence).toBe(0)
+  })
+
+  it.each([0, -1, 1.5, 4, NaN, Infinity])('rejects invalid attempt caps %s before inference', maxAttempts => {
+    expect(() => generator([], { maxAttempts })).toThrow('maxAttempts')
+  })
+
+  it.each([0, -1, 1.5, NaN, Infinity])('rejects invalid provider caps %s before inference', providerCallLimit => {
+    expect(() => generator([], { providerCallLimit })).toThrow('providerCallLimit')
+  })
+
   it('retains provider failures on fallback output without copying private fields', async () => {
     const generate = jest.fn().mockResolvedValue({ content: '[Model fallback: failed]', provider: 'openai',
       providerCalls: [{ provider: 'openai', status: 'error', durationMs: 5, error: 'private credential', prompt: source }] })

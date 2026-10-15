@@ -37,6 +37,8 @@ export interface ModelConfig {
 
 export interface ModelRequest {
   prompt: string
+  /** Optional router invocation cap, including retries/fallbacks; not a token or cost limit. */
+  providerCallLimit?: number
   systemPrompt?: string
   context?: string
   maxTokens?: number

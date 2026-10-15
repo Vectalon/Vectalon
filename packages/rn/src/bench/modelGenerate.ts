@@ -30,6 +30,10 @@ export interface ModelGenerateOptions {
    * truncate mid-JSON and the run scores zero files.
    */
   maxTokens?: number
+  /** Initial + parse-retry + repair cap (1–3). One retains first-attempt-only evidence. */
+  maxAttempts?: number
+  /** Router provider invocation cap per attempt, including retries and fallbacks. */
+  providerCallLimit?: number
   /**
    * Live streaming hook forwarded to ModelRouter.generate → the local
    * provider's onTextChunk. The CLI wires a TTY-only token preview here so a
@@ -73,7 +77,9 @@ function repairFeedback(files: BenchGeneratedFile[], scenario: BenchScenario): s
 
 /** Build a generate seam that drives the real model for a scenario. */
 export function createModelGenerate(options: ModelGenerateOptions): (scenario: BenchScenario, onAttempts?: (attempts: BenchGenerationAttempt[]) => void) => Promise<BenchGeneratedFile[]> {
-  const { modelRouter, temperature = 0.2, maxTokens = 8192, onTextChunk } = options
+  const { modelRouter, temperature = 0.2, maxTokens = 8192, maxAttempts = 3, providerCallLimit, onTextChunk } = options
+  if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 3) throw new Error('maxAttempts must be an integer from 1 to 3')
+  if (providerCallLimit !== undefined && (!Number.isSafeInteger(providerCallLimit) || providerCallLimit < 1)) throw new Error('providerCallLimit must be a positive safe integer')
 
   return async (scenario: BenchScenario, onAttempts): Promise<BenchGeneratedFile[]> => {
     const snapshot = benchmarkSnapshot(scenario.fixtures)
@@ -123,6 +129,7 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       context,
       maxTokens,
       temperature,
+      ...(providerCallLimit !== undefined ? { providerCallLimit } : {}),
       ...(onTextChunk ? { onTextChunk } : {}),
     }
     const attempts: BenchGenerationAttempt[] = []
@@ -131,9 +138,10 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       const started = Date.now()
       const record: BenchGenerationAttempt = { index: attempts.length + 1, kind, status: 'error', selected: false,
         durationMs: 0, temperature: input.temperature, maxTokens: input.maxTokens, fileCount: 0, adherence: 0, guardrails: 0,
-        artifactIdentity: 'unverified', taskDigest,
+        artifactIdentity: 'unverified', taskDigest, maxAttempts, providerCallLimit,
         requestDigest: benchmarkFingerprint({ systemPrompt: input.systemPrompt, prompt: input.prompt,
-          context: input.context, temperature: input.temperature, maxTokens: input.maxTokens }) }
+          context: input.context, temperature: input.temperature, maxTokens: input.maxTokens,
+          maxAttempts, providerCallLimit }) }
       attempts.push(record)
       try {
         const response = await modelRouter.generate(input)
@@ -174,13 +182,14 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
     // Small local models occasionally answer with prose or truncated JSON.
     // One clean regeneration is cheaper and more useful than scoring the
     // scenario N/A; never substitute deterministic output for model evidence.
-    if (!files && attempts[0].status === 'invalid') files = await attempt('parse-retry', {
+    if (!files && attempts[0].status === 'invalid' && attempts.length < maxAttempts) files = await attempt('parse-retry', {
       ...request,
       prompt: `${prompt}\n\nYour previous response was not parseable. Regenerate the complete answer as one valid JSON object only.`,
       temperature: 0,
     })
     if (!files) return finish([])
     const firstIndex = attempts.length - 1
+    if (attempts.length >= maxAttempts) return finish(files, firstIndex)
     const firstQuality = quality(files, scenario)
     if (firstQuality.guardrails === 1 && (firstQuality.adherence === null || firstQuality.adherence >= 0.8)) return finish(files, firstIndex)
 
