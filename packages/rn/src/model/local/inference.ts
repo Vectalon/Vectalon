@@ -2,6 +2,8 @@ import type { ModelPreset } from './presets'
 import { dynamicImport } from '../../utils/dynamicImport'
 import { reportError } from '../../utils/safe'
 import { getDownloadedModel } from './ModelStore'
+import { fingerprintModelFile, modelFileStamp } from './artifact'
+import type { LocalModelArtifact } from './artifact'
 import { createLlamaLogFilter, NOISE_LINE_MAX_LENGTH, shouldSuppressStderrLine, couldBecomeNoiseLine } from './llamaLog'
 
 export interface InferenceOptions {
@@ -26,6 +28,7 @@ export interface InferenceOptions {
 export interface InferenceResult {
   content: string
   modelId: string
+  artifact?: LocalModelArtifact
   tokensUsed?: number
 }
 
@@ -321,13 +324,23 @@ async function getSharedLlama(): Promise<SharedLlama> {
 }
 
 /** Loaded models keyed by GGUF path: one engine, one model per path, reused across every inference. */
-const sharedModels = new Map<string, Promise<SharedModel>>()
+const sharedModels = new Map<string, Promise<{ model: SharedModel; artifact: LocalModelArtifact; stamp: string }>>()
 
 /** Load the GGUF once per process; subsequent inferences reuse the loaded model. */
-async function getSharedModel(llama: SharedLlama, modelPath: string): Promise<SharedModel> {
+async function getSharedModel(llama: SharedLlama, modelPath: string): Promise<{ model: SharedModel; artifact: LocalModelArtifact; stamp: string }> {
   let modelPromise = sharedModels.get(modelPath)
   if (!modelPromise) {
-    modelPromise = llama.loadModel({ modelPath })
+    modelPromise = (async () => {
+      const evidence = await fingerprintModelFile(modelPath)
+      const model = await llama.loadModel({ modelPath })
+      try {
+        if (await modelFileStamp(modelPath) !== evidence.stamp) throw new Error('Model artifact changed during load; restart inference')
+      } catch (error) {
+        try { await model.dispose() } catch { /* Preserve the artifact failure. */ }
+        throw error
+      }
+      return { model, ...evidence }
+    })()
     modelPromise.catch(() => {
       sharedModels.delete(modelPath)
     })
@@ -350,7 +363,9 @@ export async function runInference(modelId: string, options: InferenceOptions): 
     // JS-level log path (belt and braces — some builds emit via console).
     return await withSuppressedTokenizerWarnings(async () => {
       const llama = await getSharedLlama()
-      const llamaModel = await getSharedModel(llama, model.filePath)
+      const loaded = await getSharedModel(llama, model.filePath)
+      if (await modelFileStamp(model.filePath) !== loaded.stamp) throw new Error('Loaded model artifact changed; restart inference')
+      const llamaModel = loaded.model
       const context = await llamaModel.createContext()
       const session = new nlc.LlamaChatSession(
         createChatSessionOptions(context.getSequence() as LlamaContextSequence, options.systemPrompt)
@@ -386,9 +401,11 @@ export async function runInference(modelId: string, options: InferenceOptions): 
           ...(options.onTextChunk ? { onTextChunk: options.onTextChunk } : {}),
         })
 
+        if (await modelFileStamp(model.filePath) !== loaded.stamp) throw new Error('Model artifact changed during inference; restart inference')
         return {
           content: response,
           modelId,
+          artifact: { ...loaded.artifact },
         }
       } finally {
         // Per-inference VRAM hygiene: the shared engine memoizes the llama +

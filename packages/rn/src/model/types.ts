@@ -1,3 +1,5 @@
+import type { LocalModelArtifact } from './local/artifact'
+
 export type ModelProviderType =
   | 'local'
   | 'wasm'
@@ -67,6 +69,7 @@ export interface ModelResponse {
   providerCalls?: ModelProviderCall[]
   /** Serving identifier, not proof of an immutable weights artifact. Absent on deterministic fallbacks. */
   model?: { id: string; source: 'configured' }
+  artifact?: LocalModelArtifact
   usage?: {
     promptTokens?: number
     completionTokens?: number

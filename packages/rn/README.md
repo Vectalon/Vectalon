@@ -364,6 +364,11 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   duration, including retries/fallbacks. Missing traces say unrecorded; circuit
   skips and router stubs are not calls. Tokens, cost and provider-internal work
   are not measured by this trace.
+  Local GGUF inference records `artifact` (SHA-256 and byte size) from a streamed
+  read before loading; the cache retains that observation and rejects file
+  metadata changes during load, reuse or inference. Restart after replacing
+  weights. This adds one file read per process/model load; it is not native-memory
+  attestation, split-file coverage or evidence for remote/WASM weights.
   These are not native correctness checks or proof of improvement; immutable
   artifact identity and paired runs remain open. Attempt records omit generated
   source and provider error messages; fingerprints are not anonymization.

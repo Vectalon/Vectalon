@@ -9,6 +9,7 @@
 
 import { isBenchmarkPath } from './fs'
 import type { ModelProviderCall } from '../model/types'
+import type { LocalModelArtifact } from '../model/local/artifact'
 
 export const SCENARIO_SPEC_VERSION = 1
 
@@ -126,6 +127,7 @@ export interface BenchGenerationAttempt {
   /** Identifier from the provider which returned this response; never inferred from the requested provider. */
   model?: { id: string; source: 'configured' }
   artifactIdentity: 'unverified'
+  artifact?: LocalModelArtifact
   /** SHA-256 fingerprints, not prompt/source disclosure or anonymization guarantees. */
   taskDigest: string
   requestDigest: string

@@ -40,13 +40,18 @@ describe('model attempt evidence', () => {
   })
 
   it('records response model identity, never upgrading a configured name to a verified artifact', async () => {
+    const artifact = { sha256: 'a'.repeat(64), sizeBytes: 12, source: 'local-file-at-load' }
     const generate = jest.fn().mockResolvedValue({ content: answer(), provider: 'local',
+      artifact: { ...artifact, filePath: '/private/model.gguf' },
       model: { id: 'actual-fallback-model', source: 'configured' } })
     const seam = createModelGenerate({ modelRouter: { generate } as unknown as ModelGenerateOptions['modelRouter'] })
     const run = await runScenario(scenario, { generate: seam })
     expect(run.attempts![0]).toMatchObject({ provider: 'local', model: { id: 'actual-fallback-model', source: 'configured' }, artifactIdentity: 'unverified' })
     expect(run.attempts![0].taskDigest).toMatch(/^sha256:[0-9a-f]{64}$/)
     expect(run.attempts![0].requestDigest).toMatch(/^sha256:[0-9a-f]{64}$/)
+    expect(run.attempts![0].artifact).toEqual(artifact)
+    expect(JSON.stringify(run)).not.toContain('/private/model.gguf')
+    expect(formatScenarioSection(run)).toContain('not backend attestation')
     expect(formatScenarioSection(run)).toContain('do not measure tokens, cost or provider-internal work')
     expect(formatScenarioSection(run)).toContain('Provider invocations: unrecorded')
     expect(formatScenarioSection(run)).toContain('before provider enrichment')

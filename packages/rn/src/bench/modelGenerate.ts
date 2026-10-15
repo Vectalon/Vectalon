@@ -143,6 +143,8 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
         if (!content) { record.status = 'empty'; return null }
         if (isModelFallback(content)) { record.status = 'fallback'; return null }
         if (response.model) record.model = { id: response.model.id, source: response.model.source }
+        if (response.artifact) record.artifact = { sha256: response.artifact.sha256,
+          sizeBytes: response.artifact.sizeBytes, source: response.artifact.source }
         const parsed = parseModelOutput(content)
         if (!parsed) { record.status = 'invalid'; return null }
         const files = parsed.files.filter(file => typeof file.path === 'string' && file.path.length > 0 && typeof file.content === 'string')

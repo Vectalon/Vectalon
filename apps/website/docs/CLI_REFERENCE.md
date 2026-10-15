@@ -973,6 +973,11 @@ provider-internal work are not measured. These are not native correctness checks
 improvement comparison. Immutable artifact identity and paired runs remain open.
 Attempt records omit generated source and provider error messages; fingerprints
 are not anonymization.
+Local GGUF inference records `artifact` (SHA-256 and byte size) before loading,
+retains it with the cached model, and rejects file metadata changes during load,
+reuse or inference. Restart after replacing weights. Hashing adds one streamed
+file read per process/model load; this is not native-memory attestation, split-file
+coverage or evidence for remote/WASM weights.
 Empty model output or missing required files fails adherence. In model-backed
 runs, reference solutions satisfy the same required-file check. References include
 assistant-authored repairs and are not independently qualified human baselines.

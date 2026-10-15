@@ -30,6 +30,7 @@ export function formatScenarioSection(run: BenchScenarioRun): string {
     for (const attempt of run.attempts) {
       lines.push(`- Attempt ${attempt.index} (${attempt.kind}): ${attempt.status}${attempt.selected ? ' · selected' : ''} · ${attempt.durationMs}ms · ${axisLine({ correctness: null, adherence: attempt.adherence, guardrails: attempt.guardrails })}`)
       lines.push(`  Provider: ${attempt.provider || 'unknown'} · configured model: ${attempt.model?.id || 'unknown'}`)
+      if (attempt.artifact) lines.push(`  Observed local file SHA-256: ${attempt.artifact.sha256} · ${attempt.artifact.sizeBytes} bytes; not backend attestation.`)
       lines.push(attempt.providerCalls
         ? `  Provider invocations: ${attempt.providerCalls.length}; circuit-skipped providers and router-generated stubs are not invocations.`
         : '  Provider invocations: unrecorded.')
