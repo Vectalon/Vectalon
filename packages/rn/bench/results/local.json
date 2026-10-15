@@ -1,5 +1,23 @@
 {
   "specVersion": 1,
+  "provenance": {
+    "runId": "be119267-eaf4-440f-a056-e6461e90b318",
+    "startedAt": "2026-10-15T08:01:24.605Z",
+    "durationMs": 6257661,
+    "taskSetDigest": "sha256:e99132e235100f5954f69169dd5ebbe3b5aea421f058fcd003b365a360d31a23",
+    "runtime": {
+      "node": "v22.23.3",
+      "platform": "linux",
+      "arch": "x64"
+    },
+    "execution": {
+      "generation": "supplied",
+      "liveRequested": true,
+      "installRequested": true,
+      "executor": "default",
+      "rubric": "default"
+    }
+  },
   "runs": [
     {
       "id": "rn-01-login-screen",
@@ -7,35 +25,101 @@
       "suite": "forms-security",
       "scaffoldable": true,
       "generatedFiles": [
-        "src/hooks/useAuth.tsx",
-        "src/App.js"
+        "src/screens/LoginScreenEmailPassword.tsx"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 60475,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.8888888888888888,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:c86a83ef46e0d8e528a87d8c17dae612ca86e27f84b5382db7272315ecdf41b2",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:516b7264494e805c54ac86ab481aa4cf1ddca080254936959f40b9a402dbc264",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 60196
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 68371,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.8888888888888888,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:c86a83ef46e0d8e528a87d8c17dae612ca86e27f84b5382db7272315ecdf41b2",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:838ad4b962015c245881afd84ee15ad20c673013f883f9ae35ae4034c15ab04a",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 68370
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/hooks/useAuth.tsx",
-          "passed": 25,
-          "failed": 0,
-          "skipped": 11,
-          "ok": true
-        },
-        {
-          "path": "src/App.js",
-          "passed": 16,
-          "failed": 0,
-          "skipped": 20,
-          "ok": true
+          "path": "src/screens/LoginScreenEmailPassword.tsx",
+          "passed": 24,
+          "failed": 3,
+          "skipped": 9,
+          "ok": false,
+          "failedRules": [
+            "No unused imports",
+            "No direct state mutation",
+            "Interactive elements have accessibility labels"
+          ]
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": null,
-        "guardrails": 1
+        "adherence": 0,
+        "guardrails": 0.8888888888888888
       },
-      "composite": 0.7142857142857143,
+      "composite": 0.4666666666666667,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "- Lint: failed (exit 1)",
+        "Missing required output files: src/screens/LoginScreen.tsx, src/services/auth.ts"
       ],
       "reference": {
         "files": [
@@ -50,9 +134,9 @@
         "composite": 0.841897233201581,
         "relative": {
           "correctness": null,
-          "adherence": null,
-          "guardrails": 1.0454545454545454,
-          "composite": 0.8484238765928906
+          "adherence": 0,
+          "guardrails": 0.9292929292929292,
+          "composite": 0.5543035993740218
         }
       }
     },
@@ -61,34 +145,128 @@
       "title": "Paginated list with pull-to-refresh",
       "suite": "data-flow",
       "scaffoldable": true,
-      "generatedFiles": [],
-      "guardrail": [],
+      "generatedFiles": [
+        "src/screens/ListScreen.tsx",
+        "src/services/items.ts"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 48952,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.5,
+          "guardrails": 0.9090909090909091,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:2a3ba1e9937e21cecd7e2f57fc196161f2ca45648c3df0210adf47d424b75cf8",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:ccb93505ffdd017348f9962514344679f710347c5fa8fb345bb796a3215ab209",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 48951
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 69111,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.5,
+          "guardrails": 0.9318181818181818,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:2a3ba1e9937e21cecd7e2f57fc196161f2ca45648c3df0210adf47d424b75cf8",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:6594e900667d957f39ef67db5cc73b3c79223ac0302ac20900aead02a8deb63d",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 69109
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "guardrail": [
+        {
+          "path": "src/screens/ListScreen.tsx",
+          "passed": 24,
+          "failed": 2,
+          "skipped": 10,
+          "ok": false,
+          "failedRules": [
+            "No unused imports",
+            "Screens use SafeAreaView or safe-area-aware layout"
+          ]
+        },
+        {
+          "path": "src/services/items.ts",
+          "passed": 17,
+          "failed": 1,
+          "skipped": 18,
+          "ok": false,
+          "failedRules": [
+            "No console.log statements"
+          ]
+        }
+      ],
       "axes": {
-        "correctness": 1,
-        "adherence": null,
-        "guardrails": null
+        "correctness": 0.5,
+        "adherence": 0.5,
+        "guardrails": 0.9318181818181818
       },
-      "composite": 1,
+      "composite": 0.6295454545454545,
       "correctnessDetails": [
         "- Tests: passed",
-        "- Type check: passed",
-        "- Lint: passed"
+        "- Type check: failed (exit 2)",
+        "- Lint: failed (exit 1)"
       ],
       "reference": {
         "files": [
-          "src/screens/FeedScreen.tsx"
+          "src/services/items.ts",
+          "src/screens/ListScreen.tsx"
         ],
         "axes": {
           "correctness": null,
-          "adherence": 0.8571428571428571,
-          "guardrails": 0.9615384615384616
+          "adherence": 0.75,
+          "guardrails": 0.9555555555555556
         },
-        "composite": 0.9093406593406593,
+        "composite": 0.8527777777777779,
         "relative": {
           "correctness": null,
-          "adherence": null,
-          "guardrails": null,
-          "composite": 1.0996978851963746
+          "adherence": 0.6666666666666666,
+          "guardrails": 0.9751585623678646,
+          "composite": 0.7382291975125851
         }
       }
     },
@@ -98,307 +276,84 @@
       "suite": "core-ui",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/ReusableCardComponentTha.tsx",
-        "src/theme.ts"
+        "src/components/Card.tsx"
       ],
-      "guardrail": [
+      "attempts": [
         {
-          "path": "src/components/ReusableCardComponentTha.tsx",
-          "passed": 25,
-          "failed": 0,
-          "skipped": 11,
-          "ok": true
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 40668,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0.5,
+          "guardrails": 0.96,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:8c1e942612d9ec9072c3a5f0f1b14e7c527452805c2cc29e8e05b7a4d1d09cad",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:642360e0873c4a61dccac2370d41cc2176b39bc177d44a0e578ee0cdb6dc7103",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 40667
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         },
         {
-          "path": "src/theme.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
-          "ok": true
-        }
-      ],
-      "axes": {
-        "correctness": 0.5,
-        "adherence": 0.6666666666666666,
-        "guardrails": 1
-      },
-      "composite": 0.7,
-      "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
-      ],
-      "reference": {
-        "files": [
-          "src/theme/tokens.ts",
-          "src/components/ThemeCard.tsx"
-        ],
-        "axes": {
-          "correctness": null,
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 44973,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
           "adherence": 1,
-          "guardrails": 1
-        },
-        "composite": 1,
-        "relative": {
-          "correctness": null,
-          "adherence": 0.6666666666666666,
           "guardrails": 1,
-          "composite": 0.7
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:8c1e942612d9ec9072c3a5f0f1b14e7c527452805c2cc29e8e05b7a4d1d09cad",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:181142eb05be4418ab91c39401236517762505f92fbfdfbbaf7e8aea7d3c50e4",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 44972
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         }
-      }
-    },
-    {
-      "id": "rn-04-typed-navigation",
-      "title": "Settings stack with typed route params and deep links",
-      "suite": "navigation",
-      "scaffoldable": false,
-      "generatedFiles": [
-        "src/navigation/CreateSettingsNavigationStackU.tsx"
       ],
       "guardrail": [
         {
-          "path": "src/navigation/CreateSettingsNavigationStackU.tsx",
-          "passed": 23,
-          "failed": 2,
-          "skipped": 11,
-          "ok": false
-        }
-      ],
-      "axes": {
-        "correctness": 0.5,
-        "adherence": null,
-        "guardrails": 0.92
-      },
-      "composite": 0.68,
-      "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
-      ],
-      "reference": {
-        "files": [
-          "src/navigation/types.ts",
-          "src/navigation/linking.ts",
-          "src/screens/SettingsScreen.tsx"
-        ],
-        "axes": {
-          "correctness": null,
-          "adherence": 1,
-          "guardrails": 1
-        },
-        "composite": 1,
-        "relative": {
-          "correctness": null,
-          "adherence": null,
-          "guardrails": 0.92,
-          "composite": 0.68
-        }
-      }
-    },
-    {
-      "id": "rn-05-form-validation",
-      "title": "Multi-field form with validation and secure persistence",
-      "suite": "forms-security",
-      "scaffoldable": true,
-      "generatedFiles": [
-        "src/components/CreateMultiFieldFormClient.tsx",
-        "src/styles/CreateMultiFieldFormStyles.tsx",
-        "src/hooks/useSecureStorage.ts",
-        "src/services/secure-storage-service.ts",
-        "src/reducers/create-multi-field-form-reducer.ts"
-      ],
-      "guardrail": [
-        {
-          "path": "src/components/CreateMultiFieldFormClient.tsx",
-          "passed": 23,
-          "failed": 4,
-          "skipped": 9,
-          "ok": false
-        },
-        {
-          "path": "src/styles/CreateMultiFieldFormStyles.tsx",
+          "path": "src/components/Card.tsx",
           "passed": 25,
           "failed": 0,
           "skipped": 11,
-          "ok": true
-        },
-        {
-          "path": "src/hooks/useSecureStorage.ts",
-          "passed": 16,
-          "failed": 2,
-          "skipped": 18,
-          "ok": false
-        },
-        {
-          "path": "src/services/secure-storage-service.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
-          "ok": true
-        },
-        {
-          "path": "src/reducers/create-multi-field-form-reducer.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
-          "ok": true
-        }
-      ],
-      "axes": {
-        "correctness": 0.5,
-        "adherence": 0.5,
-        "guardrails": 0.9433962264150944
-      },
-      "composite": 0.6330188679245283,
-      "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
-      ],
-      "reference": {
-        "files": [
-          "src/services/credentials.ts",
-          "src/screens/SignUpScreen.tsx"
-        ],
-        "axes": {
-          "correctness": null,
-          "adherence": 0.8,
-          "guardrails": 0.9130434782608695
-        },
-        "composite": 0.8565217391304347,
-        "relative": {
-          "correctness": null,
-          "adherence": 0.625,
-          "guardrails": 1.0332434860736748,
-          "composite": 0.7390575615362514
-        }
-      }
-    },
-    {
-      "id": "rn-06-offline-queue",
-      "title": "Offline-first action queue with optimistic UI",
-      "suite": "data-flow",
-      "scaffoldable": true,
-      "generatedFiles": [
-        "src/CreateOfflineFirstActionQueue.ts",
-        "src/CreateOfflineFirstActionQueue.test.tsx"
-      ],
-      "guardrail": [
-        {
-          "path": "src/CreateOfflineFirstActionQueue.ts",
-          "passed": 14,
-          "failed": 4,
-          "skipped": 18,
-          "ok": false
-        },
-        {
-          "path": "src/CreateOfflineFirstActionQueue.test.tsx",
-          "passed": 24,
-          "failed": 1,
-          "skipped": 11,
-          "ok": false
-        }
-      ],
-      "axes": {
-        "correctness": 0,
-        "adherence": 0.5,
-        "guardrails": 0.8837209302325582
-      },
-      "composite": 0.41511627906976745,
-      "correctnessDetails": [
-        "- Tests: failed (exit 1)",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
-      ],
-      "reference": {
-        "files": [
-          "src/hooks/useOfflineQueue.ts",
-          "src/screens/QueueScreen.tsx"
-        ],
-        "axes": {
-          "correctness": null,
-          "adherence": 0.4,
-          "guardrails": 0.9545454545454546
-        },
-        "composite": 0.6772727272727274,
-        "relative": {
-          "correctness": null,
-          "adherence": 1.25,
-          "guardrails": 0.9258028792912514,
-          "composite": 0.6129233650694552
-        }
-      }
-    },
-    {
-      "id": "rn-07-image-feed",
-      "title": "Image-heavy feed with thumbnails",
-      "suite": "perf",
-      "scaffoldable": false,
-      "generatedFiles": [
-        "src/CreatePerformantImageFeedFlatl.tsx"
-      ],
-      "guardrail": [
-        {
-          "path": "src/CreatePerformantImageFeedFlatl.tsx",
-          "passed": 22,
-          "failed": 4,
-          "skipped": 10,
-          "ok": false
-        }
-      ],
-      "axes": {
-        "correctness": 0.75,
-        "adherence": 0.7142857142857143,
-        "guardrails": 0.8461538461538461
-      },
-      "composite": 0.7681318681318682,
-      "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: passed"
-      ],
-      "reference": {
-        "files": [
-          "src/components/ImageRow.tsx",
-          "src/screens/ImageFeedScreen.tsx"
-        ],
-        "axes": {
-          "correctness": null,
-          "adherence": 0.6666666666666666,
-          "guardrails": 0.9607843137254902
-        },
-        "composite": 0.8137254901960783,
-        "relative": {
-          "correctness": null,
-          "adherence": 1.0714285714285716,
-          "guardrails": 0.880690737833595,
-          "composite": 0.9439692837283201
-        }
-      }
-    },
-    {
-      "id": "rn-08-feature-flags",
-      "title": "Feature-flag wrapper component and hook",
-      "suite": "core-ui",
-      "scaffoldable": false,
-      "generatedFiles": [
-        "src/components/CreateTypedFeatureflagComponent.tsx",
-        "src/hooks/useFeatureFlag.ts"
-      ],
-      "guardrail": [
-        {
-          "path": "src/components/CreateTypedFeatureflagComponent.tsx",
-          "passed": 26,
-          "failed": 0,
-          "skipped": 10,
-          "ok": true
-        },
-        {
-          "path": "src/hooks/useFeatureFlag.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
-          "ok": true
+          "ok": true,
+          "failedRules": []
         }
       ],
       "axes": {
@@ -414,9 +369,650 @@
       ],
       "reference": {
         "files": [
-          "src/config/flags.ts",
+          "src/components/Card.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1,
+          "composite": 0.8
+        }
+      }
+    },
+    {
+      "id": "rn-04-typed-navigation",
+      "title": "Settings stack with typed route params and deep links",
+      "suite": "navigation",
+      "scaffoldable": false,
+      "generatedFiles": [
+        "src/navigation/SettingsStack.tsx",
+        "src/screens/SettingsDetailScreen.tsx"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 48281,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.5,
+          "guardrails": 0.9411764705882353,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:a700ea6c4ac4f70cd454d3d3f63db982702925dd6b7d2e81db6d7532175080a0",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:9ea2c38a407c931fe6d636c7c855a7c00dfc169b3f8e5f044900f686cc7b5d92",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 48280
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 55898,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.5,
+          "guardrails": 0.9411764705882353,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:a700ea6c4ac4f70cd454d3d3f63db982702925dd6b7d2e81db6d7532175080a0",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:1849bba96eac9e6ae11a555c3af27505677573f19ad59f0fab474cc4d0fa83ea",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 55897
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "guardrail": [
+        {
+          "path": "src/navigation/SettingsStack.tsx",
+          "passed": 23,
+          "failed": 2,
+          "skipped": 11,
+          "ok": false,
+          "failedRules": [
+            "No explicit any types",
+            "No unused imports"
+          ]
+        },
+        {
+          "path": "src/screens/SettingsDetailScreen.tsx",
+          "passed": 25,
+          "failed": 1,
+          "skipped": 10,
+          "ok": false,
+          "failedRules": [
+            "Screens use SafeAreaView or safe-area-aware layout"
+          ]
+        }
+      ],
+      "axes": {
+        "correctness": 0.5,
+        "adherence": 0.5,
+        "guardrails": 0.9411764705882353
+      },
+      "composite": 0.6323529411764706,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: failed (exit 2)",
+        "- Lint: failed (exit 1)"
+      ],
+      "reference": {
+        "files": [
+          "src/navigation/types.ts",
+          "src/navigation/linking.ts",
+          "src/navigation/SettingsStack.tsx",
+          "src/screens/SettingsScreen.tsx",
+          "src/screens/SettingsDetailScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": 0.5,
+          "guardrails": 0.9411764705882353,
+          "composite": 0.6323529411764706
+        }
+      }
+    },
+    {
+      "id": "rn-05-form-validation",
+      "title": "Multi-field form with validation and secure persistence",
+      "suite": "forms-security",
+      "scaffoldable": true,
+      "generatedFiles": [
+        "src/screens/ProfileFormScreen.tsx",
+        "src/services/storage.ts"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 60093,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.375,
+          "guardrails": 0.8913043478260869,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:0161ee5dfecbe3580407c2eb5075e4f1d442710f11a92a92266a3d70c3cd5828",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:85c26876b2ac73f5452ee1364508af24b40ce9c79095c00bec08910c862dfdc9",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 60092
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 84116,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.42857142857142855,
+          "guardrails": 0.8913043478260869,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:0161ee5dfecbe3580407c2eb5075e4f1d442710f11a92a92266a3d70c3cd5828",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:74933ff121aebe00ac9bda2d4c552f8e53a259ac80df2ec7bcfbbf77d8ced3cb",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 84115
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "guardrail": [
+        {
+          "path": "src/screens/ProfileFormScreen.tsx",
+          "passed": 24,
+          "failed": 4,
+          "skipped": 8,
+          "ok": false,
+          "failedRules": [
+            "No console.log statements",
+            "No unused imports",
+            "Forms use KeyboardAvoidingView on iOS",
+            "Screens use SafeAreaView or safe-area-aware layout"
+          ]
+        },
+        {
+          "path": "src/services/storage.ts",
+          "passed": 17,
+          "failed": 1,
+          "skipped": 18,
+          "ok": false,
+          "failedRules": [
+            "No console.log statements"
+          ]
+        }
+      ],
+      "axes": {
+        "correctness": 0.5,
+        "adherence": 0.42857142857142855,
+        "guardrails": 0.8913043478260869
+      },
+      "composite": 0.5959627329192546,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: failed (exit 2)",
+        "- Lint: failed (exit 1)"
+      ],
+      "reference": {
+        "files": [
+          "src/services/storage.ts",
+          "src/screens/ProfileFormScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.75,
+          "guardrails": 0.9782608695652174
+        },
+        "composite": 0.8641304347826086,
+        "relative": {
+          "correctness": null,
+          "adherence": 0.5714285714285714,
+          "guardrails": 0.9111111111111111,
+          "composite": 0.6896675651392632
+        }
+      }
+    },
+    {
+      "id": "rn-06-offline-queue",
+      "title": "Offline-first action queue with optimistic UI",
+      "suite": "data-flow",
+      "scaffoldable": true,
+      "generatedFiles": [
+        "src/hooks/useOfflineQueue.ts",
+        "src/screens/QueueScreen.tsx"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 57960,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0,
+          "guardrails": 0.9333333333333333,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:0cc198867e07ee566b87bdfc93e565203cb8e7d983a8fe6d876e26a5559d0261",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:102dd4661ffaa626603cdb9cc5747858ea7c838bf84b50996b81167089385729",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 57959
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 65126,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0,
+          "guardrails": 0.9444444444444444,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:0cc198867e07ee566b87bdfc93e565203cb8e7d983a8fe6d876e26a5559d0261",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:e7567d351f7a8646357a1900c8d420654f3214dbed94e6184d7e44c5d50d1c07",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 65125
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "guardrail": [
+        {
+          "path": "src/hooks/useOfflineQueue.ts",
+          "passed": 17,
+          "failed": 1,
+          "skipped": 18,
+          "ok": false,
+          "failedRules": [
+            "No console.log statements"
+          ]
+        },
+        {
+          "path": "src/screens/QueueScreen.tsx",
+          "passed": 25,
+          "failed": 2,
+          "skipped": 9,
+          "ok": false,
+          "failedRules": [
+            "No unused imports",
+            "Prefer Pressable over TouchableOpacity"
+          ]
+        }
+      ],
+      "axes": {
+        "correctness": 0.5,
+        "adherence": 0,
+        "guardrails": 0.9333333333333333
+      },
+      "composite": 0.48,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: failed (exit 2)",
+        "- Lint: failed (exit 1)",
+        "Missing required output files: src/store/queue.ts"
+      ],
+      "reference": {
+        "files": [
+          "src/store/queue.ts",
+          "src/hooks/useOfflineQueue.ts",
+          "src/screens/QueueScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.75,
+          "guardrails": 1
+        },
+        "composite": 0.8749999999999999,
+        "relative": {
+          "correctness": null,
+          "adherence": 0,
+          "guardrails": 0.9333333333333333,
+          "composite": 0.5485714285714286
+        }
+      }
+    },
+    {
+      "id": "rn-07-image-feed",
+      "title": "Image-heavy feed with thumbnails",
+      "suite": "perf",
+      "scaffoldable": false,
+      "generatedFiles": [
+        "src/components/FeedRow.tsx"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 52345,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.9615384615384616,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:9a5f905b75dd75c5a239b11de8d85b4e1dee1fc66d9a45d58a1489e765fd6a9f",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:fdfa21335b724dbd5e5bbe46b1a9342a363114cf32aacaf4f07a66892cca3bb1",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 52344
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 50003,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:9a5f905b75dd75c5a239b11de8d85b4e1dee1fc66d9a45d58a1489e765fd6a9f",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:063b0f844275ad642c52276145497021932a910df3f3749110d2ce12ccbfd1a9",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 50003
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "guardrail": [
+        {
+          "path": "src/components/FeedRow.tsx",
+          "passed": 25,
+          "failed": 1,
+          "skipped": 10,
+          "ok": false,
+          "failedRules": [
+            "Interactive elements have accessibility labels"
+          ]
+        }
+      ],
+      "axes": {
+        "correctness": 0.75,
+        "adherence": 0,
+        "guardrails": 0.9615384615384616
+      },
+      "composite": 0.5884615384615385,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: failed (exit 2)",
+        "- Lint: passed",
+        "Missing required output files: src/screens/FeedScreen.tsx"
+      ],
+      "reference": {
+        "files": [
+          "src/components/FeedRow.tsx",
+          "src/screens/FeedScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": 0,
+          "guardrails": 0.9615384615384616,
+          "composite": 0.5884615384615385
+        }
+      }
+    },
+    {
+      "id": "rn-08-feature-flags",
+      "title": "Feature-flag wrapper component and hook",
+      "suite": "core-ui",
+      "scaffoldable": false,
+      "generatedFiles": [
+        "src/components/FeatureFlag.tsx",
+        "src/hooks/useFeatureFlag.ts"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 43274,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.5,
+          "guardrails": 0.9767441860465116,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:9f4b63a42536183d44d07b93d875023c2419a072a77dd8d3c13ad328f4aad94b",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:8cd02143e922ff25f52c778bc744ac0c9893787c62089096afd22758f8a60a89",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 43274
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 56738,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:9f4b63a42536183d44d07b93d875023c2419a072a77dd8d3c13ad328f4aad94b",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:4afcfd732be5cdb0545c897ba90ffa570c62ea6625c2ce88bf8a4effb9403983",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 56738
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "guardrail": [
+        {
+          "path": "src/components/FeatureFlag.tsx",
+          "passed": 25,
+          "failed": 0,
+          "skipped": 11,
+          "ok": true,
+          "failedRules": []
+        },
+        {
+          "path": "src/hooks/useFeatureFlag.ts",
+          "passed": 17,
+          "failed": 1,
+          "skipped": 18,
+          "ok": false,
+          "failedRules": [
+            "useEffect subscriptions return cleanup"
+          ]
+        }
+      ],
+      "axes": {
+        "correctness": 0.75,
+        "adherence": 0.5,
+        "guardrails": 0.9767441860465116
+      },
+      "composite": 0.7430232558139536,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: failed (exit 2)",
+        "- Lint: passed"
+      ],
+      "reference": {
+        "files": [
           "src/hooks/useFeatureFlag.ts",
-          "src/components/FeatureGate.tsx"
+          "src/components/FeatureFlag.tsx"
         ],
         "axes": {
           "correctness": null,
@@ -427,8 +1023,8 @@
         "relative": {
           "correctness": null,
           "adherence": null,
-          "guardrails": 1,
-          "composite": 0.8
+          "guardrails": 0.9767441860465116,
+          "composite": 0.7430232558139536
         }
       }
     },
@@ -438,43 +1034,118 @@
       "suite": "a11y",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/onboarding/CreateFullyAccessibleOnboardin.tsx"
+        "src/screens/OnboardingFormScreen.tsx"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 57429,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0.7142857142857143,
+          "guardrails": 0.8214285714285714,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:1c91a50a8e12da7e4c31d367e387caa9f0d311869c223fc7c34a1d10fb99abd6",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:cb778b13c9258ca918124a6ad7b2adb40a13e802a0e6c59ebda04036c68aa090",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 57427
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 77543,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:1c91a50a8e12da7e4c31d367e387caa9f0d311869c223fc7c34a1d10fb99abd6",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:c8d7eefb3caa15307581dbf05b69013f2db7d0fdeba0e2806a40050c6db40f54",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 77543
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/onboarding/CreateFullyAccessibleOnboardin.tsx",
-          "passed": 24,
-          "failed": 3,
-          "skipped": 9,
-          "ok": false
+          "path": "src/screens/OnboardingFormScreen.tsx",
+          "passed": 23,
+          "failed": 5,
+          "skipped": 8,
+          "ok": false,
+          "failedRules": [
+            "No console.log statements",
+            "No unused imports",
+            "Interactive elements have accessibility labels",
+            "Prefer Pressable over TouchableOpacity",
+            "Screens use SafeAreaView or safe-area-aware layout"
+          ]
         }
       ],
       "axes": {
-        "correctness": 0.75,
-        "adherence": 0.8,
-        "guardrails": 0.8888888888888888
+        "correctness": 0.5,
+        "adherence": 0.7142857142857143,
+        "guardrails": 0.8214285714285714
       },
-      "composite": 0.8066666666666666,
+      "composite": 0.6607142857142857,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: passed"
+        "- Lint: failed (exit 1)"
       ],
       "reference": {
         "files": [
-          "src/screens/OnboardingScreen.tsx"
+          "src/screens/OnboardingFormScreen.tsx"
         ],
         "axes": {
           "correctness": null,
-          "adherence": 0.875,
-          "guardrails": 0.9285714285714286
+          "adherence": 1,
+          "guardrails": 1
         },
-        "composite": 0.9017857142857144,
+        "composite": 1,
         "relative": {
           "correctness": null,
-          "adherence": 0.9142857142857144,
-          "guardrails": 0.9572649572649572,
-          "composite": 0.8945214521452144
+          "adherence": 0.7142857142857143,
+          "guardrails": 0.8214285714285714,
+          "composite": 0.6607142857142857
         }
       }
     },
@@ -484,43 +1155,115 @@
       "suite": "refactor",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/ConvertLegacyProfileComponentC.tsx"
+        "src/components/Profile.tsx"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 33995,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 1,
+          "guardrails": 0.96,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:52c6cb237429fde79a22da1972b534bf0986485a59b622e4800d4c8e38785cf0",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:9abec151e3f9f98a1ad21805d9a64f21ba78f82cb04fa6ea7cc8a67dd9c8acb9",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 33994
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 37929,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 1,
+          "guardrails": 0.96,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:52c6cb237429fde79a22da1972b534bf0986485a59b622e4800d4c8e38785cf0",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:4ef6aa7251f6db99188fd222c650310f3d1de572351e4290e8f27e37933d3908",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 37928
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/components/ConvertLegacyProfileComponentC.tsx",
-          "passed": 25,
-          "failed": 0,
+          "path": "src/components/Profile.tsx",
+          "passed": 24,
+          "failed": 1,
           "skipped": 11,
-          "ok": true
+          "ok": false,
+          "failedRules": [
+            "Components are exported as named exports"
+          ]
         }
       ],
       "axes": {
-        "correctness": 0.75,
-        "adherence": null,
-        "guardrails": 1
+        "correctness": 0.5,
+        "adherence": 1,
+        "guardrails": 0.96
       },
-      "composite": 0.8571428571428573,
+      "composite": 0.788,
       "correctnessDetails": [
         "- Tests: passed",
-        "- Type check: passed",
+        "- Type check: failed (exit 2)",
         "- Lint: failed (exit 1)"
       ],
       "reference": {
         "files": [
-          "src/components/ProfileCard.tsx"
+          "src/components/Profile.tsx",
+          "src/components/Profile.js"
         ],
         "axes": {
           "correctness": null,
-          "adherence": 0.75,
-          "guardrails": 0.9615384615384616
+          "adherence": 1,
+          "guardrails": 1
         },
-        "composite": 0.8557692307692307,
+        "composite": 1,
         "relative": {
           "correctness": null,
-          "adherence": null,
-          "guardrails": 1.04,
-          "composite": 1.0016051364365974
+          "adherence": 1,
+          "guardrails": 0.96,
+          "composite": 0.788
         }
       }
     },
@@ -529,56 +1272,86 @@
       "title": "Remove a dependency with full native cleanup",
       "suite": "refactor",
       "scaffoldable": false,
-      "generatedFiles": [
-        "src/App.tsx",
-        "package.json",
-        "ios/Podfile",
-        "android/settings.gradle",
-        "android/app/src/main/AndroidManifest.xml"
-      ],
-      "guardrail": [
+      "generatedFiles": [],
+      "attempts": [
         {
-          "path": "src/App.tsx",
-          "passed": 25,
-          "failed": 0,
-          "skipped": 11,
-          "ok": true
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 46438,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:522e4fc339ed095c6547152d79a5ad3868aa4289eeaac9aee9bf6c108318d50c",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:8b0298243f9509ec538b80cfa936e95bd42057972d5dfb5232fb3ab9c3bc8a76",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 46436
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         },
         {
-          "path": "package.json",
-          "passed": 13,
-          "failed": 0,
-          "skipped": 23,
-          "ok": true
-        },
-        {
-          "path": "ios/Podfile",
-          "passed": 13,
-          "failed": 0,
-          "skipped": 23,
-          "ok": true
-        },
-        {
-          "path": "android/settings.gradle",
-          "passed": 13,
-          "failed": 0,
-          "skipped": 23,
-          "ok": true
-        },
-        {
-          "path": "android/app/src/main/AndroidManifest.xml",
-          "passed": 13,
-          "failed": 0,
-          "skipped": 23,
-          "ok": true
+          "index": 2,
+          "kind": "parse-retry",
+          "status": "empty",
+          "selected": false,
+          "durationMs": 41807,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:522e4fc339ed095c6547152d79a5ad3868aa4289eeaac9aee9bf6c108318d50c",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:e3ed39f36f095fc60ade0cde1f834f6cdef253e80b804a86e0485ae6791c0254",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 41807
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         }
       ],
+      "guardrail": [],
       "axes": {
-        "correctness": null,
-        "adherence": 1,
-        "guardrails": 1
+        "correctness": 0,
+        "adherence": 0,
+        "guardrails": 0
       },
-      "composite": 1,
+      "composite": 0,
+      "correctnessDetails": [
+        "Model generation produced no non-empty files.",
+        "Missing required output files: package.json, ios/Podfile, android/settings.gradle, android/app/src/main/AndroidManifest.xml"
+      ],
       "reference": {
         "files": [
           "package.json",
@@ -594,9 +1367,9 @@
         "composite": 0.9903846153846152,
         "relative": {
           "correctness": null,
-          "adherence": 1,
-          "guardrails": 1.019607843137255,
-          "composite": 1.0097087378640779
+          "adherence": 0,
+          "guardrails": 0,
+          "composite": 0
         }
       }
     },
@@ -606,23 +1379,104 @@
       "suite": "data-flow",
       "scaffoldable": true,
       "generatedFiles": [
-        "src/AddNotificationsScreenThatFetc.tsx"
+        "src/screens/NotificationsScreen.tsx",
+        "src/services/notifications.ts"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 46765,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.375,
+          "guardrails": 0.9545454545454546,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:82a8231e015af35ccf85b0d87395030bf751546b92d3afea8ea5897224ac7aaf",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:be3e29a56293025f1eba85900cca7263124904c2a306f69a4252a702f155feba",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 46763
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 65672,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.375,
+          "guardrails": 0.9545454545454546,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:82a8231e015af35ccf85b0d87395030bf751546b92d3afea8ea5897224ac7aaf",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:5c9f7974655da9f10ee29a1127a803e255ac3ec57c63481dc8150887b9311dc7",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 65671
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/AddNotificationsScreenThatFetc.tsx",
-          "passed": 25,
+          "path": "src/screens/NotificationsScreen.tsx",
+          "passed": 24,
+          "failed": 2,
+          "skipped": 10,
+          "ok": false,
+          "failedRules": [
+            "No inline style objects in JSX",
+            "No unused imports"
+          ]
+        },
+        {
+          "path": "src/services/notifications.ts",
+          "passed": 18,
           "failed": 0,
-          "skipped": 11,
-          "ok": true
+          "skipped": 18,
+          "ok": true,
+          "failedRules": []
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.75,
-        "guardrails": 1
+        "adherence": 0.375,
+        "guardrails": 0.9545454545454546
       },
-      "composite": 0.725,
+      "composite": 0.5988636363636364,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -641,9 +1495,9 @@
         "composite": 0.888888888888889,
         "relative": {
           "correctness": null,
-          "adherence": 0.9642857142857143,
-          "guardrails": 1,
-          "composite": 0.8156249999999999
+          "adherence": 0.48214285714285715,
+          "guardrails": 0.9545454545454546,
+          "composite": 0.6737215909090909
         }
       }
     },
@@ -653,27 +1507,108 @@
       "suite": "forms-security",
       "scaffoldable": true,
       "generatedFiles": [
-        "src/components/AddAccountDeletionConfirmation.tsx"
+        "src/screens/AccountDeleteScreen.tsx",
+        "src/services/account.ts"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 47772,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.5,
+          "guardrails": 0.9555555555555556,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:5955690e8d1c56fb955f2d1b8b144b748970b382317031efb6b0e8ac12d75c8d",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:e8955958a43d895518cce8d8225e4d04837df078064adb054e23e162aebf4976",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 47771
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 93974,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.5555555555555556,
+          "guardrails": 0.9555555555555556,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:5955690e8d1c56fb955f2d1b8b144b748970b382317031efb6b0e8ac12d75c8d",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:91b2dd852e9996a948f06b4c813ecb0ab8c6e7af999cdce224971fbf7b79e221",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 93973
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/components/AddAccountDeletionConfirmation.tsx",
-          "passed": 26,
+          "path": "src/screens/AccountDeleteScreen.tsx",
+          "passed": 25,
+          "failed": 2,
+          "skipped": 9,
+          "ok": false,
+          "failedRules": [
+            "No unused imports",
+            "Screens use SafeAreaView or safe-area-aware layout"
+          ]
+        },
+        {
+          "path": "src/services/account.ts",
+          "passed": 18,
           "failed": 0,
-          "skipped": 10,
-          "ok": true
+          "skipped": 18,
+          "ok": true,
+          "failedRules": []
         }
       ],
       "axes": {
-        "correctness": 0.75,
-        "adherence": 1,
-        "guardrails": 1
+        "correctness": 0.5,
+        "adherence": 0.5,
+        "guardrails": 0.9555555555555556
       },
-      "composite": 0.9000000000000001,
+      "composite": 0.6366666666666667,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: passed"
+        "- Lint: failed (exit 1)"
       ],
       "reference": {
         "files": [
@@ -688,9 +1623,9 @@
         "composite": 0.888888888888889,
         "relative": {
           "correctness": null,
-          "adherence": 1.2857142857142856,
-          "guardrails": 1,
-          "composite": 1.0125000000000002
+          "adherence": 0.6428571428571428,
+          "guardrails": 0.9555555555555556,
+          "composite": 0.71625
         }
       }
     },
@@ -700,43 +1635,134 @@
       "suite": "e-commerce",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/BuildCheckoutFlowCartSummary.tsx",
-        "src/BuildCheckoutFlowShippingAddressForm.tsx",
-        "src/BuildCheckoutFlowOrderConfirmation.tsx"
+        "src/screens/CheckoutScreen.tsx"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 74243,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:c141179204a32df809a7d46aa96bd38ee7de37eee3f0b45513539f7003d8b194",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:fb9894a225c9583ae73166376af6415483a81f24b0f9bf015060558e99e0953a",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 74243
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "parse-retry",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 72259,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.8928571428571429,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:c141179204a32df809a7d46aa96bd38ee7de37eee3f0b45513539f7003d8b194",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:4b5e7058e46a71b228b7e27e99d48ecb3b01f1e5faa3faecbac65353bf19a2d1",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 72258
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 3,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 82713,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.8571428571428571,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:c141179204a32df809a7d46aa96bd38ee7de37eee3f0b45513539f7003d8b194",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:f9997306eb7e5c6cd3af94d4de73311075278066c461e10b7473f923382f144b",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 82712
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/BuildCheckoutFlowCartSummary.tsx",
-          "passed": 23,
-          "failed": 4,
-          "skipped": 9,
-          "ok": false
-        },
-        {
-          "path": "src/BuildCheckoutFlowShippingAddressForm.tsx",
-          "passed": 22,
-          "failed": 4,
-          "skipped": 10,
-          "ok": false
-        },
-        {
-          "path": "src/BuildCheckoutFlowOrderConfirmation.tsx",
+          "path": "src/screens/CheckoutScreen.tsx",
           "passed": 25,
-          "failed": 1,
-          "skipped": 10,
-          "ok": false
+          "failed": 3,
+          "skipped": 8,
+          "ok": false,
+          "failedRules": [
+            "No console.log statements",
+            "No unused imports",
+            "Interactive elements have accessibility labels"
+          ]
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.2,
-        "guardrails": 0.8860759493670886
+        "adherence": 0,
+        "guardrails": 0.8928571428571429
       },
-      "composite": 0.5258227848101266,
+      "composite": 0.46785714285714286,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "- Lint: failed (exit 1)",
+        "Missing required output files: src/services/orders.ts"
       ],
       "reference": {
         "files": [
@@ -751,9 +1777,9 @@
         "composite": 0.8423913043478259,
         "relative": {
           "correctness": null,
-          "adherence": 0.26666666666666666,
-          "guardrails": 0.9478952016485133,
-          "composite": 0.6242025316455697
+          "adherence": 0,
+          "guardrails": 0.9551495016611296,
+          "composite": 0.5553917050691245
         }
       }
     },
@@ -762,28 +1788,85 @@
       "title": "Product catalog with debounced search and filters",
       "suite": "e-commerce",
       "scaffoldable": false,
-      "generatedFiles": [
-        "src/components/CreateProductCatalogScreenDebo.tsx"
-      ],
-      "guardrail": [
+      "generatedFiles": [],
+      "attempts": [
         {
-          "path": "src/components/CreateProductCatalogScreenDebo.tsx",
-          "passed": 24,
-          "failed": 3,
-          "skipped": 9,
-          "ok": false
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 58071,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:6820f913f0c22cb1428214aca13732a8c2358a63de7e6985ddc7430e73f81b14",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:a088f702f32d8a25999f918d0953309ef3e5df2f11dd4f5706013cd29dc364be",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 58070
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "parse-retry",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 67493,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:6820f913f0c22cb1428214aca13732a8c2358a63de7e6985ddc7430e73f81b14",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:351108313532123a2ead3a50f1dd391a47c597fc09e2b7f51c0bf2e552133721",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 67493
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         }
       ],
+      "guardrail": [],
       "axes": {
-        "correctness": 0.5,
-        "adherence": 0.5714285714285714,
-        "guardrails": 0.8888888888888888
+        "correctness": 0,
+        "adherence": 0,
+        "guardrails": 0
       },
-      "composite": 0.638095238095238,
+      "composite": 0,
       "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "Model generation produced no non-empty files.",
+        "Missing required output files: src/screens/CatalogScreen.tsx, src/services/products.ts"
       ],
       "reference": {
         "files": [
@@ -798,9 +1881,9 @@
         "composite": 0.8206521739130433,
         "relative": {
           "correctness": null,
-          "adherence": 0.7619047619047619,
-          "guardrails": 0.997289972899729,
-          "composite": 0.7775465152948597
+          "adherence": 0,
+          "guardrails": 0,
+          "composite": 0
         }
       }
     },
@@ -810,43 +1893,132 @@
       "suite": "social-chat",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/screens/BuildChatThreadScreenMessage.tsx",
-        "src/screens/BuildChatThreadScreenMessage.styles.tsx",
-        "src/screens/BuildChatThreadScreenMessage.utils.tsx"
+        "src/services/messages.ts"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 60463,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:1133584514c53dfa8cecb8de0ebf34669e54ffc58d65f0d321891b4615ed3ad3",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:cc6c7c8f7a5a817f7e1040b87660a74f53d0db57a6bee8d8c44bd30e0176e5f6",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 60462
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "parse-retry",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 57709,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.9444444444444444,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:1133584514c53dfa8cecb8de0ebf34669e54ffc58d65f0d321891b4615ed3ad3",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:f7ed49aa4f892a08c4454388c24353f465a4034aa82fda20eb589a20721e5ea3",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 57708
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 3,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 70618,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.9444444444444444,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:1133584514c53dfa8cecb8de0ebf34669e54ffc58d65f0d321891b4615ed3ad3",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:3406a70d962d31226fe601bbc96d33c887c062dcf228ae40d0ef006c1610c3f1",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 70618
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/screens/BuildChatThreadScreenMessage.tsx",
-          "passed": 26,
+          "path": "src/services/messages.ts",
+          "passed": 17,
           "failed": 1,
-          "skipped": 9,
-          "ok": false
-        },
-        {
-          "path": "src/screens/BuildChatThreadScreenMessage.styles.tsx",
-          "passed": 25,
-          "failed": 0,
-          "skipped": 11,
-          "ok": true
-        },
-        {
-          "path": "src/screens/BuildChatThreadScreenMessage.utils.tsx",
-          "passed": 24,
-          "failed": 1,
-          "skipped": 11,
-          "ok": false
+          "skipped": 18,
+          "ok": false,
+          "failedRules": [
+            "Refs are not mutated during render"
+          ]
         }
       ],
       "axes": {
-        "correctness": 0.5,
-        "adherence": 0.6666666666666666,
-        "guardrails": 0.974025974025974
+        "correctness": 0.75,
+        "adherence": 0,
+        "guardrails": 0.9444444444444444
       },
-      "composite": 0.6922077922077923,
+      "composite": 0.5833333333333334,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "- Lint: passed",
+        "Missing required output files: src/screens/ChatScreen.tsx"
       ],
       "reference": {
         "files": [
@@ -861,9 +2033,9 @@
         "composite": 0.8904682274247493,
         "relative": {
           "correctness": null,
-          "adherence": 0.7878787878787878,
-          "guardrails": 1.041981274539414,
-          "composite": 0.7773526004511919
+          "adherence": 0,
+          "guardrails": 1.0103359173126614,
+          "composite": 0.6550860719874804
         }
       }
     },
@@ -873,23 +2045,138 @@
       "suite": "social-chat",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/BuildSocialFeedScreenPosts.tsx"
+        "src/screens/FeedScreen.tsx",
+        "src/services/posts.ts"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 56303,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:6fe4034f1589404756e51097bd667cb95b1c8040480ca4218a988bf25493796e",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:5c8d76a02ee20758355101ad22b975387f93d6a006f904e6c3bc826891e905cb",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 56303
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "parse-retry",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 50037,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.4444444444444444,
+          "guardrails": 0.9333333333333333,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:6fe4034f1589404756e51097bd667cb95b1c8040480ca4218a988bf25493796e",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:03b48b8b4eb913488166b5dfcaa4aadbd72028d69140e47d132b2f51af01b78d",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 50036
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 3,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 84455,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:6fe4034f1589404756e51097bd667cb95b1c8040480ca4218a988bf25493796e",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:9231ef4dfdfdb16ed39f93df67ee0812b3c96a2aacba698f30f7c58e5a3ba215",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 84455
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/components/BuildSocialFeedScreenPosts.tsx",
-          "passed": 22,
-          "failed": 4,
-          "skipped": 10,
-          "ok": false
+          "path": "src/screens/FeedScreen.tsx",
+          "passed": 24,
+          "failed": 3,
+          "skipped": 9,
+          "ok": false,
+          "failedRules": [
+            "No inline style objects in JSX",
+            "No unused imports",
+            "Prefer Pressable over TouchableOpacity"
+          ]
+        },
+        {
+          "path": "src/services/posts.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true,
+          "failedRules": []
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.3333333333333333,
-        "guardrails": 0.8461538461538461
+        "adherence": 0.4444444444444444,
+        "guardrails": 0.9333333333333333
       },
-      "composite": 0.5538461538461539,
+      "composite": 0.6133333333333333,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -908,9 +2195,9 @@
         "composite": 0.8666666666666667,
         "relative": {
           "correctness": null,
-          "adherence": 0.41666666666666663,
-          "guardrails": 0.9065934065934066,
-          "composite": 0.6390532544378699
+          "adherence": 0.5555555555555555,
+          "guardrails": 1,
+          "composite": 0.7076923076923076
         }
       }
     },
@@ -919,36 +2206,85 @@
       "title": "Appointment booking with availability slots",
       "suite": "booking-payments",
       "scaffoldable": false,
-      "generatedFiles": [
-        "src/app/screens/CreateAppointmentBookingScreen.styles.ts",
-        "src/app/screens/Success.tsx"
-      ],
-      "guardrail": [
+      "generatedFiles": [],
+      "attempts": [
         {
-          "path": "src/app/screens/CreateAppointmentBookingScreen.styles.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
-          "ok": true
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 58210,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:d98d1d94d307473d72c44ff659c1491966c221104be6c4f1dcaa00ad87b7ed9f",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:4f639ebf39c66ffa47802fb023ffa8888085c09a9a5f273c9a03457034075e5d",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 58210
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         },
         {
-          "path": "src/app/screens/Success.tsx",
-          "passed": 26,
-          "failed": 0,
-          "skipped": 10,
-          "ok": true
+          "index": 2,
+          "kind": "parse-retry",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 65278,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:d98d1d94d307473d72c44ff659c1491966c221104be6c4f1dcaa00ad87b7ed9f",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:dfa5757456f1a9fbb8e24a487f11a07a0693f2b1463726f19530d0fad7474d36",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 65277
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         }
       ],
+      "guardrail": [],
       "axes": {
-        "correctness": 0.5,
-        "adherence": 1,
-        "guardrails": 1
+        "correctness": 0,
+        "adherence": 0,
+        "guardrails": 0
       },
-      "composite": 0.8,
+      "composite": 0,
       "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "Model generation produced no non-empty files.",
+        "Missing required output files: src/screens/BookingScreen.tsx, src/services/booking.ts"
       ],
       "reference": {
         "files": [
@@ -963,9 +2299,9 @@
         "composite": 0.8055555555555555,
         "relative": {
           "correctness": null,
-          "adherence": 1.4285714285714286,
-          "guardrails": 1.0975609756097562,
-          "composite": 0.9931034482758623
+          "adherence": 0,
+          "guardrails": 0,
+          "composite": 0
         }
       }
     },
@@ -975,35 +2311,132 @@
       "suite": "booking-payments",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/BuildPaymentScreenCardNumber/index.tsx",
-        "src/components/BuildPaymentScreenCardNumber/styles.tsx"
+        "src/screens/PaymentScreenCardNumber.tsx"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 83491,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:5a547ce4cc660068190090b6347d5e6cf7f5884e66db4397c7669fc25ca1ed1e",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:0e0125aad9440b974f37a1cdbbad50a0f57d829fc62926cf88261522a601ca54",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 83490
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "parse-retry",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 73082,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.9259259259259259,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:5a547ce4cc660068190090b6347d5e6cf7f5884e66db4397c7669fc25ca1ed1e",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:a4e157dce5df52c6b7ed0cd29d2283a453959c922c11500b0f7a2a67fc5ff7ca",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 73080
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 3,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 73885,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.9629629629629629,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:5a547ce4cc660068190090b6347d5e6cf7f5884e66db4397c7669fc25ca1ed1e",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:a7b1646c9f61a1684ab43409b39b353918b4140c260a6c6f78fe6f6ab4e1b78f",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 73884
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/components/BuildPaymentScreenCardNumber/index.tsx",
-          "passed": 23,
-          "failed": 4,
-          "skipped": 9,
-          "ok": false
-        },
-        {
-          "path": "src/components/BuildPaymentScreenCardNumber/styles.tsx",
-          "passed": 24,
+          "path": "src/screens/PaymentScreenCardNumber.tsx",
+          "passed": 26,
           "failed": 1,
-          "skipped": 11,
-          "ok": false
+          "skipped": 9,
+          "ok": false,
+          "failedRules": [
+            "No console.log statements"
+          ]
         }
       ],
       "axes": {
-        "correctness": 0.75,
-        "adherence": 0.3333333333333333,
-        "guardrails": 0.9038461538461539
+        "correctness": 0.5,
+        "adherence": 0,
+        "guardrails": 0.9629629629629629
       },
-      "composite": 0.6711538461538462,
+      "composite": 0.4888888888888889,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: passed"
+        "- Lint: failed (exit 1)",
+        "Missing required output files: src/screens/PaymentScreen.tsx, src/services/charges.ts"
       ],
       "reference": {
         "files": [
@@ -1018,9 +2451,9 @@
         "composite": 0.8764822134387351,
         "relative": {
           "correctness": null,
-          "adherence": 0.4074074074074074,
-          "guardrails": 0.9669051878354203,
-          "composite": 0.7657358425114908
+          "adherence": 0,
+          "guardrails": 1.0301464254952626,
+          "composite": 0.5577852937492171
         }
       }
     },
@@ -1030,31 +2463,107 @@
       "suite": "booking-payments",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/screens/CreateOrderTrackingScreenStatus.tsx",
-        "src/screens/CreateOrderTrackingScreenStatu.styles.tsx"
+        "src/screens/TrackingScreen.tsx",
+        "src/services/tracking.ts"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 57963,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.4444444444444444,
+          "guardrails": 0.8888888888888888,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:70d52f9ca0f57e817be84cdb901be055390e1f19aa2913676139f497516cbbc5",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:5e020bd575706bac1815c0f51608c26d08114c7410f736c7646f32277d19868f",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 57962
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 73577,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:70d52f9ca0f57e817be84cdb901be055390e1f19aa2913676139f497516cbbc5",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:c98373bf7ce456e3354366fa9bc30eabc45abec04c4ed811290c687a00b274fb",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 73576
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/screens/CreateOrderTrackingScreenStatus.tsx",
+          "path": "src/screens/TrackingScreen.tsx",
           "passed": 22,
-          "failed": 4,
-          "skipped": 10,
-          "ok": false
+          "failed": 5,
+          "skipped": 9,
+          "ok": false,
+          "failedRules": [
+            "No console.log statements",
+            "No inline style objects in JSX",
+            "No unused imports",
+            "Prefer Pressable over TouchableOpacity",
+            "useEffect subscriptions return cleanup"
+          ]
         },
         {
-          "path": "src/screens/CreateOrderTrackingScreenStatu.styles.tsx",
-          "passed": 25,
+          "path": "src/services/tracking.ts",
+          "passed": 18,
           "failed": 0,
-          "skipped": 11,
-          "ok": true
+          "skipped": 18,
+          "ok": true,
+          "failedRules": []
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.375,
-        "guardrails": 0.9215686274509803
+        "adherence": 0.4444444444444444,
+        "guardrails": 0.8888888888888888
       },
-      "composite": 0.588970588235294,
+      "composite": 0.6000000000000001,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -1073,9 +2582,9 @@
         "composite": 0.8106060606060606,
         "relative": {
           "correctness": null,
-          "adherence": 0.5625,
-          "guardrails": 0.9654528478057889,
-          "composite": 0.726580538757559
+          "adherence": 0.6666666666666666,
+          "guardrails": 0.9312169312169312,
+          "composite": 0.7401869158878506
         }
       }
     },
@@ -1085,27 +2594,101 @@
       "suite": "health-fitness",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/BuildHealthDashboardThreeActiv.tsx"
+        "src/screens/HealthDashboardThreeActiv.tsx"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 63967,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.8846153846153846,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:4ead3c6b59bc141a01ebf5a8b1a4afd90b583eabfe3f587817625144bd12e971",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:ec54e1e2b8ae53d4419fcbfe2923e3f0f8184847c2e6a0085efcb7bdf8200570",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 63966
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 67647,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:4ead3c6b59bc141a01ebf5a8b1a4afd90b583eabfe3f587817625144bd12e971",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:b90e7c41027cdcfdec2ad9c83ab8998a09fc904ba4ddb77028b87d2937b4e17f",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 67646
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/components/BuildHealthDashboardThreeActiv.tsx",
-          "passed": 24,
-          "failed": 1,
-          "skipped": 11,
-          "ok": false
+          "path": "src/screens/HealthDashboardThreeActiv.tsx",
+          "passed": 23,
+          "failed": 3,
+          "skipped": 10,
+          "ok": false,
+          "failedRules": [
+            "No console.log statements",
+            "No unused imports",
+            "Prefer Pressable over TouchableOpacity"
+          ]
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.5,
-        "guardrails": 0.96
+        "adherence": 0,
+        "guardrails": 0.8846153846153846
       },
-      "composite": 0.6379999999999999,
+      "composite": 0.4653846153846154,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "- Lint: failed (exit 1)",
+        "Missing required output files: src/screens/HealthDashboardScreen.tsx, src/services/health.ts"
       ],
       "reference": {
         "files": [
@@ -1120,9 +2703,9 @@
         "composite": 0.8106060606060606,
         "relative": {
           "correctness": null,
-          "adherence": 0.75,
-          "guardrails": 1.0057142857142856,
-          "composite": 0.7870654205607476
+          "adherence": 0,
+          "guardrails": 0.9267399267399267,
+          "composite": 0.5741193386053199
         }
       }
     },
@@ -1132,27 +2715,133 @@
       "suite": "health-fitness",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/IntervalWorkoutTimerStar.test.js"
+        "src/hooks/useIntervalTimer.ts"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 84337,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:a6715cccbe9da3dfa5d98f8278b19ab72cc2fa60649913ff6aa2778393e97af5",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:77bd8234977d751446ad1713379eb9599d18d27952f8aa48f7d3401461ce030a",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 84336
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "parse-retry",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 88943,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.8888888888888888,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:a6715cccbe9da3dfa5d98f8278b19ab72cc2fa60649913ff6aa2778393e97af5",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:5d52b8c302aefddb8a4b8a5a516ca8e875534ddcb1c6be0c15bdcf0006dd910a",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 88942
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 3,
+          "kind": "repair",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 98302,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:a6715cccbe9da3dfa5d98f8278b19ab72cc2fa60649913ff6aa2778393e97af5",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:8a2891c3ab537f3f7a285917ea7e850e539e23c5d0ae3380ec6d74200c541de5",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 98300
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/components/IntervalWorkoutTimerStar.test.js",
+          "path": "src/hooks/useIntervalTimer.ts",
           "passed": 16,
-          "failed": 0,
-          "skipped": 20,
-          "ok": true
+          "failed": 2,
+          "skipped": 18,
+          "ok": false,
+          "failedRules": [
+            "TypeScript files avoid implicit any",
+            "useEffect subscriptions return cleanup"
+          ]
         }
       ],
       "axes": {
         "correctness": 0.5,
         "adherence": 0,
-        "guardrails": 1
+        "guardrails": 0.8888888888888888
       },
-      "composite": 0.5,
+      "composite": 0.4666666666666667,
       "correctnessDetails": [
-        "- Tests: failed (exit 1)",
-        "- Type check: passed",
-        "- Lint: passed"
+        "- Tests: passed",
+        "- Type check: failed (exit 2)",
+        "- Lint: failed (exit 1)",
+        "Missing required output files: src/screens/WorkoutTimerScreen.tsx"
       ],
       "reference": {
         "files": [
@@ -1168,8 +2857,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0,
-          "guardrails": 1.0227272727272727,
-          "composite": 0.5625
+          "guardrails": 0.9090909090909091,
+          "composite": 0.525
         }
       }
     },
@@ -1179,27 +2868,97 @@
       "suite": "media",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/BuildMusicPlayerScreenAlbum.tsx"
+        "src/services/library.ts"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 51584,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:782c6f91cd0b8db5f5387f32697db85c0bae7b90b074ea48a6b5f4aa0bfd7f65",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:b97931655eb1fd2760ca4cfdf6cdca716f834c85f3fd2c6d15acf86e7c1b788d",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 51584
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 53625,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:782c6f91cd0b8db5f5387f32697db85c0bae7b90b074ea48a6b5f4aa0bfd7f65",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:7eb2a1affdf5a99d11a499173b9bdb51918c5fcfa037c5ab3c48e129526ffb1d",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 53624
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/components/BuildMusicPlayerScreenAlbum.tsx",
-          "passed": 22,
-          "failed": 4,
-          "skipped": 10,
-          "ok": false
+          "path": "src/services/library.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true,
+          "failedRules": []
         }
       ],
       "axes": {
-        "correctness": 0.5,
-        "adherence": 0.6666666666666666,
-        "guardrails": 0.8461538461538461
+        "correctness": 1,
+        "adherence": 0,
+        "guardrails": 1
       },
-      "composite": 0.6538461538461539,
+      "composite": 0.7,
       "correctnessDetails": [
         "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "- Type check: passed",
+        "- Lint: passed",
+        "Missing required output files: src/screens/PlayerScreen.tsx"
       ],
       "reference": {
         "files": [
@@ -1214,9 +2973,9 @@
         "composite": 0.8555555555555555,
         "relative": {
           "correctness": null,
-          "adherence": 0.8571428571428571,
-          "guardrails": 0.9065934065934066,
-          "composite": 0.7642357642357643
+          "adherence": 0,
+          "guardrails": 1.0714285714285714,
+          "composite": 0.8181818181818181
         }
       }
     },
@@ -1225,28 +2984,85 @@
       "title": "Video detail with related videos",
       "suite": "media",
       "scaffoldable": false,
-      "generatedFiles": [
-        "src/screens/CreateVideoDetailScreen16.tsx"
-      ],
-      "guardrail": [
+      "generatedFiles": [],
+      "attempts": [
         {
-          "path": "src/screens/CreateVideoDetailScreen16.tsx",
-          "passed": 25,
-          "failed": 1,
-          "skipped": 10,
-          "ok": false
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 75469,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:c4815dd002ae6effcfb9262bb0298e3bf3504d0270d511ba6404792bd3d8fa96",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:8cb5c3cb2c41dc1569c8f409fe7ac2261962e245f315cbbea327e7d1fc8fa271",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 75469
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "parse-retry",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 72997,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:c4815dd002ae6effcfb9262bb0298e3bf3504d0270d511ba6404792bd3d8fa96",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:0a6bccb60385e2d298ba6f644061545e8e1a43b36062f7fc3858dbf939b95894",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 72996
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         }
       ],
+      "guardrail": [],
       "axes": {
-        "correctness": 0.5,
-        "adherence": 0.75,
-        "guardrails": 0.9615384615384616
+        "correctness": 0,
+        "adherence": 0,
+        "guardrails": 0
       },
-      "composite": 0.7134615384615384,
+      "composite": 0,
       "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "Model generation produced no non-empty files.",
+        "Missing required output files: src/screens/VideoDetailScreen.tsx, src/services/videos.ts"
       ],
       "reference": {
         "files": [
@@ -1261,9 +3077,9 @@
         "composite": 0.8666666666666667,
         "relative": {
           "correctness": null,
-          "adherence": 0.9642857142857143,
-          "guardrails": 1.0062611806797852,
-          "composite": 0.8232248520710058
+          "adherence": 0,
+          "guardrails": 0,
+          "composite": 0
         }
       }
     },
@@ -1273,43 +3089,133 @@
       "suite": "profile-onboarding",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/BuildProfileEditScreenAvatar/styles.ts",
-        "src/screens/BuildProfileEditScreenAvatar/index.js",
-        "src/screens/BuildProfileEditScreenAvatar/styles.js"
+        "src/screens/ProfileEditScreenAvatar.tsx"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 65675,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:0e52cc349d7dce5d49ef7937c4e5f4941a2749698aedcb75ecfe5feb88ad9f77",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:86d975817ee9443e43a7ff0b0d9c9b1093e3521e60fb5a7e14b141b675148a5c",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 65675
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "parse-retry",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 68201,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.9259259259259259,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:0e52cc349d7dce5d49ef7937c4e5f4941a2749698aedcb75ecfe5feb88ad9f77",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:ad267e1dc094a99ca86c95ce6d20bf88dc87027eb48e0ca9be705b0a13324ab4",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 68199
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 3,
+          "kind": "repair",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 65224,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:0e52cc349d7dce5d49ef7937c4e5f4941a2749698aedcb75ecfe5feb88ad9f77",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:01739f57b0a172ad28fa156852f639ae77cde786b4103494aee045ec3f39304e",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 65224
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/components/BuildProfileEditScreenAvatar/styles.ts",
-          "passed": 17,
-          "failed": 1,
-          "skipped": 18,
-          "ok": false
-        },
-        {
-          "path": "src/screens/BuildProfileEditScreenAvatar/index.js",
-          "passed": 15,
-          "failed": 1,
-          "skipped": 20,
-          "ok": false
-        },
-        {
-          "path": "src/screens/BuildProfileEditScreenAvatar/styles.js",
-          "passed": 15,
-          "failed": 1,
-          "skipped": 20,
-          "ok": false
+          "path": "src/screens/ProfileEditScreenAvatar.tsx",
+          "passed": 25,
+          "failed": 2,
+          "skipped": 9,
+          "ok": false,
+          "failedRules": [
+            "No console.log statements",
+            "Forms use KeyboardAvoidingView on iOS"
+          ]
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": null,
-        "guardrails": 0.94
+        "adherence": 0,
+        "guardrails": 0.9259259259259259
       },
-      "composite": 0.6885714285714286,
+      "composite": 0.4777777777777778,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "- Lint: failed (exit 1)",
+        "Missing required output files: src/screens/ProfileEditScreen.tsx, src/services/profile.ts"
       ],
       "reference": {
         "files": [
@@ -1324,9 +3230,9 @@
         "composite": 0.8656126482213439,
         "relative": {
           "correctness": null,
-          "adherence": null,
-          "guardrails": 1.0295238095238095,
-          "composite": 0.7954729288975865
+          "adherence": 0,
+          "guardrails": 1.0141093474426808,
+          "composite": 0.5519533231861999
         }
       }
     },
@@ -1336,43 +3242,99 @@
       "suite": "profile-onboarding",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/CreateMultiStepOnboardingWizard/index.tsx",
-        "src/components/CreateMultiStepOnboardingWizard/IntroScreen.tsx",
-        "src/components/CreateMultiStepOnboardingWizard/PreferencesScreen.tsx"
+        "src/services/onboarding.ts"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 74388,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.9444444444444444,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:92f2d594f25cc338170aa281383a44b567621de600f715b2fa2c14ee6ec244da",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:265ad5b8cfeefebb3a5f3225c94568f956af60cc566ebf3f335545f7ff9dd4be",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 74386
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 59830,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:92f2d594f25cc338170aa281383a44b567621de600f715b2fa2c14ee6ec244da",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:7ae16ec11862d34b66648b0134de4958d03e3097c5295fae1c306637abd9a3a6",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 59830
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/components/CreateMultiStepOnboardingWizard/index.tsx",
-          "passed": 22,
-          "failed": 4,
-          "skipped": 10,
-          "ok": false
-        },
-        {
-          "path": "src/components/CreateMultiStepOnboardingWizard/IntroScreen.tsx",
-          "passed": 26,
+          "path": "src/services/onboarding.ts",
+          "passed": 17,
           "failed": 1,
-          "skipped": 9,
-          "ok": false
-        },
-        {
-          "path": "src/components/CreateMultiStepOnboardingWizard/PreferencesScreen.tsx",
-          "passed": 24,
-          "failed": 4,
-          "skipped": 8,
-          "ok": false
+          "skipped": 18,
+          "ok": false,
+          "failedRules": [
+            "No unused imports"
+          ]
         }
       ],
       "axes": {
         "correctness": 0.75,
-        "adherence": 0.4166666666666667,
-        "guardrails": 0.8888888888888888
+        "adherence": 0,
+        "guardrails": 0.9444444444444444
       },
-      "composite": 0.6916666666666667,
+      "composite": 0.5833333333333334,
       "correctnessDetails": [
         "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: passed"
+        "- Type check: passed",
+        "- Lint: failed (exit 1)",
+        "Missing required output files: src/screens/OnboardingScreen.tsx"
       ],
       "reference": {
         "files": [
@@ -1387,9 +3349,9 @@
         "composite": 0.8166666666666667,
         "relative": {
           "correctness": null,
-          "adherence": 0.5952380952380953,
-          "guardrails": 0.9523809523809523,
-          "composite": 0.8469387755102041
+          "adherence": 0,
+          "guardrails": 1.0119047619047619,
+          "composite": 0.7142857142857143
         }
       }
     },
@@ -1398,18 +3360,111 @@
       "title": "Biometric unlock gate with PIN fallback",
       "suite": "security",
       "scaffoldable": false,
-      "generatedFiles": [],
-      "guardrail": [],
+      "generatedFiles": [
+        "src/screens/LockScreen.tsx",
+        "src/services/authLocal.ts"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 53453,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.75,
+          "guardrails": 0.9111111111111111,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:a250a309be0860ff9433d32d8431cd1be7f411c4b0b1b509828344727dd7ee86",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:b2efe68c72218d3a4b18af3d83fbffabcc6d6f28c6f2156de2b48eca5b134c2d",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 53451
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 79497,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.75,
+          "guardrails": 0.9333333333333333,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:a250a309be0860ff9433d32d8431cd1be7f411c4b0b1b509828344727dd7ee86",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:d57771eb0f45a3f91832c8d68c69f6721214c014b76559c14c28c5905eab436e",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 79496
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "guardrail": [
+        {
+          "path": "src/screens/LockScreen.tsx",
+          "passed": 25,
+          "failed": 2,
+          "skipped": 9,
+          "ok": false,
+          "failedRules": [
+            "No console.log statements",
+            "Prefer Pressable over TouchableOpacity"
+          ]
+        },
+        {
+          "path": "src/services/authLocal.ts",
+          "passed": 17,
+          "failed": 1,
+          "skipped": 18,
+          "ok": false,
+          "failedRules": [
+            "No console.log statements"
+          ]
+        }
+      ],
       "axes": {
-        "correctness": 1,
-        "adherence": null,
-        "guardrails": null
+        "correctness": 0.5,
+        "adherence": 0.75,
+        "guardrails": 0.9333333333333333
       },
-      "composite": 1,
+      "composite": 0.705,
       "correctnessDetails": [
         "- Tests: passed",
-        "- Type check: passed",
-        "- Lint: passed"
+        "- Type check: failed (exit 2)",
+        "- Lint: failed (exit 1)"
       ],
       "reference": {
         "files": [
@@ -1424,9 +3479,9 @@
         "composite": 0.8777777777777778,
         "relative": {
           "correctness": null,
-          "adherence": null,
-          "guardrails": null,
-          "composite": 1.139240506329114
+          "adherence": 0.9375,
+          "guardrails": 0.9767441860465116,
+          "composite": 0.8031645569620253
         }
       }
     },
@@ -1436,43 +3491,132 @@
       "suite": "productivity",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/DocumentLibraryScreenList.tsx",
-        "src/components/DocumentIcon.tsx",
-        "src/components/TagFilterChip.tsx"
+        "src/components/DocumentTypeIcon.tsx"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 72616,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:260155ff0c11c0f2e73de7a4cafb2d7b248774f4553c2be056e0db835691d4bd",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:834d9c1181a67a84dc0901b2dbe93af757eb34179759cdd9ba2ede929a212388",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 72616
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "parse-retry",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 71589,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.96,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:260155ff0c11c0f2e73de7a4cafb2d7b248774f4553c2be056e0db835691d4bd",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:743e8d8216fc30a68bbefbe67804f7c415c4541474a38cc3171ae92cf34cb135",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 71588
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 3,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 128010,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 3,
+          "adherence": 0.375,
+          "guardrails": 0.9,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:260155ff0c11c0f2e73de7a4cafb2d7b248774f4553c2be056e0db835691d4bd",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:25188d6a8220bb3f793cf0c63c821dd1193bee1827d318bf167e22b100ffdfd0",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 128008
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/components/DocumentLibraryScreenList.tsx",
-          "passed": 25,
-          "failed": 0,
-          "skipped": 11,
-          "ok": true
-        },
-        {
-          "path": "src/components/DocumentIcon.tsx",
+          "path": "src/components/DocumentTypeIcon.tsx",
           "passed": 24,
           "failed": 1,
           "skipped": 11,
-          "ok": false
-        },
-        {
-          "path": "src/components/TagFilterChip.tsx",
-          "passed": 23,
-          "failed": 3,
-          "skipped": 10,
-          "ok": false
+          "ok": false,
+          "failedRules": [
+            "No unused imports"
+          ]
         }
       ],
       "axes": {
-        "correctness": 0.5,
-        "adherence": 0.75,
-        "guardrails": 0.9473684210526315
+        "correctness": 0.75,
+        "adherence": 0,
+        "guardrails": 0.96
       },
-      "composite": 0.7092105263157895,
+      "composite": 0.5880000000000001,
       "correctnessDetails": [
         "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "- Type check: passed",
+        "- Lint: failed (exit 1)",
+        "Missing required output files: src/screens/DocumentListScreen.tsx, src/services/documents.ts"
       ],
       "reference": {
         "files": [
@@ -1487,9 +3631,9 @@
         "composite": 0.8092885375494071,
         "relative": {
           "correctness": null,
-          "adherence": 1.03125,
-          "guardrails": 1.0629011553273426,
-          "composite": 0.8763382816014396
+          "adherence": 0,
+          "guardrails": 1.0770731707317074,
+          "composite": 0.7265641025641026
         }
       }
     },
@@ -1498,44 +3642,85 @@
       "title": "Kanban task board with drag-free moves",
       "suite": "productivity",
       "scaffoldable": false,
-      "generatedFiles": [
-        "src/components/BuildTaskBoardScreenThree.js",
-        "src/components/BuildTaskBoardScreenThree.styles.js",
-        "src/services/tasks-api.js"
-      ],
-      "guardrail": [
+      "generatedFiles": [],
+      "attempts": [
         {
-          "path": "src/components/BuildTaskBoardScreenThree.js",
-          "passed": 15,
-          "failed": 1,
-          "skipped": 20,
-          "ok": false
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 62877,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:a69d32688ee99bf34d62dace4ad457bb5c1f031eb6d41df2e30b5ff991c6367a",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:cc39192b8b0a8f93b5544acf0382de9fca7f28fc383dc41618b135ad056875b6",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 62877
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         },
         {
-          "path": "src/components/BuildTaskBoardScreenThree.styles.js",
-          "passed": 16,
-          "failed": 0,
-          "skipped": 20,
-          "ok": true
-        },
-        {
-          "path": "src/services/tasks-api.js",
-          "passed": 15,
-          "failed": 1,
-          "skipped": 20,
-          "ok": false
+          "index": 2,
+          "kind": "parse-retry",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 81508,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:a69d32688ee99bf34d62dace4ad457bb5c1f031eb6d41df2e30b5ff991c6367a",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:6b5dbb2288ac2f303dbcd51b54cc4a9109a53ef5ec68b04ccfcfcd916dabc410",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 81508
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         }
       ],
+      "guardrail": [],
       "axes": {
-        "correctness": 0.75,
-        "adherence": 0.4,
-        "guardrails": 0.9583333333333334
+        "correctness": 0,
+        "adherence": 0,
+        "guardrails": 0
       },
-      "composite": 0.7075,
+      "composite": 0,
       "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: passed",
-        "- Lint: failed (exit 1)"
+        "Model generation produced no non-empty files.",
+        "Missing required output files: src/screens/TaskBoardScreen.tsx, src/services/tasks.ts"
       ],
       "reference": {
         "files": [
@@ -1550,9 +3735,9 @@
         "composite": 0.8166666666666667,
         "relative": {
           "correctness": null,
-          "adherence": 0.5714285714285715,
-          "guardrails": 1.0267857142857144,
-          "composite": 0.866326530612245
+          "adherence": 0,
+          "guardrails": 0,
+          "composite": 0
         }
       }
     },
@@ -1561,36 +3746,85 @@
       "title": "Subscription plan picker with comparison",
       "suite": "commerce-subscriptions",
       "scaffoldable": false,
-      "generatedFiles": [
-        "src/CreateSubscriptionScreenThreeP.tsx",
-        "src/CreateSubscriptionScreenThreeP.styles.ts"
-      ],
-      "guardrail": [
+      "generatedFiles": [],
+      "attempts": [
         {
-          "path": "src/CreateSubscriptionScreenThreeP.tsx",
-          "passed": 23,
-          "failed": 3,
-          "skipped": 10,
-          "ok": false
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 69343,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:3792aa8bdb90b85a3c7b15acdd2fdc52c0b72e517b7678efac39ae3faf4e0537",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:e0bd6286841eec6ef47bd733fbf32b9752dfacbe29453f2c83a1ee4929b98d69",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 69343
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         },
         {
-          "path": "src/CreateSubscriptionScreenThreeP.styles.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
-          "ok": true
+          "index": 2,
+          "kind": "parse-retry",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 65425,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:3792aa8bdb90b85a3c7b15acdd2fdc52c0b72e517b7678efac39ae3faf4e0537",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:8db7130bb190e025ecf7e4afd11242cd033b580086bf44fb93efc8bddbc40489",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 65425
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         }
       ],
+      "guardrail": [],
       "axes": {
-        "correctness": 0.5,
-        "adherence": 0.625,
-        "guardrails": 0.9318181818181818
+        "correctness": 0,
+        "adherence": 0,
+        "guardrails": 0
       },
-      "composite": 0.6670454545454545,
+      "composite": 0,
       "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "Model generation produced no non-empty files.",
+        "Missing required output files: src/screens/PlansScreen.tsx, src/services/subscriptions.ts"
       ],
       "reference": {
         "files": [
@@ -1605,9 +3839,9 @@
         "composite": 0.8055555555555555,
         "relative": {
           "correctness": null,
-          "adherence": 0.8928571428571429,
-          "guardrails": 1.0227272727272727,
-          "composite": 0.8280564263322884
+          "adherence": 0,
+          "guardrails": 0,
+          "composite": 0
         }
       }
     },
@@ -1616,28 +3850,85 @@
       "title": "Nearby places list with distance sorting",
       "suite": "travel-weather",
       "scaffoldable": false,
-      "generatedFiles": [
-        "src/components/BuildNearbyPlacesScreenFetch.tsx"
-      ],
-      "guardrail": [
+      "generatedFiles": [],
+      "attempts": [
         {
-          "path": "src/components/BuildNearbyPlacesScreenFetch.tsx",
-          "passed": 21,
-          "failed": 5,
-          "skipped": 10,
-          "ok": false
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 62580,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:09da695f6e6b3b41a340c7dc76e1ab4c28cecbb8e9a5514ba719e82e556284ae",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:cfcdd80a098a4824d92aa1aeb48fed9ecd8199b4c377137da787aa34ce6f7e75",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 62580
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "parse-retry",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 73919,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:09da695f6e6b3b41a340c7dc76e1ab4c28cecbb8e9a5514ba719e82e556284ae",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:5fea477c53071dd261dbd475fb06009abba1202a960bd170ade288aad5bfb239",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 73919
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         }
       ],
+      "guardrail": [],
       "axes": {
-        "correctness": 0.5,
-        "adherence": 0.42857142857142855,
-        "guardrails": 0.8076923076923077
+        "correctness": 0,
+        "adherence": 0,
+        "guardrails": 0
       },
-      "composite": 0.5708791208791208,
+      "composite": 0,
       "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "Model generation produced no non-empty files.",
+        "Missing required output files: src/screens/PlacesScreen.tsx, src/services/places.ts"
       ],
       "reference": {
         "files": [
@@ -1652,9 +3943,9 @@
         "composite": 0.8303030303030303,
         "relative": {
           "correctness": null,
-          "adherence": 0.5892857142857142,
-          "guardrails": 0.8653846153846154,
-          "composite": 0.6875551455843426
+          "adherence": 0,
+          "guardrails": 0,
+          "composite": 0
         }
       }
     },
@@ -1663,28 +3954,85 @@
       "title": "Hourly forecast with temperature curve",
       "suite": "travel-weather",
       "scaffoldable": false,
-      "generatedFiles": [
-        "src/components/BuildWeatherScreenCurrentCondi.test.tsx"
-      ],
-      "guardrail": [
+      "generatedFiles": [],
+      "attempts": [
         {
-          "path": "src/components/BuildWeatherScreenCurrentCondi.test.tsx",
-          "passed": 23,
-          "failed": 2,
-          "skipped": 11,
-          "ok": false
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 100025,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:f4f3cd08b5a08f16bd9d3c162d0b1e4dfccb5de6dfe2b2112291248b7c624d7e",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:af374f572be34c47ee4e64df07f3ef0cd2b6c1030a53733f515950f0f44fbc26",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 100025
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "parse-retry",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 68372,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:f4f3cd08b5a08f16bd9d3c162d0b1e4dfccb5de6dfe2b2112291248b7c624d7e",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:1ff3c7595603112c3648fbf804b51bc9a2576ea08a1fc06d23e7994ecb3d14a8",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 68371
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         }
       ],
+      "guardrail": [],
       "axes": {
-        "correctness": 0.25,
+        "correctness": 0,
         "adherence": 0,
-        "guardrails": 0.92
+        "guardrails": 0
       },
-      "composite": 0.376,
+      "composite": 0,
       "correctnessDetails": [
-        "- Tests: failed (exit 1)",
-        "- Type check: failed (exit 2)",
-        "- Lint: passed"
+        "Model generation produced no non-empty files.",
+        "Missing required output files: src/screens/WeatherScreen.tsx, src/services/weather.ts"
       ],
       "reference": {
         "files": [
@@ -1700,8 +4048,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0,
-          "guardrails": 0.9857142857142858,
-          "composite": 0.4338461538461538
+          "guardrails": 0,
+          "composite": 0
         }
       }
     },
@@ -1711,35 +4059,112 @@
       "suite": "settings",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/BuildPrivacySettingsScreenTogg.js",
-        "src/components/DeleteAccountFlow.js"
+        "src/screens/PrivacyScreen.tsx",
+        "src/services/privacy.ts"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 64414,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.5714285714285714,
+          "guardrails": 0.8888888888888888,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:e78f76851113d25c27d84b47e082753c9139d13dc922dd69a71e4bc1e30def3e",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:4aecd3d8237cab1d946d7f08c34e602e83fadae7ed85e2c68d731bbe871a187a",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 64412
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 80793,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:e78f76851113d25c27d84b47e082753c9139d13dc922dd69a71e4bc1e30def3e",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:b95bcf74af19c1e2d3eee31f2aaf5fd30cf8cec3fff022e8f9065757b2645f72",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 80793
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/components/BuildPrivacySettingsScreenTogg.js",
-          "passed": 16,
-          "failed": 0,
-          "skipped": 20,
-          "ok": true
+          "path": "src/screens/PrivacyScreen.tsx",
+          "passed": 24,
+          "failed": 3,
+          "skipped": 9,
+          "ok": false,
+          "failedRules": [
+            "No inline style objects in JSX",
+            "No unused imports",
+            "Prefer Pressable over TouchableOpacity"
+          ]
         },
         {
-          "path": "src/components/DeleteAccountFlow.js",
-          "passed": 15,
-          "failed": 1,
-          "skipped": 20,
-          "ok": false
+          "path": "src/services/privacy.ts",
+          "passed": 16,
+          "failed": 2,
+          "skipped": 18,
+          "ok": false,
+          "failedRules": [
+            "No console.log statements",
+            "No hardcoded API URLs"
+          ]
         }
       ],
       "axes": {
-        "correctness": 1,
-        "adherence": 0,
-        "guardrails": 0.96875
+        "correctness": 0.5,
+        "adherence": 0.5714285714285714,
+        "guardrails": 0.8888888888888888
       },
-      "composite": 0.690625,
+      "composite": 0.638095238095238,
       "correctnessDetails": [
         "- Tests: passed",
-        "- Type check: passed",
-        "- Lint: passed"
+        "- Type check: failed (exit 2)",
+        "- Lint: failed (exit 1)"
       ],
       "reference": {
         "files": [
@@ -1754,9 +4179,9 @@
         "composite": 0.8055555555555555,
         "relative": {
           "correctness": null,
-          "adherence": 0,
-          "guardrails": 1.0632621951219512,
-          "composite": 0.8573275862068968
+          "adherence": 0.8163265306122449,
+          "guardrails": 0.975609756097561,
+          "composite": 0.7921182266009853
         }
       }
     },
@@ -1766,39 +4191,115 @@
       "suite": "refactor",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/RemoveSentryReactNativePackage.ts",
         "ios/Podfile",
-        "ios/Info.plist"
+        "android/settings.gradle",
+        "android/app/src/main/AndroidManifest.xml"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 88460,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 3,
+          "adherence": 0,
+          "guardrails": 0.9743589743589743,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:62207aa22483a614e81374e9b4edd836024549b23a35421cfef86d4e04b0545b",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:8d5b0fead76c4b3c5d8b9618deb962512bb1e9981054b2fceaa84198887ef30e",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 88459
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 71187,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 3,
+          "adherence": 0,
+          "guardrails": 0.9743589743589743,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:62207aa22483a614e81374e9b4edd836024549b23a35421cfef86d4e04b0545b",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:2181e13812c218340a7397af362ba321640a4605dfccfd978d6724e24d6ce229",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 71187
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
-        {
-          "path": "src/RemoveSentryReactNativePackage.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
-          "ok": true
-        },
         {
           "path": "ios/Podfile",
           "passed": 13,
           "failed": 0,
           "skipped": 23,
-          "ok": true
+          "ok": true,
+          "failedRules": []
         },
         {
-          "path": "ios/Info.plist",
+          "path": "android/settings.gradle",
           "passed": 13,
           "failed": 0,
           "skipped": 23,
-          "ok": true
+          "ok": true,
+          "failedRules": []
+        },
+        {
+          "path": "android/app/src/main/AndroidManifest.xml",
+          "passed": 12,
+          "failed": 1,
+          "skipped": 23,
+          "ok": false,
+          "failedRules": [
+            "No hardcoded API URLs"
+          ]
         }
       ],
       "axes": {
         "correctness": null,
-        "adherence": 0.5,
-        "guardrails": 1
+        "adherence": 0,
+        "guardrails": 0.9743589743589743
       },
-      "composite": 0.75,
+      "composite": 0.4871794871794871,
+      "correctnessDetails": [
+        "Missing required output files: package.json, ios/Info.plist, ios/vectalon.xcodeproj/project.pbxproj, android/app/build.gradle"
+      ],
       "reference": {
         "files": [
           "package.json",
@@ -1817,9 +4318,9 @@
         "composite": 0.9890109890109888,
         "relative": {
           "correctness": null,
-          "adherence": 0.5,
-          "guardrails": 1.0224719101123596,
-          "composite": 0.7583333333333335
+          "adherence": 0,
+          "guardrails": 0.9962546816479401,
+          "composite": 0.49259259259259264
         }
       }
     },
@@ -1828,32 +4329,86 @@
       "title": "Remove the Firebase SDK (@react-native-firebase/app + messaging) with full native cleanup",
       "suite": "refactor",
       "scaffoldable": false,
-      "generatedFiles": [
-        "src/RemoveReactNativeFirebaseApp.ts",
-        "src/RemoveReactNativeFirebaseMessaging.ts"
-      ],
-      "guardrail": [
+      "generatedFiles": [],
+      "attempts": [
         {
-          "path": "src/RemoveReactNativeFirebaseApp.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
-          "ok": true
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 64079,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:5b533052d2c8f02692bcfc282bdd64a666c89740dab28588ffb7bb62dc1e360c",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:8f14c0e724167dca1cb9cc519b6aecb7e86c0247f120518b81221474550d386a",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 64079
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         },
         {
-          "path": "src/RemoveReactNativeFirebaseMessaging.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
-          "ok": true
+          "index": 2,
+          "kind": "parse-retry",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 69201,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:5b533052d2c8f02692bcfc282bdd64a666c89740dab28588ffb7bb62dc1e360c",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:a9d2e991464d3a4f1755edac1cd2971965f325fc691e3b654da64f3b31b42540",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 69201
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         }
       ],
+      "guardrail": [],
       "axes": {
-        "correctness": null,
-        "adherence": null,
-        "guardrails": 1
+        "correctness": 0,
+        "adherence": 0,
+        "guardrails": 0
       },
-      "composite": 1,
+      "composite": 0,
+      "correctnessDetails": [
+        "Model generation produced no non-empty files.",
+        "Missing required output files: package.json, ios/Podfile, android/settings.gradle, android/app/build.gradle, android/app/src/main/AndroidManifest.xml"
+      ],
       "reference": {
         "files": [
           "package.json",
@@ -1870,9 +4425,9 @@
         "composite": 0.9923076923076923,
         "relative": {
           "correctness": null,
-          "adherence": null,
-          "guardrails": 1.015625,
-          "composite": 1.0077519379844961
+          "adherence": 0,
+          "guardrails": 0,
+          "composite": 0
         }
       }
     },
@@ -1882,114 +4437,93 @@
       "suite": "upgrades",
       "scaffoldable": false,
       "generatedFiles": [
-        "android/app/build.gradle",
-        "android/settings.gradle"
+        "android/build.gradle",
+        "__tests__/smoke.test.ts"
       ],
-      "guardrail": [
+      "attempts": [
         {
-          "path": "android/app/build.gradle",
-          "passed": 13,
-          "failed": 0,
-          "skipped": 23,
-          "ok": true
-        },
-        {
-          "path": "android/settings.gradle",
-          "passed": 13,
-          "failed": 0,
-          "skipped": 23,
-          "ok": true
-        }
-      ],
-      "axes": {
-        "correctness": null,
-        "adherence": null,
-        "guardrails": 1
-      },
-      "composite": 1,
-      "reference": {
-        "files": [
-          "android/build.gradle"
-        ],
-        "axes": {
-          "correctness": null,
-          "adherence": 1,
-          "guardrails": 1
-        },
-        "composite": 1,
-        "relative": {
-          "correctness": null,
-          "adherence": null,
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 43572,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0,
           "guardrails": 1,
-          "composite": 1
-        }
-      }
-    },
-    {
-      "id": "rn-37-upgrade-kotlin-gradle",
-      "title": "Upgrade React Native 0.73 → 0.74: Kotlin, AGP, and Gradle wrapper pair",
-      "suite": "upgrades",
-      "scaffoldable": false,
-      "generatedFiles": [
-        "src/android/build.gradle",
-        "src/android/gradle/wrapper/gradle-wrapper.properties"
-      ],
-      "guardrail": [
-        {
-          "path": "src/android/build.gradle",
-          "passed": 13,
-          "failed": 0,
-          "skipped": 23,
-          "ok": true
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:a822901a4a46029b844336a3161a0dd616ff60133a8055c83e65061de8885f45",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:7f3b1456c45f0eb1abd52826b2a666664b69084780598299c6a4cc8d1dd0f112",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 43571
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         },
         {
-          "path": "src/android/gradle/wrapper/gradle-wrapper.properties",
-          "passed": 13,
-          "failed": 0,
-          "skipped": 23,
-          "ok": true
-        }
-      ],
-      "axes": {
-        "correctness": null,
-        "adherence": null,
-        "guardrails": 1
-      },
-      "composite": 1,
-      "reference": {
-        "files": [
-          "android/build.gradle",
-          "android/gradle/wrapper/gradle-wrapper.properties"
-        ],
-        "axes": {
-          "correctness": null,
-          "adherence": 1,
-          "guardrails": 1
-        },
-        "composite": 1,
-        "relative": {
-          "correctness": null,
-          "adherence": null,
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 51348,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0,
           "guardrails": 1,
-          "composite": 1
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:a822901a4a46029b844336a3161a0dd616ff60133a8055c83e65061de8885f45",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:4c2a889821c4600de705f499219d6ff8f4ea068a0c6efd58e76cdc70de64846c",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 51347
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
         }
-      }
-    },
-    {
-      "id": "rn-38-upgrade-new-arch",
-      "title": "Upgrade React Native 0.73 → 0.74: enable the New Architecture",
-      "suite": "upgrades",
-      "scaffoldable": false,
-      "generatedFiles": [
-        "android/gradle.properties"
       ],
       "guardrail": [
         {
-          "path": "android/gradle.properties",
+          "path": "android/build.gradle",
           "passed": 13,
           "failed": 0,
           "skipped": 23,
-          "ok": true
+          "ok": true,
+          "failedRules": []
+        },
+        {
+          "path": "__tests__/smoke.test.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true,
+          "failedRules": []
         }
       ],
       "axes": {
@@ -2000,7 +4534,7 @@
       "composite": 0.5,
       "reference": {
         "files": [
-          "android/gradle.properties"
+          "android/build.gradle"
         ],
         "axes": {
           "correctness": null,
@@ -2017,6 +4551,203 @@
       }
     },
     {
+      "id": "rn-37-upgrade-kotlin-gradle",
+      "title": "Upgrade React Native 0.73 → 0.74: Kotlin, AGP, and Gradle wrapper pair",
+      "suite": "upgrades",
+      "scaffoldable": false,
+      "generatedFiles": [
+        "android/build.gradle",
+        "android/gradle/wrapper/gradle-wrapper.properties"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 46144,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:45057db440929ee7f3a72f57511576ec7dad58a34b59cafae9a4cd8ded91a57f",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:f1fa42daeb8efc81e495739699be3dda7953a6f95ded231e6134b2cb168c03ab",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 46144
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 54611,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:45057db440929ee7f3a72f57511576ec7dad58a34b59cafae9a4cd8ded91a57f",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:99a198b29a7193c566c3f3e43c86ea02d9638c45b3d278650374ad049b139115",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 54611
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "guardrail": [
+        {
+          "path": "android/build.gradle",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 23,
+          "ok": true,
+          "failedRules": []
+        },
+        {
+          "path": "android/gradle/wrapper/gradle-wrapper.properties",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 23,
+          "ok": true,
+          "failedRules": []
+        }
+      ],
+      "axes": {
+        "correctness": null,
+        "adherence": 0,
+        "guardrails": 1
+      },
+      "composite": 0.5,
+      "reference": {
+        "files": [
+          "android/build.gradle",
+          "android/gradle/wrapper/gradle-wrapper.properties"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": 0,
+          "guardrails": 1,
+          "composite": 0.5
+        }
+      }
+    },
+    {
+      "id": "rn-38-upgrade-new-arch",
+      "title": "Upgrade React Native 0.73 → 0.74: enable the New Architecture",
+      "suite": "upgrades",
+      "scaffoldable": false,
+      "generatedFiles": [
+        "android/gradle.properties"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 34370,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 1,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:2566fefdcd2290659398b972ae657eb8414b4746b5e4088d3691736b806e56e6",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:a0886eef66acf5bb26503b605735acda4947d76d2baf452086ac88d646c20b48",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 34370
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "guardrail": [
+        {
+          "path": "android/gradle.properties",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 23,
+          "ok": true,
+          "failedRules": []
+        }
+      ],
+      "axes": {
+        "correctness": null,
+        "adherence": 1,
+        "guardrails": 1
+      },
+      "composite": 1,
+      "reference": {
+        "files": [
+          "android/gradle.properties"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1
+        },
+        "composite": 1,
+        "relative": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 1,
+          "composite": 1
+        }
+      }
+    },
+    {
       "id": "rn-39-upgrade-deprecated-api",
       "title": "Upgrade React Native 0.73 → 0.74: deprecated StatusBar props removed",
       "suite": "upgrades",
@@ -2024,21 +4755,57 @@
       "generatedFiles": [
         "src/screens/HomeScreen.tsx"
       ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 34989,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 1,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:d3d94943544dd34e778d255152be74b877d09786e6dc4ac4159b186cfd527c91",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:78c4fec8d87baa240d56a4dde7426387bdcd438851567291a8d386eb972f7500",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 34988
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
       "guardrail": [
         {
           "path": "src/screens/HomeScreen.tsx",
-          "passed": 25,
-          "failed": 1,
+          "passed": 26,
+          "failed": 0,
           "skipped": 10,
-          "ok": false
+          "ok": true,
+          "failedRules": []
         }
       ],
       "axes": {
         "correctness": null,
-        "adherence": 0.25,
-        "guardrails": 0.9615384615384616
+        "adherence": 1,
+        "guardrails": 1
       },
-      "composite": 0.6057692307692307,
+      "composite": 1,
       "reference": {
         "files": [
           "src/screens/HomeScreen.tsx"
@@ -2051,9 +4818,9 @@
         "composite": 1,
         "relative": {
           "correctness": null,
-          "adherence": 0.25,
-          "guardrails": 0.9615384615384616,
-          "composite": 0.6057692307692307
+          "adherence": 1,
+          "guardrails": 1,
+          "composite": 1
         }
       }
     },
@@ -2063,23 +4830,51 @@
       "suite": "debugging",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/theme/tokens.ts",
         "src/screens/HomeScreen.tsx"
       ],
-      "guardrail": [
+      "attempts": [
         {
-          "path": "src/theme/tokens.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
-          "ok": true
-        },
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 36312,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 1,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:54144cbebea8c9e9fe5a615058b8a36deb34253fd133324b5886d113f5ebf0ee",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:7d7ac267d92a194b7d93b20b9ac34cc0cb41a72ceaa1307667d9bf35e452c5b6",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 36311
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "guardrail": [
         {
           "path": "src/screens/HomeScreen.tsx",
           "passed": 26,
           "failed": 0,
           "skipped": 10,
-          "ok": true
+          "ok": true,
+          "failedRules": []
         }
       ],
       "axes": {
@@ -2112,31 +4907,101 @@
       "suite": "debugging",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/ReleaseBuildCrashesStartupHerm/android/app/build.gradle",
-        "src/ReleaseBuildCrashesStartupHerm/src/index.tsx"
+        "android/gradle.properties",
+        "babel.config.js"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 34522,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.5,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:ebe29577da5ff9ef6786ef29ab982ae9f5546584abd725f49e3144002363f177",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:a3813e5d6f7cf1a9b0fe23e01d0a5f613a29f574b4428c420432b4087d2fa97d",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 34522
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 38319,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0.5,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:ebe29577da5ff9ef6786ef29ab982ae9f5546584abd725f49e3144002363f177",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:7b6b88da3767e228d79bd7f83a90864e641ca54f31aad5035342c997066c9154",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 38318
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
       ],
       "guardrail": [
         {
-          "path": "src/ReleaseBuildCrashesStartupHerm/android/app/build.gradle",
+          "path": "android/gradle.properties",
           "passed": 13,
           "failed": 0,
           "skipped": 23,
-          "ok": true
+          "ok": true,
+          "failedRules": []
         },
         {
-          "path": "src/ReleaseBuildCrashesStartupHerm/src/index.tsx",
-          "passed": 25,
+          "path": "babel.config.js",
+          "passed": 16,
           "failed": 0,
-          "skipped": 11,
-          "ok": true
+          "skipped": 20,
+          "ok": true,
+          "failedRules": []
         }
       ],
       "axes": {
         "correctness": null,
-        "adherence": null,
+        "adherence": 0.5,
         "guardrails": 1
       },
-      "composite": 1,
+      "composite": 0.75,
       "reference": {
         "files": [
           "android/gradle.properties",
@@ -2150,9 +5015,9 @@
         "composite": 1,
         "relative": {
           "correctness": null,
-          "adherence": null,
+          "adherence": 0.5,
           "guardrails": 1,
-          "composite": 1
+          "composite": 0.75
         }
       }
     },
@@ -2164,13 +5029,82 @@
       "generatedFiles": [
         "src/services/cart.ts"
       ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 31139,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:b2a216331a904f25eeff2bd01ac00694c08136bc9ac1cb5927bfbcd495054223",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:7ba2ebe040d5da55fa986c79325e9e563e35af42ba606a66d2730089cc7252fb",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 31139
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 32917,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:b2a216331a904f25eeff2bd01ac00694c08136bc9ac1cb5927bfbcd495054223",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:f35f06a38fa60c73c454ebfaf1de0702b4531d19394c0f2a2393ac99f29233c5",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 32917
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
       "guardrail": [
         {
           "path": "src/services/cart.ts",
           "passed": 18,
           "failed": 0,
           "skipped": 18,
-          "ok": true
+          "ok": true,
+          "failedRules": []
         }
       ],
       "axes": {
@@ -2206,20 +5140,90 @@
         "android/settings.gradle",
         "android/app/build.gradle"
       ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 37246,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:f38331db536267560aaeb023e339685f4d88689329fcace89a323e41fe0a8b5c",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:e88783f25350082f82a6f869e340fad00171710ebb9a15d12595a156c2136504",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 37245
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 41847,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 2,
+          "adherence": 0,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:f38331db536267560aaeb023e339685f4d88689329fcace89a323e41fe0a8b5c",
+          "maxAttempts": 3,
+          "requestDigest": "sha256:e51853f0ae296fda37c38b40b8b6d13e629f3d776ef4e4b6dec4e48d4b820760",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 41846
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
       "guardrail": [
         {
           "path": "android/settings.gradle",
           "passed": 13,
           "failed": 0,
           "skipped": 23,
-          "ok": true
+          "ok": true,
+          "failedRules": []
         },
         {
           "path": "android/app/build.gradle",
           "passed": 13,
           "failed": 0,
           "skipped": 23,
-          "ok": true
+          "ok": true,
+          "failedRules": []
         }
       ],
       "axes": {
@@ -2256,8 +5260,8 @@
         "rn-05-form-validation",
         "rn-13-account-delete-screen"
       ],
-      "composite": 0.7491015274034142,
-      "guardrails": 0.9811320754716982
+      "composite": 0.566432022084196,
+      "guardrails": 0.9119162640901771
     },
     {
       "suite": "data-flow",
@@ -2266,8 +5270,8 @@
         "rn-06-offline-queue",
         "rn-12-notifications-screen"
       ],
-      "composite": 0.7133720930232559,
-      "guardrails": 0.9418604651162791
+      "composite": 0.569469696969697,
+      "guardrails": 0.9398989898989899
     },
     {
       "suite": "core-ui",
@@ -2275,32 +5279,32 @@
         "rn-03-dark-mode-component",
         "rn-08-feature-flags"
       ],
-      "composite": 0.75,
-      "guardrails": 1
+      "composite": 0.7715116279069768,
+      "guardrails": 0.9883720930232558
     },
     {
       "suite": "navigation",
       "scenarioIds": [
         "rn-04-typed-navigation"
       ],
-      "composite": 0.68,
-      "guardrails": 0.92
+      "composite": 0.6323529411764706,
+      "guardrails": 0.9411764705882353
     },
     {
       "suite": "perf",
       "scenarioIds": [
         "rn-07-image-feed"
       ],
-      "composite": 0.7681318681318682,
-      "guardrails": 0.8461538461538461
+      "composite": 0.5884615384615385,
+      "guardrails": 0.9615384615384616
     },
     {
       "suite": "a11y",
       "scenarioIds": [
         "rn-09-accessible-form"
       ],
-      "composite": 0.8066666666666666,
-      "guardrails": 0.8888888888888888
+      "composite": 0.6607142857142857,
+      "guardrails": 0.8214285714285714
     },
     {
       "suite": "refactor",
@@ -2310,8 +5314,8 @@
         "rn-34-remove-sentry-sdk",
         "rn-35-remove-firebase-sdk"
       ],
-      "composite": 0.9017857142857143,
-      "guardrails": 1
+      "composite": 0.31879487179487176,
+      "guardrails": 0.4835897435897436
     },
     {
       "suite": "e-commerce",
@@ -2319,8 +5323,8 @@
         "rn-14-checkout-flow",
         "rn-15-product-search"
       ],
-      "composite": 0.5819590114526823,
-      "guardrails": 0.8874824191279886
+      "composite": 0.23392857142857143,
+      "guardrails": 0.44642857142857145
     },
     {
       "suite": "social-chat",
@@ -2328,8 +5332,8 @@
         "rn-16-chat-thread",
         "rn-17-social-feed"
       ],
-      "composite": 0.6230269730269731,
-      "guardrails": 0.91008991008991
+      "composite": 0.5983333333333334,
+      "guardrails": 0.9388888888888889
     },
     {
       "suite": "booking-payments",
@@ -2338,8 +5342,8 @@
         "rn-19-payment-methods",
         "rn-20-order-tracking"
       ],
-      "composite": 0.6867081447963801,
-      "guardrails": 0.9418049270990446
+      "composite": 0.362962962962963,
+      "guardrails": 0.6172839506172839
     },
     {
       "suite": "health-fitness",
@@ -2347,8 +5351,8 @@
         "rn-21-health-dashboard",
         "rn-22-workout-timer"
       ],
-      "composite": 0.569,
-      "guardrails": 0.98
+      "composite": 0.46602564102564104,
+      "guardrails": 0.8867521367521367
     },
     {
       "suite": "media",
@@ -2356,8 +5360,8 @@
         "rn-23-music-player",
         "rn-24-video-detail"
       ],
-      "composite": 0.6836538461538462,
-      "guardrails": 0.9038461538461539
+      "composite": 0.35,
+      "guardrails": 0.5
     },
     {
       "suite": "profile-onboarding",
@@ -2365,16 +5369,16 @@
         "rn-25-profile-edit",
         "rn-26-onboarding-wizard"
       ],
-      "composite": 0.6901190476190476,
-      "guardrails": 0.9144444444444444
+      "composite": 0.5305555555555556,
+      "guardrails": 0.9351851851851851
     },
     {
       "suite": "security",
       "scenarioIds": [
         "rn-27-biometric-gate"
       ],
-      "composite": 1,
-      "guardrails": null
+      "composite": 0.705,
+      "guardrails": 0.9333333333333333
     },
     {
       "suite": "productivity",
@@ -2382,16 +5386,16 @@
         "rn-28-document-list",
         "rn-29-task-board"
       ],
-      "composite": 0.7083552631578948,
-      "guardrails": 0.9528508771929824
+      "composite": 0.29400000000000004,
+      "guardrails": 0.48
     },
     {
       "suite": "commerce-subscriptions",
       "scenarioIds": [
         "rn-30-subscription-plans"
       ],
-      "composite": 0.6670454545454545,
-      "guardrails": 0.9318181818181818
+      "composite": 0,
+      "guardrails": 0
     },
     {
       "suite": "travel-weather",
@@ -2399,16 +5403,16 @@
         "rn-31-places-nearby",
         "rn-32-weather-forecast"
       ],
-      "composite": 0.4734395604395604,
-      "guardrails": 0.8638461538461539
+      "composite": 0,
+      "guardrails": 0
     },
     {
       "suite": "settings",
       "scenarioIds": [
         "rn-33-privacy-settings"
       ],
-      "composite": 0.690625,
-      "guardrails": 0.96875
+      "composite": 0.638095238095238,
+      "guardrails": 0.8888888888888888
     },
     {
       "suite": "upgrades",
@@ -2418,8 +5422,8 @@
         "rn-38-upgrade-new-arch",
         "rn-39-upgrade-deprecated-api"
       ],
-      "composite": 0.7764423076923077,
-      "guardrails": 0.9903846153846154
+      "composite": 0.75,
+      "guardrails": 1
     },
     {
       "suite": "debugging",
@@ -2429,12 +5433,12 @@
         "rn-42-debug-ts-regression",
         "rn-43-debug-linking"
       ],
-      "composite": 0.75,
+      "composite": 0.6875,
       "guardrails": 1
     }
   ],
-  "overallComposite": 0.7193496227122148,
-  "overallGuardrails": 0.9510927130107178,
-  "overallReferenceComposite": 0.8938238685420926,
-  "overallRelativeComposite": 0.8046881372981032
+  "overallComposite": 0.49383969756227314,
+  "overallGuardrails": 0.7497506061514395,
+  "overallReferenceComposite": 0.9072539302064075,
+  "overallRelativeComposite": 0.5371492411636598
 }
