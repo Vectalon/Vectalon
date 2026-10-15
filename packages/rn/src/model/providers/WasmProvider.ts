@@ -126,7 +126,7 @@ export class WasmProvider {
       if (!content) {
         throw new Error('the model returned an empty generation')
       }
-      return { content, provider: 'wasm' }
+      return { content, provider: 'wasm', model: { id: getWasmPreset().modelId, source: 'configured' } }
     } catch (err) {
       this.fallback = true
       reportError(err, 'Wasm model inference failed — falling back to the deterministic stub', 'warn')

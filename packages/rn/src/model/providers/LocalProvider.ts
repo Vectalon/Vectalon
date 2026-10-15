@@ -135,6 +135,7 @@ export class LocalProvider {
         return {
           content: result.content,
           provider: 'local',
+          model: { id: preset.id, source: 'configured' },
         }
       } catch (err) {
         this.fallback = true

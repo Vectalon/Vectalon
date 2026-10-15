@@ -121,6 +121,12 @@ export interface BenchGenerationAttempt {
   selected: boolean
   durationMs: number
   provider?: string
+  /** Identifier from the provider which returned this response; never inferred from the requested provider. */
+  model?: { id: string; source: 'configured' }
+  artifactIdentity: 'unverified'
+  /** SHA-256 fingerprints, not prompt/source disclosure or anonymization guarantees. */
+  taskDigest: string
+  requestDigest: string
   temperature: number
   maxTokens: number
   fileCount: number

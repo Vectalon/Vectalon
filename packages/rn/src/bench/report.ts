@@ -25,9 +25,11 @@ export function formatScenarioSection(run: BenchScenarioRun): string {
   lines.push(`Composite: **${composite}** · ${axisLine(run.axes)}`)
   for (const detail of run.correctnessDetails || []) lines.push(detail)
   if (run.attempts) {
-    lines.push(`Model calls: ${run.attempts.length}. Attempt scores are offline checks, not verified task completion.`)
+    lines.push(`Router calls: ${run.attempts.length}; internal provider retries/fallback calls are not counted. Attempt scores are offline checks, not verified task completion.`)
+    lines.push('Model artifact identity is unverified. Request fingerprints cover benchmark input before provider enrichment, not the final inference payload.')
     for (const attempt of run.attempts) {
       lines.push(`- Attempt ${attempt.index} (${attempt.kind}): ${attempt.status}${attempt.selected ? ' · selected' : ''} · ${attempt.durationMs}ms · ${axisLine({ correctness: null, adherence: attempt.adherence, guardrails: attempt.guardrails })}`)
+      lines.push(`  Provider: ${attempt.provider || 'unknown'} · configured model: ${attempt.model?.id || 'unknown'}`)
     }
   }
   if (run.reference) {

@@ -42,6 +42,7 @@ describe('RemoteProvider', () => {
 
     expect(response.content).toBe('hello from openai')
     expect(response.provider).toBe('openai')
+    expect(response.model).toEqual({ id: 'gpt-4o', source: 'configured' })
     expect(response.usage?.promptTokens).toBe(10)
     expect(response.usage?.totalTokens).toBe(15)
 

@@ -22,6 +22,7 @@ describe('WasmProvider', () => {
     const response = await provider.generate({ prompt: 'Write a hook' })
 
     expect(response.provider).toBe('wasm')
+    expect(response.model).toEqual({ id: 'onnx-community/Qwen2.5-Coder-0.5B-Instruct', source: 'configured' })
     expect(response.content).toBe('const x = 1')
     expect(mod.pipeline).toHaveBeenCalledWith(
       'text-generation',

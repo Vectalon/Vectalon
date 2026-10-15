@@ -357,9 +357,13 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
 - **Benchmark limits** — scores can include one repair attempt, not just the
   first response. Unreleased source reports now include `attempts`: initial,
   parse-retry and repair calls, selected candidate, provider, generation settings,
-  elapsed time and offline scores. These are not per-attempt native correctness
-  checks or proof of improvement; model artifact identity and paired runs remain
-  to be added. Attempt records omit generated source and provider error messages.
+  elapsed time and offline scores. They also retain the responding provider's
+  configured model ID and SHA-256 task/request fingerprints. Configured names
+  do not verify model weights; requests are fingerprinted before provider context
+  enrichment. Counts cover router calls, not internal retries/fallback calls.
+  These are not native correctness checks or proof of improvement; immutable
+  artifact identity and paired runs remain open. Attempt records omit generated
+  source and provider error messages; fingerprints are not anonymization.
   Empty model output or missing required files fails adherence;
   in model-backed runs, reference solutions satisfy the same required-file check.
   References include assistant-authored repairs and are not independently

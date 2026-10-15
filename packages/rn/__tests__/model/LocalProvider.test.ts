@@ -16,6 +16,7 @@ describe('LocalProvider', () => {
         prompt: context ? `\nContext:\n${context}\nCreate settings` : 'Create settings',
       }))
       expect(result.content).toBe('real model output')
+      expect(result.model).toEqual({ id: run.mock.calls[0][0], source: 'configured' })
       expect(provider.isFallback()).toBe(false)
     } finally {
       run.mockRestore()
@@ -40,6 +41,7 @@ describe('LocalProvider', () => {
     expect(response.content).toContain('project ctx')
     expect(response.content).toContain('Local model fallback')
     expect(response.provider).toBe('local')
+    expect(response.model).toBeUndefined()
   })
 
   it('becomes ready after the first generate', async () => {

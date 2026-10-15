@@ -152,6 +152,7 @@ export class RemoteProvider {
         totalTokens: data.usage?.total_tokens,
       },
       provider: this.provider,
+      model: { id: this.modelName, source: 'configured' },
     }
   }
 
@@ -202,6 +203,7 @@ export class RemoteProvider {
         totalTokens: data.usage?.total_tokens,
       },
       provider: this.provider,
+      model: { id: this.modelName, source: 'configured' },
     }
   }
 
@@ -238,6 +240,7 @@ export class RemoteProvider {
         outputTokens: data.usage?.output_tokens,
       },
       provider: this.provider,
+      model: { id: this.modelName, source: 'configured' },
     }
   }
 }

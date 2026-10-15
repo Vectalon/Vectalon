@@ -17,6 +17,7 @@ import { benchmarkSnapshot } from './snapshot'
 import { guardrailPassRate, guardrailPerFile, missingRequiredFiles } from './scoring'
 import { runRubric } from './rubric'
 import { runGuardrails } from '../guardrails'
+import { benchmarkFingerprint } from './fingerprint'
 import type { BenchGeneratedFile, BenchScenario, BenchGenerationAttempt } from './types'
 
 export interface ModelGenerateOptions {
@@ -125,10 +126,14 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       ...(onTextChunk ? { onTextChunk } : {}),
     }
     const attempts: BenchGenerationAttempt[] = []
+    const taskDigest = benchmarkFingerprint(scenario)
     async function attempt(kind: BenchGenerationAttempt['kind'], input: typeof request): Promise<BenchGeneratedFile[] | null> {
       const started = Date.now()
       const record: BenchGenerationAttempt = { index: attempts.length + 1, kind, status: 'error', selected: false,
-        durationMs: 0, temperature: input.temperature, maxTokens: input.maxTokens, fileCount: 0, adherence: 0, guardrails: 0 }
+        durationMs: 0, temperature: input.temperature, maxTokens: input.maxTokens, fileCount: 0, adherence: 0, guardrails: 0,
+        artifactIdentity: 'unverified', taskDigest,
+        requestDigest: benchmarkFingerprint({ systemPrompt: input.systemPrompt, prompt: input.prompt,
+          context: input.context, temperature: input.temperature, maxTokens: input.maxTokens }) }
       attempts.push(record)
       try {
         const response = await modelRouter.generate(input)
@@ -136,6 +141,7 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
         const content = response?.content || ''
         if (!content) { record.status = 'empty'; return null }
         if (isModelFallback(content)) { record.status = 'fallback'; return null }
+        if (response.model) record.model = { id: response.model.id, source: response.model.source }
         const parsed = parseModelOutput(content)
         if (!parsed) { record.status = 'invalid'; return null }
         const files = parsed.files.filter(file => typeof file.path === 'string' && file.path.length > 0 && typeof file.content === 'string')

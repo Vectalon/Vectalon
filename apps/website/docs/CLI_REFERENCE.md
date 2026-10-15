@@ -964,9 +964,13 @@ look like a freeze).
 Scores can include one repair attempt; they are not first-attempt success rates.
 Unreleased source reports include `attempts` for initial, parse-retry and repair
 calls, selected candidate, provider, settings, elapsed time and offline scores.
-These are not per-attempt native correctness checks or a controlled improvement
-comparison. Model artifact identity and paired runs remain to be added. Attempt
-records omit generated source and provider error messages.
+Records also include the responding provider's configured model ID and SHA-256
+task/request fingerprints. Names do not verify model weights; request fingerprints
+precede provider context enrichment. Counts cover router calls, not internal
+retries/fallback calls. These are not native correctness checks or a controlled
+improvement comparison. Immutable artifact identity and paired runs remain open.
+Attempt records omit generated source and provider error messages; fingerprints
+are not anonymization.
 Empty model output or missing required files fails adherence. In model-backed
 runs, reference solutions satisfy the same required-file check. References include
 assistant-authored repairs and are not independently qualified human baselines.

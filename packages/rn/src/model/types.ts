@@ -57,6 +57,8 @@ export interface ModelRequest {
 
 export interface ModelResponse {
   content: string
+  /** Serving identifier, not proof of an immutable weights artifact. Absent on deterministic fallbacks. */
+  model?: { id: string; source: 'configured' }
   usage?: {
     promptTokens?: number
     completionTokens?: number
