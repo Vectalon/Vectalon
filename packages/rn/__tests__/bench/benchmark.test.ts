@@ -38,6 +38,36 @@ function validScenario(overrides: Partial<BenchScenario> = {}): BenchScenario {
 }
 
 describe('bench scenario spec validation', () => {
+  it('records selected task provenance without disclosing fixture source or host paths', async () => {
+    const task = validScenario({ fixtures: { 'private.ts': 'const privateSourceMarker = 42' } })
+    const one = await runBenchmark([task])
+    const two = await runBenchmark([task])
+    const changed = await runBenchmark([{ ...task, prompt: 'different task' }])
+    const filtered = await runBenchmark([task, validScenario({ id: 'excluded', suite: 'other' })], { filter: { suite: task.suite } })
+    expect(one.provenance?.runId).not.toBe(two.provenance?.runId)
+    expect(one.provenance?.taskSetDigest).toBe(two.provenance?.taskSetDigest)
+    expect(one.provenance?.taskSetDigest).toBe(filtered.provenance?.taskSetDigest)
+    expect(one.provenance?.taskSetDigest).not.toBe(changed.provenance?.taskSetDigest)
+    expect(one.provenance?.runtime).toEqual({ node: process.version, platform: process.platform, arch: process.arch })
+    expect(one.provenance?.durationMs).toBeGreaterThanOrEqual(0)
+    expect(Number.isNaN(Date.parse(one.provenance!.startedAt))).toBe(false)
+    expect(JSON.stringify(one.provenance)).not.toContain('privateSourceMarker')
+    expect(JSON.stringify(one.provenance)).not.toContain(process.cwd())
+    expect(formatBenchmarkOverall(one)).toContain('equal budgets and independent task success are not established')
+    expect(formatBenchmarkOverall({ ...one, provenance: undefined })).toContain('Run provenance: unrecorded')
+  })
+
+  it('records requested execution settings without claiming successful native checks', async () => {
+    const summary = await runBenchmark([], { generate: () => [], live: true, install: true,
+      rubric: () => null, runCommand: jest.fn() })
+    expect(summary.provenance?.execution).toEqual({ generation: 'supplied', liveRequested: true,
+      installRequested: true, rubric: 'injected', executor: 'injected' })
+    expect(summary.runs).toEqual([])
+    const defaults = await runBenchmark([])
+    expect(defaults.provenance?.execution).toEqual({ generation: 'deterministic', liveRequested: false,
+      installRequested: false, rubric: 'default', executor: 'default' })
+  })
+
   it.each(['../escape.ts', '/tmp/escape.ts', 'C:/escape.ts', 'src\\escape.ts', '.', '', 'src/../escape.ts', 'src/escape.ts\0'])('rejects unsafe fixture, expected, and fix paths: %s', path => {
     expect(validateScenario(validScenario({ fixtures: { [path]: 'x' } }))).toContain('fixture path must be a normalized relative file path')
     expect(validateScenario(validScenario({ expect: { files: [path], behaviors: [] } }))).toContain('expect.files must contain normalized relative file paths')

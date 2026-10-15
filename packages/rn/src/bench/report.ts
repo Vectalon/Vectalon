@@ -75,6 +75,14 @@ export function formatBenchmarkHeader(summary: BenchSummary): string {
 /** The `---` + Overall block that closes the report (no trailing blank). */
 export function formatBenchmarkOverall(summary: BenchSummary): string {
   const lines: string[] = ['---', '']
+  const p = summary.provenance
+  if (p) {
+    lines.push(`Run: ${p.runId} · started ${p.startedAt} · ${p.durationMs}ms`)
+    lines.push(`Task set: ${p.taskSetDigest}`)
+    lines.push(`Runtime: ${p.runtime.node} · ${p.runtime.platform}/${p.runtime.arch}`)
+    lines.push(`Execution: ${p.execution.generation} generator · live requested: ${p.execution.liveRequested} · install requested: ${p.execution.installRequested} · executor: ${p.execution.executor} · rubric: ${p.execution.rubric}`)
+    lines.push('Observed metadata only: toolchain/dependency pinning, equal budgets and independent task success are not established by matching fingerprints.')
+  } else lines.push('Run provenance: unrecorded.')
   lines.push(
     `Overall composite: ${summary.overallComposite !== null ? `${(summary.overallComposite * 100).toFixed(0)}%` : 'n/a'}` +
       ` · Overall guardrails: ${summary.overallGuardrails !== null ? `${(summary.overallGuardrails * 100).toFixed(0)}%` : 'n/a'}`

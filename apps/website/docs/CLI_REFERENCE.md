@@ -962,6 +962,11 @@ scenario also announces the model-engine warm-up (the GGUF load that used to
 look like a freeze).
 
 Scores can include one repair attempt; they are not first-attempt success rates.
+Unreleased `provenance` records run ID/start/duration, selected-task fingerprint,
+Node/platform/architecture and requested execution modes in JSON and the closing
+report section. Hostnames, paths and environment variables are omitted. Matching
+fingerprints do not establish pinned dependencies, equal budgets or task success;
+older reports without metadata remain unrecorded.
 Unreleased source reports include `attempts` for initial, parse-retry and repair
 calls, selected candidate, provider, settings, elapsed time and offline scores.
 Records also include the responding provider's configured model ID and SHA-256

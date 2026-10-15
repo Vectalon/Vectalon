@@ -355,7 +355,11 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   a missing model or a local runtime/backend failure. Inspect the model output
   and per-scenario scores before changing code or model settings.
 - **Benchmark limits** — scores can include one repair attempt, not just the
-  first response. Unreleased source reports now include `attempts`: initial,
+  first response. Unreleased run `provenance` records a unique run ID, start time,
+  elapsed time, selected-task fingerprint, Node/platform/architecture, and requested
+  execution modes. It omits hostnames, paths and environment variables. This is
+  an observation, not a pinned toolchain or proof of comparable budgets; old
+  reports without metadata say unrecorded. Unreleased source reports also include `attempts`: initial,
   parse-retry and repair calls, selected candidate, provider, generation settings,
   elapsed time and offline scores. They also retain the responding provider's
   configured model ID and SHA-256 task/request fingerprints. Configured names

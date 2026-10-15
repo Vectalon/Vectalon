@@ -405,6 +405,8 @@ Bhishak owns the release decision. Each checked item needs an artifact or report
 
 ## Next action and audit boundary
 
+Run provenance follow-up: source JSON and closing terminal/file reports now retain a per-run ID, start/duration, selected-task digest, Node/platform/architecture and requested generation/live/install/executor/rubric modes. Hostnames, local paths and environment variables are excluded; missing legacy provenance remains unrecorded. These observations do not pin dependencies/toolchains or qualify equal budgets. Focused benchmark/CLI tests, build and lint verify this reporting slice; Core/Admin remain unchanged. The controlled experiment and resource-budget enforcement are still open.
+
 Next: **RN outcome slice A**, then B and C above, advancing the existing evaluation and real-model steps 6–8. Preserve the commercial/offer gates in Step 2; do not change tier grants while building evidence. The priority is a visible, reproducible improvement experiment, not additional commands or speculative SDKs.
 
 This planning change modifies only this document. It does not run the planned test suites, native builds, real inference, live checkout, production recovery, or registry/deployment verification. Earlier local test/build successes do not close the candidate release gates.

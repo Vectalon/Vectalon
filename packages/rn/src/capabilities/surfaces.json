@@ -2962,7 +2962,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.17.0.22.5.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.18.0.22.5.implementation.json"
     ]
   },
   {
@@ -2975,7 +2975,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.17.0.22.5.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.18.0.22.5.implementation.json"
     ]
   },
   {
@@ -2988,7 +2988,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.17.0.22.5.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.18.0.22.5.implementation.json"
     ]
   },
   {
@@ -3107,7 +3107,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.17.0.22.5.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.18.0.22.5.implementation.json"
     ]
   },
   {
@@ -3301,7 +3301,7 @@
     "kind": "claims",
     "name": "packages/rn/README.md",
     "source": "packages/rn/README.md",
-    "digest": "sha256:aef076c0eb4fb03ed01572e0edf996ded10715ad01ec6f9c901b7fe6781421cf",
+    "digest": "sha256:48ed7f82ae45a3ea0c3c9434c2b0feede0a17f769ee052c7e635e3e6550555c4",
     "historical": false,
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
@@ -4855,7 +4855,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.17.0.22.5.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.18.0.22.5.implementation.json"
     ]
   },
   {
@@ -5418,7 +5418,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.17.0.22.5.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.18.0.22.5.implementation.json"
     ]
   },
   {
@@ -5429,7 +5429,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.17.0.22.5.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.18.0.22.5.implementation.json"
     ]
   },
   {
@@ -5440,7 +5440,7 @@
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.evaluation.1.0.17.0.22.5.implementation.json"
+      "capabilities/evidence/rn.evaluation.1.0.18.0.22.5.implementation.json"
     ]
   },
   {

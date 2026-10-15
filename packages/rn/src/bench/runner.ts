@@ -1,6 +1,9 @@
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'fs'
 import { tmpdir } from 'os'
 import { join, dirname } from 'path'
+import { randomUUID } from 'crypto'
+import { performance } from 'perf_hooks'
+import { benchmarkFingerprint } from './fingerprint'
 import { generateAddFeatureImplementation } from '../workflows/phases/implementationPhase'
 import { benchmarkSnapshot } from './snapshot'
 import { compositeScore, guardrailPassRate, guardrailPerFile, missingRequiredFiles, CORRECTNESS_WEIGHTS } from './scoring'
@@ -244,6 +247,15 @@ export function shouldRunScenario(scenario: BenchScenario, filter: BenchRunOptio
 
 export async function runBenchmark(scenarios: BenchScenario[], options: BenchRunOptions = {}): Promise<BenchSummary> {
   const selected = scenarios.filter(s => shouldRunScenario(s, options.filter))
+  const started = performance.now()
+  const provenance: NonNullable<BenchSummary['provenance']> = {
+    runId: randomUUID(), startedAt: new Date().toISOString(), durationMs: 0,
+    taskSetDigest: benchmarkFingerprint(selected),
+    runtime: { node: process.version, platform: process.platform, arch: process.arch },
+    execution: { generation: options.generate ? 'supplied' : 'deterministic',
+      liveRequested: Boolean(options.live), installRequested: Boolean(options.install),
+      executor: options.runCommand ? 'injected' : 'default', rubric: options.rubric ? 'injected' : 'default' },
+  }
   const total = selected.length
   const runs: BenchScenarioRun[] = []
   for (let i = 0; i < total; i++) {
@@ -287,6 +299,7 @@ export async function runBenchmark(scenarios: BenchScenario[], options: BenchRun
 
   return {
     specVersion: scenarios[0]?.specVersion ?? 0,
+    provenance: { ...provenance, durationMs: Math.round(performance.now() - started) },
     runs,
     suites,
     overallComposite: average(allComposites),

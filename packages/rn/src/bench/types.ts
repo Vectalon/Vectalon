@@ -147,6 +147,21 @@ export interface BenchSuiteSummary {
 
 export interface BenchSummary {
   specVersion: number
+  /** Observed run metadata, not a pinned toolchain or proof of comparable budgets. */
+  provenance?: {
+    runId: string
+    startedAt: string
+    durationMs: number
+    taskSetDigest: string
+    runtime: { node: string; platform: string; arch: string }
+    execution: {
+      generation: 'supplied' | 'deterministic'
+      liveRequested: boolean
+      installRequested: boolean
+      executor: 'injected' | 'default'
+      rubric: 'injected' | 'default'
+    }
+  }
   runs: BenchScenarioRun[]
   suites: BenchSuiteSummary[]
   overallComposite: number | null
