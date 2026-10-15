@@ -2,7 +2,8 @@ import { getConfig } from '../config'
 import { LocalProvider } from './providers/LocalProvider'
 import { RemoteProvider } from './providers/RemoteProvider'
 import { WasmProvider } from './providers/WasmProvider'
-import type { ModelConfig, ModelRequest, ModelResponse, ModelProviderType } from './types'
+import type { ModelConfig, ModelRequest, ModelResponse, ModelProviderType, ModelProviderCall } from './types'
+import { isModelFallback } from './fallback'
 import { REMOTE_PROVIDERS } from './setup'
 import { wasmZeroConfigEnabled } from './zeroConfig'
 import { getDefaultPreset, getPreset } from './local/presets'
@@ -96,6 +97,7 @@ export class ModelRouter {
    */
   async generate(request: ModelRequest): Promise<ModelResponse> {
     const errors: string[] = []
+    const providerCalls: ModelProviderCall[] = []
     const primary = this.provider
 
     // 1. Primary attempt (with one retry for transient failures).
@@ -104,10 +106,10 @@ export class ModelRouter {
     } else {
       const attempts = this.circuitStateKnown(primary) ? 1 : 2
       for (let attempt = 1; attempt <= attempts; attempt++) {
-        const outcome = await this.tryPrimary(request)
+        const outcome = await this.tryPrimary(request, providerCalls)
         if (outcome.ok) {
           this.circuit.recordSuccess(primary)
-          return outcome.response
+          return { ...outcome.response, providerCalls }
         }
         this.circuit.recordFailure(primary)
         errors.push(outcome.error)
@@ -124,10 +126,10 @@ export class ModelRouter {
         errors.push(`${fallback.id} is short-circuited (circuit open) — skipping`)
         continue
       }
-      const result = await this.tryProvider(fallback)
+      const result = await this.tryProvider(fallback, providerCalls)
       if (result.ok) {
         this.circuit.recordSuccess(fallback.id)
-        return result.response
+        return { ...result.response, providerCalls }
       }
       this.circuit.recordFailure(fallback.id)
       errors.push(result.error)
@@ -135,7 +137,7 @@ export class ModelRouter {
 
     // 3. Last rung — the deterministic stub. Clear, honest, never throws.
     reportError(new Error(errors.join('; ')), 'ModelRouter: all providers failed, returning deterministic stub', 'warn')
-    return this.stubResponse(request, errors)
+    return { ...this.stubResponse(request, errors), providerCalls }
   }
 
   async getProviderStatus(): Promise<Record<string, boolean>> {
@@ -230,9 +232,9 @@ export class ModelRouter {
    * internally (they never throw) so their outcome is a success; remotes can
    * throw and surface here as a failure.
    */
-  private async tryPrimary(request: ModelRequest): Promise<{ ok: true; response: ModelResponse } | { ok: false; error: string }> {
+  private async tryPrimary(request: ModelRequest, calls: ModelProviderCall[]): Promise<{ ok: true; response: ModelResponse } | { ok: false; error: string }> {
     if (this.provider === 'wasm') {
-      return this.tryProvider({ id: 'wasm', run: () => this.getWasmProvider().generate(request) })
+      return this.tryProvider({ id: 'wasm', run: () => this.getWasmProvider().generate(request) }, calls)
     }
 
     if (this.provider === 'local' && this.localProvider) {
@@ -241,20 +243,20 @@ export class ModelRouter {
       await this.localProvider.initialize()
       const nativeReady = this.localProvider.isNativeAvailable() && hasDownloadedModel(this.activeLocalPresetId())
       if (nativeReady) {
-        return this.tryProvider({ id: 'local', run: () => this.localProvider!.generate(request) })
+        return this.tryProvider({ id: 'local', run: () => this.localProvider!.generate(request) }, calls)
       }
       // Zero-config tier: no GGUF model is downloaded — try the ONNX/WASM
       // runtime (downloads on first use) before degrading to the deterministic
       // stub, so `npm install` + `vectalon feature` works with zero setup.
       if (this.zeroConfigEnabled()) {
-        return this.tryProvider({ id: 'wasm', run: () => this.getWasmProvider().generate(request) })
+        return this.tryProvider({ id: 'wasm', run: () => this.getWasmProvider().generate(request) }, calls)
       }
-      return this.tryProvider({ id: 'local', run: () => this.localProvider!.generate(request) })
+      return this.tryProvider({ id: 'local', run: () => this.localProvider!.generate(request) }, calls)
     }
 
     const remoteProvider = this.remoteProviders.get(this.provider)
     if (remoteProvider) {
-      return this.tryProvider({ id: this.provider, run: () => remoteProvider.generate(request) })
+      return this.tryProvider({ id: this.provider, run: () => remoteProvider.generate(request) }, calls)
     }
 
     return { ok: false, error: `No provider available for: ${this.provider}` }
@@ -262,14 +264,20 @@ export class ModelRouter {
 
   /** Run one provider attempt, normalizing throws into a failure result. */
   private async tryProvider(
-    attempt: ProviderAttempt
+    attempt: ProviderAttempt, calls: ModelProviderCall[]
   ): Promise<{ ok: true; response: ModelResponse } | { ok: false; error: string }> {
+    const started = Date.now()
+    const call: ModelProviderCall = { provider: attempt.id, status: 'error', durationMs: 0 }
+    calls.push(call)
     try {
       const response = await attempt.run()
+      call.status = isModelFallback(response.content) ? 'fallback' : response.content.trim() ? 'response' : 'empty'
       return { ok: true, response }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
       return { ok: false, error: `${attempt.id} failed: ${message}` }
+    } finally {
+      call.durationMs = Date.now() - started
     }
   }
 

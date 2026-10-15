@@ -50,6 +50,7 @@ describe('ModelRouter', () => {
     const response = await router.generate({ prompt: 'hi' })
     expect(response.provider).toBe('openai')
     expect(response.content).toBe('remote reply')
+    expect(response.providerCalls).toEqual([{ provider: 'openai', status: 'response', durationMs: expect.any(Number) }])
   })
 
   it('reports provider status for local, wasm, and every remote provider', async () => {
@@ -65,6 +66,41 @@ describe('ModelRouter', () => {
       vllm: false,
       groq: false,
     })
+  })
+
+  it('retains failed retries before success and isolates each call trace', async () => {
+    global.fetch = jest.fn().mockRejectedValueOnce(new Error('private failure'))
+      .mockResolvedValue({ ok: true, json: async () => ({ choices: [{ message: { content: 'reply' } }] }) })
+    const router = new ModelRouter({ zeroConfigEnabled: false })
+    router.initialize({ provider: 'openai' })
+    const first = await router.generate({ prompt: 'private input' })
+    const second = await router.generate({ prompt: 'next input' })
+    expect(first.providerCalls?.map(call => call.status)).toEqual(['error', 'response'])
+    expect(second.providerCalls?.map(call => call.status)).toEqual(['response'])
+    expect(first.providerCalls).not.toBe(second.providerCalls)
+    expect(JSON.stringify(first.providerCalls)).not.toMatch(/private/)
+  })
+
+  it('retains remote failures before a successful WASM fallback', async () => {
+    global.fetch = jest.fn().mockRejectedValue(new Error('down'))
+    const mod = { env: {}, pipeline: jest.fn(async () => jest.fn(async () => [{ generated_text: 'fallback reply' }])) }
+    const router = new ModelRouter({ zeroConfigEnabled: true,
+      wasmProvider: new WasmProvider({ loadTransformers: async () => mod }) })
+    router.initialize({ provider: 'openai' })
+    const response = await router.generate({ prompt: 'hi' })
+    expect(response.providerCalls?.map(call => [call.provider, call.status])).toEqual([
+      ['openai', 'error'], ['openai', 'error'], ['wasm', 'response'],
+    ])
+    expect(response.providerCalls?.every(call => call.durationMs >= 0)).toBe(true)
+  })
+
+  it('labels empty provider output without treating it as model success', async () => {
+    global.fetch = jest.fn().mockResolvedValue({ ok: true,
+      json: async () => ({ choices: [{ message: { content: '   ' } }] }) })
+    const router = new ModelRouter()
+    router.initialize({ provider: 'openai' })
+    const response = await router.generate({ prompt: 'hi' })
+    expect(response.providerCalls?.map(call => call.status)).toEqual(['empty'])
   })
 
   it('reports a custom remote provider as ready when initialized', async () => {
@@ -124,6 +160,7 @@ describe('ModelRouter', () => {
     const response = await router.generate({ prompt: 'hi' })
     expect(response.provider).toBe('wasm')
     expect(response.content).toBe('zero-config reply')
+    expect(response.providerCalls?.map(call => call.provider)).toEqual(['wasm'])
     expect(router.isZeroConfigActive()).toBe(true)
     expect(router.getActiveLabel()).toContain('wasm')
   })
@@ -155,6 +192,7 @@ describe('ModelRouter', () => {
     const response = await router.generate({ prompt: 'hi' })
     expect(response.provider).toBe('local')
     expect(response.content).toContain('Local model fallback')
+    expect(response.providerCalls?.map(call => call.status)).toEqual(['fallback'])
     expect(loader).not.toHaveBeenCalled()
     expect(router.isZeroConfigActive()).toBe(false)
   })
@@ -170,6 +208,9 @@ describe('ModelRouter', () => {
     expect(response.provider).toBe('openai')
     expect(response.content).toContain('hi')
     expect(response.content).toContain('openai failed: connection refused')
+    expect(response.providerCalls).toHaveLength(2)
+    expect(response.providerCalls?.every(call => call.status === 'error')).toBe(true)
+    expect(JSON.stringify(response.providerCalls)).not.toContain('connection refused')
   })
 
   it('short-circuits a failing remote after 3 failures in 60s and recovers after the cooldown (P0-7)', async () => {
@@ -187,6 +228,7 @@ describe('ModelRouter', () => {
     const short = await router.generate({ prompt: 'x' })
     expect(fetchMock).toHaveBeenCalledTimes(3)
     expect(short.content).toContain('short-circuited')
+    expect(short.providerCalls).toEqual([])
     expect(circuit.snapshot('openai').state).toBe('open')
 
     // After the cooldown the circuit goes half-open and the remote is tried again.

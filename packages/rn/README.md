@@ -360,7 +360,10 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   elapsed time and offline scores. They also retain the responding provider's
   configured model ID and SHA-256 task/request fingerprints. Configured names
   do not verify model weights; requests are fingerprinted before provider context
-  enrichment. Counts cover router calls, not internal retries/fallback calls.
+  enrichment. `providerCalls` retains each router-invoked provider's status and
+  duration, including retries/fallbacks. Missing traces say unrecorded; circuit
+  skips and router stubs are not calls. Tokens, cost and provider-internal work
+  are not measured by this trace.
   These are not native correctness checks or proof of improvement; immutable
   artifact identity and paired runs remain open. Attempt records omit generated
   source and provider error messages; fingerprints are not anonymization.

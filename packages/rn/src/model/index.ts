@@ -16,6 +16,7 @@ export type {
   ModelConfig,
   ModelRequest,
   ModelResponse,
+  ModelProviderCall,
   ModelProviderType,
   ToolDefinition,
 } from './types'

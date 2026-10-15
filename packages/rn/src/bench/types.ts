@@ -8,6 +8,7 @@
  */
 
 import { isBenchmarkPath } from './fs'
+import type { ModelProviderCall } from '../model/types'
 
 export const SCENARIO_SPEC_VERSION = 1
 
@@ -121,6 +122,7 @@ export interface BenchGenerationAttempt {
   selected: boolean
   durationMs: number
   provider?: string
+  providerCalls?: ModelProviderCall[]
   /** Identifier from the provider which returned this response; never inferred from the requested provider. */
   model?: { id: string; source: 'configured' }
   artifactIdentity: 'unverified'

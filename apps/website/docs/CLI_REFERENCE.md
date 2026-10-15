@@ -966,8 +966,10 @@ Unreleased source reports include `attempts` for initial, parse-retry and repair
 calls, selected candidate, provider, settings, elapsed time and offline scores.
 Records also include the responding provider's configured model ID and SHA-256
 task/request fingerprints. Names do not verify model weights; request fingerprints
-precede provider context enrichment. Counts cover router calls, not internal
-retries/fallback calls. These are not native correctness checks or a controlled
+precede provider context enrichment. `providerCalls` retains router-invoked
+provider statuses and durations, including retries/fallbacks; missing traces
+say unrecorded. Circuit skips and router stubs are not calls. Tokens, cost and
+provider-internal work are not measured. These are not native correctness checks or a controlled
 improvement comparison. Immutable artifact identity and paired runs remain open.
 Attempt records omit generated source and provider error messages; fingerprints
 are not anonymization.

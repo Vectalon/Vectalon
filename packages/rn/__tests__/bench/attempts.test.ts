@@ -21,6 +21,17 @@ function generator(responses: Array<string | Error>) {
 }
 
 describe('model attempt evidence', () => {
+  it('retains provider failures on fallback output without copying private fields', async () => {
+    const generate = jest.fn().mockResolvedValue({ content: '[Model fallback: failed]', provider: 'openai',
+      providerCalls: [{ provider: 'openai', status: 'error', durationMs: 5, error: 'private credential', prompt: source }] })
+    const seam = createModelGenerate({ modelRouter: { generate } as unknown as ModelGenerateOptions['modelRouter'] })
+    const run = await runScenario(scenario, { generate: seam })
+    expect(run.attempts![0].providerCalls).toEqual([{ provider: 'openai', status: 'error', durationMs: 5 }])
+    expect(JSON.stringify(run)).not.toContain('private credential')
+    expect(JSON.stringify(run)).not.toContain(source)
+    expect(formatScenarioSection(run)).toContain('openai: error · 5ms')
+  })
+
   it('fingerprints JSON deterministically without ignoring meaningful changes', () => {
     expect(benchmarkFingerprint({ b: 2, a: { y: 1, x: 0 } })).toBe(benchmarkFingerprint({ a: { x: 0, y: 1 }, b: 2 }))
     expect(benchmarkFingerprint(['a', 'b'])).not.toBe(benchmarkFingerprint(['b', 'a']))
@@ -36,7 +47,8 @@ describe('model attempt evidence', () => {
     expect(run.attempts![0]).toMatchObject({ provider: 'local', model: { id: 'actual-fallback-model', source: 'configured' }, artifactIdentity: 'unverified' })
     expect(run.attempts![0].taskDigest).toMatch(/^sha256:[0-9a-f]{64}$/)
     expect(run.attempts![0].requestDigest).toMatch(/^sha256:[0-9a-f]{64}$/)
-    expect(formatScenarioSection(run)).toContain('internal provider retries/fallback calls are not counted')
+    expect(formatScenarioSection(run)).toContain('do not measure tokens, cost or provider-internal work')
+    expect(formatScenarioSection(run)).toContain('Provider invocations: unrecorded')
     expect(formatScenarioSection(run)).toContain('before provider enrichment')
   })
 

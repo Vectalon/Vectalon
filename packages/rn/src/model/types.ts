@@ -55,8 +55,16 @@ export interface ModelRequest {
   onTextChunk?: (text: string) => void
 }
 
+/** Router-observed provider invocations, not token usage or proof inference ran. */
+export interface ModelProviderCall {
+  provider: string
+  status: 'response' | 'empty' | 'fallback' | 'error'
+  durationMs: number
+}
+
 export interface ModelResponse {
   content: string
+  providerCalls?: ModelProviderCall[]
   /** Serving identifier, not proof of an immutable weights artifact. Absent on deterministic fallbacks. */
   model?: { id: string; source: 'configured' }
   usage?: {
