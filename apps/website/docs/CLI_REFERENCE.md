@@ -974,6 +974,13 @@ integer provider cap includes router retries/fallbacks per attempt. Caps are
 recorded, but do not pin the provider or bound time, input tokens, cost or
 provider-internal work. These are programmatic options, not CLI flags; CLI
 defaults are unchanged.
+For a task-only baseline, pass `promptMode: 'task-only'`: task files and acceptance
+requirements remain, generic JSON instructions replace RN guidance, and provider
+skills/memory/intelligence enrichment is disabled. This condition requires one
+generation attempt. Default `promptMode: 'vectalon'` retains existing guidance.
+Use both caps at 1 in both conditions for first-pass comparisons; model/environment
+identity and actual resource use still need separate verification. Condition labels
+alone do not establish improvement.
 Unreleased source reports include `attempts` for initial, parse-retry and repair
 calls, selected candidate, provider, settings, elapsed time and offline scores.
 Records also include the responding provider's configured model ID and SHA-256

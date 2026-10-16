@@ -97,9 +97,10 @@ export class RemoteProvider {
     // latest web intel (mirrors LocalProvider) so remote generations follow
     // the same best-practice guidance, learned project knowledge, and
     // current ecosystem decisions.
-    const skillsPrompt = enrichWithSkills(this.projectRoot, this.skillsLoader, baseSystem) ?? baseSystem
-    const memoryPrompt = enrichWithMemory(this.projectRoot, this.memoryLoader, skillsPrompt) ?? skillsPrompt
-    const systemPrompt = enrichWithIntel(this.projectRoot, this.intelLoader, memoryPrompt) ?? memoryPrompt
+    const projectRoot = request.projectContext === 'disabled' ? undefined : this.projectRoot
+    const skillsPrompt = enrichWithSkills(projectRoot, this.skillsLoader, baseSystem) ?? baseSystem
+    const memoryPrompt = enrichWithMemory(projectRoot, this.memoryLoader, skillsPrompt) ?? skillsPrompt
+    const systemPrompt = enrichWithIntel(projectRoot, this.intelLoader, memoryPrompt) ?? memoryPrompt
     const fullPrompt = `${context}${request.prompt}`
 
     if (this.kind === 'anthropic') {

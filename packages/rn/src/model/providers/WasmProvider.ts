@@ -109,9 +109,10 @@ export class WasmProvider {
 
   async generate(request: ModelRequest): Promise<ModelResponse> {
     const baseSystem = request.systemPrompt || RN_CODER_SYSTEM_PROMPT
-    const skillsPrompt = enrichWithSkills(this.projectRoot, this.skillsLoader, baseSystem) ?? baseSystem
-    const memoryPrompt = enrichWithMemory(this.projectRoot, this.memoryLoader, skillsPrompt) ?? skillsPrompt
-    const systemPrompt = enrichWithIntel(this.projectRoot, this.intelLoader, memoryPrompt) ?? memoryPrompt
+    const projectRoot = request.projectContext === 'disabled' ? undefined : this.projectRoot
+    const skillsPrompt = enrichWithSkills(projectRoot, this.skillsLoader, baseSystem) ?? baseSystem
+    const memoryPrompt = enrichWithMemory(projectRoot, this.memoryLoader, skillsPrompt) ?? skillsPrompt
+    const systemPrompt = enrichWithIntel(projectRoot, this.intelLoader, memoryPrompt) ?? memoryPrompt
 
     try {
       const generator = await this.getPipeline()

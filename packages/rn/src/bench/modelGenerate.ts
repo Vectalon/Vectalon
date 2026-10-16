@@ -22,6 +22,8 @@ import type { BenchGeneratedFile, BenchScenario, BenchGenerationAttempt } from '
 
 export interface ModelGenerateOptions {
   modelRouter: ModelRouter
+  /** Task-only retains fixture/acceptance inputs, disables project enrichment and never repairs. */
+  promptMode?: 'task-only' | 'vectalon'
   /** Override generation temperature (default 0.2, matching the harness). */
   temperature?: number
   /**
@@ -77,7 +79,10 @@ function repairFeedback(files: BenchGeneratedFile[], scenario: BenchScenario): s
 
 /** Build a generate seam that drives the real model for a scenario. */
 export function createModelGenerate(options: ModelGenerateOptions): (scenario: BenchScenario, onAttempts?: (attempts: BenchGenerationAttempt[]) => void) => Promise<BenchGeneratedFile[]> {
-  const { modelRouter, temperature = 0.2, maxTokens = 8192, maxAttempts = 3, providerCallLimit, onTextChunk } = options
+  const { modelRouter, temperature = 0.2, maxTokens = 8192, promptMode = 'vectalon', providerCallLimit, onTextChunk } = options
+  const maxAttempts = options.maxAttempts ?? (promptMode === 'task-only' ? 1 : 3)
+  if (promptMode !== 'task-only' && promptMode !== 'vectalon') throw new Error('Unknown benchmark promptMode')
+  if (promptMode === 'task-only' && maxAttempts !== 1) throw new Error('task-only requires maxAttempts: 1')
   if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 3) throw new Error('maxAttempts must be an integer from 1 to 3')
   if (providerCallLimit !== undefined && (!Number.isSafeInteger(providerCallLimit) || providerCallLimit < 1)) throw new Error('providerCallLimit must be a positive safe integer')
 
@@ -96,7 +101,7 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       : isFix
         ? { type: 'fix' as const, area: scenario.suite, description: scenario.prompt }
         : { type: 'add-feature' as const, feature: scenario.id, description: scenario.prompt }
-    const { systemPrompt, prompt } = buildImplementationPrompt({
+    const implementationPrompt = buildImplementationPrompt({
       snapshot,
       prompt: scenario.prompt,
       intent,
@@ -105,7 +110,13 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
     const fixtureBlock = Object.entries(scenario.fixtures || {})
       .map(([path, content]) => `--- ${path} ---\n${content}`)
       .join('\n\n')
-    const context = [
+    const systemPrompt = promptMode === 'task-only' ? 'Complete the requested coding task. Return only JSON: {"files":[{"path":"...","content":"..."}]}.' : implementationPrompt.systemPrompt
+    const prompt = promptMode === 'task-only' ? scenario.prompt : implementationPrompt.prompt
+    const context = promptMode === 'task-only' ? [
+      ...scenario.expect.files.map(path => `Required output file: ${path}`),
+      ...scenario.expect.behaviors.map(behavior => `Required behavior: ${behavior}`),
+      'Current project files (return each changed file with its complete new content):', fixtureBlock,
+    ].join('\n') : [
       `Project: ${snapshot.project.name}, React Native ${snapshot.project.reactNativeVersion}`,
       '',
       'Acceptance criteria for the final files (apply each item that is relevant):',
@@ -129,6 +140,7 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       context,
       maxTokens,
       temperature,
+      ...(promptMode === 'task-only' ? { projectContext: 'disabled' as const } : {}),
       ...(providerCallLimit !== undefined ? { providerCallLimit } : {}),
       ...(onTextChunk ? { onTextChunk } : {}),
     }
@@ -138,10 +150,10 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       const started = Date.now()
       const record: BenchGenerationAttempt = { index: attempts.length + 1, kind, status: 'error', selected: false,
         durationMs: 0, temperature: input.temperature, maxTokens: input.maxTokens, fileCount: 0, adherence: 0, guardrails: 0,
-        artifactIdentity: 'unverified', taskDigest, maxAttempts, providerCallLimit,
+        artifactIdentity: 'unverified', taskDigest, maxAttempts, providerCallLimit, promptMode,
         requestDigest: benchmarkFingerprint({ systemPrompt: input.systemPrompt, prompt: input.prompt,
           context: input.context, temperature: input.temperature, maxTokens: input.maxTokens,
-          maxAttempts, providerCallLimit }) }
+          maxAttempts, providerCallLimit, promptMode, projectContext: input.projectContext }) }
       attempts.push(record)
       try {
         const response = await modelRouter.generate(input)

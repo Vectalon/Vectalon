@@ -37,6 +37,8 @@ export interface ModelConfig {
 
 export interface ModelRequest {
   prompt: string
+  /** Disable project skills/memory/intelligence for a controlled task-only baseline. */
+  projectContext?: 'disabled'
   /** Optional router invocation cap, including retries/fallbacks; not a token or cost limit. */
   providerCallLimit?: number
   systemPrompt?: string

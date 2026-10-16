@@ -134,6 +134,7 @@ export interface BenchGenerationAttempt {
   temperature: number
   maxTokens: number
   maxAttempts?: number
+  promptMode?: 'task-only' | 'vectalon'
   providerCallLimit?: number
   fileCount: number
   adherence: number | null

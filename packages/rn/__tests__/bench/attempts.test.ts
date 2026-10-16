@@ -21,6 +21,38 @@ function generator(responses: Array<string | Error>, options: Partial<ModelGener
 }
 
 describe('model attempt evidence', () => {
+  it('isolates task-only prompts while retaining the same fixture and acceptance inputs', async () => {
+    const task = { ...scenario, fixtures: { 'src/value.ts': 'export const oldValue = 1' },
+      expect: { files: ['src/value.ts'], behaviors: ['export a typed constant'] },
+      fixEdits: [{ file: 'src/value.ts', find: 'oldValue', replace: 'HELD_OUT_ANSWER' }] }
+    const baseline = generator([answer('src/wrong.ts'), answer()], { promptMode: 'task-only' })
+    const harness = generator([answer()], { maxAttempts: 1 })
+    const baseRun = await runScenario(task, { generate: baseline.seam })
+    const harnessRun = await runScenario(task, { generate: harness.seam })
+    const baseRequest = baseline.generate.mock.calls[0][0]
+    const harnessRequest = harness.generate.mock.calls[0][0]
+    expect(baseline.generate).toHaveBeenCalledTimes(1)
+    expect(baseRequest.prompt).toBe(task.prompt)
+    expect(baseRequest.projectContext).toBe('disabled')
+    expect(harnessRequest.projectContext).toBeUndefined()
+    for (const request of [baseRequest, harnessRequest]) {
+      expect(request.context).toContain(task.fixtures['src/value.ts'])
+      expect(request.context).toContain('src/value.ts')
+      expect(request.context).toContain('export a typed constant')
+      expect(JSON.stringify(request)).not.toContain('HELD_OUT_ANSWER')
+    }
+    expect(baseRequest.context).not.toContain('SafeAreaView')
+    expect(harnessRequest.context).toContain('SafeAreaView')
+    expect(baseRun.attempts![0]).toMatchObject({ promptMode: 'task-only', maxAttempts: 1 })
+    expect(baseRun.attempts![0].taskDigest).toBe(harnessRun.attempts![0].taskDigest)
+    expect(baseRun.attempts![0].requestDigest).not.toBe(harnessRun.attempts![0].requestDigest)
+    expect(formatScenarioSection(baseRun)).toContain('Prompt condition: task-only')
+  })
+
+  it('rejects repair-enabled task-only runs', () => {
+    expect(() => generator([], { promptMode: 'task-only', maxAttempts: 2 })).toThrow('task-only requires')
+  })
+
   it.each(['not JSON', answer('src/wrong.ts')])('retains the first outcome without retry or repair when capped at one', async response => {
     const { generate, seam } = generator([response, answer()], { maxAttempts: 1, providerCallLimit: 1 })
     const run = await runScenario(scenario, { generate: seam })

@@ -112,9 +112,10 @@ export class LocalProvider {
     // otherwise the shared RN-focused default steers even a bare generate()
     // call toward idiomatic React Native.
     const basePrompt = request.systemPrompt || RN_CODER_SYSTEM_PROMPT
-    const skillsPrompt = enrichWithSkills(this.projectRoot, this.skillsLoader, basePrompt) ?? basePrompt
-    const memoryPrompt = enrichWithMemory(this.projectRoot, this.memoryLoader, skillsPrompt) ?? skillsPrompt
-    const systemPrompt = enrichWithIntel(this.projectRoot, this.intelLoader, memoryPrompt) ?? memoryPrompt
+    const projectRoot = request.projectContext === 'disabled' ? undefined : this.projectRoot
+    const skillsPrompt = enrichWithSkills(projectRoot, this.skillsLoader, basePrompt) ?? basePrompt
+    const memoryPrompt = enrichWithMemory(projectRoot, this.memoryLoader, skillsPrompt) ?? skillsPrompt
+    const systemPrompt = enrichWithIntel(projectRoot, this.intelLoader, memoryPrompt) ?? memoryPrompt
 
     const preset = this.resolvePreset()
     // Only attempt native inference when the optional node-llama-cpp module

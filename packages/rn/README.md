@@ -375,6 +375,12 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   Both caps are reported; they do not pin the provider or limit elapsed time,
   input tokens, cost or provider-internal work. These are programmatic options,
   not new CLI flags; existing CLI defaults remain unchanged.
+  For a task-only baseline, set `promptMode: 'task-only'`: it retains task files
+  and acceptance requirements with generic JSON instructions, disables provider
+  skills/memory/intelligence enrichment, and requires one generation attempt.
+  The default `promptMode: 'vectalon'` preserves RN guidance. Set both caps to 1
+  in both conditions for first-pass comparisons; record model/environment and
+  actual resource use separately. Condition labels alone do not prove improvement.
   Local GGUF inference records `artifact` (SHA-256 and byte size) from a streamed
   read before loading; the cache retains that observation and rejects file
   metadata changes during load, reuse or inference. Restart after replacing
