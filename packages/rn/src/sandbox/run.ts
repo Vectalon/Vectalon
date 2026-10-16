@@ -59,6 +59,21 @@ export async function runSandboxed(command: string, args: string[], options: San
   const started = Date.now()
   const { env, dropped } = scrubEnv(process.env, { allowEnv: options.allowEnv, env: options.env })
   const backend = detectBackend()
+  let readPaths: string[] | undefined
+  if (options.readPaths !== undefined) {
+    try {
+      if (backend.isolation !== 'sandbox-exec') throw new Error('Read confinement requires the macOS sandbox backend')
+      readPaths = options.readPaths.map(path => realpathSync(path))
+      env.TMPDIR = root
+      env.TMP = root
+      env.TEMP = root
+    } catch {
+      return { ok: false, exitCode: null, signal: null, stdout: '', stderr: '',
+        stdoutTruncated: false, stderrTruncated: false, durationMs: Date.now() - started,
+        timedOut: false, isolation: backend.isolation, droppedEnv: dropped,
+        error: 'Read confinement unavailable or an allowed path does not exist; command not started' }
+    }
+  }
   const script = buildLimitWrapper(options)
   const shellArgs = buildShellArgs(command, args, script)
   const network = options.network === true
@@ -67,7 +82,7 @@ export async function runSandboxed(command: string, args: string[], options: San
   let spawnArgs = shellArgs
   if (backend.isolation === 'sandbox-exec') {
     spawnCommand = '/usr/bin/sandbox-exec'
-    spawnArgs = ['-p', buildMacProfile(root, network), '/bin/sh', ...shellArgs]
+    spawnArgs = ['-p', buildMacProfile(root, network, readPaths), '/bin/sh', ...shellArgs]
   } else if (backend.isolation === 'bwrap') {
     spawnCommand = 'bwrap'
     spawnArgs = [...buildBwrapArgs(root, network), '/bin/sh', ...shellArgs]

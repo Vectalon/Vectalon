@@ -127,7 +127,7 @@ Run `npx --package @vectalon-dev/rn vectalon <command> --help` for detailed opti
 | `status` | One read-only health screen — daemon (pid/port/health), MCP reachability + tool count, model provider ready/degraded, last background refresh, license/trial days remaining, `.vectalon/` disk usage. Every probe is wrapped so one broken source degrades to a line. The first thing you ask a customer to run | — |
 | `bundle [dir]` | Metro bundle analysis and performance budgets — ASCII top-package bars in the terminal + optional interactive HTML treemap dashboard (`--open`) with drill-down and replacement suggestions | `--platform <ios\|android>`, `--static`, `--open`, `--no-html`, `--report <dir>` |
 | `profile [dir]` | Hermes runtime profiling: JS-thread blocking, retained objects, leak candidates, baselines + regressions | `--profile <file>`, `--heap <file>`, `--baseline <label>`, `--save-baseline`, `--threshold-ms <n>`, `--json` |
-| `sandbox` | Run a command in an isolated process with no ambient authority (scrubbed env, writes confined to the root, network denied by default) | `-- <command> [args...]`, `--root <dir>`, `--timeout <ms>`, `--cpu <s>`, `--memory <mb>`, `--network`, `--allow-env <names>`, `--json` |
+| `sandbox` | Run a command with scrubbed env and backend-dependent write/network confinement; default host reads remain allowed | `-- <command> [args...]`, `--root <dir>`, `--timeout <ms>`, `--cpu <s>`, `--memory <mb>`, `--network`, `--allow-env <names>`, `--json` |
 | `render [dir]` | Compile + headless-render generated TS/TSX in the sandbox — console logs, render tree, runtime errors before the diff | `--entry <file>`, `--file <file>`, `--timeout <ms>`, `--memory <mb>`, `--json` |
 | `ci [dir]` | Self-healing CI workflow generator (EAS; GitHub Actions / Azure Pipelines / GitLab CI / Bitbucket Pipelines — detected from the git remote) | `--provider <host>` · `--dry-run` |
 | `release [dir]` | Autonomous release pipeline: bump, changelog, E2E submit, crash-rate monitor (z-score anomaly detection + auto-rollout gate) | `--version`, `--changelog`, `--submit`, `--monitor`, `--baseline`, `--zscore <n>`, `--hours`, `--json` |
@@ -930,7 +930,15 @@ Start a 14-day free trial: `npx --package @vectalon-dev/rn vectalon auth --githu
 - **M15** — Figma-to-code pipeline (design → component → tests)
 - **M16** — Maestro/Detox E2E flow generation and execution
 - **M17** — Performance regression detection (bundle budgets, startup time)
-- **V-1** — Sandboxed code execution: isolated processes with no ambient authority (env scrub, write/network confinement, rlimits) — the trust foundation for the Metro sandbox (I-4) and the self-healing CI loop
+- **V-1** — Sandboxed code execution: env scrub, backend-dependent write/network confinement and rlimits. Default host reads and macOS shared `/tmp` writes remain allowed; not a credential-free execution environment.
+
+Unreleased source API `runSandboxed(command, args, { root, readPaths: [...] })`
+opts into macOS content-read confinement, with root, system runtime paths and explicit
+canonical toolchain/dependency grants. Metadata stays visible. Temporary files and
+writes stay in root (plus `/dev/null`); missing grants and unsupported backends refuse
+execution. Use a private disposable root without secrets; never grant a home or
+credential directory. CLI/MCP defaults are unchanged. This does not qualify native
+builds or provide VM-level isolation.
 - **M18** — Crash-rate anomaly detection and auto-rollout gates
 - **M19** — Custom model provider support (Azure, Ollama, vLLM, Groq)
 - **M20** — Enterprise SSO and RBAC for team brain

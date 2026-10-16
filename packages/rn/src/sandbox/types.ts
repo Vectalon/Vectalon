@@ -21,6 +21,11 @@ export interface SandboxOptions {
    * Must exist.
    */
   root: string
+  /** Opt into macOS read confinement. Only root, system runtime paths and these
+   * canonical paths are readable. Unsupported backends refuse execution.
+   * Pass only reviewed toolchain/dependency paths; never a credential directory.
+   * Metadata remains readable. Temporary files stay in root. */
+  readPaths?: string[]
   /** Hard wall-clock timeout in ms. Default 30_000. */
   timeoutMs?: number
   /** CPU time limit in seconds (ulimit -t). Default: none. */

@@ -5,8 +5,8 @@
  * Three tiers of isolation, strongest first:
  *
  *  1. `sandbox-exec` (macOS) — an SBPL seatbelt profile restricts file writes
- *     to the sandbox root and denies outbound network by default. This is the
- *     real "no filesystem/network outside the sandbox" guarantee on macOS.
+ *     to root plus shared tmp and denies network by default. Opt-in readPaths
+ *     confines content reads and removes shared temporary write access.
  *  2. `bwrap` (bubblewrap, Linux) — `--unshare-net` denies network and the
  *     read-only root bind confines writes to the sandbox root.
  *  3. `process` — no OS confinement; we still scrub the environment, apply
@@ -62,9 +62,25 @@ function commandExists(command: string): boolean {
  * - deny-by-default, then import the system profile for normal process behavior
  * - allow reads anywhere, but writes only inside the sandbox root + tmp
  * - deny outbound network unless `network` is true
+ * With readPaths, allow only root, system runtime content and explicit grants;
+ * filesystem metadata remains visible. Do not grant directories with secrets.
  */
-export function buildMacProfile(root: string, network: boolean): string {
-  const escapedRoot = resolve(root).replace(/"/g, '\\"')
+export function buildMacProfile(root: string, network: boolean, readPaths?: string[]): string {
+  const pathLiteral = (path: string): string => JSON.stringify(resolve(path))
+  if (readPaths !== undefined) {
+    return [
+      '(version 1)', '(deny default)',
+      '(import "dyld-support.sb")',
+      '(allow syscall*)',
+      '(allow process-exec process-fork)',
+      '(allow sysctl-read)',
+      '(allow file-read-metadata)',
+      `(allow file-read* file-map-executable ${[root, '/System', '/usr/lib', '/usr/share', '/bin', '/usr/bin', ...readPaths].map(path => `(subpath ${pathLiteral(path)})`).join(' ')} (literal "/dev/null") (literal "/dev/urandom") (literal "/dev/random"))`,
+      `(allow file-write* (subpath ${pathLiteral(root)}) (literal "/dev/null"))`,
+      network ? '(allow network*)' : '(deny network*)',
+    ].join('\n')
+  }
+  const escapedRoot = pathLiteral(root)
   const networkRule = network ? '(allow network*)' : '(deny network*)'
   return [
     '(version 1)',
@@ -72,7 +88,7 @@ export function buildMacProfile(root: string, network: boolean): string {
     '(import "system.sb")',
     '(allow process*)',
     '(allow file-read*)',
-    `(allow file-write* (subpath "${escapedRoot}") (subpath "/private/tmp") (subpath "/dev/null") (subpath "/tmp"))`,
+    `(allow file-write* (subpath ${escapedRoot}) (subpath "/private/tmp") (subpath "/dev/null") (subpath "/tmp"))`,
     '(allow sysctl-read)',
     networkRule,
   ].join('\n')

@@ -1561,12 +1561,22 @@ npx --package @vectalon-dev/rn vectalon profile --profile app.cpuprofile --basel
 
 ## `sandbox`
 
-Run a command in an **isolated process with no ambient authority** — the
-trust foundation for running generated code, tests, and scripts. The
-environment is scrubbed to a deny-by-default allowlist, file writes are
+Run a command with **environment scrubbing and backend-dependent confinement**.
+The default CLI permits host filesystem reads; macOS also permits shared `/tmp`
+writes. It is not a credential-free environment for untrusted generated code.
+Environment variables are filtered, other file writes are
 confined to the sandbox root (OS-enforced on macOS/Linux), network is denied
 by default, and the run is bounded by a wall-clock timeout plus optional CPU /
 memory limits. Requires the **Pro tier**.
+
+Unreleased source API: `runSandboxed(command, args, { root, readPaths: [...] })`
+opts into macOS content-read confinement. Root, system runtime paths and explicit
+canonical grants remain readable; metadata is still visible. Writes and temporary
+files stay in root (plus `/dev/null`). Unsupported backends or missing grants fail
+before execution. Include the executable and reviewed dependency paths; never grant
+home directories, credentials or an unreviewed project tree. Use a private disposable
+root containing no secrets, and keep network disabled. This is not a VM or a complete
+native-toolchain qualification. CLI/MCP defaults do not enable this source-only option.
 
 ```bash
 npx --package @vectalon-dev/rn vectalon sandbox -- node -e 'console.log("hello")'        # run inside the project dir

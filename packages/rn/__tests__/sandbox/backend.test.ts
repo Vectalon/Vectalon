@@ -24,6 +24,15 @@ describe('detectBackend', () => {
 })
 
 describe('buildMacProfile', () => {
+  it('limits strict reads and writes without importing broader system rules', () => {
+    const profile = buildMacProfile('/private/tmp/task', false, ['/opt/runtime'])
+    expect(profile).not.toContain('(allow file-read*)')
+    expect(profile).not.toContain('(import "system.sb")')
+    expect(profile).toContain('(subpath "/opt/runtime")')
+    expect(profile).toContain('(allow file-write* (subpath "/private/tmp/task") (literal "/dev/null"))')
+    expect(profile).not.toContain('(subpath "/private/tmp")')
+  })
+
   it('denies network by default and confines writes to the root', () => {
     const profile = buildMacProfile('/tmp/sandbox', false)
     expect(profile).toContain('(version 1)')

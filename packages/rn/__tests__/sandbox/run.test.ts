@@ -1,7 +1,8 @@
-import { mkdirSync, realpathSync } from 'fs'
+import { mkdirSync, mkdtempSync, realpathSync, symlinkSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import { runSandboxed } from '../../src/sandbox/run'
+import * as backend from '../../src/sandbox/backend'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
 function sandboxRoot(): string {
@@ -11,6 +12,59 @@ function sandboxRoot(): string {
 }
 
 describe('runSandboxed', () => {
+  it('refuses strict execution when the backend cannot confine reads', async () => {
+    const root = sandboxRoot()
+    const detect = jest.spyOn(backend, 'detectBackend').mockReturnValue({ isolation: 'process', canDenyNetwork: false, canConfineWrites: false })
+    try {
+      const result = await runSandboxed('node', ['-e', 'console.log("STARTED")'], { root, readPaths: [] })
+      expect(result.error).toContain('command not started')
+      expect(result.stdout).toBe('')
+    } finally { detect.mockRestore(); cleanup(root) }
+  })
+
+  it('refuses missing strict read grants without starting the command', async () => {
+    const root = sandboxRoot()
+    try {
+      const result = await runSandboxed('node', ['-e', 'console.log("STARTED")'], {
+        root, readPaths: [join(root, 'missing')],
+      })
+      expect(result.ok).toBe(false)
+      expect(result.error).toContain('command not started')
+      expect(result.stdout).toBe('')
+    } finally { cleanup(root) }
+  })
+
+  ;(process.platform === 'darwin' ? it : it.skip)('confines file content reads, symlink escapes and shared tmp writes on macOS', async () => {
+    const outside = createTempProject({ 'canary': 'SYNTHETIC_SECRET', 'dependency': 'reviewed' })
+    const root = createTempProject({ 'input': 'approved' })
+    const sharedTmp = mkdtempSync('/private/tmp/vectalon-canary-')
+    try {
+      symlinkSync(join(outside, 'canary'), join(root, 'escape'))
+      const result = await runSandboxed(process.execPath, ['-e', `
+        const fs = require('fs');
+        const assert = require('assert');
+        assert.equal(fs.readFileSync('input', 'utf8'), 'approved');
+        assert.equal(fs.readFileSync(${JSON.stringify(join(outside, 'dependency'))}, 'utf8'), 'reviewed');
+        for (const path of [${JSON.stringify(join(outside, 'canary'))}, 'escape']) {
+          assert.throws(() => fs.readFileSync(path), /EPERM|EACCES/);
+        }
+        assert.throws(() => fs.writeFileSync(${JSON.stringify(join(outside, 'write'))}, 'bad'), /EPERM|EACCES/);
+        assert.throws(() => fs.writeFileSync(${JSON.stringify(join(sharedTmp, 'write'))}, 'bad'), /EPERM|EACCES/);
+        const child = require('child_process').spawnSync(process.execPath, ['-e',
+          'require("fs").readFileSync(' + ${JSON.stringify(JSON.stringify(join(outside, 'canary')))} + ')']);
+        assert.equal(child.status, 1, JSON.stringify({ error: child.error?.message, signal: child.signal, stderr: child.stderr?.toString() }));
+        assert.match(child.stderr.toString(), /EPERM|EACCES/);
+        fs.writeFileSync(require('path').join(require('os').tmpdir(), 'allowed'), 'ok');
+        require('net').createServer().once('error', error => {
+          assert.match(error.code, /EPERM|EACCES/);
+          console.log('CONFINED');
+        }).listen(0, '127.0.0.1', () => { throw new Error('Network unexpectedly allowed'); });
+      `], { root, readPaths: [process.execPath, join(outside, 'dependency')], timeoutMs: 15_000, maxProcesses: 4096 })
+      expect(result).toMatchObject({ ok: true, stderr: '', signal: null, exitCode: 0 })
+      expect(result.stdout.trim()).toBe('CONFINED')
+    } finally { cleanup(root); cleanup(outside); cleanup(sharedTmp) }
+  })
+
   it('runs a command in the sandbox root and captures stdout', async () => {
     const root = sandboxRoot()
     try {
