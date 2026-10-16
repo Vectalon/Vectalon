@@ -1,44 +1,44 @@
 # RN Coding Tests — Model Leaderboard
 
-_Generated: 2026-10-15T09:46:31.328Z · spec v1 · 4 model(s) · 43 scenario(s)_
+_Generated: 2026-10-16T09:41:36.274Z · spec v1 · 4 model(s) · 43 scenario(s)_
 
 ## Composite
 
 | Scenario | baseline | local | local-3b | local-7b |
 | --- | --- | --- | --- | --- |
-| rn-01-login-screen | 100% | 47% | 45% | 59% |
+| rn-01-login-screen | 100% | 59% | 45% | 59% |
 | rn-02-flatlist-fetch | 100% | 63% | 63% | 83% |
 | rn-03-dark-mode-component | — | 80% | 65% | 100% |
-| rn-04-typed-navigation | — | 63% | 48% | 100% |
-| rn-05-form-validation | 100% | 60% | 100% | 100% |
-| rn-06-offline-queue | 100% | 48% | 36% | 100% |
-| rn-07-image-feed | — | 59% | 100% | 100% |
-| rn-08-feature-flags | — | 74% | 100% | 100% |
+| rn-04-typed-navigation | — | 71% | 48% | 100% |
+| rn-05-form-validation | 100% | 66% | 100% | 100% |
+| rn-06-offline-queue | 100% | 47% | 36% | 100% |
+| rn-07-image-feed | — | 70% | 100% | 100% |
+| rn-08-feature-flags | — | 71% | 100% | 100% |
 | rn-09-accessible-form | — | 66% | 73% | 100% |
 | rn-10-refactor-hooks-ts | — | 79% | 40% | 75% |
 | rn-11-remove-dependency-native | 99% | 0% | n/a | n/a |
-| rn-12-notifications-screen | 100% | 60% | 64% | 100% |
-| rn-13-account-delete-screen | 100% | 64% | 70% | 100% |
+| rn-12-notifications-screen | 100% | 69% | 64% | 100% |
+| rn-13-account-delete-screen | 100% | 49% | 70% | 100% |
 | rn-14-checkout-flow | — | 47% | — | 100% |
 | rn-15-product-search | — | 0% | — | 100% |
 | rn-16-chat-thread | — | 58% | — | 100% |
 | rn-17-social-feed | — | 61% | — | 100% |
 | rn-18-booking-slots | — | 0% | — | 100% |
-| rn-19-payment-methods | — | 49% | — | 100% |
-| rn-20-order-tracking | — | 60% | — | 100% |
-| rn-21-health-dashboard | — | 47% | — | 100% |
+| rn-19-payment-methods | — | 47% | — | 100% |
+| rn-20-order-tracking | — | 57% | — | 100% |
+| rn-21-health-dashboard | — | 49% | — | 100% |
 | rn-22-workout-timer | — | 47% | — | 100% |
-| rn-23-music-player | — | 70% | — | 100% |
+| rn-23-music-player | — | 50% | — | 100% |
 | rn-24-video-detail | — | 0% | — | 100% |
-| rn-25-profile-edit | — | 48% | — | 100% |
-| rn-26-onboarding-wizard | — | 58% | — | 100% |
-| rn-27-biometric-gate | — | 71% | — | 100% |
+| rn-25-profile-edit | — | 47% | — | 100% |
+| rn-26-onboarding-wizard | — | 66% | — | 100% |
+| rn-27-biometric-gate | — | 60% | — | 100% |
 | rn-28-document-list | — | 59% | — | 100% |
 | rn-29-task-board | — | 0% | — | 100% |
-| rn-30-subscription-plans | — | 0% | — | 100% |
-| rn-31-places-nearby | — | 0% | — | 100% |
+| rn-30-subscription-plans | — | 57% | — | 100% |
+| rn-31-places-nearby | — | 47% | — | 100% |
 | rn-32-weather-forecast | — | 0% | — | 100% |
-| rn-33-privacy-settings | — | 64% | — | 100% |
+| rn-33-privacy-settings | — | 66% | — | 100% |
 | rn-34-remove-sentry-sdk | 99% | 49% | — | — |
 | rn-35-remove-firebase-sdk | 99% | 0% | — | — |
 | rn-36-upgrade-compile-sdk | 100% | 50% | — | 100% |
@@ -49,20 +49,20 @@ _Generated: 2026-10-15T09:46:31.328Z · spec v1 · 4 model(s) · 43 scenario(s)_
 | rn-41-debug-hermes-crash | 100% | 75% | — | 75% |
 | rn-42-debug-ts-regression | 100% | 50% | — | 50% |
 | rn-43-debug-linking | 100% | 50% | — | 50% |
-| **Overall** | 100% | 49% | 67% | 92% |
+| **Overall** | 100% | 52% | 67% | 92% |
 
 ## Correctness
 
 | Scenario | baseline | local | local-3b | local-7b |
 | --- | --- | --- | --- | --- |
-| rn-01-login-screen | n/a | 50% | 0% | 50% |
+| rn-01-login-screen | n/a | 75% | 0% | 50% |
 | rn-02-flatlist-fetch | n/a | 50% | 50% | 75% |
 | rn-03-dark-mode-component | — | 50% | 50% | 100% |
 | rn-04-typed-navigation | — | 50% | 50% | 100% |
 | rn-05-form-validation | n/a | 50% | 100% | 100% |
 | rn-06-offline-queue | n/a | 50% | 0% | 100% |
-| rn-07-image-feed | — | 75% | 100% | 100% |
-| rn-08-feature-flags | — | 75% | 100% | 100% |
+| rn-07-image-feed | — | 50% | 100% | 100% |
+| rn-08-feature-flags | — | 50% | 100% | 100% |
 | rn-09-accessible-form | — | 50% | 50% | 100% |
 | rn-10-refactor-hooks-ts | — | 50% | 0% | 75% |
 | rn-11-remove-dependency-native | n/a | 0% | n/a | n/a |
@@ -74,18 +74,18 @@ _Generated: 2026-10-15T09:46:31.328Z · spec v1 · 4 model(s) · 43 scenario(s)_
 | rn-17-social-feed | — | 50% | — | 100% |
 | rn-18-booking-slots | — | 0% | — | 100% |
 | rn-19-payment-methods | — | 50% | — | 100% |
-| rn-20-order-tracking | — | 50% | — | 100% |
+| rn-20-order-tracking | — | 75% | — | 100% |
 | rn-21-health-dashboard | — | 50% | — | 100% |
 | rn-22-workout-timer | — | 50% | — | 100% |
-| rn-23-music-player | — | 100% | — | 100% |
+| rn-23-music-player | — | 50% | — | 100% |
 | rn-24-video-detail | — | 0% | — | 100% |
 | rn-25-profile-edit | — | 50% | — | 100% |
-| rn-26-onboarding-wizard | — | 75% | — | 100% |
-| rn-27-biometric-gate | — | 50% | — | 100% |
+| rn-26-onboarding-wizard | — | 50% | — | 100% |
+| rn-27-biometric-gate | — | 75% | — | 100% |
 | rn-28-document-list | — | 75% | — | 100% |
 | rn-29-task-board | — | 0% | — | 100% |
-| rn-30-subscription-plans | — | 0% | — | 100% |
-| rn-31-places-nearby | — | 0% | — | 100% |
+| rn-30-subscription-plans | — | 75% | — | 100% |
+| rn-31-places-nearby | — | 50% | — | 100% |
 | rn-32-weather-forecast | — | 0% | — | 100% |
 | rn-33-privacy-settings | — | 50% | — | 100% |
 | rn-34-remove-sentry-sdk | n/a | n/a | — | — |
@@ -106,36 +106,36 @@ _Generated: 2026-10-15T09:46:31.328Z · spec v1 · 4 model(s) · 43 scenario(s)_
 | rn-01-login-screen | 100% | 0% | 57% | 50% |
 | rn-02-flatlist-fetch | 100% | 50% | 50% | 83% |
 | rn-03-dark-mode-component | — | 100% | 50% | n/a |
-| rn-04-typed-navigation | — | 50% | 0% | n/a |
-| rn-05-form-validation | 100% | 43% | n/a | n/a |
+| rn-04-typed-navigation | — | 75% | 0% | n/a |
+| rn-05-form-validation | 100% | 63% | n/a | n/a |
 | rn-06-offline-queue | 100% | 0% | 33% | n/a |
-| rn-07-image-feed | — | 0% | n/a | n/a |
-| rn-08-feature-flags | — | 50% | n/a | n/a |
-| rn-09-accessible-form | — | 71% | 80% | n/a |
+| rn-07-image-feed | — | 71% | n/a | n/a |
+| rn-08-feature-flags | — | n/a | n/a | n/a |
+| rn-09-accessible-form | — | 67% | 80% | n/a |
 | rn-10-refactor-hooks-ts | — | 100% | 44% | n/a |
 | rn-11-remove-dependency-native | 100% | 0% | n/a | n/a |
-| rn-12-notifications-screen | 100% | 38% | 50% | n/a |
-| rn-13-account-delete-screen | 100% | 50% | 75% | n/a |
+| rn-12-notifications-screen | 100% | 67% | 50% | n/a |
+| rn-13-account-delete-screen | 100% | 0% | 75% | n/a |
 | rn-14-checkout-flow | — | 0% | — | n/a |
 | rn-15-product-search | — | 0% | — | n/a |
 | rn-16-chat-thread | — | 0% | — | n/a |
 | rn-17-social-feed | — | 44% | — | n/a |
 | rn-18-booking-slots | — | 0% | — | n/a |
 | rn-19-payment-methods | — | 0% | — | n/a |
-| rn-20-order-tracking | — | 44% | — | n/a |
+| rn-20-order-tracking | — | 0% | — | n/a |
 | rn-21-health-dashboard | — | 0% | — | n/a |
 | rn-22-workout-timer | — | 0% | — | n/a |
 | rn-23-music-player | — | 0% | — | n/a |
 | rn-24-video-detail | — | 0% | — | n/a |
 | rn-25-profile-edit | — | 0% | — | n/a |
-| rn-26-onboarding-wizard | — | 0% | — | n/a |
-| rn-27-biometric-gate | — | 75% | — | n/a |
+| rn-26-onboarding-wizard | — | 60% | — | n/a |
+| rn-27-biometric-gate | — | 0% | — | n/a |
 | rn-28-document-list | — | 0% | — | n/a |
 | rn-29-task-board | — | 0% | — | n/a |
 | rn-30-subscription-plans | — | 0% | — | n/a |
 | rn-31-places-nearby | — | 0% | — | n/a |
 | rn-32-weather-forecast | — | 0% | — | n/a |
-| rn-33-privacy-settings | — | 57% | — | n/a |
+| rn-33-privacy-settings | — | 63% | — | n/a |
 | rn-34-remove-sentry-sdk | 100% | 0% | — | — |
 | rn-35-remove-firebase-sdk | 100% | 0% | — | — |
 | rn-36-upgrade-compile-sdk | 100% | 0% | — | 100% |
@@ -151,16 +151,16 @@ _Generated: 2026-10-15T09:46:31.328Z · spec v1 · 4 model(s) · 43 scenario(s)_
 
 | Scenario | baseline | local | local-3b | local-7b |
 | --- | --- | --- | --- | --- |
-| rn-01-login-screen | 100% | 89% | 94% | 81% |
+| rn-01-login-screen | 100% | 98% | 94% | 81% |
 | rn-02-flatlist-fetch | 100% | 93% | 93% | 92% |
 | rn-03-dark-mode-component | — | 100% | 100% | n/a |
-| rn-04-typed-navigation | — | 94% | 94% | n/a |
-| rn-05-form-validation | 100% | 89% | n/a | n/a |
-| rn-06-offline-queue | 100% | 93% | 86% | n/a |
-| rn-07-image-feed | — | 96% | n/a | n/a |
-| rn-08-feature-flags | — | 98% | n/a | n/a |
-| rn-09-accessible-form | — | 82% | 96% | n/a |
-| rn-10-refactor-hooks-ts | — | 96% | 90% | n/a |
+| rn-04-typed-navigation | — | 96% | 94% | n/a |
+| rn-05-form-validation | 100% | 91% | n/a | n/a |
+| rn-06-offline-queue | 100% | 91% | 86% | n/a |
+| rn-07-image-feed | — | 94% | n/a | n/a |
+| rn-08-feature-flags | — | 100% | n/a | n/a |
+| rn-09-accessible-form | — | 86% | 96% | n/a |
+| rn-10-refactor-hooks-ts | — | 98% | 90% | n/a |
 | rn-11-remove-dependency-native | 98% | 0% | n/a | n/a |
 | rn-12-notifications-screen | 100% | 95% | 97% | n/a |
 | rn-13-account-delete-screen | 100% | 96% | 91% | n/a |
@@ -169,21 +169,21 @@ _Generated: 2026-10-15T09:46:31.328Z · spec v1 · 4 model(s) · 43 scenario(s)_
 | rn-16-chat-thread | — | 94% | — | n/a |
 | rn-17-social-feed | — | 93% | — | n/a |
 | rn-18-booking-slots | — | 0% | — | n/a |
-| rn-19-payment-methods | — | 96% | — | n/a |
+| rn-19-payment-methods | — | 89% | — | n/a |
 | rn-20-order-tracking | — | 89% | — | n/a |
-| rn-21-health-dashboard | — | 88% | — | n/a |
+| rn-21-health-dashboard | — | 96% | — | n/a |
 | rn-22-workout-timer | — | 89% | — | n/a |
 | rn-23-music-player | — | 100% | — | n/a |
 | rn-24-video-detail | — | 0% | — | n/a |
-| rn-25-profile-edit | — | 93% | — | n/a |
-| rn-26-onboarding-wizard | — | 94% | — | n/a |
-| rn-27-biometric-gate | — | 93% | — | n/a |
+| rn-25-profile-edit | — | 89% | — | n/a |
+| rn-26-onboarding-wizard | — | 93% | — | n/a |
+| rn-27-biometric-gate | — | 100% | — | n/a |
 | rn-28-document-list | — | 96% | — | n/a |
 | rn-29-task-board | — | 0% | — | n/a |
-| rn-30-subscription-plans | — | 0% | — | n/a |
-| rn-31-places-nearby | — | 0% | — | n/a |
+| rn-30-subscription-plans | — | 89% | — | n/a |
+| rn-31-places-nearby | — | 88% | — | n/a |
 | rn-32-weather-forecast | — | 0% | — | n/a |
-| rn-33-privacy-settings | — | 89% | — | n/a |
+| rn-33-privacy-settings | — | 91% | — | n/a |
 | rn-34-remove-sentry-sdk | 98% | 97% | — | — |
 | rn-35-remove-firebase-sdk | 98% | 0% | — | — |
 | rn-36-upgrade-compile-sdk | 100% | 100% | — | 100% |
@@ -194,7 +194,7 @@ _Generated: 2026-10-15T09:46:31.328Z · spec v1 · 4 model(s) · 43 scenario(s)_
 | rn-41-debug-hermes-crash | 100% | 100% | — | 100% |
 | rn-42-debug-ts-regression | 100% | 100% | — | 100% |
 | rn-43-debug-linking | 100% | 100% | — | 100% |
-| **Overall** | 100% | 75% | 93% | 96% |
+| **Overall** | 100% | 80% | 93% | 96% |
 
 ## Relative to reference (overall)
 
@@ -203,7 +203,7 @@ Reference authorship and independent review are unverified. Ratios compare rubri
 | Model | Relative composite | Reference composite |
 | --- | --- | --- |
 | baseline | 107% | 94% |
-| local | 54% | 91% |
+| local | 57% | 91% |
 | local-3b | 76% | 89% |
 | local-7b | 114% | 89% |
 
