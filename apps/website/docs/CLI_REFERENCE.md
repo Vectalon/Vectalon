@@ -982,6 +982,15 @@ Qwen2.5-Coder-1.5B weights are required. The runner prints a local report direct
 `--include-generated` opts into source/raw diagnostics. Exit zero means execution
 completed, not candidate success. The recorded pilot passed 0/3 in both conditions;
 it establishes neither improvement nor native-build qualification.
+Add `--repair` for three verification-assisted diagnostics (up to two generations
+each), not an equal-budget comparison with first-pass results. The first repair
+diagnostic timed out; a subsequent complete run passed 0/3. No improvement is
+established. Source callers can supply
+`verify(files)` returning `{ passed, feedback }`; the caller must bound/isolate
+execution and exclude secrets/held-out answers. Up to 4,000 feedback characters
+reach the repair prompt, not reports. Attempts record verification status/time
+separately from static scores. Repairs require passing verification and no static
+regression; verifier errors retain parsed output without claiming success.
 For a task-only baseline, pass `promptMode: 'task-only'`: task files and acceptance
 requirements remain, generic JSON instructions replace RN guidance, and provider
 skills/memory/intelligence enrichment is disabled. This condition requires one

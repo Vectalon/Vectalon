@@ -136,6 +136,8 @@ export interface BenchGenerationAttempt {
   maxAttempts?: number
   promptMode?: 'task-only' | 'vectalon'
   providerCallLimit?: number
+  /** Caller-supplied verification, separate from offline rubric/native task qualification. */
+  verification?: { status: 'passed' | 'failed' | 'error'; durationMs: number }
   fileCount: number
   adherence: number | null
   guardrails: number | null

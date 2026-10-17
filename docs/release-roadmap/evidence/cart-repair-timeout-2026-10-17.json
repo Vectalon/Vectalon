@@ -1,0 +1,20 @@
+{
+  "kind": "development-pilot-timeout-summary",
+  "revision": "5b095590b1322566b7d1b1b17b8f37893a6307b8",
+  "startedAt": "2026-10-17T03:56:10.156Z",
+  "runnerSha256": "d0e0bf85331d14177f8936f8eadcb373999f98340bb0aa039418b981a228a8ca",
+  "settings": { "temperature": 0.2, "maxTokens": 2048, "maxAttempts": 2, "providerCallLimit": 1 },
+  "deadlineMs": 180000,
+  "runs": [
+    { "repetition": 1, "condition": "vectalon-verified-repair", "status": "timeout" },
+    { "repetition": 2, "condition": "vectalon-verified-repair", "status": "not-run" },
+    { "repetition": 3, "condition": "vectalon-verified-repair", "status": "not-run" }
+  ],
+  "limitations": [
+    "Runner and verifier changes were uncommitted on the recorded revision",
+    "No final attempt or phase evidence; timeout cause unproven",
+    "Twice the allowed generations of first-pass pilot; not an equal-budget comparison",
+    "One public development task, reused dependencies, no native build",
+    "No model improvement established"
+  ]
+}

@@ -21,6 +21,69 @@ function generator(responses: Array<string | Error>, options: Partial<ModelGener
 }
 
 describe('model attempt evidence', () => {
+  it('repairs a verification failure even when static scores pass, keeping feedback out of reports', async () => {
+    const verify = jest.fn().mockResolvedValueOnce({ passed: false, feedback: 'COMPILER_DIAGNOSTIC' })
+      .mockResolvedValueOnce({ passed: true, feedback: '' })
+    const { seam, generate } = generator([answer(), answer()], { verify, maxAttempts: 2 })
+    const run = await runScenario(scenario, { generate: seam })
+    expect(generate).toHaveBeenCalledTimes(2)
+    expect(generate.mock.calls[1][0].prompt).toContain('COMPILER_DIAGNOSTIC')
+    expect(run.attempts?.map(a => [a.verification?.status, a.selected])).toEqual([['failed', false], ['passed', true]])
+    expect(JSON.stringify(run)).not.toContain('COMPILER_DIAGNOSTIC')
+    expect(formatScenarioSection(run)).toContain('Supplied verifier: failed')
+  })
+
+  it.each(['failed', 'error'])('rejects a statically improved repair when its verifier is %s', async status => {
+    const verify = jest.fn().mockResolvedValueOnce({ passed: false, feedback: 'missing file' })
+    if (status === 'error') verify.mockRejectedValueOnce(new Error('PRIVATE_ERROR'))
+    else verify.mockResolvedValueOnce({ passed: false, feedback: 'still wrong' })
+    const { seam } = generator([answer('src/wrong.ts'), answer()], { verify })
+    const run = await runScenario(scenario, { generate: seam })
+    expect(run.generatedFiles).toEqual(['src/wrong.ts'])
+    expect(run.attempts?.[1].verification?.status).toBe(status)
+    expect(JSON.stringify(run)).not.toContain('PRIVATE_ERROR')
+  })
+
+  it('records verifier errors without hiding parsed output or starting speculative repair', async () => {
+    const { seam, generate } = generator([answer()], { verify: async () => { throw new Error('PRIVATE_ERROR') } })
+    const run = await runScenario(scenario, { generate: seam })
+    expect(generate).toHaveBeenCalledTimes(1)
+    expect(run.attempts?.[0]).toMatchObject({ status: 'parsed', verification: { status: 'error' }, selected: true })
+    expect(JSON.stringify(run)).not.toContain('PRIVATE_ERROR')
+  })
+
+  it('keeps task-only generation capped when supplied verification fails', async () => {
+    const { seam, generate } = generator([answer()], { promptMode: 'task-only', verify: async () => ({ passed: false, feedback: 'failed' }) })
+    const run = await runScenario(scenario, { generate: seam })
+    expect(generate).toHaveBeenCalledTimes(1)
+    expect(run.attempts?.[0].verification?.status).toBe('failed')
+  })
+
+  it('does not let a passing verifier waive static regressions', async () => {
+    const verify = jest.fn().mockResolvedValueOnce({ passed: false, feedback: 'wrong value' })
+      .mockResolvedValueOnce({ passed: true, feedback: '' })
+    const worse = JSON.stringify({ files: [{ path: 'src/value.ts', content: 'export const privateFixtureValue: any = 42;' }] })
+    const { seam } = generator([answer(), worse], { verify })
+    const run = await runScenario(scenario, { generate: seam, includeGenerated: true })
+    expect(run.generatedArtifacts?.[0].content).toBe(source)
+    expect(run.attempts?.map(a => a.selected)).toEqual([true, false])
+  })
+
+  it('treats malformed verifier results as errors', async () => {
+    const { seam, generate } = generator([answer()], { verify: jest.fn().mockResolvedValue({ passed: 'yes', feedback: '' }) })
+    const run = await runScenario(scenario, { generate: seam })
+    expect(run.attempts?.[0].verification?.status).toBe('error')
+    expect(generate).toHaveBeenCalledTimes(1)
+  })
+
+  it('passes copies to the verifier so it cannot silently replace generated source', async () => {
+    const { seam } = generator([answer()], { verify: async files => {
+      files[0].content = 'not generated'; return { passed: true, feedback: '' }
+    } })
+    const run = await runScenario(scenario, { generate: seam, includeGenerated: true })
+    expect(run.generatedArtifacts?.[0].content).toBe(source)
+  })
+
   it('isolates task-only prompts while retaining the same fixture and acceptance inputs', async () => {
     const task = { ...scenario, fixtures: { 'src/value.ts': 'export const oldValue = 1' },
       expect: { files: ['src/value.ts'], behaviors: ['export a typed constant'] },

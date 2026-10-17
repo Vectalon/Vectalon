@@ -383,6 +383,16 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   into retaining source/raw diagnostics. Exit zero means the runner completed,
   not that candidates passed. The recorded pilot passed 0/3 in both conditions;
   no model improvement or native-build qualification is claimed.
+  Add `--repair` for three verification-assisted diagnostics with at most two
+  generations each—not an equal-budget comparison with the first-pass pilot.
+  The initial repair diagnostic timed out; a subsequent complete run passed 0/3.
+  No improvement is established.
+  Source callers may supply `verify(files)` returning `{ passed, feedback }`.
+  Keep this callback bounded and isolated, and exclude secrets/held-out answers
+  from feedback. Up to 4,000 feedback characters reach the repair prompt, not
+  reports. Attempt verification status/time is separate from static scores;
+  a repair must pass verification without regressing static checks to be selected.
+  Verifier errors retain parsed output without claiming verification success.
   For a task-only baseline, set `promptMode: 'task-only'`: it retains task files
   and acceptance requirements with generic JSON instructions, disables provider
   skills/memory/intelligence enrichment, and requires one generation attempt.

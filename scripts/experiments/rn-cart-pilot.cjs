@@ -31,17 +31,19 @@ const scenario = {
   fixtures, expect: { files: [target], behaviors: ['setQuantity implements the stated semantics while preserving existing cart operations'] },
   correctness: { tests: true, typecheck: true, lint: false }, axes: ['correctness', 'adherence', 'guardrails'],
 };
-const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: 1, providerCallLimit: 1 };
+const repair = process.argv.includes('--repair');
+const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair ? 2 : 1, providerCallLimit: 1 };
 const report = { kind: 'development-pilot', revision, startedAt: new Date().toISOString(),
   runnerSha256: hash(fs.readFileSync(__filename)), appArchiveSha256: hash(archive.stdout),
   acceptanceSha256: hash(acceptance), taskSha256: hash(JSON.stringify(scenario)),
   runtime: { node: process.version, platform: process.platform, arch: process.arch }, settings,
   model: 'qwen2.5-coder-1.5b', expectedArtifactSha256: 'cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046',
-  limitations: ['No native build', 'Installed dependencies reused', 'Tokens/cost not measured', 'No human correction-time measurement', 'One public development task; not launch qualification'],
-  runs: Array.from({ length: 3 }, (_, repetition) => (repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
+  limitations: ['No native build', 'Installed dependencies reused', 'Tokens/cost not measured', 'No human correction-time measurement', 'One public development task; not launch qualification',
+    ...(repair ? ['Repair diagnostic permits twice the generation budget of the first-pass pilot; not an equal-budget comparison'] : [])],
+  runs: Array.from({ length: 3 }, (_, repetition) => (repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
 const save = () => fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report,
   (key, value) => !process.argv.includes('--include-generated') && ['generatedArtifacts', 'stdout', 'stderr'].includes(key) ? undefined : value, 2));
-async function verify(files) {
+async function verify(files, deadline = Infinity) {
   const root = fs.mkdtempSync('/private/tmp/vectalon-cart-check-');
   try {
     assert.equal(spawnSync('tar', ['-x', '--strip-components=4', '-C', root], { input: archive.stdout }).status, 0);
@@ -56,9 +58,11 @@ async function verify(files) {
       ['typecheck', [path.join(app, 'node_modules/typescript/bin/tsc'), '--noEmit']],
       ['tests', [path.join(app, 'node_modules/jest/bin/jest.js'), '--runInBand', '--no-watchman']],
     ]) {
+      const remainingMs = deadline - Date.now();
+      assert(remainingMs > 0, 'Verification deadline exhausted');
       const result = await runSandboxed(process.execPath, args, { root,
         readPaths: [process.execPath, path.join(app, 'node_modules'), path.join(repo, 'node_modules')],
-        timeoutMs: 60000, maxProcesses: 4096 });
+        timeoutMs: Math.min(60000, remainingMs), maxProcesses: 4096 });
       checks[name] = { ok: result.ok, exitCode: result.exitCode, timedOut: result.timedOut,
         isolation: result.isolation, durationMs: result.durationMs, stdout: result.stdout, stderr: result.stderr };
     }
@@ -68,6 +72,7 @@ async function verify(files) {
 async function main() {
   save();
   console.log(`Evidence: ${output}`);
+  await assert.rejects(verify([], 0), /Verification deadline exhausted/);
   report.negativeControl = await verify([]);
   save();
   assert.equal(report.negativeControl.typecheck.ok, false, 'Acceptance unexpectedly passes unchanged app');
@@ -89,23 +94,50 @@ async function main() {
   assert.equal(report.positiveControl.tests.ok, true, 'Verifier control does not satisfy acceptance');
   if (process.argv.includes('--preflight')) return;
   for (const row of report.runs) {
-    row.status = 'running'; save();
+    row.status = 'running'; row.phase = 'generation'; row.verifications = []; save();
     console.log(`Start ${row.repetition} ${row.condition}`);
-    const timer = setTimeout(() => { row.status = 'timeout'; save(); process.exit(1); }, 180000);
+    const deadline = Date.now() + 180000;
+    const timer = setTimeout(() => {
+      row.status = 'timeout'; save();
+      // Let the sandbox kill its process group and clean its root before exiting.
+      if (row.phase !== 'verification') process.exit(1);
+    }, 180000);
     try {
       const router = new ModelRouter({ zeroConfigEnabled: false });
       router.initialize({ provider: 'local', modelName: report.model });
-      const generate = createModelGenerate({ modelRouter: router, promptMode: row.condition, ...settings });
+      const verified = new Map();
+      const verifier = async files => {
+        row.phase = 'verification';
+        const verification = { status: 'running', generatedArtifacts: files };
+        row.verifications.push(verification); save();
+        let checks;
+        try { checks = await verify(files, deadline); }
+        catch (error) { verification.status = Date.now() >= deadline ? 'timeout' : 'error'; save(); throw error; }
+        verification.status = checks.typecheck.ok && checks.tests.ok ? 'passed' : 'failed';
+        verification.checks = checks;
+        row.phase = 'generation'; save();
+        assert(Date.now() < deadline, 'Verification deadline exhausted');
+        verified.set(hash(JSON.stringify(files)), checks);
+        // Only diagnostics for the generated file; never acceptance source/assertions.
+        const diagnostics = checks.typecheck.stdout.split('\n').filter(line => line.startsWith(`${target}(`));
+        return { passed: checks.typecheck.ok && checks.tests.ok,
+          feedback: [...diagnostics, ...(!checks.tests.ok ? ['Task/project tests failed. Recheck the original requirements.'] : []),
+            ...(!checks.typecheck.ok ? ['Typecheck failed. Preserve the requested public interface.'] : [])].join('\n') };
+      };
+      const generate = createModelGenerate({ modelRouter: router, promptMode: repair ? 'vectalon' : row.condition,
+        ...settings, ...(repair ? { verify: verifier } : {}) });
       row.result = await runScenario(scenario, { generate, includeGenerated: true });
+      if (Date.now() >= deadline) { row.status = 'timeout'; save(); process.exitCode = 1; break; }
       clearTimeout(timer);
-      const attempt = row.result.attempts?.[0];
-      row.identityMatched = attempt?.provider === 'local' && attempt?.artifact?.sha256 === report.expectedArtifactSha256;
+      row.identityMatched = Boolean(row.result.attempts?.length) && row.result.attempts.every(attempt =>
+        attempt.provider === 'local' && attempt.artifact?.sha256 === report.expectedArtifactSha256);
       const files = row.result.generatedArtifacts || [];
-      if (files.length === 1 && files[0].path === target && row.identityMatched) row.checks = await verify(files);
+      if (files.length === 1 && files[0].path === target && row.identityMatched) row.checks = verified.get(hash(JSON.stringify(files))) || await verify(files);
       row.status = row.checks?.typecheck.ok && row.checks?.tests.ok ? 'passed' : 'failed';
+      row.phase = 'complete';
     } catch { row.status = 'error'; }
     finally { clearTimeout(timer); save(); }
     console.log(`End ${row.repetition} ${row.condition}: ${row.status}`);
   }
 }
-main().then(() => process.exit(0)).catch(() => { report.error = 'Pilot failed; retained partial evidence'; save(); process.exit(1); });
+main().then(() => process.exit(process.exitCode || 0)).catch(() => { report.error = 'Pilot failed; retained partial evidence'; save(); process.exit(1); });
