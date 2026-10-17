@@ -974,6 +974,14 @@ integer provider cap includes router retries/fallbacks per attempt. Caps are
 recorded, but do not pin the provider or bound time, input tokens, cost or
 provider-internal work. These are programmatic options, not CLI flags; CLI
 defaults are unchanged.
+Checkout-only macOS development pilot: after the RN build, run
+`node scripts/experiments/rn-cart-pilot.cjs --preflight` from the repository root
+to check acceptance controls without inference. Omit `--preflight` for six real
+first-pass generations; installed demo dependencies and downloaded
+Qwen2.5-Coder-1.5B weights are required. The runner prints a local report directory;
+`--include-generated` opts into source/raw diagnostics. Exit zero means execution
+completed, not candidate success. The recorded pilot passed 0/3 in both conditions;
+it establishes neither improvement nor native-build qualification.
 For a task-only baseline, pass `promptMode: 'task-only'`: task files and acceptance
 requirements remain, generic JSON instructions replace RN guidance, and provider
 skills/memory/intelligence enrichment is disabled. This condition requires one

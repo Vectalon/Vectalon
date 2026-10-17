@@ -1,0 +1,406 @@
+{
+  "controlValidationFollowup": {"runnerSha256":"df1a07168984c18f4be4fb73bf12ff58997207b7ddec3847f90ebdbf1367ad2a","negativeControl":{"typecheck":{"ok":false,"exitCode":2,"timedOut":false,"isolation":"sandbox-exec","durationMs":1172},"tests":{"ok":false,"exitCode":1,"timedOut":false,"isolation":"sandbox-exec","durationMs":7240}},"positiveControl":{"typecheck":{"ok":true,"exitCode":0,"timedOut":false,"isolation":"sandbox-exec","durationMs":1019},"tests":{"ok":true,"exitCode":0,"timedOut":false,"isolation":"sandbox-exec","durationMs":6897}}},
+  "kind": "development-pilot",
+  "revision": "d10b00a98ae80073e00cd55e879717d3e2bd81f6",
+  "startedAt": "2026-10-16T12:47:33.234Z",
+  "runnerSha256": "a813c1a45fe4db6a3ada2635a586a4ca601237918af71ab4812ff11a5d554818",
+  "appArchiveSha256": "ec072b072819e8dd0e564f3b06ad837b69140c10d14d4dd46e1efb75d2d43101",
+  "acceptanceSha256": "16cbc815356fcf7e4bb7f5db3c2528913875e4ddf7de46c9808551a72496feb6",
+  "taskSha256": "ac0f80febe11a53ee9016465bddf747574be5f9300d249fe9e950241dae43b57",
+  "runtime": {
+    "node": "v24.21.0",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "settings": {
+    "temperature": 0.2,
+    "maxTokens": 2048,
+    "maxAttempts": 1,
+    "providerCallLimit": 1
+  },
+  "model": "qwen2.5-coder-1.5b",
+  "expectedArtifactSha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+  "fullLocalReportSha256": "cabb03d6a6527c37070a648d241e4eae841f460a3cc1598c06b4523daf1a9225",
+  "limitations": [
+    "No native build",
+    "Installed dependencies reused",
+    "Tokens/cost not measured",
+    "No human correction-time measurement",
+    "One public development task; not launch qualification"
+  ],
+  "negativeControl": {
+    "typecheck": false,
+    "tests": false
+  },
+  "runs": [
+    {
+      "repetition": 1,
+      "condition": "task-only",
+      "status": "failed",
+      "identityMatched": true,
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 9866,
+          "temperature": 0.2,
+          "maxTokens": 2048,
+          "fileCount": 1,
+          "adherence": 0.6666666666666666,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:f7440c119b4de43cc4fa4ccd645374e7ab7cce51cc04957ab98392bff56ebcb1",
+          "maxAttempts": 1,
+          "providerCallLimit": 1,
+          "promptMode": "task-only",
+          "requestDigest": "sha256:3cc075af549c47b04f44fe66da644df6f34dcf11b39e8ced0b4734ba91c8d9fa",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 9784
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "axes": {
+        "correctness": null,
+        "adherence": 0.6666666666666666,
+        "guardrails": 1
+      },
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 930
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6578
+        }
+      }
+    },
+    {
+      "repetition": 1,
+      "condition": "vectalon",
+      "status": "failed",
+      "identityMatched": true,
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 8186,
+          "temperature": 0.2,
+          "maxTokens": 2048,
+          "fileCount": 1,
+          "adherence": 0.6666666666666666,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:f7440c119b4de43cc4fa4ccd645374e7ab7cce51cc04957ab98392bff56ebcb1",
+          "maxAttempts": 1,
+          "providerCallLimit": 1,
+          "promptMode": "vectalon",
+          "requestDigest": "sha256:b509ded4923154317da8869a1d2588ece7a82fbe6674ec2afb23f400bd83c1b0",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 8183
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "axes": {
+        "correctness": null,
+        "adherence": 0.6666666666666666,
+        "guardrails": 1
+      },
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1252
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7959
+        }
+      }
+    },
+    {
+      "repetition": 2,
+      "condition": "vectalon",
+      "status": "failed",
+      "identityMatched": true,
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 11470,
+          "temperature": 0.2,
+          "maxTokens": 2048,
+          "fileCount": 1,
+          "adherence": 0.25,
+          "guardrails": 0.92,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:f7440c119b4de43cc4fa4ccd645374e7ab7cce51cc04957ab98392bff56ebcb1",
+          "maxAttempts": 1,
+          "providerCallLimit": 1,
+          "promptMode": "vectalon",
+          "requestDigest": "sha256:b509ded4923154317da8869a1d2588ece7a82fbe6674ec2afb23f400bd83c1b0",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 11468
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "axes": {
+        "correctness": null,
+        "adherence": 0.25,
+        "guardrails": 0.92
+      },
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 720
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6372
+        }
+      }
+    },
+    {
+      "repetition": 2,
+      "condition": "task-only",
+      "status": "failed",
+      "identityMatched": true,
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 8980,
+          "temperature": 0.2,
+          "maxTokens": 2048,
+          "fileCount": 1,
+          "adherence": 0.6666666666666666,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:f7440c119b4de43cc4fa4ccd645374e7ab7cce51cc04957ab98392bff56ebcb1",
+          "maxAttempts": 1,
+          "providerCallLimit": 1,
+          "promptMode": "task-only",
+          "requestDigest": "sha256:3cc075af549c47b04f44fe66da644df6f34dcf11b39e8ced0b4734ba91c8d9fa",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 8978
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "axes": {
+        "correctness": null,
+        "adherence": 0.6666666666666666,
+        "guardrails": 1
+      },
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1112
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6514
+        }
+      }
+    },
+    {
+      "repetition": 3,
+      "condition": "task-only",
+      "status": "failed",
+      "identityMatched": true,
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 9846,
+          "temperature": 0.2,
+          "maxTokens": 2048,
+          "fileCount": 1,
+          "adherence": 0.3333333333333333,
+          "guardrails": 0.96,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:f7440c119b4de43cc4fa4ccd645374e7ab7cce51cc04957ab98392bff56ebcb1",
+          "maxAttempts": 1,
+          "providerCallLimit": 1,
+          "promptMode": "task-only",
+          "requestDigest": "sha256:3cc075af549c47b04f44fe66da644df6f34dcf11b39e8ced0b4734ba91c8d9fa",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 9842
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "axes": {
+        "correctness": null,
+        "adherence": 0.3333333333333333,
+        "guardrails": 0.96
+      },
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1158
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7002
+        }
+      }
+    },
+    {
+      "repetition": 3,
+      "condition": "vectalon",
+      "status": "failed",
+      "identityMatched": true,
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 8858,
+          "temperature": 0.2,
+          "maxTokens": 2048,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:f7440c119b4de43cc4fa4ccd645374e7ab7cce51cc04957ab98392bff56ebcb1",
+          "maxAttempts": 1,
+          "providerCallLimit": 1,
+          "promptMode": "vectalon",
+          "requestDigest": "sha256:b509ded4923154317da8869a1d2588ece7a82fbe6674ec2afb23f400bd83c1b0",
+          "provider": "local",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 8857
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "axes": {
+        "correctness": null,
+        "adherence": 0,
+        "guardrails": 0
+      },
+      "checks": null
+    }
+  ]
+}

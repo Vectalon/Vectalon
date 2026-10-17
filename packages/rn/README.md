@@ -375,6 +375,14 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   Both caps are reported; they do not pin the provider or limit elapsed time,
   input tokens, cost or provider-internal work. These are programmatic options,
   not new CLI flags; existing CLI defaults remain unchanged.
+  Checkout-only development pilot (macOS, installed demo dependencies and the
+  downloaded Qwen2.5-Coder-1.5B model required): after building RN, run
+  `node scripts/experiments/rn-cart-pilot.cjs --preflight` from the repo root to
+  verify acceptance controls, then omit `--preflight` for six real first-pass
+  generations. It prints a local report directory; `--include-generated` opts
+  into retaining source/raw diagnostics. Exit zero means the runner completed,
+  not that candidates passed. The recorded pilot passed 0/3 in both conditions;
+  no model improvement or native-build qualification is claimed.
   For a task-only baseline, set `promptMode: 'task-only'`: it retains task files
   and acceptance requirements with generic JSON instructions, disables provider
   skills/memory/intelligence enrichment, and requires one generation attempt.
