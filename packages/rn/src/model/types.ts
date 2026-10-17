@@ -70,6 +70,8 @@ export interface ModelProviderCall {
 
 export interface ModelResponse {
   content: string
+  /** Native engine termination; absent for providers that do not report it. */
+  stopReason?: 'customStopTrigger' | 'abort' | 'maxTokens' | 'eogToken' | 'stopGenerationTrigger' | 'functionCalls'
   providerCalls?: ModelProviderCall[]
   /** Serving identifier, not proof of an immutable weights artifact. Absent on deterministic fallbacks. */
   model?: { id: string; source: 'configured' }

@@ -8,7 +8,7 @@
  */
 
 import { isBenchmarkPath } from './fs'
-import type { ModelProviderCall } from '../model/types'
+import type { ModelProviderCall, ModelResponse } from '../model/types'
 import type { LocalModelArtifact } from '../model/local/artifact'
 
 export const SCENARIO_SPEC_VERSION = 1
@@ -117,6 +117,7 @@ export interface BenchScenarioRun {
 }
 
 export interface BenchGenerationAttempt {
+  stopReason?: ModelResponse['stopReason']
   index: number
   kind: 'initial' | 'parse-retry' | 'repair'
   status: 'parsed' | 'empty' | 'fallback' | 'invalid' | 'error'

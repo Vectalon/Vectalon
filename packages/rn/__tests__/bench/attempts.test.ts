@@ -21,6 +21,15 @@ function generator(responses: Array<string | Error>, options: Partial<ModelGener
 }
 
 describe('model attempt evidence', () => {
+  it('retains termination on invalid output without claiming correctness', async () => {
+    const generate = createModelGenerate({ maxAttempts: 1, modelRouter: {
+      generate: async () => ({ content: 'incomplete', provider: 'local', stopReason: 'maxTokens' }),
+    } as unknown as ModelGenerateOptions['modelRouter'] })
+    const run = await runScenario(scenario, { generate })
+    expect(run.attempts?.[0]).toMatchObject({ status: 'invalid', stopReason: 'maxTokens', selected: false })
+    expect(formatScenarioSection(run)).toContain('Engine stop reason: maxTokens')
+  })
+
   it('repairs a verification failure even when static scores pass, keeping feedback out of reports', async () => {
     const verify = jest.fn().mockResolvedValueOnce({ passed: false, feedback: 'COMPILER_DIAGNOSTIC' })
       .mockResolvedValueOnce({ passed: true, feedback: '' })

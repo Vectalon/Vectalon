@@ -1000,6 +1000,9 @@ identity and actual resource use still need separate verification. Condition lab
 alone do not establish improvement.
 Unreleased source reports include `attempts` for initial, parse-retry and repair
 calls, selected candidate, provider, settings, elapsed time and offline scores.
+Local native attempts also retain engine `stopReason` (such as `maxTokens` or
+`eogToken`) on invalid output. Missing values remain unrecorded; normal termination
+does not prove correctness, and a token-limit stop does not prove larger budgets help.
 Records also include the responding provider's configured model ID and SHA-256
 task/request fingerprints. Names do not verify model weights; request fingerprints
 precede provider context enrichment. `providerCalls` retains router-invoked

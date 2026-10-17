@@ -162,6 +162,7 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       try {
         const response = await modelRouter.generate(input)
         record.provider = response?.provider
+        record.stopReason = response?.stopReason
         record.providerCalls = response?.providerCalls?.map(({ provider, status, durationMs }) => ({ provider, status, durationMs }))
         const content = response?.content || ''
         if (!content) { record.status = 'empty'; return null }

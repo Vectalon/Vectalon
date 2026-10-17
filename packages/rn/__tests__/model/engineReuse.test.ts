@@ -23,11 +23,11 @@ interface FakeNlc {
   getLlama: jest.Mock
   LlamaLogLevel: Record<string, number>
   LlamaChatSession: new (opts: unknown) => {
-    prompt: (prompt: string, opts?: Record<string, unknown>) => Promise<string>
+    promptWithMeta: (prompt: string, opts?: Record<string, unknown>) => Promise<{ responseText: string; stopReason: string }>
   }
 }
 
-function buildFakeNlc(): FakeNlc {
+function buildFakeNlc(stopReason = 'eogToken'): FakeNlc {
   const getLlama = jest.fn(async () => {
     const loadModel = jest.fn(async () => {
       const createContext = jest.fn(async () => ({
@@ -38,12 +38,12 @@ function buildFakeNlc(): FakeNlc {
     return { loadModel }
   })
   const FakeSession = class {
-    prompt = async (prompt: string, opts?: Record<string, unknown>) => {
+    promptWithMeta = async (prompt: string, opts?: Record<string, unknown>) => {
       // Mirror node-llama-cpp: invoke onTextChunk per decoded chunk.
       const onTextChunk = opts?.onTextChunk as ((t: string) => void) | undefined
       onTextChunk?.('streamed part ')
       onTextChunk?.('two')
-      return 'engine reused'
+      return { responseText: 'engine reused', stopReason }
     }
   }
   return {
@@ -86,6 +86,12 @@ describe('shared inference engine', () => {
     delete process.env.RN_VECTALON_CONFIG_DIR
   })
 
+  it.each(['maxTokens', 'abort', 'customStopTrigger'])('retains native termination %s without rewriting output', async reason => {
+    mockDynamicImport.mockResolvedValue(buildFakeNlc(reason))
+    const result = await runInference('qwen-test', { prompt: 'code' })
+    expect(result).toMatchObject({ content: 'engine reused', stopReason: reason })
+  })
+
   it('creates the llama + model exactly once and reuses them across inferences', async () => {
     const fakeNlc = buildFakeNlc()
     mockDynamicImport.mockResolvedValue(fakeNlc)
@@ -95,6 +101,7 @@ describe('shared inference engine', () => {
     const third = await runInference('qwen-test', { prompt: 'third' })
 
     expect(first.content).toBe('engine reused')
+    expect(first.stopReason).toBe('eogToken')
     expect(first.artifact).toEqual({ sha256: createHash('sha256').update('test weights').digest('hex'),
       sizeBytes: 12, source: 'local-file-at-load' })
     expect(second.artifact).toEqual(first.artifact)

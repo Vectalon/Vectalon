@@ -8,7 +8,7 @@ describe('LocalProvider', () => {
   it.each([undefined, 'Required output file: src/Settings.tsx'])('forwards task context to real inference (%s)', async context => {
     const downloaded = jest.spyOn(modelStore, 'hasDownloadedModel').mockReturnValue(true)
     const artifact = { sha256: 'a'.repeat(64), sizeBytes: 12, source: 'local-file-at-load' as const }
-    const run = jest.spyOn(inference, 'runInference').mockResolvedValue({ content: 'real model output', artifact } as Awaited<ReturnType<typeof inference.runInference>>)
+    const run = jest.spyOn(inference, 'runInference').mockResolvedValue({ content: 'real model output', artifact, stopReason: 'maxTokens' } as Awaited<ReturnType<typeof inference.runInference>>)
     try {
       const provider = new LocalProvider({ nativeProbe: async () => true })
       const result = await provider.generate({ prompt: 'Create settings', systemPrompt: 'Use TypeScript', context })
@@ -17,6 +17,7 @@ describe('LocalProvider', () => {
         prompt: context ? `\nContext:\n${context}\nCreate settings` : 'Create settings',
       }))
       expect(result.content).toBe('real model output')
+      expect(result.stopReason).toBe('maxTokens')
       expect(result.artifact).toEqual(artifact)
       expect(result.model).toEqual({ id: run.mock.calls[0][0], source: 'configured' })
       expect(provider.isFallback()).toBe(false)

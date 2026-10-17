@@ -1,4 +1,5 @@
 import type { ModelPreset } from './presets'
+import type { ModelResponse } from '../types'
 import { dynamicImport } from '../../utils/dynamicImport'
 import { reportError } from '../../utils/safe'
 import { getDownloadedModel } from './ModelStore'
@@ -27,6 +28,7 @@ export interface InferenceOptions {
 
 export interface InferenceResult {
   content: string
+  stopReason?: ModelResponse['stopReason']
   modelId: string
   artifact?: LocalModelArtifact
   tokensUsed?: number
@@ -380,7 +382,7 @@ export async function runInference(modelId: string, options: InferenceOptions): 
       const grammar = options.grammarSchema ? new Grammar(llama, options.grammarSchema) : undefined
 
       try {
-        const response = await session.prompt(options.prompt, {
+        const response = await session.promptWithMeta(options.prompt, {
           temperature: options.temperature ?? 0.2,
           maxTokens: options.maxTokens ?? 2048,
           // Anti-repetition sampling: Qwen2.5-Coder's known failure mode on long
@@ -403,7 +405,8 @@ export async function runInference(modelId: string, options: InferenceOptions): 
 
         if (await modelFileStamp(model.filePath) !== loaded.stamp) throw new Error('Model artifact changed during inference; restart inference')
         return {
-          content: response,
+          content: response.responseText,
+          stopReason: response.stopReason,
           modelId,
           artifact: { ...loaded.artifact },
         }

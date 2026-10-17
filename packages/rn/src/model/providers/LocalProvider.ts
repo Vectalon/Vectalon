@@ -135,6 +135,7 @@ export class LocalProvider {
         })
         return {
           content: result.content,
+          stopReason: result.stopReason,
           provider: 'local',
           model: { id: preset.id, source: 'configured' },
           artifact: result.artifact,

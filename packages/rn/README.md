@@ -368,6 +368,10 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   duration, including retries/fallbacks. Missing traces say unrecorded; circuit
   skips and router stubs are not calls. Tokens, cost and provider-internal work
   are not measured by this trace.
+  Local native attempts now retain the engine's `stopReason`, including
+  `maxTokens` and `eogToken`, even when output cannot be parsed. Missing values
+  remain unrecorded. A normal ending does not prove complete or correct code;
+  a token-limit ending does not prove that a larger budget would fix it.
   Source experiment code can pass `maxAttempts: 1` and `providerCallLimit: 1`
   to `createModelGenerate` for first-attempt-only generation. `maxAttempts`
   accepts 1–3 (default 3); parse recovery consumes an attempt. The optional
