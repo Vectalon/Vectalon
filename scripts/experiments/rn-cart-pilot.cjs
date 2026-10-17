@@ -44,6 +44,10 @@ const report = { kind: 'development-pilot', revision, startedAt: new Date().toIS
 const save = () => fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report,
   (key, value) => !process.argv.includes('--include-generated') && ['generatedArtifacts', 'stdout', 'stderr'].includes(key) ? undefined : value, 2));
 async function verify(files, deadline = Infinity) {
+  // Reject the whole candidate before writing or executing any generated file.
+  if (files.length > 1 || files.some(file => file.path !== target)) {
+    return { scope: { ok: false }, typecheck: { ok: false, skipped: true }, tests: { ok: false, skipped: true } };
+  }
   const root = fs.mkdtempSync('/private/tmp/vectalon-cart-check-');
   try {
     assert.equal(spawnSync('tar', ['-x', '--strip-components=4', '-C', root], { input: archive.stdout }).status, 0);
@@ -72,6 +76,16 @@ async function verify(files, deadline = Infinity) {
 async function main() {
   save();
   console.log(`Evidence: ${output}`);
+  for (const files of [
+    [{ path: '../outside.ts', content: 'not executed' }],
+    [{ path: '/tmp/outside.ts', content: 'not executed' }],
+    [{ path: target, content: '' }, { path: 'src/services/CatalogApi.ts', content: '' }],
+    [{ path: target, content: '' }, { path: target, content: '' }],
+  ]) {
+    assert.deepEqual(await verify(files, 0), {
+      scope: { ok: false }, typecheck: { ok: false, skipped: true }, tests: { ok: false, skipped: true },
+    });
+  }
   await assert.rejects(verify([], 0), /Verification deadline exhausted/);
   report.negativeControl = await verify([]);
   save();
@@ -119,10 +133,11 @@ async function main() {
         assert(Date.now() < deadline, 'Verification deadline exhausted');
         verified.set(hash(JSON.stringify(files)), checks);
         // Only diagnostics for the generated file; never acceptance source/assertions.
-        const diagnostics = checks.typecheck.stdout.split('\n').filter(line => line.startsWith(`${target}(`));
+        const diagnostics = (checks.typecheck.stdout || '').split('\n').filter(line => line.startsWith(`${target}(`));
         return { passed: checks.typecheck.ok && checks.tests.ok,
-          feedback: [...diagnostics, ...(!checks.tests.ok ? ['Task/project tests failed. Recheck the original requirements.'] : []),
-            ...(!checks.typecheck.ok ? ['Typecheck failed. Preserve the requested public interface.'] : [])].join('\n') };
+          feedback: checks.scope?.ok === false ? `Scope rejected. Return exactly one file: ${target}. No checks were executed.`
+            : [...diagnostics, ...(!checks.tests.ok ? ['Task/project tests failed. Recheck the original requirements.'] : []),
+              ...(!checks.typecheck.ok ? ['Typecheck failed. Preserve the requested public interface.'] : [])].join('\n') };
       };
       const generate = createModelGenerate({ modelRouter: router, promptMode: repair ? 'vectalon' : row.condition,
         ...settings, ...(repair ? { verify: verifier } : {}) });
