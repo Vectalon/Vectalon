@@ -253,15 +253,16 @@ function extractJsonFiles(content: string): GeneratedImplementation | null {
  */
 function extractSalvageableFileObjects(text: string): GeneratedImplementation | null {
   const fileRe =
-    /\{\s*"path"\s*:\s*"([^"]+)"\s*,\s*"content"\s*:\s*(?:"((?:\\.|[^"\\])*)"|`((?:\\.|[^`\\])*)`)\s*\}/g
+    /\{\s*"path"\s*:\s*"((?:\\.|[^"\\])*)"\s*,\s*"content"\s*:\s*(?:"((?:\\.|[^"\\])*)"|`((?:\\.|[^`\\])*)`)\s*\}/g
   const files: GeneratedFile[] = []
   let match: RegExpExecArray | null
   while ((match = fileRe.exec(text)) !== null) {
-    const path = match[1]
-    const content = match[2] ?? match[3] ?? ''
-    if (isSafeProjectPath(path) && typeof content === 'string') {
-      files.push({ path, content })
-    }
+    try {
+      const path = JSON.parse(`"${match[1]}"`) as string
+      // JSON strings need decoding once; backtick recovery preserves source verbatim.
+      const content = match[2] !== undefined ? JSON.parse(`"${match[2]}"`) as string : match[3]
+      if (isSafeProjectPath(path) && typeof content === 'string') files.push({ path, content })
+    } catch { /* An invalid escape is not a recoverable file object. */ }
   }
   return files.length > 0 ? { files } : null
 }

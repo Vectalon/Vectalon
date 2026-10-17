@@ -540,6 +540,10 @@ describe('bench model generate seam (M5)', () => {
       'android/app/build.gradle',
       'android/settings.gradle',
     ])
+    expect(parsed?.files).toEqual([
+      { path: 'android/settings.gradle', content: settingsContent },
+      { path: 'android/app/build.gradle', content: gradleContent },
+    ])
   })
 
   it('salvages backtick-quoted file objects from a corrupt envelope too', () => {
