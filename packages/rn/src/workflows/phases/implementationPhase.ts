@@ -332,7 +332,6 @@ export function buildImplementationPrompt(ctx: {
   blastRadius?: string
 }): { systemPrompt: string; prompt: string } {
   const conventions = detectConventions(ctx.snapshot)
-  const featureName = sanitizeFileName(ctx.prompt) || 'Feature'
 
   const systemPrompt = [
     'You are a senior React Native engineer.',
@@ -343,10 +342,10 @@ export function buildImplementationPrompt(ctx: {
     '{"files":[{"path":"src/...","content":"..."}],"notes":"..."}',
     'Each file must be a complete, self-contained source file.',
     'IMPORTANT: in the JSON, every "content" value must be a JSON string with',
-    'escaped newlines (\n). Never wrap file content in backticks or template',
+    'escaped newlines (\\n). Never wrap file content in backticks or template',
     'literals — the whole reply must be valid JSON that parses as-is.',
     '',
-    'CRITICAL: Tests have already been written for this feature (TDD).',
+    'When tests are supplied, treat their imports and assertions as contracts.',
     'Your implementation MUST satisfy the existing tests.',
     'Read every test file carefully and export exactly the symbols, names, and',
     'signatures the tests import and assert on. If a test imports a named export',
@@ -404,7 +403,7 @@ export function buildImplementationPrompt(ctx: {
     '- When you ADD or REMOVE a dependency, check whether it has native code.',
     '- Adding: iOS autolinking picks up pods on `pod install`; Android autolinking needs the package in `android/settings.gradle` + `android/app/build.gradle` if the package predates autolinking. Follow the package\'s own documentation for setup steps (config plugin, permissions, custom build steps) — do not invent them.',
     '- Removing: delete the package from package.json AND its native traces (Podfile entries, gradle includes/deps, native imports). A removal is only safe when no source file imports or references it anymore.',
-    '- The project has ios/ and android/ directories — changing a dependency without the matching native side breaks the native build.',
+    '- Check the supplied project structure before assuming ios/ or android/ directories exist; managed Expo projects may use config plugins instead.',
     '',
     'Blast radius: if this change touches a module other files import, preserve its exported',
     'names, signatures, props, and behavior — the consumers listed in the prompt depend on them.',
@@ -452,7 +451,7 @@ export function buildImplementationPrompt(ctx: {
     failureSection,
     blastRadiusSection,
     'Generate the files for this request.',
-    `Only when the request, context, and existing tests specify no module name, use "${featureName}" as a suggested base name. Preserve required file paths and exported symbols.`,
+    'Preserve required file paths and exported symbols. Modify existing modules in place when requested; do not append an unrelated implementation.',
   ].join('\n')
 
   return { systemPrompt, prompt: projectContext }

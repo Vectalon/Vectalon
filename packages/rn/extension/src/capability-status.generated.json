@@ -43,7 +43,7 @@
   },
   "vectalon.generateComponent": {
     "capabilityId": "rn.model-generation",
-    "capabilityVersion": "1.0.16",
+    "capabilityVersion": "1.0.17",
     "lifecycle": "experimental",
     "implemented": true,
     "plans": [
@@ -85,7 +85,7 @@
   },
   "vectalon.projectContext": {
     "capabilityId": "rn.project.inspect",
-    "capabilityVersion": "1.0.19",
+    "capabilityVersion": "1.0.20",
     "lifecycle": "beta",
     "implemented": true,
     "plans": [
@@ -113,7 +113,7 @@
   },
   "vectalon.restartServer": {
     "capabilityId": "rn.project.inspect",
-    "capabilityVersion": "1.0.19",
+    "capabilityVersion": "1.0.20",
     "lifecycle": "beta",
     "implemented": true,
     "plans": [
@@ -141,7 +141,7 @@
   },
   "vectalon.runFeatureWorkflow": {
     "capabilityId": "rn.feature.workflow",
-    "capabilityVersion": "1.0.16",
+    "capabilityVersion": "1.0.17",
     "lifecycle": "beta",
     "implemented": true,
     "plans": [
@@ -183,7 +183,7 @@
   },
   "vectalon.startServer": {
     "capabilityId": "rn.project.inspect",
-    "capabilityVersion": "1.0.19",
+    "capabilityVersion": "1.0.20",
     "lifecycle": "beta",
     "implemented": true,
     "plans": [
@@ -197,7 +197,7 @@
   },
   "vectalon.stopServer": {
     "capabilityId": "rn.project.inspect",
-    "capabilityVersion": "1.0.19",
+    "capabilityVersion": "1.0.20",
     "lifecycle": "beta",
     "implemented": true,
     "plans": [

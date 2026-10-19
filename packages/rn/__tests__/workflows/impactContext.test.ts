@@ -164,7 +164,7 @@ describe('impact context → downstream stages', () => {
       intent: { type: 'add-feature', feature: 'settings', description: '' },
     })
     expect(prompt).toContain('Create src/navigation/SettingsStack.tsx exporting SettingsStack')
-    expect(prompt).toContain('Only when the request, context, and existing tests specify no module name')
+    expect(prompt).not.toContain('suggested base name')
     expect(prompt).toContain('Preserve required file paths and exported symbols.')
     expect(prompt).not.toMatch(/Use ".*" as the base name/)
   })
