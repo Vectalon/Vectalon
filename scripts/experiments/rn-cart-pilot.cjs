@@ -38,6 +38,7 @@ const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair ? 2 : 
   ...(constrained ? { outputFormat: 'files-json' } : {}) };
 const report = { kind: 'development-pilot', revision, startedAt: new Date().toISOString(),
   runnerSha256: hash(fs.readFileSync(__filename)), appArchiveSha256: hash(archive.stdout),
+  inferenceModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/model/local/inference.js'))),
   acceptanceSha256: hash(acceptance), taskSha256: hash(JSON.stringify(scenario)),
   runtime: { node: process.version, platform: process.platform, arch: process.arch }, settings,
   model: 'qwen2.5-coder-1.5b', expectedArtifactSha256: 'cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046',

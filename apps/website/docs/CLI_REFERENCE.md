@@ -991,6 +991,8 @@ native local inference without tools is required, provider fallback is disabled,
 and reports record applied grammar. Unacknowledged constraints are rejected.
 Grammar does not enforce file scope, code correctness or completion before the
 token cap. This checkout-only experiment is not a published CLI option.
+The pilot records the compiled native inference module's SHA-256 to distinguish
+diagnostic sampler builds, not to attest the entire dependency/environment state.
 Source callers can supply
 `verify(files)` returning `{ passed, feedback }`; the caller must bound/isolate
 execution and exclude secrets/held-out answers. Up to 4,000 feedback characters

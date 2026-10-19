@@ -397,6 +397,8 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   Reports record applied grammar; unacknowledged constraints are rejected.
   Grammar does not enforce file scope, correct code, or completion before the token
   cap. This is a checkout-only experiment, not a published CLI option.
+  The pilot records the compiled native inference module's SHA-256 to distinguish
+  diagnostic sampler builds; this is not full dependency/environment attestation.
   Source callers may supply `verify(files)` returning `{ passed, feedback }`.
   Keep this callback bounded and isolated, and exclude secrets/held-out answers
   from feedback. Up to 4,000 feedback characters reach the repair prompt, not
