@@ -96,6 +96,9 @@ export class ModelRouter {
    * short-circuits it for 5 minutes).
    */
   async generate(request: ModelRequest): Promise<ModelResponse> {
+    if (request.outputFormat !== undefined && (request.outputFormat !== 'files-json' || this.provider !== 'local' || request.tools?.length)) {
+      throw new Error('files-json requires the native local provider without tools')
+    }
     const limit = request.providerCallLimit ?? Infinity
     if (request.providerCallLimit !== undefined && (!Number.isSafeInteger(limit) || limit < 1)) {
       throw new Error('providerCallLimit must be a positive safe integer')
@@ -124,7 +127,7 @@ export class ModelRouter {
     }
 
     // 2. Fallback chain: local native → WASM → deterministic stub.
-    const fallbacks = providerCalls.length < limit ? await this.buildFallbackAttempts(request) : []
+    const fallbacks = !request.outputFormat && providerCalls.length < limit ? await this.buildFallbackAttempts(request) : []
     for (const fallback of fallbacks) {
       if (providerCalls.length >= limit) break
       if (this.circuit.isOpen(fallback.id)) {

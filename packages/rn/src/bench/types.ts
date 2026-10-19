@@ -117,6 +117,7 @@ export interface BenchScenarioRun {
 }
 
 export interface BenchGenerationAttempt {
+  outputFormat?: ModelResponse['outputFormat']
   stopReason?: ModelResponse['stopReason']
   index: number
   kind: 'initial' | 'parse-retry' | 'repair'

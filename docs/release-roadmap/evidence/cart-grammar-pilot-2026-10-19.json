@@ -1,0 +1,585 @@
+{
+  "kind": "development-pilot",
+  "revision": "92ef08ea29ec629a98bd7136aa8e0a592e67fc0b",
+  "startedAt": "2026-10-19T15:57:19.882Z",
+  "runnerSha256": "70753631b9d5973bf6784fd965a810c6156ad86dad8d125abf34448066795268",
+  "appArchiveSha256": "07dfd18f8615965cc8dac5de4c93df4825a74bfe485474d15ce95c3b0a078688",
+  "acceptanceSha256": "16cbc815356fcf7e4bb7f5db3c2528913875e4ddf7de46c9808551a72496feb6",
+  "taskSha256": "ac0f80febe11a53ee9016465bddf747574be5f9300d249fe9e950241dae43b57",
+  "runtime": {
+    "node": "v24.21.0",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "settings": {
+    "temperature": 0.2,
+    "maxTokens": 2048,
+    "maxAttempts": 2,
+    "providerCallLimit": 1,
+    "outputFormat": "files-json"
+  },
+  "model": "qwen2.5-coder-1.5b",
+  "expectedArtifactSha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+  "limitations": [
+    "No native build",
+    "Installed dependencies reused",
+    "Tokens/cost not measured",
+    "No human correction-time measurement",
+    "One public development task; not launch qualification",
+    "Repair diagnostic permits twice the generation budget of the first-pass pilot; not an equal-budget comparison",
+    "Native file-envelope grammar constrains serialization, not file scope or code correctness",
+    "Source changes were uncommitted during this diagnostic; runner hash records the experiment, revision records its base commit",
+    "Grammar application and parsed envelopes do not establish task success or improvement"
+  ],
+  "runs": [
+    {
+      "repetition": 1,
+      "condition": "vectalon-verified-repair",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [
+        {
+          "status": "failed",
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 670
+            },
+            "tests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 6611
+            }
+          }
+        },
+        {
+          "status": "failed",
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 679
+            },
+            "tests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 6555
+            }
+          }
+        }
+      ],
+      "result": {
+        "id": "cart-quantity-pilot",
+        "title": "Set cart quantity",
+        "suite": "data-flow",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useCart.tsx"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 19712,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": 0.6666666666666666,
+            "guardrails": 1,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:f7440c119b4de43cc4fa4ccd645374e7ab7cce51cc04957ab98392bff56ebcb1",
+            "maxAttempts": 2,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "requestDigest": "sha256:9004e23d9da368357d97beb55397a720fe2c81b16fc8bcc06785753b493099e8",
+            "provider": "local",
+            "stopReason": "stopGenerationTrigger",
+            "outputFormat": "files-json",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 12246
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-1.5b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+              "sizeBytes": 1117320768,
+              "source": "local-file-at-load"
+            },
+            "verification": {
+              "status": "failed",
+              "durationMs": 7391
+            }
+          },
+          {
+            "index": 2,
+            "kind": "repair",
+            "status": "parsed",
+            "selected": false,
+            "durationMs": 17129,
+            "temperature": 0,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": 0.6666666666666666,
+            "guardrails": 0.96,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:f7440c119b4de43cc4fa4ccd645374e7ab7cce51cc04957ab98392bff56ebcb1",
+            "maxAttempts": 2,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "requestDigest": "sha256:278698f2df65b8b7d2d36ada08029a8f739dd71ae622cf9c8af9e6890bf12b9e",
+            "provider": "local",
+            "stopReason": "stopGenerationTrigger",
+            "outputFormat": "files-json",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 9778
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-1.5b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+              "sizeBytes": 1117320768,
+              "source": "local-file-at-load"
+            },
+            "verification": {
+              "status": "failed",
+              "durationMs": 7350
+            }
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useCart.tsx",
+            "passed": 25,
+            "failed": 0,
+            "skipped": 11,
+            "ok": true,
+            "failedRules": []
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.6666666666666666,
+          "guardrails": 1
+        },
+        "composite": 0.8333333333333334
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 670
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6611
+        }
+      }
+    },
+    {
+      "repetition": 2,
+      "condition": "vectalon-verified-repair",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [
+        {
+          "status": "failed",
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 711
+            },
+            "tests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 6638
+            }
+          }
+        },
+        {
+          "status": "failed",
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 712
+            },
+            "tests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 7238
+            }
+          }
+        }
+      ],
+      "result": {
+        "id": "cart-quantity-pilot",
+        "title": "Set cart quantity",
+        "suite": "data-flow",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useCart.tsx"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 17644,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": 0.6666666666666666,
+            "guardrails": 1,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:f7440c119b4de43cc4fa4ccd645374e7ab7cce51cc04957ab98392bff56ebcb1",
+            "maxAttempts": 2,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "requestDigest": "sha256:9004e23d9da368357d97beb55397a720fe2c81b16fc8bcc06785753b493099e8",
+            "provider": "local",
+            "stopReason": "stopGenerationTrigger",
+            "outputFormat": "files-json",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 10184
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-1.5b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+              "sizeBytes": 1117320768,
+              "source": "local-file-at-load"
+            },
+            "verification": {
+              "status": "failed",
+              "durationMs": 7458
+            }
+          },
+          {
+            "index": 2,
+            "kind": "repair",
+            "status": "parsed",
+            "selected": false,
+            "durationMs": 17686,
+            "temperature": 0,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": 0.6666666666666666,
+            "guardrails": 0.96,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:f7440c119b4de43cc4fa4ccd645374e7ab7cce51cc04957ab98392bff56ebcb1",
+            "maxAttempts": 2,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "requestDigest": "sha256:278698f2df65b8b7d2d36ada08029a8f739dd71ae622cf9c8af9e6890bf12b9e",
+            "provider": "local",
+            "stopReason": "stopGenerationTrigger",
+            "outputFormat": "files-json",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 9616
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-1.5b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+              "sizeBytes": 1117320768,
+              "source": "local-file-at-load"
+            },
+            "verification": {
+              "status": "failed",
+              "durationMs": 8069
+            }
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useCart.tsx",
+            "passed": 25,
+            "failed": 0,
+            "skipped": 11,
+            "ok": true,
+            "failedRules": []
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.6666666666666666,
+          "guardrails": 1
+        },
+        "composite": 0.8333333333333334
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 711
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6638
+        }
+      }
+    },
+    {
+      "repetition": 3,
+      "condition": "vectalon-verified-repair",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [
+        {
+          "status": "failed",
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 854
+            },
+            "tests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 6599
+            }
+          }
+        },
+        {
+          "status": "failed",
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 728
+            },
+            "tests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 6622
+            }
+          }
+        }
+      ],
+      "result": {
+        "id": "cart-quantity-pilot",
+        "title": "Set cart quantity",
+        "suite": "data-flow",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useCart.tsx"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 18336,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": 0.5,
+            "guardrails": 1,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:f7440c119b4de43cc4fa4ccd645374e7ab7cce51cc04957ab98392bff56ebcb1",
+            "maxAttempts": 2,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "requestDigest": "sha256:9004e23d9da368357d97beb55397a720fe2c81b16fc8bcc06785753b493099e8",
+            "provider": "local",
+            "stopReason": "stopGenerationTrigger",
+            "outputFormat": "files-json",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 10756
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-1.5b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+              "sizeBytes": 1117320768,
+              "source": "local-file-at-load"
+            },
+            "verification": {
+              "status": "failed",
+              "durationMs": 7578
+            }
+          },
+          {
+            "index": 2,
+            "kind": "repair",
+            "status": "parsed",
+            "selected": false,
+            "durationMs": 18810,
+            "temperature": 0,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": 0.5,
+            "guardrails": 1,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:f7440c119b4de43cc4fa4ccd645374e7ab7cce51cc04957ab98392bff56ebcb1",
+            "maxAttempts": 2,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "requestDigest": "sha256:849a36f72aac38b1d2450e9c2e6f73b4e5e4046a5efbab1e9b83b269e533b307",
+            "provider": "local",
+            "stopReason": "stopGenerationTrigger",
+            "outputFormat": "files-json",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 11303
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-1.5b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+              "sizeBytes": 1117320768,
+              "source": "local-file-at-load"
+            },
+            "verification": {
+              "status": "failed",
+              "durationMs": 7505
+            }
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useCart.tsx",
+            "passed": 25,
+            "failed": 0,
+            "skipped": 11,
+            "ok": true,
+            "failedRules": []
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.5,
+          "guardrails": 1
+        },
+        "composite": 0.75
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 854
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6599
+        }
+      }
+    }
+  ],
+  "negativeControl": {
+    "typecheck": {
+      "ok": false,
+      "exitCode": 2,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1316
+    },
+    "tests": {
+      "ok": false,
+      "exitCode": 1,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 7659
+    }
+  },
+  "positiveControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1043
+    },
+    "tests": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 6881
+    }
+  },
+  "fullLocalReportSha256": "2f3b989bad8580a4d92c19b0417f70e45f2aa1a5ef48982aab59f7ea6d8235ca"
+}

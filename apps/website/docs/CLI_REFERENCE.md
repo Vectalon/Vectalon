@@ -985,7 +985,13 @@ it establishes neither improvement nor native-build qualification.
 Add `--repair` for three verification-assisted diagnostics (up to two generations
 each), not an equal-budget comparison with first-pass results. The first repair
 diagnostic timed out; a subsequent complete run passed 0/3. No improvement is
-established. Source callers can supply
+established. Add `--constrained` with `--repair` to test native file-JSON grammar
+under unchanged repair budgets. Source callers may set `outputFormat: 'files-json'`;
+native local inference without tools is required, provider fallback is disabled,
+and reports record applied grammar. Unacknowledged constraints are rejected.
+Grammar does not enforce file scope, code correctness or completion before the
+token cap. This checkout-only experiment is not a published CLI option.
+Source callers can supply
 `verify(files)` returning `{ passed, feedback }`; the caller must bound/isolate
 execution and exclude secrets/held-out answers. Up to 4,000 feedback characters
 reach the repair prompt, not reports. Attempts record verification status/time

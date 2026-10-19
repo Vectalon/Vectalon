@@ -391,6 +391,12 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   generations each—not an equal-budget comparison with the first-pass pilot.
   The initial repair diagnostic timed out; a subsequent complete run passed 0/3.
   No improvement is established.
+  Add `--constrained` together with `--repair` to test native file-JSON grammar
+  under the same repair budgets. Source callers can set `outputFormat: 'files-json'`;
+  it requires native local inference without tools and disables provider fallback.
+  Reports record applied grammar; unacknowledged constraints are rejected.
+  Grammar does not enforce file scope, correct code, or completion before the token
+  cap. This is a checkout-only experiment, not a published CLI option.
   Source callers may supply `verify(files)` returning `{ passed, feedback }`.
   Keep this callback bounded and isolated, and exclude secrets/held-out answers
   from feedback. Up to 4,000 feedback characters reach the repair prompt, not

@@ -5,6 +5,22 @@ import * as modelStore from '../../src/model/local/ModelStore'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
 describe('LocalProvider', () => {
+  it('applies file JSON grammar only when requested and acknowledges it', async () => {
+    const downloaded = jest.spyOn(modelStore, 'hasDownloadedModel').mockReturnValue(true)
+    const run = jest.spyOn(inference, 'runInference').mockResolvedValue({ content: '{"files":[]}', modelId: 'test' })
+    try {
+      const provider = new LocalProvider({ nativeProbe: async () => true })
+      expect((await provider.generate({ prompt: 'code', outputFormat: 'files-json' })).outputFormat).toBe('files-json')
+      expect(run.mock.calls[0][1].grammarSchema).toMatchObject({ type: 'object', required: ['files'],
+        properties: { files: { type: 'array', minItems: 1, items: { required: ['path', 'content'] } } } })
+      expect((await provider.generate({ prompt: 'code' })).outputFormat).toBeUndefined()
+      expect(run.mock.calls[1][1].grammarSchema).toBeUndefined()
+      await expect(provider.generate({ prompt: 'code', outputFormat: 'files-json',
+        tools: [{ name: 'test', description: '', inputSchema: {} }] })).rejects.toThrow('cannot be combined')
+      expect(run).toHaveBeenCalledTimes(2)
+    } finally { run.mockRestore(); downloaded.mockRestore() }
+  })
+
   it.each([undefined, 'Required output file: src/Settings.tsx'])('forwards task context to real inference (%s)', async context => {
     const downloaded = jest.spyOn(modelStore, 'hasDownloadedModel').mockReturnValue(true)
     const artifact = { sha256: 'a'.repeat(64), sizeBytes: 12, source: 'local-file-at-load' as const }

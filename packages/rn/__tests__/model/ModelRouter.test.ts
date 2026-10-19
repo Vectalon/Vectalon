@@ -28,6 +28,24 @@ describe('ModelRouter', () => {
     expect(response.content).toMatch(/No provider available|Model fallback/)
   })
 
+  it('refuses file grammar on remote providers before sending a request', async () => {
+    global.fetch = jest.fn()
+    const router = new ModelRouter()
+    router.initialize({ provider: 'openai' })
+    await expect(router.generate({ prompt: 'private code', outputFormat: 'files-json' })).rejects.toThrow('native local')
+    expect(global.fetch).not.toHaveBeenCalled()
+  })
+
+  it('does not initialize WASM fallback for a constrained local request', async () => {
+    const wasm = jest.spyOn(WasmProvider.prototype, 'initialize')
+    try {
+      const router = new ModelRouter()
+      const response = await router.generate({ prompt: 'code', outputFormat: 'files-json' })
+      expect(response.outputFormat).toBeUndefined()
+      expect(wasm).not.toHaveBeenCalled()
+    } finally { wasm.mockRestore() }
+  })
+
   it('routes to the provider chosen at initialize, ignoring global config', async () => {
     setConfig('modelProvider', 'openai')
     const router = new ModelRouter()

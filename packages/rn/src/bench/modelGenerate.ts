@@ -22,6 +22,8 @@ import type { BenchGeneratedFile, BenchScenario, BenchGenerationAttempt } from '
 
 export interface ModelGenerateOptions {
   modelRouter: ModelRouter
+  /** Native-local JSON envelope constraint, not source-code correctness. */
+  outputFormat?: 'files-json'
   /** Task-only retains fixture/acceptance inputs, disables project enrichment and never repairs. */
   promptMode?: 'task-only' | 'vectalon'
   /** Override generation temperature (default 0.2, matching the harness). */
@@ -143,6 +145,7 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       context,
       maxTokens,
       temperature,
+      ...(options.outputFormat ? { outputFormat: options.outputFormat } : {}),
       ...(promptMode === 'task-only' ? { projectContext: 'disabled' as const } : {}),
       ...(providerCallLimit !== undefined ? { providerCallLimit } : {}),
       ...(onTextChunk ? { onTextChunk } : {}),
@@ -157,16 +160,18 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
         artifactIdentity: 'unverified', taskDigest, maxAttempts, providerCallLimit, promptMode,
         requestDigest: benchmarkFingerprint({ systemPrompt: input.systemPrompt, prompt: input.prompt,
           context: input.context, temperature: input.temperature, maxTokens: input.maxTokens,
-          maxAttempts, providerCallLimit, promptMode, projectContext: input.projectContext }) }
+          maxAttempts, providerCallLimit, promptMode, projectContext: input.projectContext, outputFormat: input.outputFormat }) }
       attempts.push(record)
       try {
         const response = await modelRouter.generate(input)
         record.provider = response?.provider
         record.stopReason = response?.stopReason
+        record.outputFormat = response?.outputFormat
         record.providerCalls = response?.providerCalls?.map(({ provider, status, durationMs }) => ({ provider, status, durationMs }))
         const content = response?.content || ''
         if (!content) { record.status = 'empty'; return null }
         if (isModelFallback(content)) { record.status = 'fallback'; return null }
+        if (input.outputFormat && response.outputFormat !== input.outputFormat) return null
         if (response.model) record.model = { id: response.model.id, source: response.model.source }
         if (response.artifact) record.artifact = { sha256: response.artifact.sha256,
           sizeBytes: response.artifact.sizeBytes, source: response.artifact.source }

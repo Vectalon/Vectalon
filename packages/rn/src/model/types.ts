@@ -37,6 +37,8 @@ export interface ModelConfig {
 
 export interface ModelRequest {
   prompt: string
+  /** Opt-in native-local file envelope grammar; incompatible with tool calling. */
+  outputFormat?: 'files-json'
   /** Disable project skills/memory/intelligence for a controlled task-only baseline. */
   projectContext?: 'disabled'
   /** Optional router invocation cap, including retries/fallbacks; not a token or cost limit. */
@@ -70,6 +72,8 @@ export interface ModelProviderCall {
 
 export interface ModelResponse {
   content: string
+  /** Present only when the serving provider applied the requested grammar. */
+  outputFormat?: 'files-json'
   /** Native engine termination; absent for providers that do not report it. */
   stopReason?: 'customStopTrigger' | 'abort' | 'maxTokens' | 'eogToken' | 'stopGenerationTrigger' | 'functionCalls'
   providerCalls?: ModelProviderCall[]

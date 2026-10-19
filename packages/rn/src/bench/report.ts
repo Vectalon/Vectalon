@@ -31,6 +31,7 @@ export function formatScenarioSection(run: BenchScenarioRun): string {
       lines.push(`- Attempt ${attempt.index} (${attempt.kind}): ${attempt.status}${attempt.selected ? ' · selected' : ''} · ${attempt.durationMs}ms · ${axisLine({ correctness: null, adherence: attempt.adherence, guardrails: attempt.guardrails })}`)
       lines.push(`  Provider: ${attempt.provider || 'unknown'} · configured model: ${attempt.model?.id || 'unknown'}`)
       lines.push(`  Engine stop reason: ${attempt.stopReason ?? 'unrecorded'}; termination is not task correctness.`)
+      if (attempt.outputFormat) lines.push(`  Applied output grammar: ${attempt.outputFormat}; file scope and code correctness still require verification.`)
       lines.push(`  Prompt condition: ${attempt.promptMode ?? 'unrecorded'}; condition labels alone do not establish a controlled comparison.`)
       if (attempt.verification) lines.push(`  Supplied verifier: ${attempt.verification.status} · ${attempt.verification.durationMs}ms (included in attempt duration); not native qualification.`)
       lines.push(`  Caps: ${attempt.maxAttempts ?? 'unrecorded'} generation attempts · ${attempt.providerCallLimit ?? 'router default'} provider calls per attempt; not measured tokens or cost.`)

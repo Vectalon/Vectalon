@@ -9,6 +9,15 @@ import { TOOL_CALL_SCHEMA } from '../toolCalling'
 import { RN_CODER_SYSTEM_PROMPT } from '../prompts'
 import { logger } from '../../cli/logger'
 
+const FILES_JSON_SCHEMA = {
+  type: 'object', additionalProperties: false,
+  properties: { files: { type: 'array', minItems: 1, items: {
+    type: 'object', additionalProperties: false,
+    properties: { path: { type: 'string' }, content: { type: 'string' } },
+    required: ['path', 'content'],
+  } } }, required: ['files'],
+}
+
 export interface LocalProviderOptions {
   /**
    * Project root — when set, enabled ecosystem skills
@@ -96,6 +105,9 @@ export class LocalProvider {
   }
 
   async generate(request: ModelRequest): Promise<ModelResponse> {
+    if (request.outputFormat !== undefined && (request.outputFormat !== 'files-json' || request.tools?.length)) {
+      throw new Error('files-json cannot be combined with tools or an unknown format')
+    }
     if (this.initializePromise) {
       // Settle the capability probe before choosing the inference path, so a
       // fire-and-forget initialize() (from ModelRouter) never races a model
@@ -130,11 +142,13 @@ export class LocalProvider {
           maxTokens: request.maxTokens || 2048,
           // Tool-enabled requests run in JSON mode so the model can only emit
           // the { tool, arguments } / { answer } envelope the loop parses.
-          ...(request.tools && request.tools.length > 0 ? { grammarSchema: TOOL_CALL_SCHEMA } : {}),
+          ...(request.outputFormat === 'files-json' ? { grammarSchema: FILES_JSON_SCHEMA }
+            : request.tools && request.tools.length > 0 ? { grammarSchema: TOOL_CALL_SCHEMA } : {}),
           ...(request.onTextChunk ? { onTextChunk: request.onTextChunk } : {}),
         })
         return {
           content: result.content,
+          ...(request.outputFormat ? { outputFormat: request.outputFormat } : {}),
           stopReason: result.stopReason,
           provider: 'local',
           model: { id: preset.id, source: 'configured' },

@@ -21,6 +21,27 @@ function generator(responses: Array<string | Error>, options: Partial<ModelGener
 }
 
 describe('model attempt evidence', () => {
+  it('distinguishes constrained requests in evidence fingerprints', async () => {
+    const generate = jest.fn().mockResolvedValue({ content: answer(), provider: 'local', outputFormat: 'files-json' })
+    const modelRouter = { generate } as unknown as ModelGenerateOptions['modelRouter']
+    const plain = await runScenario(scenario, { generate: createModelGenerate({ modelRouter, maxAttempts: 1 }) })
+    const constrained = await runScenario(scenario, { generate: createModelGenerate({ modelRouter, maxAttempts: 1, outputFormat: 'files-json' }) })
+    expect(plain.attempts?.[0].requestDigest).not.toBe(constrained.attempts?.[0].requestDigest)
+    expect(plain.attempts?.[0].taskDigest).toBe(constrained.attempts?.[0].taskDigest)
+  })
+
+  it.each([true, false])('requires provider acknowledgement for file grammar (%s)', async applied => {
+    const generate = jest.fn().mockResolvedValue({ content: answer(), provider: 'local',
+      ...(applied ? { outputFormat: 'files-json' } : {}) })
+    const seam = createModelGenerate({ modelRouter: { generate } as unknown as ModelGenerateOptions['modelRouter'],
+      maxAttempts: 1, outputFormat: 'files-json' })
+    const run = await runScenario(scenario, { generate: seam })
+    expect(generate.mock.calls[0][0].outputFormat).toBe('files-json')
+    expect(run.generatedFiles).toEqual(applied ? ['src/value.ts'] : [])
+    expect(run.attempts?.[0].status).toBe(applied ? 'parsed' : 'error')
+    if (applied) expect(formatScenarioSection(run)).toContain('Applied output grammar: files-json')
+  })
+
   it('retains termination on invalid output without claiming correctness', async () => {
     const generate = createModelGenerate({ maxAttempts: 1, modelRouter: {
       generate: async () => ({ content: 'incomplete', provider: 'local', stopReason: 'maxTokens' }),

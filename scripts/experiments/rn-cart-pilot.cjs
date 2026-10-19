@@ -32,14 +32,18 @@ const scenario = {
   correctness: { tests: true, typecheck: true, lint: false }, axes: ['correctness', 'adherence', 'guardrails'],
 };
 const repair = process.argv.includes('--repair');
-const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair ? 2 : 1, providerCallLimit: 1 };
+const constrained = process.argv.includes('--constrained');
+assert.ok(!constrained || repair, '--constrained requires --repair for this diagnostic');
+const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair ? 2 : 1, providerCallLimit: 1,
+  ...(constrained ? { outputFormat: 'files-json' } : {}) };
 const report = { kind: 'development-pilot', revision, startedAt: new Date().toISOString(),
   runnerSha256: hash(fs.readFileSync(__filename)), appArchiveSha256: hash(archive.stdout),
   acceptanceSha256: hash(acceptance), taskSha256: hash(JSON.stringify(scenario)),
   runtime: { node: process.version, platform: process.platform, arch: process.arch }, settings,
   model: 'qwen2.5-coder-1.5b', expectedArtifactSha256: 'cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046',
   limitations: ['No native build', 'Installed dependencies reused', 'Tokens/cost not measured', 'No human correction-time measurement', 'One public development task; not launch qualification',
-    ...(repair ? ['Repair diagnostic permits twice the generation budget of the first-pass pilot; not an equal-budget comparison'] : [])],
+    ...(repair ? ['Repair diagnostic permits twice the generation budget of the first-pass pilot; not an equal-budget comparison'] : []),
+    ...(constrained ? ['Native file-envelope grammar constrains serialization, not file scope or code correctness'] : [])],
   runs: Array.from({ length: 3 }, (_, repetition) => (repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
 const save = () => fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report,
   (key, value) => !process.argv.includes('--include-generated') && ['generatedArtifacts', 'stdout', 'stderr'].includes(key) ? undefined : value, 2));
