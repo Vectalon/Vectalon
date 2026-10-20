@@ -982,6 +982,9 @@ Qwen2.5-Coder-1.5B weights are required. The runner prints a local report direct
 `--include-generated` opts into source/raw diagnostics. Exit zero means execution
 completed, not candidate success. The recorded pilot passed 0/3 in both conditions;
 it establishes neither improvement nor native-build qualification.
+Each checkpoint writes a source-free `report.md` alongside JSON: condition counts,
+compilation/tests, identity, initial/repair parsing and verification, and measured
+attempt time. Missing checks remain unrecorded; this is not native qualification.
 Add `--repair` for three verification-assisted diagnostics (up to two generations
 each), not an equal-budget comparison with first-pass results. The first repair
 diagnostic timed out; a subsequent complete run passed 0/3. No improvement is

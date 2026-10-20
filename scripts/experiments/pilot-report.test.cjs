@@ -1,0 +1,56 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const { formatPilotReport } = require('./pilot-report.cjs');
+const evidence = require('../../docs/release-roadmap/evidence/cart-3b-paired-pilot-2026-10-20.json');
+
+test('retains the observed negative comparison without claiming improvement', () => {
+  const text = formatPilotReport(evidence);
+  assert.ok(text.includes('| task-only | 3 | 0 | 3 | 0 | 3/3 | 0/3 |'));
+  assert.ok(text.includes('| vectalon | 3 | 0 | 3 | 0 | 0/3 | 0/3 |'));
+  assert.ok(text.includes('not model qualification'));
+});
+
+test('does not turn missing checks, identity mismatch or partial runs into passes', () => {
+  const text = formatPilotReport({ runs: [
+    { condition: 'vectalon', repetition: 1, status: 'passed', identityMatched: false,
+      checks: { typecheck: { ok: true }, tests: { ok: true } } },
+    { condition: 'vectalon', repetition: 2, status: 'timeout' },
+    { condition: 'vectalon', repetition: 3, status: 'not-run' },
+  ] });
+  assert.ok(text.includes('| vectalon | 3 | 0 | 2 | 1 | 1/1 | 1/1 |'));
+  assert.ok(text.includes('unrecorded'));
+  assert.ok(text.includes('timeout'));
+  assert.ok(text.includes('mismatch'));
+});
+
+test('separates initial and repair verification and omits raw artifacts', () => {
+  const text = formatPilotReport({ model: 'model|name\n<script>', runs: [{ condition: 'vectalon-verified-repair',
+    repetition: 1, status: 'passed', identityMatched: true,
+    checks: { typecheck: { ok: true, stdout: 'SECRET' }, tests: { ok: true } },
+    result: { generatedArtifacts: [{ content: 'SECRET' }], attempts: [
+      { kind: 'initial', status: 'parsed', verification: { status: 'failed' }, durationMs: 10 },
+      { kind: 'repair', status: 'parsed', verification: { status: 'passed' }, durationMs: 20 },
+    ] } }] });
+  assert.ok(text.includes('initial: parsed / failed; repair: parsed / passed'));
+  assert.ok(text.includes('| 30 |'));
+  assert.ok(!text.includes('SECRET'));
+  assert.ok(!text.includes('<script>'));
+});
+
+test('keeps positive and zero outcomes as counts, not qualification', () => {
+  const passed = { condition: 'task-only', status: 'passed', identityMatched: true,
+    checks: { typecheck: { ok: true }, tests: { ok: true } } };
+  const text = formatPilotReport({ runs: [passed, { ...passed, condition: 'vectalon' }] });
+  assert.ok(text.includes('| task-only | 1 | 1 | 0 | 0 | 1/1 | 1/1 |'));
+  assert.ok(text.includes('| vectalon | 1 | 1 | 0 | 0 | 1/1 | 1/1 |'));
+  assert.ok(formatPilotReport({ runs: [] }).includes('No runs recorded'));
+});
+
+test('does not count skipped checks or missing durations as measured', () => {
+  const text = formatPilotReport({ runs: [{ condition: 'vectalon', status: 'passed', identityMatched: true,
+    checks: { typecheck: { ok: true, skipped: true }, tests: { ok: true } },
+    result: { attempts: [{ kind: 'initial', status: 'parsed' }] } }] });
+  assert.ok(text.includes('| vectalon | 1 | 0 | 1 | 0 | 0/0 | 1/1 |'));
+  assert.ok(text.includes('incomplete evidence'));
+  assert.ok(text.includes('| skipped | passed | initial: parsed / unrecorded | unrecorded |'));
+});

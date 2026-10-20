@@ -387,6 +387,9 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   into retaining source/raw diagnostics. Exit zero means the runner completed,
   not that candidates passed. The recorded pilot passed 0/3 in both conditions;
   no model improvement or native-build qualification is claimed.
+  Each checkpoint also writes a source-free `report.md`: condition counts,
+  compilation/tests, identity, per-attempt parsing/verification and measured
+  attempt time. Missing checks stay unrecorded; this is not native qualification.
   Add `--repair` for three verification-assisted diagnostics with at most two
   generations each—not an equal-budget comparison with the first-pass pilot.
   The initial repair diagnostic timed out; a subsequent complete run passed 0/3.

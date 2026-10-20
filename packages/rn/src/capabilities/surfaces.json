@@ -3301,7 +3301,7 @@
     "kind": "claims",
     "name": "packages/rn/README.md",
     "source": "packages/rn/README.md",
-    "digest": "sha256:f2316928609699ee5af486043af12e4c3e4c3fb38013158267d4e8025384c2fa",
+    "digest": "sha256:2833905741c0f1b54baac2e47f042e530d6fd8072ea2184754fe3a6be624d075",
     "historical": false,
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",

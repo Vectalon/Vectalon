@@ -4,6 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 const assert = require('assert/strict');
 const { spawnSync } = require('child_process');
+const { formatPilotReport } = require('./pilot-report.cjs');
 const { values: args } = require('node:util').parseArgs({ options: {
   preflight: { type: 'boolean' }, repair: { type: 'boolean' }, constrained: { type: 'boolean' },
   'include-generated': { type: 'boolean' }, model: { type: 'string' }, 'artifact-sha256': { type: 'string' },
@@ -56,8 +57,11 @@ const report = { kind: 'development-pilot', revision, startedAt: new Date().toIS
     ...(repair ? ['Repair diagnostic permits twice the generation budget of the first-pass pilot; not an equal-budget comparison'] : []),
     ...(constrained ? ['Native file-envelope grammar constrains serialization, not file scope or code correctness'] : [])],
   runs: Array.from({ length: 3 }, (_, repetition) => (repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
-const save = () => fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report,
-  (key, value) => !args['include-generated'] && ['generatedArtifacts', 'stdout', 'stderr'].includes(key) ? undefined : value, 2));
+const save = () => {
+  fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report,
+    (key, value) => !args['include-generated'] && ['generatedArtifacts', 'stdout', 'stderr'].includes(key) ? undefined : value, 2));
+  fs.writeFileSync(path.join(output, 'report.md'), formatPilotReport(report));
+};
 async function verify(files, deadline = Infinity) {
   // Reject the whole candidate before writing or executing any generated file.
   if (files.length > 1 || files.some(file => file.path !== target)) {
