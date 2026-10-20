@@ -4,6 +4,8 @@ Before choosing work, read [the canonical product goal and execution plan](docs/
 
 ## Goal
 
+Product principle for every SDK: **make the customer's chosen supported model measurably more effective at developing their app.** Read **Product principle — every SDK** in the canonical roadmap. Choose/check the model → understand approved app context → guide/verify/repair → show same-model improvement → disclose limitations. Do not promise any model becomes a master, silently switch models, or transfer RN qualification to future SDKs.
+
 Reduce the developer effort needed to complete verified engineering tasks with supported AI models. Prove this in React Native/Expo first, expand across mobile, then qualify other development ecosystems individually. Do not advertise future SDKs or universal model training as working capabilities.
 
 ## Current execution order

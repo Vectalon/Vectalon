@@ -4,8 +4,19 @@ const path = require('path');
 const crypto = require('crypto');
 const assert = require('assert/strict');
 const { spawnSync } = require('child_process');
+const { values: args } = require('node:util').parseArgs({ options: {
+  preflight: { type: 'boolean' }, repair: { type: 'boolean' }, constrained: { type: 'boolean' },
+  'include-generated': { type: 'boolean' }, model: { type: 'string' }, 'artifact-sha256': { type: 'string' },
+} });
+assert.equal(args.model !== undefined, args['artifact-sha256'] !== undefined, '--model and --artifact-sha256 must be supplied together');
+assert.ok(args['artifact-sha256'] === undefined || /^[a-f0-9]{64}$/.test(args['artifact-sha256']), 'Expected a lowercase SHA-256 artifact hash');
+assert.ok(!args.constrained || args.repair, '--constrained requires --repair for this diagnostic');
 const repo = path.resolve(__dirname, '../..');
 const load = file => require(path.join(repo, 'packages/rn/dist', file));
+const { getPreset } = load('model/local/presets.js');
+const model = args.model ?? 'qwen2.5-coder-1.5b';
+assert.ok(getPreset(model), 'Unknown model preset; refusing default-model substitution');
+const expectedArtifactSha256 = args['artifact-sha256'] ?? 'cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046';
 const { runSandboxed } = load('sandbox/run.js');
 const { createModelGenerate } = load('bench/modelGenerate.js');
 const { runScenario } = load('bench/runner.js');
@@ -31,9 +42,8 @@ const scenario = {
   fixtures, expect: { files: [target], behaviors: ['setQuantity implements the stated semantics while preserving existing cart operations'] },
   correctness: { tests: true, typecheck: true, lint: false }, axes: ['correctness', 'adherence', 'guardrails'],
 };
-const repair = process.argv.includes('--repair');
-const constrained = process.argv.includes('--constrained');
-assert.ok(!constrained || repair, '--constrained requires --repair for this diagnostic');
+const repair = args.repair;
+const constrained = args.constrained;
 const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair ? 2 : 1, providerCallLimit: 1,
   ...(constrained ? { outputFormat: 'files-json' } : {}) };
 const report = { kind: 'development-pilot', revision, startedAt: new Date().toISOString(),
@@ -41,13 +51,13 @@ const report = { kind: 'development-pilot', revision, startedAt: new Date().toIS
   inferenceModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/model/local/inference.js'))),
   acceptanceSha256: hash(acceptance), taskSha256: hash(JSON.stringify(scenario)),
   runtime: { node: process.version, platform: process.platform, arch: process.arch }, settings,
-  model: 'qwen2.5-coder-1.5b', expectedArtifactSha256: 'cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046',
+  model, expectedArtifactSha256,
   limitations: ['No native build', 'Installed dependencies reused', 'Tokens/cost not measured', 'No human correction-time measurement', 'One public development task; not launch qualification',
     ...(repair ? ['Repair diagnostic permits twice the generation budget of the first-pass pilot; not an equal-budget comparison'] : []),
     ...(constrained ? ['Native file-envelope grammar constrains serialization, not file scope or code correctness'] : [])],
   runs: Array.from({ length: 3 }, (_, repetition) => (repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
 const save = () => fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report,
-  (key, value) => !process.argv.includes('--include-generated') && ['generatedArtifacts', 'stdout', 'stderr'].includes(key) ? undefined : value, 2));
+  (key, value) => !args['include-generated'] && ['generatedArtifacts', 'stdout', 'stderr'].includes(key) ? undefined : value, 2));
 async function verify(files, deadline = Infinity) {
   // Reject the whole candidate before writing or executing any generated file.
   if (files.length > 1 || files.some(file => file.path !== target)) {
@@ -111,7 +121,7 @@ async function main() {
   save();
   assert.equal(report.positiveControl.typecheck.ok, true, 'Verifier control does not compile');
   assert.equal(report.positiveControl.tests.ok, true, 'Verifier control does not satisfy acceptance');
-  if (process.argv.includes('--preflight')) return;
+  if (args.preflight) return;
   for (const row of report.runs) {
     row.status = 'running'; row.phase = 'generation'; row.verifications = []; save();
     console.log(`Start ${row.repetition} ${row.condition}`);

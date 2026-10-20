@@ -993,6 +993,12 @@ Grammar does not enforce file scope, code correctness or completion before the
 token cap. This checkout-only experiment is not a published CLI option.
 The pilot records the compiled native inference module's SHA-256 to distinguish
 diagnostic sampler builds, not to attest the entire dependency/environment state.
+To choose another installed native preset, pass both `--model <preset-id>` and
+`--artifact-sha256 <expected-lowercase-sha256>` to this checkout-only pilot.
+Unknown presets/options and incomplete identities are rejected. Without `--repair`,
+the pilot compares task-only and Vectalon first attempts for that same model.
+The default is still the pinned 1.5B development lane. Preflight checks acceptance
+controls, not model quality; a stronger model is not evidence of harness improvement.
 Source callers can supply
 `verify(files)` returning `{ passed, feedback }`; the caller must bound/isolate
 execution and exclude secrets/held-out answers. Up to 4,000 feedback characters

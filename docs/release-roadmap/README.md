@@ -6,6 +6,22 @@ Core owns reusable contracts, entitlement policy, and harness primitives. Vectal
 
 ## Product direction and expansion gates — agreed 2026-10-14
 
+### Product principle — every SDK, agreed 2026-10-20
+
+**Make the customer's chosen supported model measurably more effective at developing their app.** Product positioning: **Your model. Your app. Stack expertise built into the workflow.** Start with React Native/Expo; every future SDK must follow this same principle and earn its own evidence.
+
+Vectalon supplies approved project knowledge, stack-specific guidance, scoped tools, guardrails, verification and bounded repair. This improves the working environment around a model; it does not inherently change its weights or guarantee expertise. Never promise “any model becomes a master”, perfect code, or universal training. Model choice remains with the customer: disclose incompatibility and failed qualification, recommend alternatives with evidence, and never silently substitute a stronger model to claim improvement.
+
+The common customer journey and release contract for every SDK:
+
+1. **Choose and check the model.** Identify provider/model/version, hardware and privacy requirements. Distinguish connectivity, experimental compatibility and task qualification; a basic response is not qualification. Show qualified, failed or unverified for each named workflow/environment, with evidence and scope.
+2. **Understand the app.** Load only approved project files, architecture, dependencies and conventions; show provenance, exclusions and missing knowledge. Remote code transfer requires an explicit processing choice.
+3. **Guide, verify and repair.** Use relevant stack rules and scoped tools; review changes, run applicable app checks and bound repairs. Refuse unsafe actions and expose unresolved failures.
+4. **Show the difference.** Compare the same model/artifact on held-out tasks with and without Vectalon under comparable budgets. Report first-pass and repaired outcomes, failures, latency/resource use and developer effort separately. A stronger model beating a weaker one is not Vectalon improvement.
+5. **State the limits.** Keep unsupported combinations visible. Do not inherit RN results into another SDK, convert rubric scores into task-success claims, or sell an unverified benefit as qualified.
+
+Core owns reusable qualification/evidence and context/safety contracts when shared; Vectalon owns SDK-specific tasks, rules, execution, model-selection UX and reports; Admin owns access and commercial lifecycle, not model-quality certification. No new universal SDK framework or training service is required for this principle. The existing numbered plan below remains the sole execution roadmap.
+
 Problem: developers spend too much effort supplying project context, correcting incompatible AI changes, and finding out whether generated code actually works. Promise a scoped, reviewable change with verification evidence and unresolved issues—not perfect code, universal training, or autonomous expertise.
 
 | Phase | Deliverable | Gate before expansion |
@@ -179,6 +195,7 @@ This is the single execution plan and checklist. The dated audit above is the st
 ### Phase B — Make the core developer journey excellent
 
 - [ ] **Step 4 — Prove fresh install and first useful result.**
+  - **Model-choice gate:** onboarding identifies the chosen model and processing destination, separates connectivity from workflow qualification, and shows failed/unverified lanes without silently switching models. Start with the existing model configuration and reports rather than another command.
   - **Progress (2026-10-13):** npm returns 404 for the documented unscoped `vectalon` package. Corrected public docs, website, CLI hints and generated onboarding/templates to `npx --package @vectalon-dev/rn vectalon`; added a regression check across those surfaces. Published `0.22.4` reports its version successfully from a fresh temporary directory with dependency lifecycle scripts disabled. This proves package resolution/startup, not native installation or a useful app workflow. Product tests: 13 pass; affected adapter/onboarding tests: 146 pass.
   - **Do:** install the packed candidate into clean and existing RN/Expo apps; test onboarding, inspection, doctor output, configuration, missing dependencies, offline startup, and actionable recovery messages.
   - **Repos:** Core: configuration/error contracts if implicated. Vectalon: package contents, CLI onboarding, quickstart. Admin: no changes unless trial activation blocks the journey.
@@ -205,6 +222,7 @@ This is the single execution plan and checklist. The dated audit above is the st
 **Checkpoint B:** install, project context, and evaluation evidence are trustworthy. Do not optimize against misleading scores.
 
 - [ ] **Step 7 — Fix real-model failures and safe execution.**
+  - **Model-effectiveness gate:** qualification belongs to a named model/artifact × SDK/version × workflow × environment, not to a provider brand. Compare each model against itself; recommend stronger alternatives honestly when a lane fails, without promising every model can meet the gate.
   - **Repeatability blocker (2026-10-13):** a subsequent identical navigation lane with source export scored 96% guardrails / 0% adherence because `SettingsDetailScreen.tsx` was absent. Retained output also contains unresolved screen identifiers and a placeholder deep-link handler. The earlier 100% adherence sample is not repeatable proof. Source report: `/private/tmp/vectalon-navigation-source-2026-10-13.json`; no generated code executed.
   - **Filesystem boundary (2026-10-13):** custom benchmark fixture/expected/fix paths now require normalized portable relative paths. Direct live-run callers also validate fixture/generated paths before materialization; partial temp-project writes are cleaned up on failure. 175 benchmark/CLI tests pass, including traversal/absolute/Windows/control-character refusals and cleanup. The model parser already filtered unsafe paths, but custom packs and direct generators needed their own boundary. This does not isolate process execution: `bench --live`/`--install` must use reviewed inputs in a disposable credential-free environment until a verified isolation lane exists. Core/Admin runtime unchanged.
   - **Follow-up (2026-10-13):** shared implementation prompts no longer override explicit module paths with request-derived names. The deprecated-API check distinguishes React Native's removed Navigator from valid React Navigation stack components, retaining native import/alias/require regressions. Latest focused navigation run returns both required files, 100% adherence and 96% guardrails; correctness remains unscored. It still fails the 100% guardrail threshold and does not qualify other scenarios. Report: `/private/tmp/vectalon-navigation-guardrail-origin-2026-10-13.json`. Deterministic baseline comparisons retain their rubric-only scope on both sides and now label that limitation; they are not task-completeness evidence. Verification: 474 benchmark/model/workflow tests before the guardrail correction; 219 guardrail/benchmark/harness tests after it, plus build and targeted lint.
@@ -216,6 +234,7 @@ This is the single execution plan and checklist. The dated audit above is the st
   - **Depends on:** 6. **Verify:** real inference with retained redacted outputs; native compile/tests for claimed workflows; verify a fallback or deterministic stub never masquerades as model success.
 
 - [ ] **Step 8 — Build the ten-app validation laboratory.**
+  - **Visible proof gate:** extend existing reports with baseline versus guided versus repair-assisted outcomes and qualified/failed/unverified status. Include zero/negative improvement, sample counts and missing measurements; never turn an unrun cell green.
   - **Do:** create or complete ten runnable apps with pinned dependencies and distinct configurations: minimal Expo; Expo Router; navigation/state; forms/validation; network/cache; persistence/offline; bare RN/native modules; animation/gestures; monorepo/shared packages; upgrade/legacy compatibility. Choose concrete supported versions during setup.
   - **Repos:** Core: reusable test contracts only. Vectalon: apps, command runner, reports and demo instructions. Admin: safe entitlement fixtures, not production customer records.
   - **Done when:** each app installs and runs on its declared platform; commands are classified as applicable/not applicable with reasons. Reports organize app, command, tier, model, output/diff, duration, test/build result, and failure reproduction.
@@ -404,6 +423,8 @@ Bhishak owns the release decision. Each checked item needs an artifact or report
 - [ ] Expand promotion only after canary findings are resolved and repeated successfully. Review customer outcomes after the first week. GA and supported training integrations require separate evidence, not merely more commands.
 
 ## Next action and audit boundary
+
+Product-direction implementation (2026-10-20): the all-SDK principle above now governs the root README and agent entry point. Steps 4, 7 and 8 explicitly require customer model choice, workflow-specific qualification and visible same-model improvement. The existing local pilot accepts paired `--model`/`--artifact-sha256` inputs, rejects unknown presets and incomplete identities before creating output, and preserves the default lane and evaluation budgets. This enables controlled model selection for development experiments, not finished onboarding or universal model qualification. Core/Admin contracts and existing customer access are unchanged.
 
 Constrained-generation diagnostic (2026-10-19, [source-free evidence](evidence/cart-grammar-pilot-2026-10-19.json)): the opt-in native-local `files-json` grammar produced six parsed envelopes with matching model-file hashes and `stopGenerationTrigger` termination. All six candidates failed verification: **0/3 task passes**, no improvement established. Grammar constrains serialization, not scope or implementation correctness; compilation and tests remain independent gates. The source pilot accepts `--repair --constrained`, preserving token/attempt limits and recording the requested format; each attempt records provider-confirmed application. Unsupported providers/tool combinations refuse the request, fallback is disabled, and the benchmark rejects missing acknowledgement. Existing defaults are unchanged. Regression evidence: 418 model/benchmark/CLI tests, TypeScript and targeted lint passed; inverting the acknowledgement check failed both regression cases. README and website CLI guidance are aligned. Core/Admin unchanged; no package release.
 

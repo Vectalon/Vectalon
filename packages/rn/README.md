@@ -399,6 +399,12 @@ node packages/rn/bin/rn-vectalon.js pull balanced # only when no suitable model 
   cap. This is a checkout-only experiment, not a published CLI option.
   The pilot records the compiled native inference module's SHA-256 to distinguish
   diagnostic sampler builds; this is not full dependency/environment attestation.
+  To compare another installed native preset, supply both `--model <preset-id>`
+  and `--artifact-sha256 <expected-lowercase-sha256>`. Unknown presets/options and
+  missing identities are rejected. Omit `--repair` for paired task-only/Vectalon
+  first attempts; compare each model against itself, not a stronger model against
+  the default. The default remains the pinned 1.5B development lane; availability
+  and preflight success do not qualify a model's task performance.
   Source callers may supply `verify(files)` returning `{ passed, feedback }`.
   Keep this callback bounded and isolated, and exclude secrets/held-out answers
   from feedback. Up to 4,000 feedback characters reach the repair prompt, not

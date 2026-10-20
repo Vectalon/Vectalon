@@ -1,6 +1,12 @@
 # Vectalon
 
-**The adaptive AI harness for developers — React Native, iOS, Android, Python, and beyond.**
+**Your model. Your app. Stack expertise built into the workflow.**
+
+Vectalon's goal is to make your chosen supported model measurably more effective
+at developing your app, starting with React Native/Expo. Project context, guidance,
+guardrails and verification are not universal model training or guaranteed expertise.
+Task improvement is still being qualified; future SDKs must independently meet the
+same [product principle and release gates](docs/release-roadmap/README.md#product-principle--every-sdk-agreed-2026-10-20).
 
 Current RN release: <!-- product-fact:rn-version -->0.22.5<!-- /product-fact --> ·
 benchmark scenarios: <!-- product-fact:benchmark-scenarios -->43<!-- /product-fact --> ·
