@@ -54,3 +54,14 @@ test('does not count skipped checks or missing durations as measured', () => {
   assert.ok(text.includes('incomplete evidence'));
   assert.ok(text.includes('| skipped | passed | initial: parsed / unrecorded | unrecorded |'));
 });
+
+test('identifies frozen review task semantics and records whole-run time independently', () => {
+  const text = formatPilotReport({ task: { id: 'order-copy-review', kind: 'review' }, appRevision: 'frozen-app',
+    runs: [{ condition: 'task-only', status: 'passed', identityMatched: true, durationMs: 70,
+      checks: { typecheck: { ok: true }, tests: { ok: true } },
+      result: { attempts: [{ kind: 'initial', status: 'parsed', durationMs: 20 }] } }] });
+  assert.ok(text.includes('workflow: review'));
+  assert.ok(text.includes('app revision: frozen-app'));
+  assert.ok(text.includes('a compile/runtime error is not detection'));
+  assert.ok(text.includes('| 20 | 70 |'));
+});

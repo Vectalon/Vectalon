@@ -14,6 +14,9 @@ function formatPilotReport(report) {
     'Check fractions count only recorded, non-skipped checks. Missing checks are not passes. Task passes require matching model identity and both app checks; pending runs remain in the planned count.', '',
     '| Condition | Planned | Task passes | Failed/error/timeout/incomplete | Pending | Typecheck passed/checked | Tests passed/checked |',
     '|---|---:|---:|---:|---:|---:|---:|'];
+  if (report.task) lines.splice(4, 0,
+    `Task: ${cell(report.task.id)} · workflow: ${cell(report.task.kind)} · app revision: ${cell(report.appRevision)}`, '',
+    ...(report.task.kind === 'review' ? ['Review passes require the generated test to pass on the original service and fail through an assertion on the proposed service; a compile/runtime error is not detection.', ''] : []));
   for (const condition of [...new Set(runs.map(row => row.condition))]) {
     const rows = runs.filter(row => row.condition === condition);
     const countChecks = name => {
@@ -25,8 +28,8 @@ function formatPilotReport(report) {
   if (!runs.length) lines.push('', 'No runs recorded.');
   lines.push('', '## Repetitions and attempts', '',
     'Attempt entries show kind: parsing / supplied verification. Unrecorded verification is not success. Attempt time includes in-loop verification but excludes final app checks; it is not total workflow latency.', '',
-    '| Condition | Repeat | Outcome | Identity | Typecheck | Tests | Attempts | Attempt ms |',
-    '|---|---:|---|---|---|---|---|---:|');
+    '| Condition | Repeat | Outcome | Identity | Typecheck | Tests | Attempts | Attempt ms | Run ms |',
+    '|---|---:|---|---|---|---|---|---:|---:|');
   for (const row of runs) {
     const attempts = row.result?.attempts;
     const times = attempts?.map(attempt => attempt.durationMs);
@@ -35,7 +38,8 @@ function formatPilotReport(report) {
     const details = attempts?.map(attempt => `${cell(attempt.kind)}: ${cell(attempt.status)} / ${cell(attempt.verification?.status)}`).join('; ') || 'unrecorded';
     const identity = row.identityMatched === true ? 'matched' : row.identityMatched === false ? 'mismatch' : 'unrecorded';
     const outcome = row.status === 'passed' && !passed(row) ? 'incomplete evidence' : cell(row.status);
-    lines.push(`| ${cell(row.condition)} | ${cell(row.repetition)} | ${outcome} | ${identity} | ${check(row.checks?.typecheck)} | ${check(row.checks?.tests)} | ${details} | ${duration} |`);
+    const runDuration = Number.isFinite(row.durationMs) && row.durationMs >= 0 ? row.durationMs : 'unrecorded';
+    lines.push(`| ${cell(row.condition)} | ${cell(row.repetition)} | ${outcome} | ${identity} | ${check(row.checks?.typecheck)} | ${check(row.checks?.tests)} | ${details} | ${duration} | ${runDuration} |`);
   }
   return lines.join('\n') + '\n';
 }

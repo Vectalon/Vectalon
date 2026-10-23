@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+  "model": "qwen2.5-coder-3b",
+  "artifactSha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+  "tasks": ["stock-filter", "current-session", "order-copy-review"],
+  "repetitions": 3,
+  "settings": { "temperature": 0.2, "maxTokens": 2048, "maxAttempts": 1, "providerCallLimit": 1 },
+  "conditions": ["task-only", "vectalon"],
+  "timeoutMs": 180000,
+  "limitations": [
+    "Three newly frozen tasks in one app; insufficient for reliable improvement or launch qualification",
+    "Seeds and input-token accounting unavailable in this inference path",
+    "Review means an executable regression test, not qualification of the review CLI",
+    "Native verification remains a separate per-candidate gate"
+  ]
+}

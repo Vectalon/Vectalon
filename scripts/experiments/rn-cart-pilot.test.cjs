@@ -11,6 +11,11 @@ for (const [name, args, message] of [
   ['unknown model', ['--model', 'unknown', '--artifact-sha256', 'a'.repeat(64)], 'refusing default-model substitution'],
   ['unknown option', ['--modle', 'qwen2.5-coder-3b'], 'Unknown option'],
   ['unsupported grammar condition', ['--constrained'], '--constrained requires --repair'],
+  ['unknown frozen task', ['--task', 'unknown'], 'Unknown frozen evaluation task'],
+  ['empty frozen task', ['--task', ''], 'Unknown frozen evaluation task'],
+  ['frozen task repair', ['--task', 'stock-filter', '--repair'], 'does not allow repair'],
+  ['frozen model substitution', ['--task', 'stock-filter', '--model', 'qwen2.5-coder-1.5b', '--artifact-sha256', 'a'.repeat(64)], 'model cannot change'],
+  ['frozen artifact substitution', ['--task', 'stock-filter', '--model', 'qwen2.5-coder-3b', '--artifact-sha256', 'a'.repeat(64)], 'artifact cannot change'],
 ]) {
   test(`rejects ${name} before creating experiment output`, () => {
     const result = spawnSync(process.execPath, [path.join(__dirname, 'rn-cart-pilot.cjs'), ...args], { encoding: 'utf8', timeout: 10000 });
