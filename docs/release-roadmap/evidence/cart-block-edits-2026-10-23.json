@@ -1,0 +1,581 @@
+{
+  "kind": "development-pilot",
+  "revision": "8aef0abef8625b19f63a1293c45a0a45a4933094",
+  "appRevision": "8aef0abef8625b19f63a1293c45a0a45a4933094",
+  "startedAt": "2026-10-23T13:10:16.055Z",
+  "runnerSha256": "814f4d2dbcbd3d0fbb8bb4725e6dac699f2600a2c2448bdb5b5540c6dfd48221",
+  "appArchiveSha256": "4786d65d6b4c9dcb7dc487b83db973851101132f59d83f6d7093a475ce16ac1e",
+  "generationModuleSha256": "168e88f740730479b4658b0860640a0fa38cafa1f87f0b5f27dc8b06d28d88e0",
+  "inferenceModuleSha256": "2d6ffa6cf36abd1f5ab57c20255388db1837790fa652ff994348b0a62432d9b0",
+  "acceptanceSha256": "16cbc815356fcf7e4bb7f5db3c2528913875e4ddf7de46c9808551a72496feb6",
+  "taskSha256": "e054dac45e8ad55d5e7668b9eed65b879647c11d1c8365333a904df1a3696760",
+  "runtime": {
+    "node": "v24.22.1",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "settings": {
+    "temperature": 0.2,
+    "maxTokens": 2048,
+    "maxAttempts": 1,
+    "providerCallLimit": 1,
+    "toolEnvelope": true,
+    "requiredTool": "propose_edits",
+    "anchorMode": "top-level-source-blocks"
+  },
+  "model": "qwen2.5-coder-3b",
+  "expectedArtifactSha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+  "limitations": [
+    "No native build",
+    "Installed dependencies reused",
+    "Tokens/cost not measured",
+    "No human correction-time measurement",
+    "One public development task; not launch qualification",
+    "Scoped edit protocol differs from full-file generation; single existing file, at most eight edits, no repairs",
+    "Block IDs select unique original top-level TypeScript/JSX spans; repeated selections are rejected and exact application is checked again",
+    "Block catalogue repeats approved source in context; input-token cost is not measured",
+    "Source-grounded grammar does not establish code correctness or task improvement"
+  ],
+  "runs": [
+    {
+      "repetition": 1,
+      "condition": "vectalon-edits",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "cart-quantity-pilot",
+        "title": "Set cart quantity",
+        "suite": "data-flow",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useCart.tsx"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 16109,
+            "fileCount": 1,
+            "adherence": 0.6666666666666666,
+            "guardrails": 0.96,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:c8880125495e7a0fdecba6441e5c791ef13de1e012c3b12579a9b4ff7f02ca5c",
+            "requestDigest": "sha256:aaf9c7eda12cf8d92f6b58f0e0bb0d4dd42fbaa290c907a2071685c4f89c23bb",
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "editApplication": "applied",
+            "provider": "local",
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            },
+            "stopReason": "stopGenerationTrigger",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 16033
+              }
+            ]
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useCart.tsx",
+            "passed": 24,
+            "failed": 1,
+            "skipped": 11,
+            "ok": false,
+            "failedRules": [
+              "No unused imports"
+            ]
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.6666666666666666,
+          "guardrails": 0.96
+        },
+        "composite": 0.8133333333333334
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 752
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7046
+        }
+      },
+      "durationMs": 24260
+    },
+    {
+      "repetition": 2,
+      "condition": "vectalon-edits",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "cart-quantity-pilot",
+        "title": "Set cart quantity",
+        "suite": "data-flow",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useCart.tsx"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 11651,
+            "fileCount": 1,
+            "adherence": 0.6666666666666666,
+            "guardrails": 0.96,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:c8880125495e7a0fdecba6441e5c791ef13de1e012c3b12579a9b4ff7f02ca5c",
+            "requestDigest": "sha256:aaf9c7eda12cf8d92f6b58f0e0bb0d4dd42fbaa290c907a2071685c4f89c23bb",
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "editApplication": "applied",
+            "provider": "local",
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            },
+            "stopReason": "stopGenerationTrigger",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 11646
+              }
+            ]
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useCart.tsx",
+            "passed": 24,
+            "failed": 1,
+            "skipped": 11,
+            "ok": false,
+            "failedRules": [
+              "No unused imports"
+            ]
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.6666666666666666,
+          "guardrails": 0.96
+        },
+        "composite": 0.8133333333333334
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 781
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6512
+        }
+      },
+      "durationMs": 19058
+    },
+    {
+      "repetition": 3,
+      "condition": "vectalon-edits",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "cart-quantity-pilot",
+        "title": "Set cart quantity",
+        "suite": "data-flow",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useCart.tsx"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 13701,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 1,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:c8880125495e7a0fdecba6441e5c791ef13de1e012c3b12579a9b4ff7f02ca5c",
+            "requestDigest": "sha256:aaf9c7eda12cf8d92f6b58f0e0bb0d4dd42fbaa290c907a2071685c4f89c23bb",
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "editApplication": "applied",
+            "provider": "local",
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            },
+            "stopReason": "stopGenerationTrigger",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 13698
+              }
+            ]
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useCart.tsx",
+            "passed": 25,
+            "failed": 0,
+            "skipped": 11,
+            "ok": true,
+            "failedRules": []
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 1
+        },
+        "composite": 1
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 764
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6423
+        }
+      },
+      "durationMs": 21008
+    }
+  ],
+  "negativeControl": {
+    "typecheck": {
+      "ok": false,
+      "exitCode": 2,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1343
+    },
+    "tests": {
+      "ok": false,
+      "exitCode": 1,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 7881
+    }
+  },
+  "positiveControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1067
+    },
+    "tests": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 6958
+    }
+  },
+  "responseInspection": [
+    {
+      "repetition": 1,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "8d5a0654e5d5664a95e1acf1cce9638ee372c832c96dc67fcb971395f6b3cb8e",
+          "lengthCharacters": 1429,
+          "validJson": true,
+          "topLevelKeys": [
+            "tool",
+            "arguments"
+          ],
+          "tool": "propose_edits",
+          "editCount": 6,
+          "uniqueBlockSelections": true,
+          "edits": [
+            {
+              "blockId": "block-3",
+              "originalType": "ExportNamedDeclaration",
+              "originalOccurrences": 1,
+              "op": "insert-after",
+              "replacementLengthCharacters": 24,
+              "replacementParseable": false,
+              "replacementTopLevelTypes": null
+            },
+            {
+              "blockId": "block-4",
+              "originalType": "TSInterfaceDeclaration",
+              "originalOccurrences": 1,
+              "op": "replace",
+              "replacementLengthCharacters": 57,
+              "replacementParseable": false,
+              "replacementTopLevelTypes": null
+            },
+            {
+              "blockId": "block-5",
+              "originalType": "VariableDeclaration",
+              "originalOccurrences": 1,
+              "op": "insert-after",
+              "replacementLengthCharacters": 60,
+              "replacementParseable": true,
+              "replacementTopLevelTypes": [
+                "VariableDeclaration"
+              ]
+            },
+            {
+              "blockId": "block-6",
+              "originalType": "ExportNamedDeclaration",
+              "originalOccurrences": 1,
+              "op": "insert-after",
+              "replacementLengthCharacters": 40,
+              "replacementParseable": false,
+              "replacementTopLevelTypes": null
+            },
+            {
+              "blockId": "block-7",
+              "originalType": "ExportNamedDeclaration",
+              "originalOccurrences": 1,
+              "op": "replace",
+              "replacementLengthCharacters": 43,
+              "replacementParseable": true,
+              "replacementTopLevelTypes": [
+                "VariableDeclaration"
+              ]
+            },
+            {
+              "blockId": "block-2",
+              "originalType": "ImportDeclaration",
+              "originalOccurrences": 1,
+              "op": "insert-after",
+              "replacementLengthCharacters": 61,
+              "replacementParseable": true,
+              "replacementTopLevelTypes": [
+                "TSTypeAliasDeclaration"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repetition": 2,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "8f67acdd7aa1f9d6ea7fd240592fc5800a9cd69b48837315fe3e067bb3e9ef4f",
+          "lengthCharacters": 1212,
+          "validJson": true,
+          "topLevelKeys": [
+            "tool",
+            "arguments"
+          ],
+          "tool": "propose_edits",
+          "editCount": 5,
+          "uniqueBlockSelections": true,
+          "edits": [
+            {
+              "blockId": "block-3",
+              "originalType": "ExportNamedDeclaration",
+              "originalOccurrences": 1,
+              "op": "insert-after",
+              "replacementLengthCharacters": 24,
+              "replacementParseable": false,
+              "replacementTopLevelTypes": null
+            },
+            {
+              "blockId": "block-4",
+              "originalType": "TSInterfaceDeclaration",
+              "originalOccurrences": 1,
+              "op": "replace",
+              "replacementLengthCharacters": 57,
+              "replacementParseable": false,
+              "replacementTopLevelTypes": null
+            },
+            {
+              "blockId": "block-5",
+              "originalType": "VariableDeclaration",
+              "originalOccurrences": 1,
+              "op": "insert-after",
+              "replacementLengthCharacters": 3,
+              "replacementParseable": false,
+              "replacementTopLevelTypes": null
+            },
+            {
+              "blockId": "block-6",
+              "originalType": "ExportNamedDeclaration",
+              "originalOccurrences": 1,
+              "op": "insert-after",
+              "replacementLengthCharacters": 33,
+              "replacementParseable": false,
+              "replacementTopLevelTypes": null
+            },
+            {
+              "blockId": "block-7",
+              "originalType": "ExportNamedDeclaration",
+              "originalOccurrences": 1,
+              "op": "replace",
+              "replacementLengthCharacters": 126,
+              "replacementParseable": false,
+              "replacementTopLevelTypes": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repetition": 3,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "130a6f93c240e9dfda484563d6ddc745159bf1b3240d6147ee92e48a581bd43f",
+          "lengthCharacters": 1511,
+          "validJson": true,
+          "topLevelKeys": [
+            "tool",
+            "arguments"
+          ],
+          "tool": "propose_edits",
+          "editCount": 7,
+          "uniqueBlockSelections": true,
+          "edits": [
+            {
+              "blockId": "block-3",
+              "originalType": "ExportNamedDeclaration",
+              "originalOccurrences": 1,
+              "op": "insert-after",
+              "replacementLengthCharacters": 24,
+              "replacementParseable": false,
+              "replacementTopLevelTypes": null
+            },
+            {
+              "blockId": "block-4",
+              "originalType": "TSInterfaceDeclaration",
+              "originalOccurrences": 1,
+              "op": "replace",
+              "replacementLengthCharacters": 53,
+              "replacementParseable": false,
+              "replacementTopLevelTypes": null
+            },
+            {
+              "blockId": "block-5",
+              "originalType": "VariableDeclaration",
+              "originalOccurrences": 1,
+              "op": "insert-after",
+              "replacementLengthCharacters": 60,
+              "replacementParseable": true,
+              "replacementTopLevelTypes": [
+                "VariableDeclaration"
+              ]
+            },
+            {
+              "blockId": "block-6",
+              "originalType": "ExportNamedDeclaration",
+              "originalOccurrences": 1,
+              "op": "replace",
+              "replacementLengthCharacters": 71,
+              "replacementParseable": false,
+              "replacementTopLevelTypes": null
+            },
+            {
+              "blockId": "block-7",
+              "originalType": "ExportNamedDeclaration",
+              "originalOccurrences": 1,
+              "op": "insert-after",
+              "replacementLengthCharacters": 43,
+              "replacementParseable": false,
+              "replacementTopLevelTypes": null
+            },
+            {
+              "blockId": "block-1",
+              "originalType": "ImportDeclaration",
+              "originalOccurrences": 1,
+              "op": "replace",
+              "replacementLengthCharacters": 0,
+              "replacementParseable": true,
+              "replacementTopLevelTypes": []
+            },
+            {
+              "blockId": "block-2",
+              "originalType": "ImportDeclaration",
+              "originalOccurrences": 1,
+              "op": "replace",
+              "replacementLengthCharacters": 0,
+              "replacementParseable": true,
+              "replacementTopLevelTypes": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "inspectionMethod": "Block IDs reconstructed from the original source with the same bundled parser; proposed text parsed without execution for supplemental syntax inspection. Parseable fragments do not establish complete or correct declarations. Adapter application and app checks remain recorded independently.",
+  "inspectionParserVersion": "7.29.8"
+}
