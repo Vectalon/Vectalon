@@ -4,6 +4,12 @@ const passed = row => row.status === 'passed' && row.identityMatched === true &&
   check(row.checks?.typecheck) === 'passed' && check(row.checks?.tests) === 'passed';
 const pending = row => ['running', 'not-run'].includes(row.status);
 
+function serializePilotReport(report, { includeGenerated = false, includeRawResponse = false } = {}) {
+  return JSON.stringify(report, (key, value) =>
+    (key === 'rawResponses' && !includeRawResponse) ||
+    (!includeGenerated && ['generatedArtifacts', 'stdout', 'stderr'].includes(key)) ? undefined : value, 2);
+}
+
 function formatPilotReport(report) {
   const runs = report.runs || [];
   const lines = ['# RN development pilot', '',
@@ -45,4 +51,4 @@ function formatPilotReport(report) {
   return lines.join('\n') + '\n';
 }
 
-module.exports = { formatPilotReport };
+module.exports = { formatPilotReport, serializePilotReport };

@@ -48,6 +48,8 @@ export interface ModelGenerateOptions {
    * "generating…" line.
    */
   onTextChunk?: (text: string) => void
+  /** Opt-in local diagnostics before parsing; never retained in benchmark results. May contain project source. */
+  onRawResponse?: (content: string, attempt: Pick<BenchGenerationAttempt, 'index' | 'kind'>) => void
 }
 
 function quality(files: BenchGeneratedFile[], scenario: BenchScenario): { adherence: number | null; guardrails: number | null; failures: string[]; score: number } {
@@ -169,6 +171,8 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
         record.outputFormat = response?.outputFormat
         record.providerCalls = response?.providerCalls?.map(({ provider, status, durationMs }) => ({ provider, status, durationMs }))
         const content = response?.content || ''
+        try { options.onRawResponse?.(content, { index: record.index, kind }) }
+        catch { /* Diagnostic observers must not change generation or selection. */ }
         if (!content) { record.status = 'empty'; return null }
         if (isModelFallback(content)) { record.status = 'fallback'; return null }
         if (input.outputFormat && response.outputFormat !== input.outputFormat) return null

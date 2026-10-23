@@ -1,7 +1,25 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { formatPilotReport } = require('./pilot-report.cjs');
+const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs');
 const evidence = require('../../docs/release-roadmap/evidence/cart-3b-paired-pilot-2026-10-20.json');
+
+test('requires independent opt-in for raw responses and generated diagnostics at every depth', () => {
+  const report = { runs: [{ status: 'failed', rawResponses: [{ index: 1, kind: 'initial', content: 'RAW_SECRET' }],
+    result: { generatedArtifacts: [{ content: 'SOURCE_SECRET' }] },
+    checks: { tests: { ok: false, stdout: 'OUT_SECRET', stderr: 'ERR_SECRET' } } }] };
+  assert.ok(!serializePilotReport(report).includes('SECRET'));
+  const sourceOnly = serializePilotReport(report, { includeGenerated: true });
+  assert.ok(sourceOnly.includes('SOURCE_SECRET'));
+  assert.ok(!sourceOnly.includes('RAW_SECRET'));
+  const rawOnly = serializePilotReport(report, { includeRawResponse: true });
+  assert.ok(rawOnly.includes('RAW_SECRET'));
+  assert.ok(!rawOnly.includes('SOURCE_SECRET'));
+  assert.ok(!rawOnly.includes('OUT_SECRET'));
+  const full = JSON.parse(serializePilotReport(report, { includeGenerated: true, includeRawResponse: true }));
+  assert.deepEqual(full, report);
+  assert.ok(!formatPilotReport(report).includes('SECRET'));
+  assert.equal(JSON.parse(serializePilotReport(report)).runs[0].status, 'failed');
+});
 
 test('retains the observed negative comparison without claiming improvement', () => {
   const text = formatPilotReport(evidence);

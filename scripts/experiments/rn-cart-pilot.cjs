@@ -4,11 +4,12 @@ const path = require('path');
 const crypto = require('crypto');
 const assert = require('assert/strict');
 const { spawnSync } = require('child_process');
-const { formatPilotReport } = require('./pilot-report.cjs');
+const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs');
 const { freeze, taskDefinition, reviewImportsAllowed } = require('./one-app-tasks.cjs');
 const { values: args } = require('node:util').parseArgs({ options: {
   preflight: { type: 'boolean' }, repair: { type: 'boolean' }, constrained: { type: 'boolean' },
   'include-generated': { type: 'boolean' }, model: { type: 'string' }, 'artifact-sha256': { type: 'string' },
+  'include-raw-response': { type: 'boolean' },
   task: { type: 'string' },
 } });
 assert.equal(args.model !== undefined, args['artifact-sha256'] !== undefined, '--model and --artifact-sha256 must be supplied together');
@@ -92,8 +93,9 @@ const report = { kind: task ? 'frozen-one-app-evaluation' : 'development-pilot',
     ...(constrained ? ['Native file-envelope grammar constrains serialization, not file scope or code correctness'] : [])],
   runs: Array.from({ length: task ? freeze.repetitions : 3 }, (_, repetition) => (repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
 const save = () => {
-  fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report,
-    (key, value) => !args['include-generated'] && ['generatedArtifacts', 'stdout', 'stderr'].includes(key) ? undefined : value, 2));
+  fs.writeFileSync(path.join(output, 'report.json'), serializePilotReport(report, {
+    includeGenerated: args['include-generated'], includeRawResponse: args['include-raw-response'],
+  }));
   fs.writeFileSync(path.join(output, 'report.md'), formatPilotReport(report));
 };
 async function verify(files, deadline = Infinity) {
@@ -215,7 +217,10 @@ async function main() {
               ...(!checks.typecheck.ok ? ['Typecheck failed. Preserve the requested public interface.'] : [])].join('\n') };
       };
       const generate = createModelGenerate({ modelRouter: router, promptMode: repair ? 'vectalon' : row.condition,
-        ...settings, ...(repair ? { verify: verifier } : {}) });
+        ...settings, ...(repair ? { verify: verifier } : {}),
+        ...(args['include-raw-response'] ? { onRawResponse: (content, attempt) => {
+          (row.rawResponses ??= []).push({ ...attempt, content }); save();
+        } } : {}) });
       row.result = await runScenario(scenario, { generate, includeGenerated: true });
       if (Date.now() >= deadline) { row.status = 'timeout'; save(); process.exitCode = 1; break; }
       row.identityMatched = Boolean(row.result.attempts?.length) && row.result.attempts.every(attempt =>

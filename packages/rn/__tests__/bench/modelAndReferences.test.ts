@@ -265,6 +265,36 @@ describe('bench reference solutions (M6)', () => {
 })
 
 describe('bench model generate seam (M5)', () => {
+  it.each(['', 'not JSON', '[Local model fallback] unavailable'])('observes exact raw response before rejection: %s', async content => {
+    const onRawResponse = jest.fn()
+    const onAttempts = jest.fn()
+    const files = await createModelGenerate({ modelRouter: stubRouter(content), maxAttempts: 1, onRawResponse })(validScenario(), onAttempts)
+    expect(files).toEqual([])
+    expect(onRawResponse).toHaveBeenCalledWith(content, { index: 1, kind: 'initial' })
+    expect(onAttempts.mock.calls[0][0][0]).not.toHaveProperty('content')
+    expect(onAttempts.mock.calls[0][0][0]).not.toHaveProperty('rawResponses')
+  })
+
+  it('keeps raw initial and retry responses distinct without changing requests or parsed files', async () => {
+    const content = JSON.stringify({ files: [{ path: 'src/Value.ts', content: 'export const value = 1' }] })
+    const generate = jest.fn().mockResolvedValueOnce({ content: 'invalid' }).mockResolvedValueOnce({ content })
+    const onRawResponse = jest.fn()
+    const files = await createModelGenerate({ modelRouter: { generate } as unknown as ModelGenerateOptions['modelRouter'], maxAttempts: 2, onRawResponse })(validScenario())
+    expect(onRawResponse.mock.calls).toEqual([
+      ['invalid', { index: 1, kind: 'initial' }], [content, { index: 2, kind: 'parse-retry' }],
+    ])
+    expect(files).toEqual([{ path: 'src/Value.ts', content: 'export const value = 1' }])
+    expect(generate.mock.calls[0][0]).not.toHaveProperty('onRawResponse')
+  })
+
+  it('does not change generation when a diagnostic observer throws', async () => {
+    const content = JSON.stringify({ files: [{ path: 'src/Value.ts', content: 'export const value = 1' }] })
+    const files = await createModelGenerate({ modelRouter: stubRouter(content), maxAttempts: 1,
+      onRawResponse: () => { throw new Error('private diagnostic failure') },
+    })(validScenario())
+    expect(files).toEqual([{ path: 'src/Value.ts', content: 'export const value = 1' }])
+  })
+
   it.each(['Local model fallback', 'Wasm model fallback', 'Model fallback'])('rejects %s even when it echoes valid generated-file JSON', async marker => {
     const content = `[${marker}: unavailable]\n${JSON.stringify({ files: [{ path: 'src/Output.ts', content: 'export const value = 1' }] })}`
     expect(parseModelOutput(content)).toBeNull()
