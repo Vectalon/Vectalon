@@ -6,13 +6,16 @@ end-to-end, rendered with [VHS](https://github.com/charmbracelet/vhs)
 
 ## The demo project
 
-Every tape runs inside **`apps/website/demo/login-app`** — a real Expo 53 /
-React Native 0.79 app with **19 screens** (auth flow, catalog, cart, checkout,
+Every tape runs inside **`apps/website/demo/login-app`** — an Expo 58 /
+React Native 0.88 app with **19 screens** (auth flow, catalog, cart, checkout,
 orders, profile, security, billing, activity, support), each with its own hook,
 service, and test, wired through `@react-navigation/native-stack`. The CLI
 commands (`init`, `arch`, `sec`, `feature`, `bench`, `archive`, `selftest`)
 read the project's actual source, so the recording shows the tool working on
 the same codebase a visitor would clone.
+
+Existing recordings predate this dependency upgrade; they do not demonstrate
+the current native build or model qualification. See the app's [native setup](../login-app/REPLAY.md#native-verification).
 
 ## Watch it
 
