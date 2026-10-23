@@ -28,6 +28,7 @@ export function Button({
 }) {
   const bg =
     variant === 'primary' ? styles.btnPrimary : variant === 'danger' ? styles.btnDanger : styles.btnSecondary;
+  const color = variant === 'secondary' ? '#111827' : '#fff';
   return (
     <Pressable
       style={({ pressed }) => [
@@ -41,7 +42,7 @@ export function Button({
       accessibilityRole="button"
       accessibilityLabel={label}
     >
-      {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>{label}</Text>}
+      {loading ? <ActivityIndicator color={color} /> : <Text style={[styles.btnText, { color }]}>{label}</Text>}
     </Pressable>
   );
 }
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
   btnDanger: { backgroundColor: '#ff3b30' },
   btnDim: { opacity: 0.85 },
   btnDisabled: { opacity: 0.5 },
-  btnText: { color: '#fff', fontWeight: '600' },
+  btnText: { fontWeight: '600' },
   input: {
     borderWidth: 1,
     borderColor: '#d1d5db',
