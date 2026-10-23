@@ -15,7 +15,7 @@ function formatPilotReport(report) {
   const lines = ['# RN development pilot', '',
     'Observed development evidence, not model qualification or unseen-task improvement. Native evidence is separate from app checks and rubric scores; tokens/cost and human correction time are unmeasured.', '',
     `Model: ${cell(report.model)} · expected file SHA-256: ${cell(report.expectedArtifactSha256)}`,
-    `Output-token cap: ${cell(report.settings?.maxTokens)} · attempt cap: ${cell(report.settings?.maxAttempts)} · grammar: ${cell(report.settings?.outputFormat ?? 'not requested')}`, '',
+    `Output-token cap: ${cell(report.settings?.maxTokens)} · attempt cap: ${cell(report.settings?.maxAttempts)} · grammar: ${cell(report.settings?.toolEnvelope ? 'local tool envelope' : report.settings?.outputFormat ?? 'not requested')}`, '',
     '## Outcome matrix', '',
     'Check fractions count only recorded, non-skipped checks. Missing checks are not passes. App-check passes require matching model identity and both app checks; pending runs remain in the planned count. Passing app checks alone does not meet the release guardrail/adherence or native gates.', '',
     '| Condition | Planned | App-check passes | Failed/error/timeout/incomplete | Pending | Typecheck passed/checked | Tests passed/checked |',
@@ -34,8 +34,8 @@ function formatPilotReport(report) {
   if (!runs.length) lines.push('', 'No runs recorded.');
   lines.push('', '## Repetitions and attempts', '',
     'Attempt entries show kind: parsing / supplied verification. Unrecorded verification is not success. Attempt time includes in-loop verification but excludes final app checks; it is not total workflow latency.', '',
-    '| Condition | Repeat | Outcome | Identity | Typecheck | Tests | Attempts | Attempt ms | Run ms | Guardrails % | Adherence % | Native |',
-    '|---|---:|---|---|---|---|---|---:|---:|---:|---:|---|');
+    '| Condition | Repeat | Outcome | Identity | Typecheck | Tests | Attempts | Attempt ms | Run ms | Guardrails % | Adherence % | Native | Edit application |',
+    '|---|---:|---|---|---|---|---|---:|---:|---:|---:|---|---|');
   for (const row of runs) {
     const attempts = row.result?.attempts;
     const times = attempts?.map(attempt => attempt.durationMs);
@@ -46,7 +46,7 @@ function formatPilotReport(report) {
     const outcome = row.status === 'passed' && !passed(row) ? 'incomplete evidence' : cell(row.status);
     const runDuration = Number.isFinite(row.durationMs) && row.durationMs >= 0 ? row.durationMs : 'unrecorded';
     const percent = value => Number.isFinite(value) && value >= 0 && value <= 1 ? (value * 100).toFixed(1) : 'unscored';
-    lines.push(`| ${cell(row.condition)} | ${cell(row.repetition)} | ${outcome} | ${identity} | ${check(row.checks?.typecheck)} | ${check(row.checks?.tests)} | ${details} | ${duration} | ${runDuration} | ${percent(row.result?.axes?.guardrails)} | ${percent(row.result?.axes?.adherence)} | ${cell(row.nativeVerification?.status ?? 'not-run')} |`);
+    lines.push(`| ${cell(row.condition)} | ${cell(row.repetition)} | ${outcome} | ${identity} | ${check(row.checks?.typecheck)} | ${check(row.checks?.tests)} | ${details} | ${duration} | ${runDuration} | ${percent(row.result?.axes?.guardrails)} | ${percent(row.result?.axes?.adherence)} | ${cell(row.nativeVerification?.status ?? 'not-run')} | ${cell(attempts?.map(attempt => attempt.editApplication ?? 'not-applicable').join('; ') ?? 'unrecorded')} |`);
   }
   return lines.join('\n') + '\n';
 }

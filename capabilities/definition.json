@@ -83,7 +83,7 @@
     "cli": ["bench", "fix-bench", "rnbench", "leaderboard", "smoke", "selftest", "demo", "sales-demo"],
     "claims": ["apps/website/app/benchmarks/page.tsx", "apps/website/app/changelog/page.tsx", "apps/website/app/demo/page.tsx", "apps/website/components/DemoPlayer.tsx"],
     "route": ["/benchmarks", "/changelog", "/demo"],
-    "sources": ["packages/rn/src/bench/runner.ts", "packages/rn/src/cli/commands/demo.ts"]
+    "sources": ["packages/rn/src/bench/runner.ts", "packages/rn/src/bench/modelEditGenerate.ts", "packages/rn/src/cli/commands/demo.ts"]
   },
   "rn.commercial-information": {
     "outcome": "Read current RN lifecycle and plan information; this informational surface does not grant product entitlements.",

@@ -11,6 +11,8 @@ for (const [name, args, message] of [
   ['unknown model', ['--model', 'unknown', '--artifact-sha256', 'a'.repeat(64)], 'refusing default-model substitution'],
   ['unknown option', ['--modle', 'qwen2.5-coder-3b'], 'Unknown option'],
   ['unsupported grammar condition', ['--constrained'], '--constrained requires --repair'],
+  ['edit protocol on frozen tasks', ['--task', 'stock-filter', '--edits'], 'first-attempt public development diagnostic only'],
+  ['edit protocol with repairs', ['--edits', '--repair'], 'first-attempt public development diagnostic only'],
   ['unknown frozen task', ['--task', 'unknown'], 'Unknown frozen evaluation task'],
   ['empty frozen task', ['--task', ''], 'Unknown frozen evaluation task'],
   ['frozen task repair', ['--task', 'stock-filter', '--repair'], 'does not allow repair'],

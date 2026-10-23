@@ -92,3 +92,13 @@ test('does not present passing app tests as guardrail or native qualification', 
   assert.ok(text.includes('does not meet the release'));
   assert.ok(text.includes('| 94.4 | unscored | not-run |'));
 });
+
+test('shows edit acceptance separately from app verification without exposing proposed source', () => {
+  const text = formatPilotReport({ settings: { toolEnvelope: true }, runs: [{ condition: 'vectalon-edits', status: 'failed',
+    result: { attempts: [{ kind: 'initial', status: 'parsed', editApplication: 'applied', content: 'PRIVATE_SOURCE' }] } }] });
+  assert.ok(text.includes('local tool envelope'));
+  assert.ok(text.includes('Edit application'));
+  assert.ok(text.includes('not-run | applied |'));
+  assert.ok(text.includes('| vectalon-edits | 1 | 0 |'));
+  assert.ok(!text.includes('PRIVATE_SOURCE'));
+});

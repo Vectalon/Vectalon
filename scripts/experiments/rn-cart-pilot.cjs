@@ -10,11 +10,12 @@ const { values: args } = require('node:util').parseArgs({ options: {
   preflight: { type: 'boolean' }, repair: { type: 'boolean' }, constrained: { type: 'boolean' },
   'include-generated': { type: 'boolean' }, model: { type: 'string' }, 'artifact-sha256': { type: 'string' },
   'include-raw-response': { type: 'boolean' },
-  task: { type: 'string' },
+  task: { type: 'string' }, edits: { type: 'boolean' },
 } });
 assert.equal(args.model !== undefined, args['artifact-sha256'] !== undefined, '--model and --artifact-sha256 must be supplied together');
 assert.ok(args['artifact-sha256'] === undefined || /^[a-f0-9]{64}$/.test(args['artifact-sha256']), 'Expected a lowercase SHA-256 artifact hash');
 assert.ok(!args.constrained || args.repair, '--constrained requires --repair for this diagnostic');
+assert.ok(!args.edits || (!args.task && !args.repair && !args.constrained), '--edits is a first-attempt public development diagnostic only; cannot combine with --task, --repair or --constrained');
 if (args.task !== undefined) {
   assert.ok(freeze.tasks.includes(args.task), 'Unknown frozen evaluation task');
   assert.ok(!args.repair && !args.constrained, 'Frozen first-pass evaluation does not allow repair or grammar changes');
@@ -29,6 +30,7 @@ assert.ok(getPreset(model), 'Unknown model preset; refusing default-model substi
 const expectedArtifactSha256 = args['artifact-sha256'] ?? (args.task ? freeze.artifactSha256 : 'cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046');
 const { runSandboxed } = load('sandbox/run.js');
 const { createModelGenerate } = load('bench/modelGenerate.js');
+const { createModelEditGenerate } = load('bench/modelEditGenerate.js');
 const { runScenario } = load('bench/runner.js');
 const { ModelRouter } = load('model/ModelRouter.js');
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
@@ -73,7 +75,7 @@ if (task) {
 const repair = args.repair;
 const constrained = args.constrained;
 const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair ? 2 : 1, providerCallLimit: 1,
-  ...(constrained ? { outputFormat: 'files-json' } : {}) };
+  ...(constrained ? { outputFormat: 'files-json' } : {}), ...(args.edits ? { toolEnvelope: true } : {}) };
 if (task) assert.deepEqual(settings, freeze.settings, 'Frozen resource settings changed');
 const output = fs.mkdtempSync('/private/tmp/vectalon-cart-pilot-');
 const report = { kind: task ? 'frozen-one-app-evaluation' : 'development-pilot', revision, appRevision, startedAt: new Date().toISOString(),
@@ -90,8 +92,9 @@ const report = { kind: task ? 'frozen-one-app-evaluation' : 'development-pilot',
   model, expectedArtifactSha256,
   limitations: ['No native build', 'Installed dependencies reused', 'Tokens/cost not measured', 'No human correction-time measurement', ...(task ? freeze.limitations : ['One public development task; not launch qualification']),
     ...(repair ? ['Repair diagnostic permits twice the generation budget of the first-pass pilot; not an equal-budget comparison'] : []),
-    ...(constrained ? ['Native file-envelope grammar constrains serialization, not file scope or code correctness'] : [])],
-  runs: Array.from({ length: task ? freeze.repetitions : 3 }, (_, repetition) => (repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
+    ...(constrained ? ['Native file-envelope grammar constrains serialization, not file scope or code correctness'] : []),
+    ...(args.edits ? ['Scoped edit protocol differs from full-file generation; single existing file, at most eight edits, no repairs', 'Tool-envelope grammar does not enforce argument values; edits are validated before staging'] : [])],
+  runs: Array.from({ length: task ? freeze.repetitions : 3 }, (_, repetition) => (args.edits ? ['vectalon-edits'] : repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
 const save = () => {
   fs.writeFileSync(path.join(output, 'report.json'), serializePilotReport(report, {
     includeGenerated: args['include-generated'], includeRawResponse: args['include-raw-response'],
@@ -216,7 +219,7 @@ async function main() {
             : [...diagnostics, ...(!checks.tests.ok ? ['Task/project tests failed. Recheck the original requirements.'] : []),
               ...(!checks.typecheck.ok ? ['Typecheck failed. Preserve the requested public interface.'] : [])].join('\n') };
       };
-      const generate = createModelGenerate({ modelRouter: router, promptMode: repair ? 'vectalon' : row.condition,
+      const generate = (args.edits ? createModelEditGenerate : createModelGenerate)({ modelRouter: router, promptMode: repair ? 'vectalon' : row.condition,
         ...settings, ...(repair ? { verify: verifier } : {}),
         ...(args['include-raw-response'] ? { onRawResponse: (content, attempt) => {
           (row.rawResponses ??= []).push({ ...attempt, content }); save();
