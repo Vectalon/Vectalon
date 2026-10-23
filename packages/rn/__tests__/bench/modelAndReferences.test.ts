@@ -295,6 +295,23 @@ describe('bench model generate seam (M5)', () => {
     expect(files).toEqual([{ path: 'src/Value.ts', content: 'export const value = 1' }])
   })
 
+  it('labels repair responses independently and leaves model requests unchanged', async () => {
+    const content = JSON.stringify({ files: [{ path: 'src/Value.ts', content: 'export const value = 1' }] })
+    const generate = jest.fn().mockResolvedValue({ content })
+    const router = { generate } as unknown as ModelGenerateOptions['modelRouter']
+    const onRawResponse = jest.fn()
+    for (const observer of [undefined, onRawResponse]) {
+      const verify = jest.fn().mockResolvedValueOnce({ passed: false, feedback: 'Check requirements' })
+        .mockResolvedValueOnce({ passed: true, feedback: '' })
+      await createModelGenerate({ modelRouter: router, maxAttempts: 2, verify, onRawResponse: observer })(validScenario())
+    }
+    expect(onRawResponse.mock.calls).toEqual([
+      [content, { index: 1, kind: 'initial' }], [content, { index: 2, kind: 'repair' }],
+    ])
+    expect(generate.mock.calls[0][0]).toEqual(generate.mock.calls[2][0])
+    expect(generate.mock.calls[1][0]).toEqual(generate.mock.calls[3][0])
+  })
+
   it.each(['Local model fallback', 'Wasm model fallback', 'Model fallback'])('rejects %s even when it echoes valid generated-file JSON', async marker => {
     const content = `[${marker}: unavailable]\n${JSON.stringify({ files: [{ path: 'src/Output.ts', content: 'export const value = 1' }] })}`
     expect(parseModelOutput(content)).toBeNull()
