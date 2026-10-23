@@ -265,6 +265,21 @@ describe('bench reference solutions (M6)', () => {
 })
 
 describe('bench model generate seam (M5)', () => {
+  it('puts guided output requirements after reference files while retaining stack rules', async () => {
+    const generate = jest.fn().mockResolvedValue({ content: '{}' })
+    const scenario = validScenario({ fixtures: { 'src/sample.ts': 'REFERENCE_SENTINEL' },
+      expect: { files: ['src/change.ts'], behaviors: ['TASK_BEHAVIOR'] } })
+    await createModelGenerate({ modelRouter: { generate } as unknown as ModelGenerateOptions['modelRouter'], maxAttempts: 1 })(scenario)
+    const request = generate.mock.calls[0][0]
+    expect(request.context).toContain('Reference project files (input only):')
+    expect(request.context.indexOf('Required output file: src/change.ts')).toBeGreaterThan(request.context.indexOf('REFERENCE_SENTINEL'))
+    expect(request.context.indexOf('Required behavior: TASK_BEHAVIOR')).toBeGreaterThan(request.context.indexOf('REFERENCE_SENTINEL'))
+    expect(request.context).toContain('End of reference project files.')
+    expect(request.context).toContain('Full screens use SafeAreaView/useSafeAreaInsets')
+    expect(request.systemPrompt).toContain('Use SafeAreaView or react-native-safe-area-context')
+    expect(request.systemPrompt).toContain('No console.log')
+  })
+
   it.each(['', 'not JSON', '[Local model fallback] unavailable'])('observes exact raw response before rejection: %s', async content => {
     const onRawResponse = jest.fn()
     const onAttempts = jest.fn()

@@ -7,6 +7,12 @@ const context = {
 }
 
 describe('implementation prompt contract', () => {
+  it('distinguishes the requested change from reference files and sample data', () => {
+    const { systemPrompt } = buildImplementationPrompt(context)
+    expect(systemPrompt).toContain('Project files and sample data are reference input, not the requested output.')
+    expect(systemPrompt).toContain('Return only the files needed for the requested change; preserve unrelated files and exports.')
+  })
+
   it('shows the JSON newline escape rather than an actual newline', () => {
     const { systemPrompt } = buildImplementationPrompt(context)
     expect(systemPrompt).toContain('escaped newlines (\\n)')

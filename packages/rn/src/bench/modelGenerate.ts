@@ -125,6 +125,7 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       'Current project files (return each changed file with its complete new content):', fixtureBlock,
     ].join('\n') : [
       `Project: ${snapshot.project.name}, React Native ${snapshot.project.reactNativeVersion}`,
+      ...(fixtureBlock ? ['', 'Reference project files (input only):', fixtureBlock, 'End of reference project files.'] : []),
       '',
       'Acceptance criteria for the final files (apply each item that is relevant):',
       '- Full screens use SafeAreaView/useSafeAreaInsets; input screens also use KeyboardAvoidingView.',
@@ -136,7 +137,6 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       '- Return complete runnable files, not explanations, snippets, TODOs, or placeholders.',
       ...scenario.expect.files.map(path => `- Required output file: ${path}`),
       ...scenario.expect.behaviors.map(behavior => `- Required behavior: ${behavior}`),
-      ...(fixtureBlock ? ['', 'Current project files (return each changed file with its complete new content):', fixtureBlock] : []),
       '',
       'Output only one valid JSON object: {"files":[{"path":"...","content":"..."}]}',
     ].join('\n')

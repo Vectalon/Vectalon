@@ -336,6 +336,8 @@ export function buildImplementationPrompt(ctx: {
   const systemPrompt = [
     'You are a senior React Native engineer.',
     'Generate production-ready, minimal React Native code for the user request.',
+    'Project files and sample data are reference input, not the requested output.',
+    'Return only the files needed for the requested change; preserve unrelated files and exports.',
     'Do not add TODOs or placeholders. Use real, runnable code.',
     'Return ONLY a JSON object with no markdown outside the JSON block.',
     'The JSON must have this exact shape:',
