@@ -1,0 +1,2211 @@
+{
+  "exportKind": "source-free-frozen-one-app-evaluation",
+  "originalReports": [
+    {
+      "path": "/private/tmp/vectalon-cart-pilot-kGdz9G/report.json",
+      "sha256": "f8f8c4816cf6bad66c6cf9b0f866c74b3d71c9ccbbbdaeec9117826638219a73"
+    },
+    {
+      "path": "/private/tmp/vectalon-cart-pilot-YIXoE7/report.json",
+      "sha256": "d9cf4a6decd0ab2fdb1a609642746dc6bac7af2fe55a7781bcd332ce3ccbd3c7"
+    },
+    {
+      "path": "/private/tmp/vectalon-cart-pilot-NQgvDm/report.json",
+      "sha256": "a217bdfe20678c6966b2bfca8fdca19534066480981337599c0f42a0ea59bca9"
+    }
+  ],
+  "reports": [
+    {
+      "kind": "frozen-one-app-evaluation",
+      "revision": "926ae87e537fe3f1037cb070bdde6a9591629160",
+      "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+      "startedAt": "2026-10-23T07:06:57.461Z",
+      "task": {
+        "id": "stock-filter",
+        "kind": "feature"
+      },
+      "installedDependencyVersions": {
+        "@react-navigation/native": "7.3.16",
+        "@react-navigation/native-stack": "7.18.8",
+        "expo": "58.0.17",
+        "expo-status-bar": "58.0.4",
+        "react": "19.3.0",
+        "react-native": "0.88.0",
+        "react-native-safe-area-context": "5.10.1",
+        "react-native-screens": "4.30.0",
+        "@babel/core": "7.29.7",
+        "@reduxjs/toolkit": "2.12.0",
+        "@testing-library/react-native": "14.0.1",
+        "@types/jest": "30.0.0",
+        "@types/react": "19.3.0",
+        "@react-native/jest-preset": "0.88.0",
+        "babel-preset-expo": "58.0.19",
+        "jest": "30.2.0",
+        "jest-expo": "58.0.12",
+        "react-redux": "9.3.0",
+        "react-test-renderer": "19.3.0",
+        "typescript": "5.8.3"
+      },
+      "freezeSha256": "fabf2e3b3c5f0fb24e2525702b3f4b177f59cba5075682cb185cda7f7ab1d27e",
+      "taskDefinitionsSha256": "91ea35672bf7d810c54357f4d548d2a68b987b3827e5d4e3ba06165694aa0a7e",
+      "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+      "nativeVerification": "not-run",
+      "runnerSha256": "3da2d15aaa2f40f57585e4f8dd83bd54645d99a4b9764b38b249027706cce523",
+      "appArchiveSha256": "85f494af47a4d19013fbae471533281db459a859317ce86f7778f4c768716fb2",
+      "inferenceModuleSha256": "2d6ffa6cf36abd1f5ab57c20255388db1837790fa652ff994348b0a62432d9b0",
+      "acceptanceSha256": "d2985db43bf346de1040ac73aa4777ec2f9e26f0f9dc0f96ca0c70f81270ee06",
+      "taskSha256": "20610a8aa4bdfc3cd15fde4ff6a160580d45b0824eedd1a7b7d01f07e65d6145",
+      "runtime": {
+        "node": "v24.22.1",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "settings": {
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "maxAttempts": 1,
+        "providerCallLimit": 1
+      },
+      "model": "qwen2.5-coder-3b",
+      "expectedArtifactSha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+      "limitations": [
+        "No native build",
+        "Installed dependencies reused",
+        "Tokens/cost not measured",
+        "No human correction-time measurement",
+        "Three newly frozen tasks in one app; insufficient for reliable improvement or launch qualification",
+        "Seeds and input-token accounting unavailable in this inference path",
+        "Review means an executable regression test, not qualification of the review CLI",
+        "Native verification remains a separate per-candidate gate"
+      ],
+      "runs": [
+        {
+          "repetition": 1,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "stock-filter",
+            "title": "stock-filter",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "invalid",
+                "selected": false,
+                "durationMs": 37591,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:bfbe527112f914fede49c62e21e28c25be7d420dbd4b5388a2a368c27c493ddd",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:157461037bb9cf77a3e0a0f4d3c5ace2093f77fbc7cc4f7070cb094a279d4224",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 37517
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/screens/CatalogScreen.tsx"
+            ]
+          },
+          "identityMatched": true,
+          "durationMs": 37845
+        },
+        {
+          "repetition": 1,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "stock-filter",
+            "title": "stock-filter",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/screens/CatalogScreen.tsx",
+              "src/hooks/useCatalog.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 21801,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 2,
+                "adherence": 0,
+                "guardrails": 0.9772727272727273,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:bfbe527112f914fede49c62e21e28c25be7d420dbd4b5388a2a368c27c493ddd",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:72e09f85c4e46028daaaaace5b159c7471ebba517501197b307400249c1a488d",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 21797
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/screens/CatalogScreen.tsx",
+                "passed": 25,
+                "failed": 1,
+                "skipped": 10,
+                "ok": false,
+                "failedRules": [
+                  "Screens use SafeAreaView or safe-area-aware layout"
+                ]
+              },
+              {
+                "path": "src/hooks/useCatalog.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0.9772727272727273
+            },
+            "composite": 0.4886363636363636
+          },
+          "identityMatched": true,
+          "durationMs": 21804
+        },
+        {
+          "repetition": 2,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "stock-filter",
+            "title": "stock-filter",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/screens/CatalogScreen.tsx",
+              "src/hooks/useCatalog.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 21219,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 2,
+                "adherence": 0,
+                "guardrails": 0.9772727272727273,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:bfbe527112f914fede49c62e21e28c25be7d420dbd4b5388a2a368c27c493ddd",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:72e09f85c4e46028daaaaace5b159c7471ebba517501197b307400249c1a488d",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 21217
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/screens/CatalogScreen.tsx",
+                "passed": 25,
+                "failed": 1,
+                "skipped": 10,
+                "ok": false,
+                "failedRules": [
+                  "Screens use SafeAreaView or safe-area-aware layout"
+                ]
+              },
+              {
+                "path": "src/hooks/useCatalog.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0.9772727272727273
+            },
+            "composite": 0.4886363636363636
+          },
+          "identityMatched": true,
+          "durationMs": 21220
+        },
+        {
+          "repetition": 2,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "stock-filter",
+            "title": "stock-filter",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "invalid",
+                "selected": false,
+                "durationMs": 29715,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:bfbe527112f914fede49c62e21e28c25be7d420dbd4b5388a2a368c27c493ddd",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:157461037bb9cf77a3e0a0f4d3c5ace2093f77fbc7cc4f7070cb094a279d4224",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 29713
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/screens/CatalogScreen.tsx"
+            ]
+          },
+          "identityMatched": true,
+          "durationMs": 29716
+        },
+        {
+          "repetition": 3,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "stock-filter",
+            "title": "stock-filter",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "invalid",
+                "selected": false,
+                "durationMs": 28192,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:bfbe527112f914fede49c62e21e28c25be7d420dbd4b5388a2a368c27c493ddd",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:157461037bb9cf77a3e0a0f4d3c5ace2093f77fbc7cc4f7070cb094a279d4224",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 28192
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/screens/CatalogScreen.tsx"
+            ]
+          },
+          "identityMatched": true,
+          "durationMs": 28195
+        },
+        {
+          "repetition": 3,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "stock-filter",
+            "title": "stock-filter",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/screens/CatalogScreen.tsx"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 17143,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0,
+                "guardrails": 0.9615384615384616,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:bfbe527112f914fede49c62e21e28c25be7d420dbd4b5388a2a368c27c493ddd",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:72e09f85c4e46028daaaaace5b159c7471ebba517501197b307400249c1a488d",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 17141
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/screens/CatalogScreen.tsx",
+                "passed": 25,
+                "failed": 1,
+                "skipped": 10,
+                "ok": false,
+                "failedRules": [
+                  "Screens use SafeAreaView or safe-area-aware layout"
+                ]
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0.9615384615384616
+            },
+            "composite": 0.4807692307692307
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 808
+            },
+            "tests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 6941
+            }
+          },
+          "durationMs": 25025
+        }
+      ],
+      "negativeControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1481
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 10502
+        }
+      },
+      "positiveControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1247
+        },
+        "tests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7874
+        }
+      }
+    },
+    {
+      "kind": "frozen-one-app-evaluation",
+      "revision": "926ae87e537fe3f1037cb070bdde6a9591629160",
+      "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+      "startedAt": "2026-10-23T07:10:17.501Z",
+      "task": {
+        "id": "current-session",
+        "kind": "fix"
+      },
+      "installedDependencyVersions": {
+        "@react-navigation/native": "7.3.16",
+        "@react-navigation/native-stack": "7.18.8",
+        "expo": "58.0.17",
+        "expo-status-bar": "58.0.4",
+        "react": "19.3.0",
+        "react-native": "0.88.0",
+        "react-native-safe-area-context": "5.10.1",
+        "react-native-screens": "4.30.0",
+        "@babel/core": "7.29.7",
+        "@reduxjs/toolkit": "2.12.0",
+        "@testing-library/react-native": "14.0.1",
+        "@types/jest": "30.0.0",
+        "@types/react": "19.3.0",
+        "@react-native/jest-preset": "0.88.0",
+        "babel-preset-expo": "58.0.19",
+        "jest": "30.2.0",
+        "jest-expo": "58.0.12",
+        "react-redux": "9.3.0",
+        "react-test-renderer": "19.3.0",
+        "typescript": "5.8.3"
+      },
+      "freezeSha256": "fabf2e3b3c5f0fb24e2525702b3f4b177f59cba5075682cb185cda7f7ab1d27e",
+      "taskDefinitionsSha256": "91ea35672bf7d810c54357f4d548d2a68b987b3827e5d4e3ba06165694aa0a7e",
+      "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+      "nativeVerification": "not-run",
+      "runnerSha256": "3da2d15aaa2f40f57585e4f8dd83bd54645d99a4b9764b38b249027706cce523",
+      "appArchiveSha256": "85f494af47a4d19013fbae471533281db459a859317ce86f7778f4c768716fb2",
+      "inferenceModuleSha256": "2d6ffa6cf36abd1f5ab57c20255388db1837790fa652ff994348b0a62432d9b0",
+      "acceptanceSha256": "3443838dcade255e2181d7932bac02699bad450e5f4abe1f173500c6abf6fef8",
+      "taskSha256": "97c9a91b515f9783bf166fb70f69e247c0db8e8256ea0f097cb884895626d127",
+      "runtime": {
+        "node": "v24.22.1",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "settings": {
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "maxAttempts": 1,
+        "providerCallLimit": 1
+      },
+      "model": "qwen2.5-coder-3b",
+      "expectedArtifactSha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+      "limitations": [
+        "No native build",
+        "Installed dependencies reused",
+        "Tokens/cost not measured",
+        "No human correction-time measurement",
+        "Three newly frozen tasks in one app; insufficient for reliable improvement or launch qualification",
+        "Seeds and input-token accounting unavailable in this inference path",
+        "Review means an executable regression test, not qualification of the review CLI",
+        "Native verification remains a separate per-candidate gate"
+      ],
+      "runs": [
+        {
+          "repetition": 1,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "current-session",
+            "title": "current-session",
+            "suite": "fix",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "invalid",
+                "selected": false,
+                "durationMs": 25531,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:1e47d18715528520e229984b6df17cc6f240cb51bd855f265df9a2330faef5b7",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:3bce83f09cd56b6f38c501cdd8cc1d80f4dcbb0203620e108273ed9fa877e0ff",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 25468
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/hooks/useSecuritySettings.ts"
+            ]
+          },
+          "identityMatched": true,
+          "durationMs": 25723
+        },
+        {
+          "repetition": 1,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "current-session",
+            "title": "current-session",
+            "suite": "fix",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/hooks/useSecuritySettings.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 8620,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": null,
+                "guardrails": 0.9444444444444444,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:1e47d18715528520e229984b6df17cc6f240cb51bd855f265df9a2330faef5b7",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:aff510a30ca8b2ec9db1b4aac6ec8c4601809abc317a48d0c08f52ead7928cab",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 8616
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/hooks/useSecuritySettings.ts",
+                "passed": 17,
+                "failed": 1,
+                "skipped": 18,
+                "ok": false,
+                "failedRules": [
+                  "No var declarations"
+                ]
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": null,
+              "guardrails": 0.9444444444444444
+            },
+            "composite": 0.9444444444444444
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 706
+            },
+            "tests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 6416
+            }
+          },
+          "durationMs": 15855
+        },
+        {
+          "repetition": 2,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "current-session",
+            "title": "current-session",
+            "suite": "fix",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/hooks/useSecuritySettings.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 7444,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": null,
+                "guardrails": 1,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:1e47d18715528520e229984b6df17cc6f240cb51bd855f265df9a2330faef5b7",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:aff510a30ca8b2ec9db1b4aac6ec8c4601809abc317a48d0c08f52ead7928cab",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 7444
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/hooks/useSecuritySettings.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": null,
+              "guardrails": 1
+            },
+            "composite": 1
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 575
+            },
+            "tests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 6329
+            }
+          },
+          "durationMs": 14490
+        },
+        {
+          "repetition": 2,
+          "condition": "task-only",
+          "status": "passed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "current-session",
+            "title": "current-session",
+            "suite": "fix",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/hooks/useSecuritySettings.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 12527,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": null,
+                "guardrails": 0.9444444444444444,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:1e47d18715528520e229984b6df17cc6f240cb51bd855f265df9a2330faef5b7",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:3bce83f09cd56b6f38c501cdd8cc1d80f4dcbb0203620e108273ed9fa877e0ff",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 12525
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/hooks/useSecuritySettings.ts",
+                "passed": 17,
+                "failed": 1,
+                "skipped": 18,
+                "ok": false,
+                "failedRules": [
+                  "No console.log statements"
+                ]
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": null,
+              "guardrails": 0.9444444444444444
+            },
+            "composite": 0.9444444444444444
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1162
+            },
+            "tests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 6919
+            }
+          },
+          "durationMs": 20726
+        },
+        {
+          "repetition": 3,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "current-session",
+            "title": "current-session",
+            "suite": "fix",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "invalid",
+                "selected": false,
+                "durationMs": 40373,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:1e47d18715528520e229984b6df17cc6f240cb51bd855f265df9a2330faef5b7",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:3bce83f09cd56b6f38c501cdd8cc1d80f4dcbb0203620e108273ed9fa877e0ff",
+                "provider": "local",
+                "stopReason": "maxTokens",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 40371
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/hooks/useSecuritySettings.ts"
+            ]
+          },
+          "identityMatched": true,
+          "durationMs": 40374
+        },
+        {
+          "repetition": 3,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "current-session",
+            "title": "current-session",
+            "suite": "fix",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/hooks/useSecuritySettings.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 8506,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": null,
+                "guardrails": 0.9444444444444444,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:1e47d18715528520e229984b6df17cc6f240cb51bd855f265df9a2330faef5b7",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:aff510a30ca8b2ec9db1b4aac6ec8c4601809abc317a48d0c08f52ead7928cab",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 8504
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/hooks/useSecuritySettings.ts",
+                "passed": 17,
+                "failed": 1,
+                "skipped": 18,
+                "ok": false,
+                "failedRules": [
+                  "No var declarations"
+                ]
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": null,
+              "guardrails": 0.9444444444444444
+            },
+            "composite": 0.9444444444444444
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 765
+            },
+            "tests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 6646
+            }
+          },
+          "durationMs": 16026
+        }
+      ],
+      "negativeControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1116
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6698
+        }
+      },
+      "positiveControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1016
+        },
+        "tests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6864
+        }
+      }
+    },
+    {
+      "kind": "frozen-one-app-evaluation",
+      "revision": "926ae87e537fe3f1037cb070bdde6a9591629160",
+      "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+      "startedAt": "2026-10-23T07:13:11.857Z",
+      "task": {
+        "id": "order-copy-review",
+        "kind": "review"
+      },
+      "installedDependencyVersions": {
+        "@react-navigation/native": "7.3.16",
+        "@react-navigation/native-stack": "7.18.8",
+        "expo": "58.0.17",
+        "expo-status-bar": "58.0.4",
+        "react": "19.3.0",
+        "react-native": "0.88.0",
+        "react-native-safe-area-context": "5.10.1",
+        "react-native-screens": "4.30.0",
+        "@babel/core": "7.29.7",
+        "@reduxjs/toolkit": "2.12.0",
+        "@testing-library/react-native": "14.0.1",
+        "@types/jest": "30.0.0",
+        "@types/react": "19.3.0",
+        "@react-native/jest-preset": "0.88.0",
+        "babel-preset-expo": "58.0.19",
+        "jest": "30.2.0",
+        "jest-expo": "58.0.12",
+        "react-redux": "9.3.0",
+        "react-test-renderer": "19.3.0",
+        "typescript": "5.8.3"
+      },
+      "freezeSha256": "fabf2e3b3c5f0fb24e2525702b3f4b177f59cba5075682cb185cda7f7ab1d27e",
+      "taskDefinitionsSha256": "91ea35672bf7d810c54357f4d548d2a68b987b3827e5d4e3ba06165694aa0a7e",
+      "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+      "nativeVerification": "not-run",
+      "runnerSha256": "3da2d15aaa2f40f57585e4f8dd83bd54645d99a4b9764b38b249027706cce523",
+      "appArchiveSha256": "85f494af47a4d19013fbae471533281db459a859317ce86f7778f4c768716fb2",
+      "inferenceModuleSha256": "2d6ffa6cf36abd1f5ab57c20255388db1837790fa652ff994348b0a62432d9b0",
+      "acceptanceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "taskSha256": "feb2c6a4291d7f017a5484bca1cd4c17ea1a6f1169f7a1b83345ffbdeb7dcda0",
+      "runtime": {
+        "node": "v24.22.1",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "settings": {
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "maxAttempts": 1,
+        "providerCallLimit": 1
+      },
+      "model": "qwen2.5-coder-3b",
+      "expectedArtifactSha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+      "limitations": [
+        "No native build",
+        "Installed dependencies reused",
+        "Tokens/cost not measured",
+        "No human correction-time measurement",
+        "Three newly frozen tasks in one app; insufficient for reliable improvement or launch qualification",
+        "Seeds and input-token accounting unavailable in this inference path",
+        "Review means an executable regression test, not qualification of the review CLI",
+        "Native verification remains a separate per-candidate gate"
+      ],
+      "runs": [
+        {
+          "repetition": 1,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "order-copy-review",
+            "title": "order-copy-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/__tests__/orderCopyReview.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 7045,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0,
+                "guardrails": 0.9444444444444444,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:aa4e5e9c6be23e3ff595c1d6f0cffba914efa718356597d457c914d1ec4caad8",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:3e8cb0f9691fd879f4a5a956a7f9b704bc61ca44a7b7bb03386dbe7a9a11daeb",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 6979
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/__tests__/orderCopyReview.ts",
+                "passed": 17,
+                "failed": 1,
+                "skipped": 18,
+                "ok": false,
+                "failedRules": [
+                  "Async functions have error handling"
+                ]
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0.9444444444444444
+            },
+            "composite": 0.4722222222222222
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1283
+            },
+            "tests": {
+              "ok": false,
+              "durationMs": 8235
+            },
+            "originalTests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 6949
+            },
+            "proposedTests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1286,
+              "assertionFailures": 1
+            }
+          },
+          "durationMs": 16898
+        },
+        {
+          "repetition": 1,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "order-copy-review",
+            "title": "order-copy-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/__tests__/orderCopyReview.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 6552,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": null,
+                "guardrails": 1,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:aa4e5e9c6be23e3ff595c1d6f0cffba914efa718356597d457c914d1ec4caad8",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:4c2f5fde0cfe948dfd71a5cf8756dd294ceece5cac748194d2db525805a54836",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 6552
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/__tests__/orderCopyReview.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": null,
+              "guardrails": 1
+            },
+            "composite": 1
+          },
+          "identityMatched": true,
+          "checks": {
+            "scope": {
+              "ok": false
+            },
+            "typecheck": {
+              "ok": false,
+              "skipped": true
+            },
+            "tests": {
+              "ok": false,
+              "skipped": true
+            }
+          },
+          "durationMs": 6556
+        },
+        {
+          "repetition": 2,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "order-copy-review",
+            "title": "order-copy-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/__tests__/orderCopyReview.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 7907,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": null,
+                "guardrails": 1,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:aa4e5e9c6be23e3ff595c1d6f0cffba914efa718356597d457c914d1ec4caad8",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:4c2f5fde0cfe948dfd71a5cf8756dd294ceece5cac748194d2db525805a54836",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 7906
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/__tests__/orderCopyReview.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": null,
+              "guardrails": 1
+            },
+            "composite": 1
+          },
+          "identityMatched": true,
+          "checks": {
+            "scope": {
+              "ok": false
+            },
+            "typecheck": {
+              "ok": false,
+              "skipped": true
+            },
+            "tests": {
+              "ok": false,
+              "skipped": true
+            }
+          },
+          "durationMs": 7909
+        },
+        {
+          "repetition": 2,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "order-copy-review",
+            "title": "order-copy-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "invalid",
+                "selected": false,
+                "durationMs": 7126,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:aa4e5e9c6be23e3ff595c1d6f0cffba914efa718356597d457c914d1ec4caad8",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:3e8cb0f9691fd879f4a5a956a7f9b704bc61ca44a7b7bb03386dbe7a9a11daeb",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 7125
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/__tests__/orderCopyReview.ts"
+            ]
+          },
+          "identityMatched": true,
+          "durationMs": 7127
+        },
+        {
+          "repetition": 3,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "order-copy-review",
+            "title": "order-copy-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/__tests__/orderCopyReview.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 5746,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0,
+                "guardrails": 0.8888888888888888,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:aa4e5e9c6be23e3ff595c1d6f0cffba914efa718356597d457c914d1ec4caad8",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:3e8cb0f9691fd879f4a5a956a7f9b704bc61ca44a7b7bb03386dbe7a9a11daeb",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 5745
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/__tests__/orderCopyReview.ts",
+                "passed": 16,
+                "failed": 2,
+                "skipped": 18,
+                "ok": false,
+                "failedRules": [
+                  "Async functions have error handling",
+                  "No mutation in hooks or reducers"
+                ]
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0.8888888888888888
+            },
+            "composite": 0.4444444444444445
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1127
+            },
+            "tests": {
+              "ok": false,
+              "durationMs": 8611
+            },
+            "originalTests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 7306
+            },
+            "proposedTests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1305,
+              "assertionFailures": 1
+            }
+          },
+          "durationMs": 15628
+        },
+        {
+          "repetition": 3,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "order-copy-review",
+            "title": "order-copy-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/__tests__/orderCopyReview.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 6922,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": null,
+                "guardrails": 1,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:aa4e5e9c6be23e3ff595c1d6f0cffba914efa718356597d457c914d1ec4caad8",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:4c2f5fde0cfe948dfd71a5cf8756dd294ceece5cac748194d2db525805a54836",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 6922
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-3b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+                  "sizeBytes": 2104932800,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/__tests__/orderCopyReview.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": null,
+              "guardrails": 1
+            },
+            "composite": 1
+          },
+          "identityMatched": true,
+          "checks": {
+            "scope": {
+              "ok": false
+            },
+            "typecheck": {
+              "ok": false,
+              "skipped": true
+            },
+            "tests": {
+              "ok": false,
+              "skipped": true
+            }
+          },
+          "durationMs": 6924
+        }
+      ],
+      "negativeControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1067
+        },
+        "tests": {
+          "ok": false,
+          "durationMs": 7935
+        },
+        "originalTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6749
+        },
+        "proposedTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1186,
+          "assertionFailures": 0
+        }
+      },
+      "positiveControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1042
+        },
+        "tests": {
+          "ok": true,
+          "durationMs": 7968
+        },
+        "originalTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6744
+        },
+        "proposedTests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1224,
+          "assertionFailures": 1
+        }
+      }
+    }
+  ],
+  "preflights": [
+    {
+      "kind": "frozen-one-app-evaluation",
+      "revision": "7c2694c75205f2622dcb6e3d2b1598496e64453b",
+      "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+      "startedAt": "2026-10-23T07:05:09.844Z",
+      "task": {
+        "id": "stock-filter",
+        "kind": "feature"
+      },
+      "installedDependencyVersions": {
+        "@react-navigation/native": "7.3.16",
+        "@react-navigation/native-stack": "7.18.8",
+        "expo": "58.0.17",
+        "expo-status-bar": "58.0.4",
+        "react": "19.3.0",
+        "react-native": "0.88.0",
+        "react-native-safe-area-context": "5.10.1",
+        "react-native-screens": "4.30.0",
+        "@babel/core": "7.29.7",
+        "@reduxjs/toolkit": "2.12.0",
+        "@testing-library/react-native": "14.0.1",
+        "@types/jest": "30.0.0",
+        "@types/react": "19.3.0",
+        "@react-native/jest-preset": "0.88.0",
+        "babel-preset-expo": "58.0.19",
+        "jest": "30.2.0",
+        "jest-expo": "58.0.12",
+        "react-redux": "9.3.0",
+        "react-test-renderer": "19.3.0",
+        "typescript": "5.8.3"
+      },
+      "freezeSha256": "fabf2e3b3c5f0fb24e2525702b3f4b177f59cba5075682cb185cda7f7ab1d27e",
+      "taskDefinitionsSha256": "91ea35672bf7d810c54357f4d548d2a68b987b3827e5d4e3ba06165694aa0a7e",
+      "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+      "nativeVerification": "not-run",
+      "runnerSha256": "3da2d15aaa2f40f57585e4f8dd83bd54645d99a4b9764b38b249027706cce523",
+      "appArchiveSha256": "85f494af47a4d19013fbae471533281db459a859317ce86f7778f4c768716fb2",
+      "inferenceModuleSha256": "2d6ffa6cf36abd1f5ab57c20255388db1837790fa652ff994348b0a62432d9b0",
+      "acceptanceSha256": "d2985db43bf346de1040ac73aa4777ec2f9e26f0f9dc0f96ca0c70f81270ee06",
+      "taskSha256": "20610a8aa4bdfc3cd15fde4ff6a160580d45b0824eedd1a7b7d01f07e65d6145",
+      "runtime": {
+        "node": "v24.22.1",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "settings": {
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "maxAttempts": 1,
+        "providerCallLimit": 1
+      },
+      "model": "qwen2.5-coder-3b",
+      "expectedArtifactSha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+      "limitations": [
+        "No native build",
+        "Installed dependencies reused",
+        "Tokens/cost not measured",
+        "No human correction-time measurement",
+        "Three newly frozen tasks in one app; insufficient for reliable improvement or launch qualification",
+        "Seeds and input-token accounting unavailable in this inference path",
+        "Review means an executable regression test, not qualification of the review CLI",
+        "Native verification remains a separate per-candidate gate"
+      ],
+      "runs": [
+        {
+          "repetition": 1,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 1,
+          "condition": "vectalon",
+          "status": "not-run"
+        },
+        {
+          "repetition": 2,
+          "condition": "vectalon",
+          "status": "not-run"
+        },
+        {
+          "repetition": 2,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 3,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 3,
+          "condition": "vectalon",
+          "status": "not-run"
+        }
+      ],
+      "negativeControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1278
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7435
+        }
+      },
+      "positiveControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1008
+        },
+        "tests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6652
+        }
+      }
+    },
+    {
+      "kind": "frozen-one-app-evaluation",
+      "revision": "7c2694c75205f2622dcb6e3d2b1598496e64453b",
+      "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+      "startedAt": "2026-10-23T07:05:28.407Z",
+      "task": {
+        "id": "current-session",
+        "kind": "fix"
+      },
+      "installedDependencyVersions": {
+        "@react-navigation/native": "7.3.16",
+        "@react-navigation/native-stack": "7.18.8",
+        "expo": "58.0.17",
+        "expo-status-bar": "58.0.4",
+        "react": "19.3.0",
+        "react-native": "0.88.0",
+        "react-native-safe-area-context": "5.10.1",
+        "react-native-screens": "4.30.0",
+        "@babel/core": "7.29.7",
+        "@reduxjs/toolkit": "2.12.0",
+        "@testing-library/react-native": "14.0.1",
+        "@types/jest": "30.0.0",
+        "@types/react": "19.3.0",
+        "@react-native/jest-preset": "0.88.0",
+        "babel-preset-expo": "58.0.19",
+        "jest": "30.2.0",
+        "jest-expo": "58.0.12",
+        "react-redux": "9.3.0",
+        "react-test-renderer": "19.3.0",
+        "typescript": "5.8.3"
+      },
+      "freezeSha256": "fabf2e3b3c5f0fb24e2525702b3f4b177f59cba5075682cb185cda7f7ab1d27e",
+      "taskDefinitionsSha256": "91ea35672bf7d810c54357f4d548d2a68b987b3827e5d4e3ba06165694aa0a7e",
+      "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+      "nativeVerification": "not-run",
+      "runnerSha256": "3da2d15aaa2f40f57585e4f8dd83bd54645d99a4b9764b38b249027706cce523",
+      "appArchiveSha256": "85f494af47a4d19013fbae471533281db459a859317ce86f7778f4c768716fb2",
+      "inferenceModuleSha256": "2d6ffa6cf36abd1f5ab57c20255388db1837790fa652ff994348b0a62432d9b0",
+      "acceptanceSha256": "3443838dcade255e2181d7932bac02699bad450e5f4abe1f173500c6abf6fef8",
+      "taskSha256": "97c9a91b515f9783bf166fb70f69e247c0db8e8256ea0f097cb884895626d127",
+      "runtime": {
+        "node": "v24.22.1",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "settings": {
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "maxAttempts": 1,
+        "providerCallLimit": 1
+      },
+      "model": "qwen2.5-coder-3b",
+      "expectedArtifactSha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+      "limitations": [
+        "No native build",
+        "Installed dependencies reused",
+        "Tokens/cost not measured",
+        "No human correction-time measurement",
+        "Three newly frozen tasks in one app; insufficient for reliable improvement or launch qualification",
+        "Seeds and input-token accounting unavailable in this inference path",
+        "Review means an executable regression test, not qualification of the review CLI",
+        "Native verification remains a separate per-candidate gate"
+      ],
+      "runs": [
+        {
+          "repetition": 1,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 1,
+          "condition": "vectalon",
+          "status": "not-run"
+        },
+        {
+          "repetition": 2,
+          "condition": "vectalon",
+          "status": "not-run"
+        },
+        {
+          "repetition": 2,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 3,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 3,
+          "condition": "vectalon",
+          "status": "not-run"
+        }
+      ],
+      "negativeControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1145
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7696
+        }
+      },
+      "positiveControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1178
+        },
+        "tests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 9214
+        }
+      }
+    },
+    {
+      "kind": "frozen-one-app-evaluation",
+      "revision": "7c2694c75205f2622dcb6e3d2b1598496e64453b",
+      "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+      "startedAt": "2026-10-23T07:05:32.787Z",
+      "task": {
+        "id": "order-copy-review",
+        "kind": "review"
+      },
+      "installedDependencyVersions": {
+        "@react-navigation/native": "7.3.16",
+        "@react-navigation/native-stack": "7.18.8",
+        "expo": "58.0.17",
+        "expo-status-bar": "58.0.4",
+        "react": "19.3.0",
+        "react-native": "0.88.0",
+        "react-native-safe-area-context": "5.10.1",
+        "react-native-screens": "4.30.0",
+        "@babel/core": "7.29.7",
+        "@reduxjs/toolkit": "2.12.0",
+        "@testing-library/react-native": "14.0.1",
+        "@types/jest": "30.0.0",
+        "@types/react": "19.3.0",
+        "@react-native/jest-preset": "0.88.0",
+        "babel-preset-expo": "58.0.19",
+        "jest": "30.2.0",
+        "jest-expo": "58.0.12",
+        "react-redux": "9.3.0",
+        "react-test-renderer": "19.3.0",
+        "typescript": "5.8.3"
+      },
+      "freezeSha256": "fabf2e3b3c5f0fb24e2525702b3f4b177f59cba5075682cb185cda7f7ab1d27e",
+      "taskDefinitionsSha256": "91ea35672bf7d810c54357f4d548d2a68b987b3827e5d4e3ba06165694aa0a7e",
+      "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+      "nativeVerification": "not-run",
+      "runnerSha256": "3da2d15aaa2f40f57585e4f8dd83bd54645d99a4b9764b38b249027706cce523",
+      "appArchiveSha256": "85f494af47a4d19013fbae471533281db459a859317ce86f7778f4c768716fb2",
+      "inferenceModuleSha256": "2d6ffa6cf36abd1f5ab57c20255388db1837790fa652ff994348b0a62432d9b0",
+      "acceptanceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "taskSha256": "feb2c6a4291d7f017a5484bca1cd4c17ea1a6f1169f7a1b83345ffbdeb7dcda0",
+      "runtime": {
+        "node": "v24.22.1",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "settings": {
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "maxAttempts": 1,
+        "providerCallLimit": 1
+      },
+      "model": "qwen2.5-coder-3b",
+      "expectedArtifactSha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+      "limitations": [
+        "No native build",
+        "Installed dependencies reused",
+        "Tokens/cost not measured",
+        "No human correction-time measurement",
+        "Three newly frozen tasks in one app; insufficient for reliable improvement or launch qualification",
+        "Seeds and input-token accounting unavailable in this inference path",
+        "Review means an executable regression test, not qualification of the review CLI",
+        "Native verification remains a separate per-candidate gate"
+      ],
+      "runs": [
+        {
+          "repetition": 1,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 1,
+          "condition": "vectalon",
+          "status": "not-run"
+        },
+        {
+          "repetition": 2,
+          "condition": "vectalon",
+          "status": "not-run"
+        },
+        {
+          "repetition": 2,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 3,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 3,
+          "condition": "vectalon",
+          "status": "not-run"
+        }
+      ],
+      "negativeControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1186
+        },
+        "tests": {
+          "ok": false,
+          "durationMs": 9655
+        },
+        "originalTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7802
+        },
+        "proposedTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1853,
+          "assertionFailures": 0
+        }
+      },
+      "positiveControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1752
+        },
+        "tests": {
+          "ok": true,
+          "durationMs": 9128
+        },
+        "originalTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7850
+        },
+        "proposedTests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1278,
+          "assertionFailures": 1
+        }
+      }
+    }
+  ]
+}
