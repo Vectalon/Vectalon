@@ -65,3 +65,12 @@ test('identifies frozen review task semantics and records whole-run time indepen
   assert.ok(text.includes('a compile/runtime error is not detection'));
   assert.ok(text.includes('| 20 | 70 |'));
 });
+
+test('does not present passing app tests as guardrail or native qualification', () => {
+  const text = formatPilotReport({ runs: [{ condition: 'task-only', status: 'passed', identityMatched: true,
+    checks: { typecheck: { ok: true }, tests: { ok: true } },
+    result: { axes: { guardrails: 17 / 18, adherence: null } } }] });
+  assert.ok(text.includes('App-check passes'));
+  assert.ok(text.includes('does not meet the release'));
+  assert.ok(text.includes('| 94.4 | unscored | not-run |'));
+});

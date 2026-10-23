@@ -7,12 +7,12 @@ const pending = row => ['running', 'not-run'].includes(row.status);
 function formatPilotReport(report) {
   const runs = report.runs || [];
   const lines = ['# RN development pilot', '',
-    'Observed development evidence, not model qualification or unseen-task improvement. Native builds, tokens/cost and human correction time are unmeasured.', '',
+    'Observed development evidence, not model qualification or unseen-task improvement. Native evidence is separate from app checks and rubric scores; tokens/cost and human correction time are unmeasured.', '',
     `Model: ${cell(report.model)} · expected file SHA-256: ${cell(report.expectedArtifactSha256)}`,
     `Output-token cap: ${cell(report.settings?.maxTokens)} · attempt cap: ${cell(report.settings?.maxAttempts)} · grammar: ${cell(report.settings?.outputFormat ?? 'not requested')}`, '',
     '## Outcome matrix', '',
-    'Check fractions count only recorded, non-skipped checks. Missing checks are not passes. Task passes require matching model identity and both app checks; pending runs remain in the planned count.', '',
-    '| Condition | Planned | Task passes | Failed/error/timeout/incomplete | Pending | Typecheck passed/checked | Tests passed/checked |',
+    'Check fractions count only recorded, non-skipped checks. Missing checks are not passes. App-check passes require matching model identity and both app checks; pending runs remain in the planned count. Passing app checks alone does not meet the release guardrail/adherence or native gates.', '',
+    '| Condition | Planned | App-check passes | Failed/error/timeout/incomplete | Pending | Typecheck passed/checked | Tests passed/checked |',
     '|---|---:|---:|---:|---:|---:|---:|'];
   if (report.task) lines.splice(4, 0,
     `Task: ${cell(report.task.id)} · workflow: ${cell(report.task.kind)} · app revision: ${cell(report.appRevision)}`, '',
@@ -28,8 +28,8 @@ function formatPilotReport(report) {
   if (!runs.length) lines.push('', 'No runs recorded.');
   lines.push('', '## Repetitions and attempts', '',
     'Attempt entries show kind: parsing / supplied verification. Unrecorded verification is not success. Attempt time includes in-loop verification but excludes final app checks; it is not total workflow latency.', '',
-    '| Condition | Repeat | Outcome | Identity | Typecheck | Tests | Attempts | Attempt ms | Run ms |',
-    '|---|---:|---|---|---|---|---|---:|---:|');
+    '| Condition | Repeat | Outcome | Identity | Typecheck | Tests | Attempts | Attempt ms | Run ms | Guardrails % | Adherence % | Native |',
+    '|---|---:|---|---|---|---|---|---:|---:|---:|---:|---|');
   for (const row of runs) {
     const attempts = row.result?.attempts;
     const times = attempts?.map(attempt => attempt.durationMs);
@@ -39,7 +39,8 @@ function formatPilotReport(report) {
     const identity = row.identityMatched === true ? 'matched' : row.identityMatched === false ? 'mismatch' : 'unrecorded';
     const outcome = row.status === 'passed' && !passed(row) ? 'incomplete evidence' : cell(row.status);
     const runDuration = Number.isFinite(row.durationMs) && row.durationMs >= 0 ? row.durationMs : 'unrecorded';
-    lines.push(`| ${cell(row.condition)} | ${cell(row.repetition)} | ${outcome} | ${identity} | ${check(row.checks?.typecheck)} | ${check(row.checks?.tests)} | ${details} | ${duration} | ${runDuration} |`);
+    const percent = value => Number.isFinite(value) && value >= 0 && value <= 1 ? (value * 100).toFixed(1) : 'unscored';
+    lines.push(`| ${cell(row.condition)} | ${cell(row.repetition)} | ${outcome} | ${identity} | ${check(row.checks?.typecheck)} | ${check(row.checks?.tests)} | ${details} | ${duration} | ${runDuration} | ${percent(row.result?.axes?.guardrails)} | ${percent(row.result?.axes?.adherence)} | ${cell(row.nativeVerification?.status ?? 'not-run')} |`);
   }
   return lines.join('\n') + '\n';
 }
