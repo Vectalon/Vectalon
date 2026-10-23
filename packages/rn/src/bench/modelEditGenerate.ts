@@ -49,8 +49,9 @@ export function createModelEditGenerate(options: Pick<ModelGenerateOptions, 'mod
     try {
       const response = await options.modelRouter.generate(request)
       record.provider = response.provider
-      record.model = response.model
-      record.artifact = response.artifact
+      if (response.model) record.model = { id: response.model.id, source: response.model.source }
+      if (response.artifact) record.artifact = { sha256: response.artifact.sha256,
+        sizeBytes: response.artifact.sizeBytes, source: response.artifact.source }
       record.stopReason = response.stopReason
       record.providerCalls = response.providerCalls?.map(({ provider, status, durationMs }) => ({ provider, status, durationMs }))
       const content = response.content || ''

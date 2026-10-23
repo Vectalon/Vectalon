@@ -55,6 +55,7 @@ it('rejects ambiguous anchors', async () => {
 })
 
 it.each(['not JSON', '{"answer":"done"}', '{"tool":"other","arguments":{}}', envelope({}),
+  JSON.stringify({ tool: 'propose_edits', arguments: {}, answer: envelope([edit]) }),
   '[Local model fallback] ' + envelope([edit])])('never treats an invalid, answer or fallback payload as edits: %s', async content => {
   const { seam } = setup(content)
   expect(await seam(scenario)).toEqual([])
@@ -74,6 +75,17 @@ it('retains provider failure without raw error disclosure', async () => {
   expect(await seam(scenario, attempts)).toEqual([])
   expect(attempts.mock.calls[0][0][0].status).toBe('error')
   expect(JSON.stringify(attempts.mock.calls)).not.toContain('PRIVATE_ERROR')
+})
+
+it('whitelists model and artifact metadata instead of retaining unknown provider fields', async () => {
+  const { seam, generate } = setup(envelope([edit]))
+  generate.mockResolvedValue({ content: envelope([edit]), provider: 'local',
+    model: { id: 'selected', source: 'configured', privatePrompt: 'PRIVATE_SOURCE' },
+    artifact: { sha256: 'a'.repeat(64), sizeBytes: 1, source: 'file', privatePath: 'PRIVATE_SOURCE' },
+  })
+  const attempts = jest.fn()
+  await seam(scenario, attempts)
+  expect(JSON.stringify(attempts.mock.calls)).not.toContain('PRIVATE_SOURCE')
 })
 
 it('leaves generated source out of default scenario results', async () => {

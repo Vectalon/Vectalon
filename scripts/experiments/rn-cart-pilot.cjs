@@ -30,7 +30,7 @@ assert.ok(getPreset(model), 'Unknown model preset; refusing default-model substi
 const expectedArtifactSha256 = args['artifact-sha256'] ?? (args.task ? freeze.artifactSha256 : 'cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046');
 const { runSandboxed } = load('sandbox/run.js');
 const { createModelGenerate } = load('bench/modelGenerate.js');
-const { createModelEditGenerate } = load('bench/modelEditGenerate.js');
+const { createModelEditGenerate } = args.edits ? load('bench/modelEditGenerate.js') : {};
 const { runScenario } = load('bench/runner.js');
 const { ModelRouter } = load('model/ModelRouter.js');
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
@@ -86,6 +86,7 @@ const report = { kind: task ? 'frozen-one-app-evaluation' : 'development-pilot',
     dependencyLockSha256: hash(fs.readFileSync(path.join(app, 'package-lock.json'))),
     nativeVerification: 'not-run' } : {}),
   runnerSha256: hash(fs.readFileSync(__filename)), appArchiveSha256: hash(archive.stdout),
+  generationModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/bench', args.edits ? 'modelEditGenerate.js' : 'modelGenerate.js'))),
   inferenceModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/model/local/inference.js'))),
   acceptanceSha256: hash(acceptance), taskSha256: hash(JSON.stringify(scenario)),
   runtime: { node: process.version, platform: process.platform, arch: process.arch }, settings,
@@ -231,6 +232,7 @@ async function main() {
       const files = row.result.generatedArtifacts || [];
       row.phase = 'verification';
       if (files.length === 1 && files[0].path === target && row.identityMatched) row.checks = verified.get(hash(JSON.stringify(files))) || await verify(files, deadline);
+      if (args.edits && !row.checks) row.checks = { typecheck: { ok: false, skipped: true }, tests: { ok: false, skipped: true } };
       row.status = Date.now() >= deadline ? 'timeout' : row.checks?.typecheck.ok && row.checks?.tests.ok ? 'passed' : 'failed';
       row.phase = 'complete';
     } catch { row.status = Date.now() >= deadline ? 'timeout' : 'error'; }
