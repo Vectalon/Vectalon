@@ -20,6 +20,7 @@ function formatPilotReport(report) {
     'Check fractions count only recorded, non-skipped checks. Missing checks are not passes. App-check passes require matching model identity and both app checks; pending runs remain in the planned count. Passing app checks alone does not meet the release guardrail/adherence or native gates.', '',
     '| Condition | Planned | App-check passes | Failed/error/timeout/incomplete | Pending | Typecheck passed/checked | Tests passed/checked |',
     '|---|---:|---:|---:|---:|---:|---:|'];
+  if (report.settings?.anchorMode) lines.splice(7, 0, `Anchor selection: ${cell(report.settings.anchorMode)}. Source selection is not implementation correctness.`, '');
   if (report.task) lines.splice(4, 0,
     `Task: ${cell(report.task.id)} · workflow: ${cell(report.task.kind)} · app revision: ${cell(report.appRevision)}`, '',
     ...(report.task.kind === 'review' ? ['Review passes require the generated test to pass on the original service and fail through an assertion on the proposed service; a compile/runtime error is not detection.', ''] : []));

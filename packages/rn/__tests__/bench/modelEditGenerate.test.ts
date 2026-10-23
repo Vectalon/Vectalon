@@ -10,7 +10,7 @@ const scenario: BenchScenario = { specVersion: 1, id: 'edit-test', title: 'edit'
   prompt: 'Change value to 2', fixtures: { [target]: source }, expect: { files: [target], behaviors: ['export value 2'] },
   fixEdits: [{ file: target, find: '1', replace: 'HELD_OUT_ANSWER' }],
   correctness: { tests: false, typecheck: false, lint: false }, axes: ['guardrails', 'adherence'] }
-const edit = { file: target, op: 'replace', from: 'value = 1', to: 'value = 2' }
+const edit = { file: target, op: 'replace', from: 'export const value = 1', to: 'export const value = 2' }
 const envelope = (edits: unknown) => JSON.stringify({ tool: 'propose_edits', arguments: { edits } })
 function setup(content: string) {
   const generate = jest.fn().mockResolvedValue({ content, provider: 'local', requiredTool: 'propose_edits', stopReason: 'eogToken',
@@ -28,6 +28,7 @@ it('applies exact scoped edits, preserves surrounding code and fingerprints the 
   expect(generate).toHaveBeenCalledTimes(1)
   const request = generate.mock.calls[0][0]
   expect(request.tools[0].inputSchema.properties.edits.items.properties.file.const).toBe(target)
+  expect(request.tools[0].inputSchema.properties.edits.items.properties.from.enum).toEqual(source.trimEnd().split('\n'))
   expect(request.providerCallLimit).toBe(1)
   expect(request.requiredTool).toBe('propose_edits')
   expect(JSON.stringify(request)).not.toContain('HELD_OUT_ANSWER')
@@ -59,6 +60,36 @@ it('rejects a valid proposal without provider acknowledgement of required argume
 it('rejects ambiguous anchors', async () => {
   const { seam } = setup(envelope([{ ...edit, from: 'keep' }]))
   expect(await seam(scenario)).toEqual([])
+})
+
+it('offers only nonblank full lines with exactly one literal occurrence', async () => {
+  const content = '  keep();\n  keep();\n\n  const n = 1;\n  const n = 10;\n'
+  const { seam, generate } = setup(envelope([]))
+  await seam({ ...scenario, fixtures: { [target]: content } })
+  expect(generate.mock.calls[0][0].tools[0].inputSchema.properties.edits.items.properties.from.enum).toEqual(['  const n = 1;', '  const n = 10;'])
+})
+
+it('rejects unoffered substring anchors even when unique and provider acknowledged', async () => {
+  const { seam } = setup(envelope([{ ...edit, from: 'value = 1' }]))
+  expect(await seam(scenario)).toEqual([])
+})
+
+it('preserves indentation and line endings when inserting after an offered anchor', async () => {
+  const content = '  const value = 1;\r\n  keep();\r\n'
+  const { seam } = setup(envelope([{ ...edit, op: 'insert-after', from: '  const value = 1;\r', to: '\n  const next = 2;\r' }]))
+  expect(await seam({ ...scenario, fixtures: { [target]: content } })).toEqual([{ path: target, content: '  const value = 1;\r\n  const next = 2;\r\n  keep();\r\n' }])
+})
+
+it('fails before inference when the source has no unique nonblank line', async () => {
+  const { seam, generate } = setup(envelope([]))
+  await expect(seam({ ...scenario, fixtures: { [target]: 'repeat\nrepeat\n\n' } })).rejects.toThrow('unique nonblank')
+  expect(generate).not.toHaveBeenCalled()
+})
+
+it('rejects a later edit when an earlier replacement invalidates its offered anchor', async () => {
+  const { seam } = setup(envelope([edit, { ...edit, to: 'export const value = 3' }]))
+  expect(await seam(scenario)).toEqual([])
+  expect(scenario.fixtures[target]).toBe(source)
 })
 
 it.each(['not JSON', '{"answer":"done"}', '{"tool":"other","arguments":{}}', envelope({}),

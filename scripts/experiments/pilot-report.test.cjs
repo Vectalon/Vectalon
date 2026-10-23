@@ -98,6 +98,7 @@ test('shows edit acceptance separately from app verification without exposing pr
     result: { attempts: [{ kind: 'initial', status: 'parsed', editApplication: 'applied', content: 'PRIVATE_SOURCE' }] } }] });
   assert.ok(text.includes('local tool envelope'));
   assert.ok(formatPilotReport({ settings: { requiredTool: 'propose_edits' }, runs: [] }).includes('required tool arguments: propose_edits'));
+  assert.ok(formatPilotReport({ settings: { anchorMode: 'unique-source-lines' }, runs: [] }).includes('Anchor selection: unique-source-lines'));
   assert.ok(text.includes('Edit application'));
   assert.ok(text.includes('not-run | applied |'));
   assert.ok(text.includes('| vectalon-edits | 1 | 0 |'));
