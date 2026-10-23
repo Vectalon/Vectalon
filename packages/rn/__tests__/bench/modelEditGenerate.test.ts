@@ -13,7 +13,7 @@ const scenario: BenchScenario = { specVersion: 1, id: 'edit-test', title: 'edit'
 const edit = { file: target, op: 'replace', from: 'value = 1', to: 'value = 2' }
 const envelope = (edits: unknown) => JSON.stringify({ tool: 'propose_edits', arguments: { edits } })
 function setup(content: string) {
-  const generate = jest.fn().mockResolvedValue({ content, provider: 'local', stopReason: 'eogToken',
+  const generate = jest.fn().mockResolvedValue({ content, provider: 'local', requiredTool: 'propose_edits', stopReason: 'eogToken',
     model: { id: 'selected', source: 'configured' }, artifact: { sha256: 'a'.repeat(64), sizeBytes: 1, source: 'file' },
     providerCalls: [{ provider: 'local', status: 'response', durationMs: 3 }] })
   const onRawResponse = jest.fn()
@@ -29,6 +29,7 @@ it('applies exact scoped edits, preserves surrounding code and fingerprints the 
   const request = generate.mock.calls[0][0]
   expect(request.tools[0].inputSchema.properties.edits.items.properties.file.const).toBe(target)
   expect(request.providerCallLimit).toBe(1)
+  expect(request.requiredTool).toBe('propose_edits')
   expect(JSON.stringify(request)).not.toContain('HELD_OUT_ANSWER')
   expect(attempts.mock.calls[0][0][0]).toMatchObject({ status: 'parsed', selected: true, editApplication: 'applied',
     requestDigest: benchmarkFingerprint(request), artifact: { sha256: 'a'.repeat(64) }, provider: 'local' })
@@ -47,6 +48,12 @@ it.each([
   expect(await seam(scenario, attempts)).toEqual([])
   expect(scenario.fixtures[target]).toBe(source)
   expect(attempts.mock.calls[0][0][0]).toMatchObject({ status: 'invalid', selected: false, editApplication: 'rejected' })
+})
+
+it('rejects a valid proposal without provider acknowledgement of required arguments', async () => {
+  const { seam, generate } = setup(envelope([edit]))
+  generate.mockResolvedValue({ content: envelope([edit]), provider: 'local' })
+  expect(await seam(scenario)).toEqual([])
 })
 
 it('rejects ambiguous anchors', async () => {

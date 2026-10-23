@@ -75,7 +75,7 @@ if (task) {
 const repair = args.repair;
 const constrained = args.constrained;
 const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair ? 2 : 1, providerCallLimit: 1,
-  ...(constrained ? { outputFormat: 'files-json' } : {}), ...(args.edits ? { toolEnvelope: true } : {}) };
+  ...(constrained ? { outputFormat: 'files-json' } : {}), ...(args.edits ? { toolEnvelope: true, requiredTool: 'propose_edits' } : {}) };
 if (task) assert.deepEqual(settings, freeze.settings, 'Frozen resource settings changed');
 const output = fs.mkdtempSync('/private/tmp/vectalon-cart-pilot-');
 const report = { kind: task ? 'frozen-one-app-evaluation' : 'development-pilot', revision, appRevision, startedAt: new Date().toISOString(),
@@ -94,7 +94,7 @@ const report = { kind: task ? 'frozen-one-app-evaluation' : 'development-pilot',
   limitations: ['No native build', 'Installed dependencies reused', 'Tokens/cost not measured', 'No human correction-time measurement', ...(task ? freeze.limitations : ['One public development task; not launch qualification']),
     ...(repair ? ['Repair diagnostic permits twice the generation budget of the first-pass pilot; not an equal-budget comparison'] : []),
     ...(constrained ? ['Native file-envelope grammar constrains serialization, not file scope or code correctness'] : []),
-    ...(args.edits ? ['Scoped edit protocol differs from full-file generation; single existing file, at most eight edits, no repairs', 'Tool-envelope grammar does not enforce argument values; edits are validated before staging'] : [])],
+    ...(args.edits ? ['Scoped edit protocol differs from full-file generation; single existing file, at most eight edits, no repairs', 'Required-tool grammar constrains argument structure, not anchor uniqueness or code correctness; edits are validated before staging'] : [])],
   runs: Array.from({ length: task ? freeze.repetitions : 3 }, (_, repetition) => (args.edits ? ['vectalon-edits'] : repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
 const save = () => {
   fs.writeFileSync(path.join(output, 'report.json'), serializePilotReport(report, {

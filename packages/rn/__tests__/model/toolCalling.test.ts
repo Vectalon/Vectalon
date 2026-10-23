@@ -1,5 +1,6 @@
 import {
   TOOL_CALL_SCHEMA,
+  buildRequiredToolSchema,
   buildToolCallSystemPrompt,
   parseToolCallOutput,
   runAgentLoop,
@@ -35,6 +36,19 @@ describe('TOOL_CALL_SCHEMA', () => {
 })
 
 describe('buildToolCallSystemPrompt', () => {
+  it('pins the required tool and its argument schema without an answer alternative', () => {
+    const schema = buildRequiredToolSchema(TOOLS, 'review_code')
+    expect(schema.required).toEqual(['tool', 'arguments'])
+    expect(schema.additionalProperties).toBe(false)
+    expect(schema.properties).toEqual({ tool: { const: 'review_code' }, arguments: TOOLS[1].inputSchema })
+    expect(buildToolCallSystemPrompt(TOOLS, 'review_code')).toContain('Do not return an answer')
+  })
+
+  it('rejects absent, duplicate and non-object tool schemas', () => {
+    expect(() => buildRequiredToolSchema(TOOLS, 'unknown')).toThrow('exactly one')
+    expect(() => buildRequiredToolSchema([...TOOLS, TOOLS[1]], 'review_code')).toThrow('exactly one')
+    expect(() => buildRequiredToolSchema([{ ...TOOLS[1], inputSchema: { type: 'string' } }], 'review_code')).toThrow('object')
+  })
   it('lists every tool with its description and schema', () => {
     const prompt = buildToolCallSystemPrompt(TOOLS)
     expect(prompt).toContain('get_project_context: Get project context')

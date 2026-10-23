@@ -36,6 +36,26 @@ describe('ModelRouter', () => {
     expect(global.fetch).not.toHaveBeenCalled()
   })
 
+  it('refuses required-tool grammar on remote providers before sending private context', async () => {
+    global.fetch = jest.fn()
+    const router = new ModelRouter()
+    router.initialize({ provider: 'openai' })
+    await expect(router.generate({ prompt: 'private code', requiredTool: 'propose',
+      tools: [{ name: 'propose', description: '', inputSchema: { type: 'object' } }] })).rejects.toThrow('native local')
+    expect(global.fetch).not.toHaveBeenCalled()
+  })
+
+  it('does not initialize WASM fallback for a required-tool request', async () => {
+    const wasm = jest.spyOn(WasmProvider.prototype, 'initialize')
+    try {
+      const router = new ModelRouter()
+      const response = await router.generate({ prompt: 'edit', requiredTool: 'propose',
+        tools: [{ name: 'propose', description: '', inputSchema: { type: 'object' } }] })
+      expect(response.requiredTool).toBeUndefined()
+      expect(wasm).not.toHaveBeenCalled()
+    } finally { wasm.mockRestore() }
+  })
+
   it('does not initialize WASM fallback for a constrained local request', async () => {
     const wasm = jest.spyOn(WasmProvider.prototype, 'initialize')
     try {

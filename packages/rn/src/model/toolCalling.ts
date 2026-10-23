@@ -10,9 +10,9 @@ import { reportError } from '../utils/safe'
  *   { "tool": "<name>", "arguments": { ... } }  -> a tool call
  *   { "answer": "..." }                         -> the final answer
  *
- * The grammar only constrains the envelope shape (JSON Schema can't pin string
- * values), so the model may hallucinate tool names — the agent loop validates
- * each call against the provided tool list and stops on unknown names.
+ * Automatic tool calling constrains only the envelope; the agent loop validates
+ * names and the executor must validate arguments. Required-tool requests use
+ * the selected tool's argument schema as well, but still need runtime checks.
  */
 
 /** JSON Schema for the tool-call/answer envelope (used as the grammar). */
@@ -28,8 +28,28 @@ export const TOOL_CALL_SCHEMA = {
 
 const MAX_TOOLS_IN_PROMPT = 40
 
+/** Required native call: no answer alternative, unknown tool or omitted arguments. */
+export function buildRequiredToolSchema(tools: ToolDefinition[], name: string) {
+  const matches = tools.filter(tool => tool.name === name)
+  if (typeof name !== 'string' || !name || matches.length !== 1 || matches[0].inputSchema?.type !== 'object') {
+    throw new Error('requiredTool must identify exactly one tool with an object inputSchema')
+  }
+  return { type: 'object', additionalProperties: false,
+    properties: { tool: { const: name }, arguments: matches[0].inputSchema }, required: ['tool', 'arguments'] }
+}
+
 /** Instructions + tool catalogue for the model's system prompt. */
-export function buildToolCallSystemPrompt(tools: ToolDefinition[]): string {
+export function buildToolCallSystemPrompt(tools: ToolDefinition[], requiredTool?: string): string {
+  if (requiredTool !== undefined) {
+    buildRequiredToolSchema(tools, requiredTool)
+    const tool = tools.find(tool => tool.name === requiredTool)!
+    return [
+      `Call ${requiredTool} exactly once. Return ONLY a JSON object with tool and arguments.`,
+      'The arguments must match the input schema; do not omit required fields or put them in answer text.',
+      'Do not return an answer field, markdown or explanations.',
+      `Tool: ${tool.name}: ${tool.description}`, `inputSchema: ${JSON.stringify(tool.inputSchema)}`,
+    ].join('\n')
+  }
   const lines = [
     'You are an agent that can call tools to gather information or perform actions.',
     'Respond with ONLY a JSON object — no markdown, no prose outside the JSON:',

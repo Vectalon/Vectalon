@@ -31,11 +31,11 @@ export function createModelEditGenerate(options: Pick<ModelGenerateOptions, 'mod
       systemPrompt: ['Implement the requested change using exact literal edits, not whole-file regeneration.',
         'Keep unrelated imports, exports and existing behavior unchanged. Return complete replacement text for each edit, not placeholders.',
         'Each from anchor must occur exactly once in the current file. Do not guess or edit other files.',
-        buildToolCallSystemPrompt([tool])].join('\n'),
+        buildToolCallSystemPrompt([tool], tool.name)].join('\n'),
       context: Object.entries(scenario.fixtures).map(([path, content]) => `--- ${path} ---\n${content}`).join('\n\n'),
       prompt: [scenario.prompt, ...scenario.expect.behaviors,
         `Delivery protocol: call propose_edits for ${target} instead of returning full files. The harness applies the edits and supplies unchanged source.`].join('\n'),
-      tools: [tool], temperature: options.temperature ?? 0.2, maxTokens: options.maxTokens ?? 2048, providerCallLimit: 1,
+      tools: [tool], requiredTool: tool.name, temperature: options.temperature ?? 0.2, maxTokens: options.maxTokens ?? 2048, providerCallLimit: 1,
     }
     const record: BenchGenerationAttempt & { editApplication: 'not-run' | 'rejected' | 'applied' } = {
       index: 1, kind: 'initial', status: 'error', selected: false, durationMs: 0, fileCount: 0,
@@ -60,6 +60,7 @@ export function createModelEditGenerate(options: Pick<ModelGenerateOptions, 'mod
       if (isModelFallback(content)) { record.status = 'fallback'; return [] }
       record.status = 'invalid'
       record.editApplication = 'rejected'
+      if (response.requiredTool !== tool.name) return []
       const parsed = parseToolCallOutput(content)
       if (parsed.kind !== 'tool-call' || parsed.tool !== tool.name || Object.keys(parsed.arguments).some(key => key !== 'edits')) return []
       const edits = parsed.arguments.edits

@@ -91,6 +91,7 @@ export class RemoteProvider {
   }
 
   async generate(request: ModelRequest): Promise<ModelResponse> {
+    if (request.requiredTool !== undefined) throw new Error('requiredTool requires native local generation')
     const context = request.context ? `\nContext:\n${request.context}\n` : ''
     const baseSystem = request.systemPrompt || RN_CODER_SYSTEM_PROMPT
     // Enrich with the project's enabled skills, distilled memory, and the

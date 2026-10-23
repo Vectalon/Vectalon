@@ -5,7 +5,7 @@ import { hasDownloadedModel } from '../local/ModelStore'
 import { buildSkillsSystemPrompt, enrichWithSkills } from '../../ecosystem/skills'
 import { buildMemorySystemPrompt, enrichWithMemory } from '../../memory'
 import { buildWebIntelSystemPrompt, enrichWithIntel } from '../../knowledge/intel'
-import { TOOL_CALL_SCHEMA } from '../toolCalling'
+import { TOOL_CALL_SCHEMA, buildRequiredToolSchema } from '../toolCalling'
 import { RN_CODER_SYSTEM_PROMPT } from '../prompts'
 import { logger } from '../../cli/logger'
 
@@ -105,6 +105,8 @@ export class LocalProvider {
   }
 
   async generate(request: ModelRequest): Promise<ModelResponse> {
+    if (request.requiredTool !== undefined && request.outputFormat !== undefined) throw new Error('requiredTool cannot be combined with outputFormat')
+    const requiredSchema = request.requiredTool === undefined ? undefined : buildRequiredToolSchema(request.tools || [], request.requiredTool)
     if (request.outputFormat !== undefined && (request.outputFormat !== 'files-json' || request.tools?.length)) {
       throw new Error('files-json cannot be combined with tools or an unknown format')
     }
@@ -140,14 +142,14 @@ export class LocalProvider {
           prompt: request.context ? `\nContext:\n${request.context}\n${request.prompt}` : request.prompt,
           temperature: request.temperature ?? 0.2,
           maxTokens: request.maxTokens || 2048,
-          // Tool-enabled requests run in JSON mode so the model can only emit
-          // the { tool, arguments } / { answer } envelope the loop parses.
-          ...(request.outputFormat === 'files-json' ? { grammarSchema: FILES_JSON_SCHEMA }
+          // Required-tool mode also constrains arguments; ordinary tools retain the answer alternative.
+          ...(requiredSchema ? { grammarSchema: requiredSchema } : request.outputFormat === 'files-json' ? { grammarSchema: FILES_JSON_SCHEMA }
             : request.tools && request.tools.length > 0 ? { grammarSchema: TOOL_CALL_SCHEMA } : {}),
           ...(request.onTextChunk ? { onTextChunk: request.onTextChunk } : {}),
         })
         return {
           content: result.content,
+          ...(request.requiredTool !== undefined ? { requiredTool: request.requiredTool } : {}),
           ...(request.outputFormat ? { outputFormat: request.outputFormat } : {}),
           stopReason: result.stopReason,
           provider: 'local',

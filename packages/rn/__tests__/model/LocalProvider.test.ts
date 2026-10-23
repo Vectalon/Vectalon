@@ -5,6 +5,24 @@ import * as modelStore from '../../src/model/local/ModelStore'
 import { createTempProject, cleanup } from '../helpers/tmp'
 
 describe('LocalProvider', () => {
+  it('requires the selected tool and its argument schema, without changing ordinary tool calls', async () => {
+    const downloaded = jest.spyOn(modelStore, 'hasDownloadedModel').mockReturnValue(true)
+    const run = jest.spyOn(inference, 'runInference').mockResolvedValue({ content: '{}', modelId: 'test' })
+    const tool = { name: 'propose', description: '', inputSchema: { type: 'object', additionalProperties: false,
+      properties: { edits: { type: 'array', minItems: 1, maxItems: 8, items: { type: 'string' } } }, required: ['edits'] } }
+    try {
+      const provider = new LocalProvider({ nativeProbe: async () => true })
+      expect((await provider.generate({ prompt: 'edit', tools: [tool], requiredTool: 'propose' })).requiredTool).toBe('propose')
+      expect(run.mock.calls[0][1].grammarSchema).toEqual({ type: 'object', additionalProperties: false,
+        properties: { tool: { const: 'propose' }, arguments: tool.inputSchema }, required: ['tool', 'arguments'] })
+      await provider.generate({ prompt: 'normal tool call', tools: [tool] })
+      expect(run.mock.calls[1][1].grammarSchema?.properties).toHaveProperty('answer')
+      await expect(provider.generate({ prompt: 'edit', tools: [tool], requiredTool: 'unknown' })).rejects.toThrow('requiredTool')
+      await expect(provider.generate({ prompt: 'edit', tools: [tool], requiredTool: 'propose', outputFormat: 'files-json' })).rejects.toThrow()
+      expect(run).toHaveBeenCalledTimes(2)
+    } finally { run.mockRestore(); downloaded.mockRestore() }
+  })
+
   it('applies file JSON grammar only when requested and acknowledges it', async () => {
     const downloaded = jest.spyOn(modelStore, 'hasDownloadedModel').mockReturnValue(true)
     const run = jest.spyOn(inference, 'runInference').mockResolvedValue({ content: '{"files":[]}', modelId: 'test' })

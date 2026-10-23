@@ -108,6 +108,7 @@ export class WasmProvider {
   }
 
   async generate(request: ModelRequest): Promise<ModelResponse> {
+    if (request.requiredTool !== undefined) throw new Error('requiredTool requires native local generation')
     const baseSystem = request.systemPrompt || RN_CODER_SYSTEM_PROMPT
     const projectRoot = request.projectContext === 'disabled' ? undefined : this.projectRoot
     const skillsPrompt = enrichWithSkills(projectRoot, this.skillsLoader, baseSystem) ?? baseSystem

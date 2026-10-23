@@ -3,6 +3,13 @@ import { setConfig, resetConfig } from '../../src/config'
 import { createTempProject, useTempConfig, cleanup } from '../helpers/tmp'
 
 describe('RemoteProvider', () => {
+  it('refuses required local tools before network access', async () => {
+    const fetch = jest.spyOn(global, 'fetch')
+    try {
+      await expect(new RemoteProvider('openai').generate({ prompt: 'private', requiredTool: 'edit' })).rejects.toThrow('native local')
+      expect(fetch).not.toHaveBeenCalled()
+    } finally { fetch.mockRestore() }
+  })
   const originalFetch = global.fetch
   let configDir: string
 

@@ -15,7 +15,7 @@ function formatPilotReport(report) {
   const lines = ['# RN development pilot', '',
     'Observed development evidence, not model qualification or unseen-task improvement. Native evidence is separate from app checks and rubric scores; tokens/cost and human correction time are unmeasured.', '',
     `Model: ${cell(report.model)} · expected file SHA-256: ${cell(report.expectedArtifactSha256)}`,
-    `Output-token cap: ${cell(report.settings?.maxTokens)} · attempt cap: ${cell(report.settings?.maxAttempts)} · grammar: ${cell(report.settings?.toolEnvelope ? 'local tool envelope' : report.settings?.outputFormat ?? 'not requested')}`, '',
+    `Output-token cap: ${cell(report.settings?.maxTokens)} · attempt cap: ${cell(report.settings?.maxAttempts)} · grammar: ${cell(report.settings?.requiredTool ? 'required tool arguments: ' + report.settings.requiredTool : report.settings?.toolEnvelope ? 'local tool envelope' : report.settings?.outputFormat ?? 'not requested')}`, '',
     '## Outcome matrix', '',
     'Check fractions count only recorded, non-skipped checks. Missing checks are not passes. App-check passes require matching model identity and both app checks; pending runs remain in the planned count. Passing app checks alone does not meet the release guardrail/adherence or native gates.', '',
     '| Condition | Planned | App-check passes | Failed/error/timeout/incomplete | Pending | Typecheck passed/checked | Tests passed/checked |',

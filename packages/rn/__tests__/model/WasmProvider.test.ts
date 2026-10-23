@@ -15,6 +15,11 @@ function makeTransformers(): FakeTransformers {
 }
 
 describe('WasmProvider', () => {
+  it('refuses required local tools before loading a model', async () => {
+    const loadTransformers = jest.fn()
+    await expect(new WasmProvider({ loadTransformers }).generate({ prompt: 'private', requiredTool: 'edit' })).rejects.toThrow('native local')
+    expect(loadTransformers).not.toHaveBeenCalled()
+  })
   it('generates via the transformers pipeline, trims output, and reports the wasm provider', async () => {
     const mod = makeTransformers()
     const provider = new WasmProvider({ loadTransformers: async () => mod })

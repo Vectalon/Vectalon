@@ -12,6 +12,7 @@ import { hasDownloadedModel } from './local/ModelStore'
 import { CircuitBreaker } from './circuitBreaker'
 import { reportError } from '../utils/safe'
 import { logger } from '../cli/logger'
+import { buildRequiredToolSchema } from './toolCalling'
 
 export interface ModelRouterOptions {
   /** Project root threaded into local + WASM providers (skills enrichment). */
@@ -96,6 +97,10 @@ export class ModelRouter {
    * short-circuits it for 5 minutes).
    */
   async generate(request: ModelRequest): Promise<ModelResponse> {
+    if (request.requiredTool !== undefined) {
+      if (this.provider !== 'local' || request.outputFormat !== undefined) throw new Error('requiredTool requires native local generation without outputFormat')
+      buildRequiredToolSchema(request.tools || [], request.requiredTool)
+    }
     if (request.outputFormat !== undefined && (request.outputFormat !== 'files-json' || this.provider !== 'local' || request.tools?.length)) {
       throw new Error('files-json requires the native local provider without tools')
     }
@@ -127,7 +132,7 @@ export class ModelRouter {
     }
 
     // 2. Fallback chain: local native → WASM → deterministic stub.
-    const fallbacks = !request.outputFormat && providerCalls.length < limit ? await this.buildFallbackAttempts(request) : []
+    const fallbacks = !request.outputFormat && request.requiredTool === undefined && providerCalls.length < limit ? await this.buildFallbackAttempts(request) : []
     for (const fallback of fallbacks) {
       if (providerCalls.length >= limit) break
       if (this.circuit.isOpen(fallback.id)) {

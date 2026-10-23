@@ -54,6 +54,8 @@ export interface ModelRequest {
    * drives the loop and feeds results back (see src/model/toolCalling.ts).
    */
   tools?: ToolDefinition[]
+  /** Opt-in native-local required tool/argument grammar; never silently falls back to another provider. */
+  requiredTool?: string
   /**
    * Called with each decoded text chunk as the model streams. Currently
    * honored by the local (node-llama-cpp) provider only — remote providers
@@ -72,6 +74,8 @@ export interface ModelProviderCall {
 
 export interface ModelResponse {
   content: string
+  /** Present only when native generation used the required tool's argument schema. */
+  requiredTool?: string
   /** Present only when the serving provider applied the requested grammar. */
   outputFormat?: 'files-json'
   /** Native engine termination; absent for providers that do not report it. */
