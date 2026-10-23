@@ -70,12 +70,14 @@ export async function runFix(root: string, options: FixOptions = {}): Promise<Fi
 
   // Optional real-tree apply (clean-tree guarded).
   let appliedToTree = false
+  let treeApplied: FixEdit[] = []
   let refused = false
   let verifyDir = sandbox
   let gradleVerify = false
   if (options.apply) {
     const res = await applyToTree(root, edits, !!options.force, run)
-    appliedToTree = !res.refused
+    treeApplied = res.applied
+    appliedToTree = treeApplied.length > 0
     refused = res.refused
     if (appliedToTree) {
       verifyDir = root
@@ -88,14 +90,14 @@ export async function runFix(root: string, options: FixOptions = {}): Promise<Fi
   report.verification = await verifyTree({ dir: verifyDir, gradle: gradleVerify, run })
 
   // Attach applied status to findings (drives the "Applied" verdict lines).
-  const appliedKeys = new Set(sandboxApplied.map(e => editKey(e)))
+  const appliedKeys = new Set((options.apply ? treeApplied : sandboxApplied).map(e => editKey(e)))
   for (const f of findings) {
     if (!f.edit) {
       f.applied = 'manual'
       continue
     }
     f.applied = appliedKeys.has(editKey(f.edit)) ? 'applied' : 'manual'
-    if (refused && appliedKeys.has(editKey(f.edit))) f.applied = 'no-change'
+    if (refused && sandboxApplied.some(edit => editKey(edit) === editKey(f.edit!))) f.applied = 'no-change'
   }
   if (refused) {
     report.verification = report.verification.map(v => v.name === 'Gradle' ? { ...v, status: 'skipped', detail: 'not run — --apply refused (dirty tree)' } : v)
@@ -167,6 +169,8 @@ export function renderFixMarkdown(report: FixReport): string {
   if (report.diff) {
     lines.push('')
     lines.push('## Diff')
+    lines.push('')
+    lines.push('Sandbox preview of planned edits; see Applied for actual application status.')
     lines.push('')
     lines.push('```diff')
     lines.push(report.diff.trimEnd())

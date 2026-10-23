@@ -67,7 +67,7 @@ export interface FixReport {
   verdict: FixVerdict
   findings: FixFinding[]
   edits: FixEdit[]
-  /** Unified diff of applied edits vs the original tree (sandbox or real). */
+  /** Sandbox preview diff; per-finding status records actual application when --apply is requested. */
   diff: string
   verification: FixVerification[]
   confidence: number

@@ -3001,8 +3001,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.implementation.json"
     ]
   },
   {
@@ -3028,8 +3028,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.implementation.json"
     ]
   },
   {
@@ -3120,8 +3120,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.implementation.json"
     ]
   },
   {
@@ -3147,8 +3147,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.implementation.json"
     ]
   },
   {
@@ -3161,8 +3161,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.implementation.json"
     ]
   },
   {
@@ -3175,8 +3175,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.implementation.json"
     ]
   },
   {
@@ -3301,13 +3301,13 @@
     "kind": "claims",
     "name": "packages/rn/README.md",
     "source": "packages/rn/README.md",
-    "digest": "sha256:2833905741c0f1b54baac2e47f042e530d6fd8072ea2184754fe3a6be624d075",
+    "digest": "sha256:d9d8f59727b86447b2a76ad484fb97546c07af9a1825b3d2c4be5b739fe65bd1",
     "historical": false,
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.implementation.json"
     ]
   },
   {
@@ -3320,8 +3320,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.implementation.json"
     ]
   },
   {
@@ -4877,8 +4877,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.implementation.json"
     ]
   },
   {
@@ -5052,8 +5052,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.implementation.json"
     ]
   },
   {
@@ -5284,8 +5284,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.implementation.json"
     ]
   },
   {
@@ -5318,8 +5318,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.implementation.json"
     ]
   },
   {
@@ -5451,8 +5451,8 @@
     "capabilityId": "rn.project.inspect",
     "capabilityLifecycle": "beta",
     "capabilityEvidence": [
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.customer-workflow.json",
-      "capabilities/evidence/rn.project.inspect.1.0.22.0.22.5.implementation.json"
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.customer-workflow.json",
+      "capabilities/evidence/rn.project.inspect.1.0.23.0.22.5.implementation.json"
     ]
   },
   {

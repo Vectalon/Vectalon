@@ -254,6 +254,48 @@ describe('vc fix — sandbox apply + diff', () => {
 })
 
 describe('vc fix — runFix end-to-end', () => {
+  it.each(['complete', 'partial', 'refused'])('reports %s real-tree application from actual writes', async mode => {
+    const root = tempFixture()
+    try {
+      const report = await runFix(root, {
+        issue: 'Android build started failing after upgrading RN — react-native-x requires Kotlin >= 1.9.24', apply: true,
+        run: async (command, args) => {
+          if (command === 'git' && args[0] === 'status') {
+            if (mode === 'partial') writeFileSync(join(root, 'android/build.gradle'), 'changed independently\n')
+            return { success: true, stdout: mode === 'refused' ? ' M package.json' : '', stderr: '', exitCode: 0 }
+          }
+          return { success: true, stdout: '', stderr: '', exitCode: 0 }
+        },
+      })
+      expect(report.appliedToTree).toBe(mode !== 'refused')
+      const planned = report.findings.filter(finding => finding.edit)
+      expect(planned.length).toBeGreaterThan(0)
+      if (mode === 'refused') expect(planned.every(finding => finding.applied === 'no-change')).toBe(true)
+      else {
+        expect(planned.some(finding => finding.applied === 'applied')).toBe(true)
+        if (mode === 'partial') expect(planned.filter(finding => finding.edit!.file === 'android/build.gradle').every(finding => finding.applied === 'manual')).toBe(true)
+      }
+    } finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  it('does not claim real-tree application when anchors change after the sandbox preview', async () => {
+    const root = tempFixture()
+    const issue = 'Android build started failing after upgrading RN — react-native-x requires Kotlin >= 1.9.24'
+    const edits = planEdits(root, diagnose(root, { issue }).findings)
+    try {
+      const report = await runFix(root, { issue, apply: true, run: async (command, args) => {
+        if (command === 'git' && args[0] === 'status') {
+          for (const file of new Set(edits.map(edit => edit.file))) writeFileSync(join(root, file), 'changed independently\n')
+        }
+        return { success: true, stdout: '', stderr: '', exitCode: 0 }
+      } })
+      expect(report.appliedToTree).toBe(false)
+      expect(report.findings.some(finding => finding.applied === 'applied')).toBe(false)
+      expect(report.findings.filter(finding => finding.edit).every(finding => finding.applied === 'manual')).toBe(true)
+      expect(renderFixMarkdown(report)).toContain('Sandbox preview of planned edits')
+    } finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
   it('runs the full loop: root cause → edits → verification → confidence, real tree untouched', async () => {
     const root = tempFixture()
     try {
