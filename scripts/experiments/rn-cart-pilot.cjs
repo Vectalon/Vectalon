@@ -75,7 +75,7 @@ if (task) {
 const repair = args.repair;
 const constrained = args.constrained;
 const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair ? 2 : 1, providerCallLimit: 1,
-  ...(constrained ? { outputFormat: 'files-json' } : {}), ...(args.edits ? { toolEnvelope: true, requiredTool: 'propose_edits', anchorMode: 'unique-source-lines' } : {}) };
+  ...(constrained ? { outputFormat: 'files-json' } : {}), ...(args.edits ? { toolEnvelope: true, requiredTool: 'propose_edits', anchorMode: 'top-level-source-blocks' } : {}) };
 if (task) assert.deepEqual(settings, freeze.settings, 'Frozen resource settings changed');
 const output = fs.mkdtempSync('/private/tmp/vectalon-cart-pilot-');
 const report = { kind: task ? 'frozen-one-app-evaluation' : 'development-pilot', revision, appRevision, startedAt: new Date().toISOString(),
@@ -94,7 +94,7 @@ const report = { kind: task ? 'frozen-one-app-evaluation' : 'development-pilot',
   limitations: ['No native build', 'Installed dependencies reused', 'Tokens/cost not measured', 'No human correction-time measurement', ...(task ? freeze.limitations : ['One public development task; not launch qualification']),
     ...(repair ? ['Repair diagnostic permits twice the generation budget of the first-pass pilot; not an equal-budget comparison'] : []),
     ...(constrained ? ['Native file-envelope grammar constrains serialization, not file scope or code correctness'] : []),
-    ...(args.edits ? ['Scoped edit protocol differs from full-file generation; single existing file, at most eight edits, no repairs', 'Anchors are constrained to unique original source lines; later edits may invalidate them; every edit is checked again before application', 'Source-grounded grammar does not establish code correctness or task improvement'] : [])],
+    ...(args.edits ? ['Scoped edit protocol differs from full-file generation; single existing file, at most eight edits, no repairs', 'Block IDs select unique original top-level TypeScript/JSX spans; repeated selections are rejected and exact application is checked again', 'Block catalogue repeats approved source in context; input-token cost is not measured', 'Source-grounded grammar does not establish code correctness or task improvement'] : [])],
   runs: Array.from({ length: task ? freeze.repetitions : 3 }, (_, repetition) => (args.edits ? ['vectalon-edits'] : repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
 const save = () => {
   fs.writeFileSync(path.join(output, 'report.json'), serializePilotReport(report, {

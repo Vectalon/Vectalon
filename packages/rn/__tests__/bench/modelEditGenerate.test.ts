@@ -10,7 +10,7 @@ const scenario: BenchScenario = { specVersion: 1, id: 'edit-test', title: 'edit'
   prompt: 'Change value to 2', fixtures: { [target]: source }, expect: { files: [target], behaviors: ['export value 2'] },
   fixEdits: [{ file: target, find: '1', replace: 'HELD_OUT_ANSWER' }],
   correctness: { tests: false, typecheck: false, lint: false }, axes: ['guardrails', 'adherence'] }
-const edit = { file: target, op: 'replace', from: 'export const value = 1', to: 'export const value = 2' }
+const edit = { file: target, op: 'replace', from: 'block-2', to: 'export const value = 2' }
 const envelope = (edits: unknown) => JSON.stringify({ tool: 'propose_edits', arguments: { edits } })
 function setup(content: string) {
   const generate = jest.fn().mockResolvedValue({ content, provider: 'local', requiredTool: 'propose_edits', stopReason: 'eogToken',
@@ -28,7 +28,8 @@ it('applies exact scoped edits, preserves surrounding code and fingerprints the 
   expect(generate).toHaveBeenCalledTimes(1)
   const request = generate.mock.calls[0][0]
   expect(request.tools[0].inputSchema.properties.edits.items.properties.file.const).toBe(target)
-  expect(request.tools[0].inputSchema.properties.edits.items.properties.from.enum).toEqual(source.trimEnd().split('\n'))
+  expect(request.tools[0].inputSchema.properties.edits.items.properties.from.enum).toEqual(['block-1', 'block-2', 'block-3'])
+  expect(request.context).toContain('block-2: ExportNamedDeclaration, lines 2-2')
   expect(request.providerCallLimit).toBe(1)
   expect(request.requiredTool).toBe('propose_edits')
   expect(JSON.stringify(request)).not.toContain('HELD_OUT_ANSWER')
@@ -40,7 +41,7 @@ it('applies exact scoped edits, preserves surrounding code and fingerprints the 
 
 it.each([
   [], [null], [{ ...edit, file: '../outside.ts' }], [{ ...edit, file: 'src/other.ts' }],
-  [{ ...edit, from: '' }], [{ ...edit, from: 'missing' }], [{ ...edit, to: edit.from }],
+  [{ ...edit, from: '' }], [{ ...edit, from: 'missing' }], [{ ...edit, to: 'export const value = 1' }],
   [{ ...edit, op: 'write' }], [{ ...edit, extra: 'not allowed' }], Array(9).fill(edit),
   [edit, { ...edit, from: 'missing' }], [edit, { ...edit, from: 'value = 2', to: 'value = 1' }],
 ].map(edits => ({ edits })))('rejects invalid or partially applicable candidate %# without changing fixtures', async ({ edits }) => {
@@ -62,11 +63,11 @@ it('rejects ambiguous anchors', async () => {
   expect(await seam(scenario)).toEqual([])
 })
 
-it('offers only nonblank full lines with exactly one literal occurrence', async () => {
-  const content = '  keep();\n  keep();\n\n  const n = 1;\n  const n = 10;\n'
+it('offers unique complete top-level blocks, not nested statements or repeated source', async () => {
+  const content = 'keep();\nkeep();\n\nexport function f() {\n  keep();\n}\n'
   const { seam, generate } = setup(envelope([]))
   await seam({ ...scenario, fixtures: { [target]: content } })
-  expect(generate.mock.calls[0][0].tools[0].inputSchema.properties.edits.items.properties.from.enum).toEqual(['  const n = 1;', '  const n = 10;'])
+  expect(generate.mock.calls[0][0].tools[0].inputSchema.properties.edits.items.properties.from.enum).toEqual(['block-3'])
 })
 
 it('rejects unoffered substring anchors even when unique and provider acknowledged', async () => {
@@ -76,20 +77,34 @@ it('rejects unoffered substring anchors even when unique and provider acknowledg
 
 it('preserves indentation and line endings when inserting after an offered anchor', async () => {
   const content = '  const value = 1;\r\n  keep();\r\n'
-  const { seam } = setup(envelope([{ ...edit, op: 'insert-after', from: '  const value = 1;\r', to: '\n  const next = 2;\r' }]))
+  const { seam } = setup(envelope([{ ...edit, op: 'insert-after', from: 'block-1', to: '\r\n  const next = 2;' }]))
   expect(await seam({ ...scenario, fixtures: { [target]: content } })).toEqual([{ path: target, content: '  const value = 1;\r\n  const next = 2;\r\n  keep();\r\n' }])
 })
 
-it('fails before inference when the source has no unique nonblank line', async () => {
+it('fails before inference when the source has no unique block', async () => {
   const { seam, generate } = setup(envelope([]))
-  await expect(seam({ ...scenario, fixtures: { [target]: 'repeat\nrepeat\n\n' } })).rejects.toThrow('unique nonblank')
+  await expect(seam({ ...scenario, fixtures: { [target]: 'repeat();\nrepeat();\n\n' } })).rejects.toThrow('unique source block')
   expect(generate).not.toHaveBeenCalled()
 })
 
-it('rejects a later edit when an earlier replacement invalidates its offered anchor', async () => {
+it('rejects repeated block selections before applying any candidate', async () => {
   const { seam } = setup(envelope([edit, { ...edit, to: 'export const value = 3' }]))
   expect(await seam(scenario)).toEqual([])
   expect(scenario.fixtures[target]).toBe(source)
+})
+
+it('replaces a complete multiline declaration and preserves comments and unrelated code', async () => {
+  const original = '// retain comment\r\nexport interface Options {\r\n  count: number;\r\n}\r\nexport const keep = true;\r\n'
+  const replacement = 'export interface Options {\r\n  count: number;\r\n  enabled: boolean;\r\n}'
+  const { seam } = setup(envelope([{ ...edit, from: 'block-1', to: replacement }]))
+  expect(await seam({ ...scenario, fixtures: { [target]: original } })).toEqual([{ path: target,
+    content: '// retain comment\r\n' + replacement + '\r\nexport const keep = true;\r\n' }])
+})
+
+it('refuses malformed original source without leaking its text or invoking a provider', async () => {
+  const { seam, generate } = setup(envelope([]))
+  await expect(seam({ ...scenario, fixtures: { [target]: 'PRIVATE_INVALID {' } })).rejects.toThrow('parseable')
+  expect(generate).not.toHaveBeenCalled()
 })
 
 it.each(['not JSON', '{"answer":"done"}', '{"tool":"other","arguments":{}}', envelope({}),
