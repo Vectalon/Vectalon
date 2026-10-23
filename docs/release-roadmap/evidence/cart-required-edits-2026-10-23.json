@@ -1,0 +1,387 @@
+{
+  "kind": "development-pilot",
+  "revision": "38d1bf20b6db9f3f84b3436d749936019c0923b9",
+  "appRevision": "38d1bf20b6db9f3f84b3436d749936019c0923b9",
+  "startedAt": "2026-10-23T12:06:50.692Z",
+  "runnerSha256": "7789e577d15c97025130c0a9ebf704faeb1a0adb6bf23ad55665296de455d507",
+  "appArchiveSha256": "46f52467e59c38517d08b3e139d9942e242aaa79d19f0bfe9c28c2e496f48937",
+  "generationModuleSha256": "325d3e0f921c1c1f0b7e00aeb483ce30eae974ac6733231880a42983902155c6",
+  "inferenceModuleSha256": "2d6ffa6cf36abd1f5ab57c20255388db1837790fa652ff994348b0a62432d9b0",
+  "acceptanceSha256": "16cbc815356fcf7e4bb7f5db3c2528913875e4ddf7de46c9808551a72496feb6",
+  "taskSha256": "e054dac45e8ad55d5e7668b9eed65b879647c11d1c8365333a904df1a3696760",
+  "runtime": {
+    "node": "v24.22.1",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "settings": {
+    "temperature": 0.2,
+    "maxTokens": 2048,
+    "maxAttempts": 1,
+    "providerCallLimit": 1,
+    "toolEnvelope": true,
+    "requiredTool": "propose_edits"
+  },
+  "model": "qwen2.5-coder-3b",
+  "expectedArtifactSha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+  "limitations": [
+    "No native build",
+    "Installed dependencies reused",
+    "Tokens/cost not measured",
+    "No human correction-time measurement",
+    "One public development task; not launch qualification",
+    "Scoped edit protocol differs from full-file generation; single existing file, at most eight edits, no repairs",
+    "Required-tool grammar constrains argument structure, not anchor uniqueness or code correctness; edits are validated before staging"
+  ],
+  "runs": [
+    {
+      "repetition": 1,
+      "condition": "vectalon-edits",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "cart-quantity-pilot",
+        "title": "Set cart quantity",
+        "suite": "data-flow",
+        "scaffoldable": false,
+        "generatedFiles": [],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "invalid",
+            "selected": false,
+            "durationMs": 23526,
+            "fileCount": 0,
+            "adherence": null,
+            "guardrails": null,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:c8880125495e7a0fdecba6441e5c791ef13de1e012c3b12579a9b4ff7f02ca5c",
+            "requestDigest": "sha256:a6efe93a32576059124c568929d20c68a28cb8bfb37a8873b1bac46d3e113178",
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "editApplication": "rejected",
+            "provider": "local",
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            },
+            "stopReason": "stopGenerationTrigger",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 23459
+              }
+            ]
+          }
+        ],
+        "guardrail": [],
+        "axes": {
+          "correctness": null,
+          "adherence": 0,
+          "guardrails": 0
+        },
+        "composite": 0,
+        "correctnessDetails": [
+          "Model generation produced no non-empty files.",
+          "Missing required output files: src/hooks/useCart.tsx"
+        ]
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "skipped": true
+        },
+        "tests": {
+          "ok": false,
+          "skipped": true
+        }
+      },
+      "durationMs": 23749
+    },
+    {
+      "repetition": 2,
+      "condition": "vectalon-edits",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "cart-quantity-pilot",
+        "title": "Set cart quantity",
+        "suite": "data-flow",
+        "scaffoldable": false,
+        "generatedFiles": [],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "invalid",
+            "selected": false,
+            "durationMs": 15568,
+            "fileCount": 0,
+            "adherence": null,
+            "guardrails": null,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:c8880125495e7a0fdecba6441e5c791ef13de1e012c3b12579a9b4ff7f02ca5c",
+            "requestDigest": "sha256:a6efe93a32576059124c568929d20c68a28cb8bfb37a8873b1bac46d3e113178",
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "editApplication": "rejected",
+            "provider": "local",
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            },
+            "stopReason": "stopGenerationTrigger",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 15562
+              }
+            ]
+          }
+        ],
+        "guardrail": [],
+        "axes": {
+          "correctness": null,
+          "adherence": 0,
+          "guardrails": 0
+        },
+        "composite": 0,
+        "correctnessDetails": [
+          "Model generation produced no non-empty files.",
+          "Missing required output files: src/hooks/useCart.tsx"
+        ]
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "skipped": true
+        },
+        "tests": {
+          "ok": false,
+          "skipped": true
+        }
+      },
+      "durationMs": 15570
+    },
+    {
+      "repetition": 3,
+      "condition": "vectalon-edits",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "cart-quantity-pilot",
+        "title": "Set cart quantity",
+        "suite": "data-flow",
+        "scaffoldable": false,
+        "generatedFiles": [],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "invalid",
+            "selected": false,
+            "durationMs": 24003,
+            "fileCount": 0,
+            "adherence": null,
+            "guardrails": null,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:c8880125495e7a0fdecba6441e5c791ef13de1e012c3b12579a9b4ff7f02ca5c",
+            "requestDigest": "sha256:a6efe93a32576059124c568929d20c68a28cb8bfb37a8873b1bac46d3e113178",
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "editApplication": "rejected",
+            "provider": "local",
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            },
+            "stopReason": "stopGenerationTrigger",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 24000
+              }
+            ]
+          }
+        ],
+        "guardrail": [],
+        "axes": {
+          "correctness": null,
+          "adherence": 0,
+          "guardrails": 0
+        },
+        "composite": 0,
+        "correctnessDetails": [
+          "Model generation produced no non-empty files.",
+          "Missing required output files: src/hooks/useCart.tsx"
+        ]
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "skipped": true
+        },
+        "tests": {
+          "ok": false,
+          "skipped": true
+        }
+      },
+      "durationMs": 24005
+    }
+  ],
+  "negativeControl": {
+    "typecheck": {
+      "ok": false,
+      "exitCode": 2,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1282
+    },
+    "tests": {
+      "ok": false,
+      "exitCode": 1,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 9569
+    }
+  },
+  "positiveControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1179
+    },
+    "tests": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 7175
+    }
+  },
+  "responseInspection": [
+    {
+      "repetition": 1,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "9661c41949312f52cff808e8b2cab245f7ef22c561bb0b97a8850d1019cbdde1",
+          "lengthCharacters": 2628,
+          "validJson": true,
+          "topLevelKeys": [
+            "tool",
+            "arguments"
+          ],
+          "tool": "propose_edits",
+          "argumentKeys": [
+            "edits"
+          ],
+          "editCount": 6,
+          "originalAnchorOccurrences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "outcome": "rejected; no exact source anchors; app/native checks not run"
+        }
+      ]
+    },
+    {
+      "repetition": 2,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "71095dba1bd716ba9b9aa42b0edfb0c402c1c31239cbde9da98bd74f3caf6ac2",
+          "lengthCharacters": 2129,
+          "validJson": true,
+          "topLevelKeys": [
+            "tool",
+            "arguments"
+          ],
+          "tool": "propose_edits",
+          "argumentKeys": [
+            "edits"
+          ],
+          "editCount": 7,
+          "originalAnchorOccurrences": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "outcome": "rejected; no exact source anchors; app/native checks not run"
+        }
+      ]
+    },
+    {
+      "repetition": 3,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "a81d575db2c7b938a0fc7b71799d418ce63397a4526b3de9165cb9a39f16735e",
+          "lengthCharacters": 3706,
+          "validJson": true,
+          "topLevelKeys": [
+            "tool",
+            "arguments"
+          ],
+          "tool": "propose_edits",
+          "argumentKeys": [
+            "edits"
+          ],
+          "editCount": 2,
+          "originalAnchorOccurrences": [
+            0,
+            0
+          ],
+          "outcome": "rejected; no exact source anchors; app/native checks not run"
+        }
+      ]
+    }
+  ]
+}
