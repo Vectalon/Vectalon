@@ -3,6 +3,31 @@ const assert = require('node:assert/strict');
 const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs');
 const evidence = require('../../docs/release-roadmap/evidence/cart-3b-paired-pilot-2026-10-20.json');
 
+test('output-decoding diagnostic preserves source-free parser identity and the failed unpaired outcome', () => {
+  const report = require('../../docs/release-roadmap/evidence/output-decoding-2026-10-24.json');
+  assert.equal(report.kind, 'bounded-guided-output-diagnostic');
+  assert.equal(report.resourceProtocol.rowLimit, 1);
+  assert.equal(report.runs.filter(row => row.status === 'not-run').length, 5);
+  const guided = report.runs[1];
+  assert.equal(guided.condition, 'vectalon');
+  assert.equal(guided.status, 'failed');
+  assert.equal(guided.identityMatched, true);
+  assert.equal(guided.result.attempts.length, 1);
+  assert.equal(guided.result.attempts[0].providerCalls.length, 1);
+  assert.equal(guided.checks.typecheck.ok, false);
+  assert.equal(guided.checks.tests.ok, false);
+  const audit = report.outputAudit;
+  assert.equal(audit.strictWholeResponseJson, false);
+  assert.equal(audit.strictFencedJson, true);
+  assert.equal(audit.parsedEqualsStrictFenced, true);
+  assert.equal(audit.strictFilesSha256, audit.parsedFilesSha256);
+  assert.equal(audit.strictFileCount, 1);
+  assert.equal(audit.parsedFileCount, 1);
+  assert.match(audit.rawSha256, /^[a-f0-9]{64}$/);
+  for (const key of ['generatedArtifacts', 'rawResponses', 'stdout', 'stderr']) assert.ok(!JSON.stringify(report).includes(`"${key}"`));
+  assert.ok(formatPilotReport(report).includes('| vectalon | 3 | 0 | 1 | 2 | 0/1 | 0/1 |'));
+});
+
 test('bounded resource reports retain stops and unstarted rows without implying qualification', () => {
   const report = { resourceProtocol: { routing: 'direct native in both conditions', rowLimit: 2, reserveBytes: 2147483648 },
     runs: [{ condition: 'task-only', repetition: 1, status: 'resource-aborted', resourceStopReason: 'memory-reserve',

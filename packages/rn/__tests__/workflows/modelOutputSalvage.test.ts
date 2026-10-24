@@ -4,7 +4,7 @@ describe('corrupt JSON envelope recovery', () => {
   const source = [
     'export const pattern = /\\n/;',
     'export const literal = "\\\\n";',
-    'export const quoted = "\\\"quoted\\\"";',
+    String.raw`export const quoted = "\"quoted\"";`,
     'export const path = "C:\\\\work\\\\file.ts";',
     'export const title = `Item ${count}`;',
     'export const Screen = () => (',
