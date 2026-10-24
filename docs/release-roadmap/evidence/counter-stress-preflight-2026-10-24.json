@@ -1,0 +1,137 @@
+{
+  "kind": "development-pilot",
+  "revision": "af8ac7b33b30c0e8ce96cf81fb88a7c9d136469e",
+  "appRevision": "af8ac7b33b30c0e8ce96cf81fb88a7c9d136469e",
+  "startedAt": "2026-10-24T10:10:18.803Z",
+  "controlDefinitionsSha256": "4f26f209b581c368fb1ecdd4c79d09b2b62c2d3d03f721179f99d8b0beab1f2c",
+  "conditionSettings": {
+    "task-only": {
+      "temperature": 0.2,
+      "maxTokens": 2048,
+      "maxAttempts": 1,
+      "providerCallLimit": 1,
+      "output": "full-file JSON; no requested grammar"
+    },
+    "task-relevant": {
+      "temperature": 0.2,
+      "maxTokens": 2048,
+      "maxAttempts": 1,
+      "providerCallLimit": 1,
+      "output": "minimal source-grounded full-file JSON; no requested grammar"
+    }
+  },
+  "task": {
+    "id": "batched-counter-stress-v1",
+    "kind": "development-control"
+  },
+  "runnerSha256": "0c8b7c763fa7688c7f8a7d1221c871c68c1d7b1f074e743b93118b7ed59b8412",
+  "appArchiveSha256": "bf0d753668ca3214c2a14729c449137f495d1e1b710b3640949a9b222c687440",
+  "generationModuleSha256": "1bfd99c33129c7bb38052cd18f43ce8588ed1298cfde1fbcff8ba16facee2ada",
+  "editGenerationModuleSha256": "168e88f740730479b4658b0860640a0fa38cafa1f87f0b5f27dc8b06d28d88e0",
+  "inferenceModuleSha256": "2d6ffa6cf36abd1f5ab57c20255388db1837790fa652ff994348b0a62432d9b0",
+  "acceptanceSha256": "92c5d6ae82184fb475294e426b197c9cb3c662f6e75d4c049eebe4159c9735b4",
+  "taskSha256": "8482b831b5281035ab9d0b1ec45023211f8385672b143775b9893fe77e65335c",
+  "runtime": {
+    "node": "v24.22.1",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "settings": {
+    "temperature": 0.2,
+    "maxTokens": 2048,
+    "maxAttempts": 1,
+    "providerCallLimit": 1
+  },
+  "model": "qwen2.5-coder-3b",
+  "expectedArtifactSha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+  "limitations": [
+    "No native build",
+    "Installed dependencies reused",
+    "Tokens/cost not measured",
+    "No human correction-time measurement",
+    "Public development tasks; not launch qualification",
+    "Synthetic controls in one installed app; not held-out RN workflow evidence",
+    "Conditions change instructions; input-token budgets are unmeasured; not a single-factor causal ablation",
+    "Experimental guidance uses original source and a general React state-queue rule; textual useState-call detection does not qualify aliases or arbitrary state libraries"
+  ],
+  "runs": [
+    {
+      "repetition": 1,
+      "condition": "task-only",
+      "status": "not-run"
+    },
+    {
+      "repetition": 1,
+      "condition": "task-relevant",
+      "status": "not-run"
+    },
+    {
+      "repetition": 2,
+      "condition": "task-relevant",
+      "status": "not-run"
+    },
+    {
+      "repetition": 2,
+      "condition": "task-only",
+      "status": "not-run"
+    },
+    {
+      "repetition": 3,
+      "condition": "task-only",
+      "status": "not-run"
+    },
+    {
+      "repetition": 3,
+      "condition": "task-relevant",
+      "status": "not-run"
+    }
+  ],
+  "negativeControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1580
+    },
+    "tests": {
+      "ok": false,
+      "exitCode": 1,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 9200
+    }
+  },
+  "positiveControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1645
+    },
+    "tests": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 12425
+    }
+  },
+  "priorAcceptanceControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1519
+    },
+    "tests": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 8258
+    }
+  }
+}
