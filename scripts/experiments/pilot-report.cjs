@@ -48,15 +48,16 @@ function formatPilotReport(report) {
   if (report.verificationMode) {
     lines.push('', '## Initial versus assisted outcomes', '',
       cell(report.verificationMode), '',
-      'Candidate verification is not selection or native qualification. Missing/invalid initial candidates are not passes. Both lanes have the same call cap; actual calls and input-token work can differ.', '',
+      'Candidate verification is not selection or native qualification. Missing/invalid initial candidates are not passes. Equal declared call caps do not imply equal actual calls or input-token work.', '',
       '| Condition | Initial verified passes/planned | Parse retries | Repair candidates verified/attempted | Selected app-check passes | Observed provider calls |',
       '|---|---:|---:|---:|---:|---:|');
     for (const condition of [...new Set(runs.map(row => row.condition))]) {
       const rows = runs.filter(row => row.condition === condition);
       const attempts = rows.flatMap(row => row.result?.attempts || []);
       const repairs = attempts.filter(attempt => attempt.kind === 'repair');
+      const knownCalls = attempts.reduce((sum, attempt) => sum + (attempt.providerCalls?.length ?? 0), 0);
       const calls = rows.every(row => row.result?.attempts?.length) && attempts.every(attempt => Array.isArray(attempt.providerCalls))
-        ? attempts.reduce((sum, attempt) => sum + attempt.providerCalls.length, 0) : 'unrecorded';
+        ? knownCalls : knownCalls ? `${knownCalls} recorded; remainder unrecorded` : 'unrecorded';
       const initialPasses = rows.filter(row => row.identityMatched && row.result?.attempts?.[0]?.kind === 'initial' && row.result.attempts[0].verification?.status === 'passed').length;
       lines.push(`| ${cell(condition)} | ${initialPasses}/${rows.length} | ${attempts.filter(attempt => attempt.kind === 'parse-retry').length} | ${repairs.filter(attempt => attempt.verification?.status === 'passed').length}/${repairs.length} | ${rows.filter(passed).length} | ${calls} |`);
     }

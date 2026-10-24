@@ -3,6 +3,38 @@ const assert = require('node:assert/strict');
 const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs');
 const evidence = require('../../docs/release-roadmap/evidence/cart-3b-paired-pilot-2026-10-20.json');
 
+test('guarded repair retains failed initial, rejected invalid repair and actual call observations', () => {
+  const report = require('../../docs/release-roadmap/evidence/guided-repair-2026-10-24.json');
+  assert.equal(report.kind, 'bounded-guided-repair-diagnostic');
+  assert.equal(report.resourceProtocol.rowLimit, 1);
+  assert.equal(report.runs.filter(row => row.status === 'not-run').length, 2);
+  const row = report.runs[0];
+  assert.equal(row.status, 'failed');
+  assert.equal(row.identityMatched, true);
+  assert.equal(row.resources.timeoutMs, 360000);
+  assert.ok(row.durationMs < 360000);
+  const [initial, repair] = row.result.attempts;
+  assert.equal(initial.kind, 'initial');
+  assert.equal(initial.verification.status, 'failed');
+  assert.equal(initial.selected, true);
+  assert.equal(repair.kind, 'repair');
+  assert.equal(repair.status, 'invalid');
+  assert.equal(repair.selected, false);
+  assert.equal(repair.verification, undefined);
+  assert.deepEqual(row.nativeCalls.map(call => [call.status, call.temperature]), [['response', 0.2], ['response', 0]]);
+  for (const call of row.nativeCalls) {
+    assert.equal(call.artifact.sha256, report.expectedArtifactSha256);
+    assert.equal(call.stopReason, 'eogToken');
+    assert.equal(call.maxTokens, 2048);
+  }
+  assert.equal(row.checks.typecheck.ok, false);
+  assert.equal(row.checks.tests.ok, false);
+  assert.equal(row.verifications.length, 1);
+  assert.equal(row.verifications[0].candidateArtifacts[0].sha256, row.candidateArtifacts[0].sha256);
+  assert.ok(formatPilotReport(report).includes('| vectalon-verified-repair | 0/3 | 0 | 0/1 | 0 | 2 recorded; remainder unrecorded |'));
+  for (const key of ['generatedArtifacts', 'rawResponses', 'stdout', 'stderr']) assert.ok(!JSON.stringify(report).includes(`"${key}"`));
+});
+
 test('output-decoding diagnostic preserves source-free parser identity and the failed unpaired outcome', () => {
   const report = require('../../docs/release-roadmap/evidence/output-decoding-2026-10-24.json');
   assert.equal(report.kind, 'bounded-guided-output-diagnostic');
