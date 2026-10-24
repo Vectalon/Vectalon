@@ -1,4 +1,4 @@
-// Resource calibration only: one 7B call with public app input and eight output tokens.
+// Resource calibration only: one 7B call with public app input; response text is discarded.
 const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
@@ -13,13 +13,21 @@ const { nativeMemoryBudget } = require('../../packages/rn/dist/model/local/memor
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
 
 async function main() {
+  const args = process.argv.slice(2);
+  assert.ok(args.length === 0 || (args.length === 1 && args[0] === '--full-budget'), 'Only --full-budget is supported');
+  const fullBudget = args.length === 1;
+  const maxTokens = fullBudget ? 2048 : 8;
+  const timeoutMs = fullBudget ? 180000 : 60000;
   for (const [file, expected] of Object.entries(freeze.inputs)) assert.equal(hash(fs.readFileSync(path.join(__dirname, file))), expected);
   const read = file => execFileSync('git', ['show', `${freeze.appRevision}:apps/website/demo/login-app/${file}`], { encoding: 'utf8' });
   const task = taskDefinition('stock-filter', read);
   const report = { kind: 'native-context-resource-calibration', revision: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
     model: freeze.model, expectedArtifactSha256: freeze.artifactSha256, appRevision: freeze.appRevision,
     inferenceModuleSha256: hash(fs.readFileSync(path.join(__dirname, '../../packages/rn/dist/model/local/inference.js'))),
-    task: task.id, outputTokenCap: 8, timeoutMs: 60000, sampleIntervalMs: 1000,
+    memoryModuleSha256: hash(fs.readFileSync(path.join(__dirname, '../../packages/rn/dist/model/local/memory.js'))),
+    calibrationScriptSha256: hash(fs.readFileSync(__filename)),
+    mode: fullBudget ? 'full-budget' : 'eight-token',
+    task: task.id, outputTokenCap: maxTokens, timeoutMs, sampleIntervalMs: 1000,
     limitations: ['One public-input calibration call; no task/native-app/model-quality qualification',
       'Sampled host free RAM and process RSS are not peak GPU/RAM measurements', '7B on hosts below the recommended 32 GB class remains experimental'] };
   const controller = new AbortController();
@@ -34,26 +42,26 @@ async function main() {
     if (available < 2 * 1024 ** 3) controller.abort(new Error('Resource reserve reached'));
   };
   const interval = setInterval(sample, 1000);
-  const timer = setTimeout(() => controller.abort(new Error('Calibration deadline reached')), 60000);
+  const timer = setTimeout(() => controller.abort(new Error('Calibration deadline reached')), timeoutMs);
   let calls = 0;
   try {
-    const generate = createModelGenerate({ promptMode: 'task-only', maxAttempts: 1, maxTokens: 8, providerCallLimit: 1,
+    const generate = createModelGenerate({ promptMode: 'task-only', maxAttempts: 1, maxTokens, providerCallLimit: 1,
       modelRouter: { generate: async request => {
         assert.equal(++calls, 1);
         assert.equal(request.projectContext, 'disabled');
         report.requestSha256 = hash(JSON.stringify(request));
         const result = await runInference(freeze.model, { systemPrompt: request.systemPrompt,
           prompt: request.context ? `\nContext:\n${request.context}\n${request.prompt}` : request.prompt,
-          maxTokens: 8, temperature: 0.2, signal: controller.signal });
+          maxTokens, temperature: 0.2, signal: controller.signal });
         report.artifact = result.artifact;
         report.localContext = result.localContext;
         report.stopReason = result.stopReason;
         assert.equal(result.artifact?.sha256, freeze.artifactSha256);
-        assert.equal(result.localContext?.maxOutputTokens, 8);
-        assert.ok(result.localContext.inputTokens + 8 + 256 <= result.localContext.contextSize);
+        assert.equal(result.localContext?.maxOutputTokens, maxTokens);
+        assert.ok(result.localContext.inputTokens + maxTokens + 256 <= result.localContext.contextSize);
         assert.ok(result.localContext.contextSize <= 16384);
         report.observationVerified = true;
-        // Discard response text: this output budget cannot establish a working app change.
+        // Resource evidence only; no generated app change is retained or verified.
         return { content: '', provider: 'local' };
       } } });
     await generate({ specVersion: 1, id: task.id, suite: task.kind, title: task.id, scaffoldable: false,
