@@ -30,6 +30,34 @@ test('original resource pair retains adapter failure separately from real task-o
   for (const key of ['generatedArtifacts', 'stdout', 'stderr', 'rawResponses']) assert.ok(!JSON.stringify(report).includes(`"${key}"`));
 });
 
+test('corrected resource pair retains two real failures without hiding four unstarted rows', () => {
+  const report = require('../../docs/release-roadmap/evidence/bounded-pair-2026-10-24.json');
+  const [baseline, guided] = report.runs;
+  assert.equal(report.kind, 'bounded-one-app-resource-pair');
+  assert.equal(report.runs.length, 6);
+  assert.equal(report.runs.filter(row => row.status === 'not-run').length, 4);
+  for (const row of [baseline, guided]) {
+    assert.equal(row.status, 'failed');
+    assert.equal(row.identityMatched, true);
+    assert.equal(row.result.attempts.length, 1);
+    const attempt = row.result.attempts[0];
+    assert.equal(attempt.kind, 'initial');
+    assert.equal(attempt.stopReason, 'eogToken');
+    assert.equal(attempt.artifact.sha256, report.expectedArtifactSha256);
+    assert.equal(attempt.providerCalls.length, 1);
+    assert.ok(attempt.localContext.inputTokens + 2048 + 256 <= attempt.localContext.contextSize);
+    assert.ok(row.resources.minimumSampledAvailableBudgetBytes >= row.resources.reserveBytes);
+  }
+  assert.equal(baseline.result.attempts[0].status, 'parsed');
+  assert.equal(baseline.checks.typecheck.ok, false);
+  assert.equal(guided.result.attempts[0].status, 'invalid');
+  assert.equal(guided.checks, undefined);
+  const text = formatPilotReport(report);
+  assert.ok(text.includes('| task-only | 3 | 0 | 1 | 2 | 0/1 | 0/1 |'));
+  assert.ok(text.includes('| vectalon | 3 | 0 | 1 | 2 | 0/0 | 0/0 |'));
+  for (const key of ['generatedArtifacts', 'stdout', 'stderr', 'rawResponses']) assert.ok(!JSON.stringify(report).includes(`"${key}"`));
+});
+
 test('requires independent opt-in for raw responses and generated diagnostics at every depth', () => {
   const report = { runs: [{ status: 'failed', rawResponses: [{ index: 1, kind: 'initial', content: 'RAW_SECRET' }],
     result: { generatedArtifacts: [{ content: 'SOURCE_SECRET' }] },
