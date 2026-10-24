@@ -15,6 +15,8 @@ for (const [name, args, message] of [
   ['edit protocol with repairs', ['--edits', '--repair'], 'first-attempt public development diagnostic only'],
   ['unknown frozen task', ['--task', 'unknown'], 'Unknown frozen evaluation task'],
   ['unknown generation control', ['--diagnostic', 'unknown'], 'Unknown generation control'],
+  ['guided mode without a control', ['--guided'], '--guided requires a generation control'],
+  ['guided mode on frozen task', ['--task', 'stock-filter', '--guided'], '--guided requires a generation control'],
   ['control without explicit model', ['--diagnostic', 'page-bound'], 'require an explicit model'],
   ['control with frozen task', ['--diagnostic', 'page-bound', '--task', 'stock-filter'], 'cannot combine'],
   ['control with edit override', ['--diagnostic', 'page-bound', '--edits'], 'cannot combine'],
