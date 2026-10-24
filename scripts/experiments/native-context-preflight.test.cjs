@@ -28,6 +28,29 @@ test('retained calibration separates raw-free refusal from bounded inference evi
   assert.equal(bounded.taskSuccess, undefined);
 });
 
+test('full-budget observation preserves runtime identity without claiming task success', () => {
+  const report = require('../../docs/release-roadmap/evidence/native-context-full-budget-2026-10-24.json');
+  const eight = require('../../docs/release-roadmap/evidence/native-context-bounded-2026-10-24.json');
+  assert.equal(report.outcome, 'completed');
+  assert.equal(report.observationVerified, true);
+  assert.equal(report.mode, 'full-budget');
+  assert.equal(report.nativeCallAttempts, 1);
+  assert.equal(report.outputTokenCap, 2048);
+  assert.equal(report.timeoutMs, 180000);
+  assert.ok(report.durationMs < report.timeoutMs);
+  assert.equal(report.artifact.sha256, eight.artifact.sha256);
+  assert.equal(report.inferenceModuleSha256, eight.inferenceModuleSha256);
+  assert.notEqual(report.requestSha256, eight.requestSha256);
+  assert.deepEqual(report.localContext, { inputTokens: 3617, maxOutputTokens: 2048, contextSize: 6144, batchSize: 128 });
+  assert.ok(report.localContext.inputTokens + 2048 + 256 <= report.localContext.contextSize);
+  assert.ok(report.host.minimumSampledAvailableBudgetBytes >= 2 * 1024 ** 3);
+  assert.equal(report.host.memoryMetric, 'macos-pressure-estimate');
+  for (const field of ['revision', 'inferenceModuleSha256', 'memoryModuleSha256', 'calibrationScriptSha256']) {
+    assert.match(report[field], /^[a-f0-9]{40,64}$/);
+  }
+  for (const field of ['content', 'generatedSource', 'taskSuccess', 'nativeSuccess']) assert.equal(report[field], undefined);
+});
+
 for (const fullBudget of [false, true]) for (const matches of [true, false]) test(`resource calibration requires matching observations and never emits response text (full=${fullBudget}, matches=${matches})`, () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-context-calibration-test-'));
   try {

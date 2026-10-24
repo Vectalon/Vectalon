@@ -1,0 +1,47 @@
+{
+  "kind": "native-context-resource-calibration",
+  "revision": "9f726c7270315c2cd2e54f5ff2d1924bfd2680a1",
+  "model": "qwen2.5-coder-7b",
+  "expectedArtifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+  "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+  "inferenceModuleSha256": "a6431f4d10327a44ed93cb145224df51e91429046e096ba793c9081a2673fcc0",
+  "memoryModuleSha256": "a3cf0ae9e88f8ff63ecd5bfeaba7563abd617e96770d28fd20ee717d070d9ac4",
+  "calibrationScriptSha256": "473fdba0c981603cc21b26060dafc4fed7a60fbeb89bb4193c7e6031c1b8432c",
+  "mode": "full-budget",
+  "task": "stock-filter",
+  "outputTokenCap": 2048,
+  "timeoutMs": 180000,
+  "sampleIntervalMs": 1000,
+  "limitations": [
+    "One public-input calibration call; no task/native-app/model-quality qualification",
+    "Sampled host free RAM and process RSS are not peak GPU/RAM measurements",
+    "7B on hosts below the recommended 32 GB class remains experimental"
+  ],
+  "host": {
+    "totalBytes": 17179869184,
+    "memoryMetric": "macos-pressure-estimate",
+    "availableBudgetBytesBefore": 6700148981,
+    "rawFreeBytesBefore": 313589760,
+    "minimumSampledAvailableBudgetBytes": 3435973836,
+    "maximumSampledRssBytes": 3021717504,
+    "availableBudgetBytesAfter": 3779571220,
+    "rawFreeBytesAfter": 126861312
+  },
+  "requestSha256": "985db7e4724f8ddf0699829296431ef96c68cc40424f3c8f8389598c9dc30a5b",
+  "artifact": {
+    "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+    "sizeBytes": 3993201376,
+    "source": "local-file-at-load"
+  },
+  "localContext": {
+    "inputTokens": 3617,
+    "maxOutputTokens": 2048,
+    "contextSize": 6144,
+    "batchSize": 128
+  },
+  "stopReason": "eogToken",
+  "observationVerified": true,
+  "durationMs": 74593,
+  "nativeCallAttempts": 1,
+  "outcome": "completed"
+}
