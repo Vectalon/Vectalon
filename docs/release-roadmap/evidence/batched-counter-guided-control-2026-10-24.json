@@ -1,0 +1,362 @@
+{
+  "kind": "development-pilot",
+  "revision": "3c472a77d40e460f16b3ae512ec7329ffd0ddd54",
+  "appRevision": "3c472a77d40e460f16b3ae512ec7329ffd0ddd54",
+  "startedAt": "2026-10-24T09:27:20.702Z",
+  "controlDefinitionsSha256": "7774bc8c32aeeabd02e2c93c62da5df36de39aad3e9bea5a606b0b514adec8a7",
+  "conditionSettings": {
+    "vectalon": {
+      "temperature": 0.2,
+      "maxTokens": 2048,
+      "maxAttempts": 1,
+      "providerCallLimit": 1,
+      "output": "existing guided full-file JSON; no requested grammar"
+    }
+  },
+  "task": {
+    "id": "batched-counter",
+    "kind": "development-control"
+  },
+  "runnerSha256": "80271bf1121b086dd9c722d56ad6475450db8f84aeaef9ae64cef78a0ef6fc8c",
+  "appArchiveSha256": "f947a75a782dc2defe9e553a08bc1d42bdf4d0198abf372e88e75abf606b8ccf",
+  "generationModuleSha256": "beb86a667bc52bb3611057f2035c20cb123d01211c4142d5579075072cdbba25",
+  "inferenceModuleSha256": "2d6ffa6cf36abd1f5ab57c20255388db1837790fa652ff994348b0a62432d9b0",
+  "acceptanceSha256": "804cc35fcc426f2512be3400ee2af76e6747f3f6e97e984fa540bb71877016f0",
+  "taskSha256": "e8dae35595487291e41402edb067169fccc12ed5e14017e57b755113f764a340",
+  "runtime": {
+    "node": "v24.22.1",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "settings": {
+    "temperature": 0.2,
+    "maxTokens": 2048,
+    "maxAttempts": 1,
+    "providerCallLimit": 1
+  },
+  "model": "qwen2.5-coder-3b",
+  "expectedArtifactSha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+  "limitations": [
+    "No native build",
+    "Installed dependencies reused",
+    "Tokens/cost not measured",
+    "No human correction-time measurement",
+    "Public development tasks; not launch qualification",
+    "Synthetic controls in one installed app; not held-out RN workflow evidence",
+    "Conditions change prompt and output protocol; not a grammar-only ablation",
+    "Block catalogue repeats input source; input-token budgets are unmeasured"
+  ],
+  "runs": [
+    {
+      "repetition": 1,
+      "condition": "vectalon",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "batched-counter",
+        "title": "batched-counter",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "invalid",
+            "selected": false,
+            "durationMs": 9134,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 0,
+            "adherence": 0,
+            "guardrails": 0,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:7dadfc2dae7bde8f1e1b57a6f4f5257ae4d6b7bea5c4681311f1219c2eafba4d",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "requestDigest": "sha256:44436c380b0a182cbb7bd7368dfc10319e99ecd550b658976d4a5d9f548d6acd",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 9019
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [],
+        "axes": {
+          "correctness": null,
+          "adherence": 0,
+          "guardrails": 0
+        },
+        "composite": 0,
+        "correctnessDetails": [
+          "Model generation produced no non-empty files.",
+          "Missing required output files: src/hooks/useStepCounter.ts"
+        ]
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "skipped": true
+        },
+        "tests": {
+          "ok": false,
+          "skipped": true
+        }
+      },
+      "durationMs": 9433
+    },
+    {
+      "repetition": 2,
+      "condition": "vectalon",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "batched-counter",
+        "title": "batched-counter",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "invalid",
+            "selected": false,
+            "durationMs": 3556,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 0,
+            "adherence": 0,
+            "guardrails": 0,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:7dadfc2dae7bde8f1e1b57a6f4f5257ae4d6b7bea5c4681311f1219c2eafba4d",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "requestDigest": "sha256:44436c380b0a182cbb7bd7368dfc10319e99ecd550b658976d4a5d9f548d6acd",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 3552
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [],
+        "axes": {
+          "correctness": null,
+          "adherence": 0,
+          "guardrails": 0
+        },
+        "composite": 0,
+        "correctnessDetails": [
+          "Model generation produced no non-empty files.",
+          "Missing required output files: src/hooks/useStepCounter.ts"
+        ]
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "skipped": true
+        },
+        "tests": {
+          "ok": false,
+          "skipped": true
+        }
+      },
+      "durationMs": 3561
+    },
+    {
+      "repetition": 3,
+      "condition": "vectalon",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "batched-counter",
+        "title": "batched-counter",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "invalid",
+            "selected": false,
+            "durationMs": 3457,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 0,
+            "adherence": 0,
+            "guardrails": 0,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:7dadfc2dae7bde8f1e1b57a6f4f5257ae4d6b7bea5c4681311f1219c2eafba4d",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "requestDigest": "sha256:44436c380b0a182cbb7bd7368dfc10319e99ecd550b658976d4a5d9f548d6acd",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 3452
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [],
+        "axes": {
+          "correctness": null,
+          "adherence": 0,
+          "guardrails": 0
+        },
+        "composite": 0,
+        "correctnessDetails": [
+          "Model generation produced no non-empty files.",
+          "Missing required output files: src/hooks/useStepCounter.ts"
+        ]
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "skipped": true
+        },
+        "tests": {
+          "ok": false,
+          "skipped": true
+        }
+      },
+      "durationMs": 3458
+    }
+  ],
+  "negativeControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1305
+    },
+    "tests": {
+      "ok": false,
+      "exitCode": 1,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 8572
+    }
+  },
+  "positiveControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1155
+    },
+    "tests": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 7324
+    }
+  },
+  "comparisonInputs": {
+    "priorReport": "docs/release-roadmap/evidence/batched-counter-control-2026-10-24.json",
+    "priorReportSha256": "5bc1639017d72e4878078331f708a862d856802b5feb4775c42811bc2453e983",
+    "controlDefinitionsMatched": true,
+    "taskMatched": true,
+    "acceptanceMatched": true,
+    "generationModuleMatched": true,
+    "inferenceModuleMatched": true,
+    "appTree": "d7eb45ce5cdfd0a19f088e2fe83eae41f7c2fedd",
+    "priorAppTree": "d7eb45ce5cdfd0a19f088e2fe83eae41f7c2fedd",
+    "runtimeMatched": true
+  },
+  "responseInspection": [
+    {
+      "repetition": 1,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "17a2c17bb60b6badbfcfbc26b898abf53212759a326b6c2b402d29a01ab3dbca",
+          "lengthCharacters": 190,
+          "codeFenced": true,
+          "envelopeParseableAfterFenceRemoval": false
+        }
+      ]
+    },
+    {
+      "repetition": 2,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "f4526fe905c20abd4270e7bb8424fa6ec3339c9386d7d12038bcaa9da7f42e49",
+          "lengthCharacters": 181,
+          "codeFenced": true,
+          "envelopeParseableAfterFenceRemoval": false
+        }
+      ]
+    },
+    {
+      "repetition": 3,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "08a4c5165e3429b7af31abb88e9a33b5720d7d1c2180b2476cc3dbbdc13a1223",
+          "lengthCharacters": 205,
+          "codeFenced": true,
+          "envelopeParseableAfterFenceRemoval": false
+        }
+      ]
+    }
+  ],
+  "inspectionMethod": "Supplemental envelope inspection strips only an outer fence, never repairs JSON or changes candidate selection; cross-run fingerprints compare stored reports and Git app trees, not runtime attestation."
+}

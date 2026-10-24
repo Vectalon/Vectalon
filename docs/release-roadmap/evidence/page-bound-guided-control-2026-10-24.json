@@ -1,0 +1,410 @@
+{
+  "kind": "development-pilot",
+  "revision": "3c472a77d40e460f16b3ae512ec7329ffd0ddd54",
+  "appRevision": "3c472a77d40e460f16b3ae512ec7329ffd0ddd54",
+  "startedAt": "2026-10-24T09:26:02.869Z",
+  "controlDefinitionsSha256": "7774bc8c32aeeabd02e2c93c62da5df36de39aad3e9bea5a606b0b514adec8a7",
+  "conditionSettings": {
+    "vectalon": {
+      "temperature": 0.2,
+      "maxTokens": 2048,
+      "maxAttempts": 1,
+      "providerCallLimit": 1,
+      "output": "existing guided full-file JSON; no requested grammar"
+    }
+  },
+  "task": {
+    "id": "page-bound",
+    "kind": "development-control"
+  },
+  "runnerSha256": "80271bf1121b086dd9c722d56ad6475450db8f84aeaef9ae64cef78a0ef6fc8c",
+  "appArchiveSha256": "f947a75a782dc2defe9e553a08bc1d42bdf4d0198abf372e88e75abf606b8ccf",
+  "generationModuleSha256": "beb86a667bc52bb3611057f2035c20cb123d01211c4142d5579075072cdbba25",
+  "inferenceModuleSha256": "2d6ffa6cf36abd1f5ab57c20255388db1837790fa652ff994348b0a62432d9b0",
+  "acceptanceSha256": "c0269d8b53e28c1043b3a948e932d20c97e0d80eac848ac928f906772bfcf9dc",
+  "taskSha256": "146720e82338865beb92c50fc75cce5ee54c3353e2c78946bb7ce4d501d962a0",
+  "runtime": {
+    "node": "v24.22.1",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "settings": {
+    "temperature": 0.2,
+    "maxTokens": 2048,
+    "maxAttempts": 1,
+    "providerCallLimit": 1
+  },
+  "model": "qwen2.5-coder-3b",
+  "expectedArtifactSha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+  "limitations": [
+    "No native build",
+    "Installed dependencies reused",
+    "Tokens/cost not measured",
+    "No human correction-time measurement",
+    "Public development tasks; not launch qualification",
+    "Synthetic controls in one installed app; not held-out RN workflow evidence",
+    "Conditions change prompt and output protocol; not a grammar-only ablation",
+    "Block catalogue repeats input source; input-token budgets are unmeasured"
+  ],
+  "runs": [
+    {
+      "repetition": 1,
+      "condition": "vectalon",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "page-bound",
+        "title": "page-bound",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/services/PageBound.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 10613,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 1,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:25fd2a46ca7a1b7a1a700f6bf751045277f7a04bb66abc82f25d3af4f29bca28",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "requestDigest": "sha256:859facdd847233672adb021cff0ceb2fd58a07560d935d907619588322f070d3",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 10523
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/services/PageBound.ts",
+            "passed": 18,
+            "failed": 0,
+            "skipped": 18,
+            "ok": true,
+            "failedRules": []
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 1
+        },
+        "composite": 1
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1508
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 16582
+        }
+      },
+      "durationMs": 29193
+    },
+    {
+      "repetition": 2,
+      "condition": "vectalon",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "page-bound",
+        "title": "page-bound",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/services/PageBound.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 5501,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 1,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:25fd2a46ca7a1b7a1a700f6bf751045277f7a04bb66abc82f25d3af4f29bca28",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "requestDigest": "sha256:859facdd847233672adb021cff0ceb2fd58a07560d935d907619588322f070d3",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 5494
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/services/PageBound.ts",
+            "passed": 18,
+            "failed": 0,
+            "skipped": 18,
+            "ok": true,
+            "failedRules": []
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 1
+        },
+        "composite": 1
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1640
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 9253
+        }
+      },
+      "durationMs": 16596
+    },
+    {
+      "repetition": 3,
+      "condition": "vectalon",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "page-bound",
+        "title": "page-bound",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "invalid",
+            "selected": false,
+            "durationMs": 4344,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 0,
+            "adherence": 0,
+            "guardrails": 0,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:25fd2a46ca7a1b7a1a700f6bf751045277f7a04bb66abc82f25d3af4f29bca28",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "requestDigest": "sha256:859facdd847233672adb021cff0ceb2fd58a07560d935d907619588322f070d3",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 4331
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [],
+        "axes": {
+          "correctness": null,
+          "adherence": 0,
+          "guardrails": 0
+        },
+        "composite": 0,
+        "correctnessDetails": [
+          "Model generation produced no non-empty files.",
+          "Missing required output files: src/services/PageBound.ts"
+        ]
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "skipped": true
+        },
+        "tests": {
+          "ok": false,
+          "skipped": true
+        }
+      },
+      "durationMs": 4346
+    }
+  ],
+  "negativeControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 3658
+    },
+    "tests": {
+      "ok": false,
+      "exitCode": 1,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 13350
+    }
+  },
+  "positiveControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1503
+    },
+    "tests": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 8226
+    }
+  },
+  "comparisonInputs": {
+    "priorReport": "docs/release-roadmap/evidence/page-bound-control-2026-10-24.json",
+    "priorReportSha256": "ec74c5b2f0366e845ad62db414c34617441fb9a7d8065ec4b77f0255ee4d129e",
+    "controlDefinitionsMatched": true,
+    "taskMatched": true,
+    "acceptanceMatched": true,
+    "generationModuleMatched": true,
+    "inferenceModuleMatched": true,
+    "appTree": "d7eb45ce5cdfd0a19f088e2fe83eae41f7c2fedd",
+    "priorAppTree": "d7eb45ce5cdfd0a19f088e2fe83eae41f7c2fedd",
+    "runtimeMatched": true
+  },
+  "responseInspection": [
+    {
+      "repetition": 1,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "d39017d280b2d60c78289acef892c3020325ed4e878bc3a89b811d0294df0c03",
+          "lengthCharacters": 253,
+          "codeFenced": true,
+          "envelopeParseableAfterFenceRemoval": true,
+          "topLevelKeys": [
+            "files",
+            "notes"
+          ],
+          "files": [
+            {
+              "path": "src/services/PageBound.ts",
+              "contentType": "string",
+              "contentLengthCharacters": 125
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repetition": 2,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "7597e4ebf7344e012571f7bc28ff795c15107914035ec070998377355e7d3a48",
+          "lengthCharacters": 266,
+          "codeFenced": true,
+          "envelopeParseableAfterFenceRemoval": true,
+          "topLevelKeys": [
+            "files",
+            "notes"
+          ],
+          "files": [
+            {
+              "path": "src/services/PageBound.ts",
+              "contentType": "string",
+              "contentLengthCharacters": 138
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "repetition": 3,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "528d397016430b2af541a90de676469079b472b70cdf60ef5b8773bef0232344",
+          "lengthCharacters": 266,
+          "codeFenced": true,
+          "envelopeParseableAfterFenceRemoval": false
+        }
+      ]
+    }
+  ],
+  "inspectionMethod": "Supplemental envelope inspection strips only an outer fence, never repairs JSON or changes candidate selection; cross-run fingerprints compare stored reports and Git app trees, not runtime attestation."
+}
