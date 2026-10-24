@@ -66,6 +66,19 @@ test('does not equate compilation gains in sampling controls with task improveme
   assert.ok(text.includes('| repeat-off | 3 | 0 | 3 | 0 | 3/3 | 0/3 |'));
 });
 
+test('retains the isolated 7B app-check pass without implying release qualification', () => {
+  const report = require('../../docs/release-roadmap/evidence/counter-7b-comparison-2026-10-24.json');
+  assert.equal(report.model, 'qwen2.5-coder-7b');
+  assert.equal(report.runs.filter(row => row.status === 'passed').length, 1);
+  const text = formatPilotReport(report);
+  assert.ok(text.includes('| task-only | 3 | 0 | 3 | 0 | 3/3 | 0/3 |'));
+  assert.ok(text.includes('| task-relevant | 3 | 1 | 2 | 0 | 3/3 | 1/3 |'));
+  assert.ok(text.includes('| 94.4 | unscored | not-run |'));
+  assert.ok(text.includes('does not meet the release'));
+  assert.equal(report.independentRecheck.byteIdenticalCandidate, true);
+  assert.equal(report.independentRecheck.checks.tests.passedTests, 38);
+});
+
 test('does not turn missing checks, identity mismatch or partial runs into passes', () => {
   const text = formatPilotReport({ runs: [
     { condition: 'vectalon', repetition: 1, status: 'passed', identityMatched: false,
