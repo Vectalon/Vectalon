@@ -8,6 +8,7 @@ const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs'
 const { taskDefinition, reviewImportsAllowed } = require('./one-app-tasks.cjs');
 const { ids: controlIds, controlTask } = require('./generation-controls.cjs');
 const { createSamplingRouter } = require('./sampling-control.cjs');
+const { startResourceGuard } = require('./resource-guard.cjs');
 const { values: args } = require('node:util').parseArgs({ options: {
   preflight: { type: 'boolean' }, repair: { type: 'boolean' }, constrained: { type: 'boolean' },
   'include-generated': { type: 'boolean' }, model: { type: 'string' }, 'artifact-sha256': { type: 'string' },
@@ -16,7 +17,9 @@ const { values: args } = require('node:util').parseArgs({ options: {
   'task-relevant': { type: 'boolean' }, 'verified-controls': { type: 'boolean' },
   'sampling-control': { type: 'boolean' },
   'evaluation-lane': { type: 'string' },
+  'resource-pair': { type: 'boolean' },
 } });
+assert.ok(!args['resource-pair'] || (args.task === 'stock-filter' && args['evaluation-lane'] === '7b'), '--resource-pair requires --task stock-filter --evaluation-lane 7b');
 assert.ok(args['evaluation-lane'] === undefined || ['3b', '7b'].includes(args['evaluation-lane']), 'Unknown evaluation lane');
 assert.ok(args['evaluation-lane'] === undefined || args.task !== undefined, '--evaluation-lane requires --task');
 const freezeFile = args['evaluation-lane'] === '7b' ? 'one-app-evaluation-7b.json' : 'one-app-evaluation.json';
@@ -103,6 +106,13 @@ const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair || ver
 if (args.task) assert.deepEqual(settings, freeze.settings, 'Frozen resource settings changed');
 const output = fs.mkdtempSync('/private/tmp/vectalon-cart-pilot-');
 const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pilot', revision, appRevision, startedAt: new Date().toISOString(),
+  ...(args['resource-pair'] ? { kind: 'bounded-one-app-resource-pair', resourceProtocol: {
+    routing: 'direct native in both conditions; no router enrichment/fallback; default sampling unchanged',
+    rowLimit: 2, reserveBytes: 2 * 1024 ** 3, sampleIntervalMs: 1000, hardStopGraceMs: 5000,
+    guardSha256: hash(fs.readFileSync(path.join(__dirname, 'resource-guard.cjs'))),
+    adapterSha256: hash(fs.readFileSync(path.join(__dirname, 'sampling-control.cjs'))),
+    memoryModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/model/local/memory.js'))),
+  } } : {}),
   ...(args.diagnostic ? { controlDefinitionsSha256: hash(fs.readFileSync(path.join(__dirname, 'generation-controls.cjs'))),
     conditionSettings: samplingControl ? {
       'repeat-default': { ...settings, output: 'task-relevant full-file JSON; existing repetition penalties' },
@@ -252,21 +262,29 @@ async function main() {
     assert.equal(report.priorAcceptanceControl.tests.ok, true, 'Stress negative must pass the earlier finite acceptance cases');
   }
   if (args.preflight) return;
-  for (const row of report.runs) {
+  for (const row of args['resource-pair'] ? report.runs.slice(0, 2) : report.runs) {
     const started = Date.now();
     row.status = 'running'; row.phase = 'generation'; row.verifications = []; save();
     console.log(`Start ${row.repetition} ${row.condition}`);
     const timeoutMs = task ? freeze.timeoutMs : 180000;
     const deadline = Date.now() + timeoutMs;
-    const timer = setTimeout(() => {
+    const timer = args['resource-pair'] ? undefined : setTimeout(() => {
       row.status = 'timeout'; save();
       // Let the sandbox kill its process group and clean its root before exiting.
       if (row.phase !== 'verification') process.exit(1);
     }, timeoutMs);
+    const guard = args['resource-pair'] ? startResourceGuard(load('model/local/memory.js').nativeMemoryBudget, timeoutMs,
+      reason => { row.status = reason === 'deadline' ? 'timeout' : 'resource-aborted'; row.resourceStopReason = reason; row.durationMs = Date.now() - started; save(); },
+      () => { if (row.phase !== 'verification') process.exit(1); }) : undefined;
+    if (guard) row.resources = guard.observation;
     try {
-      const router = samplingControl ? createSamplingRouter(load('model/local/inference.js').runInference, report.model, row.condition === 'repeat-off')
+      guard?.signal.throwIfAborted();
+      const router = guard ? createSamplingRouter((model, options) => {
+        guard.signal.throwIfAborted();
+        return load('model/local/inference.js').runInference(model, { ...options, signal: guard.signal });
+      }, report.model, false) : samplingControl ? createSamplingRouter(load('model/local/inference.js').runInference, report.model, row.condition === 'repeat-off')
         : new ModelRouter({ zeroConfigEnabled: false });
-      if (!samplingControl) router.initialize({ provider: 'local', modelName: report.model });
+      if (!samplingControl && !guard) router.initialize({ provider: 'local', modelName: report.model });
       const verified = new Map();
       const verifier = async files => {
         row.phase = 'verification';
@@ -293,6 +311,7 @@ async function main() {
           (row.rawResponses ??= []).push({ ...attempt, content }); save();
         } } : {}) });
       row.result = await runScenario(scenario, { generate, includeGenerated: true });
+      guard?.signal.throwIfAborted();
       if (Date.now() >= deadline) { row.status = 'timeout'; save(); process.exitCode = 1; break; }
       row.identityMatched = Boolean(row.result.attempts?.length) && row.result.attempts.every(attempt =>
         attempt.provider === 'local' && attempt.artifact?.sha256 === report.expectedArtifactSha256);
@@ -303,8 +322,13 @@ async function main() {
       row.status = Date.now() >= deadline ? 'timeout' : row.checks?.typecheck.ok && row.checks?.tests.ok ? 'passed' : 'failed';
       row.phase = 'complete';
     } catch { row.status = Date.now() >= deadline ? 'timeout' : 'error'; }
-    finally { clearTimeout(timer); row.durationMs = Date.now() - started; save(); }
+    finally {
+      clearTimeout(timer); guard?.dispose();
+      if (guard?.signal.aborted) row.status = row.resourceStopReason === 'deadline' ? 'timeout' : 'resource-aborted';
+      row.durationMs = Date.now() - started; save();
+    }
     console.log(`End ${row.repetition} ${row.condition}: ${row.status}`);
+    if (guard?.signal.aborted) { process.exitCode = 1; break; }
   }
 }
 main().then(() => process.exit(process.exitCode || 0)).catch(() => { report.error = 'Pilot failed; retained partial evidence'; save(); process.exit(1); });

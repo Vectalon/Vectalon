@@ -3,6 +3,18 @@ const assert = require('node:assert/strict');
 const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs');
 const evidence = require('../../docs/release-roadmap/evidence/cart-3b-paired-pilot-2026-10-20.json');
 
+test('bounded resource reports retain stops and unstarted rows without implying qualification', () => {
+  const report = { resourceProtocol: { routing: 'direct native in both conditions', rowLimit: 2, reserveBytes: 2147483648 },
+    runs: [{ condition: 'task-only', repetition: 1, status: 'resource-aborted', resourceStopReason: 'memory-reserve',
+      resources: { memoryMetric: 'os-free', minimumSampledAvailableBudgetBytes: 1024, maximumSampledRssBytes: 2048 } },
+      { condition: 'vectalon', repetition: 1, status: 'not-run' }] };
+  const text = formatPilotReport(report);
+  assert.ok(text.includes('| task-only | 1 | os-free | 1024 | 2048 | unrecorded | memory-reserve |'));
+  assert.ok(text.includes('| vectalon | 1 | 0 | 0 | 1 |'));
+  assert.ok(text.includes('not peak GPU/RAM or sustained-safety evidence'));
+  assert.ok(text.indexOf('## Bounded resource protocol') < text.indexOf('## Outcome matrix'));
+});
+
 test('requires independent opt-in for raw responses and generated diagnostics at every depth', () => {
   const report = { runs: [{ status: 'failed', rawResponses: [{ index: 1, kind: 'initial', content: 'RAW_SECRET' }],
     result: { generatedArtifacts: [{ content: 'SOURCE_SECRET' }] },

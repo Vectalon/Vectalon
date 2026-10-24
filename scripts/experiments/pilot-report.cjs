@@ -27,6 +27,15 @@ function formatPilotReport(report) {
   if (report.task) lines.splice(4, 0,
     `Task: ${cell(report.task.id)} · workflow: ${cell(report.task.kind)} · app revision: ${cell(report.appRevision)}`, '',
     ...(report.task.kind === 'review' ? ['Review passes require the generated test to pass on the original service and fail through an assertion on the proposed service; a compile/runtime error is not detection.', ''] : []));
+  if (report.resourceProtocol) lines.splice(lines.indexOf('## Outcome matrix'), 0, '## Bounded resource protocol', '',
+    cell(report.resourceProtocol.routing), '',
+    `Row limit: ${cell(report.resourceProtocol.rowLimit)}. Remaining planned rows stay not-run. Reserve: ${cell(report.resourceProtocol.reserveBytes)} bytes. Samples are estimates, not peak GPU/RAM or sustained-safety evidence.`, '',
+    '| Condition | Repeat | Memory metric | Minimum available bytes | Maximum sampled RSS bytes | Input/output cap/context/batch tokens | Resource stop |',
+    '|---|---:|---|---:|---:|---|---|',
+    ...runs.filter(row => row.resources).map(row => {
+      const context = row.result?.attempts?.[0]?.localContext;
+      return `| ${cell(row.condition)} | ${cell(row.repetition)} | ${cell(row.resources.memoryMetric)} | ${cell(row.resources.minimumSampledAvailableBudgetBytes)} | ${cell(row.resources.maximumSampledRssBytes)} | ${context ? [context.inputTokens, context.maxOutputTokens, context.contextSize, context.batchSize].map(cell).join('/') : 'unrecorded'} | ${cell(row.resourceStopReason ?? 'none observed')} |`;
+    }), '');
   for (const condition of [...new Set(runs.map(row => row.condition))]) {
     const rows = runs.filter(row => row.condition === condition);
     const countChecks = name => {

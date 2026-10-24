@@ -5,6 +5,44 @@ const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
 
+for (const lowMemory of [false, true]) test(`bounded pair retains six planned rows and stops safely (lowMemory=${lowMemory})`, () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-resource-pair-test-'));
+  let output;
+  try {
+    const preload = path.join(root, 'stubs.cjs');
+    fs.writeFileSync(preload, `const Module = require('node:module'); const load = Module._load; let checks = 0;
+Module._load = function(request, ...args) {
+  if (request.endsWith('/dist/model/local/memory.js')) return { nativeMemoryBudget: () => ({ availableBytes: ${lowMemory ? 1024 : 8 * 1024 ** 3}, source: 'os-free' }) };
+  if (request.endsWith('/dist/sandbox/run.js')) return { runSandboxed: async () => {
+    checks++; const ok = checks !== 2 && checks <= 4;
+    return { ok, exitCode: ok ? 0 : 1, durationMs: 1, stdout: 'PRIVATE_DIAGNOSTIC', stderr: '' };
+  } };
+  if (request.endsWith('/dist/bench/runner.js')) return { runScenario: async () => ({ attempts: [], generatedArtifacts: [] }) };
+  if (request.endsWith('/dist/model/local/inference.js')) throw Error('test must not load native inference');
+  return load.call(this, request, ...args);
+};\n`);
+    const result = spawnSync(process.execPath, ['--require', preload, path.join(__dirname, 'rn-cart-pilot.cjs'),
+      '--task', 'stock-filter', '--evaluation-lane', '7b', '--resource-pair'], { encoding: 'utf8', timeout: 15000 });
+    assert.equal(result.status, lowMemory ? 1 : 0, result.stderr);
+    output = result.stdout.match(/^Evidence: (.+)$/m)?.[1];
+    assert.ok(output, result.stdout);
+    const source = fs.readFileSync(path.join(output, 'report.json'), 'utf8');
+    const report = JSON.parse(source);
+    assert.equal(report.kind, 'bounded-one-app-resource-pair');
+    assert.equal(report.resourceProtocol.rowLimit, 2);
+    assert.equal(report.runs.length, 6);
+    assert.equal(report.runs[0].status, lowMemory ? 'resource-aborted' : 'failed');
+    assert.equal(report.runs[1].status, lowMemory ? 'not-run' : 'failed');
+    assert.ok(report.runs.slice(2).every(row => row.status === 'not-run'));
+    assert.equal(report.runs[0].resources.reserveBytes, 2 * 1024 ** 3);
+    if (lowMemory) assert.equal(report.runs[0].resourceStopReason, 'memory-reserve');
+    assert.ok(!source.includes('PRIVATE_DIAGNOSTIC'));
+  } finally {
+    if (output) fs.rmSync(output, { recursive: true, force: true });
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('rejects changed 7B verifier input before experiment output or inference', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-freeze-test-'));
   try {
@@ -19,6 +57,9 @@ test('rejects changed 7B verifier input before experiment output or inference', 
 });
 
 for (const [name, args, message] of [
+  ['resource pair without frozen task', ['--resource-pair'], '--resource-pair requires'],
+  ['resource pair on another task', ['--resource-pair', '--task', 'current-session', '--evaluation-lane', '7b'], '--resource-pair requires'],
+  ['resource pair on another model lane', ['--resource-pair', '--task', 'stock-filter'], '--resource-pair requires'],
   ['model without identity', ['--model', 'qwen2.5-coder-3b'], 'must be supplied together'],
   ['identity without model', ['--artifact-sha256', 'a'.repeat(64)], 'must be supplied together'],
   ['invalid identity', ['--model', 'qwen2.5-coder-3b', '--artifact-sha256', 'bad'], 'Expected a lowercase SHA-256'],
