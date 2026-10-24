@@ -24,8 +24,8 @@ export interface ModelGenerateOptions {
   modelRouter: ModelRouter
   /** Native-local JSON envelope constraint, not source-code correctness. */
   outputFormat?: 'files-json'
-  /** Task-only retains fixture/acceptance inputs, disables project enrichment and never repairs. */
-  promptMode?: 'task-only' | 'vectalon'
+  /** Task-only isolates inputs; task-relevant adds experimental source guidance. Both disable enrichment and repairs. */
+  promptMode?: 'task-only' | 'vectalon' | 'task-relevant'
   /** Override generation temperature (default 0.2, matching the harness). */
   temperature?: number
   /**
@@ -87,9 +87,10 @@ function repairFeedback(files: BenchGeneratedFile[], scenario: BenchScenario): s
 /** Build a generate seam that drives the real model for a scenario. */
 export function createModelGenerate(options: ModelGenerateOptions): (scenario: BenchScenario, onAttempts?: (attempts: BenchGenerationAttempt[]) => void) => Promise<BenchGeneratedFile[]> {
   const { modelRouter, temperature = 0.2, maxTokens = 8192, promptMode = 'vectalon', providerCallLimit, onTextChunk } = options
-  const maxAttempts = options.maxAttempts ?? (promptMode === 'task-only' ? 1 : 3)
-  if (promptMode !== 'task-only' && promptMode !== 'vectalon') throw new Error('Unknown benchmark promptMode')
-  if (promptMode === 'task-only' && maxAttempts !== 1) throw new Error('task-only requires maxAttempts: 1')
+  const minimal = promptMode !== 'vectalon'
+  const maxAttempts = options.maxAttempts ?? (minimal ? 1 : 3)
+  if (!['task-only', 'vectalon', 'task-relevant'].includes(promptMode)) throw new Error('Unknown benchmark promptMode')
+  if (minimal && maxAttempts !== 1) throw new Error(`${promptMode} requires maxAttempts: 1`)
   if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 3) throw new Error('maxAttempts must be an integer from 1 to 3')
   if (providerCallLimit !== undefined && (!Number.isSafeInteger(providerCallLimit) || providerCallLimit < 1)) throw new Error('providerCallLimit must be a positive safe integer')
 
@@ -117,9 +118,18 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
     const fixtureBlock = Object.entries(scenario.fixtures || {})
       .map(([path, content]) => `--- ${path} ---\n${content}`)
       .join('\n\n')
-    const systemPrompt = promptMode === 'task-only' ? 'Complete the requested coding task. Return only JSON: {"files":[{"path":"...","content":"..."}]}.' : implementationPrompt.systemPrompt
-    const prompt = promptMode === 'task-only' ? scenario.prompt : implementationPrompt.prompt
-    const context = promptMode === 'task-only' ? [
+    let systemPrompt = minimal ? 'Complete the requested coding task. Return only JSON: {"files":[{"path":"...","content":"..."}]}.' : implementationPrompt.systemPrompt
+    if (promptMode === 'task-relevant') {
+      systemPrompt += '\nPreserve existing imports, exports, types and unrelated behavior in the supplied source. Implement the requested change in that code.'
+      systemPrompt += '\nEach content string must contain a complete source module, not an object describing it. Escape line breaks inside JSON strings.'
+      // shortcut: textual useState-call detection; qualify aliased calls before broader use.
+      if (/\buseState\s*(?:<[^>]*>)?\s*\(/.test(fixtureBlock)) {
+        // React state queues: https://react.dev/learn/queueing-a-series-of-state-updates
+        systemPrompt += '\nFor React state calculated from previous state, pass a pure updater function to the setter so queued updates compose. Keep state local to each hook instance.'
+      }
+    }
+    const prompt = minimal ? scenario.prompt : implementationPrompt.prompt
+    const context = minimal ? [
       ...scenario.expect.files.map(path => `Required output file: ${path}`),
       ...scenario.expect.behaviors.map(behavior => `Required behavior: ${behavior}`),
       'Current project files (return each changed file with its complete new content):', fixtureBlock,
@@ -148,7 +158,7 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       maxTokens,
       temperature,
       ...(options.outputFormat ? { outputFormat: options.outputFormat } : {}),
-      ...(promptMode === 'task-only' ? { projectContext: 'disabled' as const } : {}),
+      ...(minimal ? { projectContext: 'disabled' as const } : {}),
       ...(providerCallLimit !== undefined ? { providerCallLimit } : {}),
       ...(onTextChunk ? { onTextChunk } : {}),
     }

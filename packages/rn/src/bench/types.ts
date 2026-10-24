@@ -136,7 +136,7 @@ export interface BenchGenerationAttempt {
   temperature: number
   maxTokens: number
   maxAttempts?: number
-  promptMode?: 'task-only' | 'vectalon'
+  promptMode?: 'task-only' | 'vectalon' | 'task-relevant'
   providerCallLimit?: number
   /** Caller-supplied verification, separate from offline rubric/native task qualification. */
   verification?: { status: 'passed' | 'failed' | 'error'; durationMs: number }

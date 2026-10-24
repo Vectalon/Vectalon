@@ -11,7 +11,7 @@ test('task-only, guided full-file and block-edit requests exclude control answer
     const scenario = { specVersion: 1, id, title: id, suite: 'data-flow', scaffoldable: false,
       prompt: task.prompt, fixtures: { [task.target]: task.original }, expect: { files: [task.target], behaviors: [task.prompt] },
       correctness: { tests: true, typecheck: true, lint: false }, axes: ['guardrails', 'adherence'] };
-    for (const [factory, promptMode] of [[createModelGenerate, 'task-only'], [createModelGenerate, 'vectalon'], [createModelEditGenerate, 'vectalon']]) {
+    for (const [factory, promptMode] of [[createModelGenerate, 'task-only'], [createModelGenerate, 'vectalon'], [createModelGenerate, 'task-relevant'], [createModelEditGenerate, 'vectalon']]) {
       const requests = [];
       const generate = factory({ modelRouter: { generate: async request => { requests.push(request); return { content: '', provider: 'local' }; } },
         promptMode, temperature: 0.2, maxTokens: 2048, maxAttempts: 1, providerCallLimit: 1 });

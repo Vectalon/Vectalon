@@ -12,12 +12,14 @@ const { values: args } = require('node:util').parseArgs({ options: {
   'include-generated': { type: 'boolean' }, model: { type: 'string' }, 'artifact-sha256': { type: 'string' },
   'include-raw-response': { type: 'boolean' },
   task: { type: 'string' }, edits: { type: 'boolean' }, diagnostic: { type: 'string' }, guided: { type: 'boolean' },
+  'task-relevant': { type: 'boolean' },
 } });
 assert.equal(args.model !== undefined, args['artifact-sha256'] !== undefined, '--model and --artifact-sha256 must be supplied together');
 assert.ok(args['artifact-sha256'] === undefined || /^[a-f0-9]{64}$/.test(args['artifact-sha256']), 'Expected a lowercase SHA-256 artifact hash');
 assert.ok(!args.constrained || args.repair, '--constrained requires --repair for this diagnostic');
 assert.ok(!args.edits || (!args.task && !args.repair && !args.constrained), '--edits is a first-attempt public development diagnostic only; cannot combine with --task, --repair or --constrained');
 assert.ok(!args.guided || args.diagnostic !== undefined, '--guided requires a generation control');
+assert.ok(!args['task-relevant'] || (args.diagnostic !== undefined && !args.guided), '--task-relevant requires a generation control without --guided');
 if (args.diagnostic !== undefined) {
   assert.ok(controlIds.includes(args.diagnostic), 'Unknown generation control');
   assert.ok(!args.task && !args.edits && !args.repair && !args.constrained, 'Generation controls cannot combine with task, edits, repair or constrained');
@@ -88,7 +90,9 @@ if (args.task) assert.deepEqual(settings, freeze.settings, 'Frozen resource sett
 const output = fs.mkdtempSync('/private/tmp/vectalon-cart-pilot-');
 const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pilot', revision, appRevision, startedAt: new Date().toISOString(),
   ...(args.diagnostic ? { controlDefinitionsSha256: hash(fs.readFileSync(path.join(__dirname, 'generation-controls.cjs'))),
-    conditionSettings: args.guided ? { vectalon: { ...settings, output: 'existing guided full-file JSON; no requested grammar' } }
+    conditionSettings: args['task-relevant'] ? { 'task-only': { ...settings, output: 'full-file JSON; no requested grammar' },
+      'task-relevant': { ...settings, output: 'minimal source-grounded full-file JSON; no requested grammar' } }
+      : args.guided ? { vectalon: { ...settings, output: 'existing guided full-file JSON; no requested grammar' } }
       : { 'task-only': { ...settings, output: 'full-file JSON; no requested grammar' },
         'vectalon-edits': { ...settings, requiredTool: 'propose_edits', anchorMode: 'top-level-source-blocks' } } } : {}),
   ...(task ? { task: { id: task.id, kind: task.kind } } : {}),
@@ -106,11 +110,12 @@ const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pi
   runtime: { node: process.version, platform: process.platform, arch: process.arch }, settings,
   model, expectedArtifactSha256,
   limitations: ['No native build', 'Installed dependencies reused', 'Tokens/cost not measured', 'No human correction-time measurement', ...(args.task ? freeze.limitations : ['Public development tasks; not launch qualification']),
-    ...(args.diagnostic ? ['Synthetic controls in one installed app; not held-out RN workflow evidence', 'Conditions change prompt and output protocol; not a grammar-only ablation', 'Block catalogue repeats input source; input-token budgets are unmeasured'] : []),
+    ...(args.diagnostic ? ['Synthetic controls in one installed app; not held-out RN workflow evidence', 'Conditions change instructions; input-token budgets are unmeasured; not a single-factor causal ablation'] : []),
+    ...(args['task-relevant'] ? ['Experimental guidance uses original source and a general React state-queue rule; textual useState-call detection does not qualify aliases or arbitrary state libraries'] : []),
     ...(repair ? ['Repair diagnostic permits twice the generation budget of the first-pass pilot; not an equal-budget comparison'] : []),
     ...(constrained ? ['Native file-envelope grammar constrains serialization, not file scope or code correctness'] : []),
     ...(args.edits ? ['Scoped edit protocol differs from full-file generation; single existing file, at most eight edits, no repairs', 'Block IDs select unique original top-level TypeScript/JSX spans; repeated selections are rejected and exact application is checked again', 'Block catalogue repeats approved source in context; input-token cost is not measured', 'Source-grounded grammar does not establish code correctness or task improvement'] : [])],
-  runs: Array.from({ length: args.task ? freeze.repetitions : 3 }, (_, repetition) => (args.guided ? ['vectalon'] : args.diagnostic ? (repetition % 2 ? ['vectalon-edits', 'task-only'] : ['task-only', 'vectalon-edits']) : args.edits ? ['vectalon-edits'] : repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
+  runs: Array.from({ length: args.task ? freeze.repetitions : 3 }, (_, repetition) => (args['task-relevant'] ? (repetition % 2 ? ['task-relevant', 'task-only'] : ['task-only', 'task-relevant']) : args.guided ? ['vectalon'] : args.diagnostic ? (repetition % 2 ? ['vectalon-edits', 'task-only'] : ['task-only', 'vectalon-edits']) : args.edits ? ['vectalon-edits'] : repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
 const save = () => {
   fs.writeFileSync(path.join(output, 'report.json'), serializePilotReport(report, {
     includeGenerated: args['include-generated'], includeRawResponse: args['include-raw-response'],

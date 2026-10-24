@@ -16,6 +16,8 @@ for (const [name, args, message] of [
   ['unknown frozen task', ['--task', 'unknown'], 'Unknown frozen evaluation task'],
   ['unknown generation control', ['--diagnostic', 'unknown'], 'Unknown generation control'],
   ['guided mode without a control', ['--guided'], '--guided requires a generation control'],
+  ['task-relevant mode without a control', ['--task-relevant'], '--task-relevant requires a generation control'],
+  ['mixed guidance modes', ['--diagnostic', 'page-bound', '--guided', '--task-relevant'], '--task-relevant requires'],
   ['guided mode on frozen task', ['--task', 'stock-filter', '--guided'], '--guided requires a generation control'],
   ['control without explicit model', ['--diagnostic', 'page-bound'], 'require an explicit model'],
   ['control with frozen task', ['--diagnostic', 'page-bound', '--task', 'stock-filter'], 'cannot combine'],

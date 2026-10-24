@@ -146,6 +146,31 @@ describe('model attempt evidence', () => {
     expect(() => generator([], { promptMode: 'task-only', maxAttempts: 2 })).toThrow('task-only requires')
   })
 
+  it('keeps experimental task-relevant guidance source-grounded, single-attempt and separate from defaults', async () => {
+    const mode = 'task-relevant' as ModelGenerateOptions['promptMode']
+    const task = { ...scenario, fixtures: { 'src/value.ts': "import { useState } from 'react';\nexport function useValue() { return useState(0); }" },
+      fixEdits: [{ file: 'src/value.ts', find: '0', replace: 'HELD_OUT_ANSWER' }] }
+    const focused = generator(['not JSON', answer()], { promptMode: mode })
+    const result = await runScenario(task, { generate: focused.seam })
+    expect(focused.generate).toHaveBeenCalledTimes(1)
+    const request = focused.generate.mock.calls[0][0]
+    expect(request.systemPrompt).toContain('pure updater function')
+    expect(request.systemPrompt).toContain('Preserve existing imports')
+    expect(request.context).toContain(task.fixtures['src/value.ts'])
+    expect(request.projectContext).toBe('disabled')
+    expect(request.prompt).toBe(task.prompt)
+    expect(JSON.stringify(request)).not.toContain('HELD_OUT_ANSWER')
+    expect(JSON.stringify(request)).not.toContain('SafeAreaView')
+    expect(result.attempts![0]).toMatchObject({ promptMode: 'task-relevant', maxAttempts: 1, status: 'invalid' })
+    expect(() => generator([], { promptMode: mode, maxAttempts: 2 })).toThrow('task-relevant requires')
+  })
+
+  it('does not add React state guidance to a plain utility source', async () => {
+    const focused = generator([answer()], { promptMode: 'task-relevant' as ModelGenerateOptions['promptMode'] })
+    await focused.seam({ ...scenario, fixtures: { 'src/value.ts': 'export const value = 1;' } })
+    expect(focused.generate.mock.calls[0][0].systemPrompt).not.toContain('pure updater function')
+  })
+
   it.each(['not JSON', answer('src/wrong.ts')])('retains the first outcome without retry or repair when capped at one', async response => {
     const { generate, seam } = generator([response, answer()], { maxAttempts: 1, providerCallLimit: 1 })
     const run = await runScenario(scenario, { generate: seam })
