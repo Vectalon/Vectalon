@@ -1,0 +1,581 @@
+{
+  "exportKind": "source-free-7b-app-replication-interrupted",
+  "recordedAt": "2026-10-24T14:46:50.450Z",
+  "originalReports": [
+    {
+      "path": "/private/tmp/vectalon-cart-pilot-5AzG9j/report.json",
+      "sha256": "1ce9b45e4d9381c3c053e32432be8c653218302934894692bf017532e7764b04"
+    },
+    {
+      "path": "/private/tmp/vectalon-cart-pilot-eGN09E/report.json",
+      "sha256": "cc86f98f2d5a4a1dcc37dc13354ef7aea17c3f9be45a299b51026e82b5de955d"
+    },
+    {
+      "path": "/private/tmp/vectalon-cart-pilot-rEKgWs/report.json",
+      "sha256": "4b91b2fad86996ff55a0fef594e340b58cdee138de1964eb1586f7cfaa46181a"
+    }
+  ],
+  "execution": {
+    "plannedRuns": 18,
+    "completedRuns": 1,
+    "interruptedRuns": 1,
+    "notStartedRuns": 16,
+    "interruption": {
+      "reason": "Operator stopped resolved model process after system-wide free memory reached 5%",
+      "signal": "SIGTERM",
+      "freeMemoryPercentDuring": 5,
+      "freeMemoryPercentAfter": 64,
+      "processExitVerified": true,
+      "classification": "External resource interruption, not a model result. Original running/not-run statuses preserved; no silent retries."
+    },
+    "nativeVerification": "not-run",
+    "contextAudit": "Caller uses createContext() without a size bound; installed library defaults to memory-dependent auto context sizing. Causation of this resource event is not established."
+  },
+  "reports": [
+    {
+      "kind": "frozen-one-app-evaluation",
+      "revision": "ec0eb45ddb20e96c46b500136069e5216e25f493",
+      "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+      "startedAt": "2026-10-24T14:36:44.014Z",
+      "task": {
+        "id": "stock-filter",
+        "kind": "feature"
+      },
+      "installedDependencyVersions": {
+        "@react-navigation/native": "7.3.16",
+        "@react-navigation/native-stack": "7.18.8",
+        "expo": "58.0.17",
+        "expo-status-bar": "58.0.4",
+        "react": "19.3.0",
+        "react-native": "0.88.0",
+        "react-native-safe-area-context": "5.10.1",
+        "react-native-screens": "4.30.0",
+        "@babel/core": "7.29.7",
+        "@reduxjs/toolkit": "2.12.0",
+        "@testing-library/react-native": "14.0.1",
+        "@types/jest": "30.0.0",
+        "@types/react": "19.3.0",
+        "@react-native/jest-preset": "0.88.0",
+        "babel-preset-expo": "58.0.19",
+        "jest": "30.2.0",
+        "jest-expo": "58.0.12",
+        "react-redux": "9.3.0",
+        "react-test-renderer": "19.3.0",
+        "typescript": "5.8.3"
+      },
+      "evaluationLane": "7b",
+      "freezeSha256": "eada448a45e1bc3a635556209abc1fefb354e09d8ba5700587566c0558d72f7c",
+      "taskDefinitionsSha256": "91ea35672bf7d810c54357f4d548d2a68b987b3827e5d4e3ba06165694aa0a7e",
+      "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+      "nativeVerification": "not-run",
+      "runnerSha256": "f4e232bea9fb5d4e30b0162d2bfbbb94ad6071d6a5793bed0a5b7c46bf5a4989",
+      "appArchiveSha256": "85f494af47a4d19013fbae471533281db459a859317ce86f7778f4c768716fb2",
+      "generationModuleSha256": "0dbb2c26064efd81a4e9d8e0393a8ca501c6b5c5399228827d41a933af57e7c5",
+      "inferenceModuleSha256": "1bf27277bafa95596828c3d08228f084e399ae4b276d8aa214ede8160ce4646e",
+      "acceptanceSha256": "d2985db43bf346de1040ac73aa4777ec2f9e26f0f9dc0f96ca0c70f81270ee06",
+      "taskSha256": "20610a8aa4bdfc3cd15fde4ff6a160580d45b0824eedd1a7b7d01f07e65d6145",
+      "runtime": {
+        "node": "v24.22.1",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "settings": {
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "maxAttempts": 1,
+        "providerCallLimit": 1
+      },
+      "model": "qwen2.5-coder-7b",
+      "expectedArtifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+      "limitations": [
+        "No native build",
+        "Installed dependencies reused",
+        "Tokens/cost not measured",
+        "No human correction-time measurement",
+        "Separate 7B replication lane reuses previously evaluated public 3B tasks; not fresh held-out launch evidence",
+        "Three tasks in one installed app; insufficient for reliable improvement or launch qualification",
+        "Seeds and input-token accounting unavailable in this inference path",
+        "Review means an executable regression test, not qualification of the review CLI",
+        "Native probe preflight uses Jest with native shims; native build/device verification remains separate"
+      ],
+      "runs": [
+        {
+          "repetition": 1,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "result": {
+            "id": "stock-filter",
+            "title": "stock-filter",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/screens/CatalogScreen.tsx"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 146977,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0.6666666666666666,
+                "guardrails": 0.8888888888888888,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:bfbe527112f914fede49c62e21e28c25be7d420dbd4b5388a2a368c27c493ddd",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:157461037bb9cf77a3e0a0f4d3c5ace2093f77fbc7cc4f7070cb094a279d4224",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 146647
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/screens/CatalogScreen.tsx",
+                "passed": 24,
+                "failed": 3,
+                "skipped": 9,
+                "ok": false,
+                "failedRules": [
+                  "Interactive elements have accessibility labels",
+                  "Screens use SafeAreaView or safe-area-aware layout",
+                  "Directly exported function declarations have return annotations"
+                ]
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0.6666666666666666,
+              "guardrails": 0.8888888888888888
+            },
+            "composite": 0.7777777777777778
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 2263
+            },
+            "tests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 11731
+            }
+          },
+          "durationMs": 161556
+        },
+        {
+          "repetition": 1,
+          "condition": "vectalon",
+          "status": "running",
+          "phase": "generation",
+          "verifications": []
+        },
+        {
+          "repetition": 2,
+          "condition": "vectalon",
+          "status": "not-run"
+        },
+        {
+          "repetition": 2,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 3,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 3,
+          "condition": "vectalon",
+          "status": "not-run"
+        }
+      ],
+      "negativeControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 2247
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 10920
+        }
+      },
+      "positiveControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1584
+        },
+        "tests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 9134
+        }
+      }
+    }
+  ],
+  "preflights": [
+    {
+      "kind": "frozen-one-app-evaluation",
+      "revision": "ec0eb45ddb20e96c46b500136069e5216e25f493",
+      "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+      "startedAt": "2026-10-24T14:43:20.170Z",
+      "task": {
+        "id": "current-session",
+        "kind": "fix"
+      },
+      "installedDependencyVersions": {
+        "@react-navigation/native": "7.3.16",
+        "@react-navigation/native-stack": "7.18.8",
+        "expo": "58.0.17",
+        "expo-status-bar": "58.0.4",
+        "react": "19.3.0",
+        "react-native": "0.88.0",
+        "react-native-safe-area-context": "5.10.1",
+        "react-native-screens": "4.30.0",
+        "@babel/core": "7.29.7",
+        "@reduxjs/toolkit": "2.12.0",
+        "@testing-library/react-native": "14.0.1",
+        "@types/jest": "30.0.0",
+        "@types/react": "19.3.0",
+        "@react-native/jest-preset": "0.88.0",
+        "babel-preset-expo": "58.0.19",
+        "jest": "30.2.0",
+        "jest-expo": "58.0.12",
+        "react-redux": "9.3.0",
+        "react-test-renderer": "19.3.0",
+        "typescript": "5.8.3"
+      },
+      "evaluationLane": "7b",
+      "freezeSha256": "eada448a45e1bc3a635556209abc1fefb354e09d8ba5700587566c0558d72f7c",
+      "taskDefinitionsSha256": "91ea35672bf7d810c54357f4d548d2a68b987b3827e5d4e3ba06165694aa0a7e",
+      "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+      "nativeVerification": "not-run",
+      "runnerSha256": "f4e232bea9fb5d4e30b0162d2bfbbb94ad6071d6a5793bed0a5b7c46bf5a4989",
+      "appArchiveSha256": "85f494af47a4d19013fbae471533281db459a859317ce86f7778f4c768716fb2",
+      "generationModuleSha256": "0dbb2c26064efd81a4e9d8e0393a8ca501c6b5c5399228827d41a933af57e7c5",
+      "inferenceModuleSha256": "1bf27277bafa95596828c3d08228f084e399ae4b276d8aa214ede8160ce4646e",
+      "acceptanceSha256": "3443838dcade255e2181d7932bac02699bad450e5f4abe1f173500c6abf6fef8",
+      "taskSha256": "97c9a91b515f9783bf166fb70f69e247c0db8e8256ea0f097cb884895626d127",
+      "runtime": {
+        "node": "v24.22.1",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "settings": {
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "maxAttempts": 1,
+        "providerCallLimit": 1
+      },
+      "model": "qwen2.5-coder-7b",
+      "expectedArtifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+      "limitations": [
+        "No native build",
+        "Installed dependencies reused",
+        "Tokens/cost not measured",
+        "No human correction-time measurement",
+        "Separate 7B replication lane reuses previously evaluated public 3B tasks; not fresh held-out launch evidence",
+        "Three tasks in one installed app; insufficient for reliable improvement or launch qualification",
+        "Seeds and input-token accounting unavailable in this inference path",
+        "Review means an executable regression test, not qualification of the review CLI",
+        "Native probe preflight uses Jest with native shims; native build/device verification remains separate"
+      ],
+      "runs": [
+        {
+          "repetition": 1,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 1,
+          "condition": "vectalon",
+          "status": "not-run"
+        },
+        {
+          "repetition": 2,
+          "condition": "vectalon",
+          "status": "not-run"
+        },
+        {
+          "repetition": 2,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 3,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 3,
+          "condition": "vectalon",
+          "status": "not-run"
+        }
+      ],
+      "negativeControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 5343
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 19530
+        }
+      },
+      "positiveControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 2670
+        },
+        "tests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 15324
+        }
+      },
+      "nativeProbePreflight": {
+        "method": "Disposable probe UI and real hook under Jest/native shims; NOT native build/device evidence",
+        "probeSha256": "167657abd64538d8c1c46dbdd248da99e0a38a51a3ea335289b7041d250dc502",
+        "acceptanceSha256": "2689847b8e78cd608e16519da42bc067b5e769d81d2572a74be4fb56fd5c28c5",
+        "negative": {
+          "typecheck": {
+            "ok": true,
+            "exitCode": 0,
+            "timedOut": false,
+            "isolation": "sandbox-exec",
+            "durationMs": 2369
+          },
+          "tests": {
+            "ok": false,
+            "exitCode": 1,
+            "timedOut": false,
+            "isolation": "sandbox-exec",
+            "durationMs": 15422
+          }
+        },
+        "positive": {
+          "typecheck": {
+            "ok": true,
+            "exitCode": 0,
+            "timedOut": false,
+            "isolation": "sandbox-exec",
+            "durationMs": 3126
+          },
+          "tests": {
+            "ok": true,
+            "exitCode": 0,
+            "timedOut": false,
+            "isolation": "sandbox-exec",
+            "durationMs": 19305
+          }
+        }
+      }
+    },
+    {
+      "kind": "frozen-one-app-evaluation",
+      "revision": "ec0eb45ddb20e96c46b500136069e5216e25f493",
+      "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+      "startedAt": "2026-10-24T14:44:45.268Z",
+      "task": {
+        "id": "order-copy-review",
+        "kind": "review"
+      },
+      "installedDependencyVersions": {
+        "@react-navigation/native": "7.3.16",
+        "@react-navigation/native-stack": "7.18.8",
+        "expo": "58.0.17",
+        "expo-status-bar": "58.0.4",
+        "react": "19.3.0",
+        "react-native": "0.88.0",
+        "react-native-safe-area-context": "5.10.1",
+        "react-native-screens": "4.30.0",
+        "@babel/core": "7.29.7",
+        "@reduxjs/toolkit": "2.12.0",
+        "@testing-library/react-native": "14.0.1",
+        "@types/jest": "30.0.0",
+        "@types/react": "19.3.0",
+        "@react-native/jest-preset": "0.88.0",
+        "babel-preset-expo": "58.0.19",
+        "jest": "30.2.0",
+        "jest-expo": "58.0.12",
+        "react-redux": "9.3.0",
+        "react-test-renderer": "19.3.0",
+        "typescript": "5.8.3"
+      },
+      "evaluationLane": "7b",
+      "freezeSha256": "eada448a45e1bc3a635556209abc1fefb354e09d8ba5700587566c0558d72f7c",
+      "taskDefinitionsSha256": "91ea35672bf7d810c54357f4d548d2a68b987b3827e5d4e3ba06165694aa0a7e",
+      "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+      "nativeVerification": "not-run",
+      "runnerSha256": "f4e232bea9fb5d4e30b0162d2bfbbb94ad6071d6a5793bed0a5b7c46bf5a4989",
+      "appArchiveSha256": "85f494af47a4d19013fbae471533281db459a859317ce86f7778f4c768716fb2",
+      "generationModuleSha256": "0dbb2c26064efd81a4e9d8e0393a8ca501c6b5c5399228827d41a933af57e7c5",
+      "inferenceModuleSha256": "1bf27277bafa95596828c3d08228f084e399ae4b276d8aa214ede8160ce4646e",
+      "acceptanceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "taskSha256": "feb2c6a4291d7f017a5484bca1cd4c17ea1a6f1169f7a1b83345ffbdeb7dcda0",
+      "runtime": {
+        "node": "v24.22.1",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "settings": {
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "maxAttempts": 1,
+        "providerCallLimit": 1
+      },
+      "model": "qwen2.5-coder-7b",
+      "expectedArtifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+      "limitations": [
+        "No native build",
+        "Installed dependencies reused",
+        "Tokens/cost not measured",
+        "No human correction-time measurement",
+        "Separate 7B replication lane reuses previously evaluated public 3B tasks; not fresh held-out launch evidence",
+        "Three tasks in one installed app; insufficient for reliable improvement or launch qualification",
+        "Seeds and input-token accounting unavailable in this inference path",
+        "Review means an executable regression test, not qualification of the review CLI",
+        "Native probe preflight uses Jest with native shims; native build/device verification remains separate"
+      ],
+      "runs": [
+        {
+          "repetition": 1,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 1,
+          "condition": "vectalon",
+          "status": "not-run"
+        },
+        {
+          "repetition": 2,
+          "condition": "vectalon",
+          "status": "not-run"
+        },
+        {
+          "repetition": 2,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 3,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 3,
+          "condition": "vectalon",
+          "status": "not-run"
+        }
+      ],
+      "negativeControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 2834
+        },
+        "tests": {
+          "ok": false,
+          "durationMs": 19621
+        },
+        "originalTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 16771
+        },
+        "proposedTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 2850,
+          "assertionFailures": 0
+        }
+      },
+      "positiveControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 2191
+        },
+        "tests": {
+          "ok": true,
+          "durationMs": 18113
+        },
+        "originalTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 14632
+        },
+        "proposedTests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 3481,
+          "assertionFailures": 1
+        }
+      }
+    }
+  ]
+}

@@ -2,6 +2,21 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { spawnSync } = require('node:child_process');
 const path = require('node:path');
+const fs = require('node:fs');
+const os = require('node:os');
+
+test('rejects changed 7B verifier input before experiment output or inference', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-freeze-test-'));
+  try {
+    const preload = path.join(root, 'changed-input.cjs');
+    fs.writeFileSync(preload, "const fs = require('node:fs'); const read = fs.readFileSync; fs.readFileSync = function(file, ...args) { if (String(file).endsWith('/stock-filter.acceptance.tsx')) return 'changed verifier'; return read.call(this, file, ...args); };\n");
+    const result = spawnSync(process.execPath, ['--require', preload, path.join(__dirname, 'rn-cart-pilot.cjs'),
+      '--task', 'stock-filter', '--evaluation-lane', '7b', '--preflight'], { encoding: 'utf8', timeout: 10000 });
+    assert.notEqual(result.status, 0);
+    assert.ok(result.stderr.includes('Frozen evaluation input changed: stock-filter.acceptance.tsx'), result.stderr);
+    assert.ok(!result.stdout.includes('Evidence:'));
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
+});
 
 for (const [name, args, message] of [
   ['model without identity', ['--model', 'qwen2.5-coder-3b'], 'must be supplied together'],

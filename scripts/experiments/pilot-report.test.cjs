@@ -79,6 +79,22 @@ test('retains the isolated 7B app-check pass without implying release qualificat
   assert.equal(report.independentRecheck.checks.tests.passedTests, 38);
 });
 
+test('keeps resource-interrupted app trials distinct from completed model failures', () => {
+  const evidence = require('../../docs/release-roadmap/evidence/one-app-7b-interrupted-2026-10-24.json');
+  assert.equal(evidence.execution.plannedRuns, 18);
+  assert.equal(evidence.execution.completedRuns + evidence.execution.interruptedRuns + evidence.execution.notStartedRuns, 18);
+  const partial = evidence.reports[0];
+  assert.equal(partial.runs.filter(row => row.status === 'failed').length, 1);
+  assert.equal(partial.runs.filter(row => row.status === 'running').length, 1);
+  assert.ok(formatPilotReport(partial).includes('| vectalon | 3 | 0 | 0 | 3 | 0/0 | 0/0 |'));
+  assert.equal(evidence.execution.nativeVerification, 'not-run');
+  assert.ok(evidence.preflights.every(report => report.runs.every(row => row.status === 'not-run')));
+  const probe = evidence.preflights.find(report => report.task.id === 'current-session').nativeProbePreflight;
+  assert.equal(probe.negative.tests.ok, false);
+  assert.equal(probe.positive.tests.ok, true);
+  assert.ok(probe.method.includes('NOT native build/device evidence'));
+});
+
 test('does not turn missing checks, identity mismatch or partial runs into passes', () => {
   const text = formatPilotReport({ runs: [
     { condition: 'vectalon', repetition: 1, status: 'passed', identityMatched: false,
