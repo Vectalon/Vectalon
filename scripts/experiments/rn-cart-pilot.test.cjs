@@ -5,7 +5,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
 
-for (const lowMemory of [false, true]) test(`bounded pair retains six planned rows and stops safely (lowMemory=${lowMemory})`, () => {
+for (const [lowMemory, singleGuided] of [[false, false], [true, false], [false, true]]) test(`bounded diagnostics retain six planned rows and stop safely (lowMemory=${lowMemory}, singleGuided=${singleGuided})`, () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-resource-pair-test-'));
   let output;
   try {
@@ -28,26 +28,32 @@ Module._load = function(request, ...args) {
   return load.call(this, request, ...args);
 };\n`);
     const result = spawnSync(process.execPath, ['--require', preload, path.join(__dirname, 'rn-cart-pilot.cjs'),
-      '--task', 'stock-filter', '--evaluation-lane', '7b', '--resource-pair'], { encoding: 'utf8', timeout: 15000 });
+      '--task', 'stock-filter', '--evaluation-lane', '7b', '--resource-pair',
+      ...(singleGuided ? ['--raw-guided', '--include-raw-response', '--include-generated'] : [])], { encoding: 'utf8', timeout: 15000 });
     assert.equal(result.status, lowMemory ? 1 : 0, result.stderr);
     output = result.stdout.match(/^Evidence: (.+)$/m)?.[1];
     assert.ok(output, result.stdout);
     const source = fs.readFileSync(path.join(output, 'report.json'), 'utf8');
     const report = JSON.parse(source);
-    assert.equal(report.kind, 'bounded-one-app-resource-pair');
-    assert.equal(report.resourceProtocol.rowLimit, 2);
+    assert.equal(report.kind, singleGuided ? 'bounded-guided-output-diagnostic' : 'bounded-one-app-resource-pair');
+    assert.equal(report.resourceProtocol.rowLimit, singleGuided ? 1 : 2);
     assert.equal(report.runs.length, 6);
-    assert.equal(report.runs[0].status, lowMemory ? 'resource-aborted' : 'failed');
+    assert.equal(report.runs[0].status, singleGuided ? 'not-run' : lowMemory ? 'resource-aborted' : 'failed');
     assert.equal(report.runs[1].status, lowMemory ? 'not-run' : 'failed');
     assert.ok(report.runs.slice(2).every(row => row.status === 'not-run'));
-    assert.equal(report.runs[0].resources.reserveBytes, 2 * 1024 ** 3);
+    assert.equal(report.runs[singleGuided ? 1 : 0].resources.reserveBytes, 2 * 1024 ** 3);
     if (lowMemory) assert.equal(report.runs[0].resourceStopReason, 'memory-reserve');
-    else for (const row of report.runs.slice(0, 2)) {
+    else for (const row of singleGuided ? [report.runs[1]] : report.runs.slice(0, 2)) {
       assert.equal(row.result.attempts[0].provider, 'local');
       assert.equal(row.identityMatched, true);
       assert.equal(row.result.attempts[0].providerCalls.length, 1);
     }
-    assert.ok(!source.includes('PRIVATE_DIAGNOSTIC'));
+    if (singleGuided) {
+      assert.equal(report.runs.filter(row => row.status === 'not-run').length, 5);
+      assert.equal(report.runs[1].rawResponses.length, 1);
+    }
+    assert.equal(source.includes('PRIVATE_DIAGNOSTIC'), singleGuided);
+    assert.ok(!require('./pilot-report.cjs').serializePilotReport(report).includes('PRIVATE_DIAGNOSTIC'));
   } finally {
     if (output) fs.rmSync(output, { recursive: true, force: true });
     fs.rmSync(root, { recursive: true, force: true });
@@ -68,6 +74,8 @@ test('rejects changed 7B verifier input before experiment output or inference', 
 });
 
 for (const [name, args, message] of [
+  ['raw diagnostic without explicit capture', ['--raw-guided', '--resource-pair', '--task', 'stock-filter', '--evaluation-lane', '7b'], '--raw-guided requires'],
+  ['raw diagnostic without resource guards', ['--raw-guided', '--include-generated', '--include-raw-response'], '--raw-guided requires'],
   ['resource pair without frozen task', ['--resource-pair'], '--resource-pair requires'],
   ['resource pair on another task', ['--resource-pair', '--task', 'current-session', '--evaluation-lane', '7b'], '--resource-pair requires'],
   ['resource pair on another model lane', ['--resource-pair', '--task', 'stock-filter'], '--resource-pair requires'],

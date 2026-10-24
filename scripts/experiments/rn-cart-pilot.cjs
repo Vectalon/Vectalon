@@ -18,7 +18,9 @@ const { values: args } = require('node:util').parseArgs({ options: {
   'sampling-control': { type: 'boolean' },
   'evaluation-lane': { type: 'string' },
   'resource-pair': { type: 'boolean' },
+  'raw-guided': { type: 'boolean' },
 } });
+assert.ok(!args['raw-guided'] || (args['resource-pair'] && args['include-raw-response'] && args['include-generated']), '--raw-guided requires --resource-pair --include-raw-response --include-generated');
 assert.ok(!args['resource-pair'] || (args.task === 'stock-filter' && args['evaluation-lane'] === '7b'), '--resource-pair requires --task stock-filter --evaluation-lane 7b');
 assert.ok(args['evaluation-lane'] === undefined || ['3b', '7b'].includes(args['evaluation-lane']), 'Unknown evaluation lane');
 assert.ok(args['evaluation-lane'] === undefined || args.task !== undefined, '--evaluation-lane requires --task');
@@ -106,9 +108,9 @@ const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair || ver
 if (args.task) assert.deepEqual(settings, freeze.settings, 'Frozen resource settings changed');
 const output = fs.mkdtempSync('/private/tmp/vectalon-cart-pilot-');
 const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pilot', revision, appRevision, startedAt: new Date().toISOString(),
-  ...(args['resource-pair'] ? { kind: 'bounded-one-app-resource-pair', resourceProtocol: {
+  ...(args['resource-pair'] ? { kind: args['raw-guided'] ? 'bounded-guided-output-diagnostic' : 'bounded-one-app-resource-pair', resourceProtocol: {
     routing: 'direct native in both conditions; no router enrichment/fallback; default sampling unchanged',
-    rowLimit: 2, reserveBytes: 2 * 1024 ** 3, sampleIntervalMs: 1000, hardStopGraceMs: 5000,
+    rowLimit: args['raw-guided'] ? 1 : 2, reserveBytes: 2 * 1024 ** 3, sampleIntervalMs: 1000, hardStopGraceMs: 5000,
     guardSha256: hash(fs.readFileSync(path.join(__dirname, 'resource-guard.cjs'))),
     adapterSha256: hash(fs.readFileSync(path.join(__dirname, 'sampling-control.cjs'))),
     memoryModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/model/local/memory.js'))),
@@ -262,7 +264,8 @@ async function main() {
     assert.equal(report.priorAcceptanceControl.tests.ok, true, 'Stress negative must pass the earlier finite acceptance cases');
   }
   if (args.preflight) return;
-  for (const row of args['resource-pair'] ? report.runs.slice(0, 2) : report.runs) {
+  for (const row of args['raw-guided'] ? report.runs.filter(row => row.condition === 'vectalon').slice(0, 1)
+    : args['resource-pair'] ? report.runs.slice(0, 2) : report.runs) {
     const started = Date.now();
     row.status = 'running'; row.phase = 'generation'; row.verifications = []; save();
     console.log(`Start ${row.repetition} ${row.condition}`);
