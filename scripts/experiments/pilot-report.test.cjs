@@ -43,6 +43,19 @@ test('retains all six counter stress failures and distinguishes skipped checks',
   }
 });
 
+test('retains failed verified counter repairs without promoting extra calls to improvement', () => {
+  const report = require('../../docs/release-roadmap/evidence/counter-verified-repair-2026-10-24.json');
+  assert.equal(report.runs.length, 6);
+  assert.ok(report.runs.every(row => row.status === 'failed' && row.identityMatched && row.result.attempts.length === 2));
+  const text = formatPilotReport(report);
+  assert.ok(text.includes('| task-only | 0/3 | 0 | 0/3 | 0 | 6 |'));
+  assert.ok(text.includes('| task-relevant | 0/3 | 1 | 0/2 | 0 | 6 |'));
+  assert.ok(text.includes('initial: invalid / unrecorded; parse-retry: parsed / failed'));
+  const attempts = report.runs.flatMap(row => row.result.attempts);
+  assert.equal(attempts.filter(attempt => attempt.kind === 'repair' && attempt.selected).length, 0);
+  assert.equal(attempts.reduce((sum, attempt) => sum + attempt.providerCalls.length, 0), 12);
+});
+
 test('does not turn missing checks, identity mismatch or partial runs into passes', () => {
   const text = formatPilotReport({ runs: [
     { condition: 'vectalon', repetition: 1, status: 'passed', identityMatched: false,
