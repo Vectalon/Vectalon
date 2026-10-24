@@ -43,3 +43,26 @@ test('stress control is versioned separately and does not rewrite completed coun
   assert(stress.acceptance.startsWith(old.acceptance));
   assert(stress.prompt.includes('retained from earlier renders'));
 });
+
+test('verified minimal repairs exclude control answers and acceptance from both requests', async () => {
+  const task = controlTask('batched-counter-stress-v1');
+  for (const promptMode of ['task-only', 'task-relevant']) {
+    const requests = [];
+    let checks = 0;
+    const generate = createModelGenerate({ promptMode, maxAttempts: 2, providerCallLimit: 1,
+      modelRouter: { generate: async request => { requests.push(request); return {
+        content: JSON.stringify({ files: [{ path: task.target, content: task.original }] }), provider: 'local',
+      }; } }, verify: async () => ({ passed: ++checks === 2, feedback: 'Task/project tests failed. Recheck the original requirements.' }) });
+    await generate({ specVersion: 1, id: task.id, suite: task.kind, title: task.id, scaffoldable: false,
+      prompt: task.prompt, fixtures: { [task.target]: task.original }, expect: { files: [task.target], behaviors: [task.prompt] },
+      correctness: { tests: true, typecheck: true, lint: false }, axes: ['guardrails', 'adherence'] });
+    assert.equal(requests.length, 2);
+    for (const request of requests) {
+      const input = JSON.stringify(request);
+      for (const excluded of [task.positiveControl, task.acceptance, task.priorAcceptance]) {
+        assert(!input.includes(JSON.stringify(excluded).slice(1, -1)));
+      }
+      assert.equal(request.projectContext, 'disabled');
+    }
+  }
+});

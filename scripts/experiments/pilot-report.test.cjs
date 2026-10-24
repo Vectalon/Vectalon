@@ -79,6 +79,24 @@ test('keeps positive and zero outcomes as counts, not qualification', () => {
   assert.ok(formatPilotReport({ runs: [] }).includes('No runs recorded'));
 });
 
+test('separates initial failure, repair candidate, selected outcome and observed calls', () => {
+  const report = { verificationMode: 'both conditions: bounded verifier', runs: [
+    { condition: 'task-only', status: 'passed', identityMatched: true,
+      checks: { typecheck: { ok: true }, tests: { ok: true } }, result: { attempts: [
+        { kind: 'initial', verification: { status: 'failed' }, providerCalls: [{}] },
+        { kind: 'repair', verification: { status: 'passed' }, providerCalls: [{}] },
+      ] } },
+    { condition: 'task-only', status: 'failed', identityMatched: true, result: { attempts: [
+      { kind: 'initial', status: 'invalid', providerCalls: [{}] },
+      { kind: 'parse-retry', status: 'invalid', providerCalls: [{}] },
+    ] } },
+    { condition: 'task-relevant', status: 'not-run' },
+  ] };
+  const text = formatPilotReport(report);
+  assert.ok(text.includes('| task-only | 0/2 | 1 | 1/1 | 1 | 4 |'));
+  assert.ok(text.includes('| task-relevant | 0/1 | 0 | 0/0 | 0 | unrecorded |'));
+});
+
 test('does not count skipped checks or missing durations as measured', () => {
   const text = formatPilotReport({ runs: [{ condition: 'vectalon', status: 'passed', identityMatched: true,
     checks: { typecheck: { ok: true, skipped: true }, tests: { ok: true } },

@@ -12,7 +12,7 @@ const { values: args } = require('node:util').parseArgs({ options: {
   'include-generated': { type: 'boolean' }, model: { type: 'string' }, 'artifact-sha256': { type: 'string' },
   'include-raw-response': { type: 'boolean' },
   task: { type: 'string' }, edits: { type: 'boolean' }, diagnostic: { type: 'string' }, guided: { type: 'boolean' },
-  'task-relevant': { type: 'boolean' },
+  'task-relevant': { type: 'boolean' }, 'verified-controls': { type: 'boolean' },
 } });
 assert.equal(args.model !== undefined, args['artifact-sha256'] !== undefined, '--model and --artifact-sha256 must be supplied together');
 assert.ok(args['artifact-sha256'] === undefined || /^[a-f0-9]{64}$/.test(args['artifact-sha256']), 'Expected a lowercase SHA-256 artifact hash');
@@ -20,6 +20,7 @@ assert.ok(!args.constrained || args.repair, '--constrained requires --repair for
 assert.ok(!args.edits || (!args.task && !args.repair && !args.constrained), '--edits is a first-attempt public development diagnostic only; cannot combine with --task, --repair or --constrained');
 assert.ok(!args.guided || args.diagnostic !== undefined, '--guided requires a generation control');
 assert.ok(!args['task-relevant'] || (args.diagnostic !== undefined && !args.guided), '--task-relevant requires a generation control without --guided');
+assert.ok(!args['verified-controls'] || (args.diagnostic !== undefined && args['task-relevant'] && !args.repair && !args.constrained && !args.edits && !args.task), '--verified-controls requires --diagnostic and --task-relevant without task, repair, constrained or edits');
 if (args.diagnostic !== undefined) {
   assert.ok(controlIds.includes(args.diagnostic), 'Unknown generation control');
   assert.ok(!args.task && !args.edits && !args.repair && !args.constrained, 'Generation controls cannot combine with task, edits, repair or constrained');
@@ -83,8 +84,9 @@ if (task) {
   scenario.expect = { files: [target], behaviors: [task.prompt] };
 }
 const repair = args.repair;
+const verifiedControls = args['verified-controls'];
 const constrained = args.constrained;
-const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair ? 2 : 1, providerCallLimit: 1,
+const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair || verifiedControls ? 2 : 1, providerCallLimit: 1,
   ...(constrained ? { outputFormat: 'files-json' } : {}), ...(args.edits ? { toolEnvelope: true, requiredTool: 'propose_edits', anchorMode: 'top-level-source-blocks' } : {}) };
 if (args.task) assert.deepEqual(settings, freeze.settings, 'Frozen resource settings changed');
 const output = fs.mkdtempSync('/private/tmp/vectalon-cart-pilot-');
@@ -108,11 +110,13 @@ const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pi
   inferenceModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/model/local/inference.js'))),
   acceptanceSha256: hash(acceptance), taskSha256: hash(JSON.stringify(scenario)),
   runtime: { node: process.version, platform: process.platform, arch: process.arch }, settings,
+  ...(verifiedControls ? { verificationMode: 'both conditions: bounded app verifier; compiler-only diagnostics and generic test-failure feedback' } : {}),
   model, expectedArtifactSha256,
   limitations: ['No native build', 'Installed dependencies reused', 'Tokens/cost not measured', 'No human correction-time measurement', ...(args.task ? freeze.limitations : ['Public development tasks; not launch qualification']),
     ...(args.diagnostic ? ['Synthetic controls in one installed app; not held-out RN workflow evidence', 'Conditions change instructions; input-token budgets are unmeasured; not a single-factor causal ablation'] : []),
     ...(args['task-relevant'] ? ['Experimental guidance uses original source and a general React state-queue rule; textual useState-call detection does not qualify aliases or arbitrary state libraries'] : []),
     ...(repair ? ['Repair diagnostic permits twice the generation budget of the first-pass pilot; not an equal-budget comparison'] : []),
+    ...(verifiedControls ? ['Both conditions permit at most two provider calls and 4096 output tokens; actual work and input tokens differ. Earlier single-attempt results are not equal-budget controls.'] : []),
     ...(constrained ? ['Native file-envelope grammar constrains serialization, not file scope or code correctness'] : []),
     ...(args.edits ? ['Scoped edit protocol differs from full-file generation; single existing file, at most eight edits, no repairs', 'Block IDs select unique original top-level TypeScript/JSX spans; repeated selections are rejected and exact application is checked again', 'Block catalogue repeats approved source in context; input-token cost is not measured', 'Source-grounded grammar does not establish code correctness or task improvement'] : [])],
   runs: Array.from({ length: args.task ? freeze.repetitions : 3 }, (_, repetition) => (args['task-relevant'] ? (repetition % 2 ? ['task-relevant', 'task-only'] : ['task-only', 'task-relevant']) : args.guided ? ['vectalon'] : args.diagnostic ? (repetition % 2 ? ['vectalon-edits', 'task-only'] : ['task-only', 'vectalon-edits']) : args.edits ? ['vectalon-edits'] : repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
@@ -249,7 +253,7 @@ async function main() {
               ...(!checks.typecheck.ok ? ['Typecheck failed. Preserve the requested public interface.'] : [])].join('\n') };
       };
       const generate = (args.edits || row.condition === 'vectalon-edits' ? createModelEditGenerate : createModelGenerate)({ modelRouter: router, promptMode: repair ? 'vectalon' : row.condition,
-        ...settings, ...(repair ? { verify: verifier } : {}),
+        ...settings, ...(repair || verifiedControls ? { verify: verifier } : {}),
         ...(args['include-raw-response'] ? { onRawResponse: (content, attempt) => {
           (row.rawResponses ??= []).push({ ...attempt, content }); save();
         } } : {}) });

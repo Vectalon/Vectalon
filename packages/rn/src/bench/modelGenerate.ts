@@ -24,7 +24,7 @@ export interface ModelGenerateOptions {
   modelRouter: ModelRouter
   /** Native-local JSON envelope constraint, not source-code correctness. */
   outputFormat?: 'files-json'
-  /** Task-only isolates inputs; task-relevant adds experimental source guidance. Both disable enrichment and repairs. */
+  /** Both minimal modes disable enrichment; repairs require an explicit verifier and two-attempt cap. */
   promptMode?: 'task-only' | 'vectalon' | 'task-relevant'
   /** Override generation temperature (default 0.2, matching the harness). */
   temperature?: number
@@ -90,7 +90,7 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
   const minimal = promptMode !== 'vectalon'
   const maxAttempts = options.maxAttempts ?? (minimal ? 1 : 3)
   if (!['task-only', 'vectalon', 'task-relevant'].includes(promptMode)) throw new Error('Unknown benchmark promptMode')
-  if (minimal && maxAttempts !== 1) throw new Error(`${promptMode} requires maxAttempts: 1`)
+  if (minimal && maxAttempts !== 1 && !(maxAttempts === 2 && options.verify)) throw new Error(`${promptMode} requires maxAttempts: 1, or 2 with an explicit verifier`)
   if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 3) throw new Error('maxAttempts must be an integer from 1 to 3')
   if (providerCallLimit !== undefined && (!Number.isSafeInteger(providerCallLimit) || providerCallLimit < 1)) throw new Error('providerCallLimit must be a positive safe integer')
 

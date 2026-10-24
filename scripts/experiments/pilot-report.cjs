@@ -36,6 +36,22 @@ function formatPilotReport(report) {
     lines.push(`| ${cell(condition)} | ${rows.length} | ${rows.filter(passed).length} | ${rows.filter(row => !passed(row) && !pending(row)).length} | ${rows.filter(pending).length} | ${countChecks('typecheck')} | ${countChecks('tests')} |`);
   }
   if (!runs.length) lines.push('', 'No runs recorded.');
+  if (report.verificationMode) {
+    lines.push('', '## Initial versus assisted outcomes', '',
+      cell(report.verificationMode), '',
+      'Candidate verification is not selection or native qualification. Missing/invalid initial candidates are not passes. Both lanes have the same call cap; actual calls and input-token work can differ.', '',
+      '| Condition | Initial verified passes/planned | Parse retries | Repair candidates verified/attempted | Selected app-check passes | Observed provider calls |',
+      '|---|---:|---:|---:|---:|---:|');
+    for (const condition of [...new Set(runs.map(row => row.condition))]) {
+      const rows = runs.filter(row => row.condition === condition);
+      const attempts = rows.flatMap(row => row.result?.attempts || []);
+      const repairs = attempts.filter(attempt => attempt.kind === 'repair');
+      const calls = rows.every(row => row.result?.attempts?.length) && attempts.every(attempt => Array.isArray(attempt.providerCalls))
+        ? attempts.reduce((sum, attempt) => sum + attempt.providerCalls.length, 0) : 'unrecorded';
+      const initialPasses = rows.filter(row => row.identityMatched && row.result?.attempts?.[0]?.kind === 'initial' && row.result.attempts[0].verification?.status === 'passed').length;
+      lines.push(`| ${cell(condition)} | ${initialPasses}/${rows.length} | ${attempts.filter(attempt => attempt.kind === 'parse-retry').length} | ${repairs.filter(attempt => attempt.verification?.status === 'passed').length}/${repairs.length} | ${rows.filter(passed).length} | ${calls} |`);
+    }
+  }
   lines.push('', '## Repetitions and attempts', '',
     'Attempt entries show kind: parsing / supplied verification. Unrecorded verification is not success. Attempt time includes in-loop verification but excludes final app checks; it is not total workflow latency.', '',
     '| Condition | Repeat | Outcome | Identity | Typecheck | Tests | Attempts | Attempt ms | Run ms | Guardrails % | Adherence % | Native | Edit application |',

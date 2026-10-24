@@ -89,6 +89,32 @@ describe('model attempt evidence', () => {
     expect(run.attempts?.[0].verification?.status).toBe('failed')
   })
 
+  it.each(['task-only', 'task-relevant'] as const)('allows explicit two-attempt verified %s diagnostics without enrichment', async promptMode => {
+    const verify = jest.fn().mockResolvedValueOnce({ passed: false, feedback: 'TS1005: missing source delimiter' })
+      .mockResolvedValueOnce({ passed: true, feedback: '' })
+    const { seam, generate } = generator([answer(), answer()], { promptMode, maxAttempts: 2, providerCallLimit: 1, verify })
+    const run = await runScenario(scenario, { generate: seam })
+    expect(generate).toHaveBeenCalledTimes(2)
+    expect(run.attempts?.map(a => [a.kind, a.verification?.status, a.selected])).toEqual([
+      ['initial', 'failed', false], ['repair', 'passed', true],
+    ])
+    expect(generate.mock.calls[1][0].prompt).toContain('TS1005: missing source delimiter')
+    expect(generate.mock.calls.map(([request]) => [request.projectContext, request.providerCallLimit, request.temperature]))
+      .toEqual([['disabled', 1, 0.2], ['disabled', 1, 0]])
+    expect(JSON.stringify(run)).not.toContain('missing source delimiter')
+    expect(() => generator([], { promptMode, maxAttempts: 3, verify })).toThrow(`${promptMode} requires`)
+  })
+
+  it.each(['task-only', 'task-relevant'] as const)('stops verified %s diagnostics on initial success', async promptMode => {
+    const { seam, generate } = generator([answer(), answer()], {
+      promptMode, maxAttempts: 2, verify: async () => ({ passed: true, feedback: '' }),
+    })
+    const run = await runScenario(scenario, { generate: seam })
+    expect(generate).toHaveBeenCalledTimes(1)
+    expect(run.attempts).toHaveLength(1)
+    expect(run.attempts?.[0]).toMatchObject({ kind: 'initial', selected: true, verification: { status: 'passed' } })
+  })
+
   it('does not let a passing verifier waive static regressions', async () => {
     const verify = jest.fn().mockResolvedValueOnce({ passed: false, feedback: 'wrong value' })
       .mockResolvedValueOnce({ passed: true, feedback: '' })
