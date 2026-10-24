@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const assert = require('assert/strict');
 const { spawnSync } = require('child_process');
 const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs');
-const { freeze, taskDefinition, reviewImportsAllowed } = require('./one-app-tasks.cjs');
+const { taskDefinition, reviewImportsAllowed } = require('./one-app-tasks.cjs');
 const { ids: controlIds, controlTask } = require('./generation-controls.cjs');
 const { createSamplingRouter } = require('./sampling-control.cjs');
 const { values: args } = require('node:util').parseArgs({ options: {
@@ -15,7 +15,12 @@ const { values: args } = require('node:util').parseArgs({ options: {
   task: { type: 'string' }, edits: { type: 'boolean' }, diagnostic: { type: 'string' }, guided: { type: 'boolean' },
   'task-relevant': { type: 'boolean' }, 'verified-controls': { type: 'boolean' },
   'sampling-control': { type: 'boolean' },
+  'evaluation-lane': { type: 'string' },
 } });
+assert.ok(args['evaluation-lane'] === undefined || ['3b', '7b'].includes(args['evaluation-lane']), 'Unknown evaluation lane');
+assert.ok(args['evaluation-lane'] === undefined || args.task !== undefined, '--evaluation-lane requires --task');
+const freezeFile = args['evaluation-lane'] === '7b' ? 'one-app-evaluation-7b.json' : 'one-app-evaluation.json';
+const freeze = require(`./${freezeFile}`);
 assert.equal(args.model !== undefined, args['artifact-sha256'] !== undefined, '--model and --artifact-sha256 must be supplied together');
 assert.ok(args['artifact-sha256'] === undefined || /^[a-f0-9]{64}$/.test(args['artifact-sha256']), 'Expected a lowercase SHA-256 artifact hash');
 assert.ok(!args.constrained || args.repair, '--constrained requires --repair for this diagnostic');
@@ -47,6 +52,9 @@ const { createModelEditGenerate } = args.edits || args.diagnostic ? load('bench/
 const { runScenario } = load('bench/runner.js');
 const { ModelRouter } = load('model/ModelRouter.js');
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
+for (const [file, expected] of Object.entries(freeze.inputs ?? {})) {
+  if (args.task) assert.equal(hash(fs.readFileSync(path.join(__dirname, file))), expected, `Frozen evaluation input changed: ${file}`);
+}
 const appPath = 'apps/website/demo/login-app';
 const app = path.join(repo, appPath);
 const revision = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: repo, encoding: 'utf8' }).stdout.trim();
@@ -107,7 +115,8 @@ const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pi
   ...(task ? { task: { id: task.id, kind: task.kind } } : {}),
   ...(args.task ? {
     installedDependencyVersions,
-    freezeSha256: hash(fs.readFileSync(path.join(__dirname, 'one-app-evaluation.json'))),
+    evaluationLane: args['evaluation-lane'] ?? '3b',
+    freezeSha256: hash(fs.readFileSync(path.join(__dirname, freezeFile))),
     taskDefinitionsSha256: hash(fs.readFileSync(path.join(__dirname, 'one-app-tasks.cjs'))),
     dependencyLockSha256: hash(fs.readFileSync(path.join(app, 'package-lock.json'))),
     nativeVerification: 'not-run' } : {}),
@@ -137,7 +146,7 @@ const save = () => {
   }));
   fs.writeFileSync(path.join(output, 'report.md'), formatPilotReport(report));
 };
-async function verify(files, deadline = Infinity, acceptanceSource = acceptance) {
+async function verify(files, deadline = Infinity, acceptanceSource = acceptance, probeSource) {
   // Reject the whole candidate before writing or executing any generated file.
   if (files.length > 1 || files.some(file => file.path !== target) || (task?.kind === 'review' &&
     (files.length !== 1 || !reviewImportsAllowed(files[0].content, require(path.join(app, 'node_modules/typescript')))))) {
@@ -149,6 +158,7 @@ async function verify(files, deadline = Infinity, acceptanceSource = acceptance)
     fs.symlinkSync(path.join(app, 'node_modules'), path.join(root, 'node_modules'));
     if (args.diagnostic) fs.writeFileSync(path.join(root, target), task.original);
     if (acceptanceSource) fs.writeFileSync(path.join(root, 'src/__tests__/cartPilot.tsx'), acceptanceSource);
+    if (probeSource) fs.writeFileSync(path.join(root, 'App.tsx'), probeSource);
     for (const file of files) {
       assert.equal(file.path, target, 'Out-of-scope generated file');
       fs.writeFileSync(path.join(root, file.path), file.content);
@@ -222,6 +232,19 @@ async function main() {
   save();
   assert.equal(report.positiveControl.typecheck.ok, true, 'Verifier control does not compile');
   assert.equal(report.positiveControl.tests.ok, true, 'Verifier control does not satisfy acceptance');
+  if (args.task === 'current-session') {
+    const probe = fs.readFileSync(path.join(__dirname, 'current-session.native.tsx'), 'utf8');
+    const probeAcceptance = fs.readFileSync(path.join(__dirname, 'current-session.probe.acceptance.tsx'), 'utf8');
+    report.nativeProbePreflight = { method: 'Disposable probe UI and real hook under Jest/native shims; NOT native build/device evidence',
+      probeSha256: hash(probe), acceptanceSha256: hash(probeAcceptance),
+      negative: await verify([], Infinity, probeAcceptance, probe),
+      positive: await verify([{ path: target, content: control }], Infinity, probeAcceptance, probe) };
+    save();
+    assert.equal(report.nativeProbePreflight.negative.typecheck.ok, true);
+    assert.equal(report.nativeProbePreflight.negative.tests.ok, false);
+    assert.equal(report.nativeProbePreflight.positive.typecheck.ok, true);
+    assert.equal(report.nativeProbePreflight.positive.tests.ok, true);
+  }
   if (task?.priorAcceptance) {
     report.priorAcceptanceControl = await verify([], Infinity, task.priorAcceptance);
     save();

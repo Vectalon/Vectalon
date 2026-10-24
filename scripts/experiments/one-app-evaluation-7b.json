@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+  "model": "qwen2.5-coder-7b",
+  "artifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+  "tasks": ["stock-filter", "current-session", "order-copy-review"],
+  "repetitions": 3,
+  "settings": { "temperature": 0.2, "maxTokens": 2048, "maxAttempts": 1, "providerCallLimit": 1 },
+  "conditions": ["task-only", "vectalon"],
+  "timeoutMs": 180000,
+  "inputs": {
+    "one-app-tasks.cjs": "91ea35672bf7d810c54357f4d548d2a68b987b3827e5d4e3ba06165694aa0a7e",
+    "stock-filter.acceptance.tsx": "d2985db43bf346de1040ac73aa4777ec2f9e26f0f9dc0f96ca0c70f81270ee06",
+    "current-session.acceptance.tsx": "3443838dcade255e2181d7932bac02699bad450e5f4abe1f173500c6abf6fef8",
+    "current-session.native.tsx": "167657abd64538d8c1c46dbdd248da99e0a38a51a3ea335289b7041d250dc502",
+    "current-session.probe.acceptance.tsx": "2689847b8e78cd608e16519da42bc067b5e769d81d2572a74be4fb56fd5c28c5"
+  },
+  "limitations": [
+    "Separate 7B replication lane reuses previously evaluated public 3B tasks; not fresh held-out launch evidence",
+    "Three tasks in one installed app; insufficient for reliable improvement or launch qualification",
+    "Seeds and input-token accounting unavailable in this inference path",
+    "Review means an executable regression test, not qualification of the review CLI",
+    "Native probe preflight uses Jest with native shims; native build/device verification remains separate"
+  ]
+}
