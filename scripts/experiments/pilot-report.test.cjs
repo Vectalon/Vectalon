@@ -28,6 +28,21 @@ test('retains the observed negative comparison without claiming improvement', ()
   assert.ok(text.includes('not model qualification'));
 });
 
+test('retains all six counter stress failures and distinguishes skipped checks', () => {
+  const report = require('../../docs/release-roadmap/evidence/counter-stress-comparison-2026-10-24.json');
+  assert.equal(report.runs.length, 6);
+  assert.ok(report.runs.every(row => row.status === 'failed' && row.identityMatched &&
+    row.result.attempts.length === 1 && row.result.attempts[0].kind === 'initial'));
+  const text = formatPilotReport(report);
+  assert.ok(text.includes('| task-only | 3 | 0 | 3 | 0 | 3/3 | 0/3 |'));
+  assert.ok(text.includes('| task-relevant | 3 | 0 | 3 | 0 | 0/2 | 0/2 |'));
+  assert.ok(text.includes('skipped | skipped | initial: invalid'));
+  const serialized = serializePilotReport(report);
+  for (const key of ['generatedArtifacts', 'rawResponses', 'stdout', 'stderr']) {
+    assert.ok(!serialized.includes(`"${key}"`));
+  }
+});
+
 test('does not turn missing checks, identity mismatch or partial runs into passes', () => {
   const text = formatPilotReport({ runs: [
     { condition: 'vectalon', repetition: 1, status: 'passed', identityMatched: false,
