@@ -66,6 +66,8 @@ export function createModelEditGenerate(options: Pick<ModelGenerateOptions, 'mod
       if (response.model) record.model = { id: response.model.id, source: response.model.source }
       if (response.artifact) record.artifact = { sha256: response.artifact.sha256,
         sizeBytes: response.artifact.sizeBytes, source: response.artifact.source }
+      if (response.localContext) record.localContext = { inputTokens: response.localContext.inputTokens, maxOutputTokens: response.localContext.maxOutputTokens,
+        contextSize: response.localContext.contextSize, batchSize: response.localContext.batchSize }
       record.stopReason = response.stopReason
       record.providerCalls = response.providerCalls?.map(({ provider, status, durationMs }) => ({ provider, status, durationMs }))
       const content = response.content || ''

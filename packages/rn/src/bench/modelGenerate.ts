@@ -178,6 +178,8 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
         const response = await modelRouter.generate(input)
         record.provider = response?.provider
         record.stopReason = response?.stopReason
+        if (response.localContext) record.localContext = { inputTokens: response.localContext.inputTokens, maxOutputTokens: response.localContext.maxOutputTokens,
+          contextSize: response.localContext.contextSize, batchSize: response.localContext.batchSize }
         record.outputFormat = response?.outputFormat
         record.providerCalls = response?.providerCalls?.map(({ provider, status, durationMs }) => ({ provider, status, durationMs }))
         const content = response?.content || ''

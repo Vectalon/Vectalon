@@ -15,7 +15,7 @@ function createSamplingRouter(runInference, model, disableRepeatPenalty) {
       temperature: request.temperature, maxTokens: request.maxTokens,
       ...(disableRepeatPenalty ? { repeatPenalty: false } : {}),
     });
-    return { content: result.content, stopReason: result.stopReason, artifact: result.artifact,
+    return { content: result.content, stopReason: result.stopReason, artifact: result.artifact, localContext: result.localContext,
       provider: 'local', model: { id: result.modelId, source: 'configured' },
       providerCalls: [{ provider: 'local', status: 'response', durationMs: Date.now() - started }] };
   } };

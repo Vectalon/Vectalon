@@ -223,6 +223,8 @@ Run `npx --package @vectalon-dev/rn vectalon` with no arguments (Node `>=20.12`,
 
 ## Model Providers
 
+Model-file size is not runtime RAM usage. The `fast` / `balanced` / `quality` RAM bands are recommendations, not workflow qualification. Source-build native safeguards (pending a consolidated package release) size the full formatted prompt plus output budget and headroom, cap context at 16,384 tokens with batch size 128, refuse context shifting and concurrent native calls, and conservatively require model-file bytes plus 2 GiB free RAM before a first load. Cached-model context allocation rechecks the 2 GiB free reserve. Free-RAM checks can refuse a reclaimable-memory host and are not peak-memory guarantees. Oversized requests are rejected, not silently truncated; close other apps, reduce approved input/output, or explicitly choose a smaller model.
+
 | Provider | Type | Details |
 |----------|------|---------|
 | **local** | GGUF (node-llama-cpp) | Qwen2.5-Coder presets in three auto-selected tiers — `fast` (1.5B, 8 GB RAM), `balanced` (3B, 16 GB), `quality` (7B, 32 GB). Fully offline, zero source leaves the machine. Skills inlined into system prompt. |

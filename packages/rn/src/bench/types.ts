@@ -117,6 +117,7 @@ export interface BenchScenarioRun {
 }
 
 export interface BenchGenerationAttempt {
+  localContext?: ModelResponse['localContext']
   outputFormat?: ModelResponse['outputFormat']
   stopReason?: ModelResponse['stopReason']
   index: number

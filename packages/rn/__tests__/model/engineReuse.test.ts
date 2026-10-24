@@ -8,6 +8,7 @@
 jest.mock('../../src/utils/dynamicImport', () => ({
   dynamicImport: jest.fn(),
 }))
+jest.mock('os', () => ({ ...jest.requireActual('os'), freemem: jest.fn(() => 16 * 1024 ** 3) }))
 
 import { dynamicImport } from '../../src/utils/dynamicImport'
 import { runInference, _resetSharedEngineForTests } from '../../src/model/local/inference'
@@ -16,10 +17,13 @@ import { useTempConfig, cleanup } from '../helpers/tmp'
 import { writeFileSync } from 'fs'
 import { join } from 'path'
 import { createHash } from 'crypto'
+import { freemem } from 'os'
 
 const mockDynamicImport = dynamicImport as jest.Mock
 
 interface FakeNlc {
+  resolveChatWrapper: jest.Mock
+  appendUserMessageToChatHistory: jest.Mock
   getLlama: jest.Mock
   LlamaLogLevel: Record<string, number>
   LlamaChatSession: new (opts: unknown) => {
@@ -27,13 +31,15 @@ interface FakeNlc {
   }
 }
 
-function buildFakeNlc(stopReason = 'eogToken'): FakeNlc {
+function buildFakeNlc(stopReason = 'eogToken', inputTokens = 32): FakeNlc {
   const getLlama = jest.fn(async () => {
     const loadModel = jest.fn(async () => {
-      const createContext = jest.fn(async () => ({
+      const createContext = jest.fn(async (options?: { contextSize: number }) => ({
+        contextSize: options?.contextSize ?? 32768,
+        dispose: jest.fn(),
         getSequence: () => ({ tokenize: jest.fn() }),
       }))
-      return { createContext }
+      return { createContext, trainContextSize: 32768 }
     })
     return { loadModel }
   })
@@ -47,6 +53,11 @@ function buildFakeNlc(stopReason = 'eogToken'): FakeNlc {
     }
   }
   return {
+    resolveChatWrapper: jest.fn(() => ({ settings: {},
+      generateInitialChatHistory: ({ systemPrompt }: { systemPrompt?: string }) => systemPrompt ? [{ type: 'system', text: systemPrompt }] : [],
+      generateContextState: jest.fn(() => ({ contextText: { tokenize: () => new Array(inputTokens).fill(0) } })),
+    })),
+    appendUserMessageToChatHistory: jest.fn((history: unknown[], text: string) => [...history, { type: 'user', text }]),
     getLlama,
     LlamaLogLevel: { fatal: 0, error: 1, warn: 2, info: 3, log: 4, debug: 5 },
     LlamaChatSession: FakeSession as unknown as FakeNlc['LlamaChatSession'],
@@ -65,6 +76,7 @@ describe('shared inference engine', () => {
   let configDir: string
   let modelPath: string
   beforeEach(() => {
+    jest.mocked(freemem).mockReturnValue(16 * 1024 ** 3)
     configDir = useTempConfig()
     modelPath = join(configDir, 'fake-qwen.gguf')
     writeFileSync(modelPath, 'test weights')
@@ -112,6 +124,128 @@ describe('shared inference engine', () => {
     expect(fakeNlc.getLlama).toHaveBeenCalledTimes(1)
     const llama = await llamaOf(fakeNlc)
     expect(llama.loadModel).toHaveBeenCalledTimes(1)
+  })
+
+  it('allocates only the formatted input plus output reserve and keeps original chat messages', async () => {
+    const fake = buildFakeNlc()
+    mockDynamicImport.mockResolvedValue(fake)
+    await runInference('qwen-test', { systemPrompt: 'keep all instructions', prompt: 'keep all source', maxTokens: 2048 })
+    const loaded = await (await llamaOf(fake)).loadModel.mock.results[0].value
+    expect(loaded.createContext).toHaveBeenCalledWith({ contextSize: 2560, batchSize: 128 })
+    const wrapper = fake.resolveChatWrapper.mock.results[0].value
+    expect(wrapper.generateContextState.mock.calls[0][0].chatHistory).toEqual([
+      { type: 'system', text: 'keep all instructions' }, { type: 'user', text: 'keep all source' }, { type: 'model', response: [] },
+    ])
+  })
+
+  it('refuses oversized input rather than allocating a large context or dropping source', async () => {
+    const fake = buildFakeNlc('eogToken', 15000)
+    mockDynamicImport.mockResolvedValue(fake)
+    await expect(runInference('qwen-test', { prompt: 'oversize' })).rejects.toThrow('context budget')
+    const loaded = await (await llamaOf(fake)).loadModel.mock.results[0].value
+    expect(loaded.createContext).not.toHaveBeenCalled()
+  })
+
+  it('refuses low free RAM before native model loading', async () => {
+    const fake = buildFakeNlc()
+    mockDynamicImport.mockResolvedValue(fake)
+    jest.mocked(freemem).mockReturnValue(1024 ** 3)
+    await expect(runInference('qwen-test', { prompt: 'small' })).rejects.toThrow('free RAM')
+    expect(fake.getLlama).not.toHaveBeenCalled()
+  })
+
+  it('rechecks free RAM after loading before allocating context', async () => {
+    const fake = buildFakeNlc()
+    mockDynamicImport.mockResolvedValue(fake)
+    jest.mocked(freemem).mockReturnValueOnce(16 * 1024 ** 3).mockReturnValueOnce(1024 ** 3)
+    await expect(runInference('qwen-test', { prompt: 'small' })).rejects.toThrow('context reserve')
+    const loaded = await (await llamaOf(fake)).loadModel.mock.results[0].value
+    expect(loaded.createContext).not.toHaveBeenCalled()
+  })
+
+  it('rejects a smaller-than-requested native allocation and releases it', async () => {
+    const fake = buildFakeNlc()
+    const getEngine = fake.getLlama
+    const dispose = jest.fn()
+    fake.getLlama = jest.fn(async () => {
+      const engine = await getEngine()
+      const load = engine.loadModel
+      engine.loadModel = jest.fn(async () => {
+        const model = await load()
+        model.createContext.mockResolvedValue({ contextSize: 1024, dispose, getSequence: jest.fn() })
+        return model
+      })
+      return engine
+    })
+    mockDynamicImport.mockResolvedValue(fake)
+    await expect(runInference('qwen-test', { prompt: 'small' })).rejects.toThrow('does not satisfy')
+    expect(dispose).toHaveBeenCalledTimes(1)
+  })
+
+  it('refuses a model chat wrapper that would discard system instructions', async () => {
+    const fake = buildFakeNlc()
+    fake.resolveChatWrapper.mockReturnValue({ settings: { supportsSystemMessages: false } })
+    mockDynamicImport.mockResolvedValue(fake)
+    await expect(runInference('qwen-test', { systemPrompt: 'must preserve', prompt: 'small' })).rejects.toThrow('cannot preserve')
+  })
+
+  it('does not load an already-canceled request and forwards cancellation to native prompt evaluation', async () => {
+    const fake = buildFakeNlc()
+    mockDynamicImport.mockResolvedValue(fake)
+    const canceled = new AbortController()
+    canceled.abort(new Error('canceled'))
+    await expect(runInference('qwen-test', { prompt: 'small', signal: canceled.signal })).rejects.toThrow('canceled')
+    expect(fake.getLlama).not.toHaveBeenCalled()
+    const controller = new AbortController()
+    const prompt = jest.fn(async (_text: string, _options?: Record<string, unknown>) => ({ responseText: 'code', stopReason: 'eogToken' }))
+    fake.LlamaChatSession = class { promptWithMeta = prompt }
+    await runInference('qwen-test', { prompt: 'small', signal: controller.signal })
+    expect(prompt.mock.calls[0][1]?.signal).toBe(controller.signal)
+  })
+
+  it('supports existing 8192-output callers when the complete formatted input fits', async () => {
+    mockDynamicImport.mockResolvedValue(buildFakeNlc())
+    const result = await runInference('qwen-test', { prompt: 'small', maxTokens: 8192 })
+    expect(result.localContext).toEqual({ inputTokens: 32, maxOutputTokens: 8192, contextSize: 8704, batchSize: 128 })
+  })
+
+  it.each([0, -1, NaN, Infinity, 1.5, 16129])('refuses invalid output budgets before loading (%s)', async maxTokens => {
+    const fake = buildFakeNlc()
+    mockDynamicImport.mockResolvedValue(fake)
+    await expect(runInference('qwen-test', { prompt: 'small', maxTokens })).rejects.toThrow('output token budget')
+    expect(fake.getLlama).not.toHaveBeenCalled()
+  })
+
+  it('releases allocated context if session construction fails, allowing a later retry', async () => {
+    const fake = buildFakeNlc()
+    const working = fake.LlamaChatSession
+    fake.LlamaChatSession = class { constructor() { throw new Error('session failed') } promptWithMeta = jest.fn() }
+    mockDynamicImport.mockResolvedValue(fake)
+    await expect(runInference('qwen-test', { prompt: 'small' })).rejects.toThrow('session failed')
+    const loaded = await (await llamaOf(fake)).loadModel.mock.results[0].value
+    expect((await loaded.createContext.mock.results[0].value).dispose).toHaveBeenCalledTimes(1)
+    fake.LlamaChatSession = working
+    await expect(runInference('qwen-test', { prompt: 'retry' })).resolves.toHaveProperty('content')
+  })
+
+  it('refuses concurrent native allocations and context shifting', async () => {
+    const fake = buildFakeNlc()
+    let release!: () => void
+    let entered!: () => void
+    const ready = new Promise<void>(resolve => { entered = resolve })
+    const wait = new Promise<void>(resolve => { release = resolve })
+    let shift!: () => never
+    fake.LlamaChatSession = class {
+      constructor(options: unknown) { shift = (options as { contextShift: { strategy: () => never } }).contextShift.strategy }
+      promptWithMeta = async () => { entered(); await wait; return { responseText: 'code', stopReason: 'eogToken' } }
+    }
+    mockDynamicImport.mockResolvedValue(fake)
+    const first = runInference('qwen-test', { prompt: 'first' })
+    await ready
+    try {
+      await expect(runInference('qwen-test', { prompt: 'second' })).rejects.toThrow('already active')
+      expect(() => shift()).toThrow('Context shift refused')
+    } finally { release(); await first }
   })
 
   it('forwards onTextChunk into the session prompt options', async () => {

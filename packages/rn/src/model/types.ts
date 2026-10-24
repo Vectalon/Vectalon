@@ -74,6 +74,8 @@ export interface ModelProviderCall {
 
 export interface ModelResponse {
   content: string
+  /** Native-local formatted input/allocation observations; not total token usage or peak RAM. */
+  localContext?: { inputTokens: number; maxOutputTokens: number; contextSize: number; batchSize: number }
   /** Present only when native generation used the required tool's argument schema. */
   requiredTool?: string
   /** Present only when the serving provider applied the requested grammar. */

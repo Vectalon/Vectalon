@@ -1,5 +1,7 @@
 import type { ModelPreset } from './presets'
 import type { ModelResponse } from '../types'
+import { freemem } from 'os'
+import { statSync } from 'fs'
 import { dynamicImport } from '../../utils/dynamicImport'
 import { reportError } from '../../utils/safe'
 import { getDownloadedModel } from './ModelStore'
@@ -14,6 +16,8 @@ export interface InferenceOptions {
   maxTokens?: number
   /** Diagnostic-only opt-out; omitted preserves existing native sampling. */
   repeatPenalty?: false
+  /** Optional native cancellation, including prompt evaluation. */
+  signal?: AbortSignal
   /**
    * JSON Schema for constrained (grammar) decoding. When present, a
    * LlamaJsonSchemaGrammar is built from it so the model can only emit JSON
@@ -34,6 +38,7 @@ export interface InferenceResult {
   modelId: string
   artifact?: LocalModelArtifact
   tokensUsed?: number
+  localContext?: ModelResponse['localContext']
 }
 
 /**
@@ -221,6 +226,7 @@ export function _resetStderrNoiseFilterForTests(): void {
 export function _resetSharedEngineForTests(): void {
   sharedLlamaPromise = null
   sharedModels.clear()
+  inferenceActive = false
 }
 
 /**
@@ -292,6 +298,7 @@ type SharedContext = Awaited<ReturnType<SharedModel['createContext']>>
 type LlamaContextSequence = ReturnType<SharedContext['getSequence']>
 
 let sharedLlamaPromise: Promise<SharedLlama> | null = null
+let inferenceActive = false
 
 async function getSharedLlama(): Promise<SharedLlama> {
   if (!sharedLlamaPromise) {
@@ -358,8 +365,17 @@ export async function runInference(modelId: string, options: InferenceOptions): 
   if (!model) {
     throw new Error(`Model ${modelId} is not downloaded. Run 'vectalon pull' first.`)
   }
+  const maxTokens = options.maxTokens ?? 2048
+  if (!Number.isSafeInteger(maxTokens) || maxTokens < 1 || maxTokens > 16128) throw new Error('Invalid local output token budget')
+  if (inferenceActive) throw new Error('Native inference already active; retry after it completes')
+  inferenceActive = true
 
   try {
+    options.signal?.throwIfAborted()
+    // shortcut: conservative free-RAM gate, not a peak-memory predictor; calibrate per hardware before raising limits.
+    const reserveBytes = 2 * 1024 ** 3
+    const loadBytes = sharedModels.has(model.filePath) ? 0 : statSync(model.filePath).size
+    if (freemem() < loadBytes + reserveBytes) throw new Error('Insufficient free RAM for local model and reserve; close other apps or choose a smaller model')
     const nlc = await dynamicImport<typeof import('node-llama-cpp')>('node-llama-cpp')
     // Suppress the known-harmless tokenizer warning for the ENTIRE inference:
     // it can fire at getLlama/loadModel time OR lazily at the first prompt when
@@ -370,23 +386,33 @@ export async function runInference(modelId: string, options: InferenceOptions): 
       const loaded = await getSharedModel(llama, model.filePath)
       if (await modelFileStamp(model.filePath) !== loaded.stamp) throw new Error('Loaded model artifact changed; restart inference')
       const llamaModel = loaded.model
-      const context = await llamaModel.createContext()
-      const session = new nlc.LlamaChatSession(
-        createChatSessionOptions(context.getSequence() as LlamaContextSequence, options.systemPrompt)
-      )
-
-      // Constrained decoding: force the model to emit JSON matching the schema
-      // (tool-call envelopes). LlamaJsonSchemaGrammar needs the llama instance;
-      // the generic class defeats Parameters<>, so cast the constructor.
-      type LlamaGrammarInstance = InstanceType<typeof nlc.LlamaGrammar>
-      type GrammarCtor = new (llama: unknown, schema: Record<string, unknown>) => LlamaGrammarInstance
-      const Grammar = nlc.LlamaJsonSchemaGrammar as unknown as GrammarCtor
-      const grammar = options.grammarSchema ? new Grammar(llama, options.grammarSchema) : undefined
-
+      const chatWrapper = nlc.resolveChatWrapper(llamaModel)
+      if (options.systemPrompt && chatWrapper.settings.supportsSystemMessages === false) throw new Error('Local chat wrapper cannot preserve system instructions')
+      const history = nlc.appendUserMessageToChatHistory(chatWrapper.generateInitialChatHistory({ systemPrompt: options.systemPrompt }), options.prompt)
+      history.push({ type: 'model', response: [] })
+      const inputTokens = chatWrapper.generateContextState({ chatHistory: history }).contextText.tokenize(llamaModel.tokenizer).length
+      const requiredTokens = inputTokens + maxTokens + 256
+      // shortcut: 16384-token ceiling; expand only after host-memory calibration.
+      const contextSize = Math.max(2048, Math.ceil(requiredTokens / 256) * 256)
+      if (contextSize > Math.min(16384, llamaModel.trainContextSize)) throw new Error('Local context budget exceeded; reduce approved input or output budget; no context was dropped')
+      if (freemem() < reserveBytes) throw new Error('Insufficient free RAM for local context reserve')
+      options.signal?.throwIfAborted()
+      const context = await llamaModel.createContext({ contextSize, batchSize: 128 })
+      let session: InstanceType<LlamaModule['LlamaChatSession']> | undefined
       try {
+        if (!Number.isSafeInteger(context.contextSize) || context.contextSize < requiredTokens || context.contextSize > 16384) throw new Error('Native context allocation does not satisfy the bounded request')
+        session = new nlc.LlamaChatSession({
+          ...createChatSessionOptions(context.getSequence() as LlamaContextSequence, options.systemPrompt), chatWrapper,
+          contextShift: { size: 1, strategy: () => { throw new Error('Context shift refused; full approved input must remain visible') } },
+        })
+        type LlamaGrammarInstance = InstanceType<typeof nlc.LlamaGrammar>
+        type GrammarCtor = new (llama: unknown, schema: Record<string, unknown>) => LlamaGrammarInstance
+        const Grammar = nlc.LlamaJsonSchemaGrammar as unknown as GrammarCtor
+        const grammar = options.grammarSchema ? new Grammar(llama, options.grammarSchema) : undefined
         const response = await session.promptWithMeta(options.prompt, {
           temperature: options.temperature ?? 0.2,
-          maxTokens: options.maxTokens ?? 2048,
+          maxTokens,
+          ...(options.signal ? { signal: options.signal } : {}),
           // Anti-repetition sampling: Qwen2.5-Coder's known failure mode on long
           // outputs (e.g. multi-file benchmark replies) is a broken-record loop
           // that echoes recent fixture text until maxTokens — the result never
@@ -411,6 +437,7 @@ export async function runInference(modelId: string, options: InferenceOptions): 
           stopReason: response.stopReason,
           modelId,
           artifact: { ...loaded.artifact },
+          localContext: { inputTokens, maxOutputTokens: maxTokens, contextSize: context.contextSize, batchSize: 128 },
         }
       } finally {
         // Per-inference VRAM hygiene: the shared engine memoizes the llama +
@@ -423,7 +450,7 @@ export async function runInference(modelId: string, options: InferenceOptions): 
         // one starts. Both are no-ops if already disposed; a failed prompt
         // still releases the context on the way out.
         try {
-          session.dispose({ disposeSequence: true })
+          session?.dispose({ disposeSequence: true })
         } catch {
           // Disposal must never mask the inference result/error.
         }
@@ -437,6 +464,8 @@ export async function runInference(modelId: string, options: InferenceOptions): 
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
     throw new Error(`Inference failed for model ${modelId}: ${message}`)
+  } finally {
+    inferenceActive = false
   }
 }
 

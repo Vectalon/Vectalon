@@ -21,6 +21,15 @@ function generator(responses: Array<string | Error>, options: Partial<ModelGener
 }
 
 describe('model attempt evidence', () => {
+  it('retains only numeric native context observations, not arbitrary provider context fields', async () => {
+    const { seam, generate } = generator([], { maxAttempts: 1 })
+    generate.mockResolvedValue({ content: answer(), provider: 'local', localContext: {
+      inputTokens: 100, maxOutputTokens: 2048, contextSize: 2560, batchSize: 128, source: 'PRIVATE_CONTEXT',
+    } })
+    const run = await runScenario(scenario, { generate: seam })
+    expect(run.attempts?.[0].localContext).toEqual({ inputTokens: 100, maxOutputTokens: 2048, contextSize: 2560, batchSize: 128 })
+    expect(JSON.stringify(run)).not.toContain('PRIVATE_CONTEXT')
+  })
   it('distinguishes constrained requests in evidence fingerprints', async () => {
     const generate = jest.fn().mockResolvedValue({ content: answer(), provider: 'local', outputFormat: 'files-json' })
     const modelRouter = { generate } as unknown as ModelGenerateOptions['modelRouter']

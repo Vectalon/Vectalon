@@ -192,6 +192,12 @@ export default function DocsPage() {
           </div>
 
           {/* COMMANDS — free */}
+          <p className="mt-3 text-sm leading-relaxed text-slate-400">
+            Local model files need additional runtime memory. Recommended RAM bands are 8 GB
+            (fast), 16 GB (balanced), and 32 GB (quality); availability is not workflow
+            qualification. A larger model on a smaller host remains experimental. Close other
+            apps or explicitly choose a smaller model when memory is insufficient.
+          </p>
           <ManH tone="accent">commands · free — genuinely useful</ManH>
           <div className="mt-3 divide-y divide-ink-700/50 border-t border-ink-700/50">
             {FREE.map(([cmd, desc]) => (
