@@ -12,6 +12,8 @@ export interface InferenceOptions {
   prompt: string
   temperature?: number
   maxTokens?: number
+  /** Diagnostic-only opt-out; omitted preserves existing native sampling. */
+  repeatPenalty?: false
   /**
    * JSON Schema for constrained (grammar) decoding. When present, a
    * LlamaJsonSchemaGrammar is built from it so the model can only emit JSON
@@ -393,7 +395,7 @@ export async function runInference(modelId: string, options: InferenceOptions): 
           // penalty suppresses verbatim loops (node-llama-cpp's default repeat
           // window of 64 tokens is far too short to catch whole-block echoes).
           minP: 0.05,
-          repeatPenalty: {
+          repeatPenalty: options.repeatPenalty === false ? false : {
             penalty: 1.1,
             lastTokens: 512,
             frequencyPenalty: 0.3,

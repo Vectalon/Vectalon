@@ -127,6 +127,16 @@ describe('shared inference engine', () => {
     expect(chunks).toEqual(['streamed part ', 'two'])
   })
 
+  it.each([undefined, false] as const)('changes only repetition penalties for an explicit diagnostic override (%s)', async repeatPenalty => {
+    const fakeNlc = buildFakeNlc()
+    const prompt = jest.fn(async (_text: string, _options?: Record<string, unknown>) => ({ responseText: 'code', stopReason: 'eogToken' }))
+    fakeNlc.LlamaChatSession = class { promptWithMeta = prompt }
+    mockDynamicImport.mockResolvedValue(fakeNlc)
+    await runInference('qwen-test', { prompt: 'write code', repeatPenalty })
+    expect(prompt.mock.calls[0][1]).toMatchObject({ temperature: 0.2, maxTokens: 2048, minP: 0.05,
+      repeatPenalty: repeatPenalty === false ? false : { penalty: 1.1, lastTokens: 512, frequencyPenalty: 0.3, presencePenalty: 0.2 } })
+  })
+
   it('rejects a replaced file instead of attaching its hash to the cached model', async () => {
     mockDynamicImport.mockResolvedValue(buildFakeNlc())
     await runInference('qwen-test', { prompt: 'first' })
