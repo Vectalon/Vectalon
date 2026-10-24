@@ -5,22 +5,27 @@ const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
 
-for (const [lowMemory, singleGuided] of [[false, false], [true, false], [false, true]]) test(`bounded diagnostics retain six planned rows and stop safely (lowMemory=${lowMemory}, singleGuided=${singleGuided})`, () => {
+for (const [lowMemory, singleGuided, guidedRepair] of [[false, false, false], [true, false, false], [false, true, false], [false, false, true]]) test(`bounded diagnostics retain planned rows and stop safely (lowMemory=${lowMemory}, singleGuided=${singleGuided}, repair=${guidedRepair})`, () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-resource-pair-test-'));
   let output;
   try {
     const preload = path.join(root, 'stubs.cjs');
-    fs.writeFileSync(preload, `const Module = require('node:module'); const load = Module._load; let checks = 0;
+    fs.writeFileSync(preload, `const Module = require('node:module'); const load = Module._load; let checks = 0, calls = 0;
 Module._load = function(request, ...args) {
   if (request.endsWith('/dist/model/local/memory.js')) return { nativeMemoryBudget: () => ({ availableBytes: ${lowMemory ? 1024 : 8 * 1024 ** 3}, source: 'os-free' }) };
   if (request.endsWith('/dist/sandbox/run.js')) return { runSandboxed: async () => {
-    checks++; const ok = checks !== 2 && checks <= 4;
+    checks++; const ok = checks !== 2 && (checks <= 4 || (${guidedRepair} && checks >= 7));
     return { ok, exitCode: ok ? 0 : 1, durationMs: 1, stdout: 'PRIVATE_DIAGNOSTIC', stderr: '' };
   } };
   if (request.endsWith('/dist/model/local/inference.js')) return { runInference: async (model, options) => {
     const assert = require('node:assert/strict');
     assert.equal(options.signal.aborted, false); assert.equal(options.maxTokens, 2048);
-    assert.equal(options.repeatPenalty, undefined); assert.equal(options.temperature, 0.2);
+    assert.equal(options.repeatPenalty, undefined); assert.equal(options.temperature, ${guidedRepair} && ++calls === 2 ? 0 : 0.2);
+    if (${guidedRepair} && calls === 2) {
+      assert.ok(options.prompt.includes('Verifier feedback'));
+      assert.ok(options.prompt.includes('Typecheck failed'));
+      assert.ok(!options.prompt.includes('cartPilot.tsx'));
+    }
     return { content: JSON.stringify({ files: [{ path: 'src/screens/CatalogScreen.tsx', content: 'export const example = 1;' }] }),
       modelId: model, stopReason: 'eogToken', artifact: { sha256: '${require('./one-app-evaluation-7b.json').artifactSha256}' },
       localContext: { inputTokens: 100, maxOutputTokens: 2048, contextSize: 2560, batchSize: 128 } };
@@ -29,12 +34,26 @@ Module._load = function(request, ...args) {
 };\n`);
     const result = spawnSync(process.execPath, ['--require', preload, path.join(__dirname, 'rn-cart-pilot.cjs'),
       '--task', 'stock-filter', '--evaluation-lane', '7b', '--resource-pair',
-      ...(singleGuided ? ['--raw-guided', '--include-raw-response', '--include-generated'] : [])], { encoding: 'utf8', timeout: 15000 });
+      ...(singleGuided ? ['--raw-guided', '--include-raw-response', '--include-generated'] : []),
+      ...(guidedRepair ? ['--guided-repair'] : [])], { encoding: 'utf8', timeout: 15000 });
     assert.equal(result.status, lowMemory ? 1 : 0, result.stderr);
     output = result.stdout.match(/^Evidence: (.+)$/m)?.[1];
     assert.ok(output, result.stdout);
     const source = fs.readFileSync(path.join(output, 'report.json'), 'utf8');
     const report = JSON.parse(source);
+    if (guidedRepair) {
+      assert.equal(report.kind, 'bounded-guided-repair-diagnostic');
+      assert.equal(report.resourceProtocol.rowLimit, 1);
+      assert.equal(report.settings.maxAttempts, 2);
+      assert.equal(report.runs.length, 3);
+      assert.equal(report.runs[0].resources.timeoutMs, 360000);
+      assert.equal(report.runs[0].status, 'passed');
+      assert.deepEqual(report.runs[0].result.attempts.map(a => [a.kind, a.verification.status, a.selected]), [['initial', 'failed', false], ['repair', 'passed', true]]);
+      assert.deepEqual(report.runs[0].nativeCalls.map(c => c.status), ['response', 'response']);
+      assert.ok(report.runs.slice(1).every(row => row.status === 'not-run'));
+      assert.ok(!require('./pilot-report.cjs').serializePilotReport(report).includes('PRIVATE_DIAGNOSTIC'));
+      return;
+    }
     assert.equal(report.kind, singleGuided ? 'bounded-guided-output-diagnostic' : 'bounded-one-app-resource-pair');
     assert.equal(report.resourceProtocol.rowLimit, singleGuided ? 1 : 2);
     assert.equal(report.runs.length, 6);
@@ -74,6 +93,9 @@ test('rejects changed 7B verifier input before experiment output or inference', 
 });
 
 for (const [name, args, message] of [
+  ['guided repair without guards', ['--guided-repair'], '--guided-repair requires'],
+  ['guided repair mixed with raw-only diagnostic', ['--guided-repair', '--resource-pair', '--raw-guided'], '--guided-repair requires'],
+  ['guided repair mixed with legacy repair', ['--guided-repair', '--resource-pair', '--repair'], '--guided-repair requires'],
   ['raw diagnostic without explicit capture', ['--raw-guided', '--resource-pair', '--task', 'stock-filter', '--evaluation-lane', '7b'], '--raw-guided requires'],
   ['raw diagnostic without resource guards', ['--raw-guided', '--include-generated', '--include-raw-response'], '--raw-guided requires'],
   ['resource pair without frozen task', ['--resource-pair'], '--resource-pair requires'],

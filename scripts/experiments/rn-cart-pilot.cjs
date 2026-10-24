@@ -19,7 +19,9 @@ const { values: args } = require('node:util').parseArgs({ options: {
   'evaluation-lane': { type: 'string' },
   'resource-pair': { type: 'boolean' },
   'raw-guided': { type: 'boolean' },
+  'guided-repair': { type: 'boolean' },
 } });
+assert.ok(!args['guided-repair'] || (args['resource-pair'] && !args['raw-guided'] && !args.repair), '--guided-repair requires --resource-pair without --raw-guided or --repair');
 assert.ok(!args['raw-guided'] || (args['resource-pair'] && args['include-raw-response'] && args['include-generated']), '--raw-guided requires --resource-pair --include-raw-response --include-generated');
 assert.ok(!args['resource-pair'] || (args.task === 'stock-filter' && args['evaluation-lane'] === '7b'), '--resource-pair requires --task stock-filter --evaluation-lane 7b');
 assert.ok(args['evaluation-lane'] === undefined || ['3b', '7b'].includes(args['evaluation-lane']), 'Unknown evaluation lane');
@@ -99,18 +101,18 @@ if (task) {
   scenario.prompt = task.prompt;
   scenario.expect = { files: [target], behaviors: [task.prompt] };
 }
-const repair = args.repair;
+const repair = args.repair || args['guided-repair'];
 const verifiedControls = args['verified-controls'];
 const samplingControl = args['sampling-control'];
 const constrained = args.constrained;
 const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair || verifiedControls ? 2 : 1, providerCallLimit: 1,
   ...(constrained ? { outputFormat: 'files-json' } : {}), ...(args.edits ? { toolEnvelope: true, requiredTool: 'propose_edits', anchorMode: 'top-level-source-blocks' } : {}) };
-if (args.task) assert.deepEqual(settings, freeze.settings, 'Frozen resource settings changed');
+if (args.task) assert.deepEqual(args['guided-repair'] ? { ...settings, maxAttempts: 1 } : settings, freeze.settings, 'Frozen resource settings changed');
 const output = fs.mkdtempSync('/private/tmp/vectalon-cart-pilot-');
 const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pilot', revision, appRevision, startedAt: new Date().toISOString(),
-  ...(args['resource-pair'] ? { kind: args['raw-guided'] ? 'bounded-guided-output-diagnostic' : 'bounded-one-app-resource-pair', resourceProtocol: {
+  ...(args['resource-pair'] ? { kind: args['guided-repair'] ? 'bounded-guided-repair-diagnostic' : args['raw-guided'] ? 'bounded-guided-output-diagnostic' : 'bounded-one-app-resource-pair', resourceProtocol: {
     routing: 'direct native in both conditions; no router enrichment/fallback; default sampling unchanged',
-    rowLimit: args['raw-guided'] ? 1 : 2, reserveBytes: 2 * 1024 ** 3, sampleIntervalMs: 1000, hardStopGraceMs: 5000,
+    rowLimit: args['raw-guided'] || args['guided-repair'] ? 1 : 2, reserveBytes: 2 * 1024 ** 3, sampleIntervalMs: 1000, hardStopGraceMs: 5000,
     guardSha256: hash(fs.readFileSync(path.join(__dirname, 'resource-guard.cjs'))),
     adapterSha256: hash(fs.readFileSync(path.join(__dirname, 'sampling-control.cjs'))),
     memoryModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/model/local/memory.js'))),
@@ -138,7 +140,9 @@ const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pi
   inferenceModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/model/local/inference.js'))),
   acceptanceSha256: hash(acceptance), taskSha256: hash(JSON.stringify(scenario)),
   runtime: { node: process.version, platform: process.platform, arch: process.arch }, settings,
-  ...(verifiedControls ? { verificationMode: 'both conditions: bounded app verifier; compiler-only diagnostics and generic test-failure feedback' } : {}),
+  ...(verifiedControls || args['guided-repair'] ? { verificationMode: args['guided-repair']
+    ? 'Single guided diagnostic: initial plus at most one repair/parse retry; 4096 requested output tokens total and 360 seconds including checks; not equal to first-pass budgets'
+    : 'both conditions: bounded app verifier; compiler-only diagnostics and generic test-failure feedback' } : {}),
   ...(samplingControl ? { samplingControl: { adapterSha256: hash(fs.readFileSync(path.join(__dirname, 'sampling-control.cjs'))),
     routing: 'direct native inference; no enrichment or fallback in either lane', promptMode: 'task-relevant', minP: 0.05,
     repeatDefault: { penalty: 1.1, lastTokens: 512, frequencyPenalty: 0.3, presencePenalty: 0.2 }, repeatOff: false } } : {}),
@@ -264,12 +268,13 @@ async function main() {
     assert.equal(report.priorAcceptanceControl.tests.ok, true, 'Stress negative must pass the earlier finite acceptance cases');
   }
   if (args.preflight) return;
-  for (const row of args['raw-guided'] ? report.runs.filter(row => row.condition === 'vectalon').slice(0, 1)
+  for (const row of args['guided-repair'] ? report.runs.slice(0, 1)
+    : args['raw-guided'] ? report.runs.filter(row => row.condition === 'vectalon').slice(0, 1)
     : args['resource-pair'] ? report.runs.slice(0, 2) : report.runs) {
     const started = Date.now();
     row.status = 'running'; row.phase = 'generation'; row.verifications = []; save();
     console.log(`Start ${row.repetition} ${row.condition}`);
-    const timeoutMs = task ? freeze.timeoutMs : 180000;
+    const timeoutMs = args['guided-repair'] ? 360000 : task ? freeze.timeoutMs : 180000;
     const deadline = Date.now() + timeoutMs;
     const timer = args['resource-pair'] ? undefined : setTimeout(() => {
       row.status = 'timeout'; save();
@@ -282,9 +287,20 @@ async function main() {
     if (guard) row.resources = guard.observation;
     try {
       guard?.signal.throwIfAborted();
-      const direct = guard ? createSamplingRouter((model, options) => {
+      const direct = guard ? createSamplingRouter(async (model, options) => {
         guard.signal.throwIfAborted();
-        return load('model/local/inference.js').runInference(model, { ...options, signal: guard.signal });
+        const calls = (row.nativeCalls ??= []);
+        assert.ok(calls.length < (args['guided-repair'] ? 2 : 1), 'Native call cap exhausted');
+        const call = { index: calls.length + 1, status: 'running', temperature: options.temperature,
+          maxTokens: options.maxTokens, requestSha256: hash(JSON.stringify({ model, ...options })) };
+        calls.push(call); save();
+        const callStarted = Date.now();
+        try {
+          const result = await load('model/local/inference.js').runInference(model, { ...options, signal: guard.signal });
+          Object.assign(call, { status: 'response', artifact: result.artifact, localContext: result.localContext, stopReason: result.stopReason });
+          return result;
+        } catch (error) { call.status = guard.signal.aborted ? 'aborted' : 'error'; throw error; }
+        finally { call.durationMs = Date.now() - callStarted; save(); }
       }, report.model, false) : undefined;
       // Both diagnostic conditions bypass enrichment; keep their supplied prompt/context unchanged.
       const router = direct ? { generate: request => direct.generate({ ...request, projectContext: 'disabled' }) }
