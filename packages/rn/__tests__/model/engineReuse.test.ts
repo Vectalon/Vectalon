@@ -8,7 +8,7 @@
 jest.mock('../../src/utils/dynamicImport', () => ({
   dynamicImport: jest.fn(),
 }))
-jest.mock('os', () => ({ ...jest.requireActual('os'), freemem: jest.fn(() => 16 * 1024 ** 3) }))
+jest.mock('os', () => ({ ...jest.requireActual('os'), platform: () => 'linux', freemem: jest.fn(() => 16 * 1024 ** 3) }))
 
 import { dynamicImport } from '../../src/utils/dynamicImport'
 import { runInference, _resetSharedEngineForTests } from '../../src/model/local/inference'

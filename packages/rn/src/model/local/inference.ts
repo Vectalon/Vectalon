@@ -1,6 +1,6 @@
 import type { ModelPreset } from './presets'
 import type { ModelResponse } from '../types'
-import { freemem } from 'os'
+import { nativeMemoryBudget } from './memory'
 import { statSync } from 'fs'
 import { dynamicImport } from '../../utils/dynamicImport'
 import { reportError } from '../../utils/safe'
@@ -375,7 +375,7 @@ export async function runInference(modelId: string, options: InferenceOptions): 
     // shortcut: conservative free-RAM gate, not a peak-memory predictor; calibrate per hardware before raising limits.
     const reserveBytes = 2 * 1024 ** 3
     const loadBytes = sharedModels.has(model.filePath) ? 0 : statSync(model.filePath).size
-    if (freemem() < loadBytes + reserveBytes) throw new Error('Insufficient free RAM for local model and reserve; close other apps or choose a smaller model')
+    if (nativeMemoryBudget().availableBytes < loadBytes + reserveBytes) throw new Error('Insufficient free RAM budget for local model and reserve; close other apps or choose a smaller model')
     const nlc = await dynamicImport<typeof import('node-llama-cpp')>('node-llama-cpp')
     // Suppress the known-harmless tokenizer warning for the ENTIRE inference:
     // it can fire at getLlama/loadModel time OR lazily at the first prompt when
@@ -395,7 +395,7 @@ export async function runInference(modelId: string, options: InferenceOptions): 
       // shortcut: 16384-token ceiling; expand only after host-memory calibration.
       const contextSize = Math.max(2048, Math.ceil(requiredTokens / 256) * 256)
       if (contextSize > Math.min(16384, llamaModel.trainContextSize)) throw new Error('Local context budget exceeded; reduce approved input or output budget; no context was dropped')
-      if (freemem() < reserveBytes) throw new Error('Insufficient free RAM for local context reserve')
+      if (nativeMemoryBudget().availableBytes < reserveBytes) throw new Error('Insufficient free RAM budget for local context reserve')
       options.signal?.throwIfAborted()
       const context = await llamaModel.createContext({ contextSize, batchSize: 128 })
       let session: InstanceType<LlamaModule['LlamaChatSession']> | undefined

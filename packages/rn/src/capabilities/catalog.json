@@ -5,7 +5,7 @@
   "capabilities": [
     {
       "id": "rn.project.inspect",
-      "version": "1.0.27",
+      "version": "1.0.28",
       "lifecycle": "beta",
       "implemented": true,
       "owner": {
@@ -821,6 +821,24 @@
           "recordedAt": "2026-10-24T15:12:03.605Z",
           "productVersion": "0.22.5",
           "capabilityVersion": "1.0.27"
+        },
+        {
+          "kind": "implementation",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.project.inspect.1.0.28.0.22.5.implementation.json",
+          "digest": "sha256:d86a271f07f90affccb10ff52204da934f6c9a68975033cd97381328fdd5efcf",
+          "recordedAt": "2026-10-24T15:19:33.585Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.28"
+        },
+        {
+          "kind": "customer-workflow",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.project.inspect.1.0.28.0.22.5.customer-workflow.json",
+          "digest": "sha256:81fb249f86d9d59714397fcd932ac6e80418cc21aa770182122573a00c4c42a6",
+          "recordedAt": "2026-10-24T15:19:33.585Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.28"
         }
       ]
     },
@@ -1267,7 +1285,7 @@
     },
     {
       "id": "rn.generated-file.repair",
-      "version": "1.0.23",
+      "version": "1.0.24",
       "lifecycle": "beta",
       "implemented": true,
       "owner": {
@@ -2008,12 +2026,30 @@
           "recordedAt": "2026-10-24T15:12:09.064Z",
           "productVersion": "0.22.5",
           "capabilityVersion": "1.0.23"
+        },
+        {
+          "kind": "implementation",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.generated-file.repair.1.0.24.0.22.5.implementation.json",
+          "digest": "sha256:d2c2c498bf51fb8a9e2148bcb22e24a6a28ee3b14c0888e7d08dbf7657a394eb",
+          "recordedAt": "2026-10-24T15:19:41.318Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.24"
+        },
+        {
+          "kind": "customer-workflow",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.generated-file.repair.1.0.24.0.22.5.customer-workflow.json",
+          "digest": "sha256:7b7198a297dad4760a3945e2010d2aac404ebd9ba58cfb0fa676a4c85ef7f93d",
+          "recordedAt": "2026-10-24T15:19:41.318Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.24"
         }
       ]
     },
     {
       "id": "rn.feature.workflow",
-      "version": "1.0.23",
+      "version": "1.0.24",
       "lifecycle": "beta",
       "implemented": true,
       "owner": {
@@ -2757,12 +2793,30 @@
           "recordedAt": "2026-10-24T15:12:11.116Z",
           "productVersion": "0.22.5",
           "capabilityVersion": "1.0.23"
+        },
+        {
+          "kind": "implementation",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.feature.workflow.1.0.24.0.22.5.implementation.json",
+          "digest": "sha256:9508774e0917a094f8f2d46ab0ea85098cf58ffe55f29e7a4e8da9f877bb41af",
+          "recordedAt": "2026-10-24T15:19:44.912Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.24"
+        },
+        {
+          "kind": "customer-workflow",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.feature.workflow.1.0.24.0.22.5.customer-workflow.json",
+          "digest": "sha256:ab37faeb19177a0c3d98548992eae67f754cf9c93280ec43211bdbb66de68a87",
+          "recordedAt": "2026-10-24T15:19:44.912Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.24"
         }
       ]
     },
     {
       "id": "rn.analysis",
-      "version": "1.0.18",
+      "version": "1.0.19",
       "lifecycle": "experimental",
       "implemented": true,
       "owner": {
@@ -3105,12 +3159,21 @@
           "recordedAt": "2026-10-24T15:12:15.402Z",
           "productVersion": "0.22.5",
           "capabilityVersion": "1.0.18"
+        },
+        {
+          "kind": "implementation",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.analysis.1.0.19.0.22.5.implementation.json",
+          "digest": "sha256:9be4a829ba3c2c12247d94835dbacc8c6e14f8138375163262b5f2b6bb363cd5",
+          "recordedAt": "2026-10-24T15:19:50.297Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.19"
         }
       ]
     },
     {
       "id": "rn.model-generation",
-      "version": "1.0.23",
+      "version": "1.0.24",
       "lifecycle": "experimental",
       "implemented": true,
       "owner": {
@@ -3498,12 +3561,21 @@
           "recordedAt": "2026-10-24T15:12:15.430Z",
           "productVersion": "0.22.5",
           "capabilityVersion": "1.0.23"
+        },
+        {
+          "kind": "implementation",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.model-generation.1.0.24.0.22.5.implementation.json",
+          "digest": "sha256:6fa0fc226777b8e3497f78eaccc302644ec161746a52688b803aaa70d34c7a41",
+          "recordedAt": "2026-10-24T15:19:50.316Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.24"
         }
       ]
     },
     {
       "id": "rn.knowledge",
-      "version": "1.0.15",
+      "version": "1.0.16",
       "lifecycle": "experimental",
       "implemented": true,
       "owner": {
@@ -3819,12 +3891,21 @@
           "recordedAt": "2026-10-24T15:12:15.447Z",
           "productVersion": "0.22.5",
           "capabilityVersion": "1.0.15"
+        },
+        {
+          "kind": "implementation",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.knowledge.1.0.16.0.22.5.implementation.json",
+          "digest": "sha256:37d0889a2ea943083b2248f3389645c6858daa88bf83a058def1facdbfc49589",
+          "recordedAt": "2026-10-24T15:19:50.324Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.16"
         }
       ]
     },
     {
       "id": "rn.build-distribution",
-      "version": "1.0.15",
+      "version": "1.0.16",
       "lifecycle": "experimental",
       "implemented": true,
       "owner": {
@@ -4140,12 +4221,21 @@
           "recordedAt": "2026-10-24T15:12:15.467Z",
           "productVersion": "0.22.5",
           "capabilityVersion": "1.0.15"
+        },
+        {
+          "kind": "implementation",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.build-distribution.1.0.16.0.22.5.implementation.json",
+          "digest": "sha256:87e0215fd37106fdba7cfd327c751e9c131cddf9c0f60cf34688bf24c10cbfd7",
+          "recordedAt": "2026-10-24T15:19:50.336Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.16"
         }
       ]
     },
     {
       "id": "rn.device-and-sandbox",
-      "version": "1.0.16",
+      "version": "1.0.17",
       "lifecycle": "experimental",
       "implemented": true,
       "owner": {
@@ -4470,12 +4560,21 @@
           "recordedAt": "2026-10-24T15:12:15.480Z",
           "productVersion": "0.22.5",
           "capabilityVersion": "1.0.16"
+        },
+        {
+          "kind": "implementation",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.device-and-sandbox.1.0.17.0.22.5.implementation.json",
+          "digest": "sha256:7672c14ec0eee2d24a65265f134cb71b979f446f19ebccac3ed282af4f0ca9c1",
+          "recordedAt": "2026-10-24T15:19:50.353Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.17"
         }
       ]
     },
     {
       "id": "rn.upgrade-and-fix",
-      "version": "1.0.18",
+      "version": "1.0.19",
       "lifecycle": "experimental",
       "implemented": true,
       "owner": {
@@ -4818,12 +4917,21 @@
           "recordedAt": "2026-10-24T15:12:15.507Z",
           "productVersion": "0.22.5",
           "capabilityVersion": "1.0.18"
+        },
+        {
+          "kind": "implementation",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.upgrade-and-fix.1.0.19.0.22.5.implementation.json",
+          "digest": "sha256:f79205c15fee82e65a051ea2cc962a44d6d4af087492d66695b87687db72828d",
+          "recordedAt": "2026-10-24T15:19:50.381Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.19"
         }
       ]
     },
     {
       "id": "rn.evaluation",
-      "version": "1.0.37",
+      "version": "1.0.38",
       "lifecycle": "experimental",
       "implemented": true,
       "owner": {
@@ -5337,6 +5445,15 @@
           "recordedAt": "2026-10-24T15:12:15.523Z",
           "productVersion": "0.22.5",
           "capabilityVersion": "1.0.37"
+        },
+        {
+          "kind": "implementation",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.evaluation.1.0.38.0.22.5.implementation.json",
+          "digest": "sha256:a90e55e3b06e1d27e93d75f0b5f448ad85b732541875bf2f897552dde488f089",
+          "recordedAt": "2026-10-24T15:19:50.396Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.38"
         }
       ]
     },

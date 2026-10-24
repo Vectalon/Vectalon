@@ -15,6 +15,7 @@ for (const matches of [true, false]) test(`resource calibration requires matchin
     fs.writeFileSync(preload, `const Module = require('node:module'); const load = Module._load;
 Module._load = function(request, ...args) {
   if (request.endsWith('/dist/model/local/inference.js')) return { runInference: async () => (${JSON.stringify(result)}) };
+  if (request.endsWith('/dist/model/local/memory.js')) return { nativeMemoryBudget: () => ({ availableBytes: 8 * 1024 ** 3, source: 'os-free' }) };
   if (request === 'node:os') return { ...load.call(this, request, ...args), totalmem: () => 16 * 1024 ** 3, freemem: () => 8 * 1024 ** 3 };
   return load.call(this, request, ...args);
 };\n`);

@@ -9,6 +9,7 @@ const freeze = require('./one-app-evaluation-7b.json');
 const { taskDefinition } = require('./one-app-tasks.cjs');
 const { createModelGenerate } = require('../../packages/rn/dist/bench/modelGenerate.js');
 const { runInference } = require('../../packages/rn/dist/model/local/inference.js');
+const { nativeMemoryBudget } = require('../../packages/rn/dist/model/local/memory.js');
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
 
 async function main() {
@@ -23,12 +24,14 @@ async function main() {
       'Sampled host free RAM and process RSS are not peak GPU/RAM measurements', '7B on hosts below the recommended 32 GB class remains experimental'] };
   const controller = new AbortController();
   const started = Date.now();
-  let minimumFree = os.freemem(), maximumRss = process.memoryUsage().rss;
-  report.host = { totalBytes: os.totalmem(), freeBytesBefore: minimumFree };
+  const memory = nativeMemoryBudget();
+  let minimumFree = memory.availableBytes, maximumRss = process.memoryUsage().rss;
+  report.host = { totalBytes: os.totalmem(), memoryMetric: memory.source, availableBudgetBytesBefore: minimumFree, rawFreeBytesBefore: os.freemem() };
   const sample = () => {
-    minimumFree = Math.min(minimumFree, os.freemem());
+    const available = nativeMemoryBudget().availableBytes;
+    minimumFree = Math.min(minimumFree, available);
     maximumRss = Math.max(maximumRss, process.memoryUsage().rss);
-    if (os.freemem() < 2 * 1024 ** 3) controller.abort(new Error('Resource reserve reached'));
+    if (available < 2 * 1024 ** 3) controller.abort(new Error('Resource reserve reached'));
   };
   const interval = setInterval(sample, 1000);
   const timer = setTimeout(() => controller.abort(new Error('Calibration deadline reached')), 60000);
@@ -61,7 +64,7 @@ async function main() {
     clearInterval(interval); clearTimeout(timer); sample();
     report.durationMs = Date.now() - started;
     report.nativeCallAttempts = calls;
-    report.host = { ...report.host, minimumSampledFreeBytes: minimumFree, maximumSampledRssBytes: maximumRss, freeBytesAfter: os.freemem() };
+    report.host = { ...report.host, minimumSampledAvailableBudgetBytes: minimumFree, maximumSampledRssBytes: maximumRss, availableBudgetBytesAfter: nativeMemoryBudget().availableBytes, rawFreeBytesAfter: os.freemem() };
   }
   report.outcome = report.observationVerified && !controller.signal.aborted ? 'completed' : controller.signal.aborted ? 'aborted' : 'refused-or-error';
   return report;
