@@ -1,0 +1,697 @@
+{
+  "kind": "development-pilot",
+  "revision": "9b8cfaa394980725e10e24657169897260466fb3",
+  "appRevision": "9b8cfaa394980725e10e24657169897260466fb3",
+  "startedAt": "2026-10-24T11:18:16.368Z",
+  "controlDefinitionsSha256": "4f26f209b581c368fb1ecdd4c79d09b2b62c2d3d03f721179f99d8b0beab1f2c",
+  "conditionSettings": {
+    "repeat-default": {
+      "temperature": 0.2,
+      "maxTokens": 2048,
+      "maxAttempts": 1,
+      "providerCallLimit": 1,
+      "output": "task-relevant full-file JSON; existing repetition penalties"
+    },
+    "repeat-off": {
+      "temperature": 0.2,
+      "maxTokens": 2048,
+      "maxAttempts": 1,
+      "providerCallLimit": 1,
+      "output": "task-relevant full-file JSON; repetition penalties disabled"
+    }
+  },
+  "task": {
+    "id": "batched-counter-stress-v1",
+    "kind": "development-control"
+  },
+  "runnerSha256": "97755d4e6e1eae716aaa4b2eddb6d14429eaed7bc53fc84ea593668de315c9d8",
+  "appArchiveSha256": "cc3b708d5939d4f725fa7872a1601aab5cdd87803f4cb467ae02db05573f2578",
+  "generationModuleSha256": "0dbb2c26064efd81a4e9d8e0393a8ca501c6b5c5399228827d41a933af57e7c5",
+  "editGenerationModuleSha256": "168e88f740730479b4658b0860640a0fa38cafa1f87f0b5f27dc8b06d28d88e0",
+  "inferenceModuleSha256": "1bf27277bafa95596828c3d08228f084e399ae4b276d8aa214ede8160ce4646e",
+  "acceptanceSha256": "92c5d6ae82184fb475294e426b197c9cb3c662f6e75d4c049eebe4159c9735b4",
+  "taskSha256": "8482b831b5281035ab9d0b1ec45023211f8385672b143775b9893fe77e65335c",
+  "runtime": {
+    "node": "v24.22.1",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "settings": {
+    "temperature": 0.2,
+    "maxTokens": 2048,
+    "maxAttempts": 1,
+    "providerCallLimit": 1
+  },
+  "samplingControl": {
+    "adapterSha256": "dedea48ed6ff9b00746364f2b38b831acd56ac1ada552cd702c0300701a615bd",
+    "routing": "direct native inference; no enrichment or fallback in either lane",
+    "promptMode": "task-relevant",
+    "minP": 0.05,
+    "repeatDefault": {
+      "penalty": 1.1,
+      "lastTokens": 512,
+      "frequencyPenalty": 0.3,
+      "presencePenalty": 0.2
+    },
+    "repeatOff": false
+  },
+  "model": "qwen2.5-coder-3b",
+  "expectedArtifactSha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+  "limitations": [
+    "No native build",
+    "Installed dependencies reused",
+    "Tokens/cost not measured",
+    "No human correction-time measurement",
+    "Public development tasks; not launch qualification",
+    "Synthetic controls in one installed app; not held-out RN workflow evidence",
+    "Conditions change instructions; input-token budgets are unmeasured; not a single-factor causal ablation",
+    "Experimental guidance uses original source and a general React state-queue rule; textual useState-call detection does not qualify aliases or arbitrary state libraries",
+    "Direct native sampling diagnostic in both lanes, not the production router; repetition penalties alone differ; historical router runs are not causal controls."
+  ],
+  "runs": [
+    {
+      "repetition": 1,
+      "condition": "repeat-default",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "batched-counter-stress-v1",
+        "title": "batched-counter-stress-v1",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useStepCounter.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 7613,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 0.9444444444444444,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:02d2a1f60dcfa3ce18fd2e44eea5addaf271fe8896a96d8a6972fe5241ef887d",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "task-relevant",
+            "requestDigest": "sha256:46d37549f5128ce9801394f9b5211fcac7f15235e04fb01fb935ba9087f994ac",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 7601
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useStepCounter.ts",
+            "passed": 17,
+            "failed": 1,
+            "skipped": 18,
+            "ok": false,
+            "failedRules": [
+              "Directly exported function declarations have return annotations"
+            ]
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 0.9444444444444444
+        },
+        "composite": 0.9444444444444444
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1215
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7558
+        }
+      },
+      "durationMs": 16537,
+      "inspection": {
+        "sourceSyntaxDiagnosticCodes": [],
+        "compilerDiagnosticCodes": [],
+        "method": "Post-run compiler/syntax inspection only; no source edits, repairs or rescoring."
+      }
+    },
+    {
+      "repetition": 1,
+      "condition": "repeat-off",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "batched-counter-stress-v1",
+        "title": "batched-counter-stress-v1",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useStepCounter.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 2970,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 0.9444444444444444,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:02d2a1f60dcfa3ce18fd2e44eea5addaf271fe8896a96d8a6972fe5241ef887d",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "task-relevant",
+            "requestDigest": "sha256:46d37549f5128ce9801394f9b5211fcac7f15235e04fb01fb935ba9087f994ac",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 2967
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useStepCounter.ts",
+            "passed": 17,
+            "failed": 1,
+            "skipped": 18,
+            "ok": false,
+            "failedRules": [
+              "Directly exported function declarations have return annotations"
+            ]
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 0.9444444444444444
+        },
+        "composite": 0.9444444444444444
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1207
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6868
+        }
+      },
+      "durationMs": 11164,
+      "inspection": {
+        "sourceSyntaxDiagnosticCodes": [],
+        "compilerDiagnosticCodes": [],
+        "method": "Post-run compiler/syntax inspection only; no source edits, repairs or rescoring."
+      }
+    },
+    {
+      "repetition": 2,
+      "condition": "repeat-off",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "batched-counter-stress-v1",
+        "title": "batched-counter-stress-v1",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useStepCounter.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 2917,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 0.9444444444444444,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:02d2a1f60dcfa3ce18fd2e44eea5addaf271fe8896a96d8a6972fe5241ef887d",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "task-relevant",
+            "requestDigest": "sha256:46d37549f5128ce9801394f9b5211fcac7f15235e04fb01fb935ba9087f994ac",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 2916
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useStepCounter.ts",
+            "passed": 17,
+            "failed": 1,
+            "skipped": 18,
+            "ok": false,
+            "failedRules": [
+              "Directly exported function declarations have return annotations"
+            ]
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 0.9444444444444444
+        },
+        "composite": 0.9444444444444444
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1151
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6865
+        }
+      },
+      "durationMs": 11054,
+      "inspection": {
+        "sourceSyntaxDiagnosticCodes": [],
+        "compilerDiagnosticCodes": [],
+        "method": "Post-run compiler/syntax inspection only; no source edits, repairs or rescoring."
+      }
+    },
+    {
+      "repetition": 2,
+      "condition": "repeat-default",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "batched-counter-stress-v1",
+        "title": "batched-counter-stress-v1",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useStepCounter.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 3259,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 0.9444444444444444,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:02d2a1f60dcfa3ce18fd2e44eea5addaf271fe8896a96d8a6972fe5241ef887d",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "task-relevant",
+            "requestDigest": "sha256:46d37549f5128ce9801394f9b5211fcac7f15235e04fb01fb935ba9087f994ac",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 3257
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useStepCounter.ts",
+            "passed": 17,
+            "failed": 1,
+            "skipped": 18,
+            "ok": false,
+            "failedRules": [
+              "Directly exported function declarations have return annotations"
+            ]
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 0.9444444444444444
+        },
+        "composite": 0.9444444444444444
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 685
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6714
+        }
+      },
+      "durationMs": 10773,
+      "inspection": {
+        "sourceSyntaxDiagnosticCodes": [
+          1005
+        ],
+        "compilerDiagnosticCodes": [
+          "TS1005"
+        ],
+        "method": "Post-run compiler/syntax inspection only; no source edits, repairs or rescoring."
+      }
+    },
+    {
+      "repetition": 3,
+      "condition": "repeat-default",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "batched-counter-stress-v1",
+        "title": "batched-counter-stress-v1",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useStepCounter.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 3418,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 0.9444444444444444,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:02d2a1f60dcfa3ce18fd2e44eea5addaf271fe8896a96d8a6972fe5241ef887d",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "task-relevant",
+            "requestDigest": "sha256:46d37549f5128ce9801394f9b5211fcac7f15235e04fb01fb935ba9087f994ac",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 3416
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useStepCounter.ts",
+            "passed": 17,
+            "failed": 1,
+            "skipped": 18,
+            "ok": false,
+            "failedRules": [
+              "Directly exported function declarations have return annotations"
+            ]
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 0.9444444444444444
+        },
+        "composite": 0.9444444444444444
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1131
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6510
+        }
+      },
+      "durationMs": 11181,
+      "inspection": {
+        "sourceSyntaxDiagnosticCodes": [],
+        "compilerDiagnosticCodes": [
+          "TS2304"
+        ],
+        "method": "Post-run compiler/syntax inspection only; no source edits, repairs or rescoring."
+      }
+    },
+    {
+      "repetition": 3,
+      "condition": "repeat-off",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "batched-counter-stress-v1",
+        "title": "batched-counter-stress-v1",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useStepCounter.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 2880,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 0.9444444444444444,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:02d2a1f60dcfa3ce18fd2e44eea5addaf271fe8896a96d8a6972fe5241ef887d",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "task-relevant",
+            "requestDigest": "sha256:46d37549f5128ce9801394f9b5211fcac7f15235e04fb01fb935ba9087f994ac",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 2878
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useStepCounter.ts",
+            "passed": 17,
+            "failed": 1,
+            "skipped": 18,
+            "ok": false,
+            "failedRules": [
+              "Directly exported function declarations have return annotations"
+            ]
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 0.9444444444444444
+        },
+        "composite": 0.9444444444444444
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1137
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6726
+        }
+      },
+      "durationMs": 10861,
+      "inspection": {
+        "sourceSyntaxDiagnosticCodes": [],
+        "compilerDiagnosticCodes": [],
+        "method": "Post-run compiler/syntax inspection only; no source edits, repairs or rescoring."
+      }
+    }
+  ],
+  "negativeControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1190
+    },
+    "tests": {
+      "ok": false,
+      "exitCode": 1,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 7004
+    }
+  },
+  "positiveControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1035
+    },
+    "tests": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 7123
+    }
+  },
+  "priorAcceptanceControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1082
+    },
+    "tests": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 7687
+    }
+  }
+}

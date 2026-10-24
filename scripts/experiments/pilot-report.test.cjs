@@ -56,6 +56,16 @@ test('retains failed verified counter repairs without promoting extra calls to i
   assert.equal(attempts.reduce((sum, attempt) => sum + attempt.providerCalls.length, 0), 12);
 });
 
+test('does not equate compilation gains in sampling controls with task improvement', () => {
+  const report = require('../../docs/release-roadmap/evidence/counter-sampling-2026-10-24.json');
+  assert.equal(report.runs.length, 6);
+  assert.ok(report.runs.every(row => row.status === 'failed' && row.identityMatched));
+  assert.equal(new Set(report.runs.map(row => row.result.attempts[0].requestDigest)).size, 1);
+  const text = formatPilotReport(report);
+  assert.ok(text.includes('| repeat-default | 3 | 0 | 3 | 0 | 1/3 | 0/3 |'));
+  assert.ok(text.includes('| repeat-off | 3 | 0 | 3 | 0 | 3/3 | 0/3 |'));
+});
+
 test('does not turn missing checks, identity mismatch or partial runs into passes', () => {
   const text = formatPilotReport({ runs: [
     { condition: 'vectalon', repetition: 1, status: 'passed', identityMatched: false,
