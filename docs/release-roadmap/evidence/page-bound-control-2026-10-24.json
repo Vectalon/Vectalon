@@ -1,0 +1,749 @@
+{
+  "kind": "development-pilot",
+  "revision": "03e93eac4654510e9b303e5eab186f608ae29bfb",
+  "appRevision": "03e93eac4654510e9b303e5eab186f608ae29bfb",
+  "startedAt": "2026-10-24T09:14:56.964Z",
+  "controlDefinitionsSha256": "7774bc8c32aeeabd02e2c93c62da5df36de39aad3e9bea5a606b0b514adec8a7",
+  "conditionSettings": {
+    "task-only": {
+      "temperature": 0.2,
+      "maxTokens": 2048,
+      "maxAttempts": 1,
+      "providerCallLimit": 1,
+      "output": "full-file JSON; no requested grammar"
+    },
+    "vectalon-edits": {
+      "temperature": 0.2,
+      "maxTokens": 2048,
+      "maxAttempts": 1,
+      "providerCallLimit": 1,
+      "requiredTool": "propose_edits",
+      "anchorMode": "top-level-source-blocks"
+    }
+  },
+  "task": {
+    "id": "page-bound",
+    "kind": "development-control"
+  },
+  "runnerSha256": "7fdbc861fb281348bc790893500738efabccd7d17f2a9fd97b79dcb38314799f",
+  "appArchiveSha256": "7d942e700821bf8730109feb0d5375d7a117e1c31dd8b7e12fa63ea426944a68",
+  "generationModuleSha256": "beb86a667bc52bb3611057f2035c20cb123d01211c4142d5579075072cdbba25",
+  "editGenerationModuleSha256": "168e88f740730479b4658b0860640a0fa38cafa1f87f0b5f27dc8b06d28d88e0",
+  "inferenceModuleSha256": "2d6ffa6cf36abd1f5ab57c20255388db1837790fa652ff994348b0a62432d9b0",
+  "acceptanceSha256": "c0269d8b53e28c1043b3a948e932d20c97e0d80eac848ac928f906772bfcf9dc",
+  "taskSha256": "146720e82338865beb92c50fc75cce5ee54c3353e2c78946bb7ce4d501d962a0",
+  "runtime": {
+    "node": "v24.22.1",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "settings": {
+    "temperature": 0.2,
+    "maxTokens": 2048,
+    "maxAttempts": 1,
+    "providerCallLimit": 1
+  },
+  "model": "qwen2.5-coder-3b",
+  "expectedArtifactSha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+  "limitations": [
+    "No native build",
+    "Installed dependencies reused",
+    "Tokens/cost not measured",
+    "No human correction-time measurement",
+    "Public development tasks; not launch qualification",
+    "Synthetic controls in one installed app; not held-out RN workflow evidence",
+    "Conditions change prompt and output protocol; not a grammar-only ablation",
+    "Block catalogue repeats input source; input-token budgets are unmeasured",
+    "Shared host; background consistency tests overlapped part of the experiment. Durations are observations, not a controlled performance comparison."
+  ],
+  "runs": [
+    {
+      "repetition": 1,
+      "condition": "task-only",
+      "status": "passed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "page-bound",
+        "title": "page-bound",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/services/PageBound.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 7247,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 1,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:25fd2a46ca7a1b7a1a700f6bf751045277f7a04bb66abc82f25d3af4f29bca28",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "task-only",
+            "requestDigest": "sha256:6bbdcb129b9d9bb7f4861225d09f33a198bf6e7c8d449915d8af8b1f29ef8ca7",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 7157
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/services/PageBound.ts",
+            "passed": 18,
+            "failed": 0,
+            "skipped": 18,
+            "ok": true,
+            "failedRules": []
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 1
+        },
+        "composite": 1
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1279
+        },
+        "tests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7825
+        }
+      },
+      "durationMs": 16768
+    },
+    {
+      "repetition": 1,
+      "condition": "vectalon-edits",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "page-bound",
+        "title": "page-bound",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "invalid",
+            "selected": false,
+            "durationMs": 5747,
+            "fileCount": 0,
+            "adherence": null,
+            "guardrails": null,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:25fd2a46ca7a1b7a1a700f6bf751045277f7a04bb66abc82f25d3af4f29bca28",
+            "requestDigest": "sha256:4d198682e13fbad5caf93ea864e83a5d73c6b9d3bc3cee341c9eb1eb1e256964",
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "editApplication": "rejected",
+            "provider": "local",
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            },
+            "stopReason": "stopGenerationTrigger",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 5745
+              }
+            ]
+          }
+        ],
+        "guardrail": [],
+        "axes": {
+          "correctness": null,
+          "adherence": 0,
+          "guardrails": 0
+        },
+        "composite": 0,
+        "correctnessDetails": [
+          "Model generation produced no non-empty files.",
+          "Missing required output files: src/services/PageBound.ts"
+        ]
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "skipped": true
+        },
+        "tests": {
+          "ok": false,
+          "skipped": true
+        }
+      },
+      "durationMs": 5756
+    },
+    {
+      "repetition": 2,
+      "condition": "vectalon-edits",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "page-bound",
+        "title": "page-bound",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/services/PageBound.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 4670,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 1,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:25fd2a46ca7a1b7a1a700f6bf751045277f7a04bb66abc82f25d3af4f29bca28",
+            "requestDigest": "sha256:4d198682e13fbad5caf93ea864e83a5d73c6b9d3bc3cee341c9eb1eb1e256964",
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "editApplication": "applied",
+            "provider": "local",
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            },
+            "stopReason": "stopGenerationTrigger",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 4667
+              }
+            ]
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/services/PageBound.ts",
+            "passed": 18,
+            "failed": 0,
+            "skipped": 18,
+            "ok": true,
+            "failedRules": []
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 1
+        },
+        "composite": 1
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1357
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7259
+        }
+      },
+      "durationMs": 13420
+    },
+    {
+      "repetition": 2,
+      "condition": "task-only",
+      "status": "passed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "page-bound",
+        "title": "page-bound",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/services/PageBound.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 2959,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 1,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:25fd2a46ca7a1b7a1a700f6bf751045277f7a04bb66abc82f25d3af4f29bca28",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "task-only",
+            "requestDigest": "sha256:6bbdcb129b9d9bb7f4861225d09f33a198bf6e7c8d449915d8af8b1f29ef8ca7",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 2958
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/services/PageBound.ts",
+            "passed": 18,
+            "failed": 0,
+            "skipped": 18,
+            "ok": true,
+            "failedRules": []
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 1
+        },
+        "composite": 1
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1132
+        },
+        "tests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7142
+        }
+      },
+      "durationMs": 11372
+    },
+    {
+      "repetition": 3,
+      "condition": "task-only",
+      "status": "passed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "page-bound",
+        "title": "page-bound",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/services/PageBound.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 2553,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 1,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:25fd2a46ca7a1b7a1a700f6bf751045277f7a04bb66abc82f25d3af4f29bca28",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "task-only",
+            "requestDigest": "sha256:6bbdcb129b9d9bb7f4861225d09f33a198bf6e7c8d449915d8af8b1f29ef8ca7",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 2549
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/services/PageBound.ts",
+            "passed": 18,
+            "failed": 0,
+            "skipped": 18,
+            "ok": true,
+            "failedRules": []
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 1
+        },
+        "composite": 1
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1643
+        },
+        "tests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 9412
+        }
+      },
+      "durationMs": 13765
+    },
+    {
+      "repetition": 3,
+      "condition": "vectalon-edits",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "page-bound",
+        "title": "page-bound",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/services/PageBound.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 7013,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 1,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:25fd2a46ca7a1b7a1a700f6bf751045277f7a04bb66abc82f25d3af4f29bca28",
+            "requestDigest": "sha256:4d198682e13fbad5caf93ea864e83a5d73c6b9d3bc3cee341c9eb1eb1e256964",
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "editApplication": "applied",
+            "provider": "local",
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            },
+            "stopReason": "stopGenerationTrigger",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 7009
+              }
+            ]
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/services/PageBound.ts",
+            "passed": 18,
+            "failed": 0,
+            "skipped": 18,
+            "ok": true,
+            "failedRules": []
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 1
+        },
+        "composite": 1
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1185
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 9669
+        }
+      },
+      "durationMs": 18053
+    }
+  ],
+  "negativeControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 2565
+    },
+    "tests": {
+      "ok": false,
+      "exitCode": 1,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 14882
+    }
+  },
+  "positiveControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1904
+    },
+    "tests": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 12281
+    }
+  },
+  "responseInspection": [
+    {
+      "condition": "task-only",
+      "repetition": 1,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "e171e885cc6a1b491b5d067f1c4adb53a0bee96f629117b77ccc2532c3267647",
+          "lengthCharacters": 345,
+          "codeFenced": true,
+          "envelopeParseableAfterFenceRemoval": false
+        }
+      ]
+    },
+    {
+      "condition": "vectalon-edits",
+      "repetition": 1,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "6f0bdbedab06f35406b62478eb3eb68818183326b6a9a9dbc00250856a33255d",
+          "lengthCharacters": 618,
+          "codeFenced": false,
+          "envelopeParseableAfterFenceRemoval": true,
+          "topLevelKeys": [
+            "tool",
+            "arguments"
+          ],
+          "proposedEdits": [
+            {
+              "file": "src/services/PageBound.ts",
+              "from": "block-2",
+              "op": "replace",
+              "replacementLengthCharacters": 171
+            },
+            {
+              "file": "src/services/PageBound.ts",
+              "from": "block-2",
+              "op": "insert-after",
+              "replacementLengthCharacters": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "condition": "vectalon-edits",
+      "repetition": 2,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "ba3e130709840e080ff7681972c69d2dc697f81a17b42366aa54e1cc0ed6ac24",
+          "lengthCharacters": 438,
+          "codeFenced": false,
+          "envelopeParseableAfterFenceRemoval": true,
+          "topLevelKeys": [
+            "tool",
+            "arguments"
+          ],
+          "proposedEdits": [
+            {
+              "file": "src/services/PageBound.ts",
+              "from": "block-2",
+              "op": "replace",
+              "replacementLengthCharacters": 172
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "condition": "task-only",
+      "repetition": 2,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "eef1d78a0fa71e2446a428fb0bde5535b34ec2800f1950bdda58365e15cc4dfb",
+          "lengthCharacters": 410,
+          "codeFenced": true,
+          "envelopeParseableAfterFenceRemoval": true,
+          "topLevelKeys": [
+            "files"
+          ]
+        }
+      ]
+    },
+    {
+      "condition": "task-only",
+      "repetition": 3,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "e171e885cc6a1b491b5d067f1c4adb53a0bee96f629117b77ccc2532c3267647",
+          "lengthCharacters": 345,
+          "codeFenced": true,
+          "envelopeParseableAfterFenceRemoval": false
+        }
+      ]
+    },
+    {
+      "condition": "vectalon-edits",
+      "repetition": 3,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "cfbd3314ecb5b3cef3429ed8acb299bd6b4e39ebeb279951c5ce137e7f75b977",
+          "lengthCharacters": 633,
+          "codeFenced": false,
+          "envelopeParseableAfterFenceRemoval": true,
+          "topLevelKeys": [
+            "tool",
+            "arguments"
+          ],
+          "proposedEdits": [
+            {
+              "file": "src/services/PageBound.ts",
+              "from": "block-2",
+              "op": "replace",
+              "replacementLengthCharacters": 185
+            },
+            {
+              "file": "src/services/PageBound.ts",
+              "from": "block-1",
+              "op": "insert-after",
+              "replacementLengthCharacters": 1
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "inspectionMethod": "Supplemental JSON-envelope inspection may remove an outer code fence only. It does not repair JSON, decode malformed strings, apply edits, execute code or change recorded outcomes."
+}

@@ -1,0 +1,762 @@
+{
+  "kind": "development-pilot",
+  "revision": "03e93eac4654510e9b303e5eab186f608ae29bfb",
+  "appRevision": "03e93eac4654510e9b303e5eab186f608ae29bfb",
+  "startedAt": "2026-10-24T09:16:48.655Z",
+  "controlDefinitionsSha256": "7774bc8c32aeeabd02e2c93c62da5df36de39aad3e9bea5a606b0b514adec8a7",
+  "conditionSettings": {
+    "task-only": {
+      "temperature": 0.2,
+      "maxTokens": 2048,
+      "maxAttempts": 1,
+      "providerCallLimit": 1,
+      "output": "full-file JSON; no requested grammar"
+    },
+    "vectalon-edits": {
+      "temperature": 0.2,
+      "maxTokens": 2048,
+      "maxAttempts": 1,
+      "providerCallLimit": 1,
+      "requiredTool": "propose_edits",
+      "anchorMode": "top-level-source-blocks"
+    }
+  },
+  "task": {
+    "id": "batched-counter",
+    "kind": "development-control"
+  },
+  "runnerSha256": "7fdbc861fb281348bc790893500738efabccd7d17f2a9fd97b79dcb38314799f",
+  "appArchiveSha256": "7d942e700821bf8730109feb0d5375d7a117e1c31dd8b7e12fa63ea426944a68",
+  "generationModuleSha256": "beb86a667bc52bb3611057f2035c20cb123d01211c4142d5579075072cdbba25",
+  "editGenerationModuleSha256": "168e88f740730479b4658b0860640a0fa38cafa1f87f0b5f27dc8b06d28d88e0",
+  "inferenceModuleSha256": "2d6ffa6cf36abd1f5ab57c20255388db1837790fa652ff994348b0a62432d9b0",
+  "acceptanceSha256": "804cc35fcc426f2512be3400ee2af76e6747f3f6e97e984fa540bb71877016f0",
+  "taskSha256": "e8dae35595487291e41402edb067169fccc12ed5e14017e57b755113f764a340",
+  "runtime": {
+    "node": "v24.22.1",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "settings": {
+    "temperature": 0.2,
+    "maxTokens": 2048,
+    "maxAttempts": 1,
+    "providerCallLimit": 1
+  },
+  "model": "qwen2.5-coder-3b",
+  "expectedArtifactSha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+  "limitations": [
+    "No native build",
+    "Installed dependencies reused",
+    "Tokens/cost not measured",
+    "No human correction-time measurement",
+    "Public development tasks; not launch qualification",
+    "Synthetic controls in one installed app; not held-out RN workflow evidence",
+    "Conditions change prompt and output protocol; not a grammar-only ablation",
+    "Block catalogue repeats input source; input-token budgets are unmeasured",
+    "Shared host; background consistency tests overlapped part of the experiment. Durations are observations, not a controlled performance comparison."
+  ],
+  "runs": [
+    {
+      "repetition": 1,
+      "condition": "task-only",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "batched-counter",
+        "title": "batched-counter",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "invalid",
+            "selected": false,
+            "durationMs": 24818,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 0,
+            "adherence": 0,
+            "guardrails": 0,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:7dadfc2dae7bde8f1e1b57a6f4f5257ae4d6b7bea5c4681311f1219c2eafba4d",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "task-only",
+            "requestDigest": "sha256:40a5375df848cf629036a66faa08c237128806cb9cd68e3e22c0030b3d9b7ed9",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 24714
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [],
+        "axes": {
+          "correctness": null,
+          "adherence": 0,
+          "guardrails": 0
+        },
+        "composite": 0,
+        "correctnessDetails": [
+          "Model generation produced no non-empty files.",
+          "Missing required output files: src/hooks/useStepCounter.ts"
+        ]
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "skipped": true
+        },
+        "tests": {
+          "ok": false,
+          "skipped": true
+        }
+      },
+      "durationMs": 25233
+    },
+    {
+      "repetition": 1,
+      "condition": "vectalon-edits",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "batched-counter",
+        "title": "batched-counter",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useStepCounter.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 7639,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 0.9444444444444444,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:7dadfc2dae7bde8f1e1b57a6f4f5257ae4d6b7bea5c4681311f1219c2eafba4d",
+            "requestDigest": "sha256:a96a15bcb0c5be520d1761a13b209572a365962df0983d321a6871404804f89f",
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "editApplication": "applied",
+            "provider": "local",
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            },
+            "stopReason": "stopGenerationTrigger",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 7613
+              }
+            ]
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useStepCounter.ts",
+            "passed": 17,
+            "failed": 1,
+            "skipped": 18,
+            "ok": false,
+            "failedRules": [
+              "TypeScript files avoid implicit any"
+            ]
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 0.9444444444444444
+        },
+        "composite": 0.9444444444444444
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 2126
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 17564
+        }
+      },
+      "durationMs": 27656
+    },
+    {
+      "repetition": 2,
+      "condition": "vectalon-edits",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "batched-counter",
+        "title": "batched-counter",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useStepCounter.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 8048,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 0.9444444444444444,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:7dadfc2dae7bde8f1e1b57a6f4f5257ae4d6b7bea5c4681311f1219c2eafba4d",
+            "requestDigest": "sha256:a96a15bcb0c5be520d1761a13b209572a365962df0983d321a6871404804f89f",
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "editApplication": "applied",
+            "provider": "local",
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            },
+            "stopReason": "stopGenerationTrigger",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 8043
+              }
+            ]
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useStepCounter.ts",
+            "passed": 17,
+            "failed": 1,
+            "skipped": 18,
+            "ok": false,
+            "failedRules": [
+              "TypeScript files avoid implicit any"
+            ]
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 0.9444444444444444
+        },
+        "composite": 0.9444444444444444
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 2183
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 14771
+        }
+      },
+      "durationMs": 25246
+    },
+    {
+      "repetition": 2,
+      "condition": "task-only",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "batched-counter",
+        "title": "batched-counter",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useStepCounter.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 4200,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 0.9444444444444444,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:7dadfc2dae7bde8f1e1b57a6f4f5257ae4d6b7bea5c4681311f1219c2eafba4d",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "task-only",
+            "requestDigest": "sha256:40a5375df848cf629036a66faa08c237128806cb9cd68e3e22c0030b3d9b7ed9",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 4194
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useStepCounter.ts",
+            "passed": 17,
+            "failed": 1,
+            "skipped": 18,
+            "ok": false,
+            "failedRules": [
+              "TypeScript files avoid implicit any"
+            ]
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 0.9444444444444444
+        },
+        "composite": 0.9444444444444444
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 2307
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 12475
+        }
+      },
+      "durationMs": 19255
+    },
+    {
+      "repetition": 3,
+      "condition": "task-only",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "batched-counter",
+        "title": "batched-counter",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useStepCounter.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 4835,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 0.9444444444444444,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:7dadfc2dae7bde8f1e1b57a6f4f5257ae4d6b7bea5c4681311f1219c2eafba4d",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "task-only",
+            "requestDigest": "sha256:40a5375df848cf629036a66faa08c237128806cb9cd68e3e22c0030b3d9b7ed9",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 4832
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useStepCounter.ts",
+            "passed": 17,
+            "failed": 1,
+            "skipped": 18,
+            "ok": false,
+            "failedRules": [
+              "TypeScript files avoid implicit any"
+            ]
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 0.9444444444444444
+        },
+        "composite": 0.9444444444444444
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 2352
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 14135
+        }
+      },
+      "durationMs": 21529
+    },
+    {
+      "repetition": 3,
+      "condition": "vectalon-edits",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "result": {
+        "id": "batched-counter",
+        "title": "batched-counter",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useStepCounter.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 7917,
+            "fileCount": 1,
+            "adherence": null,
+            "guardrails": 0.9444444444444444,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:7dadfc2dae7bde8f1e1b57a6f4f5257ae4d6b7bea5c4681311f1219c2eafba4d",
+            "requestDigest": "sha256:a96a15bcb0c5be520d1761a13b209572a365962df0983d321a6871404804f89f",
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "editApplication": "applied",
+            "provider": "local",
+            "model": {
+              "id": "qwen2.5-coder-3b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "724fb256bec1ff062b2f65e4569e871ad2e95ab2a3989723d1769c54294730b7",
+              "sizeBytes": 2104932800,
+              "source": "local-file-at-load"
+            },
+            "stopReason": "stopGenerationTrigger",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 7912
+              }
+            ]
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useStepCounter.ts",
+            "passed": 17,
+            "failed": 1,
+            "skipped": 18,
+            "ok": false,
+            "failedRules": [
+              "TypeScript files avoid implicit any"
+            ]
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": null,
+          "guardrails": 0.9444444444444444
+        },
+        "composite": 0.9444444444444444
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1386
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 10797
+        }
+      },
+      "durationMs": 20321
+    }
+  ],
+  "negativeControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 2391
+    },
+    "tests": {
+      "ok": false,
+      "exitCode": 1,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 13517
+    }
+  },
+  "positiveControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 2331
+    },
+    "tests": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 15815
+    }
+  },
+  "responseInspection": [
+    {
+      "condition": "task-only",
+      "repetition": 1,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "35e2fd825c1e1d6efe6619e00022ce1a31633ac25471f937cfa0adf7e4eb6c09",
+          "lengthCharacters": 497,
+          "codeFenced": true,
+          "envelopeParseableAfterFenceRemoval": false
+        }
+      ]
+    },
+    {
+      "condition": "vectalon-edits",
+      "repetition": 1,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "084c0cf9f109db970b9e1333b2799f777f7519ea7688e135573382171eb91643",
+          "lengthCharacters": 522,
+          "codeFenced": false,
+          "envelopeParseableAfterFenceRemoval": true,
+          "topLevelKeys": [
+            "tool",
+            "arguments"
+          ],
+          "proposedEdits": [
+            {
+              "file": "src/hooks/useStepCounter.ts",
+              "from": "block-1",
+              "op": "replace",
+              "replacementLengthCharacters": 0
+            },
+            {
+              "file": "src/hooks/useStepCounter.ts",
+              "from": "block-2",
+              "op": "insert-after",
+              "replacementLengthCharacters": 73
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "condition": "vectalon-edits",
+      "repetition": 2,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "27e7b3d94ddbca16233ec229aa5c66a9fdba94ad174db590ebdbebc92ab8981d",
+          "lengthCharacters": 523,
+          "codeFenced": false,
+          "envelopeParseableAfterFenceRemoval": true,
+          "topLevelKeys": [
+            "tool",
+            "arguments"
+          ],
+          "proposedEdits": [
+            {
+              "file": "src/hooks/useStepCounter.ts",
+              "from": "block-1",
+              "op": "replace",
+              "replacementLengthCharacters": 0
+            },
+            {
+              "file": "src/hooks/useStepCounter.ts",
+              "from": "block-2",
+              "op": "insert-after",
+              "replacementLengthCharacters": 76
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "condition": "task-only",
+      "repetition": 2,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "3886ad6b63aa6ba0d23ac8ef3effd08a4a7ccf7be690ccdaf74bf2f9d07e5ce5",
+          "lengthCharacters": 445,
+          "codeFenced": true,
+          "envelopeParseableAfterFenceRemoval": false
+        }
+      ]
+    },
+    {
+      "condition": "task-only",
+      "repetition": 3,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "c3cc295af2328cab384f459cff8daa0c71f7ae1b7a273be99d4b12787f968bc2",
+          "lengthCharacters": 671,
+          "codeFenced": true,
+          "envelopeParseableAfterFenceRemoval": false
+        }
+      ]
+    },
+    {
+      "condition": "vectalon-edits",
+      "repetition": 3,
+      "responses": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "084c0cf9f109db970b9e1333b2799f777f7519ea7688e135573382171eb91643",
+          "lengthCharacters": 522,
+          "codeFenced": false,
+          "envelopeParseableAfterFenceRemoval": true,
+          "topLevelKeys": [
+            "tool",
+            "arguments"
+          ],
+          "proposedEdits": [
+            {
+              "file": "src/hooks/useStepCounter.ts",
+              "from": "block-1",
+              "op": "replace",
+              "replacementLengthCharacters": 0
+            },
+            {
+              "file": "src/hooks/useStepCounter.ts",
+              "from": "block-2",
+              "op": "insert-after",
+              "replacementLengthCharacters": 73
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "inspectionMethod": "Supplemental JSON-envelope inspection may remove an outer code fence only. It does not repair JSON, decode malformed strings, apply edits, execute code or change recorded outcomes."
+}
