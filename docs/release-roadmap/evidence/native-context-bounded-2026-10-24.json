@@ -1,0 +1,44 @@
+{
+  "kind": "native-context-resource-calibration",
+  "revision": "b892d6c02754ef0442dac9a1e6cf76f961dc1a01",
+  "model": "qwen2.5-coder-7b",
+  "expectedArtifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+  "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+  "inferenceModuleSha256": "a6431f4d10327a44ed93cb145224df51e91429046e096ba793c9081a2673fcc0",
+  "task": "stock-filter",
+  "outputTokenCap": 8,
+  "timeoutMs": 60000,
+  "sampleIntervalMs": 1000,
+  "limitations": [
+    "One public-input calibration call; no task/native-app/model-quality qualification",
+    "Sampled host free RAM and process RSS are not peak GPU/RAM measurements",
+    "7B on hosts below the recommended 32 GB class remains experimental"
+  ],
+  "host": {
+    "totalBytes": 17179869184,
+    "memoryMetric": "macos-pressure-estimate",
+    "availableBudgetBytesBefore": 6871947673,
+    "rawFreeBytesBefore": 158367744,
+    "minimumSampledAvailableBudgetBytes": 3435973836,
+    "maximumSampledRssBytes": 1370521600,
+    "availableBudgetBytesAfter": 3435973836,
+    "rawFreeBytesAfter": 141115392
+  },
+  "requestSha256": "5dfe545df002718237c53c3279b0c48975d1ce3f9da9b4fea7b6467d6153844e",
+  "artifact": {
+    "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+    "sizeBytes": 3993201376,
+    "source": "local-file-at-load"
+  },
+  "localContext": {
+    "inputTokens": 3617,
+    "maxOutputTokens": 8,
+    "contextSize": 4096,
+    "batchSize": 128
+  },
+  "stopReason": "maxTokens",
+  "observationVerified": true,
+  "durationMs": 39696,
+  "nativeCallAttempts": 1,
+  "outcome": "completed"
+}

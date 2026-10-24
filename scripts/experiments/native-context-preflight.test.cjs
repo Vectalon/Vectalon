@@ -5,6 +5,29 @@ const path = require('node:path');
 const os = require('node:os');
 const { spawnSync } = require('node:child_process');
 
+test('retained calibration separates raw-free refusal from bounded inference evidence', () => {
+  const evidence = path.join(__dirname, '../../docs/release-roadmap/evidence');
+  const refused = JSON.parse(fs.readFileSync(path.join(evidence, 'native-context-raw-free-refusal-2026-10-24.json'), 'utf8'));
+  const bounded = JSON.parse(fs.readFileSync(path.join(evidence, 'native-context-bounded-2026-10-24.json'), 'utf8'));
+  assert.equal(refused.outcome, 'aborted');
+  assert.equal(refused.artifact, undefined);
+  assert.equal(refused.localContext, undefined);
+  assert.equal(refused.requestSha256, bounded.requestSha256);
+  assert.equal(bounded.outcome, 'completed');
+  assert.equal(bounded.observationVerified, true);
+  assert.equal(bounded.artifact.sha256, bounded.expectedArtifactSha256);
+  assert.equal(bounded.host.memoryMetric, 'macos-pressure-estimate');
+  assert.ok(bounded.host.minimumSampledAvailableBudgetBytes >= 2 * 1024 ** 3);
+  const context = bounded.localContext;
+  assert.equal(context.maxOutputTokens, 8);
+  assert.equal(context.batchSize, 128);
+  assert.ok(context.inputTokens + context.maxOutputTokens + 256 <= context.contextSize);
+  assert.ok(context.contextSize <= 16384);
+  assert.equal(bounded.kind, 'native-context-resource-calibration');
+  assert.equal(bounded.content, undefined);
+  assert.equal(bounded.taskSuccess, undefined);
+});
+
 for (const matches of [true, false]) test(`resource calibration requires matching observations and never emits response text (${matches})`, () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-context-calibration-test-'));
   try {
