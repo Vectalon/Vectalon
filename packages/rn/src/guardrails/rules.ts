@@ -1,6 +1,7 @@
 import { GuardrailRule } from './types'
 import { isNewArchitectureEnabled } from '../utils/newArchitecture'
 import { isReact19 } from '../utils/reactCompiler'
+import { parseSource } from '../harness/AstScanner'
 
 function findLine(content: string, index: number): number {
   return content.slice(0, index).split('\n').length
@@ -440,14 +441,19 @@ export const rules: GuardrailRule[] = [
   },
   {
     id: 'typescript-strict',
-    name: 'TypeScript files avoid implicit any',
-    description: 'TypeScript functions should use explicit parameter types and return types where helpful.',
+    name: 'Directly exported function declarations have return annotations',
+    description: 'Advisory style policy for direct named/default function declarations, not compiler implicit-any analysis. Arrow exports and export lists are outside this rule.',
     severity: 'info',
     applicable: ({ filePath }) => /\.tsx?$/.test(filePath),
-    check: ({ content }) => {
-      const match = content.match(/export\s+function\s+\w+\s*\([^)]*\)\s*\{/)
-      if (match && !/:\s*\w+/.test(match[0])) {
-        return { passed: false, message: 'Exported function missing return type annotation', line: findLine(content, match.index || 0) }
+    check: ({ content, filePath }) => {
+      const ast = parseSource(content, filePath)
+      if (!ast) return { passed: false, message: 'Could not assess return annotations: file did not parse' }
+      for (const statement of ast.program.body) {
+        if (statement.type !== 'ExportNamedDeclaration' && statement.type !== 'ExportDefaultDeclaration') continue
+        const declaration = statement.declaration
+        if ((declaration?.type === 'FunctionDeclaration' || declaration?.type === 'TSDeclareFunction') && !declaration.returnType) {
+          return { passed: false, message: 'Exported function missing return type annotation (style policy)', line: declaration.loc?.start.line }
+        }
       }
       return { passed: true }
     },

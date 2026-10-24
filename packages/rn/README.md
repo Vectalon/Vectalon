@@ -248,6 +248,8 @@ override per-command with `--model <provider>`.
 
 **Code Quality**: `no-console-log`, `no-inline-styles`, `no-hardcoded-urls`, `no-secrets-in-code`, `no-any-type`, `proper-error-handling`, `no-unused-imports`, `no-direct-state-mutation`, `proper-hook-deps`, `no-heavy-work-in-render`, `use-keyboard-avoiding-view`, `accessibility-labels`, `no-deprecated-apis`, `platform-aware-code`, `proper-navigation-types`, `consistent-naming`, `use-safe-area`, `no-todos-in-code`, `typescript-strict`, `proper-image-assets`, `memoize-expensive-components`, `no-mutation-in-hooks`, `use-strict-equality`, `no-var-declarations`, `proper-export-style`, `use-pressable`, `no-leaked-render`
 
+`typescript-strict` is an informational return-annotation style policy for directly exported function declarations, not an implicit-any type checker. Valid inferred return types can still trigger it; arrow exports and export lists are outside its scope. Run the project's strict TypeScript checks for semantic diagnostics. Compiler success, style findings and tested safety rules are different evidence.
+
 **New Architecture**: `no-set-native-props`, `no-sync-native-module-calls`, `missing-turbomodule-spec`
 
 **React 19**: `no-ref-mutation-in-render`, `use-effect-cleanup`, `use-outside-suspense`, `unstable-dependency-array`, `no-forward-ref`

@@ -122,7 +122,7 @@ const save = () => {
   }));
   fs.writeFileSync(path.join(output, 'report.md'), formatPilotReport(report));
 };
-async function verify(files, deadline = Infinity) {
+async function verify(files, deadline = Infinity, acceptanceSource = acceptance) {
   // Reject the whole candidate before writing or executing any generated file.
   if (files.length > 1 || files.some(file => file.path !== target) || (task?.kind === 'review' &&
     (files.length !== 1 || !reviewImportsAllowed(files[0].content, require(path.join(app, 'node_modules/typescript')))))) {
@@ -133,7 +133,7 @@ async function verify(files, deadline = Infinity) {
     assert.equal(spawnSync('tar', ['-x', '--strip-components=4', '-C', root], { input: archive.stdout }).status, 0);
     fs.symlinkSync(path.join(app, 'node_modules'), path.join(root, 'node_modules'));
     if (args.diagnostic) fs.writeFileSync(path.join(root, target), task.original);
-    if (acceptance) fs.writeFileSync(path.join(root, 'src/__tests__/cartPilot.tsx'), acceptance);
+    if (acceptanceSource) fs.writeFileSync(path.join(root, 'src/__tests__/cartPilot.tsx'), acceptanceSource);
     for (const file of files) {
       assert.equal(file.path, target, 'Out-of-scope generated file');
       fs.writeFileSync(path.join(root, file.path), file.content);
@@ -207,6 +207,12 @@ async function main() {
   save();
   assert.equal(report.positiveControl.typecheck.ok, true, 'Verifier control does not compile');
   assert.equal(report.positiveControl.tests.ok, true, 'Verifier control does not satisfy acceptance');
+  if (task?.priorAcceptance) {
+    report.priorAcceptanceControl = await verify([], Infinity, task.priorAcceptance);
+    save();
+    assert.equal(report.priorAcceptanceControl.typecheck.ok, true);
+    assert.equal(report.priorAcceptanceControl.tests.ok, true, 'Stress negative must pass the earlier finite acceptance cases');
+  }
   if (args.preflight) return;
   for (const row of report.runs) {
     const started = Date.now();

@@ -1,6 +1,34 @@
 // Public development controls, not held-out qualification tasks.
-const ids = ['page-bound', 'batched-counter'];
+const ids = ['page-bound', 'batched-counter', 'batched-counter-stress-v1'];
 function controlTask(id) {
+  if (id === 'batched-counter-stress-v1') {
+    const base = controlTask('batched-counter');
+    return { ...base, id,
+      prompt: base.prompt + ' Increment callbacks retained from earlier renders must remain correct after other callbacks update the state, including mixed old/new callbacks in one batch.',
+      original: base.original.replace('const increment = () => setCount(count + 1);',
+        'let queued = 0;\n  const increment = () => { queued += 1; setCount(count + queued); };'),
+      priorAcceptance: base.acceptance,
+      acceptance: base.acceptance + `
+it('retained callbacks stay correct after later renders and updates', async () => {
+  const { result } = await renderHook(() => useStepCounter());
+  const retained = result.current.increment;
+  await act(async () => { for (let i = 0; i < 4; i++) retained(); });
+  expect(result.current.count).toBe(4);
+  await act(async () => { result.current.increment(); });
+  expect(result.current.count).toBe(5);
+  await act(async () => { retained(); retained(); });
+  expect(result.current.count).toBe(7);
+});
+it('composes callbacks from different renders in a single batch', async () => {
+  const { result } = await renderHook(() => useStepCounter());
+  const first = result.current.increment;
+  await act(async () => { first(); first(); });
+  const second = result.current.increment;
+  await act(async () => { first(); second(); first(); });
+  expect(result.current.count).toBe(5);
+});`,
+    };
+  }
   if (id === 'page-bound') return {
     id, kind: 'development-control', target: 'src/services/PageBound.ts',
     prompt: 'Implement normalizePage(value: number): number. Non-finite values and values below 1 return 1. Otherwise round down and cap the result at 50. Preserve the existing PAGE_LABEL export. Change only src/services/PageBound.ts; return its complete content.',
