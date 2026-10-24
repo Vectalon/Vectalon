@@ -99,6 +99,7 @@ test('shows edit acceptance separately from app verification without exposing pr
   assert.ok(text.includes('local tool envelope'));
   assert.ok(formatPilotReport({ settings: { requiredTool: 'propose_edits' }, runs: [] }).includes('required tool arguments: propose_edits'));
   assert.ok(formatPilotReport({ settings: { anchorMode: 'unique-source-lines' }, runs: [] }).includes('Anchor selection: unique-source-lines'));
+  assert.ok(formatPilotReport({ conditionSettings: { 'vectalon-edits': { requiredTool: 'propose_edits', anchorMode: 'top-level-source-blocks', maxTokens: 2048, maxAttempts: 1 } }, runs: [] }).includes('Condition vectalon-edits: top-level-source-blocks; required tool: propose_edits'));
   assert.ok(text.includes('Edit application'));
   assert.ok(text.includes('not-run | applied |'));
   assert.ok(text.includes('| vectalon-edits | 1 | 0 |'));

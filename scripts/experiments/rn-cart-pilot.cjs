@@ -6,16 +6,22 @@ const assert = require('assert/strict');
 const { spawnSync } = require('child_process');
 const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs');
 const { freeze, taskDefinition, reviewImportsAllowed } = require('./one-app-tasks.cjs');
+const { ids: controlIds, controlTask } = require('./generation-controls.cjs');
 const { values: args } = require('node:util').parseArgs({ options: {
   preflight: { type: 'boolean' }, repair: { type: 'boolean' }, constrained: { type: 'boolean' },
   'include-generated': { type: 'boolean' }, model: { type: 'string' }, 'artifact-sha256': { type: 'string' },
   'include-raw-response': { type: 'boolean' },
-  task: { type: 'string' }, edits: { type: 'boolean' },
+  task: { type: 'string' }, edits: { type: 'boolean' }, diagnostic: { type: 'string' },
 } });
 assert.equal(args.model !== undefined, args['artifact-sha256'] !== undefined, '--model and --artifact-sha256 must be supplied together');
 assert.ok(args['artifact-sha256'] === undefined || /^[a-f0-9]{64}$/.test(args['artifact-sha256']), 'Expected a lowercase SHA-256 artifact hash');
 assert.ok(!args.constrained || args.repair, '--constrained requires --repair for this diagnostic');
 assert.ok(!args.edits || (!args.task && !args.repair && !args.constrained), '--edits is a first-attempt public development diagnostic only; cannot combine with --task, --repair or --constrained');
+if (args.diagnostic !== undefined) {
+  assert.ok(controlIds.includes(args.diagnostic), 'Unknown generation control');
+  assert.ok(!args.task && !args.edits && !args.repair && !args.constrained, 'Generation controls cannot combine with task, edits, repair or constrained');
+  assert.ok(args.model !== undefined, 'Generation controls require an explicit model and artifact identity');
+}
 if (args.task !== undefined) {
   assert.ok(freeze.tasks.includes(args.task), 'Unknown frozen evaluation task');
   assert.ok(!args.repair && !args.constrained, 'Frozen first-pass evaluation does not allow repair or grammar changes');
@@ -30,7 +36,7 @@ assert.ok(getPreset(model), 'Unknown model preset; refusing default-model substi
 const expectedArtifactSha256 = args['artifact-sha256'] ?? (args.task ? freeze.artifactSha256 : 'cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046');
 const { runSandboxed } = load('sandbox/run.js');
 const { createModelGenerate } = load('bench/modelGenerate.js');
-const { createModelEditGenerate } = args.edits ? load('bench/modelEditGenerate.js') : {};
+const { createModelEditGenerate } = args.edits || args.diagnostic ? load('bench/modelEditGenerate.js') : {};
 const { runScenario } = load('bench/runner.js');
 const { ModelRouter } = load('model/ModelRouter.js');
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
@@ -43,15 +49,16 @@ const readApp = file => {
   assert.equal(result.status, 0);
   return result.stdout;
 };
-const task = args.task ? taskDefinition(args.task, readApp) : undefined;
+const task = args.task ? taskDefinition(args.task, readApp) : args.diagnostic ? controlTask(args.diagnostic) : undefined;
 const target = task?.target ?? 'src/hooks/useCart.tsx';
 const acceptance = task?.acceptance ?? fs.readFileSync(path.join(__dirname, 'cart-quantity.acceptance.tsx'), 'utf8');
 const archive = spawnSync('git', ['archive', appRevision, appPath], { cwd: repo, maxBuffer: 16 * 1024 * 1024 });
 assert.equal(archive.status, 0, 'Cannot export app snapshot');
 const fixturePaths = task?.fixturePaths ?? ['package.json', target, 'src/services/CatalogApi.ts'];
-const fixtures = { ...Object.fromEntries(fixturePaths.map(file => [file, readApp(file)])), ...task?.extraFixtures };
+const fixtures = args.diagnostic ? { [target]: task.original }
+  : { ...Object.fromEntries(fixturePaths.map(file => [file, readApp(file)])), ...task?.extraFixtures };
 const installedDependencyVersions = {};
-if (task) {
+if (args.task) {
   const lock = JSON.parse(readApp('package-lock.json'));
   assert.equal(fs.readFileSync(path.join(app, 'package-lock.json'), 'utf8'), readApp('package-lock.json'), 'Installed app lockfile differs from frozen baseline');
   const manifest = JSON.parse(fixtures['package.json']);
@@ -76,10 +83,14 @@ const repair = args.repair;
 const constrained = args.constrained;
 const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair ? 2 : 1, providerCallLimit: 1,
   ...(constrained ? { outputFormat: 'files-json' } : {}), ...(args.edits ? { toolEnvelope: true, requiredTool: 'propose_edits', anchorMode: 'top-level-source-blocks' } : {}) };
-if (task) assert.deepEqual(settings, freeze.settings, 'Frozen resource settings changed');
+if (args.task) assert.deepEqual(settings, freeze.settings, 'Frozen resource settings changed');
 const output = fs.mkdtempSync('/private/tmp/vectalon-cart-pilot-');
-const report = { kind: task ? 'frozen-one-app-evaluation' : 'development-pilot', revision, appRevision, startedAt: new Date().toISOString(),
-  ...(task ? { task: { id: task.id, kind: task.kind },
+const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pilot', revision, appRevision, startedAt: new Date().toISOString(),
+  ...(args.diagnostic ? { controlDefinitionsSha256: hash(fs.readFileSync(path.join(__dirname, 'generation-controls.cjs'))),
+    conditionSettings: { 'task-only': { ...settings, output: 'full-file JSON; no requested grammar' },
+      'vectalon-edits': { ...settings, requiredTool: 'propose_edits', anchorMode: 'top-level-source-blocks' } } } : {}),
+  ...(task ? { task: { id: task.id, kind: task.kind } } : {}),
+  ...(args.task ? {
     installedDependencyVersions,
     freezeSha256: hash(fs.readFileSync(path.join(__dirname, 'one-app-evaluation.json'))),
     taskDefinitionsSha256: hash(fs.readFileSync(path.join(__dirname, 'one-app-tasks.cjs'))),
@@ -87,15 +98,17 @@ const report = { kind: task ? 'frozen-one-app-evaluation' : 'development-pilot',
     nativeVerification: 'not-run' } : {}),
   runnerSha256: hash(fs.readFileSync(__filename)), appArchiveSha256: hash(archive.stdout),
   generationModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/bench', args.edits ? 'modelEditGenerate.js' : 'modelGenerate.js'))),
+  ...(args.diagnostic ? { editGenerationModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/bench/modelEditGenerate.js'))) } : {}),
   inferenceModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/model/local/inference.js'))),
   acceptanceSha256: hash(acceptance), taskSha256: hash(JSON.stringify(scenario)),
   runtime: { node: process.version, platform: process.platform, arch: process.arch }, settings,
   model, expectedArtifactSha256,
-  limitations: ['No native build', 'Installed dependencies reused', 'Tokens/cost not measured', 'No human correction-time measurement', ...(task ? freeze.limitations : ['One public development task; not launch qualification']),
+  limitations: ['No native build', 'Installed dependencies reused', 'Tokens/cost not measured', 'No human correction-time measurement', ...(args.task ? freeze.limitations : ['Public development tasks; not launch qualification']),
+    ...(args.diagnostic ? ['Synthetic controls in one installed app; not held-out RN workflow evidence', 'Conditions change prompt and output protocol; not a grammar-only ablation', 'Block catalogue repeats input source; input-token budgets are unmeasured'] : []),
     ...(repair ? ['Repair diagnostic permits twice the generation budget of the first-pass pilot; not an equal-budget comparison'] : []),
     ...(constrained ? ['Native file-envelope grammar constrains serialization, not file scope or code correctness'] : []),
     ...(args.edits ? ['Scoped edit protocol differs from full-file generation; single existing file, at most eight edits, no repairs', 'Block IDs select unique original top-level TypeScript/JSX spans; repeated selections are rejected and exact application is checked again', 'Block catalogue repeats approved source in context; input-token cost is not measured', 'Source-grounded grammar does not establish code correctness or task improvement'] : [])],
-  runs: Array.from({ length: task ? freeze.repetitions : 3 }, (_, repetition) => (args.edits ? ['vectalon-edits'] : repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
+  runs: Array.from({ length: args.task ? freeze.repetitions : 3 }, (_, repetition) => (args.diagnostic ? (repetition % 2 ? ['vectalon-edits', 'task-only'] : ['task-only', 'vectalon-edits']) : args.edits ? ['vectalon-edits'] : repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
 const save = () => {
   fs.writeFileSync(path.join(output, 'report.json'), serializePilotReport(report, {
     includeGenerated: args['include-generated'], includeRawResponse: args['include-raw-response'],
@@ -112,6 +125,7 @@ async function verify(files, deadline = Infinity) {
   try {
     assert.equal(spawnSync('tar', ['-x', '--strip-components=4', '-C', root], { input: archive.stdout }).status, 0);
     fs.symlinkSync(path.join(app, 'node_modules'), path.join(root, 'node_modules'));
+    if (args.diagnostic) fs.writeFileSync(path.join(root, target), task.original);
     if (acceptance) fs.writeFileSync(path.join(root, 'src/__tests__/cartPilot.tsx'), acceptance);
     for (const file of files) {
       assert.equal(file.path, target, 'Out-of-scope generated file');
@@ -171,6 +185,7 @@ async function main() {
     assert.match(report.negativeControl.typecheck.stdout + report.negativeControl.typecheck.stderr, /setQuantity/);
   }
   assert.equal(report.negativeControl.tests.ok, false);
+  if (args.diagnostic) assert.equal(report.negativeControl.typecheck.ok, true, 'Control must fail behavior, not missing source or compilation');
   // Assistant-authored verifier control, never included in inference fixtures.
   const control = task?.positiveControl ?? fixtures[target]
     .replace('  clear: () => void;', '  clear: () => void;\n  setQuantity: (productId: string, qty: number) => void;')
@@ -220,7 +235,7 @@ async function main() {
             : [...diagnostics, ...(!checks.tests.ok ? ['Task/project tests failed. Recheck the original requirements.'] : []),
               ...(!checks.typecheck.ok ? ['Typecheck failed. Preserve the requested public interface.'] : [])].join('\n') };
       };
-      const generate = (args.edits ? createModelEditGenerate : createModelGenerate)({ modelRouter: router, promptMode: repair ? 'vectalon' : row.condition,
+      const generate = (args.edits || row.condition === 'vectalon-edits' ? createModelEditGenerate : createModelGenerate)({ modelRouter: router, promptMode: repair ? 'vectalon' : row.condition,
         ...settings, ...(repair ? { verify: verifier } : {}),
         ...(args['include-raw-response'] ? { onRawResponse: (content, attempt) => {
           (row.rawResponses ??= []).push({ ...attempt, content }); save();
@@ -232,7 +247,7 @@ async function main() {
       const files = row.result.generatedArtifacts || [];
       row.phase = 'verification';
       if (files.length === 1 && files[0].path === target && row.identityMatched) row.checks = verified.get(hash(JSON.stringify(files))) || await verify(files, deadline);
-      if (args.edits && !row.checks) row.checks = { typecheck: { ok: false, skipped: true }, tests: { ok: false, skipped: true } };
+      if ((args.edits || args.diagnostic) && !row.checks) row.checks = { typecheck: { ok: false, skipped: true }, tests: { ok: false, skipped: true } };
       row.status = Date.now() >= deadline ? 'timeout' : row.checks?.typecheck.ok && row.checks?.tests.ok ? 'passed' : 'failed';
       row.phase = 'complete';
     } catch { row.status = Date.now() >= deadline ? 'timeout' : 'error'; }

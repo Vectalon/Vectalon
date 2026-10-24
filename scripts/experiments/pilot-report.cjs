@@ -21,6 +21,9 @@ function formatPilotReport(report) {
     '| Condition | Planned | App-check passes | Failed/error/timeout/incomplete | Pending | Typecheck passed/checked | Tests passed/checked |',
     '|---|---:|---:|---:|---:|---:|---:|'];
   if (report.settings?.anchorMode) lines.splice(7, 0, `Anchor selection: ${cell(report.settings.anchorMode)}. Source selection is not implementation correctness.`, '');
+  if (report.conditionSettings) lines.splice(lines.indexOf('## Outcome matrix'), 0,
+    ...Object.entries(report.conditionSettings).map(([name, settings]) =>
+      `Condition ${cell(name)}: ${cell(settings.output ?? settings.anchorMode)}; required tool: ${cell(settings.requiredTool ?? 'not requested')}; output cap: ${cell(settings.maxTokens)}; attempt cap: ${cell(settings.maxAttempts)}.`), '');
   if (report.task) lines.splice(4, 0,
     `Task: ${cell(report.task.id)} · workflow: ${cell(report.task.kind)} · app revision: ${cell(report.appRevision)}`, '',
     ...(report.task.kind === 'review' ? ['Review passes require the generated test to pass on the original service and fail through an assertion on the proposed service; a compile/runtime error is not detection.', ''] : []));
