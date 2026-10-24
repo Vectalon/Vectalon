@@ -17,8 +17,14 @@ Module._load = function(request, ...args) {
     checks++; const ok = checks !== 2 && checks <= 4;
     return { ok, exitCode: ok ? 0 : 1, durationMs: 1, stdout: 'PRIVATE_DIAGNOSTIC', stderr: '' };
   } };
-  if (request.endsWith('/dist/bench/runner.js')) return { runScenario: async () => ({ attempts: [], generatedArtifacts: [] }) };
-  if (request.endsWith('/dist/model/local/inference.js')) throw Error('test must not load native inference');
+  if (request.endsWith('/dist/model/local/inference.js')) return { runInference: async (model, options) => {
+    const assert = require('node:assert/strict');
+    assert.equal(options.signal.aborted, false); assert.equal(options.maxTokens, 2048);
+    assert.equal(options.repeatPenalty, undefined); assert.equal(options.temperature, 0.2);
+    return { content: JSON.stringify({ files: [{ path: 'src/screens/CatalogScreen.tsx', content: 'export const example = 1;' }] }),
+      modelId: model, stopReason: 'eogToken', artifact: { sha256: '${require('./one-app-evaluation-7b.json').artifactSha256}' },
+      localContext: { inputTokens: 100, maxOutputTokens: 2048, contextSize: 2560, batchSize: 128 } };
+  } };
   return load.call(this, request, ...args);
 };\n`);
     const result = spawnSync(process.execPath, ['--require', preload, path.join(__dirname, 'rn-cart-pilot.cjs'),
@@ -36,6 +42,11 @@ Module._load = function(request, ...args) {
     assert.ok(report.runs.slice(2).every(row => row.status === 'not-run'));
     assert.equal(report.runs[0].resources.reserveBytes, 2 * 1024 ** 3);
     if (lowMemory) assert.equal(report.runs[0].resourceStopReason, 'memory-reserve');
+    else for (const row of report.runs.slice(0, 2)) {
+      assert.equal(row.result.attempts[0].provider, 'local');
+      assert.equal(row.identityMatched, true);
+      assert.equal(row.result.attempts[0].providerCalls.length, 1);
+    }
     assert.ok(!source.includes('PRIVATE_DIAGNOSTIC'));
   } finally {
     if (output) fs.rmSync(output, { recursive: true, force: true });

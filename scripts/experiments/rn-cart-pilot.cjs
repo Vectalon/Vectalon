@@ -279,10 +279,13 @@ async function main() {
     if (guard) row.resources = guard.observation;
     try {
       guard?.signal.throwIfAborted();
-      const router = guard ? createSamplingRouter((model, options) => {
+      const direct = guard ? createSamplingRouter((model, options) => {
         guard.signal.throwIfAborted();
         return load('model/local/inference.js').runInference(model, { ...options, signal: guard.signal });
-      }, report.model, false) : samplingControl ? createSamplingRouter(load('model/local/inference.js').runInference, report.model, row.condition === 'repeat-off')
+      }, report.model, false) : undefined;
+      // Both diagnostic conditions bypass enrichment; keep their supplied prompt/context unchanged.
+      const router = direct ? { generate: request => direct.generate({ ...request, projectContext: 'disabled' }) }
+        : samplingControl ? createSamplingRouter(load('model/local/inference.js').runInference, report.model, row.condition === 'repeat-off')
         : new ModelRouter({ zeroConfigEnabled: false });
       if (!samplingControl && !guard) router.initialize({ provider: 'local', modelName: report.model });
       const verified = new Map();

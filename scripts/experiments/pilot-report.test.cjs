@@ -15,6 +15,21 @@ test('bounded resource reports retain stops and unstarted rows without implying 
   assert.ok(text.indexOf('## Bounded resource protocol') < text.indexOf('## Outcome matrix'));
 });
 
+test('original resource pair retains adapter failure separately from real task-only output', () => {
+  const report = require('../../docs/release-roadmap/evidence/bounded-pair-adapter-failure-2026-10-24.json');
+  const [baseline, guided] = report.runs;
+  assert.equal(baseline.status, 'failed');
+  assert.equal(baseline.identityMatched, true);
+  assert.equal(baseline.result.attempts[0].providerCalls.length, 1);
+  assert.equal(baseline.checks.typecheck.ok, false);
+  assert.equal(guided.result.attempts[0].status, 'error');
+  assert.equal(guided.result.attempts[0].artifact, undefined);
+  assert.equal(guided.result.attempts[0].localContext, undefined);
+  assert.equal(report.runs.filter(row => row.status === 'not-run').length, 4);
+  assert.match(baseline.candidateArtifacts[0].sha256, /^[a-f0-9]{64}$/);
+  for (const key of ['generatedArtifacts', 'stdout', 'stderr', 'rawResponses']) assert.ok(!JSON.stringify(report).includes(`"${key}"`));
+});
+
 test('requires independent opt-in for raw responses and generated diagnostics at every depth', () => {
   const report = { runs: [{ status: 'failed', rawResponses: [{ index: 1, kind: 'initial', content: 'RAW_SECRET' }],
     result: { generatedArtifacts: [{ content: 'SOURCE_SECRET' }] },
