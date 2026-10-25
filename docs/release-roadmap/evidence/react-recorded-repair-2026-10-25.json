@@ -1,0 +1,456 @@
+{
+  "kind": "recorded-candidate-assisted-repair",
+  "revision": "96acf8ab0dd6e9eeb6887b4b9ecf23b20f24afbf",
+  "appRevision": "96acf8ab0dd6e9eeb6887b4b9ecf23b20f24afbf",
+  "startedAt": "2026-10-25T06:53:41.989Z",
+  "resourceProtocol": {
+    "routing": "direct native; no router enrichment/fallback; default sampling unchanged",
+    "rowLimit": 1,
+    "reserveBytes": 2147483648,
+    "sampleIntervalMs": 1000,
+    "hardStopGraceMs": 5000,
+    "guardSha256": "eb638785341c4705f40f3920c80ed3bf0f2416e78737244378146480c1ba91fd",
+    "adapterSha256": "d622c26847b63efeaa3ed280b6f04b8287ce5ae9848cb26316eb8590325e1691",
+    "memoryModuleSha256": "a3cf0ae9e88f8ff63ecd5bfeaba7563abd617e96770d28fd20ee717d070d9ac4",
+    "repairModuleSha256": "364e644d423a03edf7abdbac7b4f545a027b633471db9d4493b003342f730984",
+    "maxNativeCalls": 1,
+    "recordedLoaderSha256": "a2be4c199b19cd656bb223305eb8f5c78390d2a74b6f62a7b6f98fa03adc4345",
+    "grammarSchemaSha256": "36f6e24d7302679e68fb63fe0a1095f867e1b35be543a7182f3e8713ae059f5c"
+  },
+  "controlDefinitionsSha256": "a86c4755da001790b9a930c41679cf7b72ac950aca5895793f97c6f4e6044579",
+  "controlSourceSha256": "ee4577b3bbace239032382945cf4a453c47374682f23522e7f081c10faf2b43f",
+  "conditionSettings": {
+    "vectalon-edits": {
+      "temperature": 0.2,
+      "maxTokens": 2048,
+      "maxAttempts": 2,
+      "providerCallLimit": 1,
+      "toolEnvelope": true,
+      "requiredTool": "propose_edits",
+      "anchorMode": "module-and-direct-local-declarations",
+      "output": "source-grounded declaration edits; required native tool grammar"
+    }
+  },
+  "task": {
+    "id": "delayed-label-v1",
+    "kind": "development-control"
+  },
+  "runnerSha256": "5521d247a3dc5ca90778e67cff74882b7ffe0272465d07c9fe1031ac917112cb",
+  "appArchiveSha256": "5d769dfa2ad636017b095359474389c97d716aba2259a7870854f3134ed6e4bb",
+  "generationModuleSha256": "5a94446f8a221df4056abd8f5f842c2d1180b297a4f08b91fada2e455c4b3434",
+  "editGenerationModuleSha256": "5a94446f8a221df4056abd8f5f842c2d1180b297a4f08b91fada2e455c4b3434",
+  "inferenceModuleSha256": "a6431f4d10327a44ed93cb145224df51e91429046e096ba793c9081a2673fcc0",
+  "acceptanceSha256": "fc9c59b09fed194c2d561c287a574bb4d868e5d2c0301f73f9d460c16d360fd8",
+  "taskSha256": "f705b79011a24c69856f2307b34ce944ff18ea10cae5d98b5c8cc894ab7a2528",
+  "runtime": {
+    "node": "v24.22.1",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "settings": {
+    "temperature": 0.2,
+    "maxTokens": 2048,
+    "maxAttempts": 2,
+    "providerCallLimit": 1,
+    "toolEnvelope": true,
+    "requiredTool": "propose_edits",
+    "anchorMode": "module-and-direct-local-declarations"
+  },
+  "recordedInitial": {
+    "kind": "recorded-failed-candidate",
+    "revision": "44b7ccbfd4ef95c2ed3138ea1bcc2b430892f2bc",
+    "requestDigest": "sha256:582f6481015a1059272a38ff61f9add1101ed1b0007c2de825927bf602502414",
+    "candidateSha256": "fd90d55fcf5e918b9607508c9db19f4249e55a1539d8e6956b0fb128d5b17979",
+    "responseSha256": "28adead0b2397da7d64d4d0343562f3cc03619f49054e5b18e36d3f377b67656",
+    "controlSourceSha256": "ee4577b3bbace239032382945cf4a453c47374682f23522e7f081c10faf2b43f",
+    "acceptanceSha256": "fc9c59b09fed194c2d561c287a574bb4d868e5d2c0301f73f9d460c16d360fd8",
+    "historicalAttemptDurationMs": 26538
+  },
+  "verificationMode": "Recorded initial candidate rechecked with zero new initial calls; at most one new repair call, 2048 output tokens, 180 seconds including recheck. Historical invocation/duration excluded from current budgets. Not first-pass or equal-budget improvement; strict repair selection unchanged.",
+  "model": "qwen2.5-coder-7b",
+  "expectedArtifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+  "limitations": [
+    "No native build",
+    "Installed dependencies reused",
+    "Tokens/cost not measured",
+    "No human correction-time measurement",
+    "Public development tasks; not launch qualification",
+    "Synthetic controls in one installed app; not held-out RN workflow evidence",
+    "Conditions change instructions; input-token budgets are unmeasured; not a single-factor causal ablation",
+    "Scoped edit protocol differs from full-file generation; single existing file, at most eight edits per call; one explicit bounded repair after failed verification",
+    "Block IDs select unique module/direct named-function local declarations; duplicate or overlapping selections are rejected before application",
+    "Other nesting and arrow/class function bodies are not qualified local anchors",
+    "Block catalogue repeats approved source in context; input-token cost is not measured",
+    "Source-grounded grammar does not establish code correctness or task improvement"
+  ],
+  "runs": [
+    {
+      "repetition": 1,
+      "condition": "vectalon-edits",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [
+        {
+          "status": "failed",
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1180
+            },
+            "tests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 7184
+            }
+          }
+        }
+      ],
+      "resources": {
+        "memoryMetric": "macos-pressure-estimate",
+        "availableBudgetBytesBefore": 5841155522,
+        "minimumSampledAvailableBudgetBytes": 2748779069,
+        "maximumSampledRssBytes": 3773251584,
+        "reserveBytes": 2147483648,
+        "sampleIntervalMs": 1000,
+        "timeoutMs": 180000,
+        "availableBudgetBytesAfter": 3092376453
+      },
+      "editAttempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 8480,
+          "fileCount": 1,
+          "adherence": 1,
+          "guardrails": 0.8888888888888888,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:1718daa1ecf9f336e9529cccd849791267e98832fa62f7af76ebf0b838d2db9f",
+          "requestDigest": "sha256:582f6481015a1059272a38ff61f9add1101ed1b0007c2de825927bf602502414",
+          "temperature": 0.2,
+          "maxTokens": 2048,
+          "maxAttempts": 2,
+          "providerCallLimit": 1,
+          "promptMode": "vectalon",
+          "editApplication": "applied",
+          "provider": "local",
+          "model": {
+            "id": "qwen2.5-coder-7b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+            "sizeBytes": 3993201376,
+            "source": "local-file-at-load"
+          },
+          "localContext": {
+            "inputTokens": 1078,
+            "maxOutputTokens": 2048,
+            "contextSize": 3584,
+            "batchSize": 128
+          },
+          "stopReason": "stopGenerationTrigger",
+          "providerCalls": [],
+          "unchangedEdits": 0,
+          "origin": "recorded-candidate-recheck",
+          "editApplicationOrigin": "recorded",
+          "verification": {
+            "status": "failed",
+            "durationMs": 8480
+          },
+          "originalTaskDigest": "sha256:1718daa1ecf9f336e9529cccd849791267e98832fa62f7af76ebf0b838d2db9f"
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 28782,
+          "fileCount": 0,
+          "adherence": null,
+          "guardrails": null,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:1f8ab669f8c66f20b183936d231c82c6e785cfc8aa70166d194b45b321e588d2",
+          "requestDigest": "sha256:05b714e53ff9cadcfc1170cafae25b6acb4e2f076d4c34752ab8c25f091d30c6",
+          "temperature": 0,
+          "maxTokens": 2048,
+          "maxAttempts": 2,
+          "providerCallLimit": 1,
+          "promptMode": "vectalon",
+          "editApplication": "rejected",
+          "provider": "local",
+          "model": {
+            "id": "qwen2.5-coder-7b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+            "sizeBytes": 3993201376,
+            "source": "local-file-at-load"
+          },
+          "localContext": {
+            "inputTokens": 1491,
+            "maxOutputTokens": 2048,
+            "contextSize": 3840,
+            "batchSize": 128
+          },
+          "stopReason": "stopGenerationTrigger",
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 28774
+            }
+          ],
+          "unchangedEdits": 1,
+          "originalTaskDigest": "sha256:1718daa1ecf9f336e9529cccd849791267e98832fa62f7af76ebf0b838d2db9f",
+          "repairBaseSha256": "fd90d55fcf5e918b9607508c9db19f4249e55a1539d8e6956b0fb128d5b17979"
+        }
+      ],
+      "nativeCalls": [
+        {
+          "index": 1,
+          "status": "response",
+          "kind": "repair",
+          "temperature": 0,
+          "maxTokens": 2048,
+          "requestSha256": "2b19666c4fed2d9756cce6b83911836a37ac80a6caac6b2a4b6c42b3bb6467e5",
+          "grammarSchemaSha256": "36f6e24d7302679e68fb63fe0a1095f867e1b35be543a7182f3e8713ae059f5c",
+          "artifact": {
+            "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+            "sizeBytes": 3993201376,
+            "source": "local-file-at-load"
+          },
+          "localContext": {
+            "inputTokens": 1491,
+            "maxOutputTokens": 2048,
+            "contextSize": 3840,
+            "batchSize": 128
+          },
+          "stopReason": "stopGenerationTrigger",
+          "durationMs": 28772
+        }
+      ],
+      "result": {
+        "id": "delayed-label-v1",
+        "title": "delayed-label-v1",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useDelayedLabel.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 8480,
+            "fileCount": 1,
+            "adherence": 1,
+            "guardrails": 0.8888888888888888,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:1718daa1ecf9f336e9529cccd849791267e98832fa62f7af76ebf0b838d2db9f",
+            "requestDigest": "sha256:582f6481015a1059272a38ff61f9add1101ed1b0007c2de825927bf602502414",
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "maxAttempts": 2,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "editApplication": "applied",
+            "provider": "local",
+            "model": {
+              "id": "qwen2.5-coder-7b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+              "sizeBytes": 3993201376,
+              "source": "local-file-at-load"
+            },
+            "localContext": {
+              "inputTokens": 1078,
+              "maxOutputTokens": 2048,
+              "contextSize": 3584,
+              "batchSize": 128
+            },
+            "stopReason": "stopGenerationTrigger",
+            "providerCalls": [],
+            "unchangedEdits": 0,
+            "origin": "recorded-candidate-recheck",
+            "editApplicationOrigin": "recorded",
+            "verification": {
+              "status": "failed",
+              "durationMs": 8480
+            },
+            "originalTaskDigest": "sha256:1718daa1ecf9f336e9529cccd849791267e98832fa62f7af76ebf0b838d2db9f"
+          },
+          {
+            "index": 2,
+            "kind": "repair",
+            "status": "invalid",
+            "selected": false,
+            "durationMs": 28782,
+            "fileCount": 0,
+            "adherence": null,
+            "guardrails": null,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:1f8ab669f8c66f20b183936d231c82c6e785cfc8aa70166d194b45b321e588d2",
+            "requestDigest": "sha256:05b714e53ff9cadcfc1170cafae25b6acb4e2f076d4c34752ab8c25f091d30c6",
+            "temperature": 0,
+            "maxTokens": 2048,
+            "maxAttempts": 2,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "editApplication": "rejected",
+            "provider": "local",
+            "model": {
+              "id": "qwen2.5-coder-7b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+              "sizeBytes": 3993201376,
+              "source": "local-file-at-load"
+            },
+            "localContext": {
+              "inputTokens": 1491,
+              "maxOutputTokens": 2048,
+              "contextSize": 3840,
+              "batchSize": 128
+            },
+            "stopReason": "stopGenerationTrigger",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 28774
+              }
+            ],
+            "unchangedEdits": 1,
+            "originalTaskDigest": "sha256:1718daa1ecf9f336e9529cccd849791267e98832fa62f7af76ebf0b838d2db9f",
+            "repairBaseSha256": "fd90d55fcf5e918b9607508c9db19f4249e55a1539d8e6956b0fb128d5b17979"
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useDelayedLabel.ts",
+            "passed": 16,
+            "failed": 2,
+            "skipped": 18,
+            "ok": false,
+            "failedRules": [
+              "No unused imports",
+              "Directly exported function declarations have return annotations"
+            ]
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 0.8888888888888888
+        },
+        "composite": 0.9444444444444444
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1180
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7184
+        }
+      },
+      "durationMs": 37299
+    },
+    {
+      "repetition": 2,
+      "condition": "vectalon-edits",
+      "status": "not-run"
+    },
+    {
+      "repetition": 3,
+      "condition": "vectalon-edits",
+      "status": "not-run"
+    }
+  ],
+  "negativeControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1512
+    },
+    "tests": {
+      "ok": false,
+      "exitCode": 1,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 8315
+    }
+  },
+  "positiveControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1179
+    },
+    "tests": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 7756
+    }
+  },
+  "outputAudit": {
+    "responseSha256": "28adead0b2397da7d64d4d0343562f3cc03619f49054e5b18e36d3f377b67656",
+    "strictToolEnvelope": true,
+    "edits": [
+      {
+        "file": "src/hooks/useDelayedLabel.ts",
+        "operation": "replace",
+        "block": "block-2",
+        "replacementBytes": 808,
+        "replacementSha256": "066a48e8cd5f1ebf10e09205febde689ed8f9b0a91180f43109832172e6d5b45"
+      }
+    ],
+    "unchangedEdits": 1,
+    "newRepairCandidateCount": 0,
+    "selectedCandidateOrigin": "recorded-initial",
+    "selectedCandidateSha256": "fd90d55fcf5e918b9607508c9db19f4249e55a1539d8e6956b0fb128d5b17979",
+    "observedNewInitialCalls": 0,
+    "observedNewRepairCalls": 1
+  },
+  "qualification": "Recorded initial recheck failed; one new repair was an exact no-op and rejected; no improved candidate or native qualification",
+  "nativeRequestAudit": {
+    "kind": "offline-native-request-audit",
+    "newModelCalls": 0,
+    "stubDeliveries": 1,
+    "nativeRequestSha256": "2b19666c4fed2d9756cce6b83911836a37ac80a6caac6b2a4b6c42b3bb6467e5",
+    "grammarSchemaSha256": "36f6e24d7302679e68fb63fe0a1095f867e1b35be543a7182f3e8713ae059f5c",
+    "scopedCompilerFeedbackPresent": true,
+    "originalInputPresent": true,
+    "acceptanceAndReferenceExcluded": true,
+    "limitation": "Exact adapter/request identity, not proof of model comprehension or hardware attestation",
+    "repairRequestDigest": "sha256:05b714e53ff9cadcfc1170cafae25b6acb4e2f076d4c34752ab8c25f091d30c6",
+    "replayedUnchangedEdits": 1
+  }
+}

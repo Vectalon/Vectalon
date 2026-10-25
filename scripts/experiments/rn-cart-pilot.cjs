@@ -30,9 +30,13 @@ const pinnedAsyncControl = args.diagnostic === 'delayed-label-v1' && !args.task 
 const editRepair = args['edit-repair'];
 assert.ok(!editRepair || (scopedEdits && pinnedAsyncControl && args['resource-pair']), '--edit-repair requires guarded pinned delayed-label-v1 --scoped-edits');
 assert.ok(args['repair-from'] === undefined || (editRepair && pinnedAsyncControl), '--repair-from requires the pinned --edit-repair diagnostic');
-const recordedInitial = args['repair-from'] === undefined ? undefined
-  : require('./recorded-edit-candidate.cjs').loadRecordedEditCandidate(JSON.parse(fs.readFileSync(args['repair-from'], 'utf8')),
-    require('../../docs/release-roadmap/evidence/react-async-edits-2026-10-25.json'));
+let recordedInitial;
+if (args['repair-from'] !== undefined) {
+  try {
+    recordedInitial = require('./recorded-edit-candidate.cjs').loadRecordedEditCandidate(JSON.parse(fs.readFileSync(args['repair-from'], 'utf8')),
+      require('../../docs/release-roadmap/evidence/react-async-edits-2026-10-25.json'));
+  } catch { throw new Error('Recorded candidate unavailable or does not match pinned evidence; no source logged'); }
+}
 assert.ok(!scopedEdits || (args['resource-pair'] && ((args.task === 'current-session' && args['evaluation-lane'] === '7b' && !args.diagnostic) || pinnedAsyncControl)
   && !args.edits && !args['guided-repair'] && !args['raw-guided'] && !args.repair && !args.constrained
   && !args.guided && !args['task-relevant'] && !args['verified-controls'] && !args['sampling-control']), '--scoped-edits requires guarded current-session 7b or pinned delayed-label-v1 without other generation modes');

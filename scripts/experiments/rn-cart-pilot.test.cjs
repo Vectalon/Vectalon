@@ -188,6 +188,21 @@ Module._load = function(request, ...args) {
   }
 });
 
+test('invalid recorded JSON fails before output without echoing source bytes', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-recorded-invalid-'));
+  try {
+    const file = path.join(root, 'invalid.json');
+    fs.writeFileSync(file, 'PRIVATE_SOURCE_TOKEN_NOT_JSON');
+    const result = spawnSync(process.execPath, [path.join(__dirname, 'rn-cart-pilot.cjs'), '--diagnostic', 'delayed-label-v1',
+      '--scoped-edits', '--edit-repair', '--resource-pair', '--repair-from', file,
+      '--model', 'qwen2.5-coder-7b', '--artifact-sha256', require('./one-app-evaluation-7b.json').artifactSha256],
+    { encoding: 'utf8', timeout: 10000 });
+    assert.notEqual(result.status, 0);
+    assert.ok(!result.stdout.includes('Evidence:'));
+    assert.ok(!result.stderr.includes('PRIVATE_SOURCE_TOKEN'));
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
+});
+
 test('rejects changed 7B verifier input before experiment output or inference', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-freeze-test-'));
   try {

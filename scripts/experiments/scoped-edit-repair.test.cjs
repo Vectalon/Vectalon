@@ -73,6 +73,23 @@ test('verifier errors stop work and retain source-free failure evidence', async 
   assert.ok(!JSON.stringify(evidence).includes('PRIVATE_VERIFIER_ERROR'));
 });
 
+test('does not publish a verifier error while verification is still pending', async () => {
+  let entered;
+  const started = new Promise(resolve => { entered = resolve; });
+  let finish;
+  let latest;
+  const generate = createVerifiedEditGenerate(() => async (_, onAttempts) => {
+    onAttempts([{ status: 'parsed', durationMs: 0, guardrails: 1, adherence: null }]);
+    return [{ path: 'src/value.ts', content: 'initial' }];
+  }, { verify: () => { entered(); return new Promise(resolve => { finish = resolve; }); } });
+  const pending = generate(scenario, records => { latest = structuredClone(records); });
+  await started;
+  assert.notEqual(latest[0].verification?.status, 'error');
+  finish({ passed: true });
+  await pending;
+  assert.equal(latest[0].verification.status, 'passed');
+});
+
 test('invalid initial delivery does not spend a repair or invoke verification', async () => {
   const s = setup([undefined], []);
   assert.deepEqual((await s.run()).files, []);

@@ -29,7 +29,6 @@ function createVerifiedEditGenerate(createEditGenerate, options) {
         if (!index) { selected = files; record.selected = true; }
         const started = Date.now();
         record.verification = { status: 'error', durationMs: 0 };
-        publish();
         let verification;
         try {
           verification = await options.verify(files);

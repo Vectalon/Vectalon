@@ -3,6 +3,35 @@ const assert = require('node:assert/strict');
 const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs');
 const evidence = require('../../docs/release-roadmap/evidence/cart-3b-paired-pilot-2026-10-20.json');
 
+test('recorded repair retains historical initial separately and rejects unchanged repair despite delivered feedback', () => {
+  const report = require('../../docs/release-roadmap/evidence/react-recorded-repair-2026-10-25.json');
+  const row = report.runs[0];
+  assert.equal(report.kind, 'recorded-candidate-assisted-repair');
+  assert.equal(report.resourceProtocol.maxNativeCalls, 1);
+  assert.equal(row.resources.timeoutMs, 180000);
+  assert.equal(row.nativeCalls.length, 1);
+  assert.equal(row.nativeCalls[0].kind, 'repair');
+  const [initial, repair] = row.result.attempts;
+  assert.equal(initial.origin, 'recorded-candidate-recheck');
+  assert.deepEqual(initial.providerCalls, []);
+  assert.equal(initial.verification.status, 'failed');
+  assert.equal(initial.selected, true);
+  assert.equal(repair.kind, 'repair');
+  assert.equal(repair.unchangedEdits, 1);
+  assert.equal(repair.editApplication, 'rejected');
+  assert.equal(repair.selected, false);
+  assert.equal(repair.repairBaseSha256, report.recordedInitial.candidateSha256);
+  assert.equal(report.outputAudit.selectedCandidateSha256, report.recordedInitial.candidateSha256);
+  assert.equal(report.runs.filter(row => row.status === 'not-run').length, 2);
+  assert.equal(report.nativeRequestAudit.newModelCalls, 0);
+  assert.equal(report.nativeRequestAudit.nativeRequestSha256, row.nativeCalls[0].requestSha256);
+  assert.equal(report.nativeRequestAudit.repairRequestDigest, repair.requestDigest);
+  assert.equal(report.nativeRequestAudit.acceptanceAndReferenceExcluded, true);
+  assert.equal(report.nativeRequestAudit.scopedCompilerFeedbackPresent, true);
+  assert.match(formatPilotReport(report), /1491\/2048\/3840\/128/);
+  for (const key of ['generatedArtifacts', 'rawResponses', 'stdout', 'stderr']) assert.ok(!JSON.stringify(report).includes(`"${key}"`));
+});
+
 test('bounded scoped repair records a rejected initial without claiming an unspent repair', () => {
   const report = require('../../docs/release-roadmap/evidence/react-async-repair-2026-10-25.json');
   const prior = require('../../docs/release-roadmap/evidence/react-async-edits-2026-10-25.json');

@@ -35,7 +35,7 @@ function formatPilotReport(report) {
     '| Condition | Repeat | Memory metric | Minimum available bytes | Maximum sampled RSS bytes | Input/output cap/context/batch tokens | Resource stop |',
     '|---|---:|---|---:|---:|---|---|',
     ...runs.filter(row => row.resources).map(row => {
-      const context = row.result?.attempts?.[0]?.localContext;
+      const context = report.recordedInitial ? row.nativeCalls?.[0]?.localContext : row.result?.attempts?.[0]?.localContext;
       return `| ${cell(row.condition)} | ${cell(row.repetition)} | ${cell(row.resources.memoryMetric)} | ${cell(row.resources.minimumSampledAvailableBudgetBytes)} | ${cell(row.resources.maximumSampledRssBytes)} | ${context ? [context.inputTokens, context.maxOutputTokens, context.contextSize, context.batchSize].map(cell).join('/') : 'unrecorded'} | ${cell(row.resourceStopReason ?? 'none observed')} |`;
     }), '');
   for (const condition of [...new Set(runs.map(row => row.condition))]) {
