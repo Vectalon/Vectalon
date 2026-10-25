@@ -29,9 +29,12 @@ const editMode = args.edits || scopedEdits;
 assert.ok(!args['guided-repair'] || (args['resource-pair'] && !args['raw-guided'] && !args.repair), '--guided-repair requires --resource-pair without --raw-guided or --repair');
 assert.ok(!args['raw-guided'] || (args['resource-pair'] && args['include-raw-response'] && args['include-generated']), '--raw-guided requires --resource-pair --include-raw-response --include-generated');
 const freshEvaluation = args['evaluation-lane'] === 'fresh-7b';
+const asyncControlPair = args.diagnostic === 'delayed-label-v1' && args['task-relevant']
+  && args.model === 'qwen2.5-coder-7b' && args['artifact-sha256'] === require('./one-app-evaluation-7b.json').artifactSha256
+  && !args['verified-controls'] && !args['sampling-control'] && !args['guided-repair'] && !args['raw-guided'];
 assert.ok(!freshEvaluation || (args['resource-pair'] && !args['guided-repair'] && !args['raw-guided']), 'Fresh evaluation requires --resource-pair without diagnostic repair/raw-guided modes');
 assert.ok(!args['resource-pair'] || ((args.task === 'stock-filter' || scopedEdits) && args['evaluation-lane'] === '7b')
-  || (freshEvaluation && args.task === 'orders-refresh-race'), '--resource-pair requires --task stock-filter --evaluation-lane 7b, --scoped-edits, or fresh-7b orders-refresh-race');
+  || (freshEvaluation && args.task === 'orders-refresh-race') || asyncControlPair, '--resource-pair requires --task stock-filter --evaluation-lane 7b, --scoped-edits, fresh-7b orders-refresh-race, or pinned delayed-label-v1 --task-relevant');
 assert.ok(args['evaluation-lane'] === undefined || ['3b', '7b', 'fresh-7b'].includes(args['evaluation-lane']), 'Unknown evaluation lane');
 assert.ok(args['evaluation-lane'] === undefined || args.task !== undefined, '--evaluation-lane requires --task');
 const freezeFile = freshEvaluation ? 'one-app-evaluation-fresh-7b.json' : args['evaluation-lane'] === '7b' ? 'one-app-evaluation-7b.json' : 'one-app-evaluation.json';
@@ -133,6 +136,7 @@ const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pi
     ...(fileSchema ? { grammarSchemaSha256: hash(JSON.stringify(fileSchema)) } : {}),
   } } : {}),
   ...(args.diagnostic ? { controlDefinitionsSha256: hash(fs.readFileSync(path.join(__dirname, 'generation-controls.cjs'))),
+    ...(args.diagnostic === 'delayed-label-v1' ? { controlSourceSha256: hash(fs.readFileSync(path.join(__dirname, 'react-async-control.cjs'))) } : {}),
     conditionSettings: samplingControl ? {
       'repeat-default': { ...settings, output: 'task-relevant full-file JSON; existing repetition penalties' },
       'repeat-off': { ...settings, output: 'task-relevant full-file JSON; repetition penalties disabled' },

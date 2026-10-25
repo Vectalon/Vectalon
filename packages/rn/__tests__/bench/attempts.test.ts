@@ -206,6 +206,36 @@ describe('model attempt evidence', () => {
     expect(focused.generate.mock.calls[0][0].systemPrompt).not.toContain('pure updater function')
   })
 
+  it('adds snapshot and effect-cycle guidance only to explicit task-relevant React controls', async () => {
+    const task = { ...scenario, fixtures: { 'src/value.ts': `import { useState, useEffect } from 'react';
+export function useValue() { const [value, setValue] = useState(0); useEffect(() => { setValue(1); }, []); return value; }` },
+    fixEdits: [{ file: 'src/value.ts', find: '0', replace: 'PRIVATE_ACCEPTANCE_ANSWER' }] }
+    for (const promptMode of ['task-relevant', 'task-only', 'vectalon'] as const) {
+      const focused = generator([answer()], { promptMode, maxAttempts: 1 })
+      await focused.seam(task)
+      const request = focused.generate.mock.calls[0][0]
+      if (promptMode === 'task-relevant') {
+        expect(request.systemPrompt).toContain('render snapshot')
+        expect(request.systemPrompt).toContain('non-rendering bookkeeping')
+        expect(request.systemPrompt).toContain('Do not read or write refs during rendering')
+        expect(request.systemPrompt).toContain('callback identity')
+        expect(request.systemPrompt).toContain('Do not suppress dependencies')
+      } else {
+        expect(request.systemPrompt).not.toContain('non-rendering bookkeeping')
+        expect(request.systemPrompt).not.toContain('Do not suppress dependencies')
+      }
+      expect(JSON.stringify(request)).not.toContain('PRIVATE_ACCEPTANCE_ANSWER')
+    }
+  })
+
+  it('omits effect-cycle guidance when supplied state source has no effect', async () => {
+    const focused = generator([answer()], { promptMode: 'task-relevant' })
+    await focused.seam({ ...scenario, fixtures: { 'src/value.ts': 'const [value, setValue] = useState(0);' } })
+    const { systemPrompt } = focused.generate.mock.calls[0][0]
+    expect(systemPrompt).toContain('render snapshot')
+    expect(systemPrompt).not.toContain('callback identity')
+  })
+
   it.each(['not JSON', answer('src/wrong.ts')])('retains the first outcome without retry or repair when capped at one', async response => {
     const { generate, seam } = generator([response, answer()], { maxAttempts: 1, providerCallLimit: 1 })
     const run = await runScenario(scenario, { generate: seam })

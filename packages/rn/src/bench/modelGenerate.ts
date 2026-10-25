@@ -126,6 +126,12 @@ export function createModelGenerate(options: ModelGenerateOptions): (scenario: B
       if (/\buseState\s*(?:<[^>]*>)?\s*\(/.test(fixtureBlock)) {
         // React state queues: https://react.dev/learn/queueing-a-series-of-state-updates
         systemPrompt += '\nFor React state calculated from previous state, pass a pure updater function to the setter so queued updates compose. Keep state local to each hook instance.'
+        // https://react.dev/learn/state-as-a-snapshot and /reference/react/useRef
+        systemPrompt += '\nState in a callback is a render snapshot, including after a setter or await; setting state does not update that captured value. Use an instance-local ref for non-rendering bookkeeping that must be read synchronously across callbacks; keep visible output in state. Do not read or write refs during rendering.'
+        if (/\buseEffect\s*\(/.test(fixtureBlock)) {
+          // https://react.dev/reference/react/useEffect#my-effect-keeps-re-running-in-an-infinite-cycle
+          systemPrompt += '\nCheck effect/callback identity: an effect that invokes a callback must not cycle because that callback updates state that changes its own identity. Do not suppress dependencies to hide stale closures; restructure non-rendering bookkeeping and include genuine reactive dependencies.'
+        }
       }
     }
     const prompt = minimal ? scenario.prompt : implementationPrompt.prompt

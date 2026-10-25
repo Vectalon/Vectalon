@@ -1,6 +1,7 @@
 // Public development controls, not held-out qualification tasks.
-const ids = ['page-bound', 'batched-counter', 'batched-counter-stress-v1'];
+const ids = ['page-bound', 'batched-counter', 'batched-counter-stress-v1', 'delayed-label-v1'];
 function controlTask(id) {
+  if (id === 'delayed-label-v1') return require('./react-async-control.cjs');
   if (id === 'batched-counter-stress-v1') {
     const base = controlTask('batched-counter');
     return { ...base, id,
