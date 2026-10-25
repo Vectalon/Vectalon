@@ -84,6 +84,9 @@ export function createModelEditGenerate(options: Pick<ModelGenerateOptions, 'mod
         Object.keys(edit).some(key => !['file', 'op', 'from', 'to'].includes(key)) || edit.file !== target ||
         !['replace', 'insert-after'].includes(edit.op) || !anchors.includes(edit.from) || typeof edit.to !== 'string') ||
         new Set(edits.map(edit => edit.from)).size !== edits.length) return []
+      // A truncated block must not consume an unchanged neighboring statement.
+      try { for (const edit of edits) parse(edit.to, { sourceType: 'module', plugins: ['typescript', 'jsx'], allowUndeclaredExports: true }) }
+      catch { return [] }
       root = mkdtempSync(join(tmpdir(), 'vectalon-model-edits-'))
       const file = join(root, target)
       mkdirSync(dirname(file), { recursive: true })
@@ -93,6 +96,8 @@ export function createModelEditGenerate(options: Pick<ModelGenerateOptions, 'mod
       if (applied.skipped.length || applied.applied.length !== edits.length) return []
       const next = readFileSync(file, 'utf8')
       if (next === scenario.fixtures[target]) return []
+      try { parse(next, { sourceType: 'module', plugins: ['typescript', 'jsx'] }) }
+      catch { return [] }
       const files = [{ path: target, content: next }]
       record.editApplication = 'applied'
       record.status = 'parsed'

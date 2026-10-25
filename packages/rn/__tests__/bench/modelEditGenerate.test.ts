@@ -58,6 +58,16 @@ it('rejects a valid proposal without provider acknowledgement of required argume
   expect(await seam(scenario)).toEqual([])
 })
 
+it.each(['export function useSecuritySettings(): {\n', 'export const value =', 'export const Screen = () => <View>'])(
+  'rejects a syntactically incomplete replacement without selecting it: %s', async replacement => {
+    const { seam } = setup(envelope([{ ...edit, to: replacement }]))
+    const attempts = jest.fn()
+    expect(await seam(scenario, attempts)).toEqual([])
+    expect(scenario.fixtures[target]).toBe(source)
+    expect(attempts.mock.calls[0][0][0]).toMatchObject({ status: 'invalid', selected: false, editApplication: 'rejected' })
+    expect(JSON.stringify(attempts.mock.calls)).not.toContain(replacement)
+  })
+
 it('rejects ambiguous anchors', async () => {
   const { seam } = setup(envelope([{ ...edit, from: 'keep' }]))
   expect(await seam(scenario)).toEqual([])
@@ -79,6 +89,12 @@ it('preserves indentation and line endings when inserting after an offered ancho
   const content = '  const value = 1;\r\n  keep();\r\n'
   const { seam } = setup(envelope([{ ...edit, op: 'insert-after', from: 'block-1', to: '\r\n  const next = 2;' }]))
   expect(await seam({ ...scenario, fixtures: { [target]: content } })).toEqual([{ path: target, content: '  const value = 1;\r\n  const next = 2;\r\n  keep();\r\n' }])
+})
+
+it('accepts a complete inserted export that references an existing declaration', async () => {
+  const addition = '\nexport { value as renamed };'
+  const { seam } = setup(envelope([{ ...edit, op: 'insert-after', to: addition }]))
+  expect(await seam(scenario)).toEqual([{ path: target, content: source.replace('export const value = 1', 'export const value = 1' + addition) }])
 })
 
 it('fails before inference when the source has no unique block', async () => {

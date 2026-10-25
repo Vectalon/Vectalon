@@ -3,6 +3,27 @@ const assert = require('node:assert/strict');
 const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs');
 const evidence = require('../../docs/release-roadmap/evidence/cart-3b-paired-pilot-2026-10-20.json');
 
+test('scoped session history retains exact application separately from malformed candidate failure', () => {
+  const report = require('../../docs/release-roadmap/evidence/scoped-session-2026-10-25.json');
+  assert.equal(report.kind, 'bounded-scoped-edit-diagnostic');
+  assert.equal(report.task.id, 'current-session');
+  const row = report.runs[0];
+  assert.equal(row.status, 'failed');
+  assert.equal(row.identityMatched, true);
+  assert.equal(row.result.attempts[0].editApplication, 'applied');
+  assert.equal(row.checks.typecheck.ok, false);
+  assert.equal(row.checks.tests.ok, false);
+  assert.equal(row.nativeCalls.length, 1);
+  assert.equal(report.outputAudit.strictJson, true);
+  assert.equal(report.outputAudit.editCount, 1);
+  assert.equal(report.outputAudit.replacements[0].toBytes, 52);
+  assert.ok(row.compilerDiagnosticCodes.includes('TS1005'));
+  assert.equal(report.runs.filter(row => row.status === 'not-run').length, 2);
+  assert.equal(report.nativeProbePreflight.negative.tests.ok, false);
+  assert.equal(report.nativeProbePreflight.positive.tests.ok, true);
+  for (const key of ['generatedArtifacts', 'rawResponses', 'stdout', 'stderr']) assert.ok(!JSON.stringify(report).includes(`"${key}"`));
+});
+
 test('structured repair separates valid envelopes and higher rubric scores from failed app verification', () => {
   const report = require('../../docs/release-roadmap/evidence/structured-repair-2026-10-25.json');
   assert.equal(report.kind, 'bounded-structured-repair-diagnostic');

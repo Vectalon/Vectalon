@@ -5039,7 +5039,7 @@
     },
     {
       "id": "rn.evaluation",
-      "version": "1.0.39",
+      "version": "1.0.40",
       "lifecycle": "experimental",
       "implemented": true,
       "owner": {
@@ -5571,6 +5571,15 @@
           "recordedAt": "2026-10-25T04:14:31.684Z",
           "productVersion": "0.22.5",
           "capabilityVersion": "1.0.39"
+        },
+        {
+          "kind": "implementation",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.evaluation.1.0.40.0.22.5.implementation.json",
+          "digest": "sha256:fdb397fd2446b7565086aece6fa51738ad2aa6842d1838d3d4e1582dc4df4194",
+          "recordedAt": "2026-10-25T04:31:07.482Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.40"
         }
       ]
     },
