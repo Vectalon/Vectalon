@@ -5,7 +5,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
 
-for (const [lowMemory, singleGuided, guidedRepair, structured] of [[false, false, false, false], [true, false, false, false], [false, true, false, false], [false, false, true, false], [false, false, true, true]]) test(`bounded diagnostics retain planned rows and stop safely (lowMemory=${lowMemory}, singleGuided=${singleGuided}, repair=${guidedRepair}, structured=${structured})`, () => {
+for (const [lowMemory, singleGuided, guidedRepair, structured, scoped] of [[false, false, false, false, false], [true, false, false, false, false], [false, true, false, false, false], [false, false, true, false, false], [false, false, true, true, false], [false, false, false, false, true]]) test(`bounded diagnostics retain planned rows and stop safely (lowMemory=${lowMemory}, singleGuided=${singleGuided}, repair=${guidedRepair}, structured=${structured}, scoped=${scoped})`, () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-resource-pair-test-'));
   let output;
   try {
@@ -14,34 +14,56 @@ for (const [lowMemory, singleGuided, guidedRepair, structured] of [[false, false
 Module._load = function(request, ...args) {
   if (request.endsWith('/dist/model/local/memory.js')) return { nativeMemoryBudget: () => ({ availableBytes: ${lowMemory ? 1024 : 8 * 1024 ** 3}, source: 'os-free' }) };
   if (request.endsWith('/dist/sandbox/run.js')) return { runSandboxed: async () => {
-    checks++; const ok = checks !== 2 && (checks <= 4 || (${guidedRepair} && checks >= 7));
+    checks++; const ok = checks !== 2 && (checks <= 4 || (${guidedRepair} && checks >= 7) || (${scoped} && [5,7,8].includes(checks)));
     return { ok, exitCode: ok ? 0 : 1, durationMs: 1, stdout: 'PRIVATE_DIAGNOSTIC', stderr: '' };
   } };
   if (request.endsWith('/dist/model/local/inference.js')) return { runInference: async (model, options) => {
     const assert = require('node:assert/strict');
     assert.equal(options.signal.aborted, false); assert.equal(options.maxTokens, 2048);
-    assert.deepEqual(options.grammarSchema, ${structured} ? require(${JSON.stringify(path.join(__dirname, '../../packages/rn/dist/model/providers/LocalProvider.js'))}).FILES_JSON_SCHEMA : undefined);
+    if (${scoped}) {
+      assert.equal(options.grammarSchema.properties.tool.const, 'propose_edits');
+      assert.equal(options.grammarSchema.properties.arguments.properties.edits.items.properties.file.const, 'src/hooks/useSecuritySettings.ts');
+    } else assert.deepEqual(options.grammarSchema, ${structured} ? require(${JSON.stringify(path.join(__dirname, '../../packages/rn/dist/model/providers/LocalProvider.js'))}).FILES_JSON_SCHEMA : undefined);
     assert.equal(options.repeatPenalty, undefined); assert.equal(options.temperature, ${guidedRepair} && ++calls === 2 ? 0 : 0.2);
     if (${guidedRepair} && calls === 2) {
       assert.ok(options.prompt.includes('Verifier feedback'));
       assert.ok(options.prompt.includes('Typecheck failed'));
       assert.ok(!options.prompt.includes('cartPilot.tsx'));
     }
-    return { content: JSON.stringify({ files: [{ path: 'src/screens/CatalogScreen.tsx', content: 'export const example = 1;' }] }),
+    return { content: JSON.stringify(${scoped} ? { tool: 'propose_edits', arguments: { edits: [{ file: 'src/hooks/useSecuritySettings.ts', op: 'replace',
+      from: options.grammarSchema.properties.arguments.properties.edits.items.properties.from.enum[0], to: 'import { useState, useCallback } from "react";' }] } }
+      : { files: [{ path: 'src/screens/CatalogScreen.tsx', content: 'export const example = 1;' }] }),
       modelId: model, stopReason: 'eogToken', artifact: { sha256: '${require('./one-app-evaluation-7b.json').artifactSha256}' },
       localContext: { inputTokens: 100, maxOutputTokens: 2048, contextSize: 2560, batchSize: 128 } };
   } };
   return load.call(this, request, ...args);
 };\n`);
     const result = spawnSync(process.execPath, ['--require', preload, path.join(__dirname, 'rn-cart-pilot.cjs'),
-      '--task', 'stock-filter', '--evaluation-lane', '7b', '--resource-pair',
+      '--task', scoped ? 'current-session' : 'stock-filter', '--evaluation-lane', '7b', '--resource-pair',
       ...(singleGuided ? ['--raw-guided', '--include-raw-response', '--include-generated'] : []),
-      ...(guidedRepair ? ['--guided-repair'] : []), ...(structured ? ['--constrained'] : [])], { encoding: 'utf8', timeout: 15000 });
+      ...(guidedRepair ? ['--guided-repair'] : []), ...(structured ? ['--constrained'] : []),
+      ...(scoped ? ['--scoped-edits', '--include-generated'] : [])], { encoding: 'utf8', timeout: 15000 });
     assert.equal(result.status, lowMemory ? 1 : 0, result.stderr);
     output = result.stdout.match(/^Evidence: (.+)$/m)?.[1];
     assert.ok(output, result.stdout);
     const source = fs.readFileSync(path.join(output, 'report.json'), 'utf8');
     const report = JSON.parse(source);
+    if (scoped) {
+      assert.equal(report.kind, 'bounded-scoped-edit-diagnostic');
+      assert.equal(report.resourceProtocol.rowLimit, 1);
+      assert.equal(report.runs.length, 3);
+      const row = report.runs[0];
+      assert.equal(row.status, 'failed');
+      assert.equal(row.result.attempts[0].editApplication, 'applied');
+      assert.equal(row.identityMatched, true);
+      assert.equal(row.nativeCalls.length, 1);
+      assert.equal(row.nativeCalls[0].grammarSchemaSha256, report.resourceProtocol.grammarSchemaSha256);
+      assert.ok(report.runs.slice(1).every(row => row.status === 'not-run'));
+      const original = spawnSync('git', ['show', require('./one-app-evaluation-7b.json').appRevision + ':apps/website/demo/login-app/src/hooks/useSecuritySettings.ts'], { encoding: 'utf8' }).stdout;
+      assert.equal(row.result.generatedArtifacts[0].content, 'import { useState, useCallback } from "react";' + original.slice(original.indexOf('\n')));
+      assert.ok(!require('./pilot-report.cjs').serializePilotReport(report).includes('PRIVATE_DIAGNOSTIC'));
+      return;
+    }
     if (guidedRepair) {
       assert.equal(report.kind, structured ? 'bounded-structured-repair-diagnostic' : 'bounded-guided-repair-diagnostic');
       if (structured) {
@@ -99,6 +121,9 @@ test('rejects changed 7B verifier input before experiment output or inference', 
 });
 
 for (const [name, args, message] of [
+  ['scoped edits without guards', ['--scoped-edits'], '--scoped-edits requires'],
+  ['scoped edits on another task', ['--scoped-edits', '--resource-pair', '--task', 'stock-filter', '--evaluation-lane', '7b'], '--scoped-edits requires'],
+  ['scoped edits mixed with repairs', ['--scoped-edits', '--resource-pair', '--task', 'current-session', '--evaluation-lane', '7b', '--guided-repair'], '--scoped-edits requires'],
   ['guided repair without guards', ['--guided-repair'], '--guided-repair requires'],
   ['guided repair mixed with raw-only diagnostic', ['--guided-repair', '--resource-pair', '--raw-guided'], '--guided-repair requires'],
   ['guided repair mixed with legacy repair', ['--guided-repair', '--resource-pair', '--repair'], '--guided-repair requires'],

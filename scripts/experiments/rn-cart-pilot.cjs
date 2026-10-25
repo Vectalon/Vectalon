@@ -20,10 +20,15 @@ const { values: args } = require('node:util').parseArgs({ options: {
   'resource-pair': { type: 'boolean' },
   'raw-guided': { type: 'boolean' },
   'guided-repair': { type: 'boolean' },
+  'scoped-edits': { type: 'boolean' },
 } });
+const scopedEdits = args['scoped-edits'];
+assert.ok(!scopedEdits || (args['resource-pair'] && args.task === 'current-session' && args['evaluation-lane'] === '7b'
+  && !args.edits && !args['guided-repair'] && !args['raw-guided'] && !args.repair && !args.constrained), '--scoped-edits requires guarded current-session 7b without other generation modes');
+const editMode = args.edits || scopedEdits;
 assert.ok(!args['guided-repair'] || (args['resource-pair'] && !args['raw-guided'] && !args.repair), '--guided-repair requires --resource-pair without --raw-guided or --repair');
 assert.ok(!args['raw-guided'] || (args['resource-pair'] && args['include-raw-response'] && args['include-generated']), '--raw-guided requires --resource-pair --include-raw-response --include-generated');
-assert.ok(!args['resource-pair'] || (args.task === 'stock-filter' && args['evaluation-lane'] === '7b'), '--resource-pair requires --task stock-filter --evaluation-lane 7b');
+assert.ok(!args['resource-pair'] || ((args.task === 'stock-filter' || scopedEdits) && args['evaluation-lane'] === '7b'), '--resource-pair requires --task stock-filter --evaluation-lane 7b, or --scoped-edits');
 assert.ok(args['evaluation-lane'] === undefined || ['3b', '7b'].includes(args['evaluation-lane']), 'Unknown evaluation lane');
 assert.ok(args['evaluation-lane'] === undefined || args.task !== undefined, '--evaluation-lane requires --task');
 const freezeFile = args['evaluation-lane'] === '7b' ? 'one-app-evaluation-7b.json' : 'one-app-evaluation.json';
@@ -55,7 +60,7 @@ assert.ok(getPreset(model), 'Unknown model preset; refusing default-model substi
 const expectedArtifactSha256 = args['artifact-sha256'] ?? (args.task ? freeze.artifactSha256 : 'cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046');
 const { runSandboxed } = load('sandbox/run.js');
 const { createModelGenerate } = load('bench/modelGenerate.js');
-const { createModelEditGenerate } = args.edits || args.diagnostic ? load('bench/modelEditGenerate.js') : {};
+const { createModelEditGenerate } = editMode || args.diagnostic ? load('bench/modelEditGenerate.js') : {};
 const { runScenario } = load('bench/runner.js');
 const { ModelRouter } = load('model/ModelRouter.js');
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
@@ -108,15 +113,15 @@ const constrained = args.constrained;
 const fileSchema = args['guided-repair'] && constrained ? load('model/providers/LocalProvider.js').FILES_JSON_SCHEMA : undefined;
 if (args['guided-repair'] && constrained) assert.ok(fileSchema, 'Build the RN package before the structured diagnostic');
 const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair || verifiedControls ? 2 : 1, providerCallLimit: 1,
-  ...(constrained ? { outputFormat: 'files-json' } : {}), ...(args.edits ? { toolEnvelope: true, requiredTool: 'propose_edits', anchorMode: 'top-level-source-blocks' } : {}) };
-if (args.task) assert.deepEqual(settings, args['guided-repair']
+  ...(constrained ? { outputFormat: 'files-json' } : {}), ...(editMode ? { toolEnvelope: true, requiredTool: 'propose_edits', anchorMode: 'top-level-source-blocks' } : {}) };
+if (args.task) assert.deepEqual(settings, scopedEdits ? { ...freeze.settings, toolEnvelope: true, requiredTool: 'propose_edits', anchorMode: 'top-level-source-blocks' } : args['guided-repair']
   ? { ...freeze.settings, maxAttempts: 2, ...(constrained ? { outputFormat: 'files-json' } : {}) }
   : freeze.settings, 'Frozen resource settings changed');
 const output = fs.mkdtempSync('/private/tmp/vectalon-cart-pilot-');
 const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pilot', revision, appRevision, startedAt: new Date().toISOString(),
-  ...(args['resource-pair'] ? { kind: fileSchema ? 'bounded-structured-repair-diagnostic' : args['guided-repair'] ? 'bounded-guided-repair-diagnostic' : args['raw-guided'] ? 'bounded-guided-output-diagnostic' : 'bounded-one-app-resource-pair', resourceProtocol: {
+  ...(args['resource-pair'] ? { kind: scopedEdits ? 'bounded-scoped-edit-diagnostic' : fileSchema ? 'bounded-structured-repair-diagnostic' : args['guided-repair'] ? 'bounded-guided-repair-diagnostic' : args['raw-guided'] ? 'bounded-guided-output-diagnostic' : 'bounded-one-app-resource-pair', resourceProtocol: {
     routing: 'direct native in both conditions; no router enrichment/fallback; default sampling unchanged',
-    rowLimit: args['raw-guided'] || args['guided-repair'] ? 1 : 2, reserveBytes: 2 * 1024 ** 3, sampleIntervalMs: 1000, hardStopGraceMs: 5000,
+    rowLimit: scopedEdits || args['raw-guided'] || args['guided-repair'] ? 1 : 2, reserveBytes: 2 * 1024 ** 3, sampleIntervalMs: 1000, hardStopGraceMs: 5000,
     guardSha256: hash(fs.readFileSync(path.join(__dirname, 'resource-guard.cjs'))),
     adapterSha256: hash(fs.readFileSync(path.join(__dirname, 'sampling-control.cjs'))),
     memoryModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/model/local/memory.js'))),
@@ -140,7 +145,7 @@ const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pi
     dependencyLockSha256: hash(fs.readFileSync(path.join(app, 'package-lock.json'))),
     nativeVerification: 'not-run' } : {}),
   runnerSha256: hash(fs.readFileSync(__filename)), appArchiveSha256: hash(archive.stdout),
-  generationModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/bench', args.edits ? 'modelEditGenerate.js' : 'modelGenerate.js'))),
+  generationModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/bench', editMode ? 'modelEditGenerate.js' : 'modelGenerate.js'))),
   ...(args.diagnostic && !args.guided ? { editGenerationModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/bench/modelEditGenerate.js'))) } : {}),
   inferenceModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/model/local/inference.js'))),
   acceptanceSha256: hash(acceptance), taskSha256: hash(JSON.stringify(scenario)),
@@ -159,8 +164,8 @@ const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pi
     ...(verifiedControls ? ['Both conditions permit at most two provider calls and 4096 output tokens; actual work and input tokens differ. Earlier single-attempt results are not equal-budget controls.'] : []),
     ...(samplingControl ? ['Direct native sampling diagnostic in both lanes, not the production router; repetition penalties alone differ; historical router runs are not causal controls.'] : []),
     ...(constrained ? ['Native file-envelope grammar constrains serialization, not file scope or code correctness'] : []),
-    ...(args.edits ? ['Scoped edit protocol differs from full-file generation; single existing file, at most eight edits, no repairs', 'Block IDs select unique original top-level TypeScript/JSX spans; repeated selections are rejected and exact application is checked again', 'Block catalogue repeats approved source in context; input-token cost is not measured', 'Source-grounded grammar does not establish code correctness or task improvement'] : [])],
-  runs: Array.from({ length: args.task ? freeze.repetitions : 3 }, (_, repetition) => (samplingControl ? (repetition % 2 ? ['repeat-off', 'repeat-default'] : ['repeat-default', 'repeat-off']) : args['task-relevant'] ? (repetition % 2 ? ['task-relevant', 'task-only'] : ['task-only', 'task-relevant']) : args.guided ? ['vectalon'] : args.diagnostic ? (repetition % 2 ? ['vectalon-edits', 'task-only'] : ['task-only', 'vectalon-edits']) : args.edits ? ['vectalon-edits'] : repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
+    ...(editMode ? ['Scoped edit protocol differs from full-file generation; single existing file, at most eight edits, no repairs', 'Block IDs select unique original top-level TypeScript/JSX spans; repeated selections are rejected and exact application is checked again', 'Block catalogue repeats approved source in context; input-token cost is not measured', 'Source-grounded grammar does not establish code correctness or task improvement'] : [])],
+  runs: Array.from({ length: args.task ? freeze.repetitions : 3 }, (_, repetition) => (samplingControl ? (repetition % 2 ? ['repeat-off', 'repeat-default'] : ['repeat-default', 'repeat-off']) : args['task-relevant'] ? (repetition % 2 ? ['task-relevant', 'task-only'] : ['task-only', 'task-relevant']) : args.guided ? ['vectalon'] : args.diagnostic ? (repetition % 2 ? ['vectalon-edits', 'task-only'] : ['task-only', 'vectalon-edits']) : editMode ? ['vectalon-edits'] : repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
 const save = () => {
   fs.writeFileSync(path.join(output, 'report.json'), serializePilotReport(report, {
     includeGenerated: args['include-generated'], includeRawResponse: args['include-raw-response'],
@@ -273,7 +278,7 @@ async function main() {
     assert.equal(report.priorAcceptanceControl.tests.ok, true, 'Stress negative must pass the earlier finite acceptance cases');
   }
   if (args.preflight) return;
-  for (const row of args['guided-repair'] ? report.runs.slice(0, 1)
+  for (const row of scopedEdits || args['guided-repair'] ? report.runs.slice(0, 1)
     : args['raw-guided'] ? report.runs.filter(row => row.condition === 'vectalon').slice(0, 1)
     : args['resource-pair'] ? report.runs.slice(0, 2) : report.runs) {
     const started = Date.now();
@@ -292,14 +297,16 @@ async function main() {
     if (guard) row.resources = guard.observation;
     try {
       guard?.signal.throwIfAborted();
+      let toolSchema;
       const direct = guard ? createSamplingRouter(async (model, options) => {
         guard.signal.throwIfAborted();
-        const nativeOptions = { ...options, ...(fileSchema ? { grammarSchema: fileSchema } : {}) };
+        const schema = fileSchema || toolSchema;
+        const nativeOptions = { ...options, ...(schema ? { grammarSchema: schema } : {}) };
         const calls = (row.nativeCalls ??= []);
         assert.ok(calls.length < (args['guided-repair'] ? 2 : 1), 'Native call cap exhausted');
         const call = { index: calls.length + 1, status: 'running', temperature: options.temperature,
           maxTokens: options.maxTokens, requestSha256: hash(JSON.stringify({ model, ...nativeOptions })),
-          ...(fileSchema ? { grammarSchemaSha256: hash(JSON.stringify(fileSchema)) } : {}) };
+          ...(schema ? { grammarSchemaSha256: hash(JSON.stringify(schema)) } : {}) };
         calls.push(call); save();
         const callStarted = Date.now();
         try {
@@ -311,8 +318,13 @@ async function main() {
       }, report.model, false) : undefined;
       // Both diagnostic conditions bypass enrichment; keep their supplied prompt/context unchanged.
       const router = direct ? { generate: async request => {
-        const response = await direct.generate({ ...request, projectContext: 'disabled', ...(fileSchema ? { outputFormat: undefined } : {}) });
-        return { ...response, ...(fileSchema ? { outputFormat: 'files-json' } : {}) };
+        if (scopedEdits) {
+          assert.equal(request.requiredTool, 'propose_edits'); assert.equal(request.tools?.length, 1);
+          toolSchema = load('model/toolCalling.js').buildRequiredToolSchema(request.tools, request.requiredTool);
+          report.resourceProtocol.grammarSchemaSha256 = hash(JSON.stringify(toolSchema)); save();
+        }
+        const response = await direct.generate({ ...request, projectContext: 'disabled', ...(scopedEdits ? { tools: undefined } : {}), ...(fileSchema ? { outputFormat: undefined } : {}) });
+        return { ...response, ...(scopedEdits ? { requiredTool: 'propose_edits' } : {}), ...(fileSchema ? { outputFormat: 'files-json' } : {}) };
       } }
         : samplingControl ? createSamplingRouter(load('model/local/inference.js').runInference, report.model, row.condition === 'repeat-off')
         : new ModelRouter({ zeroConfigEnabled: false });
@@ -337,7 +349,7 @@ async function main() {
             : [...diagnostics, ...(!checks.tests.ok ? ['Task/project tests failed. Recheck the original requirements.'] : []),
               ...(!checks.typecheck.ok ? ['Typecheck failed. Preserve the requested public interface.'] : [])].join('\n') };
       };
-      const generate = (args.edits || row.condition === 'vectalon-edits' ? createModelEditGenerate : createModelGenerate)({ modelRouter: router, promptMode: samplingControl ? 'task-relevant' : repair ? 'vectalon' : row.condition,
+      const generate = (editMode || row.condition === 'vectalon-edits' ? createModelEditGenerate : createModelGenerate)({ modelRouter: router, promptMode: samplingControl ? 'task-relevant' : repair ? 'vectalon' : row.condition,
         ...settings, ...(repair || verifiedControls ? { verify: verifier } : {}),
         ...(args['include-raw-response'] ? { onRawResponse: (content, attempt) => {
           (row.rawResponses ??= []).push({ ...attempt, content }); save();
@@ -350,7 +362,7 @@ async function main() {
       const files = row.result.generatedArtifacts || [];
       row.phase = 'verification';
       if (files.length === 1 && files[0].path === target && row.identityMatched) row.checks = verified.get(hash(JSON.stringify(files))) || await verify(files, deadline);
-      if ((args.edits || args.diagnostic) && !row.checks) row.checks = { typecheck: { ok: false, skipped: true }, tests: { ok: false, skipped: true } };
+      if ((editMode || args.diagnostic) && !row.checks) row.checks = { typecheck: { ok: false, skipped: true }, tests: { ok: false, skipped: true } };
       row.status = Date.now() >= deadline ? 'timeout' : row.checks?.typecheck.ok && row.checks?.tests.ok ? 'passed' : 'failed';
       row.phase = 'complete';
     } catch { row.status = Date.now() >= deadline ? 'timeout' : 'error'; }
