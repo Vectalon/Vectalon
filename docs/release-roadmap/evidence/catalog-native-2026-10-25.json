@@ -1,0 +1,218 @@
+{
+  "kind": "exact-candidate-native-probe",
+  "date": "2026-10-25",
+  "sourceRevision": "c3fde35",
+  "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+  "inferenceEvidence": "one-app-v2-comparison-2026-10-25.json",
+  "task": "catalog-get-isolation",
+  "condition": "vectalon",
+  "repetition": 1,
+  "candidateSha256": "70d3a6c4624ea8dcc51dc03da8b131dec41a9560b605b5103f9742ca0934f8ad",
+  "candidateModified": false,
+  "newModelCalls": 0,
+  "firstAttemptCandidate": true,
+  "guardrails": 1,
+  "adherence": 0,
+  "qualified": false,
+  "reliableImprovementEstablished": false,
+  "probeSha256": "4d0a4f5dd7e1f552cefff053ce559340ada81759bb80326d899810ed561a465e",
+  "probeTestSha256": "f779c6d394006f7355289fb73779ece7052ce0c730eca92e161d69d667fe0fdf",
+  "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+  "podLockSha256": "4b7e860e1275e7a36b63d8a986fb9acc9f2dfb6e3608fa9ae070093880e8fcad",
+  "environment": {
+    "expo": "58.0.17",
+    "reactNative": "0.88.0",
+    "react": "19.3.0",
+    "configuration": "Release",
+    "bundledJavaScript": true,
+    "signing": false,
+    "architecture": "arm64",
+    "deviceId": "B749EB61-E0F9-44E6-BE39-FCAD14D5C3ED",
+    "deviceName": "iPhone 17 Pro",
+    "modelName": "iPhone 17 Pro",
+    "osBuildNumber": "23F77",
+    "osVersion": "26.5",
+    "platform": "iOS Simulator",
+    "bundleId": "in.vectalon.nativeproof",
+    "installation": "Reinstalled only disposable probe app before each variant; its previous data cleared"
+  },
+  "builds": [
+    {
+      "path": "/private/tmp/vectalon-expo58-native-Z5pg9t/catalog-negative-2026-10-25.xcresult",
+      "status": "succeeded",
+      "errors": 0,
+      "warnings": 31,
+      "durationMs": 22829,
+      "destination": {
+        "architecture": "arm64",
+        "deviceId": "B749EB61-E0F9-44E6-BE39-FCAD14D5C3ED",
+        "deviceName": "iPhone 17 Pro",
+        "modelName": "iPhone 17 Pro",
+        "osBuildNumber": "23F77",
+        "osVersion": "26.5",
+        "platform": "iOS Simulator"
+      },
+      "variant": "original",
+      "usedForRuntimeEvidence": true
+    },
+    {
+      "path": "/private/tmp/vectalon-expo58-native-Z5pg9t/catalog-candidate-2026-10-25.xcresult",
+      "status": "succeeded",
+      "errors": 0,
+      "warnings": 28,
+      "durationMs": 19167,
+      "destination": {
+        "architecture": "arm64",
+        "deviceId": "B749EB61-E0F9-44E6-BE39-FCAD14D5C3ED",
+        "deviceName": "iPhone 17 Pro",
+        "modelName": "iPhone 17 Pro",
+        "osBuildNumber": "23F77",
+        "osVersion": "26.5",
+        "platform": "iOS Simulator"
+      },
+      "variant": "superseded-newline-staging",
+      "usedForRuntimeEvidence": false
+    },
+    {
+      "path": "/private/tmp/vectalon-expo58-native-Z5pg9t/catalog-candidate-exact-2026-10-25.xcresult",
+      "status": "succeeded",
+      "errors": 0,
+      "warnings": 28,
+      "durationMs": 20819,
+      "destination": {
+        "architecture": "arm64",
+        "deviceId": "B749EB61-E0F9-44E6-BE39-FCAD14D5C3ED",
+        "deviceName": "iPhone 17 Pro",
+        "modelName": "iPhone 17 Pro",
+        "osBuildNumber": "23F77",
+        "osVersion": "26.5",
+        "platform": "iOS Simulator"
+      },
+      "variant": "exact-candidate",
+      "usedForRuntimeEvidence": true
+    }
+  ],
+  "bundleSha256": {
+    "original": "8fe02277667a44cd51fe1117a7d1852207b2c89053dc3823acbd2b533358a332",
+    "exactCandidate": "ca56aa7ff733b01be9c51364603fc762d6f0c3c6fbf5179f9d750bb6a5ae45e1"
+  },
+  "executableSha256BeforeInstrumentation": "21c3ad1b9bce2d0d88c5c278c5c1f4505ee77644c9255a286e9543a5e15ef8cd",
+  "stagingCorrection": {
+    "initialSha256": "7f6d60528381491730537485e2a6d555eb097a855c69d90d84bd4402db191646",
+    "reason": "Patch staging added final newline; restored exact response bytes, checked hash and rebuilt before candidate installation",
+    "supersededBuildUsedForRuntimeEvidence": false
+  },
+  "observations": [
+    {
+      "variant": "original",
+      "action": "check-isolation",
+      "verdict": "FAIL",
+      "checks": [
+        {
+          "name": "Independent objects",
+          "passed": false
+        },
+        {
+          "name": "Second result unchanged",
+          "passed": false
+        },
+        {
+          "name": "Next get unchanged",
+          "passed": false
+        },
+        {
+          "name": "Catalog list unchanged",
+          "passed": false
+        },
+        {
+          "name": "Category list unchanged",
+          "passed": false
+        },
+        {
+          "name": "Unknown ID returns null",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "variant": "exact-candidate",
+      "action": "check-isolation",
+      "verdict": "PASS",
+      "checks": [
+        {
+          "name": "Independent objects",
+          "passed": true
+        },
+        {
+          "name": "Second result unchanged",
+          "passed": true
+        },
+        {
+          "name": "Next get unchanged",
+          "passed": true
+        },
+        {
+          "name": "Catalog list unchanged",
+          "passed": true
+        },
+        {
+          "name": "Category list unchanged",
+          "passed": true
+        },
+        {
+          "name": "Unknown ID returns null",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "variant": "exact-candidate",
+      "action": "repeat-check-isolation",
+      "verdict": "PASS",
+      "checks": [
+        {
+          "name": "Independent objects",
+          "passed": true
+        },
+        {
+          "name": "Second result unchanged",
+          "passed": true
+        },
+        {
+          "name": "Next get unchanged",
+          "passed": true
+        },
+        {
+          "name": "Catalog list unchanged",
+          "passed": true
+        },
+        {
+          "name": "Category list unchanged",
+          "passed": true
+        },
+        {
+          "name": "Unknown ID returns null",
+          "passed": true
+        }
+      ]
+    }
+  ],
+  "evidence": {
+    "method": "Argent action screenshots and candidate native-devtools accessibility description",
+    "negativeScreenshot": "catalog-native-negative-2026-10-25.png",
+    "candidateScreenshot": "catalog-native-candidate-2026-10-25.png",
+    "candidateAccessibility": [
+      "{\n  \"description\": \"Source: native-devtools\\nMode: flat\\nCoordinates are normalized [0,1] fractions of the screen (x, y, width, height), not pixels.\\nPass them straight to gesture-tap / gesture-swipe / gesture-pinch, which expect this same space.\\nTo tap an element, use its centre: tap_x = frame.x + frame.width / 2, tap_y = frame.y + frame.height / 2.\\n\\nROOT  AXGroup (0.000, 0.000, 1.000, 1.000)\\n\\n  AXStaticText \\\"Catalog isolation probe\\\"  (0.060, 0.103, 0.881, 0.033)\\n  AXStaticText \\\"Isolation: PASS\\\"  (0.060, 0.154, 0.881, 0.023)\\n  AXStaticText \\\"Independent objects: PASS\\\"  (0.060, 0.196, 0.881, 0.023)\\n  AXStaticText \\\"Second result unchanged: PASS\\\"  (0.060, 0.237, 0.881, 0.023)\\n  AXStaticText \\\"Next get unchanged: PASS\\\"  (0.060, 0.279, 0.881, 0.023)\\n  AXStaticText \\\"Catalog list unchanged: PASS\\\"  (0.060, 0.320, 0.881, 0.023)\\n  AXStaticText \\\"Category list unchanged: PASS\\\"  (0.060, 0.362, 0.881, 0.023)\\n  AXStaticText \\\"Unknown ID returns null: PASS\\\"  (0.060, 0.404, 0.881, 0.023)\\n  AXButton \\\"Check catalog isolation\\\"  (0.060, 0.463, 0.881, 0.064)\",\n  \"source\": \"native-devtools\"\n}",
+      "--- Screen after action ---",
+      "Saved: /var/folders/qn/jb3vc2814tj5dgsxvcbdjj4w0000gn/T/simserver-qk6H6n/media/61807000-1792916442078.png"
+    ]
+  },
+  "verdict": "passed-tested-native-probe",
+  "limits": [
+    "Known public service task in one simulator, not full customer-screen/native-project, security, Android, hardware or signed distribution qualification.",
+    "Native workspace/dependencies and incremental build reused; other unreferenced source from earlier probes remains in temporary workspace.",
+    "Probe authored after inference, not in model context; no new model generation or repair.",
+    "Task-only and guided each passed 3/3 app checks: no measured advantage; original adherence 0 remains unchanged.",
+    "Temporary candidate/build records may expire; hashes/screenshots do not retain generated source."
+  ]
+}

@@ -83,3 +83,21 @@ test('retained v2 comparison preserves all first attempts, equal declared caps a
   }
   assert.ok(evidence.candidateEvidence.every(row => row.responseFingerprints.length === 1));
 });
+
+test('supplemental native probe binds the unchanged accepted candidate without promoting qualification', () => {
+  const native = require('../../docs/release-roadmap/evidence/catalog-native-2026-10-25.json');
+  const comparison = require('../../docs/release-roadmap/evidence/one-app-v2-comparison-2026-10-25.json');
+  const candidate = comparison.candidateEvidence.find(row => row.task === native.task && row.condition === native.condition && row.repetition === native.repetition);
+  assert.equal(native.candidateSha256, candidate.files[0].sha256);
+  assert.equal(native.candidateModified, false);
+  assert.equal(native.newModelCalls, 0);
+  assert.equal(native.qualified, false);
+  assert.equal(native.reliableImprovementEstablished, false);
+  assert.equal(native.adherence, 0);
+  assert.equal(native.observations[0].checks.filter(check => !check.passed).length, 5);
+  assert.ok(native.observations.slice(1).every(row => row.checks.every(check => check.passed)));
+  assert.equal(native.builds[1].usedForRuntimeEvidence, false);
+  for (const [file, expected] of [['catalog-isolation.native.tsx', native.probeSha256], ['catalog-isolation.probe.acceptance.tsx', native.probeTestSha256]]) {
+    assert.equal(createHash('sha256').update(fs.readFileSync(path.join(__dirname, file))).digest('hex'), expected);
+  }
+});

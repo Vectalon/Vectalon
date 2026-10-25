@@ -1,0 +1,202 @@
+{
+  "kind": "unchanged-rubric-applicability-audit",
+  "date": "2026-10-25",
+  "modelCalls": 0,
+  "scoringChanged": false,
+  "thresholdsChanged": false,
+  "previousScoresRewritten": false,
+  "fixturesSha256": "1624d51ea00099bb6350435e462458c2c2b9e9ac18083053bdc15d0268fcb347",
+  "rubricSourceSha256": "e7a1a3b0d89b1d9e4a12b17086d68c57bfc905879347ccef8416b5355ed3db41",
+  "rubricRuntimeSha256": "ce1b97fff6006c4a61f015085f936212e237992ecb5b8ab09f8e2c9f8c58de02",
+  "observations": [
+    {
+      "id": "pure-async-service",
+      "path": "src/services/Arithmetic.ts",
+      "observation": "Pure service is marked as missing UI error handling solely for async syntax",
+      "errorStates": false,
+      "result": {
+        "files": [
+          {
+            "filePath": "src/services/Arithmetic.ts",
+            "applicable": 1,
+            "passed": 0,
+            "failed": 1,
+            "checks": [
+              {
+                "id": "error-states",
+                "name": "Async work uses try/catch with user-visible error states",
+                "passed": false,
+                "message": "Async work without try/catch",
+                "line": 1
+              }
+            ]
+          }
+        ],
+        "overall": 0
+      }
+    },
+    {
+      "id": "propagating-network-service",
+      "path": "src/services/Network.ts",
+      "observation": "Service propagates failures to its caller but is still required to contain UI state",
+      "errorStates": false,
+      "result": {
+        "files": [
+          {
+            "filePath": "src/services/Network.ts",
+            "applicable": 2,
+            "passed": 0,
+            "failed": 2,
+            "checks": [
+              {
+                "id": "error-states",
+                "name": "Async work uses try/catch with user-visible error states",
+                "passed": false,
+                "message": "Async work without try/catch",
+                "line": 1
+              },
+              {
+                "id": "fetch-states",
+                "name": "Data fetching has loading, empty, and error states",
+                "passed": false,
+                "message": "Fetch missing states (loading=false, empty=false, error=false)",
+                "line": 1
+              }
+            ]
+          }
+        ],
+        "overall": 0
+      }
+    },
+    {
+      "id": "async-in-string",
+      "path": "src/utils/label.ts",
+      "observation": "String content triggers a check despite no asynchronous operation",
+      "errorStates": false,
+      "result": {
+        "files": [
+          {
+            "filePath": "src/utils/label.ts",
+            "applicable": 1,
+            "passed": 0,
+            "failed": 1,
+            "checks": [
+              {
+                "id": "error-states",
+                "name": "Async work uses try/catch with user-visible error states",
+                "passed": false,
+                "message": "Async work without try/catch",
+                "line": 1
+              }
+            ]
+          }
+        ],
+        "overall": 0
+      }
+    },
+    {
+      "id": "missing-ui-error-handling",
+      "path": "src/screens/LookupScreen.tsx",
+      "observation": "UI asynchronous operation without catch/error state is detected",
+      "errorStates": false,
+      "result": {
+        "files": [
+          {
+            "filePath": "src/screens/LookupScreen.tsx",
+            "applicable": 3,
+            "passed": 0,
+            "failed": 3,
+            "checks": [
+              {
+                "id": "safe-area",
+                "name": "Screens use SafeAreaView or safe-area insets",
+                "passed": false,
+                "message": "Screen does not use SafeAreaView or useSafeAreaInsets"
+              },
+              {
+                "id": "error-states",
+                "name": "Async work uses try/catch with user-visible error states",
+                "passed": false,
+                "message": "Async work without try/catch",
+                "line": 1
+              },
+              {
+                "id": "fetch-states",
+                "name": "Data fetching has loading, empty, and error states",
+                "passed": false,
+                "message": "Fetch missing states (loading=false, empty=false, error=false)",
+                "line": 1
+              }
+            ]
+          }
+        ],
+        "overall": 0
+      }
+    },
+    {
+      "id": "ui-with-error-handling",
+      "path": "src/screens/LookupScreen.tsx",
+      "observation": "Textual catch and UI error state satisfy the check; this is not a compilation or behavioral assertion",
+      "errorStates": true,
+      "result": {
+        "files": [
+          {
+            "filePath": "src/screens/LookupScreen.tsx",
+            "applicable": 4,
+            "passed": 2,
+            "failed": 2,
+            "checks": [
+              {
+                "id": "safe-area",
+                "name": "Screens use SafeAreaView or safe-area insets",
+                "passed": false,
+                "message": "Screen does not use SafeAreaView or useSafeAreaInsets"
+              },
+              {
+                "id": "error-states",
+                "name": "Async work uses try/catch with user-visible error states",
+                "passed": true
+              },
+              {
+                "id": "immutable-updates",
+                "name": "State updates are immutable",
+                "passed": true
+              },
+              {
+                "id": "fetch-states",
+                "name": "Data fetching has loading, empty, and error states",
+                "passed": false,
+                "message": "Fetch missing states (loading=false, empty=false, error=true)",
+                "line": 1
+              }
+            ]
+          }
+        ],
+        "overall": 0.5
+      }
+    },
+    {
+      "id": "promise-without-async-marker",
+      "path": "src/services/Deferred.ts",
+      "observation": "Rejected promise without lexical async/await/fetch markers is outside this check",
+      "errorStates": null,
+      "result": {
+        "files": [
+          {
+            "filePath": "src/services/Deferred.ts",
+            "applicable": 0,
+            "passed": 0,
+            "failed": 0,
+            "checks": []
+          }
+        ],
+        "overall": null
+      }
+    }
+  ],
+  "limits": [
+    "Independent synthetic lexical fixtures, not executable app or safety acceptance.",
+    "UI fixture is not a compilation assertion; other checks can still fail.",
+    "False positives and blind spots shown here do not qualify service tasks or authorize changing recorded gates."
+  ]
+}
