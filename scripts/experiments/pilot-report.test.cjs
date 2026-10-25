@@ -3,6 +3,37 @@ const assert = require('node:assert/strict');
 const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs');
 const evidence = require('../../docs/release-roadmap/evidence/cart-3b-paired-pilot-2026-10-20.json');
 
+test('fresh orders pair retains heap failure, stale-state assertions and four pending rows without claiming improvement', () => {
+  const report = require('../../docs/release-roadmap/evidence/orders-refresh-pair-2026-10-25.json');
+  assert.equal(report.evaluationLane, 'fresh-7b');
+  assert.equal(report.task.id, 'orders-refresh-race');
+  assert.equal(report.negativeControl.typecheck.ok, true);
+  assert.equal(report.negativeControl.tests.ok, false);
+  assert.equal(report.positiveControl.typecheck.ok, true);
+  assert.equal(report.positiveControl.tests.ok, true);
+  assert.equal(report.runs.filter(row => row.status === 'not-run').length, 4);
+  for (const row of report.runs.slice(0, 2)) {
+    assert.equal(row.status, 'failed');
+    assert.equal(row.identityMatched, true);
+    assert.equal(row.nativeCalls.length, 1);
+    assert.equal(row.result.attempts.length, 1);
+    assert.equal(row.result.attempts[0].kind, 'initial');
+    assert.equal(row.checks.typecheck.ok, true);
+    assert.equal(row.checks.tests.ok, false);
+    assert.equal(row.result.axes.adherence, 1);
+    assert.ok(row.result.axes.guardrails < 1);
+  }
+  assert.equal(report.runs[0].checks.tests.exitCode, null);
+  assert.equal(report.outputAudits[0].testProcessHeapExhausted, true);
+  assert.equal(report.runs[1].checks.tests.exitCode, 1);
+  assert.match(report.outputAudits[1].testSummary, /8 failed, 32 passed, 40 total/);
+  for (const audit of report.outputAudits) assert.match(audit.responseSha256, /^[a-f0-9]{64}$/);
+  for (const key of ['generatedArtifacts', 'rawResponses', 'stdout', 'stderr']) assert.ok(!JSON.stringify(report).includes(`"${key}"`));
+  const markdown = formatPilotReport(report);
+  assert.match(markdown, /task-only \| 3 \| 0 \| 1 \| 2/);
+  assert.match(markdown, /vectalon \| 3 \| 0 \| 1 \| 2/);
+});
+
 test('native probe matches accepted replay without rewriting first-attempt or reliability evidence', () => {
   const native = require('../../docs/release-roadmap/evidence/local-anchor-native-2026-10-25.json');
   const replay = require('../../docs/release-roadmap/evidence/local-anchor-replay-2026-10-25.json');
