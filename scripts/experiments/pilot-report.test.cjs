@@ -534,6 +534,41 @@ test('does not present passing app tests as guardrail or native qualification', 
   assert.ok(text.includes('| 94.4 | unscored | not-run |'));
 });
 
+test('shows workflow gate failures separately from missing qualification evidence', () => {
+  const report = { model: 'chosen-model', task: { id: 'public-control', kind: 'development-control' }, runs: [
+    { condition: 'failed-lane', status: 'failed', nativeCalls: [{}] },
+    { condition: 'pending-lane', status: 'not-run' },
+    { condition: 'app-only', status: 'passed', identityMatched: true,
+      checks: { typecheck: { ok: true }, tests: { ok: true } },
+      result: { axes: { guardrails: 1, adherence: 1 } }, nativeVerification: { status: 'passed' } },
+    { condition: 'rubric-failure', status: 'passed', identityMatched: true,
+      checks: { typecheck: { ok: true }, tests: { ok: true } },
+      result: { axes: { guardrails: 0.94, adherence: null } } },
+    { condition: 'missing', status: 'passed', result: { axes: { guardrails: null, adherence: 2 } },
+      checks: { tests: { ok: true, skipped: true } }, nativeVerification: { status: 'not-run' } },
+    { condition: 'native-failure', status: 'passed', nativeVerification: { status: 'failed' } },
+  ] };
+  const text = formatPilotReport(report);
+  assert.ok(text.includes('## Workflow qualification boundary'));
+  assert.ok(text.includes('| failed-lane | failed | 1 | 0 | 0/0 |'));
+  assert.ok(text.includes('| pending-lane | unverified | 0 | 1 | 0/0 |'));
+  assert.ok(text.includes('| app-only | unverified | 0 | 0 | 1/1 |'));
+  assert.ok(text.includes('| rubric-failure | failed | 1 | 0 | 0/0 |'));
+  assert.ok(text.includes('| missing | unverified | 0 | 0 | 0/0 |'));
+  assert.ok(text.includes('| native-failure | failed | 1 | 0 | 0/1 |'));
+  assert.ok(text.includes('No automatic qualification'));
+});
+
+test('never counts a successful recorded recheck as a new first-attempt pass', () => {
+  const report = { recordedInitial: { candidateSha256: 'recorded' }, verificationMode: 'assisted only', runs: [
+    { condition: 'repair', identityMatched: true, status: 'passed',
+      checks: { typecheck: { ok: true }, tests: { ok: true } }, result: { attempts: [
+        { kind: 'initial', origin: 'recorded-candidate-recheck', verification: { status: 'passed' }, providerCalls: [] },
+      ] } },
+  ] };
+  assert.ok(formatPilotReport(report).includes('| repair | 0/1 | 0 | 0/0 | 1 | 0 |'));
+});
+
 test('shows edit acceptance separately from app verification without exposing proposed source', () => {
   const text = formatPilotReport({ settings: { toolEnvelope: true }, runs: [{ condition: 'vectalon-edits', status: 'failed',
     result: { attempts: [{ kind: 'initial', status: 'parsed', editApplication: 'applied', content: 'PRIVATE_SOURCE' }] } }] });

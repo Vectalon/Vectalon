@@ -31,6 +31,14 @@ Check fractions count only recorded, non-skipped checks. Missing checks are not 
 |---|---:|---:|---:|---:|---:|---:|
 | vectalon-edits | 3 | 0 | 1 | 2 | 0/1 | 0/1 |
 
+## Workflow qualification boundary
+
+Scope: this model artifact, task and condition only. Failed means an observed task, identity, safety or native gate failed; unverified means no recorded failure, not qualification. No automatic qualification: repeated held-out comparisons, comparable budgets and customer/native acceptance still require review. Native counts use supplied candidate verification only, never local inference calls. Pending rows and missing scores remain unresolved; tokens/cost and human effort remain unmeasured.
+
+| Condition | Gate state | Rows with observed gate failure | Pending | Supplied native passed/checked |
+|---|---|---:|---:|---:|
+| vectalon-edits | failed | 1 | 2 | 0/0 |
+
 ## Initial versus assisted outcomes
 
 Recorded initial candidate rechecked with zero new initial calls  at most one new repair call  2048 output tokens  180 seconds including recheck. Historical invocation/duration excluded from current budgets. Not first-pass or equal-budget improvement  strict repair selection unchanged.

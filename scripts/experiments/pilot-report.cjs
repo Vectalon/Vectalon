@@ -47,6 +47,21 @@ function formatPilotReport(report) {
     lines.push(`| ${cell(condition)} | ${rows.length} | ${rows.filter(passed).length} | ${rows.filter(row => !passed(row) && !pending(row)).length} | ${rows.filter(pending).length} | ${countChecks('typecheck')} | ${countChecks('tests')} |`);
   }
   if (!runs.length) lines.push('', 'No runs recorded.');
+  lines.push('', '## Workflow qualification boundary', '',
+    'Scope: this model artifact, task and condition only. Failed means an observed task, identity, safety or native gate failed; unverified means no recorded failure, not qualification. No automatic qualification: repeated held-out comparisons, comparable budgets and customer/native acceptance still require review. Native counts use supplied candidate verification only, never local inference calls. Pending rows and missing scores remain unresolved; tokens/cost and human effort remain unmeasured.', '',
+    '| Condition | Gate state | Rows with observed gate failure | Pending | Supplied native passed/checked |',
+    '|---|---|---:|---:|---:|');
+  for (const condition of [...new Set(runs.map(row => row.condition))]) {
+    const rows = runs.filter(row => row.condition === condition);
+    const below = (value, threshold) => Number.isFinite(value) && value >= 0 && value <= 1 && value < threshold;
+    const failures = rows.filter(row => !pending(row) && (
+      ['failed', 'error', 'timeout'].includes(row.status) || row.identityMatched === false ||
+      ['typecheck', 'tests'].some(name => check(row.checks?.[name]) === 'failed') ||
+      below(row.result?.axes?.guardrails, 1) || below(row.result?.axes?.adherence, 0.8) ||
+      row.nativeVerification?.status === 'failed')).length;
+    const native = rows.filter(row => ['passed', 'failed'].includes(row.nativeVerification?.status));
+    lines.push(`| ${cell(condition)} | ${failures ? 'failed' : 'unverified'} | ${failures} | ${rows.filter(pending).length} | ${native.filter(row => row.nativeVerification.status === 'passed').length}/${native.length} |`);
+  }
   if (report.verificationMode) {
     lines.push('', '## Initial versus assisted outcomes', '',
       cell(report.verificationMode), '',
@@ -60,7 +75,7 @@ function formatPilotReport(report) {
       const knownCalls = attempts.reduce((sum, attempt) => sum + (attempt.providerCalls?.length ?? 0), 0);
       const calls = rows.every(row => row.result?.attempts?.length) && attempts.every(attempt => Array.isArray(attempt.providerCalls))
         ? knownCalls : knownCalls ? `${knownCalls} recorded; remainder unrecorded` : 'unrecorded';
-      const initialPasses = rows.filter(row => row.identityMatched && row.result?.attempts?.[0]?.kind === 'initial' && row.result.attempts[0].verification?.status === 'passed').length;
+      const initialPasses = rows.filter(row => !report.recordedInitial && row.identityMatched === true && row.result?.attempts?.[0]?.kind === 'initial' && row.result.attempts[0].origin !== 'recorded-candidate-recheck' && row.result.attempts[0].verification?.status === 'passed').length;
       lines.push(`| ${cell(condition)} | ${initialPasses}/${rows.length} | ${attempts.filter(attempt => attempt.kind === 'parse-retry').length} | ${repairs.filter(attempt => attempt.verification?.status === 'passed').length}/${repairs.length} | ${rows.filter(passed).length} | ${calls} |`);
     }
   }
