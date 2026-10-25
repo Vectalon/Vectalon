@@ -35,6 +35,7 @@ test('repairs once against the actual candidate, retaining initial failure and s
   assert.deepEqual(evidence.map(a => [a.index, a.kind, a.verification.status, a.selected]),
     [[1, 'initial', 'failed', false], [2, 'repair', 'passed', true]]);
   assert.equal(s.requests[1].task.fixtures['src/value.ts'], 'initial');
+  assert.equal(s.requests[1].task.fixtures['original-input/src/value.ts'], scenario.fixtures['src/value.ts']);
   assert.match(s.requests[1].task.prompt, /Verifier feedback.*diagnostic data/);
   assert.deepEqual(s.requests.map(r => r.temperature), [0.2, 0]);
   assert.deepEqual(s.raw, [{ index: 1, kind: 'initial' }, { index: 2, kind: 'repair' }]);
@@ -79,6 +80,28 @@ test('invalid initial delivery does not spend a repair or invoke verification', 
   assert.equal(s.checks.length, 0);
 });
 
+test('recorded candidate is rechecked without generating a new initial response', async () => {
+  let calls = 0;
+  let checks = 0;
+  let evidence;
+  const generate = createVerifiedEditGenerate(() => async (task, onAttempts) => {
+    calls++;
+    assert.equal(task.fixtures['src/value.ts'], 'recorded');
+    onAttempts([{ taskDigest: 'repair-task', status: 'invalid', durationMs: 1, selected: false }]);
+    return [];
+  }, { recordedInitial: { files: [{ path: 'src/value.ts', content: 'recorded' }], attempt: {
+    taskDigest: 'original-task', origin: 'recorded-candidate-recheck', status: 'parsed', providerCalls: [], durationMs: 0,
+  } }, verify: async () => { checks++; return { passed: false, feedback: 'Generic failure.' }; } });
+  const files = await generate(scenario, records => { evidence = records; });
+  assert.equal(files[0].content, 'recorded');
+  assert.equal(calls, 1);
+  assert.equal(checks, 1);
+  assert.equal(evidence[0].origin, 'recorded-candidate-recheck');
+  assert.deepEqual(evidence[0].providerCalls, []);
+  assert.equal(evidence[0].verification.status, 'failed');
+  assert.equal(evidence[1].kind, 'repair');
+});
+
 test('uses actual source-edit safety and new candidate anchors for the repair', async () => {
   const { createModelEditGenerate } = require('../../packages/rn/dist/bench/modelEditGenerate.js');
   const requests = [];
@@ -96,6 +119,8 @@ test('uses actual source-edit safety and new candidate anchors for the repair', 
     fixEdits: [{ file: 'src/value.ts', find: '0', replace: 'PRIVATE_REFERENCE_ANSWER' }] }, records => { evidence = records; });
   assert.equal(files[0].content, 'export const value = 2;');
   assert.match(requests[1].context, /export const value = 1;/);
+  assert.match(requests[1].context, /original-input\/src\/value.ts/);
+  assert.match(requests[1].context, /export const value = 0;/);
   assert.ok(evidence.every(a => a.editApplication === 'applied'));
   assert.equal(evidence[1].selected, true);
   assert.notEqual(evidence[0].requestDigest, evidence[1].requestDigest);

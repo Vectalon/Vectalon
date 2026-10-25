@@ -134,6 +134,60 @@ Module._load = function(request, ...args) {
   }
 });
 
+test('recorded resume invokes only one native repair and labels historical initial separately', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-recorded-resume-test-'));
+  let output;
+  try {
+    const preload = path.join(root, 'stubs.cjs');
+    const recorded = path.join(root, 'recorded.json');
+    fs.writeFileSync(recorded, '{}');
+    fs.writeFileSync(preload, `const Module = require('node:module'), fs = require('node:fs'), crypto = require('node:crypto');
+const load = Module._load; let checks = 0, calls = 0;
+const control = require(${JSON.stringify(path.join(__dirname, 'react-async-control.cjs'))});
+const hash = value => crypto.createHash('sha256').update(value).digest('hex');
+Module._load = function(request, ...args) {
+  if (request === './recorded-edit-candidate.cjs') return { loadRecordedEditCandidate: () => ({
+    files: [{ path: 'src/hooks/useDelayedLabel.ts', content: 'export const value = 1;' }],
+    attempt: { kind: 'initial', status: 'parsed', origin: 'recorded-candidate-recheck', editApplication: 'applied', provider: 'local',
+      providerCalls: [], artifact: { sha256: '${require('./one-app-evaluation-7b.json').artifactSha256}' }, durationMs: 0 },
+    provenance: { revision: 'recorded', candidateSha256: 'recorded-hash', acceptanceSha256: hash(control.acceptance),
+      controlSourceSha256: hash(fs.readFileSync(${JSON.stringify(path.join(__dirname, 'react-async-control.cjs'))})) }
+  }) };
+  if (request.endsWith('/dist/model/local/memory.js')) return { nativeMemoryBudget: () => ({ availableBytes: 8 * 1024 ** 3, source: 'os-free' }) };
+  if (request.endsWith('/dist/sandbox/run.js')) return { runSandboxed: async () => {
+    const ok = ++checks % 2 === 1 || checks === 4;
+    return { ok, exitCode: ok ? 0 : 1, durationMs: 1, stdout: '', stderr: '' };
+  } };
+  if (request.endsWith('/dist/model/local/inference.js')) return { runInference: async (model, options) => {
+    require('node:assert/strict').equal(++calls, 1); require('node:assert/strict').equal(options.temperature, 0);
+    return { content: 'invalid tool response', modelId: model, artifact: { sha256: '${require('./one-app-evaluation-7b.json').artifactSha256}' } };
+  } };
+  return load.call(this, request, ...args);
+};`);
+    const result = spawnSync(process.execPath, ['--require', preload, path.join(__dirname, 'rn-cart-pilot.cjs'),
+      '--diagnostic', 'delayed-label-v1', '--scoped-edits', '--edit-repair', '--resource-pair', '--repair-from', recorded,
+      '--model', 'qwen2.5-coder-7b', '--artifact-sha256', require('./one-app-evaluation-7b.json').artifactSha256],
+    { encoding: 'utf8', timeout: 15000 });
+    assert.equal(result.status, 0, result.stderr);
+    output = result.stdout.match(/^Evidence: (.+)$/m)?.[1];
+    const report = JSON.parse(fs.readFileSync(path.join(output, 'report.json'), 'utf8'));
+    assert.equal(report.kind, 'recorded-candidate-assisted-repair');
+    assert.equal(report.resourceProtocol.maxNativeCalls, 1);
+    const row = report.runs[0];
+    assert.equal(row.resources.timeoutMs, 180000);
+    assert.equal(row.nativeCalls.length, 1);
+    assert.equal(row.nativeCalls[0].kind, 'repair');
+    assert.equal(row.result.attempts[0].origin, 'recorded-candidate-recheck');
+    assert.deepEqual(row.result.attempts[0].providerCalls, []);
+    assert.equal(row.result.attempts[1].kind, 'repair');
+    assert.equal(row.result.attempts[1].selected, false);
+    assert.match(fs.readFileSync(path.join(output, 'report.md'), 'utf8'), /Rechecked without a new initial model call/);
+  } finally {
+    if (output) fs.rmSync(output, { recursive: true, force: true });
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('rejects changed 7B verifier input before experiment output or inference', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-freeze-test-'));
   try {
@@ -148,6 +202,7 @@ test('rejects changed 7B verifier input before experiment output or inference', 
 });
 
 for (const [name, args, message] of [
+  ['recorded source without repair mode', ['--repair-from', '/private/tmp/not-read.json'], '--repair-from requires'],
   ['edit repair without scoped mode', ['--edit-repair'], '--edit-repair requires'],
   ['edit repair on frozen task', ['--edit-repair', '--scoped-edits', '--resource-pair', '--task', 'current-session', '--evaluation-lane', '7b'], '--edit-repair requires'],
   ['async scoped control with wrong identity', ['--diagnostic', 'delayed-label-v1', '--scoped-edits', '--resource-pair', '--model', 'qwen2.5-coder-7b', '--artifact-sha256', 'a'.repeat(64)], '--scoped-edits requires'],
