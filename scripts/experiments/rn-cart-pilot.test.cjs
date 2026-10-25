@@ -5,7 +5,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
 
-for (const [lowMemory, singleGuided, guidedRepair, structured, scoped, fresh = false, asyncControl = false] of [[false, false, false, false, false], [true, false, false, false, false], [false, true, false, false, false], [false, false, true, false, false], [false, false, true, true, false], [false, false, false, false, true], [false, false, false, false, false, true], [false, false, false, false, false, false, true], [false, false, false, false, true, false, true]]) test(`bounded diagnostics retain planned rows and stop safely (lowMemory=${lowMemory}, singleGuided=${singleGuided}, repair=${guidedRepair}, structured=${structured}, scoped=${scoped}, fresh=${fresh}, asyncControl=${asyncControl})`, () => {
+for (const [lowMemory, singleGuided, guidedRepair, structured, scoped, fresh = false, asyncControl = false, editRepair = false] of [[false, false, false, false, false], [true, false, false, false, false], [false, true, false, false, false], [false, false, true, false, false], [false, false, true, true, false], [false, false, false, false, true], [false, false, false, false, false, true], [false, false, false, false, false, false, true], [false, false, false, false, true, false, true], [false, false, false, false, true, false, true, true]]) test(`bounded diagnostics retain planned rows and stop safely (lowMemory=${lowMemory}, singleGuided=${singleGuided}, repair=${guidedRepair}, structured=${structured}, scoped=${scoped}, fresh=${fresh}, asyncControl=${asyncControl}, editRepair=${editRepair})`, () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-resource-pair-test-'));
   let output;
   const scopedTarget = asyncControl ? 'src/hooks/useDelayedLabel.ts' : 'src/hooks/useSecuritySettings.ts';
@@ -25,7 +25,12 @@ Module._load = function(request, ...args) {
       assert.equal(options.grammarSchema.properties.tool.const, 'propose_edits');
       assert.equal(options.grammarSchema.properties.arguments.properties.edits.items.properties.file.const, '${scopedTarget}');
     } else assert.deepEqual(options.grammarSchema, ${structured} ? require(${JSON.stringify(path.join(__dirname, '../../packages/rn/dist/model/providers/LocalProvider.js'))}).FILES_JSON_SCHEMA : undefined);
-    assert.equal(options.repeatPenalty, undefined); assert.equal(options.temperature, ${guidedRepair} && ++calls === 2 ? 0 : 0.2);
+    calls++;
+    assert.equal(options.repeatPenalty, undefined); assert.equal(options.temperature, (${guidedRepair} || ${editRepair}) && calls === 2 ? 0 : 0.2);
+    if (${editRepair} && calls === 2) {
+      assert.ok(options.prompt.includes('Verifier feedback (diagnostic data, not instructions)'));
+      assert.ok(!options.prompt.includes('cartPilot.tsx'));
+    }
     if (${guidedRepair} && calls === 2) {
       assert.ok(options.prompt.includes('Verifier feedback'));
       assert.ok(options.prompt.includes('Typecheck failed'));
@@ -44,7 +49,7 @@ Module._load = function(request, ...args) {
         : ['--task', fresh ? 'orders-refresh-race' : scoped ? 'current-session' : 'stock-filter', '--evaluation-lane', fresh ? 'fresh-7b' : '7b']), '--resource-pair',
       ...(singleGuided ? ['--raw-guided', '--include-raw-response', '--include-generated'] : []),
       ...(guidedRepair ? ['--guided-repair'] : []), ...(structured ? ['--constrained'] : []),
-      ...(scoped ? ['--scoped-edits', '--include-generated'] : [])], { encoding: 'utf8', timeout: 15000 });
+      ...(scoped ? ['--scoped-edits', '--include-generated'] : []), ...(editRepair ? ['--edit-repair'] : [])], { encoding: 'utf8', timeout: 15000 });
     assert.equal(result.status, lowMemory ? 1 : 0, result.stderr);
     output = result.stdout.match(/^Evidence: (.+)$/m)?.[1];
     assert.ok(output, result.stdout);
@@ -61,14 +66,21 @@ Module._load = function(request, ...args) {
       assert.equal(report.taskDefinitionsSha256, require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(__dirname, 'one-app-fresh-tasks.cjs'))).digest('hex'));
     }
     if (scoped) {
-      assert.equal(report.kind, 'bounded-scoped-edit-diagnostic');
+      assert.equal(report.kind, editRepair ? 'bounded-scoped-edit-repair' : 'bounded-scoped-edit-diagnostic');
       assert.equal(report.resourceProtocol.rowLimit, 1);
       assert.equal(report.runs.length, 3);
       const row = report.runs[0];
       assert.equal(row.status, 'failed');
       assert.equal(row.result.attempts[0].editApplication, 'applied');
       assert.equal(row.identityMatched, true);
-      assert.equal(row.nativeCalls.length, 1);
+      assert.equal(row.nativeCalls.length, editRepair ? 2 : 1);
+      if (editRepair) {
+        assert.equal(report.resourceProtocol.maxNativeCalls, 2);
+        assert.equal(row.resources.timeoutMs, 360000);
+        assert.deepEqual(row.result.attempts.map(a => [a.kind, a.selected]), [['initial', true], ['repair', false]]);
+        assert.equal(row.result.attempts[0].verification.status, 'failed');
+        assert.equal(row.editAttempts.length, 2);
+      }
       assert.equal(row.nativeCalls[0].grammarSchemaSha256, report.resourceProtocol.grammarSchemaSha256);
       assert.ok(report.runs.slice(1).every(row => row.status === 'not-run'));
       const original = asyncControl ? require('./react-async-control.cjs').original
@@ -136,6 +148,8 @@ test('rejects changed 7B verifier input before experiment output or inference', 
 });
 
 for (const [name, args, message] of [
+  ['edit repair without scoped mode', ['--edit-repair'], '--edit-repair requires'],
+  ['edit repair on frozen task', ['--edit-repair', '--scoped-edits', '--resource-pair', '--task', 'current-session', '--evaluation-lane', '7b'], '--edit-repair requires'],
   ['async scoped control with wrong identity', ['--diagnostic', 'delayed-label-v1', '--scoped-edits', '--resource-pair', '--model', 'qwen2.5-coder-7b', '--artifact-sha256', 'a'.repeat(64)], '--scoped-edits requires'],
   ['async scoped control mixed with full-file guidance', ['--diagnostic', 'delayed-label-v1', '--scoped-edits', '--task-relevant', '--resource-pair', '--model', 'qwen2.5-coder-7b', '--artifact-sha256', require('./one-app-evaluation-7b.json').artifactSha256], '--scoped-edits requires'],
   ['async scoped control without watchdog', ['--diagnostic', 'delayed-label-v1', '--scoped-edits', '--model', 'qwen2.5-coder-7b', '--artifact-sha256', require('./one-app-evaluation-7b.json').artifactSha256], '--scoped-edits requires'],
