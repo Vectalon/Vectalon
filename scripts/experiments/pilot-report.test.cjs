@@ -24,6 +24,22 @@ test('scoped session history retains exact application separately from malformed
   for (const key of ['generatedArtifacts', 'rawResponses', 'stdout', 'stderr']) assert.ok(!JSON.stringify(report).includes(`"${key}"`));
 });
 
+test('offline syntax replay rejects the recorded response without claiming fresh inference', () => {
+  const observed = require('../../docs/release-roadmap/evidence/scoped-session-2026-10-25.json');
+  const replay = require('../../docs/release-roadmap/evidence/scoped-syntax-replay-2026-10-25.json');
+  assert.equal(replay.nativeCalls, 0);
+  assert.equal(replay.stubDeliveries, 1);
+  assert.equal(replay.rawSha256, observed.outputAudit.rawSha256);
+  assert.equal(replay.requestDigest, observed.runs[0].result.attempts[0].requestDigest);
+  assert.equal(replay.candidateCount, 0);
+  assert.equal(replay.fixturesUnchanged, true);
+  assert.equal(replay.attempt.editApplication, 'rejected');
+  assert.equal(replay.attempt.status, 'invalid');
+  assert.equal(replay.attempt.selected, false);
+  assert.equal(replay.attempt.provider, 'offline-replay');
+  assert.equal(replay.attempt.artifact, undefined);
+});
+
 test('structured repair separates valid envelopes and higher rubric scores from failed app verification', () => {
   const report = require('../../docs/release-roadmap/evidence/structured-repair-2026-10-25.json');
   assert.equal(report.kind, 'bounded-structured-repair-diagnostic');
