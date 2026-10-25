@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+  "model": "qwen2.5-coder-7b",
+  "artifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+  "tasks": ["cart-distinct-count", "catalog-get-isolation", "order-input-review"],
+  "repetitions": 3,
+  "settings": { "temperature": 0.2, "maxTokens": 2048, "maxAttempts": 1, "providerCallLimit": 1 },
+  "conditions": ["task-only", "vectalon"],
+  "timeoutMs": 180000,
+  "inputs": {
+    "one-app-v2-tasks.cjs": "29a89c362d4e5dc0a0a7727009ff8604ca68babdd38b3eb6e99090c0f9097a41",
+    "cart-distinct-count.acceptance.tsx": "5db69e0775ea67f79da8ab480be79b5920b99d9b449a61929107ebc0b37fafce",
+    "catalog-get-isolation.acceptance.tsx": "14ddeb0fb977e013459f3e200030bf72fb3ace911624f2b25c1f7e14526f4518",
+    "one-app-tasks.cjs": "91ea35672bf7d810c54357f4d548d2a68b987b3827e5d4e3ba06165694aa0a7e"
+  },
+  "limitations": [
+    "New public development tasks, not private held-out launch evidence; pretraining exposure unknown",
+    "One installed Expo 58/RN 0.88 app; no cross-app or native/device qualification",
+    "Both first-pass conditions use direct native inference, unchanged sampling, equal output/call/time caps; actual input tokens/cost differ and remain unmeasured",
+    "Three repetitions per condition/task, alternating order; resource/deadline stops retain remaining planned rows as not-run",
+    "Acceptance and assistant-authored positive controls excluded from inference and training exports",
+    "Assisted lane deferred until a separate frozen protocol; no assisted/first-pass or historical comparison is equal-budget evidence",
+    "Seeds, human correction time and external acceptance remain unmeasured"
+  ]
+}
