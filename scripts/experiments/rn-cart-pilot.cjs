@@ -23,18 +23,20 @@ const { values: args } = require('node:util').parseArgs({ options: {
   'scoped-edits': { type: 'boolean' },
 } });
 const scopedEdits = args['scoped-edits'];
-assert.ok(!scopedEdits || (args['resource-pair'] && args.task === 'current-session' && args['evaluation-lane'] === '7b'
-  && !args.edits && !args['guided-repair'] && !args['raw-guided'] && !args.repair && !args.constrained), '--scoped-edits requires guarded current-session 7b without other generation modes');
+const pinnedAsyncControl = args.diagnostic === 'delayed-label-v1' && !args.task && !args['evaluation-lane']
+  && args.model === 'qwen2.5-coder-7b' && args['artifact-sha256'] === require('./one-app-evaluation-7b.json').artifactSha256;
+assert.ok(!scopedEdits || (args['resource-pair'] && ((args.task === 'current-session' && args['evaluation-lane'] === '7b' && !args.diagnostic) || pinnedAsyncControl)
+  && !args.edits && !args['guided-repair'] && !args['raw-guided'] && !args.repair && !args.constrained
+  && !args.guided && !args['task-relevant'] && !args['verified-controls'] && !args['sampling-control']), '--scoped-edits requires guarded current-session 7b or pinned delayed-label-v1 without other generation modes');
 const editMode = args.edits || scopedEdits;
 assert.ok(!args['guided-repair'] || (args['resource-pair'] && !args['raw-guided'] && !args.repair), '--guided-repair requires --resource-pair without --raw-guided or --repair');
 assert.ok(!args['raw-guided'] || (args['resource-pair'] && args['include-raw-response'] && args['include-generated']), '--raw-guided requires --resource-pair --include-raw-response --include-generated');
 const freshEvaluation = args['evaluation-lane'] === 'fresh-7b';
-const asyncControlPair = args.diagnostic === 'delayed-label-v1' && args['task-relevant']
-  && args.model === 'qwen2.5-coder-7b' && args['artifact-sha256'] === require('./one-app-evaluation-7b.json').artifactSha256
+const asyncControlPair = pinnedAsyncControl && args['task-relevant']
   && !args['verified-controls'] && !args['sampling-control'] && !args['guided-repair'] && !args['raw-guided'];
 assert.ok(!freshEvaluation || (args['resource-pair'] && !args['guided-repair'] && !args['raw-guided']), 'Fresh evaluation requires --resource-pair without diagnostic repair/raw-guided modes');
 assert.ok(!args['resource-pair'] || ((args.task === 'stock-filter' || scopedEdits) && args['evaluation-lane'] === '7b')
-  || (freshEvaluation && args.task === 'orders-refresh-race') || asyncControlPair, '--resource-pair requires --task stock-filter --evaluation-lane 7b, --scoped-edits, fresh-7b orders-refresh-race, or pinned delayed-label-v1 --task-relevant');
+  || (freshEvaluation && args.task === 'orders-refresh-race') || asyncControlPair || (scopedEdits && pinnedAsyncControl), '--resource-pair requires --task stock-filter --evaluation-lane 7b, --scoped-edits, fresh-7b orders-refresh-race, or pinned delayed-label-v1 --task-relevant');
 assert.ok(args['evaluation-lane'] === undefined || ['3b', '7b', 'fresh-7b'].includes(args['evaluation-lane']), 'Unknown evaluation lane');
 assert.ok(args['evaluation-lane'] === undefined || args.task !== undefined, '--evaluation-lane requires --task');
 const freezeFile = freshEvaluation ? 'one-app-evaluation-fresh-7b.json' : args['evaluation-lane'] === '7b' ? 'one-app-evaluation-7b.json' : 'one-app-evaluation.json';
@@ -128,7 +130,7 @@ if (args.task) assert.deepEqual(settings, scopedEdits ? { ...freeze.settings, to
 const output = fs.mkdtempSync('/private/tmp/vectalon-cart-pilot-');
 const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pilot', revision, appRevision, startedAt: new Date().toISOString(),
   ...(args['resource-pair'] ? { kind: scopedEdits ? 'bounded-scoped-edit-diagnostic' : fileSchema ? 'bounded-structured-repair-diagnostic' : args['guided-repair'] ? 'bounded-guided-repair-diagnostic' : args['raw-guided'] ? 'bounded-guided-output-diagnostic' : 'bounded-one-app-resource-pair', resourceProtocol: {
-    routing: 'direct native in both conditions; no router enrichment/fallback; default sampling unchanged',
+    routing: 'direct native; no router enrichment/fallback; default sampling unchanged',
     rowLimit: scopedEdits || args['raw-guided'] || args['guided-repair'] ? 1 : 2, reserveBytes: 2 * 1024 ** 3, sampleIntervalMs: 1000, hardStopGraceMs: 5000,
     guardSha256: hash(fs.readFileSync(path.join(__dirname, 'resource-guard.cjs'))),
     adapterSha256: hash(fs.readFileSync(path.join(__dirname, 'sampling-control.cjs'))),
@@ -137,7 +139,7 @@ const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pi
   } } : {}),
   ...(args.diagnostic ? { controlDefinitionsSha256: hash(fs.readFileSync(path.join(__dirname, 'generation-controls.cjs'))),
     ...(args.diagnostic === 'delayed-label-v1' ? { controlSourceSha256: hash(fs.readFileSync(path.join(__dirname, 'react-async-control.cjs'))) } : {}),
-    conditionSettings: samplingControl ? {
+    conditionSettings: scopedEdits ? { 'vectalon-edits': { ...settings, output: 'source-grounded declaration edits; required native tool grammar' } } : samplingControl ? {
       'repeat-default': { ...settings, output: 'task-relevant full-file JSON; existing repetition penalties' },
       'repeat-off': { ...settings, output: 'task-relevant full-file JSON; repetition penalties disabled' },
     } : args['task-relevant'] ? { 'task-only': { ...settings, output: 'full-file JSON; no requested grammar' },
@@ -174,7 +176,7 @@ const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pi
     ...(samplingControl ? ['Direct native sampling diagnostic in both lanes, not the production router; repetition penalties alone differ; historical router runs are not causal controls.'] : []),
     ...(constrained ? ['Native file-envelope grammar constrains serialization, not file scope or code correctness'] : []),
     ...(editMode ? ['Scoped edit protocol differs from full-file generation; single existing file, at most eight edits, no repairs', 'Block IDs select unique module/direct named-function local declarations; duplicate or overlapping selections are rejected before application', 'Other nesting and arrow/class function bodies are not qualified local anchors', 'Block catalogue repeats approved source in context; input-token cost is not measured', 'Source-grounded grammar does not establish code correctness or task improvement'] : [])],
-  runs: Array.from({ length: args.task ? freeze.repetitions : 3 }, (_, repetition) => (samplingControl ? (repetition % 2 ? ['repeat-off', 'repeat-default'] : ['repeat-default', 'repeat-off']) : args['task-relevant'] ? (repetition % 2 ? ['task-relevant', 'task-only'] : ['task-only', 'task-relevant']) : args.guided ? ['vectalon'] : args.diagnostic ? (repetition % 2 ? ['vectalon-edits', 'task-only'] : ['task-only', 'vectalon-edits']) : editMode ? ['vectalon-edits'] : repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
+  runs: Array.from({ length: args.task ? freeze.repetitions : 3 }, (_, repetition) => (scopedEdits ? ['vectalon-edits'] : samplingControl ? (repetition % 2 ? ['repeat-off', 'repeat-default'] : ['repeat-default', 'repeat-off']) : args['task-relevant'] ? (repetition % 2 ? ['task-relevant', 'task-only'] : ['task-only', 'task-relevant']) : args.guided ? ['vectalon'] : args.diagnostic ? (repetition % 2 ? ['vectalon-edits', 'task-only'] : ['task-only', 'vectalon-edits']) : editMode ? ['vectalon-edits'] : repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
 const save = () => {
   fs.writeFileSync(path.join(output, 'report.json'), serializePilotReport(report, {
     includeGenerated: args['include-generated'], includeRawResponse: args['include-raw-response'],

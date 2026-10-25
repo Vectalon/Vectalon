@@ -5,9 +5,10 @@ const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
 
-for (const [lowMemory, singleGuided, guidedRepair, structured, scoped, fresh = false, asyncControl = false] of [[false, false, false, false, false], [true, false, false, false, false], [false, true, false, false, false], [false, false, true, false, false], [false, false, true, true, false], [false, false, false, false, true], [false, false, false, false, false, true], [false, false, false, false, false, false, true]]) test(`bounded diagnostics retain planned rows and stop safely (lowMemory=${lowMemory}, singleGuided=${singleGuided}, repair=${guidedRepair}, structured=${structured}, scoped=${scoped}, fresh=${fresh}, asyncControl=${asyncControl})`, () => {
+for (const [lowMemory, singleGuided, guidedRepair, structured, scoped, fresh = false, asyncControl = false] of [[false, false, false, false, false], [true, false, false, false, false], [false, true, false, false, false], [false, false, true, false, false], [false, false, true, true, false], [false, false, false, false, true], [false, false, false, false, false, true], [false, false, false, false, false, false, true], [false, false, false, false, true, false, true]]) test(`bounded diagnostics retain planned rows and stop safely (lowMemory=${lowMemory}, singleGuided=${singleGuided}, repair=${guidedRepair}, structured=${structured}, scoped=${scoped}, fresh=${fresh}, asyncControl=${asyncControl})`, () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-resource-pair-test-'));
   let output;
+  const scopedTarget = asyncControl ? 'src/hooks/useDelayedLabel.ts' : 'src/hooks/useSecuritySettings.ts';
   try {
     const preload = path.join(root, 'stubs.cjs');
     fs.writeFileSync(preload, `const Module = require('node:module'); const load = Module._load; let checks = 0, calls = 0;
@@ -22,7 +23,7 @@ Module._load = function(request, ...args) {
     assert.equal(options.signal.aborted, false); assert.equal(options.maxTokens, 2048);
     if (${scoped}) {
       assert.equal(options.grammarSchema.properties.tool.const, 'propose_edits');
-      assert.equal(options.grammarSchema.properties.arguments.properties.edits.items.properties.file.const, 'src/hooks/useSecuritySettings.ts');
+      assert.equal(options.grammarSchema.properties.arguments.properties.edits.items.properties.file.const, '${scopedTarget}');
     } else assert.deepEqual(options.grammarSchema, ${structured} ? require(${JSON.stringify(path.join(__dirname, '../../packages/rn/dist/model/providers/LocalProvider.js'))}).FILES_JSON_SCHEMA : undefined);
     assert.equal(options.repeatPenalty, undefined); assert.equal(options.temperature, ${guidedRepair} && ++calls === 2 ? 0 : 0.2);
     if (${guidedRepair} && calls === 2) {
@@ -30,7 +31,7 @@ Module._load = function(request, ...args) {
       assert.ok(options.prompt.includes('Typecheck failed'));
       assert.ok(!options.prompt.includes('cartPilot.tsx'));
     }
-    return { content: JSON.stringify(${scoped} ? { tool: 'propose_edits', arguments: { edits: [{ file: 'src/hooks/useSecuritySettings.ts', op: 'replace',
+    return { content: JSON.stringify(${scoped} ? { tool: 'propose_edits', arguments: { edits: [{ file: '${scopedTarget}', op: 'replace',
       from: options.grammarSchema.properties.arguments.properties.edits.items.properties.from.enum[0], to: 'import { useState, useCallback } from "react";' }] } }
       : { files: [{ path: '${asyncControl ? 'src/hooks/useDelayedLabel.ts' : fresh ? 'src/hooks/useOrders.ts' : 'src/screens/CatalogScreen.tsx'}', content: 'export const example = 1;' }] }),
       modelId: model, stopReason: 'eogToken', artifact: { sha256: '${require('./one-app-evaluation-7b.json').artifactSha256}' },
@@ -39,7 +40,7 @@ Module._load = function(request, ...args) {
   return load.call(this, request, ...args);
 };\n`);
     const result = spawnSync(process.execPath, ['--require', preload, path.join(__dirname, 'rn-cart-pilot.cjs'),
-      ...(asyncControl ? ['--diagnostic', 'delayed-label-v1', '--task-relevant', '--model', 'qwen2.5-coder-7b', '--artifact-sha256', require('./one-app-evaluation-7b.json').artifactSha256]
+      ...(asyncControl ? ['--diagnostic', 'delayed-label-v1', ...(!scoped ? ['--task-relevant'] : []), '--model', 'qwen2.5-coder-7b', '--artifact-sha256', require('./one-app-evaluation-7b.json').artifactSha256]
         : ['--task', fresh ? 'orders-refresh-race' : scoped ? 'current-session' : 'stock-filter', '--evaluation-lane', fresh ? 'fresh-7b' : '7b']), '--resource-pair',
       ...(singleGuided ? ['--raw-guided', '--include-raw-response', '--include-generated'] : []),
       ...(guidedRepair ? ['--guided-repair'] : []), ...(structured ? ['--constrained'] : []),
@@ -51,7 +52,7 @@ Module._load = function(request, ...args) {
     const report = JSON.parse(source);
     if (asyncControl) {
       assert.equal(report.task.id, 'delayed-label-v1');
-      assert.deepEqual(report.runs.slice(0, 2).map(row => row.condition), ['task-only', 'task-relevant']);
+      assert.deepEqual(report.runs.slice(0, 2).map(row => row.condition), scoped ? ['vectalon-edits', 'vectalon-edits'] : ['task-only', 'task-relevant']);
       assert.match(report.controlSourceSha256, /^[a-f0-9]{64}$/);
     }
     if (fresh) {
@@ -70,7 +71,10 @@ Module._load = function(request, ...args) {
       assert.equal(row.nativeCalls.length, 1);
       assert.equal(row.nativeCalls[0].grammarSchemaSha256, report.resourceProtocol.grammarSchemaSha256);
       assert.ok(report.runs.slice(1).every(row => row.status === 'not-run'));
-      const original = spawnSync('git', ['show', require('./one-app-evaluation-7b.json').appRevision + ':apps/website/demo/login-app/src/hooks/useSecuritySettings.ts'], { encoding: 'utf8' }).stdout;
+      const original = asyncControl ? require('./react-async-control.cjs').original
+        : spawnSync('git', ['show', require('./one-app-evaluation-7b.json').appRevision + ':apps/website/demo/login-app/src/hooks/useSecuritySettings.ts'], { encoding: 'utf8' }).stdout;
+      assert.equal(report.runs[0].condition, 'vectalon-edits');
+      if (asyncControl) assert.deepEqual(Object.keys(report.conditionSettings), ['vectalon-edits']);
       assert.equal(row.result.generatedArtifacts[0].content, 'import { useState, useCallback } from "react";' + original.slice(original.indexOf('\n')));
       assert.ok(!require('./pilot-report.cjs').serializePilotReport(report).includes('PRIVATE_DIAGNOSTIC'));
       return;
@@ -132,6 +136,9 @@ test('rejects changed 7B verifier input before experiment output or inference', 
 });
 
 for (const [name, args, message] of [
+  ['async scoped control with wrong identity', ['--diagnostic', 'delayed-label-v1', '--scoped-edits', '--resource-pair', '--model', 'qwen2.5-coder-7b', '--artifact-sha256', 'a'.repeat(64)], '--scoped-edits requires'],
+  ['async scoped control mixed with full-file guidance', ['--diagnostic', 'delayed-label-v1', '--scoped-edits', '--task-relevant', '--resource-pair', '--model', 'qwen2.5-coder-7b', '--artifact-sha256', require('./one-app-evaluation-7b.json').artifactSha256], '--scoped-edits requires'],
+  ['async scoped control without watchdog', ['--diagnostic', 'delayed-label-v1', '--scoped-edits', '--model', 'qwen2.5-coder-7b', '--artifact-sha256', require('./one-app-evaluation-7b.json').artifactSha256], '--scoped-edits requires'],
   ['async guarded control with unpinned model', ['--diagnostic', 'delayed-label-v1', '--task-relevant', '--resource-pair', '--model', 'qwen2.5-coder-3b', '--artifact-sha256', 'a'.repeat(64)], '--resource-pair requires'],
   ['async guarded control with repair override', ['--diagnostic', 'delayed-label-v1', '--task-relevant', '--resource-pair', '--verified-controls', '--model', 'qwen2.5-coder-7b', '--artifact-sha256', require('./one-app-evaluation-7b.json').artifactSha256], '--resource-pair requires'],
   ['fresh lane without resource guards', ['--task', 'orders-refresh-race', '--evaluation-lane', 'fresh-7b'], 'Fresh evaluation requires'],

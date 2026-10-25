@@ -4,6 +4,15 @@ const { ids, controlTask } = require('./generation-controls.cjs');
 const { createModelEditGenerate } = require('../../packages/rn/dist/bench/modelEditGenerate.js');
 const { createModelGenerate } = require('../../packages/rn/dist/bench/modelGenerate.js');
 
+test('async control source and acceptance stay frozen after its recorded full-file failures', () => {
+  const fs = require('node:fs');
+  const { createHash } = require('node:crypto');
+  const prior = require('../../docs/release-roadmap/evidence/react-async-control-2026-10-25.json');
+  const hash = value => createHash('sha256').update(value).digest('hex');
+  assert.equal(hash(fs.readFileSync(require.resolve('./react-async-control.cjs'))), prior.controlSourceSha256);
+  assert.equal(hash(controlTask('delayed-label-v1').acceptance), prior.acceptanceSha256);
+});
+
 test('task-only, guided full-file and block-edit requests exclude control answers and acceptance source', async () => {
   for (const id of ids) {
     const task = controlTask(id);
