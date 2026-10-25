@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+  "model": "qwen2.5-coder-7b",
+  "artifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+  "tasks": ["orders-refresh-race"],
+  "repetitions": 3,
+  "settings": { "temperature": 0.2, "maxTokens": 2048, "maxAttempts": 1, "providerCallLimit": 1 },
+  "conditions": ["task-only", "vectalon"],
+  "timeoutMs": 180000,
+  "inputs": {
+  "one-app-fresh-tasks.cjs": "434b99211b18e53eafc86a4e195c97cea1dc4bb1935213c9f3de205b82d670c3",
+  "orders-refresh-race.acceptance.tsx": "459053ec37680eac293fe3295a37f5e7f771aa5f1e27de529ebf66468f6e0379"
+},
+  "limitations": [
+    "Freshly authored public development task, not private held-out launch evidence; pretraining exposure unknown",
+    "One fix task in one installed app, not feature/review coverage or reliable improvement",
+    "Direct native inference in both conditions with equal output/call/time caps; input lengths and actual costs differ",
+    "Acceptance and assistant-authored positive control excluded from inference and training exports",
+    "Native build/device acceptance remains separate; no native orders probe qualified yet"
+  ]
+}

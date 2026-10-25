@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const assert = require('assert/strict');
 const { spawnSync } = require('child_process');
 const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs');
-const { taskDefinition, reviewImportsAllowed } = require('./one-app-tasks.cjs');
+const { reviewImportsAllowed } = require('./one-app-tasks.cjs');
 const { ids: controlIds, controlTask } = require('./generation-controls.cjs');
 const { createSamplingRouter } = require('./sampling-control.cjs');
 const { startResourceGuard } = require('./resource-guard.cjs');
@@ -28,11 +28,16 @@ assert.ok(!scopedEdits || (args['resource-pair'] && args.task === 'current-sessi
 const editMode = args.edits || scopedEdits;
 assert.ok(!args['guided-repair'] || (args['resource-pair'] && !args['raw-guided'] && !args.repair), '--guided-repair requires --resource-pair without --raw-guided or --repair');
 assert.ok(!args['raw-guided'] || (args['resource-pair'] && args['include-raw-response'] && args['include-generated']), '--raw-guided requires --resource-pair --include-raw-response --include-generated');
-assert.ok(!args['resource-pair'] || ((args.task === 'stock-filter' || scopedEdits) && args['evaluation-lane'] === '7b'), '--resource-pair requires --task stock-filter --evaluation-lane 7b, or --scoped-edits');
-assert.ok(args['evaluation-lane'] === undefined || ['3b', '7b'].includes(args['evaluation-lane']), 'Unknown evaluation lane');
+const freshEvaluation = args['evaluation-lane'] === 'fresh-7b';
+assert.ok(!freshEvaluation || (args['resource-pair'] && !args['guided-repair'] && !args['raw-guided']), 'Fresh evaluation requires --resource-pair without diagnostic repair/raw-guided modes');
+assert.ok(!args['resource-pair'] || ((args.task === 'stock-filter' || scopedEdits) && args['evaluation-lane'] === '7b')
+  || (freshEvaluation && args.task === 'orders-refresh-race'), '--resource-pair requires --task stock-filter --evaluation-lane 7b, --scoped-edits, or fresh-7b orders-refresh-race');
+assert.ok(args['evaluation-lane'] === undefined || ['3b', '7b', 'fresh-7b'].includes(args['evaluation-lane']), 'Unknown evaluation lane');
 assert.ok(args['evaluation-lane'] === undefined || args.task !== undefined, '--evaluation-lane requires --task');
-const freezeFile = args['evaluation-lane'] === '7b' ? 'one-app-evaluation-7b.json' : 'one-app-evaluation.json';
+const freezeFile = freshEvaluation ? 'one-app-evaluation-fresh-7b.json' : args['evaluation-lane'] === '7b' ? 'one-app-evaluation-7b.json' : 'one-app-evaluation.json';
 const freeze = require(`./${freezeFile}`);
+const taskDefinitionsFile = freshEvaluation ? 'one-app-fresh-tasks.cjs' : 'one-app-tasks.cjs';
+const { taskDefinition } = require(`./${taskDefinitionsFile}`);
 assert.equal(args.model !== undefined, args['artifact-sha256'] !== undefined, '--model and --artifact-sha256 must be supplied together');
 assert.ok(args['artifact-sha256'] === undefined || /^[a-f0-9]{64}$/.test(args['artifact-sha256']), 'Expected a lowercase SHA-256 artifact hash');
 assert.ok(!args.constrained || args.repair || args['guided-repair'], '--constrained requires --repair or --guided-repair for this diagnostic');
@@ -141,7 +146,7 @@ const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pi
     installedDependencyVersions,
     evaluationLane: args['evaluation-lane'] ?? '3b',
     freezeSha256: hash(fs.readFileSync(path.join(__dirname, freezeFile))),
-    taskDefinitionsSha256: hash(fs.readFileSync(path.join(__dirname, 'one-app-tasks.cjs'))),
+    taskDefinitionsSha256: hash(fs.readFileSync(path.join(__dirname, taskDefinitionsFile))),
     dependencyLockSha256: hash(fs.readFileSync(path.join(app, 'package-lock.json'))),
     nativeVerification: 'not-run' } : {}),
   runnerSha256: hash(fs.readFileSync(__filename)), appArchiveSha256: hash(archive.stdout),
