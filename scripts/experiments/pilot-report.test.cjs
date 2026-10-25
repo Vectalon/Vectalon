@@ -3,6 +3,31 @@ const assert = require('node:assert/strict');
 const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs');
 const evidence = require('../../docs/release-roadmap/evidence/cart-3b-paired-pilot-2026-10-20.json');
 
+test('async scoped delivery preserves exact application separately from compiler and app failure', () => {
+  const report = require('../../docs/release-roadmap/evidence/react-async-edits-2026-10-25.json');
+  const prior = require('../../docs/release-roadmap/evidence/react-async-control-2026-10-25.json');
+  const row = report.runs[0];
+  assert.equal(report.kind, 'bounded-scoped-edit-diagnostic');
+  assert.equal(report.controlSourceSha256, prior.controlSourceSha256);
+  assert.equal(report.acceptanceSha256, prior.acceptanceSha256);
+  assert.equal(report.resourceProtocol.rowLimit, 1);
+  assert.equal(report.runs.filter(row => row.status === 'not-run').length, 2);
+  assert.ok(report.runs.every(row => row.condition === 'vectalon-edits'));
+  assert.equal(report.outputAudit.strictToolEnvelope, true);
+  assert.equal(report.outputAudit.edits[0].block, 'block-2');
+  assert.equal(row.identityMatched, true);
+  assert.equal(row.nativeCalls.length, 1);
+  assert.equal(row.nativeCalls[0].grammarSchemaSha256, report.resourceProtocol.grammarSchemaSha256);
+  assert.equal(row.result.attempts[0].editApplication, 'applied');
+  assert.equal(row.result.attempts[0].status, 'parsed');
+  assert.equal(row.status, 'failed');
+  assert.equal(row.checks.typecheck.ok, false);
+  assert.equal(row.checks.tests.ok, false);
+  assert.deepEqual(report.outputAudit.compilerDiagnosticCodes.sort(), ['TS2304', 'TS2554']);
+  assert.match(report.outputAudit.testSummary, /5 failed, 34 passed, 39 total/);
+  for (const key of ['generatedArtifacts', 'rawResponses', 'stdout', 'stderr']) assert.ok(!JSON.stringify(report).includes(`"${key}"`));
+});
+
 test('async guidance control retains behavior failure and malformed delivery as separate failures', () => {
   const report = require('../../docs/release-roadmap/evidence/react-async-control-2026-10-25.json');
   const [base, guided] = report.runs;

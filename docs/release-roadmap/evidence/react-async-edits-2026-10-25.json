@@ -1,0 +1,276 @@
+{
+  "kind": "bounded-scoped-edit-diagnostic",
+  "revision": "44b7ccbfd4ef95c2ed3138ea1bcc2b430892f2bc",
+  "appRevision": "44b7ccbfd4ef95c2ed3138ea1bcc2b430892f2bc",
+  "startedAt": "2026-10-25T06:17:47.165Z",
+  "resourceProtocol": {
+    "routing": "direct native; no router enrichment/fallback; default sampling unchanged",
+    "rowLimit": 1,
+    "reserveBytes": 2147483648,
+    "sampleIntervalMs": 1000,
+    "hardStopGraceMs": 5000,
+    "guardSha256": "eb638785341c4705f40f3920c80ed3bf0f2416e78737244378146480c1ba91fd",
+    "adapterSha256": "d622c26847b63efeaa3ed280b6f04b8287ce5ae9848cb26316eb8590325e1691",
+    "memoryModuleSha256": "a3cf0ae9e88f8ff63ecd5bfeaba7563abd617e96770d28fd20ee717d070d9ac4",
+    "grammarSchemaSha256": "16d589b2460e76ba2b88967ca4fb73a59e4b3d197312ee160c71ccd6260bb42e"
+  },
+  "controlDefinitionsSha256": "a86c4755da001790b9a930c41679cf7b72ac950aca5895793f97c6f4e6044579",
+  "controlSourceSha256": "ee4577b3bbace239032382945cf4a453c47374682f23522e7f081c10faf2b43f",
+  "conditionSettings": {
+    "vectalon-edits": {
+      "temperature": 0.2,
+      "maxTokens": 2048,
+      "maxAttempts": 1,
+      "providerCallLimit": 1,
+      "toolEnvelope": true,
+      "requiredTool": "propose_edits",
+      "anchorMode": "module-and-direct-local-declarations",
+      "output": "source-grounded declaration edits; required native tool grammar"
+    }
+  },
+  "task": {
+    "id": "delayed-label-v1",
+    "kind": "development-control"
+  },
+  "runnerSha256": "156b7b830df40443fbd919f37098254029c4cd593ddbe3c9e64887de66c9618f",
+  "appArchiveSha256": "422a5abeb1595fdb963e4a4078c6288030885a9b505a7991eadbbeab870d8831",
+  "generationModuleSha256": "5a94446f8a221df4056abd8f5f842c2d1180b297a4f08b91fada2e455c4b3434",
+  "editGenerationModuleSha256": "5a94446f8a221df4056abd8f5f842c2d1180b297a4f08b91fada2e455c4b3434",
+  "inferenceModuleSha256": "a6431f4d10327a44ed93cb145224df51e91429046e096ba793c9081a2673fcc0",
+  "acceptanceSha256": "fc9c59b09fed194c2d561c287a574bb4d868e5d2c0301f73f9d460c16d360fd8",
+  "taskSha256": "f705b79011a24c69856f2307b34ce944ff18ea10cae5d98b5c8cc894ab7a2528",
+  "runtime": {
+    "node": "v24.22.1",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "settings": {
+    "temperature": 0.2,
+    "maxTokens": 2048,
+    "maxAttempts": 1,
+    "providerCallLimit": 1,
+    "toolEnvelope": true,
+    "requiredTool": "propose_edits",
+    "anchorMode": "module-and-direct-local-declarations"
+  },
+  "model": "qwen2.5-coder-7b",
+  "expectedArtifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+  "limitations": [
+    "No native build",
+    "Installed dependencies reused",
+    "Tokens/cost not measured",
+    "No human correction-time measurement",
+    "Public development tasks; not launch qualification",
+    "Synthetic controls in one installed app; not held-out RN workflow evidence",
+    "Conditions change instructions; input-token budgets are unmeasured; not a single-factor causal ablation",
+    "Scoped edit protocol differs from full-file generation; single existing file, at most eight edits, no repairs",
+    "Block IDs select unique module/direct named-function local declarations; duplicate or overlapping selections are rejected before application",
+    "Other nesting and arrow/class function bodies are not qualified local anchors",
+    "Block catalogue repeats approved source in context; input-token cost is not measured",
+    "Source-grounded grammar does not establish code correctness or task improvement"
+  ],
+  "runs": [
+    {
+      "repetition": 1,
+      "condition": "vectalon-edits",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "resources": {
+        "memoryMetric": "macos-pressure-estimate",
+        "availableBudgetBytesBefore": 9792525434,
+        "minimumSampledAvailableBudgetBytes": 3264175144,
+        "maximumSampledRssBytes": 4104912896,
+        "reserveBytes": 2147483648,
+        "sampleIntervalMs": 1000,
+        "timeoutMs": 180000,
+        "availableBudgetBytesAfter": 8589934592
+      },
+      "nativeCalls": [
+        {
+          "index": 1,
+          "status": "response",
+          "temperature": 0.2,
+          "maxTokens": 2048,
+          "requestSha256": "8c575a8f989568edb4f05244fd75c565eae7692b4964fe611bd29557f24dea19",
+          "grammarSchemaSha256": "16d589b2460e76ba2b88967ca4fb73a59e4b3d197312ee160c71ccd6260bb42e",
+          "artifact": {
+            "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+            "sizeBytes": 3993201376,
+            "source": "local-file-at-load"
+          },
+          "localContext": {
+            "inputTokens": 1078,
+            "maxOutputTokens": 2048,
+            "contextSize": 3584,
+            "batchSize": 128
+          },
+          "stopReason": "stopGenerationTrigger",
+          "durationMs": 26522
+        }
+      ],
+      "result": {
+        "id": "delayed-label-v1",
+        "title": "delayed-label-v1",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useDelayedLabel.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 26538,
+            "fileCount": 1,
+            "adherence": 1,
+            "guardrails": 0.8888888888888888,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:1718daa1ecf9f336e9529cccd849791267e98832fa62f7af76ebf0b838d2db9f",
+            "requestDigest": "sha256:582f6481015a1059272a38ff61f9add1101ed1b0007c2de825927bf602502414",
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "editApplication": "applied",
+            "provider": "local",
+            "model": {
+              "id": "qwen2.5-coder-7b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+              "sizeBytes": 3993201376,
+              "source": "local-file-at-load"
+            },
+            "localContext": {
+              "inputTokens": 1078,
+              "maxOutputTokens": 2048,
+              "contextSize": 3584,
+              "batchSize": 128
+            },
+            "stopReason": "stopGenerationTrigger",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 26523
+              }
+            ],
+            "unchangedEdits": 0
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useDelayedLabel.ts",
+            "passed": 16,
+            "failed": 2,
+            "skipped": 18,
+            "ok": false,
+            "failedRules": [
+              "No unused imports",
+              "Directly exported function declarations have return annotations"
+            ]
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 0.8888888888888888
+        },
+        "composite": 0.9444444444444444
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1216
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7546
+        }
+      },
+      "durationMs": 35445
+    },
+    {
+      "repetition": 2,
+      "condition": "vectalon-edits",
+      "status": "not-run"
+    },
+    {
+      "repetition": 3,
+      "condition": "vectalon-edits",
+      "status": "not-run"
+    }
+  ],
+  "negativeControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1324
+    },
+    "tests": {
+      "ok": false,
+      "exitCode": 1,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 7813
+    }
+  },
+  "positiveControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1050
+    },
+    "tests": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 7117
+    }
+  },
+  "outputAudit": {
+    "responseSha256": "28adead0b2397da7d64d4d0343562f3cc03619f49054e5b18e36d3f377b67656",
+    "strictToolEnvelope": true,
+    "tool": "propose_edits",
+    "edits": [
+      {
+        "file": "src/hooks/useDelayedLabel.ts",
+        "operation": "replace",
+        "block": "block-2",
+        "replacementBytes": 808,
+        "replacementSha256": "066a48e8cd5f1ebf10e09205febde689ed8f9b0a91180f43109832172e6d5b45"
+      }
+    ],
+    "candidates": [
+      {
+        "path": "src/hooks/useDelayedLabel.ts",
+        "sha256": "fd90d55fcf5e918b9607508c9db19f4249e55a1539d8e6956b0fb128d5b17979",
+        "bytes": 867
+      }
+    ],
+    "compilerDiagnosticCodes": [
+      "TS2554",
+      "TS2304"
+    ],
+    "testSummary": "Tests:       5 failed, 34 passed, 39 total",
+    "unchangedControlAndAcceptance": true
+  },
+  "qualification": "Valid delivery and exact application, not working code; changed public reload API and undefined effect identifier; no native or reliable model improvement"
+}
