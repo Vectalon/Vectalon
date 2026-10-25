@@ -49,3 +49,37 @@ test('v2 freezes new feature/fix/review tasks and keeps acceptance/reference sou
   }
   assert.deepEqual(kinds, ['feature', 'fix', 'review']);
 });
+
+test('retained v2 comparison preserves all first attempts, equal declared caps and negative results', () => {
+  const evidence = require('../../docs/release-roadmap/evidence/one-app-v2-comparison-2026-10-25.json');
+  assert.equal(evidence.plannedRows, 18);
+  assert.equal(evidence.completedRows, 18);
+  assert.equal(evidence.newModelCalls, 18);
+  assert.equal(evidence.nativeDeviceChecks, 0);
+  assert.equal(evidence.reliableImprovementEstablished, false);
+  assert.deepEqual(evidence.reports.map(report => report.runs.filter(row => row.status === 'passed').length), [0, 6, 0]);
+  for (const report of evidence.reports) {
+    assert.equal(report.runs.length, 6);
+    assert.equal(report.negativeControl.tests.ok, false);
+    assert.equal(report.positiveControl.typecheck.ok, true);
+    assert.equal(report.positiveControl.tests.ok, true);
+    assert.deepEqual(report.settings, require('./one-app-evaluation-v2-7b.json').settings);
+    assert.equal(report.resourceProtocol.rowLimit, 6);
+    for (const row of report.runs) {
+      assert.equal(row.identityMatched, true);
+      assert.equal(row.nativeCalls.length, 1);
+      assert.equal(row.result.attempts.length, 1);
+      assert.equal(row.result.attempts[0].kind, 'initial');
+      assert.ok(!row.resourceStopReason);
+    }
+    const matrix = require('./pilot-report.cjs').formatPilotReport(report);
+    assert.ok(matrix.includes('| task-only | failed | 3 | 0 | 0/0 |'));
+    assert.ok(matrix.includes('| vectalon | failed | 3 | 0 | 0/0 |'));
+  }
+  const fix = evidence.reports[1];
+  assert.ok(fix.runs.every(row => row.result.axes.adherence === 0 && row.result.axes.guardrails === 1));
+  for (const key of ['generatedArtifacts', 'rawResponses', 'stdout', 'stderr', 'content']) {
+    assert.ok(!JSON.stringify(evidence).includes(`"${key}":`), key);
+  }
+  assert.ok(evidence.candidateEvidence.every(row => row.responseFingerprints.length === 1));
+});

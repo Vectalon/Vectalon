@@ -1,0 +1,3412 @@
+{
+  "kind": "v2-one-app-first-pass-comparison",
+  "date": "2026-10-25",
+  "protocolRevision": "f0b8b2d4da6cae199ef8ff24e8db49f46126ce0f",
+  "plannedRows": 18,
+  "completedRows": 18,
+  "newModelCalls": 18,
+  "repairs": 0,
+  "nativeDeviceChecks": 0,
+  "reliableImprovementEstablished": false,
+  "originalReportSha256": [
+    {
+      "task": "cart-distinct-count",
+      "sha256": "1751fbbf47414b8b218749bdfc8bfeb0df1b272e6ac953c959916bf311a1ba2c"
+    },
+    {
+      "task": "catalog-get-isolation",
+      "sha256": "d65c949e74564a4291e5f166b17cba10654ab6188266a0daf17c1e6b06055891"
+    },
+    {
+      "task": "order-input-review",
+      "sha256": "369e5579679c63e70bc227f94f53976abf9f27e8263f37890ef5b41a51ff5b61"
+    }
+  ],
+  "reports": [
+    {
+      "kind": "bounded-one-app-resource-pair",
+      "revision": "f0b8b2d4da6cae199ef8ff24e8db49f46126ce0f",
+      "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+      "startedAt": "2026-10-25T07:34:03.627Z",
+      "resourceProtocol": {
+        "routing": "direct native; no router enrichment/fallback; default sampling unchanged",
+        "rowLimit": 6,
+        "reserveBytes": 2147483648,
+        "sampleIntervalMs": 1000,
+        "hardStopGraceMs": 5000,
+        "guardSha256": "eb638785341c4705f40f3920c80ed3bf0f2416e78737244378146480c1ba91fd",
+        "adapterSha256": "d622c26847b63efeaa3ed280b6f04b8287ce5ae9848cb26316eb8590325e1691",
+        "memoryModuleSha256": "a3cf0ae9e88f8ff63ecd5bfeaba7563abd617e96770d28fd20ee717d070d9ac4"
+      },
+      "task": {
+        "id": "cart-distinct-count",
+        "kind": "feature"
+      },
+      "installedDependencyVersions": {
+        "@react-navigation/native": "7.3.16",
+        "@react-navigation/native-stack": "7.18.8",
+        "expo": "58.0.17",
+        "expo-status-bar": "58.0.4",
+        "react": "19.3.0",
+        "react-native": "0.88.0",
+        "react-native-safe-area-context": "5.10.1",
+        "react-native-screens": "4.30.0",
+        "@babel/core": "7.29.7",
+        "@reduxjs/toolkit": "2.12.0",
+        "@testing-library/react-native": "14.0.1",
+        "@types/jest": "30.0.0",
+        "@types/react": "19.3.0",
+        "@react-native/jest-preset": "0.88.0",
+        "babel-preset-expo": "58.0.19",
+        "jest": "30.2.0",
+        "jest-expo": "58.0.12",
+        "react-redux": "9.3.0",
+        "react-test-renderer": "19.3.0",
+        "typescript": "5.8.3"
+      },
+      "evaluationLane": "v2-7b",
+      "freezeSha256": "5b8af5c4d16f2a5ac1a495914101a14d1a614185ab23b22bcc8e95a6748b926b",
+      "taskDefinitionsSha256": "29a89c362d4e5dc0a0a7727009ff8604ca68babdd38b3eb6e99090c0f9097a41",
+      "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+      "nativeVerification": "not-run",
+      "runnerSha256": "4fe504370758ea14f8ada0c3176b4a6ec72ea79be3d88fa484677badf8c9ab84",
+      "appArchiveSha256": "85f494af47a4d19013fbae471533281db459a859317ce86f7778f4c768716fb2",
+      "generationModuleSha256": "be34d34579ffa7ee84e5867908d46feaaccdd9814d466cdceb665673f4e6edc5",
+      "inferenceModuleSha256": "a6431f4d10327a44ed93cb145224df51e91429046e096ba793c9081a2673fcc0",
+      "acceptanceSha256": "5db69e0775ea67f79da8ab480be79b5920b99d9b449a61929107ebc0b37fafce",
+      "taskSha256": "e990db28cb479e5bc3d7de98a4c8548f45dbfc56a2a584b3385006ddeb0f1d55",
+      "runtime": {
+        "node": "v24.22.1",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "settings": {
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "maxAttempts": 1,
+        "providerCallLimit": 1
+      },
+      "model": "qwen2.5-coder-7b",
+      "expectedArtifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+      "limitations": [
+        "No native build",
+        "Installed dependencies reused",
+        "Tokens/cost not measured",
+        "No human correction-time measurement",
+        "New public development tasks, not private held-out launch evidence; pretraining exposure unknown",
+        "One installed Expo 58/RN 0.88 app; no cross-app or native/device qualification",
+        "Both first-pass conditions use direct native inference, unchanged sampling, equal output/call/time caps; actual input tokens/cost differ and remain unmeasured",
+        "Three repetitions per condition/task, alternating order; resource/deadline stops retain remaining planned rows as not-run",
+        "Acceptance and assistant-authored positive controls excluded from inference and training exports",
+        "Assisted lane deferred until a separate frozen protocol; no assisted/first-pass or historical comparison is equal-budget evidence",
+        "Seeds, human correction time and external acceptance remain unmeasured"
+      ],
+      "runs": [
+        {
+          "repetition": 1,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 6184752906,
+            "minimumSampledAvailableBudgetBytes": 2576980377,
+            "maximumSampledRssBytes": 2677391360,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 9792525434
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "fb95a7333358b3567bd5c1d87d8f5cf2970211a61bffa1b44383db23181afa53",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 1446,
+                "maxOutputTokens": 2048,
+                "contextSize": 3840,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 39112
+            }
+          ],
+          "result": {
+            "id": "cart-distinct-count",
+            "title": "cart-distinct-count",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/hooks/useCart.tsx"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 39140,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0.6666666666666666,
+                "guardrails": 0.92,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:eb94cd5a84ef1daf314c59f42bce1c26e85aa9f8c3a9ebe9988cee7bee2662af",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:f49b8b637b4d11066740cd83dcbbf15184d964877c8e2af43ab6f9b521fc18b7",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 1446,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 3840,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 39115
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/hooks/useCart.tsx",
+                "passed": 23,
+                "failed": 2,
+                "skipped": 11,
+                "ok": false,
+                "failedRules": [
+                  "No unused imports",
+                  "Directly exported function declarations have return annotations"
+                ]
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0.6666666666666666,
+              "guardrails": 0.92
+            },
+            "composite": 0.7933333333333333
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1533
+            },
+            "tests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 7746
+            }
+          },
+          "durationMs": 48602
+        },
+        {
+          "repetition": 1,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 9792525434,
+            "minimumSampledAvailableBudgetBytes": 4123168604,
+            "maximumSampledRssBytes": 1079099392,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 4810363371
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "40a9bab27065560a13479492d5c0772553ce2a2407ca1afdd9cc5120263ac23a",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 2440,
+                "maxOutputTokens": 2048,
+                "contextSize": 4864,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 37215
+            }
+          ],
+          "result": {
+            "id": "cart-distinct-count",
+            "title": "cart-distinct-count",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "invalid",
+                "selected": false,
+                "durationMs": 37218,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:eb94cd5a84ef1daf314c59f42bce1c26e85aa9f8c3a9ebe9988cee7bee2662af",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:7082cc29ee4d12eea88af9a49d59ac0a307ba920a9c36aa62e297efeedc4cfd4",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 2440,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 4864,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 37216
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/hooks/useCart.tsx"
+            ]
+          },
+          "identityMatched": true,
+          "durationMs": 37226
+        },
+        {
+          "repetition": 2,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 4810363371,
+            "minimumSampledAvailableBudgetBytes": 4466765987,
+            "maximumSampledRssBytes": 1115144192,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 9620726743
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "40a9bab27065560a13479492d5c0772553ce2a2407ca1afdd9cc5120263ac23a",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 2440,
+                "maxOutputTokens": 2048,
+                "contextSize": 4864,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 38119
+            }
+          ],
+          "result": {
+            "id": "cart-distinct-count",
+            "title": "cart-distinct-count",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/hooks/useCart.tsx"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 38126,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0.6666666666666666,
+                "guardrails": 0.92,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:eb94cd5a84ef1daf314c59f42bce1c26e85aa9f8c3a9ebe9988cee7bee2662af",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:7082cc29ee4d12eea88af9a49d59ac0a307ba920a9c36aa62e297efeedc4cfd4",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 2440,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 4864,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 38121
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/hooks/useCart.tsx",
+                "passed": 23,
+                "failed": 2,
+                "skipped": 11,
+                "ok": false,
+                "failedRules": [
+                  "No unused imports",
+                  "Directly exported function declarations have return annotations"
+                ]
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0.6666666666666666,
+              "guardrails": 0.92
+            },
+            "composite": 0.7933333333333333
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 807
+            },
+            "tests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 6812
+            }
+          },
+          "durationMs": 45878
+        },
+        {
+          "repetition": 2,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 9620726743,
+            "minimumSampledAvailableBudgetBytes": 2405181685,
+            "maximumSampledRssBytes": 1051967488,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 10136122818
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "fb95a7333358b3567bd5c1d87d8f5cf2970211a61bffa1b44383db23181afa53",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 1446,
+                "maxOutputTokens": 2048,
+                "contextSize": 3840,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 33062
+            }
+          ],
+          "result": {
+            "id": "cart-distinct-count",
+            "title": "cart-distinct-count",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/hooks/useCart.tsx"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 33074,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0.6666666666666666,
+                "guardrails": 0.92,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:eb94cd5a84ef1daf314c59f42bce1c26e85aa9f8c3a9ebe9988cee7bee2662af",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:f49b8b637b4d11066740cd83dcbbf15184d964877c8e2af43ab6f9b521fc18b7",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 1446,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 3840,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 33065
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/hooks/useCart.tsx",
+                "passed": 23,
+                "failed": 2,
+                "skipped": 11,
+                "ok": false,
+                "failedRules": [
+                  "No unused imports",
+                  "Directly exported function declarations have return annotations"
+                ]
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0.6666666666666666,
+              "guardrails": 0.92
+            },
+            "composite": 0.7933333333333333
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1425
+            },
+            "tests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 7327
+            }
+          },
+          "durationMs": 41970
+        },
+        {
+          "repetition": 3,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 10136122818,
+            "minimumSampledAvailableBudgetBytes": 5153960755,
+            "maximumSampledRssBytes": 1045889024,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 10307921510
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "fb95a7333358b3567bd5c1d87d8f5cf2970211a61bffa1b44383db23181afa53",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 1446,
+                "maxOutputTokens": 2048,
+                "contextSize": 3840,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 29597
+            }
+          ],
+          "result": {
+            "id": "cart-distinct-count",
+            "title": "cart-distinct-count",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/hooks/useCart.tsx"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 29604,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0.6666666666666666,
+                "guardrails": 0.92,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:eb94cd5a84ef1daf314c59f42bce1c26e85aa9f8c3a9ebe9988cee7bee2662af",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:f49b8b637b4d11066740cd83dcbbf15184d964877c8e2af43ab6f9b521fc18b7",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 1446,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 3840,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 29599
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/hooks/useCart.tsx",
+                "passed": 23,
+                "failed": 2,
+                "skipped": 11,
+                "ok": false,
+                "failedRules": [
+                  "No unused imports",
+                  "Directly exported function declarations have return annotations"
+                ]
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0.6666666666666666,
+              "guardrails": 0.92
+            },
+            "composite": 0.7933333333333333
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1264
+            },
+            "tests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 7518
+            }
+          },
+          "durationMs": 38524
+        },
+        {
+          "repetition": 3,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 10307921510,
+            "minimumSampledAvailableBudgetBytes": 4810363371,
+            "maximumSampledRssBytes": 1112817664,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 10136122818
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "40a9bab27065560a13479492d5c0772553ce2a2407ca1afdd9cc5120263ac23a",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 2440,
+                "maxOutputTokens": 2048,
+                "contextSize": 4864,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 36953
+            }
+          ],
+          "result": {
+            "id": "cart-distinct-count",
+            "title": "cart-distinct-count",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/hooks/useCart.tsx"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 36960,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0.6666666666666666,
+                "guardrails": 0.92,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:eb94cd5a84ef1daf314c59f42bce1c26e85aa9f8c3a9ebe9988cee7bee2662af",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:7082cc29ee4d12eea88af9a49d59ac0a307ba920a9c36aa62e297efeedc4cfd4",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 2440,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 4864,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 36955
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/hooks/useCart.tsx",
+                "passed": 23,
+                "failed": 2,
+                "skipped": 11,
+                "ok": false,
+                "failedRules": [
+                  "No unused imports",
+                  "Directly exported function declarations have return annotations"
+                ]
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0.6666666666666666,
+              "guardrails": 0.92
+            },
+            "composite": 0.7933333333333333
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 827
+            },
+            "tests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 6734
+            }
+          },
+          "durationMs": 44641
+        }
+      ],
+      "negativeControl": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1233
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7244
+        }
+      },
+      "positiveControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1058
+        },
+        "tests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7038
+        }
+      }
+    },
+    {
+      "kind": "bounded-one-app-resource-pair",
+      "revision": "f0b8b2d4da6cae199ef8ff24e8db49f46126ce0f",
+      "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+      "startedAt": "2026-10-25T07:38:37.680Z",
+      "resourceProtocol": {
+        "routing": "direct native; no router enrichment/fallback; default sampling unchanged",
+        "rowLimit": 6,
+        "reserveBytes": 2147483648,
+        "sampleIntervalMs": 1000,
+        "hardStopGraceMs": 5000,
+        "guardSha256": "eb638785341c4705f40f3920c80ed3bf0f2416e78737244378146480c1ba91fd",
+        "adapterSha256": "d622c26847b63efeaa3ed280b6f04b8287ce5ae9848cb26316eb8590325e1691",
+        "memoryModuleSha256": "a3cf0ae9e88f8ff63ecd5bfeaba7563abd617e96770d28fd20ee717d070d9ac4"
+      },
+      "task": {
+        "id": "catalog-get-isolation",
+        "kind": "fix"
+      },
+      "installedDependencyVersions": {
+        "@react-navigation/native": "7.3.16",
+        "@react-navigation/native-stack": "7.18.8",
+        "expo": "58.0.17",
+        "expo-status-bar": "58.0.4",
+        "react": "19.3.0",
+        "react-native": "0.88.0",
+        "react-native-safe-area-context": "5.10.1",
+        "react-native-screens": "4.30.0",
+        "@babel/core": "7.29.7",
+        "@reduxjs/toolkit": "2.12.0",
+        "@testing-library/react-native": "14.0.1",
+        "@types/jest": "30.0.0",
+        "@types/react": "19.3.0",
+        "@react-native/jest-preset": "0.88.0",
+        "babel-preset-expo": "58.0.19",
+        "jest": "30.2.0",
+        "jest-expo": "58.0.12",
+        "react-redux": "9.3.0",
+        "react-test-renderer": "19.3.0",
+        "typescript": "5.8.3"
+      },
+      "evaluationLane": "v2-7b",
+      "freezeSha256": "5b8af5c4d16f2a5ac1a495914101a14d1a614185ab23b22bcc8e95a6748b926b",
+      "taskDefinitionsSha256": "29a89c362d4e5dc0a0a7727009ff8604ca68babdd38b3eb6e99090c0f9097a41",
+      "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+      "nativeVerification": "not-run",
+      "runnerSha256": "4fe504370758ea14f8ada0c3176b4a6ec72ea79be3d88fa484677badf8c9ab84",
+      "appArchiveSha256": "85f494af47a4d19013fbae471533281db459a859317ce86f7778f4c768716fb2",
+      "generationModuleSha256": "be34d34579ffa7ee84e5867908d46feaaccdd9814d466cdceb665673f4e6edc5",
+      "inferenceModuleSha256": "a6431f4d10327a44ed93cb145224df51e91429046e096ba793c9081a2673fcc0",
+      "acceptanceSha256": "14ddeb0fb977e013459f3e200030bf72fb3ace911624f2b25c1f7e14526f4518",
+      "taskSha256": "bd7c49d70f75b9788eaf3d83b4b7e7b7b85028c1e7cc4f0e27e802930d32ff6a",
+      "runtime": {
+        "node": "v24.22.1",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "settings": {
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "maxAttempts": 1,
+        "providerCallLimit": 1
+      },
+      "model": "qwen2.5-coder-7b",
+      "expectedArtifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+      "limitations": [
+        "No native build",
+        "Installed dependencies reused",
+        "Tokens/cost not measured",
+        "No human correction-time measurement",
+        "New public development tasks, not private held-out launch evidence; pretraining exposure unknown",
+        "One installed Expo 58/RN 0.88 app; no cross-app or native/device qualification",
+        "Both first-pass conditions use direct native inference, unchanged sampling, equal output/call/time caps; actual input tokens/cost differ and remain unmeasured",
+        "Three repetitions per condition/task, alternating order; resource/deadline stops retain remaining planned rows as not-run",
+        "Acceptance and assistant-authored positive controls excluded from inference and training exports",
+        "Assisted lane deferred until a separate frozen protocol; no assisted/first-pass or historical comparison is equal-budget evidence",
+        "Seeds, human correction time and external acceptance remain unmeasured"
+      ],
+      "runs": [
+        {
+          "repetition": 1,
+          "condition": "task-only",
+          "status": "passed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 10307921510,
+            "minimumSampledAvailableBudgetBytes": 4123168604,
+            "maximumSampledRssBytes": 5056233472,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 9105330667
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "4dae69aeaaf65fcfe409f3839c46c9d080c5783373cb65fef61bdc8e403f31df",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 1277,
+                "maxOutputTokens": 2048,
+                "contextSize": 3584,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 32242
+            }
+          ],
+          "result": {
+            "id": "catalog-get-isolation",
+            "title": "catalog-get-isolation",
+            "suite": "fix",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/services/CatalogApi.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 32258,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0,
+                "guardrails": 1,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:ff2cb5af2d3029a596a964463d23701260a06c654b64fba0996d2a4e77233664",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:3fc0fdbf6a2c28461ff69f9e71250860145f3883e9be4c4edb71417c1c17d329",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 1277,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 3584,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 32243
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/services/CatalogApi.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 1
+            },
+            "composite": 0.5
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1338
+            },
+            "tests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 7381
+            }
+          },
+          "durationMs": 41111
+        },
+        {
+          "repetition": 1,
+          "condition": "vectalon",
+          "status": "passed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 9105330667,
+            "minimumSampledAvailableBudgetBytes": 3264175144,
+            "maximumSampledRssBytes": 4743872512,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 8933531975
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "0b08d179ac4388d54c87b51ae5dea2f32ebe6e95ac50c0b9b319d5352188c450",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 2271,
+                "maxOutputTokens": 2048,
+                "contextSize": 4608,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 33191
+            }
+          ],
+          "result": {
+            "id": "catalog-get-isolation",
+            "title": "catalog-get-isolation",
+            "suite": "fix",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/services/CatalogApi.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 33207,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0,
+                "guardrails": 1,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:ff2cb5af2d3029a596a964463d23701260a06c654b64fba0996d2a4e77233664",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:f84029caec0f0531a4ecc41ad14c589ebc5335c5798e29e1e44edb0f266551e2",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 2271,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 4608,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 33194
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/services/CatalogApi.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 1
+            },
+            "composite": 0.5
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1614
+            },
+            "tests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 7726
+            }
+          },
+          "durationMs": 42680
+        },
+        {
+          "repetition": 2,
+          "condition": "vectalon",
+          "status": "passed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 8933531975,
+            "minimumSampledAvailableBudgetBytes": 3779571220,
+            "maximumSampledRssBytes": 4609114112,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 8589934592
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "0b08d179ac4388d54c87b51ae5dea2f32ebe6e95ac50c0b9b319d5352188c450",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 2271,
+                "maxOutputTokens": 2048,
+                "contextSize": 4608,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 29269
+            }
+          ],
+          "result": {
+            "id": "catalog-get-isolation",
+            "title": "catalog-get-isolation",
+            "suite": "fix",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/services/CatalogApi.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 29273,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0,
+                "guardrails": 1,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:ff2cb5af2d3029a596a964463d23701260a06c654b64fba0996d2a4e77233664",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:f84029caec0f0531a4ecc41ad14c589ebc5335c5798e29e1e44edb0f266551e2",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 2271,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 4608,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 29270
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/services/CatalogApi.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 1
+            },
+            "composite": 0.5
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1464
+            },
+            "tests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 7834
+            }
+          },
+          "durationMs": 38711
+        },
+        {
+          "repetition": 2,
+          "condition": "task-only",
+          "status": "passed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 8589934592,
+            "minimumSampledAvailableBudgetBytes": 3092376453,
+            "maximumSampledRssBytes": 4166254592,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 9277129359
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "4dae69aeaaf65fcfe409f3839c46c9d080c5783373cb65fef61bdc8e403f31df",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 1277,
+                "maxOutputTokens": 2048,
+                "contextSize": 3584,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 23548
+            }
+          ],
+          "result": {
+            "id": "catalog-get-isolation",
+            "title": "catalog-get-isolation",
+            "suite": "fix",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/services/CatalogApi.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 23554,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0,
+                "guardrails": 1,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:ff2cb5af2d3029a596a964463d23701260a06c654b64fba0996d2a4e77233664",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:3fc0fdbf6a2c28461ff69f9e71250860145f3883e9be4c4edb71417c1c17d329",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 1277,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 3584,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 23551
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/services/CatalogApi.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 1
+            },
+            "composite": 0.5
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1315
+            },
+            "tests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 7438
+            }
+          },
+          "durationMs": 32429
+        },
+        {
+          "repetition": 3,
+          "condition": "task-only",
+          "status": "passed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 9277129359,
+            "minimumSampledAvailableBudgetBytes": 3264175144,
+            "maximumSampledRssBytes": 4178444288,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 8246337208
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "4dae69aeaaf65fcfe409f3839c46c9d080c5783373cb65fef61bdc8e403f31df",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 1277,
+                "maxOutputTokens": 2048,
+                "contextSize": 3584,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 23022
+            }
+          ],
+          "result": {
+            "id": "catalog-get-isolation",
+            "title": "catalog-get-isolation",
+            "suite": "fix",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/services/CatalogApi.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 23027,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0,
+                "guardrails": 1,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:ff2cb5af2d3029a596a964463d23701260a06c654b64fba0996d2a4e77233664",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:3fc0fdbf6a2c28461ff69f9e71250860145f3883e9be4c4edb71417c1c17d329",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 1277,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 3584,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 23024
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/services/CatalogApi.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 1
+            },
+            "composite": 0.5
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1286
+            },
+            "tests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 7259
+            }
+          },
+          "durationMs": 31707
+        },
+        {
+          "repetition": 3,
+          "condition": "vectalon",
+          "status": "passed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 8246337208,
+            "minimumSampledAvailableBudgetBytes": 3435973836,
+            "maximumSampledRssBytes": 4170317824,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 8589934592
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "0b08d179ac4388d54c87b51ae5dea2f32ebe6e95ac50c0b9b319d5352188c450",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 2271,
+                "maxOutputTokens": 2048,
+                "contextSize": 4608,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 30292
+            }
+          ],
+          "result": {
+            "id": "catalog-get-isolation",
+            "title": "catalog-get-isolation",
+            "suite": "fix",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/services/CatalogApi.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 30299,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0,
+                "guardrails": 1,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:ff2cb5af2d3029a596a964463d23701260a06c654b64fba0996d2a4e77233664",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:f84029caec0f0531a4ecc41ad14c589ebc5335c5798e29e1e44edb0f266551e2",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 2271,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 4608,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 30296
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/services/CatalogApi.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 1
+            },
+            "composite": 0.5
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1234
+            },
+            "tests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 7468
+            }
+          },
+          "durationMs": 39144
+        }
+      ],
+      "negativeControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1015
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6923
+        }
+      },
+      "positiveControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1052
+        },
+        "tests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6712
+        }
+      }
+    },
+    {
+      "kind": "bounded-one-app-resource-pair",
+      "revision": "f0b8b2d4da6cae199ef8ff24e8db49f46126ce0f",
+      "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+      "startedAt": "2026-10-25T07:42:39.800Z",
+      "resourceProtocol": {
+        "routing": "direct native; no router enrichment/fallback; default sampling unchanged",
+        "rowLimit": 6,
+        "reserveBytes": 2147483648,
+        "sampleIntervalMs": 1000,
+        "hardStopGraceMs": 5000,
+        "guardSha256": "eb638785341c4705f40f3920c80ed3bf0f2416e78737244378146480c1ba91fd",
+        "adapterSha256": "d622c26847b63efeaa3ed280b6f04b8287ce5ae9848cb26316eb8590325e1691",
+        "memoryModuleSha256": "a3cf0ae9e88f8ff63ecd5bfeaba7563abd617e96770d28fd20ee717d070d9ac4"
+      },
+      "task": {
+        "id": "order-input-review",
+        "kind": "review"
+      },
+      "installedDependencyVersions": {
+        "@react-navigation/native": "7.3.16",
+        "@react-navigation/native-stack": "7.18.8",
+        "expo": "58.0.17",
+        "expo-status-bar": "58.0.4",
+        "react": "19.3.0",
+        "react-native": "0.88.0",
+        "react-native-safe-area-context": "5.10.1",
+        "react-native-screens": "4.30.0",
+        "@babel/core": "7.29.7",
+        "@reduxjs/toolkit": "2.12.0",
+        "@testing-library/react-native": "14.0.1",
+        "@types/jest": "30.0.0",
+        "@types/react": "19.3.0",
+        "@react-native/jest-preset": "0.88.0",
+        "babel-preset-expo": "58.0.19",
+        "jest": "30.2.0",
+        "jest-expo": "58.0.12",
+        "react-redux": "9.3.0",
+        "react-test-renderer": "19.3.0",
+        "typescript": "5.8.3"
+      },
+      "evaluationLane": "v2-7b",
+      "freezeSha256": "5b8af5c4d16f2a5ac1a495914101a14d1a614185ab23b22bcc8e95a6748b926b",
+      "taskDefinitionsSha256": "29a89c362d4e5dc0a0a7727009ff8604ca68babdd38b3eb6e99090c0f9097a41",
+      "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+      "nativeVerification": "not-run",
+      "runnerSha256": "4fe504370758ea14f8ada0c3176b4a6ec72ea79be3d88fa484677badf8c9ab84",
+      "appArchiveSha256": "85f494af47a4d19013fbae471533281db459a859317ce86f7778f4c768716fb2",
+      "generationModuleSha256": "be34d34579ffa7ee84e5867908d46feaaccdd9814d466cdceb665673f4e6edc5",
+      "inferenceModuleSha256": "a6431f4d10327a44ed93cb145224df51e91429046e096ba793c9081a2673fcc0",
+      "acceptanceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "taskSha256": "b882eb0094fda1f8086f39ec35c1468324c45c2e75a49fe7ac4e1e4300caf9f9",
+      "runtime": {
+        "node": "v24.22.1",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "settings": {
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "maxAttempts": 1,
+        "providerCallLimit": 1
+      },
+      "model": "qwen2.5-coder-7b",
+      "expectedArtifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+      "limitations": [
+        "No native build",
+        "Installed dependencies reused",
+        "Tokens/cost not measured",
+        "No human correction-time measurement",
+        "New public development tasks, not private held-out launch evidence; pretraining exposure unknown",
+        "One installed Expo 58/RN 0.88 app; no cross-app or native/device qualification",
+        "Both first-pass conditions use direct native inference, unchanged sampling, equal output/call/time caps; actual input tokens/cost differ and remain unmeasured",
+        "Three repetitions per condition/task, alternating order; resource/deadline stops retain remaining planned rows as not-run",
+        "Acceptance and assistant-authored positive controls excluded from inference and training exports",
+        "Assisted lane deferred until a separate frozen protocol; no assisted/first-pass or historical comparison is equal-budget evidence",
+        "Seeds, human correction time and external acceptance remain unmeasured"
+      ],
+      "runs": [
+        {
+          "repetition": 1,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 9620726743,
+            "minimumSampledAvailableBudgetBytes": 3264175144,
+            "maximumSampledRssBytes": 4621860864,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 8246337208
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "0a32e1f602793cb2faf0fd18c8216698993413950151519dd61f960ba0095226",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 1110,
+                "maxOutputTokens": 2048,
+                "contextSize": 3584,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 27084
+            }
+          ],
+          "result": {
+            "id": "order-input-review",
+            "title": "order-input-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/__tests__/orderInputReview.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 27103,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0,
+                "guardrails": 1,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:01d654d958d26faa05ba6b8588477e277692dfd0637c5047c3058198e699be1a",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:4aef3c5ceeeeec92426011c159daebc9ef53cde0a1fb25be2ca2f1ddfc93c8c7",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 1110,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 3584,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 27087
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/__tests__/orderInputReview.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 1
+            },
+            "composite": 0.5
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 2067
+            },
+            "tests": {
+              "ok": false,
+              "durationMs": 9446
+            },
+            "originalTests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 8053
+            },
+            "proposedTests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1393,
+              "assertionFailures": 0
+            }
+          },
+          "durationMs": 38798
+        },
+        {
+          "repetition": 1,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 8418135900,
+            "minimumSampledAvailableBudgetBytes": 3092376453,
+            "maximumSampledRssBytes": 2752135168,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 8933531975
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "e8d5c3f6cad9215c6a184de3479cc69b0c8dfb0be25341e4173cc9e8eae225b2",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 2104,
+                "maxOutputTokens": 2048,
+                "contextSize": 4608,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 23147
+            }
+          ],
+          "result": {
+            "id": "order-input-review",
+            "title": "order-input-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/__tests__/orderInputReview.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 23162,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0,
+                "guardrails": 1,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:01d654d958d26faa05ba6b8588477e277692dfd0637c5047c3058198e699be1a",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:a9c32e0c3e26d545cd448a5db06267faaeb0556b5897c15456405931a64d66e0",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 2104,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 4608,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 23152
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/__tests__/orderInputReview.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 1
+            },
+            "composite": 0.5
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1609
+            },
+            "tests": {
+              "ok": false,
+              "durationMs": 9092
+            },
+            "originalTests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 7643
+            },
+            "proposedTests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1449,
+              "assertionFailures": 0
+            }
+          },
+          "durationMs": 34027
+        },
+        {
+          "repetition": 2,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 8933531975,
+            "minimumSampledAvailableBudgetBytes": 3264175144,
+            "maximumSampledRssBytes": 2144337920,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 9277129359
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "e8d5c3f6cad9215c6a184de3479cc69b0c8dfb0be25341e4173cc9e8eae225b2",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 2104,
+                "maxOutputTokens": 2048,
+                "contextSize": 4608,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 24815
+            }
+          ],
+          "result": {
+            "id": "order-input-review",
+            "title": "order-input-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/__tests__/orderInputReview.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 24834,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 1,
+                "guardrails": 1,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:01d654d958d26faa05ba6b8588477e277692dfd0637c5047c3058198e699be1a",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:a9c32e0c3e26d545cd448a5db06267faaeb0556b5897c15456405931a64d66e0",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 2104,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 4608,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 24819
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/__tests__/orderInputReview.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 1,
+              "guardrails": 1
+            },
+            "composite": 1
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1742
+            },
+            "tests": {
+              "ok": false,
+              "durationMs": 12293
+            },
+            "originalTests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 10520
+            },
+            "proposedTests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1773,
+              "assertionFailures": 0
+            }
+          },
+          "durationMs": 39067
+        },
+        {
+          "repetition": 2,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 9277129359,
+            "minimumSampledAvailableBudgetBytes": 3264175144,
+            "maximumSampledRssBytes": 1426145280,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 8933531975
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "0a32e1f602793cb2faf0fd18c8216698993413950151519dd61f960ba0095226",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 1110,
+                "maxOutputTokens": 2048,
+                "contextSize": 3584,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 21359
+            }
+          ],
+          "result": {
+            "id": "order-input-review",
+            "title": "order-input-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/__tests__/orderInputReview.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 21367,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0,
+                "guardrails": 1,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:01d654d958d26faa05ba6b8588477e277692dfd0637c5047c3058198e699be1a",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:4aef3c5ceeeeec92426011c159daebc9ef53cde0a1fb25be2ca2f1ddfc93c8c7",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 1110,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 3584,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 21362
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/__tests__/orderInputReview.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 1
+            },
+            "composite": 0.5
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1323
+            },
+            "tests": {
+              "ok": false,
+              "durationMs": 9629
+            },
+            "originalTests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 7766
+            },
+            "proposedTests": {
+              "ok": false,
+              "exitCode": 1,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1863,
+              "assertionFailures": 1
+            }
+          },
+          "durationMs": 32479
+        },
+        {
+          "repetition": 3,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 8933531975,
+            "minimumSampledAvailableBudgetBytes": 3264175144,
+            "maximumSampledRssBytes": 764198912,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 9448928051
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "0a32e1f602793cb2faf0fd18c8216698993413950151519dd61f960ba0095226",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 1110,
+                "maxOutputTokens": 2048,
+                "contextSize": 3584,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 23680
+            }
+          ],
+          "result": {
+            "id": "order-input-review",
+            "title": "order-input-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/__tests__/orderInputReview.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 23688,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0,
+                "guardrails": 1,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:01d654d958d26faa05ba6b8588477e277692dfd0637c5047c3058198e699be1a",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:4aef3c5ceeeeec92426011c159daebc9ef53cde0a1fb25be2ca2f1ddfc93c8c7",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 1110,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 3584,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 23683
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/__tests__/orderInputReview.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 1
+            },
+            "composite": 0.5
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": false,
+              "exitCode": 2,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1550
+            },
+            "tests": {
+              "ok": false,
+              "durationMs": 8680
+            },
+            "originalTests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 7435
+            },
+            "proposedTests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1245,
+              "assertionFailures": 0
+            }
+          },
+          "durationMs": 34088
+        },
+        {
+          "repetition": 3,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 9448928051,
+            "minimumSampledAvailableBudgetBytes": 4123168604,
+            "maximumSampledRssBytes": 1045692416,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 180000,
+            "availableBudgetBytesAfter": 9620726743
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "response",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "e8d5c3f6cad9215c6a184de3479cc69b0c8dfb0be25341e4173cc9e8eae225b2",
+              "artifact": {
+                "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                "sizeBytes": 3993201376,
+                "source": "local-file-at-load"
+              },
+              "localContext": {
+                "inputTokens": 2104,
+                "maxOutputTokens": 2048,
+                "contextSize": 4608,
+                "batchSize": 128
+              },
+              "stopReason": "eogToken",
+              "durationMs": 22163
+            }
+          ],
+          "result": {
+            "id": "order-input-review",
+            "title": "order-input-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [
+              "src/__tests__/orderInputReview.ts"
+            ],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "parsed",
+                "selected": true,
+                "durationMs": 22168,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 1,
+                "adherence": 0,
+                "guardrails": 1,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:01d654d958d26faa05ba6b8588477e277692dfd0637c5047c3058198e699be1a",
+                "maxAttempts": 1,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:a9c32e0c3e26d545cd448a5db06267faaeb0556b5897c15456405931a64d66e0",
+                "provider": "local",
+                "stopReason": "eogToken",
+                "localContext": {
+                  "inputTokens": 2104,
+                  "maxOutputTokens": 2048,
+                  "contextSize": 4608,
+                  "batchSize": 128
+                },
+                "providerCalls": [
+                  {
+                    "provider": "local",
+                    "status": "response",
+                    "durationMs": 22165
+                  }
+                ],
+                "model": {
+                  "id": "qwen2.5-coder-7b",
+                  "source": "configured"
+                },
+                "artifact": {
+                  "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+                  "sizeBytes": 3993201376,
+                  "source": "local-file-at-load"
+                }
+              }
+            ],
+            "guardrail": [
+              {
+                "path": "src/__tests__/orderInputReview.ts",
+                "passed": 18,
+                "failed": 0,
+                "skipped": 18,
+                "ok": true,
+                "failedRules": []
+              }
+            ],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 1
+            },
+            "composite": 0.5
+          },
+          "identityMatched": true,
+          "checks": {
+            "typecheck": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1265
+            },
+            "tests": {
+              "ok": false,
+              "durationMs": 8536
+            },
+            "originalTests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 7292
+            },
+            "proposedTests": {
+              "ok": true,
+              "exitCode": 0,
+              "timedOut": false,
+              "isolation": "sandbox-exec",
+              "durationMs": 1244,
+              "assertionFailures": 0
+            }
+          },
+          "durationMs": 32113
+        }
+      ],
+      "negativeControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1142
+        },
+        "tests": {
+          "ok": false,
+          "durationMs": 8123
+        },
+        "originalTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6926
+        },
+        "proposedTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1197,
+          "assertionFailures": 0
+        }
+      },
+      "positiveControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1065
+        },
+        "tests": {
+          "ok": true,
+          "durationMs": 7836
+        },
+        "originalTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 6608
+        },
+        "proposedTests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1228,
+          "assertionFailures": 1
+        }
+      }
+    }
+  ],
+  "candidateEvidence": [
+    {
+      "task": "cart-distinct-count",
+      "condition": "task-only",
+      "repetition": 1,
+      "files": [
+        {
+          "path": "src/hooks/useCart.tsx",
+          "sha256": "6a58b614eed0bda8be3bb3a4eb2c2317a9de7bb961068a8543bb561d37df40d0"
+        }
+      ],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "24e17acde05cee93a4f1e6b3fb128aa84ea07b26fecc764aead8ac64a5f7d364"
+        }
+      ],
+      "rubric": [
+        {
+          "filePath": "src/hooks/useCart.tsx",
+          "applicable": 3,
+          "passed": 2,
+          "failed": 1,
+          "checks": [
+            {
+              "id": "virtualized-lists",
+              "passed": false
+            },
+            {
+              "id": "immutable-updates",
+              "passed": true
+            },
+            {
+              "id": "hook-deps",
+              "passed": true
+            }
+          ]
+        }
+      ],
+      "compilerCodes": [
+        "TS2304"
+      ],
+      "testSummary": [
+        "Test Suites: 15 passed, 15 total",
+        "Tests:       36 passed, 36 total"
+      ]
+    },
+    {
+      "task": "cart-distinct-count",
+      "condition": "vectalon",
+      "repetition": 1,
+      "files": [],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "42bbb57141c5554405ec460116c48d142b5ec7e180e814db228cdce5076d82ad"
+        }
+      ],
+      "rubric": [],
+      "compilerCodes": [],
+      "testSummary": []
+    },
+    {
+      "task": "cart-distinct-count",
+      "condition": "vectalon",
+      "repetition": 2,
+      "files": [
+        {
+          "path": "src/hooks/useCart.tsx",
+          "sha256": "54a89cbba52715caf59e99b24d56e6e0d7dcbf99b6f4aee6df0bb7d1271ce350"
+        }
+      ],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "442e3b2191d589e801decf40d9f66ec0d43aab09f7e1afc75b1cdd1b0f558482"
+        }
+      ],
+      "rubric": [
+        {
+          "filePath": "src/hooks/useCart.tsx",
+          "applicable": 3,
+          "passed": 2,
+          "failed": 1,
+          "checks": [
+            {
+              "id": "virtualized-lists",
+              "passed": false
+            },
+            {
+              "id": "immutable-updates",
+              "passed": true
+            },
+            {
+              "id": "hook-deps",
+              "passed": true
+            }
+          ]
+        }
+      ],
+      "compilerCodes": [
+        "TS1005"
+      ],
+      "testSummary": [
+        "Test Suites: 5 failed, 10 passed, 15 total",
+        "Tests:       15 passed, 15 total"
+      ]
+    },
+    {
+      "task": "cart-distinct-count",
+      "condition": "task-only",
+      "repetition": 2,
+      "files": [
+        {
+          "path": "src/hooks/useCart.tsx",
+          "sha256": "722e522fd911a8088ff988f2864cb34616c8c7842f3a33dae694b0d94cf80e6d"
+        }
+      ],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "b5f69ad7536bbe6db4b313ebd420cab86e0414accebd0c519018c83923424bf3"
+        }
+      ],
+      "rubric": [
+        {
+          "filePath": "src/hooks/useCart.tsx",
+          "applicable": 3,
+          "passed": 2,
+          "failed": 1,
+          "checks": [
+            {
+              "id": "virtualized-lists",
+              "passed": false
+            },
+            {
+              "id": "immutable-updates",
+              "passed": true
+            },
+            {
+              "id": "hook-deps",
+              "passed": true
+            }
+          ]
+        }
+      ],
+      "compilerCodes": [
+        "TS2304"
+      ],
+      "testSummary": [
+        "Test Suites: 15 passed, 15 total",
+        "Tests:       36 passed, 36 total"
+      ]
+    },
+    {
+      "task": "cart-distinct-count",
+      "condition": "task-only",
+      "repetition": 3,
+      "files": [
+        {
+          "path": "src/hooks/useCart.tsx",
+          "sha256": "6a58b614eed0bda8be3bb3a4eb2c2317a9de7bb961068a8543bb561d37df40d0"
+        }
+      ],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "24e17acde05cee93a4f1e6b3fb128aa84ea07b26fecc764aead8ac64a5f7d364"
+        }
+      ],
+      "rubric": [
+        {
+          "filePath": "src/hooks/useCart.tsx",
+          "applicable": 3,
+          "passed": 2,
+          "failed": 1,
+          "checks": [
+            {
+              "id": "virtualized-lists",
+              "passed": false
+            },
+            {
+              "id": "immutable-updates",
+              "passed": true
+            },
+            {
+              "id": "hook-deps",
+              "passed": true
+            }
+          ]
+        }
+      ],
+      "compilerCodes": [
+        "TS2304"
+      ],
+      "testSummary": [
+        "Test Suites: 15 passed, 15 total",
+        "Tests:       36 passed, 36 total"
+      ]
+    },
+    {
+      "task": "cart-distinct-count",
+      "condition": "vectalon",
+      "repetition": 3,
+      "files": [
+        {
+          "path": "src/hooks/useCart.tsx",
+          "sha256": "2689862dc1dd07f978ecffc44653bacdb868eb8a765dec3635db9cb101397967"
+        }
+      ],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "2bbd2bb7353dfd005defc03ebe0482c2e8d5abbe85b0d1db11783f85bc88351c"
+        }
+      ],
+      "rubric": [
+        {
+          "filePath": "src/hooks/useCart.tsx",
+          "applicable": 3,
+          "passed": 2,
+          "failed": 1,
+          "checks": [
+            {
+              "id": "virtualized-lists",
+              "passed": false
+            },
+            {
+              "id": "immutable-updates",
+              "passed": true
+            },
+            {
+              "id": "hook-deps",
+              "passed": true
+            }
+          ]
+        }
+      ],
+      "compilerCodes": [
+        "TS1109",
+        "TS1005",
+        "TS1435"
+      ],
+      "testSummary": [
+        "Test Suites: 5 failed, 10 passed, 15 total",
+        "Tests:       15 passed, 15 total"
+      ]
+    },
+    {
+      "task": "catalog-get-isolation",
+      "condition": "task-only",
+      "repetition": 1,
+      "files": [
+        {
+          "path": "src/services/CatalogApi.ts",
+          "sha256": "329e856f4f2df971e23f26a386ca38faddac65087e437cf128a825051be42f0a"
+        }
+      ],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "4f66edc010a300f5f5f5682287640c44f11ec2648c61d286d151c8f0d465ae8e"
+        }
+      ],
+      "rubric": [
+        {
+          "filePath": "src/services/CatalogApi.ts",
+          "applicable": 1,
+          "passed": 0,
+          "failed": 1,
+          "checks": [
+            {
+              "id": "error-states",
+              "passed": false
+            }
+          ]
+        }
+      ],
+      "compilerCodes": [],
+      "testSummary": [
+        "Test Suites: 15 passed, 15 total",
+        "Tests:       35 passed, 35 total"
+      ]
+    },
+    {
+      "task": "catalog-get-isolation",
+      "condition": "vectalon",
+      "repetition": 1,
+      "files": [
+        {
+          "path": "src/services/CatalogApi.ts",
+          "sha256": "70d3a6c4624ea8dcc51dc03da8b131dec41a9560b605b5103f9742ca0934f8ad"
+        }
+      ],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "7bc3d6ca9a3659aac2e083e034a0cc585495962f0d87e0d66d2427979ba41204"
+        }
+      ],
+      "rubric": [
+        {
+          "filePath": "src/services/CatalogApi.ts",
+          "applicable": 1,
+          "passed": 0,
+          "failed": 1,
+          "checks": [
+            {
+              "id": "error-states",
+              "passed": false
+            }
+          ]
+        }
+      ],
+      "compilerCodes": [],
+      "testSummary": [
+        "Test Suites: 15 passed, 15 total",
+        "Tests:       35 passed, 35 total"
+      ]
+    },
+    {
+      "task": "catalog-get-isolation",
+      "condition": "vectalon",
+      "repetition": 2,
+      "files": [
+        {
+          "path": "src/services/CatalogApi.ts",
+          "sha256": "8f91489762001916edcb408e699091313ed089bf03f4e855e1eb7c9eb42060fb"
+        }
+      ],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "bccda9e4175a044a51f1675541dcd4445fee4d7cb060bb1ab9c5ea1e1e534d0d"
+        }
+      ],
+      "rubric": [
+        {
+          "filePath": "src/services/CatalogApi.ts",
+          "applicable": 1,
+          "passed": 0,
+          "failed": 1,
+          "checks": [
+            {
+              "id": "error-states",
+              "passed": false
+            }
+          ]
+        }
+      ],
+      "compilerCodes": [],
+      "testSummary": [
+        "Test Suites: 15 passed, 15 total",
+        "Tests:       35 passed, 35 total"
+      ]
+    },
+    {
+      "task": "catalog-get-isolation",
+      "condition": "task-only",
+      "repetition": 2,
+      "files": [
+        {
+          "path": "src/services/CatalogApi.ts",
+          "sha256": "329e856f4f2df971e23f26a386ca38faddac65087e437cf128a825051be42f0a"
+        }
+      ],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "4f66edc010a300f5f5f5682287640c44f11ec2648c61d286d151c8f0d465ae8e"
+        }
+      ],
+      "rubric": [
+        {
+          "filePath": "src/services/CatalogApi.ts",
+          "applicable": 1,
+          "passed": 0,
+          "failed": 1,
+          "checks": [
+            {
+              "id": "error-states",
+              "passed": false
+            }
+          ]
+        }
+      ],
+      "compilerCodes": [],
+      "testSummary": [
+        "Test Suites: 15 passed, 15 total",
+        "Tests:       35 passed, 35 total"
+      ]
+    },
+    {
+      "task": "catalog-get-isolation",
+      "condition": "task-only",
+      "repetition": 3,
+      "files": [
+        {
+          "path": "src/services/CatalogApi.ts",
+          "sha256": "329e856f4f2df971e23f26a386ca38faddac65087e437cf128a825051be42f0a"
+        }
+      ],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "4f66edc010a300f5f5f5682287640c44f11ec2648c61d286d151c8f0d465ae8e"
+        }
+      ],
+      "rubric": [
+        {
+          "filePath": "src/services/CatalogApi.ts",
+          "applicable": 1,
+          "passed": 0,
+          "failed": 1,
+          "checks": [
+            {
+              "id": "error-states",
+              "passed": false
+            }
+          ]
+        }
+      ],
+      "compilerCodes": [],
+      "testSummary": [
+        "Test Suites: 15 passed, 15 total",
+        "Tests:       35 passed, 35 total"
+      ]
+    },
+    {
+      "task": "catalog-get-isolation",
+      "condition": "vectalon",
+      "repetition": 3,
+      "files": [
+        {
+          "path": "src/services/CatalogApi.ts",
+          "sha256": "8f91489762001916edcb408e699091313ed089bf03f4e855e1eb7c9eb42060fb"
+        }
+      ],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "bccda9e4175a044a51f1675541dcd4445fee4d7cb060bb1ab9c5ea1e1e534d0d"
+        }
+      ],
+      "rubric": [
+        {
+          "filePath": "src/services/CatalogApi.ts",
+          "applicable": 1,
+          "passed": 0,
+          "failed": 1,
+          "checks": [
+            {
+              "id": "error-states",
+              "passed": false
+            }
+          ]
+        }
+      ],
+      "compilerCodes": [],
+      "testSummary": [
+        "Test Suites: 15 passed, 15 total",
+        "Tests:       35 passed, 35 total"
+      ]
+    },
+    {
+      "task": "order-input-review",
+      "condition": "task-only",
+      "repetition": 1,
+      "files": [
+        {
+          "path": "src/__tests__/orderInputReview.ts",
+          "sha256": "c5b05f602841d2a89edb37e5c6615328a8413e39d83581d99a01b8b972d6e584"
+        }
+      ],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "d2c530b4ff04bbb367f3f108322571c020c9c3ca6c81c2f0b2a69a27390e0644"
+        }
+      ],
+      "rubric": [
+        {
+          "filePath": "src/__tests__/orderInputReview.ts",
+          "applicable": 1,
+          "passed": 0,
+          "failed": 1,
+          "checks": [
+            {
+              "id": "error-states",
+              "passed": false
+            }
+          ]
+        }
+      ],
+      "compilerCodes": [
+        "TS18046"
+      ],
+      "testSummary": []
+    },
+    {
+      "task": "order-input-review",
+      "condition": "vectalon",
+      "repetition": 1,
+      "files": [
+        {
+          "path": "src/__tests__/orderInputReview.ts",
+          "sha256": "f23a11153a6ffccc3365e7320e456674d093532850ff85c46843779330496974"
+        }
+      ],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "358c77218a6a40c7f3ced9b3caa36d7e5dc5e0ec851d9ad97fa69fb22bcc34fc"
+        }
+      ],
+      "rubric": [
+        {
+          "filePath": "src/__tests__/orderInputReview.ts",
+          "applicable": 1,
+          "passed": 0,
+          "failed": 1,
+          "checks": [
+            {
+              "id": "error-states",
+              "passed": false
+            }
+          ]
+        }
+      ],
+      "compilerCodes": [],
+      "testSummary": []
+    },
+    {
+      "task": "order-input-review",
+      "condition": "vectalon",
+      "repetition": 2,
+      "files": [
+        {
+          "path": "src/__tests__/orderInputReview.ts",
+          "sha256": "14eb53b47d91197decd22a1936f00745ed940c03825f413c3ef13a19053f1410"
+        }
+      ],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "5bbb97eabe3499efacb069dad301fae523b91e8e20ea49eb792744d0239afa53"
+        }
+      ],
+      "rubric": [
+        {
+          "filePath": "src/__tests__/orderInputReview.ts",
+          "applicable": 1,
+          "passed": 1,
+          "failed": 0,
+          "checks": [
+            {
+              "id": "error-states",
+              "passed": true
+            }
+          ]
+        }
+      ],
+      "compilerCodes": [
+        "TS18046"
+      ],
+      "testSummary": []
+    },
+    {
+      "task": "order-input-review",
+      "condition": "task-only",
+      "repetition": 2,
+      "files": [
+        {
+          "path": "src/__tests__/orderInputReview.ts",
+          "sha256": "8c3c0fe3ab68ff106f459dd4021634ad4e30a68ca921ccb149505adeba0dd26d"
+        }
+      ],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "24c97d06987172c29a042672cb5378d8db11dcbd66c41b49753026eadaddb0c2"
+        }
+      ],
+      "rubric": [
+        {
+          "filePath": "src/__tests__/orderInputReview.ts",
+          "applicable": 1,
+          "passed": 0,
+          "failed": 1,
+          "checks": [
+            {
+              "id": "error-states",
+              "passed": false
+            }
+          ]
+        }
+      ],
+      "compilerCodes": [
+        "TS18046",
+        "TS2304"
+      ],
+      "testSummary": []
+    },
+    {
+      "task": "order-input-review",
+      "condition": "task-only",
+      "repetition": 3,
+      "files": [
+        {
+          "path": "src/__tests__/orderInputReview.ts",
+          "sha256": "76189b49b3427745a290ee1e19ccd08c7800f7e4bfec0cd8c321016387789827"
+        }
+      ],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "c3e2f1e62abe4a5892453cad3cfd2446e98ea77cbfef70fe0ac244f593fa09b0"
+        }
+      ],
+      "rubric": [
+        {
+          "filePath": "src/__tests__/orderInputReview.ts",
+          "applicable": 1,
+          "passed": 0,
+          "failed": 1,
+          "checks": [
+            {
+              "id": "error-states",
+              "passed": false
+            }
+          ]
+        }
+      ],
+      "compilerCodes": [
+        "TS18046"
+      ],
+      "testSummary": []
+    },
+    {
+      "task": "order-input-review",
+      "condition": "vectalon",
+      "repetition": 3,
+      "files": [
+        {
+          "path": "src/__tests__/orderInputReview.ts",
+          "sha256": "8303079d8896ff4d5aa8b3dc0d92f2d2441fb789e12c3833d57ee24e4cf7a736"
+        }
+      ],
+      "responseFingerprints": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "sha256": "a7c87b5f86e10ba331acb3a38548d0f0faa84a421b3a00de0338c11f76d7f303"
+        }
+      ],
+      "rubric": [
+        {
+          "filePath": "src/__tests__/orderInputReview.ts",
+          "applicable": 1,
+          "passed": 0,
+          "failed": 1,
+          "checks": [
+            {
+              "id": "error-states",
+              "passed": false
+            }
+          ]
+        }
+      ],
+      "compilerCodes": [],
+      "testSummary": []
+    }
+  ]
+}
