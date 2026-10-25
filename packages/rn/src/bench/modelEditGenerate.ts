@@ -58,7 +58,7 @@ export function createModelEditGenerate(options: Pick<ModelGenerateOptions, 'mod
         `Delivery protocol: call propose_edits for ${target} instead of returning full files. The harness applies the edits and supplies unchanged source.`].join('\n'),
       tools: [tool], requiredTool: tool.name, temperature: options.temperature ?? 0.2, maxTokens: options.maxTokens ?? 2048, providerCallLimit: 1,
     }
-    const record: BenchGenerationAttempt & { editApplication: 'not-run' | 'rejected' | 'applied' } = {
+    const record: BenchGenerationAttempt & { editApplication: 'not-run' | 'rejected' | 'applied'; unchangedEdits?: number } = {
       index: 1, kind: 'initial', status: 'error', selected: false, durationMs: 0, fileCount: 0,
       adherence: null, guardrails: null, artifactIdentity: 'unverified',
       taskDigest: benchmarkFingerprint(scenario), requestDigest: benchmarkFingerprint(request),
@@ -96,13 +96,17 @@ export function createModelEditGenerate(options: Pick<ModelGenerateOptions, 'mod
       // A truncated block must not consume an unchanged neighboring statement.
       try { for (const edit of edits) parse(edit.to, { sourceType: 'module', plugins: ['typescript', 'jsx'], allowUndeclaredExports: true }) }
       catch { return [] }
+      // Exact no-ops are already satisfied; every actual modification must still apply.
+      const changes = edits.filter((edit, index) => edit.op !== 'replace' || edit.to !== selected[index].from)
+      record.unchangedEdits = edits.length - changes.length
+      if (!changes.length) return []
       root = mkdtempSync(join(tmpdir(), 'vectalon-model-edits-'))
       const file = join(root, target)
       mkdirSync(dirname(file), { recursive: true })
       writeFileSync(file, scenario.fixtures[target])
-      const applied = applyEdits(root, edits.map(edit => ({ ...edit, from: blocks.find(block => block.id === edit.from)!.from,
+      const applied = applyEdits(root, changes.map(edit => ({ ...edit, from: blocks.find(block => block.id === edit.from)!.from,
         summary: 'Model-proposed edit' } as FixEdit)))
-      if (applied.skipped.length || applied.applied.length !== edits.length) return []
+      if (applied.skipped.length || applied.applied.length !== changes.length) return []
       const next = readFileSync(file, 'utf8')
       if (next === scenario.fixtures[target]) return []
       try { parse(next, { sourceType: 'module', plugins: ['typescript', 'jsx'] }) }

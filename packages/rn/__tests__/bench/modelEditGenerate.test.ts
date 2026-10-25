@@ -108,6 +108,21 @@ it('applies multiple disjoint local declarations without changing surrounding so
       .replace('const update = (id: string) => send(id);', 'const update = () => send("safe");') }])
 })
 
+it('ignores byte-identical replacements only when a real applicable edit remains', async () => {
+  const { seam } = setup(envelope([{ ...edit, from: 'block-2', to: 'const keep = true;' },
+    { ...edit, from: 'block-3', to: 'const update = () => send("safe");' }]))
+  const attempts = jest.fn()
+  expect(await seam({ ...scenario, fixtures: { [target]: localSource } }, attempts)).toEqual([{ path: target,
+    content: localSource.replace('const update = (id: string) => send(id);', 'const update = () => send("safe");') }])
+  expect(attempts.mock.calls[0][0][0]).toMatchObject({ editApplication: 'applied', unchangedEdits: 1 })
+})
+
+it('does not let an unchanged replacement hide an invalid edit', async () => {
+  const { seam } = setup(envelope([{ ...edit, from: 'block-2', to: 'const keep = true;' },
+    { ...edit, from: 'missing', to: 'const update = () => {};' }]))
+  expect(await seam({ ...scenario, fixtures: { [target]: localSource } })).toEqual([])
+})
+
 it('does not offer ambiguous local text or deeper nested declarations', async () => {
   const { seam, generate } = setup(envelope([]))
   const original = 'export function first() { const same = 1; if (same) { const hidden = 2; } }\nexport function second() { const same = 1; }'

@@ -1,0 +1,304 @@
+{
+  "kind": "bounded-scoped-edit-diagnostic",
+  "revision": "136d4c7e97afcd0a7afd916b4cbf67e8e21201f5",
+  "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+  "startedAt": "2026-10-25T04:55:05.527Z",
+  "resourceProtocol": {
+    "routing": "direct native in both conditions; no router enrichment/fallback; default sampling unchanged",
+    "rowLimit": 1,
+    "reserveBytes": 2147483648,
+    "sampleIntervalMs": 1000,
+    "hardStopGraceMs": 5000,
+    "guardSha256": "eb638785341c4705f40f3920c80ed3bf0f2416e78737244378146480c1ba91fd",
+    "adapterSha256": "d622c26847b63efeaa3ed280b6f04b8287ce5ae9848cb26316eb8590325e1691",
+    "memoryModuleSha256": "a3cf0ae9e88f8ff63ecd5bfeaba7563abd617e96770d28fd20ee717d070d9ac4",
+    "grammarSchemaSha256": "2d59d39e8bb075658d0116fb6a2ab17465b5fab2de35dbbc45f7503756e609d1"
+  },
+  "task": {
+    "id": "current-session",
+    "kind": "fix"
+  },
+  "installedDependencyVersions": {
+    "@react-navigation/native": "7.3.16",
+    "@react-navigation/native-stack": "7.18.8",
+    "expo": "58.0.17",
+    "expo-status-bar": "58.0.4",
+    "react": "19.3.0",
+    "react-native": "0.88.0",
+    "react-native-safe-area-context": "5.10.1",
+    "react-native-screens": "4.30.0",
+    "@babel/core": "7.29.7",
+    "@reduxjs/toolkit": "2.12.0",
+    "@testing-library/react-native": "14.0.1",
+    "@types/jest": "30.0.0",
+    "@types/react": "19.3.0",
+    "@react-native/jest-preset": "0.88.0",
+    "babel-preset-expo": "58.0.19",
+    "jest": "30.2.0",
+    "jest-expo": "58.0.12",
+    "react-redux": "9.3.0",
+    "react-test-renderer": "19.3.0",
+    "typescript": "5.8.3"
+  },
+  "evaluationLane": "7b",
+  "freezeSha256": "eada448a45e1bc3a635556209abc1fefb354e09d8ba5700587566c0558d72f7c",
+  "taskDefinitionsSha256": "91ea35672bf7d810c54357f4d548d2a68b987b3827e5d4e3ba06165694aa0a7e",
+  "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+  "nativeVerification": "not-run",
+  "runnerSha256": "b93d3a29d2952a78505a7ad84e94cc43c44f36cc8938d2f65aa76fad4b64ec14",
+  "appArchiveSha256": "85f494af47a4d19013fbae471533281db459a859317ce86f7778f4c768716fb2",
+  "generationModuleSha256": "f9bc8ebe8686a2674ef728870dcab6f92361914da323c4350fae584ccacaa781",
+  "inferenceModuleSha256": "a6431f4d10327a44ed93cb145224df51e91429046e096ba793c9081a2673fcc0",
+  "acceptanceSha256": "3443838dcade255e2181d7932bac02699bad450e5f4abe1f173500c6abf6fef8",
+  "taskSha256": "97c9a91b515f9783bf166fb70f69e247c0db8e8256ea0f097cb884895626d127",
+  "runtime": {
+    "node": "v24.22.1",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "settings": {
+    "temperature": 0.2,
+    "maxTokens": 2048,
+    "maxAttempts": 1,
+    "providerCallLimit": 1,
+    "toolEnvelope": true,
+    "requiredTool": "propose_edits",
+    "anchorMode": "module-and-direct-local-declarations"
+  },
+  "model": "qwen2.5-coder-7b",
+  "expectedArtifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+  "limitations": [
+    "No native build",
+    "Installed dependencies reused",
+    "Tokens/cost not measured",
+    "No human correction-time measurement",
+    "Separate 7B replication lane reuses previously evaluated public 3B tasks; not fresh held-out launch evidence",
+    "Three tasks in one installed app; insufficient for reliable improvement or launch qualification",
+    "Seeds and input-token accounting unavailable in this inference path",
+    "Review means an executable regression test, not qualification of the review CLI",
+    "Native probe preflight uses Jest with native shims; native build/device verification remains separate",
+    "Scoped edit protocol differs from full-file generation; single existing file, at most eight edits, no repairs",
+    "Block IDs select unique module/direct named-function local declarations; duplicate or overlapping selections are rejected before application",
+    "Other nesting and arrow/class function bodies are not qualified local anchors",
+    "Block catalogue repeats approved source in context; input-token cost is not measured",
+    "Source-grounded grammar does not establish code correctness or task improvement"
+  ],
+  "runs": [
+    {
+      "repetition": 1,
+      "condition": "vectalon-edits",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "resources": {
+        "memoryMetric": "macos-pressure-estimate",
+        "availableBudgetBytesBefore": 9620726743,
+        "minimumSampledAvailableBudgetBytes": 2748779069,
+        "maximumSampledRssBytes": 3936370688,
+        "reserveBytes": 2147483648,
+        "sampleIntervalMs": 1000,
+        "timeoutMs": 180000,
+        "availableBudgetBytesAfter": 4123168604
+      },
+      "nativeCalls": [
+        {
+          "index": 1,
+          "status": "response",
+          "temperature": 0.2,
+          "maxTokens": 2048,
+          "requestSha256": "e90b34ed1aba226beb6a99147f0837c94a55b789d5665f7cf429e90168121045",
+          "grammarSchemaSha256": "2d59d39e8bb075658d0116fb6a2ab17465b5fab2de35dbbc45f7503756e609d1",
+          "artifact": {
+            "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+            "sizeBytes": 3993201376,
+            "source": "local-file-at-load"
+          },
+          "localContext": {
+            "inputTokens": 2153,
+            "maxOutputTokens": 2048,
+            "contextSize": 4608,
+            "batchSize": 128
+          },
+          "stopReason": "stopGenerationTrigger",
+          "durationMs": 27680
+        }
+      ],
+      "result": {
+        "id": "current-session",
+        "title": "current-session",
+        "suite": "fix",
+        "scaffoldable": false,
+        "generatedFiles": [],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "invalid",
+            "selected": false,
+            "durationMs": 27690,
+            "fileCount": 0,
+            "adherence": null,
+            "guardrails": null,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:1e47d18715528520e229984b6df17cc6f240cb51bd855f265df9a2330faef5b7",
+            "requestDigest": "sha256:3b180c605327ef6dde434f9de24cc9eb8eef487d7c12ed8703d258dd3180b107",
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "vectalon",
+            "editApplication": "rejected",
+            "provider": "local",
+            "model": {
+              "id": "qwen2.5-coder-7b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+              "sizeBytes": 3993201376,
+              "source": "local-file-at-load"
+            },
+            "localContext": {
+              "inputTokens": 2153,
+              "maxOutputTokens": 2048,
+              "contextSize": 4608,
+              "batchSize": 128
+            },
+            "stopReason": "stopGenerationTrigger",
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 27681
+              }
+            ]
+          }
+        ],
+        "guardrail": [],
+        "axes": {
+          "correctness": null,
+          "adherence": 0,
+          "guardrails": 0
+        },
+        "composite": 0,
+        "correctnessDetails": [
+          "Model generation produced no non-empty files.",
+          "Missing required output files: src/hooks/useSecuritySettings.ts"
+        ]
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "skipped": true
+        },
+        "tests": {
+          "ok": false,
+          "skipped": true
+        }
+      },
+      "durationMs": 27708
+    },
+    {
+      "repetition": 2,
+      "condition": "vectalon-edits",
+      "status": "not-run"
+    },
+    {
+      "repetition": 3,
+      "condition": "vectalon-edits",
+      "status": "not-run"
+    }
+  ],
+  "negativeControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1197
+    },
+    "tests": {
+      "ok": false,
+      "exitCode": 1,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 7180
+    }
+  },
+  "positiveControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1017
+    },
+    "tests": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 6626
+    }
+  },
+  "nativeProbePreflight": {
+    "method": "Disposable probe UI and real hook under Jest/native shims; NOT native build/device evidence",
+    "probeSha256": "167657abd64538d8c1c46dbdd248da99e0a38a51a3ea335289b7041d250dc502",
+    "acceptanceSha256": "2689847b8e78cd608e16519da42bc067b5e769d81d2572a74be4fb56fd5c28c5",
+    "negative": {
+      "typecheck": {
+        "ok": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "isolation": "sandbox-exec",
+        "durationMs": 1013
+      },
+      "tests": {
+        "ok": false,
+        "exitCode": 1,
+        "timedOut": false,
+        "isolation": "sandbox-exec",
+        "durationMs": 6565
+      }
+    },
+    "positive": {
+      "typecheck": {
+        "ok": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "isolation": "sandbox-exec",
+        "durationMs": 997
+      },
+      "tests": {
+        "ok": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "isolation": "sandbox-exec",
+        "durationMs": 6549
+      }
+    }
+  },
+  "outputAudit": {
+    "strictJson": true,
+    "rawSha256": "abaec1760d4db3f3c3c21ca600cbf24dfee0f7300367e5449381b67e4f06b4ad",
+    "rawBytes": 719,
+    "editCount": 2,
+    "edits": [
+      {
+        "file": "src/hooks/useSecuritySettings.ts",
+        "op": "replace",
+        "from": "block-7",
+        "toSha256": "6c2a8250b0fc92f8d0bdc19a15ea8316ba55421695cd46d033d3daeb77a7337b",
+        "toBytes": 82
+      },
+      {
+        "file": "src/hooks/useSecuritySettings.ts",
+        "op": "replace",
+        "from": "block-8",
+        "toSha256": "4c1dc2caee0c58bb6eb6fe510b7d59407553671777e52f80baab1168ed881817",
+        "toBytes": 185
+      }
+    ]
+  }
+}
