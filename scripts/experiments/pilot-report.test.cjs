@@ -3,6 +3,28 @@ const assert = require('node:assert/strict');
 const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs');
 const evidence = require('../../docs/release-roadmap/evidence/cart-3b-paired-pilot-2026-10-20.json');
 
+test('bounded scoped repair records a rejected initial without claiming an unspent repair', () => {
+  const report = require('../../docs/release-roadmap/evidence/react-async-repair-2026-10-25.json');
+  const prior = require('../../docs/release-roadmap/evidence/react-async-edits-2026-10-25.json');
+  const row = report.runs[0];
+  assert.equal(report.kind, 'bounded-scoped-edit-repair');
+  assert.equal(report.controlSourceSha256, prior.controlSourceSha256);
+  assert.equal(report.acceptanceSha256, prior.acceptanceSha256);
+  assert.equal(report.resourceProtocol.maxNativeCalls, 2);
+  assert.equal(row.resources.timeoutMs, 360000);
+  assert.equal(row.nativeCalls.length, 1);
+  assert.equal(row.result.attempts.length, 1);
+  assert.equal(row.result.attempts[0].kind, 'initial');
+  assert.equal(row.result.attempts[0].editApplication, 'rejected');
+  assert.equal(row.result.attempts[0].selected, false);
+  assert.equal(row.result.attempts[0].verification, undefined);
+  assert.equal(row.checks.tests.skipped, true);
+  assert.equal(report.outputAudit.composedModuleDiagnostic.reasonCode, 'VarRedeclaration');
+  assert.equal(report.outputAudit.observedRepairCalls, 0);
+  assert.equal(report.runs.filter(row => row.status === 'not-run').length, 2);
+  for (const key of ['generatedArtifacts', 'rawResponses', 'stdout', 'stderr']) assert.ok(!JSON.stringify(report).includes(`"${key}"`));
+});
+
 test('async scoped delivery preserves exact application separately from compiler and app failure', () => {
   const report = require('../../docs/release-roadmap/evidence/react-async-edits-2026-10-25.json');
   const prior = require('../../docs/release-roadmap/evidence/react-async-control-2026-10-25.json');
