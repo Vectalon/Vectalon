@@ -1,0 +1,408 @@
+{
+  "kind": "bounded-one-app-resource-pair",
+  "revision": "8b85650175d6ef1eb52fb0bfd3e353bd3da9c7b3",
+  "appRevision": "8b85650175d6ef1eb52fb0bfd3e353bd3da9c7b3",
+  "startedAt": "2026-10-25T06:10:38.744Z",
+  "resourceProtocol": {
+    "routing": "direct native in both conditions; no router enrichment/fallback; default sampling unchanged",
+    "rowLimit": 2,
+    "reserveBytes": 2147483648,
+    "sampleIntervalMs": 1000,
+    "hardStopGraceMs": 5000,
+    "guardSha256": "eb638785341c4705f40f3920c80ed3bf0f2416e78737244378146480c1ba91fd",
+    "adapterSha256": "d622c26847b63efeaa3ed280b6f04b8287ce5ae9848cb26316eb8590325e1691",
+    "memoryModuleSha256": "a3cf0ae9e88f8ff63ecd5bfeaba7563abd617e96770d28fd20ee717d070d9ac4"
+  },
+  "controlDefinitionsSha256": "a86c4755da001790b9a930c41679cf7b72ac950aca5895793f97c6f4e6044579",
+  "controlSourceSha256": "ee4577b3bbace239032382945cf4a453c47374682f23522e7f081c10faf2b43f",
+  "conditionSettings": {
+    "task-only": {
+      "temperature": 0.2,
+      "maxTokens": 2048,
+      "maxAttempts": 1,
+      "providerCallLimit": 1,
+      "output": "full-file JSON; no requested grammar"
+    },
+    "task-relevant": {
+      "temperature": 0.2,
+      "maxTokens": 2048,
+      "maxAttempts": 1,
+      "providerCallLimit": 1,
+      "output": "minimal source-grounded full-file JSON; no requested grammar"
+    }
+  },
+  "task": {
+    "id": "delayed-label-v1",
+    "kind": "development-control"
+  },
+  "runnerSha256": "05c584ad3b0e41a8ba5a84175931a88d66bb008998e4c903b137da4e14fe4578",
+  "appArchiveSha256": "b90d4286864748c669ce4b7f1a0bd4bf8b4ec189de2188d70afa8bb658513ee0",
+  "generationModuleSha256": "be34d34579ffa7ee84e5867908d46feaaccdd9814d466cdceb665673f4e6edc5",
+  "editGenerationModuleSha256": "5a94446f8a221df4056abd8f5f842c2d1180b297a4f08b91fada2e455c4b3434",
+  "inferenceModuleSha256": "a6431f4d10327a44ed93cb145224df51e91429046e096ba793c9081a2673fcc0",
+  "acceptanceSha256": "fc9c59b09fed194c2d561c287a574bb4d868e5d2c0301f73f9d460c16d360fd8",
+  "taskSha256": "f705b79011a24c69856f2307b34ce944ff18ea10cae5d98b5c8cc894ab7a2528",
+  "runtime": {
+    "node": "v24.22.1",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "settings": {
+    "temperature": 0.2,
+    "maxTokens": 2048,
+    "maxAttempts": 1,
+    "providerCallLimit": 1
+  },
+  "model": "qwen2.5-coder-7b",
+  "expectedArtifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+  "limitations": [
+    "No native build",
+    "Installed dependencies reused",
+    "Tokens/cost not measured",
+    "No human correction-time measurement",
+    "Public development tasks; not launch qualification",
+    "Synthetic controls in one installed app; not held-out RN workflow evidence",
+    "Conditions change instructions; input-token budgets are unmeasured; not a single-factor causal ablation",
+    "Experimental guidance uses original source and a general React state-queue rule; textual useState-call detection does not qualify aliases or arbitrary state libraries"
+  ],
+  "runs": [
+    {
+      "repetition": 1,
+      "condition": "task-only",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "resources": {
+        "memoryMetric": "macos-pressure-estimate",
+        "availableBudgetBytesBefore": 10136122818,
+        "minimumSampledAvailableBudgetBytes": 3607772528,
+        "maximumSampledRssBytes": 4235640832,
+        "reserveBytes": 2147483648,
+        "sampleIntervalMs": 1000,
+        "timeoutMs": 180000,
+        "availableBudgetBytesAfter": 8589934592
+      },
+      "nativeCalls": [
+        {
+          "index": 1,
+          "status": "response",
+          "temperature": 0.2,
+          "maxTokens": 2048,
+          "requestSha256": "36b4ed077bf98c6d66025821cb9c502c5b4462efb98a0559b462411d1f08dd15",
+          "artifact": {
+            "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+            "sizeBytes": 3993201376,
+            "source": "local-file-at-load"
+          },
+          "localContext": {
+            "inputTokens": 395,
+            "maxOutputTokens": 2048,
+            "contextSize": 2816,
+            "batchSize": 128
+          },
+          "stopReason": "eogToken",
+          "durationMs": 21275
+        }
+      ],
+      "result": {
+        "id": "delayed-label-v1",
+        "title": "delayed-label-v1",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [
+          "src/hooks/useDelayedLabel.ts"
+        ],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "parsed",
+            "selected": true,
+            "durationMs": 21296,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 1,
+            "adherence": 1,
+            "guardrails": 0.9444444444444444,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:1718daa1ecf9f336e9529cccd849791267e98832fa62f7af76ebf0b838d2db9f",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "task-only",
+            "requestDigest": "sha256:6c2efd2106a72ad6644d049e031e5c348bd3b4e049ea8421b39eba2f57a5a9a7",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "localContext": {
+              "inputTokens": 395,
+              "maxOutputTokens": 2048,
+              "contextSize": 2816,
+              "batchSize": 128
+            },
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 21277
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-7b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+              "sizeBytes": 3993201376,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [
+          {
+            "path": "src/hooks/useDelayedLabel.ts",
+            "passed": 17,
+            "failed": 1,
+            "skipped": 18,
+            "ok": false,
+            "failedRules": [
+              "Directly exported function declarations have return annotations"
+            ]
+          }
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 1,
+          "guardrails": 0.9444444444444444
+        },
+        "composite": 0.9722222222222221
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1301
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7429
+        }
+      },
+      "durationMs": 30160
+    },
+    {
+      "repetition": 1,
+      "condition": "task-relevant",
+      "status": "failed",
+      "phase": "complete",
+      "verifications": [],
+      "resources": {
+        "memoryMetric": "macos-pressure-estimate",
+        "availableBudgetBytesBefore": 8589934592,
+        "minimumSampledAvailableBudgetBytes": 3607772528,
+        "maximumSampledRssBytes": 3363880960,
+        "reserveBytes": 2147483648,
+        "sampleIntervalMs": 1000,
+        "timeoutMs": 180000,
+        "availableBudgetBytesAfter": 4123168604
+      },
+      "nativeCalls": [
+        {
+          "index": 1,
+          "status": "response",
+          "temperature": 0.2,
+          "maxTokens": 2048,
+          "requestSha256": "891f7b0d40a0e67a3d6b110b65b866d685d903d26f7c14d3cad61f618ff7f678",
+          "artifact": {
+            "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+            "sizeBytes": 3993201376,
+            "source": "local-file-at-load"
+          },
+          "localContext": {
+            "inputTokens": 578,
+            "maxOutputTokens": 2048,
+            "contextSize": 3072,
+            "batchSize": 128
+          },
+          "stopReason": "eogToken",
+          "durationMs": 12545
+        }
+      ],
+      "result": {
+        "id": "delayed-label-v1",
+        "title": "delayed-label-v1",
+        "suite": "development-control",
+        "scaffoldable": false,
+        "generatedFiles": [],
+        "attempts": [
+          {
+            "index": 1,
+            "kind": "initial",
+            "status": "invalid",
+            "selected": false,
+            "durationMs": 12547,
+            "temperature": 0.2,
+            "maxTokens": 2048,
+            "fileCount": 0,
+            "adherence": 0,
+            "guardrails": 0,
+            "artifactIdentity": "unverified",
+            "taskDigest": "sha256:1718daa1ecf9f336e9529cccd849791267e98832fa62f7af76ebf0b838d2db9f",
+            "maxAttempts": 1,
+            "providerCallLimit": 1,
+            "promptMode": "task-relevant",
+            "requestDigest": "sha256:d6a6af9b6701fd41546ca32764148c3b10d9c0590eb6c5788230e11dce05aefd",
+            "provider": "local",
+            "stopReason": "eogToken",
+            "localContext": {
+              "inputTokens": 578,
+              "maxOutputTokens": 2048,
+              "contextSize": 3072,
+              "batchSize": 128
+            },
+            "providerCalls": [
+              {
+                "provider": "local",
+                "status": "response",
+                "durationMs": 12546
+              }
+            ],
+            "model": {
+              "id": "qwen2.5-coder-7b",
+              "source": "configured"
+            },
+            "artifact": {
+              "sha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+              "sizeBytes": 3993201376,
+              "source": "local-file-at-load"
+            }
+          }
+        ],
+        "guardrail": [],
+        "axes": {
+          "correctness": null,
+          "adherence": 0,
+          "guardrails": 0
+        },
+        "composite": 0,
+        "correctnessDetails": [
+          "Model generation produced no non-empty files.",
+          "Missing required output files: src/hooks/useDelayedLabel.ts"
+        ]
+      },
+      "identityMatched": true,
+      "checks": {
+        "typecheck": {
+          "ok": false,
+          "skipped": true
+        },
+        "tests": {
+          "ok": false,
+          "skipped": true
+        }
+      },
+      "durationMs": 12555
+    },
+    {
+      "repetition": 2,
+      "condition": "task-relevant",
+      "status": "not-run"
+    },
+    {
+      "repetition": 2,
+      "condition": "task-only",
+      "status": "not-run"
+    },
+    {
+      "repetition": 3,
+      "condition": "task-only",
+      "status": "not-run"
+    },
+    {
+      "repetition": 3,
+      "condition": "task-relevant",
+      "status": "not-run"
+    }
+  ],
+  "negativeControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1305
+    },
+    "tests": {
+      "ok": false,
+      "exitCode": 1,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 7858
+    }
+  },
+  "positiveControl": {
+    "typecheck": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 1091
+    },
+    "tests": {
+      "ok": true,
+      "exitCode": 0,
+      "timedOut": false,
+      "isolation": "sandbox-exec",
+      "durationMs": 7323
+    }
+  },
+  "outputAudits": [
+    {
+      "condition": "task-only",
+      "responseSha256": "7bade742459f3ab4d91596b9922aaa74fc00baefcdd1cd9cf7e0c9f5ee00e3e9",
+      "jsonEnvelopeValidAfterFenceRemoval": true,
+      "candidates": [
+        {
+          "path": "src/hooks/useDelayedLabel.ts",
+          "sha256": "7b8399a8228afc92d5b28f2e654c7c9a3c41fd49382057c0f42cc0908396964c",
+          "bytes": 850
+        }
+      ],
+      "testSummary": "Tests:       5 failed, 34 passed, 39 total"
+    },
+    {
+      "condition": "task-relevant",
+      "responseSha256": "2ba8018399cbf8a2d83b47ab6383357ce1fab278d6a8c0a2f868c0251da550db",
+      "jsonEnvelopeValidAfterFenceRemoval": false,
+      "candidates": [],
+      "testSummary": null
+    }
+  ],
+  "preflightHistory": [
+    {
+      "report": "/private/tmp/vectalon-cart-pilot-9pss0M/report.json",
+      "status": "verifier-type-error",
+      "modelCalls": 0
+    },
+    {
+      "report": "/private/tmp/vectalon-cart-pilot-bXHnrp/report.json",
+      "status": "verifier-type-error",
+      "codes": [
+        "TS2345",
+        "TS18046"
+      ],
+      "modelCalls": 0
+    },
+    {
+      "report": "/private/tmp/vectalon-cart-pilot-11NtKC/report.json",
+      "status": "expected-negative-and-positive-controls",
+      "modelCalls": 0,
+      "positiveAppTests": 39
+    }
+  ],
+  "qualification": "Public development control; neither condition passed; no held-out/native improvement established"
+}

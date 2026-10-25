@@ -3,6 +3,34 @@ const assert = require('node:assert/strict');
 const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs');
 const evidence = require('../../docs/release-roadmap/evidence/cart-3b-paired-pilot-2026-10-20.json');
 
+test('async guidance control retains behavior failure and malformed delivery as separate failures', () => {
+  const report = require('../../docs/release-roadmap/evidence/react-async-control-2026-10-25.json');
+  const [base, guided] = report.runs;
+  assert.equal(report.task.id, 'delayed-label-v1');
+  assert.deepEqual([base.condition, guided.condition], ['task-only', 'task-relevant']);
+  assert.equal(report.runs.filter(row => row.status === 'not-run').length, 4);
+  assert.equal(report.negativeControl.typecheck.ok, true);
+  assert.equal(report.negativeControl.tests.ok, false);
+  assert.equal(report.positiveControl.tests.ok, true);
+  for (const row of [base, guided]) {
+    assert.equal(row.status, 'failed');
+    assert.equal(row.identityMatched, true);
+    assert.equal(row.nativeCalls.length, 1);
+    assert.equal(row.result.attempts.length, 1);
+    assert.equal(row.result.attempts[0].kind, 'initial');
+  }
+  assert.equal(base.checks.typecheck.ok, true);
+  assert.equal(base.checks.tests.ok, false);
+  assert.match(report.outputAudits[0].testSummary, /5 failed, 34 passed, 39 total/);
+  assert.equal(guided.result.attempts[0].status, 'invalid');
+  assert.equal(guided.checks.tests.skipped, true);
+  assert.equal(report.outputAudits[1].jsonEnvelopeValidAfterFenceRemoval, false);
+  assert.deepEqual(report.outputAudits[1].candidates, []);
+  assert.ok(report.preflightHistory.every(row => row.modelCalls === 0));
+  for (const key of ['generatedArtifacts', 'rawResponses', 'stdout', 'stderr']) assert.ok(!JSON.stringify(report).includes(`"${key}"`));
+  assert.match(formatPilotReport(report), /task-relevant \| 3 \| 0 \| 1 \| 2/);
+});
+
 test('fresh orders pair retains heap failure, stale-state assertions and four pending rows without claiming improvement', () => {
   const report = require('../../docs/release-roadmap/evidence/orders-refresh-pair-2026-10-25.json');
   assert.equal(report.evaluationLane, 'fresh-7b');
