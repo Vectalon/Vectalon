@@ -5,7 +5,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
 
-for (const [lowMemory, singleGuided, guidedRepair] of [[false, false, false], [true, false, false], [false, true, false], [false, false, true]]) test(`bounded diagnostics retain planned rows and stop safely (lowMemory=${lowMemory}, singleGuided=${singleGuided}, repair=${guidedRepair})`, () => {
+for (const [lowMemory, singleGuided, guidedRepair, structured] of [[false, false, false, false], [true, false, false, false], [false, true, false, false], [false, false, true, false], [false, false, true, true]]) test(`bounded diagnostics retain planned rows and stop safely (lowMemory=${lowMemory}, singleGuided=${singleGuided}, repair=${guidedRepair}, structured=${structured})`, () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-resource-pair-test-'));
   let output;
   try {
@@ -20,6 +20,7 @@ Module._load = function(request, ...args) {
   if (request.endsWith('/dist/model/local/inference.js')) return { runInference: async (model, options) => {
     const assert = require('node:assert/strict');
     assert.equal(options.signal.aborted, false); assert.equal(options.maxTokens, 2048);
+    assert.deepEqual(options.grammarSchema, ${structured} ? require(${JSON.stringify(path.join(__dirname, '../../packages/rn/dist/model/providers/LocalProvider.js'))}).FILES_JSON_SCHEMA : undefined);
     assert.equal(options.repeatPenalty, undefined); assert.equal(options.temperature, ${guidedRepair} && ++calls === 2 ? 0 : 0.2);
     if (${guidedRepair} && calls === 2) {
       assert.ok(options.prompt.includes('Verifier feedback'));
@@ -35,14 +36,19 @@ Module._load = function(request, ...args) {
     const result = spawnSync(process.execPath, ['--require', preload, path.join(__dirname, 'rn-cart-pilot.cjs'),
       '--task', 'stock-filter', '--evaluation-lane', '7b', '--resource-pair',
       ...(singleGuided ? ['--raw-guided', '--include-raw-response', '--include-generated'] : []),
-      ...(guidedRepair ? ['--guided-repair'] : [])], { encoding: 'utf8', timeout: 15000 });
+      ...(guidedRepair ? ['--guided-repair'] : []), ...(structured ? ['--constrained'] : [])], { encoding: 'utf8', timeout: 15000 });
     assert.equal(result.status, lowMemory ? 1 : 0, result.stderr);
     output = result.stdout.match(/^Evidence: (.+)$/m)?.[1];
     assert.ok(output, result.stdout);
     const source = fs.readFileSync(path.join(output, 'report.json'), 'utf8');
     const report = JSON.parse(source);
     if (guidedRepair) {
-      assert.equal(report.kind, 'bounded-guided-repair-diagnostic');
+      assert.equal(report.kind, structured ? 'bounded-structured-repair-diagnostic' : 'bounded-guided-repair-diagnostic');
+      if (structured) {
+        assert.equal(report.settings.outputFormat, 'files-json');
+        assert.ok(report.runs[0].result.attempts.every(a => a.outputFormat === 'files-json'));
+        assert.ok(report.runs[0].nativeCalls.every(c => c.grammarSchemaSha256 === report.resourceProtocol.grammarSchemaSha256));
+      }
       assert.equal(report.resourceProtocol.rowLimit, 1);
       assert.equal(report.settings.maxAttempts, 2);
       assert.equal(report.runs.length, 3);

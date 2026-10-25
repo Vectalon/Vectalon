@@ -9,7 +9,7 @@ import { TOOL_CALL_SCHEMA, buildRequiredToolSchema } from '../toolCalling'
 import { RN_CODER_SYSTEM_PROMPT } from '../prompts'
 import { logger } from '../../cli/logger'
 
-const FILES_JSON_SCHEMA = {
+export const FILES_JSON_SCHEMA = {
   type: 'object', additionalProperties: false,
   properties: { files: { type: 'array', minItems: 1, items: {
     type: 'object', additionalProperties: false,

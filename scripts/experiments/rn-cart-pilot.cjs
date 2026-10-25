@@ -30,7 +30,7 @@ const freezeFile = args['evaluation-lane'] === '7b' ? 'one-app-evaluation-7b.jso
 const freeze = require(`./${freezeFile}`);
 assert.equal(args.model !== undefined, args['artifact-sha256'] !== undefined, '--model and --artifact-sha256 must be supplied together');
 assert.ok(args['artifact-sha256'] === undefined || /^[a-f0-9]{64}$/.test(args['artifact-sha256']), 'Expected a lowercase SHA-256 artifact hash');
-assert.ok(!args.constrained || args.repair, '--constrained requires --repair for this diagnostic');
+assert.ok(!args.constrained || args.repair || args['guided-repair'], '--constrained requires --repair or --guided-repair for this diagnostic');
 assert.ok(!args.edits || (!args.task && !args.repair && !args.constrained), '--edits is a first-attempt public development diagnostic only; cannot combine with --task, --repair or --constrained');
 assert.ok(!args.guided || args.diagnostic !== undefined, '--guided requires a generation control');
 assert.ok(!args['task-relevant'] || (args.diagnostic !== undefined && !args.guided), '--task-relevant requires a generation control without --guided');
@@ -43,7 +43,7 @@ if (args.diagnostic !== undefined) {
 }
 if (args.task !== undefined) {
   assert.ok(freeze.tasks.includes(args.task), 'Unknown frozen evaluation task');
-  assert.ok(!args.repair && !args.constrained, 'Frozen first-pass evaluation does not allow repair or grammar changes');
+  assert.ok(!args.repair && (!args.constrained || args['guided-repair']), 'Frozen first-pass evaluation does not allow repair or grammar changes');
   assert.ok(args.model === undefined || args.model === freeze.model, 'Frozen evaluation model cannot change');
   assert.ok(args['artifact-sha256'] === undefined || args['artifact-sha256'] === freeze.artifactSha256, 'Frozen evaluation artifact cannot change');
 }
@@ -105,17 +105,22 @@ const repair = args.repair || args['guided-repair'];
 const verifiedControls = args['verified-controls'];
 const samplingControl = args['sampling-control'];
 const constrained = args.constrained;
+const fileSchema = args['guided-repair'] && constrained ? load('model/providers/LocalProvider.js').FILES_JSON_SCHEMA : undefined;
+if (args['guided-repair'] && constrained) assert.ok(fileSchema, 'Build the RN package before the structured diagnostic');
 const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair || verifiedControls ? 2 : 1, providerCallLimit: 1,
   ...(constrained ? { outputFormat: 'files-json' } : {}), ...(args.edits ? { toolEnvelope: true, requiredTool: 'propose_edits', anchorMode: 'top-level-source-blocks' } : {}) };
-if (args.task) assert.deepEqual(args['guided-repair'] ? { ...settings, maxAttempts: 1 } : settings, freeze.settings, 'Frozen resource settings changed');
+if (args.task) assert.deepEqual(settings, args['guided-repair']
+  ? { ...freeze.settings, maxAttempts: 2, ...(constrained ? { outputFormat: 'files-json' } : {}) }
+  : freeze.settings, 'Frozen resource settings changed');
 const output = fs.mkdtempSync('/private/tmp/vectalon-cart-pilot-');
 const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pilot', revision, appRevision, startedAt: new Date().toISOString(),
-  ...(args['resource-pair'] ? { kind: args['guided-repair'] ? 'bounded-guided-repair-diagnostic' : args['raw-guided'] ? 'bounded-guided-output-diagnostic' : 'bounded-one-app-resource-pair', resourceProtocol: {
+  ...(args['resource-pair'] ? { kind: fileSchema ? 'bounded-structured-repair-diagnostic' : args['guided-repair'] ? 'bounded-guided-repair-diagnostic' : args['raw-guided'] ? 'bounded-guided-output-diagnostic' : 'bounded-one-app-resource-pair', resourceProtocol: {
     routing: 'direct native in both conditions; no router enrichment/fallback; default sampling unchanged',
     rowLimit: args['raw-guided'] || args['guided-repair'] ? 1 : 2, reserveBytes: 2 * 1024 ** 3, sampleIntervalMs: 1000, hardStopGraceMs: 5000,
     guardSha256: hash(fs.readFileSync(path.join(__dirname, 'resource-guard.cjs'))),
     adapterSha256: hash(fs.readFileSync(path.join(__dirname, 'sampling-control.cjs'))),
     memoryModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/model/local/memory.js'))),
+    ...(fileSchema ? { grammarSchemaSha256: hash(JSON.stringify(fileSchema)) } : {}),
   } } : {}),
   ...(args.diagnostic ? { controlDefinitionsSha256: hash(fs.readFileSync(path.join(__dirname, 'generation-controls.cjs'))),
     conditionSettings: samplingControl ? {
@@ -289,21 +294,26 @@ async function main() {
       guard?.signal.throwIfAborted();
       const direct = guard ? createSamplingRouter(async (model, options) => {
         guard.signal.throwIfAborted();
+        const nativeOptions = { ...options, ...(fileSchema ? { grammarSchema: fileSchema } : {}) };
         const calls = (row.nativeCalls ??= []);
         assert.ok(calls.length < (args['guided-repair'] ? 2 : 1), 'Native call cap exhausted');
         const call = { index: calls.length + 1, status: 'running', temperature: options.temperature,
-          maxTokens: options.maxTokens, requestSha256: hash(JSON.stringify({ model, ...options })) };
+          maxTokens: options.maxTokens, requestSha256: hash(JSON.stringify({ model, ...nativeOptions })),
+          ...(fileSchema ? { grammarSchemaSha256: hash(JSON.stringify(fileSchema)) } : {}) };
         calls.push(call); save();
         const callStarted = Date.now();
         try {
-          const result = await load('model/local/inference.js').runInference(model, { ...options, signal: guard.signal });
+          const result = await load('model/local/inference.js').runInference(model, { ...nativeOptions, signal: guard.signal });
           Object.assign(call, { status: 'response', artifact: result.artifact, localContext: result.localContext, stopReason: result.stopReason });
           return result;
         } catch (error) { call.status = guard.signal.aborted ? 'aborted' : 'error'; throw error; }
         finally { call.durationMs = Date.now() - callStarted; save(); }
       }, report.model, false) : undefined;
       // Both diagnostic conditions bypass enrichment; keep their supplied prompt/context unchanged.
-      const router = direct ? { generate: request => direct.generate({ ...request, projectContext: 'disabled' }) }
+      const router = direct ? { generate: async request => {
+        const response = await direct.generate({ ...request, projectContext: 'disabled', ...(fileSchema ? { outputFormat: undefined } : {}) });
+        return { ...response, ...(fileSchema ? { outputFormat: 'files-json' } : {}) };
+      } }
         : samplingControl ? createSamplingRouter(load('model/local/inference.js').runInference, report.model, row.condition === 'repeat-off')
         : new ModelRouter({ zeroConfigEnabled: false });
       if (!samplingControl && !guard) router.initialize({ provider: 'local', modelName: report.model });
