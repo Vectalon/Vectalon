@@ -3,6 +3,33 @@ const assert = require('node:assert/strict');
 const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs');
 const evidence = require('../../docs/release-roadmap/evidence/cart-3b-paired-pilot-2026-10-20.json');
 
+test('structured repair separates valid envelopes and higher rubric scores from failed app verification', () => {
+  const report = require('../../docs/release-roadmap/evidence/structured-repair-2026-10-25.json');
+  assert.equal(report.kind, 'bounded-structured-repair-diagnostic');
+  assert.equal(report.settings.outputFormat, 'files-json');
+  assert.equal(report.runs.filter(row => row.status === 'not-run').length, 2);
+  const row = report.runs[0];
+  assert.equal(row.status, 'failed');
+  assert.equal(row.identityMatched, true);
+  assert.equal(row.nativeCalls.length, 2);
+  assert.deepEqual(row.result.attempts.map(a => [a.kind, a.status, a.verification.status, a.selected]),
+    [['initial', 'parsed', 'failed', true], ['repair', 'parsed', 'failed', false]]);
+  assert.ok(row.result.attempts[1].guardrails > row.result.attempts[0].guardrails);
+  for (const call of row.nativeCalls) {
+    assert.equal(call.grammarSchemaSha256, report.resourceProtocol.grammarSchemaSha256);
+    assert.equal(call.artifact.sha256, report.expectedArtifactSha256);
+    assert.equal(call.stopReason, 'stopGenerationTrigger');
+  }
+  for (const audit of report.outputAudits) {
+    assert.equal(audit.strictJson, true);
+    assert.equal(audit.fileEnvelopeValid, true);
+    assert.equal(audit.parsedExactlyMatchesStrict, true);
+    assert.equal(audit.strictFilesSha256, audit.parsedFilesSha256);
+  }
+  assert.ok(row.verifications.every(v => !v.checks.typecheck.ok && !v.checks.tests.ok));
+  for (const key of ['generatedArtifacts', 'rawResponses', 'stdout', 'stderr']) assert.ok(!JSON.stringify(report).includes(`"${key}"`));
+});
+
 test('guarded repair retains failed initial, rejected invalid repair and actual call observations', () => {
   const report = require('../../docs/release-roadmap/evidence/guided-repair-2026-10-24.json');
   assert.equal(report.kind, 'bounded-guided-repair-diagnostic');
