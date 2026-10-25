@@ -60,3 +60,30 @@ Next verify this exact candidate natively before expanding, then freeze fresh sa
 
 Verification: 672 focused model/benchmark/workflow tests across 43 suites, 99 experiment/report checks, RN build, targeted lint and product/Core-contract/capability consistency passed. Evaluation implementation evidence advanced to 1.0.42 without lifecycle promotion; prior records remain. The full RN suite and native build/device checks were not rerun in this slice. Independent replay app verification used the unchanged acceptance tests and reported no failed/skipped tests.
 
+## Native follow-up
+
+The exact replay candidate now passes the tested native probe. [Source-free native evidence](local-anchor-native-2026-10-25.json) retains its source hash, probe/dependency/bundle identities and all six observed states. This supplements the earlier app result; the original failed inference and replay's historical `nativeVerification: not-run` remain unchanged.
+
+Reused `/private/tmp/vectalon-expo58-native-Z5pg9t`, the existing Expo 58 / RN 0.88 native dependencies and the unchanged [session probe](../../../scripts/experiments/current-session.native.tsx). All `src` files matched the fresh frozen export except the candidate hook and the export's additional acceptance test; the exact hook was applied without editing. Temporary `App.tsx` matched the committed probe byte-for-byte. The generated Xcode workspace's incremental Release build succeeded in 15.181 seconds, with zero errors and 27 warnings (Expo module visibility and bundled-JavaScript globals/eval warnings). No native dependency/source patch, new inference, Metro server, package publication or customer-data change.
+
+On iPhone 18 Pro / iOS 27.0 Simulator, Argent reinstalled only disposable `in.vectalon.nativeproof`, clearing that app's prior data. Accessibility trees and screenshots showed:
+
+| Action | Current sessions | Other sessions | Two factor |
+|---|---:|---:|---|
+| Launch | 1 | 2 | Off |
+| Try current and unknown IDs | 1 | 2 | Off |
+| Revoke both other sessions in one handler | 1 | 0 | Off |
+| Toggle two factor | 1 | 0 | On |
+| Repeat current and unknown IDs | 1 | 0 | On |
+| Repeat revoke other sessions | 1 | 0 | On |
+
+![Current session remains protected](session-local-protected-2026-10-25.png)
+
+![Other sessions removed; two factor on; repeated actions harmless](session-local-final-2026-10-25.png)
+
+The [earlier native negative control](current-session-native-2026-10-23.md) reproduced the original hook deleting the current session with this same probe; it was not rerun today. Device-scoped Argent services were stopped afterward; unrelated devices were untouched. Local result bundle: `/private/tmp/vectalon-expo58-native-Z5pg9t/session-local-anchor-2026-10-25.xcresult`. Temporary generated source/build records may expire; durable hashes and screenshots alone are not portable source reproduction.
+
+This is one known public fix with post-processing assistance, not original first-attempt success, a fresh held-out comparison, universal guardrail compliance or reliable improvement. The probe calls the hook directly, not the full customer screen. Android, physical devices, signed distribution, fresh dependency installation in this slice and external acceptance were not checked. Next freeze fresh same-model tasks and comparable budgets before inference; keep task-only/guided and initial/assisted results separate. Core/Admin and valid grants remain unchanged.
+
+Follow-up verification: 100 experiment/report tests passed, including candidate/probe/lock identity, retained first-attempt failure and screenshot-file checks. Product manifest, Core contract projections, capability consistency and whitespace checks passed. No full RN regression suite rerun or capability lifecycle promotion.
+

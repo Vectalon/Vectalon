@@ -3,6 +3,28 @@ const assert = require('node:assert/strict');
 const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs');
 const evidence = require('../../docs/release-roadmap/evidence/cart-3b-paired-pilot-2026-10-20.json');
 
+test('native probe matches accepted replay without rewriting first-attempt or reliability evidence', () => {
+  const native = require('../../docs/release-roadmap/evidence/local-anchor-native-2026-10-25.json');
+  const replay = require('../../docs/release-roadmap/evidence/local-anchor-replay-2026-10-25.json');
+  const { readFileSync } = require('node:fs');
+  const { createHash } = require('node:crypto');
+  assert.equal(native.candidateSha256, replay.candidate.sha256);
+  assert.equal(native.dependencyLockSha256, replay.appRecheck.dependencyLockSha256);
+  assert.equal(native.probeSha256, createHash('sha256').update(readFileSync(`${__dirname}/current-session.native.tsx`)).digest('hex'));
+  assert.equal(native.modelCalls, 0);
+  assert.equal(native.candidateModified, false);
+  assert.equal(native.firstAttemptSuccess, false);
+  assert.equal(native.reliableImprovementEstablished, false);
+  assert.equal(native.build.status, 'succeeded');
+  assert.equal(native.build.errors, 0);
+  assert.deepEqual(native.observations.map(o => [o.current, o.other, o.twoFactor]),
+    [[1, 2, false], [1, 2, false], [1, 0, false], [1, 0, true], [1, 0, true], [1, 0, true]]);
+  for (const key of ['protectedScreenshot', 'finalScreenshot']) {
+    const bytes = readFileSync(`${__dirname}/../../docs/release-roadmap/evidence/${native.evidence[key]}`);
+    assert.equal(bytes.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  }
+});
+
 test('local anchor replay records post-processing-assisted app success without rewriting original rejection', () => {
   const original = require('../../docs/release-roadmap/evidence/local-anchor-session-2026-10-25.json');
   const replay = require('../../docs/release-roadmap/evidence/local-anchor-replay-2026-10-25.json');

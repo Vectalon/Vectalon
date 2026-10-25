@@ -1,0 +1,60 @@
+{
+  "kind": "post-processing-assisted-native-probe",
+  "date": "2026-10-25",
+  "revision": "77c55e4",
+  "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+  "replayEvidence": "local-anchor-replay-2026-10-25.json",
+  "candidateSha256": "3177e26edd322ec85bc9f1bd5e107fdfed514c0e7ea9ba115a99ddf092d24d1d",
+  "probeSha256": "167657abd64538d8c1c46dbdd248da99e0a38a51a3ea335289b7041d250dc502",
+  "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+  "podLockSha256": "4b7e860e1275e7a36b63d8a986fb9acc9f2dfb6e3608fa9ae070093880e8fcad",
+  "bundleSha256": "ef7b1b53e87e8922ce6e3e4329e8204b1d669d7991af0f7b6fbb996c9f561508",
+  "executableSha256BeforeInstrumentation": "21c3ad1b9bce2d0d88c5c278c5c1f4505ee77644c9255a286e9543a5e15ef8cd",
+  "modelCalls": 0,
+  "candidateModified": false,
+  "environment": {
+    "expo": "58.0.17",
+    "reactNative": "0.88.0",
+    "react": "19.3.0",
+    "device": "iPhone 18 Pro Simulator",
+    "os": "iOS 27.0",
+    "udid": "9C219A24-CCFD-49CD-AD19-965A0E974B04",
+    "bundleId": "in.vectalon.nativeproof",
+    "configuration": "Release",
+    "signing": false,
+    "installation": "reinstalled disposable probe app; its previous data cleared"
+  },
+  "build": {
+    "status": "succeeded",
+    "errors": 0,
+    "warnings": 27,
+    "durationMs": 15181,
+    "incremental": true,
+    "resultBundle": "/private/tmp/vectalon-expo58-native-Z5pg9t/session-local-anchor-2026-10-25.xcresult"
+  },
+  "observations": [
+    { "action": "launch", "current": 1, "other": 2, "twoFactor": false },
+    { "action": "try-current-and-unknown", "current": 1, "other": 2, "twoFactor": false },
+    { "action": "revoke-both-others-in-one-handler", "current": 1, "other": 0, "twoFactor": false },
+    { "action": "toggle-two-factor", "current": 1, "other": 0, "twoFactor": true },
+    { "action": "repeat-current-and-unknown", "current": 1, "other": 0, "twoFactor": true },
+    { "action": "repeat-revoke-others", "current": 1, "other": 0, "twoFactor": true }
+  ],
+  "evidence": {
+    "method": "Argent accessibility trees and action screenshots",
+    "protectedScreenshot": "session-local-protected-2026-10-25.png",
+    "finalScreenshot": "session-local-final-2026-10-25.png",
+    "priorNegativeControl": "current-session-native-2026-10-23.md",
+    "negativeControlRerun": false
+  },
+  "verdict": "passed-tested-native-probe",
+  "firstAttemptSuccess": false,
+  "reliableImprovementEstablished": false,
+  "limits": [
+    "Known public task; accepted only after exact-no-op post-processing normalization",
+    "Probe calls hook directly; not full customer-screen acceptance or production security verification",
+    "One simulator only; no Android, physical device, signed distribution or fresh held-out comparison",
+    "Existing dependency installation and incremental native build reused; no fresh install this slice",
+    "Temporary build artifacts may expire; hashes and screenshots do not retain generated source"
+  ]
+}
