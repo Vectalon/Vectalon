@@ -3,6 +3,29 @@ const assert = require('node:assert/strict');
 const { formatPilotReport, serializePilotReport } = require('./pilot-report.cjs');
 const evidence = require('../../docs/release-roadmap/evidence/cart-3b-paired-pilot-2026-10-20.json');
 
+test('local anchor replay records post-processing-assisted app success without rewriting original rejection', () => {
+  const original = require('../../docs/release-roadmap/evidence/local-anchor-session-2026-10-25.json');
+  const replay = require('../../docs/release-roadmap/evidence/local-anchor-replay-2026-10-25.json');
+  const row = original.runs[0];
+  assert.equal(row.status, 'failed');
+  assert.equal(row.result.attempts[0].editApplication, 'rejected');
+  assert.equal(row.checks.tests.skipped, true);
+  assert.equal(original.runs.filter(row => row.status === 'not-run').length, 2);
+  assert.equal(replay.rawSha256, original.outputAudit.rawSha256);
+  assert.equal(replay.requestDigest, row.result.attempts[0].requestDigest);
+  assert.equal(replay.nativeCalls, 0);
+  assert.equal(replay.attempt.provider, 'offline-replay');
+  assert.equal(replay.attempt.unchangedEdits, 1);
+  assert.equal(replay.fixturesUnchanged, true);
+  assert.equal(replay.appRecheck.candidateSha256, replay.candidate.sha256);
+  assert.equal(replay.appRecheck.acceptanceSha256, replay.acceptanceSha256);
+  assert.equal(replay.appRecheck.checks.typecheck.ok, true);
+  assert.deepEqual(replay.appRecheck.tests, { passed: 36, failed: 0, skipped: 0, suites: 15 });
+  assert.equal(replay.appRecheck.nativeVerification, 'not-run');
+  assert.equal(replay.attempt.adherence, null);
+  for (const key of ['generatedArtifacts', 'rawResponses', '_candidate', '_acceptance']) assert.ok(!JSON.stringify(replay).includes(`"${key}"`));
+});
+
 test('scoped session history retains exact application separately from malformed candidate failure', () => {
   const report = require('../../docs/release-roadmap/evidence/scoped-session-2026-10-25.json');
   assert.equal(report.kind, 'bounded-scoped-edit-diagnostic');

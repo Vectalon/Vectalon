@@ -1,0 +1,71 @@
+{
+  "kind": "offline-noop-normalized-replay",
+  "revision": "d71eb7e6bf8f9bf53c1d3578d6dcdc86da6d896e",
+  "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+  "nativeCalls": 0,
+  "stubDeliveries": 1,
+  "rawSha256": "abaec1760d4db3f3c3c21ca600cbf24dfee0f7300367e5449381b67e4f06b4ad",
+  "taskDigest": "sha256:1e47d18715528520e229984b6df17cc6f240cb51bd855f265df9a2330faef5b7",
+  "requestDigest": "sha256:3b180c605327ef6dde434f9de24cc9eb8eef487d7c12ed8703d258dd3180b107",
+  "fixturesUnchanged": true,
+  "editModuleSha256": "5a94446f8a221df4056abd8f5f842c2d1180b297a4f08b91fada2e455c4b3434",
+  "candidate": {
+    "path": "src/hooks/useSecuritySettings.ts",
+    "sha256": "3177e26edd322ec85bc9f1bd5e107fdfed514c0e7ea9ba115a99ddf092d24d1d",
+    "bytes": 1220
+  },
+  "acceptanceSha256": "3443838dcade255e2181d7932bac02699bad450e5f4abe1f173500c6abf6fef8",
+  "attempt": {
+    "index": 1,
+    "kind": "initial",
+    "status": "parsed",
+    "selected": true,
+    "durationMs": 7,
+    "fileCount": 1,
+    "adherence": null,
+    "guardrails": 1,
+    "artifactIdentity": "unverified",
+    "taskDigest": "sha256:1e47d18715528520e229984b6df17cc6f240cb51bd855f265df9a2330faef5b7",
+    "requestDigest": "sha256:3b180c605327ef6dde434f9de24cc9eb8eef487d7c12ed8703d258dd3180b107",
+    "temperature": 0.2,
+    "maxTokens": 2048,
+    "maxAttempts": 1,
+    "providerCallLimit": 1,
+    "promptMode": "vectalon",
+    "editApplication": "applied",
+    "provider": "offline-replay",
+    "unchangedEdits": 1
+  },
+  "limitation": "Post-processing-assisted replay, not original first-pass success or fresh model inference",
+  "appRecheck": {
+    "kind": "isolated-installed-app-recheck",
+    "candidateSha256": "3177e26edd322ec85bc9f1bd5e107fdfed514c0e7ea9ba115a99ddf092d24d1d",
+    "acceptanceSha256": "3443838dcade255e2181d7932bac02699bad450e5f4abe1f173500c6abf6fef8",
+    "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+    "checks": {
+      "typecheck": {
+        "ok": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "isolation": "sandbox-exec",
+        "durationMs": 1285
+      },
+      "tests": {
+        "ok": true,
+        "exitCode": 0,
+        "timedOut": false,
+        "isolation": "sandbox-exec",
+        "durationMs": 7661
+      }
+    },
+    "tests": {
+      "passed": 36,
+      "failed": 0,
+      "skipped": 0,
+      "suites": 15
+    },
+    "method": "Fresh frozen app export, exact replay candidate, unchanged acceptance, existing installed dependencies, sandboxed compiler/full Jest suite",
+    "nativeVerification": "not-run",
+    "modelCalls": 0
+  }
+}
