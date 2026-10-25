@@ -1,0 +1,243 @@
+{
+  "kind": "paired-repair-preflight",
+  "date": "2026-10-25",
+  "newModelCalls": 0,
+  "plannedWorkflowRows": 12,
+  "maximumNativeCalls": 24,
+  "reports": [
+    {
+      "task": {
+        "id": "cart-membership",
+        "kind": "feature"
+      },
+      "revision": "5b81b0038abcc12b667c5747e6117234bd1710f1",
+      "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+      "freezeSha256": "31345a4c1a1f5e882826f28141c67ddf1d9717b83a67dccdbd6d121e10b034ec",
+      "runnerSha256": "41e5d198bf573291f00db3e39ca9c1577a885c2b91aa2958ba003ff30fe5294e",
+      "rubricModuleSha256": "746ef7071c2d8ff59e3174c15097162c8f0e93939e8de77fb66693db16900b79",
+      "taskDefinitionsSha256": "1bb6f0aa12b8af1ecfaee67aa5e98926d9ad7529785202ae4a32be4d772f2d76",
+      "acceptanceSha256": "48138540d396e63c0111e55d452ae5661edefea62627ef9bf0e2f080af5e152f",
+      "taskSha256": "d940fbef8136e4ffacc20ae2c77efd1d5ce8b5828da6467ef88632400c1f0013",
+      "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+      "resourceProtocol": {
+        "routing": "direct native; no router enrichment/fallback; default sampling unchanged",
+        "rowLimit": 6,
+        "reserveBytes": 2147483648,
+        "sampleIntervalMs": 1000,
+        "hardStopGraceMs": 5000,
+        "maxNativeCalls": 2,
+        "guardSha256": "eb638785341c4705f40f3920c80ed3bf0f2416e78737244378146480c1ba91fd",
+        "adapterSha256": "d622c26847b63efeaa3ed280b6f04b8287ce5ae9848cb26316eb8590325e1691",
+        "memoryModuleSha256": "a3cf0ae9e88f8ff63ecd5bfeaba7563abd617e96770d28fd20ee717d070d9ac4"
+      },
+      "settings": {
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "maxAttempts": 2,
+        "providerCallLimit": 1
+      },
+      "verificationMode": "Both conditions: same bounded app verifier and existing non-regressing repair selection; at most two calls, 4096 requested output tokens, 360 seconds including checks. Initial, parse retry, repair and selected evidence stay separate; actual input work/cost differs.",
+      "negativeControl": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1487
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 9363
+        }
+      },
+      "positiveControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1193
+        },
+        "tests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7692
+        }
+      },
+      "runs": [
+        {
+          "repetition": 1,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 1,
+          "condition": "vectalon",
+          "status": "not-run"
+        },
+        {
+          "repetition": 2,
+          "condition": "vectalon",
+          "status": "not-run"
+        },
+        {
+          "repetition": 2,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 3,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 3,
+          "condition": "vectalon",
+          "status": "not-run"
+        }
+      ],
+      "originalReportSha256": "c6d0b5f7622f260e57efe8084745599884d3117a1f537eab78177c1cf8e5fb93"
+    },
+    {
+      "task": {
+        "id": "order-total-review",
+        "kind": "review"
+      },
+      "revision": "5b81b0038abcc12b667c5747e6117234bd1710f1",
+      "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+      "freezeSha256": "31345a4c1a1f5e882826f28141c67ddf1d9717b83a67dccdbd6d121e10b034ec",
+      "runnerSha256": "41e5d198bf573291f00db3e39ca9c1577a885c2b91aa2958ba003ff30fe5294e",
+      "rubricModuleSha256": "746ef7071c2d8ff59e3174c15097162c8f0e93939e8de77fb66693db16900b79",
+      "taskDefinitionsSha256": "1bb6f0aa12b8af1ecfaee67aa5e98926d9ad7529785202ae4a32be4d772f2d76",
+      "acceptanceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "taskSha256": "17499d838915d3c99ea7ebbf9de88945b2d02bb1f08324a20248a4051247201e",
+      "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+      "resourceProtocol": {
+        "routing": "direct native; no router enrichment/fallback; default sampling unchanged",
+        "rowLimit": 6,
+        "reserveBytes": 2147483648,
+        "sampleIntervalMs": 1000,
+        "hardStopGraceMs": 5000,
+        "maxNativeCalls": 2,
+        "guardSha256": "eb638785341c4705f40f3920c80ed3bf0f2416e78737244378146480c1ba91fd",
+        "adapterSha256": "d622c26847b63efeaa3ed280b6f04b8287ce5ae9848cb26316eb8590325e1691",
+        "memoryModuleSha256": "a3cf0ae9e88f8ff63ecd5bfeaba7563abd617e96770d28fd20ee717d070d9ac4"
+      },
+      "settings": {
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "maxAttempts": 2,
+        "providerCallLimit": 1
+      },
+      "verificationMode": "Both conditions: same bounded app verifier and existing non-regressing repair selection; at most two calls, 4096 requested output tokens, 360 seconds including checks. Initial, parse retry, repair and selected evidence stay separate; actual input work/cost differs.",
+      "negativeControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1223
+        },
+        "tests": {
+          "ok": false,
+          "durationMs": 9604
+        },
+        "originalTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 8259
+        },
+        "proposedTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1345,
+          "assertionFailures": 0
+        }
+      },
+      "positiveControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1130
+        },
+        "tests": {
+          "ok": true,
+          "durationMs": 8709
+        },
+        "originalTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7418
+        },
+        "proposedTests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1291,
+          "assertionFailures": 1
+        }
+      },
+      "runs": [
+        {
+          "repetition": 1,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 1,
+          "condition": "vectalon",
+          "status": "not-run"
+        },
+        {
+          "repetition": 2,
+          "condition": "vectalon",
+          "status": "not-run"
+        },
+        {
+          "repetition": 2,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 3,
+          "condition": "task-only",
+          "status": "not-run"
+        },
+        {
+          "repetition": 3,
+          "condition": "vectalon",
+          "status": "not-run"
+        }
+      ],
+      "originalReportSha256": "4d35da8af457a3cb400fd5d8daaa80891583e4c958e0865be47b190617e8de6b"
+    }
+  ],
+  "limitations": [
+    "No native build",
+    "Installed dependencies reused",
+    "Tokens/cost not measured",
+    "No human correction-time measurement",
+    "Two newly authored public development tasks in one installed app, not private held-out launch evidence; pretraining exposure unknown",
+    "Both conditions use the same existing full-file generator, verifier and non-regressing repair selection; only prompt guidance differs",
+    "At most two native calls and 4096 requested output tokens per row; one shared 360-second generation/check deadline; actual input work and costs differ",
+    "Initial temperature 0.2; parse retry or repair temperature 0; no grammar override, enrichment, fallback or model substitution",
+    "Three repetitions per task/condition, alternating order; memory/deadline stops retain remaining planned rows",
+    "Acceptance and assistant-authored controls excluded from prompts and training exports; repair gets scoped compiler diagnostics and generic test failure only",
+    "Repair selection is not qualification; 100% tested guardrails, at least 80% adherence where scored, native and customer gates are unchanged",
+    "Seeds, actual tokens/cost, human correction time, native/device and external acceptance remain unmeasured"
+  ]
+}

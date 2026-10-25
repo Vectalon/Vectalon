@@ -134,7 +134,7 @@ Module._load = function(request, ...args) {
   }
 });
 
-for (const preflight of [true, false]) test(`v2 keeps all repetitions and frozen lane (preflight=${preflight})`, () => {
+for (const paired of [false, true]) for (const preflight of [true, false]) test(`v2 keeps all repetitions and frozen lane (preflight=${preflight}, paired=${paired})`, () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-v2-preflight-test-'));
   let output;
   try {
@@ -143,29 +143,43 @@ for (const preflight of [true, false]) test(`v2 keeps all repetitions and frozen
 Module._load = function(request, ...args) {
   if (request.endsWith('/dist/model/local/memory.js')) return { nativeMemoryBudget: () => ({ availableBytes: 8 * 1024 ** 3, source: 'os-free' }) };
   if (request.endsWith('/dist/sandbox/run.js')) return { runSandboxed: async () => {
-    const ok = ++checks !== 2; return { ok, exitCode: ok ? 0 : 1, durationMs: 1, stdout: '', stderr: '' };
+    const ok = ++checks !== 2 && (!${paired} || checks <= 4 || checks % 4 !== 2); return { ok, exitCode: ok ? 0 : 1, durationMs: 1, stdout: '', stderr: '' };
   } };
   if (request.endsWith('/dist/model/local/inference.js')) {
     if (${preflight}) throw new Error('Preflight must not load inference');
-    return { runInference: async () => {
-      require('node:assert/strict').ok(++calls <= 6);
-      return { content: 'invalid candidate', modelId: 'qwen2.5-coder-7b', artifact: { sha256: '${require('./one-app-evaluation-7b.json').artifactSha256}' } };
+    return { runInference: async (model, options) => {
+      const assert = require('node:assert/strict'); assert.ok(++calls <= ${paired ? 12 : 6});
+      if (${paired}) {
+        assert.equal(options.maxTokens, 2048); assert.equal(options.temperature, calls % 2 ? 0.2 : 0);
+        assert.ok(!options.prompt.includes('paired_repair_acceptance_canary'));
+        if (calls % 2 === 0) assert.ok(options.prompt.includes('Task/project tests failed. Recheck the original requirements.'));
+      }
+      return { content: ${paired} ? JSON.stringify({ files: [{ path: 'src/hooks/useCart.tsx', content: 'export const value = ' + calls + ';' }] }) : 'invalid candidate', modelId: 'qwen2.5-coder-7b', artifact: { sha256: '${require('./one-app-evaluation-7b.json').artifactSha256}' } };
     } };
   }
   return load.call(this, request, ...args);
 };`);
     const result = spawnSync(process.execPath, ['--require', preload, path.join(__dirname, 'rn-cart-pilot.cjs'),
-      '--task', 'cart-distinct-count', '--evaluation-lane', 'v2-7b', '--resource-pair', ...(preflight ? ['--preflight'] : [])],
+      '--task', paired ? 'cart-membership' : 'cart-distinct-count', '--evaluation-lane', paired ? 'paired-repair-7b' : 'v2-7b', '--resource-pair', ...(preflight ? ['--preflight'] : [])],
     { encoding: 'utf8', timeout: 15000 });
     assert.equal(result.status, 0, result.stderr);
     output = result.stdout.match(/^Evidence: (.+)$/m)?.[1];
     const report = JSON.parse(fs.readFileSync(path.join(output, 'report.json'), 'utf8'));
-    assert.equal(report.evaluationLane, 'v2-7b');
+    assert.equal(report.evaluationLane, paired ? 'paired-repair-7b' : 'v2-7b');
     assert.match(report.rubricModuleSha256, /^[a-f0-9]{64}$/);
     assert.equal(report.resourceProtocol.rowLimit, 6);
     assert.equal(report.runs.length, 6);
-    assert.ok(report.runs.every(row => row.status === (preflight ? 'not-run' : 'failed')));
-    assert.equal(report.runs.reduce((sum, row) => sum + (row.nativeCalls?.length ?? 0), 0), preflight ? 0 : 6);
+    assert.ok(report.runs.every(row => row.status === (preflight ? 'not-run' : paired ? 'passed' : 'failed')));
+    assert.equal(report.runs.reduce((sum, row) => sum + (row.nativeCalls?.length ?? 0), 0), preflight ? 0 : paired ? 12 : 6);
+    if (paired) {
+      assert.equal(report.settings.maxAttempts, 2);
+      assert.equal(report.resourceProtocol.maxNativeCalls, 2);
+      for (const row of preflight ? [] : report.runs) {
+        assert.equal(row.resources.timeoutMs, 360000);
+        assert.deepEqual(row.result.attempts.map(attempt => [attempt.kind, attempt.verification.status, attempt.selected === true]), [['initial', 'failed', false], ['repair', 'passed', true]]);
+      }
+      assert.ok(report.verificationMode.includes('Both conditions'));
+    }
     assert.deepEqual(report.runs.map(row => row.condition), ['task-only', 'vectalon', 'vectalon', 'task-only', 'task-only', 'vectalon']);
     assert.equal(report.positiveControl.tests.ok, true);
     assert.equal(report.negativeControl.tests.ok, false);
@@ -258,6 +272,11 @@ test('rejects changed 7B verifier input before experiment output or inference', 
 });
 
 for (const [name, args, message] of [
+  ['paired repair without guards', ['--task', 'cart-membership', '--evaluation-lane', 'paired-repair-7b'], 'Paired repair requires'],
+  ['paired repair with generation override', ['--task', 'cart-membership', '--evaluation-lane', 'paired-repair-7b', '--resource-pair', '--guided-repair'], 'Paired repair requires'],
+  ['paired repair model substitution', ['--task', 'cart-membership', '--evaluation-lane', 'paired-repair-7b', '--resource-pair', '--model', 'qwen2.5-coder-3b', '--artifact-sha256', 'a'.repeat(64)], 'model cannot change'],
+  ['paired repair artifact substitution', ['--task', 'cart-membership', '--evaluation-lane', 'paired-repair-7b', '--resource-pair', '--model', 'qwen2.5-coder-7b', '--artifact-sha256', 'a'.repeat(64)], 'artifact cannot change'],
+  ['paired repair with known old task', ['--task', 'cart-distinct-count', '--evaluation-lane', 'paired-repair-7b', '--resource-pair'], 'Unknown frozen evaluation task'],
   ['v2 without resource guards', ['--task', 'cart-distinct-count', '--evaluation-lane', 'v2-7b'], 'V2 evaluation requires'],
   ['v2 with repair', ['--task', 'cart-distinct-count', '--evaluation-lane', 'v2-7b', '--resource-pair', '--guided-repair'], 'V2 evaluation requires'],
   ['v2 model substitution', ['--task', 'cart-distinct-count', '--evaluation-lane', 'v2-7b', '--resource-pair', '--model', 'qwen2.5-coder-3b', '--artifact-sha256', 'a'.repeat(64)], 'model cannot change'],

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+  "model": "qwen2.5-coder-7b",
+  "artifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+  "tasks": ["cart-membership", "order-total-review"],
+  "conditions": ["task-only", "vectalon"],
+  "repetitions": 3,
+  "settings": { "temperature": 0.2, "maxTokens": 2048, "maxAttempts": 2, "providerCallLimit": 1 },
+  "timeoutMs": 360000,
+  "rubricModuleSha256": "746ef7071c2d8ff59e3174c15097162c8f0e93939e8de77fb66693db16900b79",
+  "inputs": {
+    "one-app-paired-repair-tasks.cjs": "1bb6f0aa12b8af1ecfaee67aa5e98926d9ad7529785202ae4a32be4d772f2d76",
+    "cart-membership.acceptance.tsx": "48138540d396e63c0111e55d452ae5661edefea62627ef9bf0e2f080af5e152f",
+    "one-app-tasks.cjs": "91ea35672bf7d810c54357f4d548d2a68b987b3827e5d4e3ba06165694aa0a7e"
+  },
+  "limitations": [
+    "Two newly authored public development tasks in one installed app, not private held-out launch evidence; pretraining exposure unknown",
+    "Both conditions use the same existing full-file generator, verifier and non-regressing repair selection; only prompt guidance differs",
+    "At most two native calls and 4096 requested output tokens per row; one shared 360-second generation/check deadline; actual input work and costs differ",
+    "Initial temperature 0.2; parse retry or repair temperature 0; no grammar override, enrichment, fallback or model substitution",
+    "Three repetitions per task/condition, alternating order; memory/deadline stops retain remaining planned rows",
+    "Acceptance and assistant-authored controls excluded from prompts and training exports; repair gets scoped compiler diagnostics and generic test failure only",
+    "Repair selection is not qualification; 100% tested guardrails, at least 80% adherence where scored, native and customer gates are unchanged",
+    "Seeds, actual tokens/cost, human correction time, native/device and external acceptance remain unmeasured"
+  ]
+}

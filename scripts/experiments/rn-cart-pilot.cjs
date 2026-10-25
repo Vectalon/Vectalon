@@ -45,17 +45,19 @@ assert.ok(!args['guided-repair'] || (args['resource-pair'] && !args['raw-guided'
 assert.ok(!args['raw-guided'] || (args['resource-pair'] && args['include-raw-response'] && args['include-generated']), '--raw-guided requires --resource-pair --include-raw-response --include-generated');
 const freshEvaluation = args['evaluation-lane'] === 'fresh-7b';
 const v2Evaluation = args['evaluation-lane'] === 'v2-7b';
+const pairedRepair = args['evaluation-lane'] === 'paired-repair-7b';
+assert.ok(!pairedRepair || (args['resource-pair'] && !args['guided-repair'] && !args['raw-guided'] && !args.repair && !editMode && !args.diagnostic && !args.constrained), 'Paired repair requires --resource-pair without generation overrides');
 assert.ok(!v2Evaluation || (args['resource-pair'] && !args['guided-repair'] && !args['raw-guided'] && !args.repair && !editMode && !args.diagnostic), 'V2 evaluation requires --resource-pair without generation overrides');
 const asyncControlPair = pinnedAsyncControl && args['task-relevant']
   && !args['verified-controls'] && !args['sampling-control'] && !args['guided-repair'] && !args['raw-guided'];
 assert.ok(!freshEvaluation || (args['resource-pair'] && !args['guided-repair'] && !args['raw-guided']), 'Fresh evaluation requires --resource-pair without diagnostic repair/raw-guided modes');
 assert.ok(!args['resource-pair'] || ((args.task === 'stock-filter' || scopedEdits) && args['evaluation-lane'] === '7b')
-  || v2Evaluation || (freshEvaluation && args.task === 'orders-refresh-race') || asyncControlPair || (scopedEdits && pinnedAsyncControl), '--resource-pair requires --task stock-filter --evaluation-lane 7b, --scoped-edits, fresh-7b orders-refresh-race, v2-7b, or pinned delayed-label-v1 --task-relevant');
-assert.ok(args['evaluation-lane'] === undefined || ['3b', '7b', 'fresh-7b', 'v2-7b'].includes(args['evaluation-lane']), 'Unknown evaluation lane');
+  || pairedRepair || v2Evaluation || (freshEvaluation && args.task === 'orders-refresh-race') || asyncControlPair || (scopedEdits && pinnedAsyncControl), '--resource-pair requires a supported frozen guarded evaluation or diagnostic');
+assert.ok(args['evaluation-lane'] === undefined || ['3b', '7b', 'fresh-7b', 'v2-7b', 'paired-repair-7b'].includes(args['evaluation-lane']), 'Unknown evaluation lane');
 assert.ok(args['evaluation-lane'] === undefined || args.task !== undefined, '--evaluation-lane requires --task');
-const freezeFile = v2Evaluation ? 'one-app-evaluation-v2-7b.json' : freshEvaluation ? 'one-app-evaluation-fresh-7b.json' : args['evaluation-lane'] === '7b' ? 'one-app-evaluation-7b.json' : 'one-app-evaluation.json';
+const freezeFile = pairedRepair ? 'one-app-evaluation-paired-repair-7b.json' : v2Evaluation ? 'one-app-evaluation-v2-7b.json' : freshEvaluation ? 'one-app-evaluation-fresh-7b.json' : args['evaluation-lane'] === '7b' ? 'one-app-evaluation-7b.json' : 'one-app-evaluation.json';
 const freeze = require(`./${freezeFile}`);
-const taskDefinitionsFile = v2Evaluation ? 'one-app-v2-tasks.cjs' : freshEvaluation ? 'one-app-fresh-tasks.cjs' : 'one-app-tasks.cjs';
+const taskDefinitionsFile = pairedRepair ? 'one-app-paired-repair-tasks.cjs' : v2Evaluation ? 'one-app-v2-tasks.cjs' : freshEvaluation ? 'one-app-fresh-tasks.cjs' : 'one-app-tasks.cjs';
 const { taskDefinition } = require(`./${taskDefinitionsFile}`);
 assert.equal(args.model !== undefined, args['artifact-sha256'] !== undefined, '--model and --artifact-sha256 must be supplied together');
 assert.ok(args['artifact-sha256'] === undefined || /^[a-f0-9]{64}$/.test(args['artifact-sha256']), 'Expected a lowercase SHA-256 artifact hash');
@@ -88,6 +90,7 @@ const { createModelEditGenerate } = editMode || args.diagnostic ? load('bench/mo
 const { runScenario } = load('bench/runner.js');
 const { ModelRouter } = load('model/ModelRouter.js');
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
+if (pairedRepair) assert.equal(hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/bench/rubric.js'))), freeze.rubricModuleSha256, 'Frozen scoring runtime changed');
 for (const [file, expected] of Object.entries(freeze.inputs ?? {})) {
   if (args.task) assert.equal(hash(fs.readFileSync(path.join(__dirname, file))), expected, `Frozen evaluation input changed: ${file}`);
 }
@@ -140,7 +143,7 @@ const samplingControl = args['sampling-control'];
 const constrained = args.constrained;
 const fileSchema = args['guided-repair'] && constrained ? load('model/providers/LocalProvider.js').FILES_JSON_SCHEMA : undefined;
 if (args['guided-repair'] && constrained) assert.ok(fileSchema, 'Build the RN package before the structured diagnostic');
-const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair || verifiedControls || editRepair ? 2 : 1, providerCallLimit: 1,
+const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair || verifiedControls || editRepair || pairedRepair ? 2 : 1, providerCallLimit: 1,
   ...(constrained ? { outputFormat: 'files-json' } : {}), ...(editMode ? { toolEnvelope: true, requiredTool: 'propose_edits', anchorMode: 'module-and-direct-local-declarations' } : {}) };
 if (args.task) assert.deepEqual(settings, scopedEdits ? { ...freeze.settings, toolEnvelope: true, requiredTool: 'propose_edits', anchorMode: 'module-and-direct-local-declarations' } : args['guided-repair']
   ? { ...freeze.settings, maxAttempts: 2, ...(constrained ? { outputFormat: 'files-json' } : {}) }
@@ -149,7 +152,8 @@ const output = fs.mkdtempSync('/private/tmp/vectalon-cart-pilot-');
 const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pilot', revision, appRevision, startedAt: new Date().toISOString(),
   ...(args['resource-pair'] ? { kind: recordedInitial ? 'recorded-candidate-assisted-repair' : editRepair ? 'bounded-scoped-edit-repair' : scopedEdits ? 'bounded-scoped-edit-diagnostic' : fileSchema ? 'bounded-structured-repair-diagnostic' : args['guided-repair'] ? 'bounded-guided-repair-diagnostic' : args['raw-guided'] ? 'bounded-guided-output-diagnostic' : 'bounded-one-app-resource-pair', resourceProtocol: {
     routing: 'direct native; no router enrichment/fallback; default sampling unchanged',
-    rowLimit: v2Evaluation ? freeze.repetitions * freeze.conditions.length : scopedEdits || args['raw-guided'] || args['guided-repair'] ? 1 : 2, reserveBytes: 2 * 1024 ** 3, sampleIntervalMs: 1000, hardStopGraceMs: 5000,
+    rowLimit: pairedRepair || v2Evaluation ? freeze.repetitions * freeze.conditions.length : scopedEdits || args['raw-guided'] || args['guided-repair'] ? 1 : 2, reserveBytes: 2 * 1024 ** 3, sampleIntervalMs: 1000, hardStopGraceMs: 5000,
+    ...(pairedRepair ? { maxNativeCalls: 2 } : {}),
     guardSha256: hash(fs.readFileSync(path.join(__dirname, 'resource-guard.cjs'))),
     adapterSha256: hash(fs.readFileSync(path.join(__dirname, 'sampling-control.cjs'))),
     memoryModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/model/local/memory.js'))),
@@ -184,6 +188,7 @@ const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pi
   runtime: { node: process.version, platform: process.platform, arch: process.arch }, settings,
   ...(recordedInitial ? { recordedInitial: recordedInitial.provenance, verificationMode: 'Recorded initial candidate rechecked with zero new initial calls; at most one new repair call, 2048 output tokens, 180 seconds including recheck. Historical invocation/duration excluded from current budgets. Not first-pass or equal-budget improvement; strict repair selection unchanged.' }
     : editRepair ? { verificationMode: 'One initial scoped-edit attempt plus at most one repair against its applied candidate; 4096 requested output tokens total, 360 seconds including checks; not equal to first-pass budgets. Repair selection requires passed app verification, 100% tested guardrails and no adherence regression (unscored remains unscored).' } : {}),
+  ...(pairedRepair ? { verificationMode: 'Both conditions: same bounded app verifier and existing non-regressing repair selection; at most two calls, 4096 requested output tokens, 360 seconds including checks. Initial, parse retry, repair and selected evidence stay separate; actual input work/cost differs.' } : {}),
   ...(verifiedControls || args['guided-repair'] ? { verificationMode: args['guided-repair']
     ? 'Single guided diagnostic: initial plus at most one repair/parse retry; 4096 requested output tokens total and 360 seconds including checks; not equal to first-pass budgets'
     : 'both conditions: bounded app verifier; compiler-only diagnostics and generic test-failure feedback' } : {}),
@@ -318,7 +323,7 @@ async function main() {
     const started = Date.now();
     row.status = 'running'; row.phase = 'generation'; row.verifications = []; save();
     console.log(`Start ${row.repetition} ${row.condition}`);
-    const timeoutMs = recordedInitial ? 180000 : args['guided-repair'] || editRepair ? 360000 : task ? freeze.timeoutMs : 180000;
+    const timeoutMs = recordedInitial ? 180000 : args['guided-repair'] || editRepair || pairedRepair ? 360000 : task ? freeze.timeoutMs : 180000;
     const deadline = Date.now() + timeoutMs;
     const timer = args['resource-pair'] ? undefined : setTimeout(() => {
       row.status = 'timeout'; save();
@@ -337,7 +342,7 @@ async function main() {
         const schema = fileSchema || toolSchema;
         const nativeOptions = { ...options, ...(schema ? { grammarSchema: schema } : {}) };
         const calls = (row.nativeCalls ??= []);
-        assert.ok(calls.length < (recordedInitial ? 1 : args['guided-repair'] || editRepair ? 2 : 1), 'Native call cap exhausted');
+        assert.ok(calls.length < (recordedInitial ? 1 : args['guided-repair'] || editRepair || pairedRepair ? 2 : 1), 'Native call cap exhausted');
         const call = { index: calls.length + 1, status: 'running', ...(editRepair ? { kind: recordedInitial || calls.length ? 'repair' : 'initial' } : {}), temperature: options.temperature,
           maxTokens: options.maxTokens, requestSha256: hash(JSON.stringify({ model, ...nativeOptions })),
           ...(schema ? { grammarSchemaSha256: hash(JSON.stringify(schema)) } : {}) };
@@ -386,7 +391,7 @@ async function main() {
       const factory = editRepair ? options => require('./scoped-edit-repair.cjs').createVerifiedEditGenerate(createModelEditGenerate, options)
         : editMode || row.condition === 'vectalon-edits' ? createModelEditGenerate : createModelGenerate;
       const generated = factory({ modelRouter: router, promptMode: samplingControl ? 'task-relevant' : repair ? 'vectalon' : row.condition,
-        ...settings, ...(repair || verifiedControls || editRepair ? { verify: verifier } : {}), ...(recordedInitial ? { recordedInitial } : {}),
+        ...settings, ...(repair || verifiedControls || editRepair || pairedRepair ? { verify: verifier } : {}), ...(recordedInitial ? { recordedInitial } : {}),
         ...(args['include-raw-response'] ? { onRawResponse: (content, attempt) => {
           (row.rawResponses ??= []).push({ ...attempt, content }); save();
         } } : {}) });
