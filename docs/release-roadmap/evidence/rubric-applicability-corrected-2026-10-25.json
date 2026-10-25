@@ -1,0 +1,218 @@
+{
+  "kind": "corrected-rubric-applicability",
+  "date": "2026-10-25",
+  "capabilityVersion": "rn.evaluation/1.0.44",
+  "historicalAudit": "rubric-applicability-2026-10-25.json",
+  "newModelCalls": 0,
+  "historicalScoresRewritten": false,
+  "thresholdsChanged": false,
+  "modelImprovementEstablished": false,
+  "verification": {
+    "fullRn": {
+      "success": true,
+      "suites": 321,
+      "suitesPassed": 321,
+      "suitesFailed": 0,
+      "tests": 3210,
+      "passed": 3209,
+      "failed": 0,
+      "skipped": 1,
+      "sha256": "1bcabf4a5158976311d3addf7d68e2e5185da023e9e375ff1e14bcb91b793fe9",
+      "command": "pnpm --filter @vectalon-dev/rn test -- --runInBand --json --outputFile=/private/tmp/vectalon-rubric-full-rn-2026-10-25.json",
+      "execution": "permitted rerun; existing local servers and sandbox isolation allowed",
+      "restrictedAttempt": {
+        "suitesFailed": 18,
+        "suitesPassed": 303,
+        "testsFailed": 60,
+        "testsPassed": 3149,
+        "skipped": 1,
+        "reason": "Outer sandbox denied local server listen and nested sandbox application; retained as failed environment run"
+      }
+    },
+    "experimentReportTests": {
+      "passed": 162,
+      "failed": 0,
+      "skipped": 0
+    },
+    "typecheck": "passed",
+    "typescriptBuild": "passed; existing Core bundle unchanged",
+    "targetedLint": "passed",
+    "productContractsCapabilities": "passed",
+    "newInference": "not-run",
+    "native": "not-rerun",
+    "customer": "not-run"
+  },
+  "sourceSha256": "5c518a0183033f18b31b9ffd40b7e4e3acc407a92c54419979920ef40f3baa6d",
+  "runtimeSha256": "746ef7071c2d8ff59e3174c15097162c8f0e93939e8de77fb66693db16900b79",
+  "fixtureSha256": "1624d51ea00099bb6350435e462458c2c2b9e9ac18083053bdc15d0268fcb347",
+  "observations": [
+    {
+      "id": "pure-async-service",
+      "path": "src/services/Arithmetic.ts",
+      "previousErrorStates": false,
+      "currentErrorStates": null,
+      "result": {
+        "files": [
+          {
+            "filePath": "src/services/Arithmetic.ts",
+            "applicable": 0,
+            "passed": 0,
+            "failed": 0,
+            "checks": []
+          }
+        ],
+        "overall": null
+      }
+    },
+    {
+      "id": "propagating-network-service",
+      "path": "src/services/Network.ts",
+      "previousErrorStates": false,
+      "currentErrorStates": null,
+      "result": {
+        "files": [
+          {
+            "filePath": "src/services/Network.ts",
+            "applicable": 1,
+            "passed": 0,
+            "failed": 1,
+            "checks": [
+              {
+                "id": "fetch-states",
+                "name": "Data fetching has loading, empty, and error states",
+                "passed": false,
+                "message": "Fetch missing states (loading=false, empty=false, error=false)",
+                "line": 1
+              }
+            ]
+          }
+        ],
+        "overall": 0
+      }
+    },
+    {
+      "id": "async-in-string",
+      "path": "src/utils/label.ts",
+      "previousErrorStates": false,
+      "currentErrorStates": null,
+      "result": {
+        "files": [
+          {
+            "filePath": "src/utils/label.ts",
+            "applicable": 0,
+            "passed": 0,
+            "failed": 0,
+            "checks": []
+          }
+        ],
+        "overall": null
+      }
+    },
+    {
+      "id": "missing-ui-error-handling",
+      "path": "src/screens/LookupScreen.tsx",
+      "previousErrorStates": false,
+      "currentErrorStates": false,
+      "result": {
+        "files": [
+          {
+            "filePath": "src/screens/LookupScreen.tsx",
+            "applicable": 3,
+            "passed": 0,
+            "failed": 3,
+            "checks": [
+              {
+                "id": "safe-area",
+                "name": "Screens use SafeAreaView or safe-area insets",
+                "passed": false,
+                "message": "Screen does not use SafeAreaView or useSafeAreaInsets"
+              },
+              {
+                "id": "error-states",
+                "name": "UI async work uses try/catch with user-visible error states",
+                "passed": false,
+                "message": "UI async work lacks catch/error-state evidence",
+                "line": 1
+              },
+              {
+                "id": "fetch-states",
+                "name": "Data fetching has loading, empty, and error states",
+                "passed": false,
+                "message": "Fetch missing states (loading=false, empty=false, error=false)",
+                "line": 1
+              }
+            ]
+          }
+        ],
+        "overall": 0
+      }
+    },
+    {
+      "id": "ui-with-error-handling",
+      "path": "src/screens/LookupScreen.tsx",
+      "previousErrorStates": true,
+      "currentErrorStates": true,
+      "result": {
+        "files": [
+          {
+            "filePath": "src/screens/LookupScreen.tsx",
+            "applicable": 4,
+            "passed": 2,
+            "failed": 2,
+            "checks": [
+              {
+                "id": "safe-area",
+                "name": "Screens use SafeAreaView or safe-area insets",
+                "passed": false,
+                "message": "Screen does not use SafeAreaView or useSafeAreaInsets"
+              },
+              {
+                "id": "error-states",
+                "name": "UI async work uses try/catch with user-visible error states",
+                "passed": true
+              },
+              {
+                "id": "immutable-updates",
+                "name": "State updates are immutable",
+                "passed": true
+              },
+              {
+                "id": "fetch-states",
+                "name": "Data fetching has loading, empty, and error states",
+                "passed": false,
+                "message": "Fetch missing states (loading=false, empty=false, error=true)",
+                "line": 1
+              }
+            ]
+          }
+        ],
+        "overall": 0.5
+      }
+    },
+    {
+      "id": "promise-without-async-marker",
+      "path": "src/services/Deferred.ts",
+      "previousErrorStates": null,
+      "currentErrorStates": null,
+      "result": {
+        "files": [
+          {
+            "filePath": "src/services/Deferred.ts",
+            "applicable": 0,
+            "passed": 0,
+            "failed": 0,
+            "checks": []
+          }
+        ],
+        "overall": null
+      }
+    }
+  ],
+  "limits": [
+    "Unscored means not applicable or unmeasured, not 100% adherence or qualification.",
+    "This UI rule does not assess service error propagation or task correctness.",
+    "Recognized paths, JSX and hook names identify UI; aliases and indirect async work are not universally recognized.",
+    "File-level catch/error-state evidence is not per-operation control-flow proof; syntax/typecheck and app/native tests remain separate.",
+    "Historical app/native, guardrail and adherence results remain unchanged; later controlled comparisons need the new runtime fingerprint."
+  ]
+}

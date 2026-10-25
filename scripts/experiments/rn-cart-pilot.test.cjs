@@ -161,6 +161,7 @@ Module._load = function(request, ...args) {
     output = result.stdout.match(/^Evidence: (.+)$/m)?.[1];
     const report = JSON.parse(fs.readFileSync(path.join(output, 'report.json'), 'utf8'));
     assert.equal(report.evaluationLane, 'v2-7b');
+    assert.match(report.rubricModuleSha256, /^[a-f0-9]{64}$/);
     assert.equal(report.resourceProtocol.rowLimit, 6);
     assert.equal(report.runs.length, 6);
     assert.ok(report.runs.every(row => row.status === (preflight ? 'not-run' : 'failed')));

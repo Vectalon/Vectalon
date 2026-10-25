@@ -155,6 +155,44 @@ describe('rubric per-check behavior', () => {
     expect(check.check({ filePath: good.path, content: good.content }).passed).toBe(true)
   })
 
+  it('error-states: excludes services and non-executable async text instead of inventing UI obligations', () => {
+    const check = checkById('error-states')
+    for (const file of [
+      tsxFile('export async function sum(a: number, b: number) { return a + b }', 'src/services/Arithmetic.ts'),
+      tsxFile("export async function load() { const r = await fetch('/value'); if (!r.ok) throw new Error('failed'); return r.text() }", 'src/services/Network.ts'),
+      tsxFile("export const label = 'async fetch await'; // async function load() {}"),
+      tsxFile('export const pattern = /async|fetch/; const message = `async`;'),
+      tsxFile('const async = 1; export const value = async;'),
+    ]) expect(check.applicable!({ filePath: file.path, content: file.content })).toBe(false)
+    expect(rubricAdherence([tsxFile('export async function sum() { return 3 }', 'src/services/Arithmetic.ts')])).toBeNull()
+  })
+
+  it('error-states: still checks hooks and UI code regardless of extension or misleading directory', () => {
+    const check = checkById('error-states')
+    for (const file of [
+      tsxFile('export function useLookup() { async function load() { await fetch(API) } return { load } }', 'src/domain/useLookup.ts'),
+      tsxFile('export const Widget = () => { async function load() { await fetch(API) } return <View /> }', 'src/services/Widget.tsx'),
+      tsxFile('export function load() { return Promise.reject(new Error("failed")) }'),
+      tsxFile('export function load() { return request.then(done) }'),
+      tsxFile('export const label = `${fetch(API)}`'),
+    ]) {
+      expect(check.applicable!({ filePath: file.path, content: file.content })).toBe(true)
+      expect(check.check({ filePath: file.path, content: file.content }).passed).toBe(false)
+    }
+  })
+
+  it('error-states: does not accept catch/error-state words in comments or strings as handling', () => {
+    const file = tsxFile("async function load() { await fetch(API); const decoy = 'try {} catch (e) { setError(e) }' }")
+    expect(checkById('error-states').check({ filePath: file.path, content: file.content }).passed).toBe(false)
+  })
+
+  it('error-states: malformed UI code fails assessment rather than becoming unscored', () => {
+    const file = tsxFile('export async function load( {')
+    const check = checkById('error-states')
+    expect(check.applicable!({ filePath: file.path, content: file.content })).toBe(true)
+    expect(check.check({ filePath: file.path, content: file.content }).passed).toBe(false)
+  })
+
   it('immutable-updates: no push/splice/sort on state', () => {
     const check = checkById('immutable-updates')
     const bad = tsxFile('export function F() { const [items, setItems] = useState([]); items.push(x); return <View />; }')

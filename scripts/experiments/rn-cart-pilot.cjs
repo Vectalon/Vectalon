@@ -177,6 +177,7 @@ const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pi
     nativeVerification: 'not-run' } : {}),
   runnerSha256: hash(fs.readFileSync(__filename)), appArchiveSha256: hash(archive.stdout),
   generationModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/bench', editMode ? 'modelEditGenerate.js' : 'modelGenerate.js'))),
+  rubricModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/bench/rubric.js'))),
   ...(args.diagnostic && !args.guided ? { editGenerationModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/bench/modelEditGenerate.js'))) } : {}),
   inferenceModuleSha256: hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/model/local/inference.js'))),
   acceptanceSha256: hash(acceptance), taskSha256: hash(JSON.stringify(scenario)),

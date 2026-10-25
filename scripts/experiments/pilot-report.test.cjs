@@ -569,6 +569,12 @@ test('never counts a successful recorded recheck as a new first-attempt pass', (
   assert.ok(formatPilotReport(report).includes('| repair | 0/1 | 0 | 0/0 | 1 | 0 |'));
 });
 
+test('identifies the actual scorer for new runs without rewriting legacy evidence', () => {
+  const hash = 'a'.repeat(64);
+  assert.ok(formatPilotReport({ rubricModuleSha256: hash, runs: [] }).includes(`Scoring runtime SHA-256: ${hash}`));
+  assert.ok(!formatPilotReport({ runs: [] }).includes('Scoring runtime SHA-256:'));
+});
+
 test('shows edit acceptance separately from app verification without exposing proposed source', () => {
   const text = formatPilotReport({ settings: { toolEnvelope: true }, runs: [{ condition: 'vectalon-edits', status: 'failed',
     result: { attempts: [{ kind: 'initial', status: 'parsed', editApplication: 'applied', content: 'PRIVATE_SOURCE' }] } }] });

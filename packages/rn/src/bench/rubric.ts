@@ -20,6 +20,7 @@
 
 import { BenchGeneratedFile } from './types'
 import { nativePackageTokens, isReferenceLine } from '../utils/nativeScan'
+import { parseSource, walk } from '../harness/AstScanner'
 
 export interface RubricCheckOptions {
   filePath: string
@@ -105,6 +106,39 @@ function findJsxOpeningTagEnd(content: string, start: number): number {
   }
 
   return -1
+}
+
+function errorStateEvidence({ filePath, content }: RubricCheckOptions) {
+  let ui = /(?:^|\/)(?:screens|components|hooks)\/|(?:^|\/)App\.[jt]sx?$/.test(filePath.replace(/\\/g, '/'))
+  let asyncLine: number | undefined
+  let caught = false
+  let errorState = false
+  const errorReference = (node: { name?: string; property?: { name?: string; value?: string } } | null | undefined) =>
+    ['error', 'isError'].includes(node?.name ?? node?.property?.name ?? node?.property?.value ?? '')
+  try {
+    const tree = parseSource(content, filePath)
+    if (!tree) return { applicable: ui, passed: false, invalid: true }
+    walk(tree, node => {
+      if (node.type === 'JSXElement' || node.type === 'JSXFragment' ||
+        (['FunctionDeclaration', 'VariableDeclarator'].includes(node.type) && /^use[A-Z]/.test(node.id?.name ?? ''))) ui = true
+      const call = ['CallExpression', 'OptionalCallExpression', 'NewExpression'].includes(node.type)
+      const callee = call ? node.callee : undefined
+      const member = callee && ['MemberExpression', 'OptionalMemberExpression'].includes(callee.type)
+      const property = member ? callee.property?.name ?? callee.property?.value : undefined
+      if (node.async === true || node.type === 'AwaitExpression' || (call && (
+        (callee?.type === 'Identifier' && ['fetch', 'axios', 'Promise'].includes(callee.name)) ||
+        (member && (['fetch', 'then', 'catch', 'finally'].includes(property) || ['axios', 'Promise'].includes(callee.object?.name)))
+      ))) asyncLine ??= node.loc?.start.line ?? 1
+      if (node.type === 'CatchClause') caught = true
+      // shortcut: file-level evidence, not proof that each operation reaches a UI error handler.
+      if ((call && callee?.type === 'Identifier' && callee.name === 'setError') ||
+        (node.type === 'ObjectProperty' && errorReference(node.key)) ||
+        (node.type === 'LogicalExpression' && node.operator === '&&' && errorReference(node.left)) ||
+        (node.type === 'ConditionalExpression' && errorReference(node.test)) ||
+        (node.type === 'JSXExpressionContainer' && errorReference(node.expression))) errorState = true
+    })
+    return { applicable: ui && asyncLine !== undefined, passed: caught && errorState, line: asyncLine }
+  } catch { return { applicable: ui, passed: false, invalid: true } }
 }
 
 export const rubricChecks: RubricCheck[] = [
@@ -221,23 +255,13 @@ export const rubricChecks: RubricCheck[] = [
   },
   {
     id: 'error-states',
-    name: 'Async work uses try/catch with user-visible error states',
-    description: 'Async operations should be wrapped in try/catch and surface errors to the UI (setError, error &&, isError).',
-    applicable: ({ content }) => /\basync\b|\bfetch\s*\(|\.then\s*\(|axios|await\s/.test(content),
-    check: ({ content }) => {
-      const match = content.match(/\basync\b|\bfetch\s*\(|\.then\s*\(/)
-      if (match) {
-        const hasTryCatch = /try\s*\{[\s\S]*\}\s*catch\s*\(/.test(content)
-        const hasErrorState = /setError\s*\(|\berror\s*&&|\berror\s*\?|\{error\}|isError|error\s*:\s*/.test(content)
-        if (!hasTryCatch || !hasErrorState) {
-          return {
-            passed: false,
-            message: !hasTryCatch ? 'Async work without try/catch' : 'try/catch present but no user-visible error state',
-            line: findLine(content, match.index || 0),
-          }
-        }
-      }
-      return { passed: true }
+    name: 'UI async work uses try/catch with user-visible error states',
+    description: 'UI and hooks with recognized async syntax require catch/error-state evidence; service error propagation is not assessed by this UI rule.',
+    applicable: options => errorStateEvidence(options).applicable,
+    check: options => {
+      const evidence = errorStateEvidence(options)
+      return { passed: evidence.passed,
+        ...(!evidence.passed ? { message: evidence.invalid ? 'Cannot assess UI error handling: source is unparseable or exceeds the AST budget' : 'UI async work lacks catch/error-state evidence', line: evidence.line } : {}) }
     },
   },
   {
