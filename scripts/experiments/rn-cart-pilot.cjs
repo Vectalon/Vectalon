@@ -113,8 +113,8 @@ const constrained = args.constrained;
 const fileSchema = args['guided-repair'] && constrained ? load('model/providers/LocalProvider.js').FILES_JSON_SCHEMA : undefined;
 if (args['guided-repair'] && constrained) assert.ok(fileSchema, 'Build the RN package before the structured diagnostic');
 const settings = { temperature: 0.2, maxTokens: 2048, maxAttempts: repair || verifiedControls ? 2 : 1, providerCallLimit: 1,
-  ...(constrained ? { outputFormat: 'files-json' } : {}), ...(editMode ? { toolEnvelope: true, requiredTool: 'propose_edits', anchorMode: 'top-level-source-blocks' } : {}) };
-if (args.task) assert.deepEqual(settings, scopedEdits ? { ...freeze.settings, toolEnvelope: true, requiredTool: 'propose_edits', anchorMode: 'top-level-source-blocks' } : args['guided-repair']
+  ...(constrained ? { outputFormat: 'files-json' } : {}), ...(editMode ? { toolEnvelope: true, requiredTool: 'propose_edits', anchorMode: 'module-and-direct-local-declarations' } : {}) };
+if (args.task) assert.deepEqual(settings, scopedEdits ? { ...freeze.settings, toolEnvelope: true, requiredTool: 'propose_edits', anchorMode: 'module-and-direct-local-declarations' } : args['guided-repair']
   ? { ...freeze.settings, maxAttempts: 2, ...(constrained ? { outputFormat: 'files-json' } : {}) }
   : freeze.settings, 'Frozen resource settings changed');
 const output = fs.mkdtempSync('/private/tmp/vectalon-cart-pilot-');
@@ -164,7 +164,7 @@ const report = { kind: args.task ? 'frozen-one-app-evaluation' : 'development-pi
     ...(verifiedControls ? ['Both conditions permit at most two provider calls and 4096 output tokens; actual work and input tokens differ. Earlier single-attempt results are not equal-budget controls.'] : []),
     ...(samplingControl ? ['Direct native sampling diagnostic in both lanes, not the production router; repetition penalties alone differ; historical router runs are not causal controls.'] : []),
     ...(constrained ? ['Native file-envelope grammar constrains serialization, not file scope or code correctness'] : []),
-    ...(editMode ? ['Scoped edit protocol differs from full-file generation; single existing file, at most eight edits, no repairs', 'Block IDs select unique original top-level TypeScript/JSX spans; repeated selections are rejected and exact application is checked again', 'Block catalogue repeats approved source in context; input-token cost is not measured', 'Source-grounded grammar does not establish code correctness or task improvement'] : [])],
+    ...(editMode ? ['Scoped edit protocol differs from full-file generation; single existing file, at most eight edits, no repairs', 'Block IDs select unique module/direct named-function local declarations; duplicate or overlapping selections are rejected before application', 'Other nesting and arrow/class function bodies are not qualified local anchors', 'Block catalogue repeats approved source in context; input-token cost is not measured', 'Source-grounded grammar does not establish code correctness or task improvement'] : [])],
   runs: Array.from({ length: args.task ? freeze.repetitions : 3 }, (_, repetition) => (samplingControl ? (repetition % 2 ? ['repeat-off', 'repeat-default'] : ['repeat-default', 'repeat-off']) : args['task-relevant'] ? (repetition % 2 ? ['task-relevant', 'task-only'] : ['task-only', 'task-relevant']) : args.guided ? ['vectalon'] : args.diagnostic ? (repetition % 2 ? ['vectalon-edits', 'task-only'] : ['task-only', 'vectalon-edits']) : editMode ? ['vectalon-edits'] : repair ? ['vectalon-verified-repair'] : repetition % 2 ? ['vectalon', 'task-only'] : ['task-only', 'vectalon']).map(condition => ({ repetition: repetition + 1, condition, status: 'not-run' }))).flat() };
 const save = () => {
   fs.writeFileSync(path.join(output, 'report.json'), serializePilotReport(report, {

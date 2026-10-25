@@ -80,6 +80,41 @@ it('offers unique complete top-level blocks, not nested statements or repeated s
   expect(generate.mock.calls[0][0].tools[0].inputSchema.properties.edits.items.properties.from.enum).toEqual(['block-3'])
 })
 
+const localSource = '// preserve\r\nexport function hook() {\r\n  const keep = true;\r\n  const update = (id: string) => send(id);\r\n  return { keep, update };\r\n}\r\n'
+it('offers direct local declarations and changes only the selected declaration', async () => {
+  const replacement = 'const update = (id: string) => { if (id) send(id); };'
+  const { seam, generate } = setup(envelope([{ ...edit, from: 'block-3', to: replacement }]))
+  expect(await seam({ ...scenario, fixtures: { [target]: localSource } })).toEqual([{ path: target,
+    content: localSource.replace('const update = (id: string) => send(id);', replacement) }])
+  const request = generate.mock.calls[0][0]
+  expect(request.tools[0].inputSchema.properties.edits.items.properties.from.enum).toEqual(['block-1', 'block-2', 'block-3'])
+  expect(request.context).toContain('block-3: VariableDeclaration, lines 4-4 (function-local)')
+  expect(localSource).toContain('const update = (id: string) => send(id);')
+})
+
+it.each(['replace', 'insert-after'])('rejects overlapping parent/local selections even with %s', async op => {
+  const { seam } = setup(envelope([{ ...edit, from: 'block-1', op, to: 'export function hook() {}' },
+    { ...edit, from: 'block-3', to: 'const update = () => {};' }]))
+  const attempts = jest.fn()
+  expect(await seam({ ...scenario, fixtures: { [target]: localSource } }, attempts)).toEqual([])
+  expect(attempts.mock.calls[0][0][0]).toMatchObject({ editApplication: 'rejected', selected: false })
+})
+
+it('applies multiple disjoint local declarations without changing surrounding source', async () => {
+  const { seam } = setup(envelope([{ ...edit, from: 'block-2', to: 'const keep = false;' },
+    { ...edit, from: 'block-3', to: 'const update = () => send("safe");' }]))
+  expect(await seam({ ...scenario, fixtures: { [target]: localSource } })).toEqual([{ path: target,
+    content: localSource.replace('const keep = true;', 'const keep = false;')
+      .replace('const update = (id: string) => send(id);', 'const update = () => send("safe");') }])
+})
+
+it('does not offer ambiguous local text or deeper nested declarations', async () => {
+  const { seam, generate } = setup(envelope([]))
+  const original = 'export function first() { const same = 1; if (same) { const hidden = 2; } }\nexport function second() { const same = 1; }'
+  await seam({ ...scenario, fixtures: { [target]: original } })
+  expect(generate.mock.calls[0][0].tools[0].inputSchema.properties.edits.items.properties.from.enum).toEqual(['block-1', 'block-2'])
+})
+
 it('rejects unoffered substring anchors even when unique and provider acknowledged', async () => {
   const { seam } = setup(envelope([{ ...edit, from: 'value = 1' }]))
   expect(await seam(scenario)).toEqual([])

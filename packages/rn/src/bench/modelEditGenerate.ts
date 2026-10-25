@@ -24,8 +24,14 @@ export function createModelEditGenerate(options: Pick<ModelGenerateOptions, 'mod
     let tree: ReturnType<typeof parse>
     try { tree = parse(source, { sourceType: 'module', plugins: ['typescript', 'jsx'] }) }
     catch { throw new Error('Edit diagnostic requires parseable TypeScript/JSX source') }
-    // shortcut: top-level blocks only; nested edits need separate measured qualification.
-    const blocks = tree.program.body.map((node, index) => ({ id: `block-${index + 1}`, type: node.type,
+    // shortcut: direct locals of named function declarations only; qualify other nesting separately.
+    const locals = tree.program.body.flatMap(node => {
+      const declaration = node.type === 'ExportNamedDeclaration' || node.type === 'ExportDefaultDeclaration' ? node.declaration : node
+      return declaration?.type === 'FunctionDeclaration' && declaration.body
+        ? declaration.body.body.filter(statement => statement.type === 'VariableDeclaration') : []
+    })
+    const blocks = [...tree.program.body, ...locals].map((node, index) => ({ id: `block-${index + 1}`, type: node.type,
+      start: node.start!, end: node.end!, scope: index < tree.program.body.length ? 'module' : 'function-local',
       lines: `${node.loc?.start.line}-${node.loc?.end.line}`, from: source.slice(node.start!, node.end!),
     })).filter(block => block.from && source.split(block.from).length === 2)
     if (!blocks.length) throw new Error('Edit diagnostic requires a unique source block')
@@ -39,14 +45,15 @@ export function createModelEditGenerate(options: Pick<ModelGenerateOptions, 'mod
       } },
     } }
     const request = {
-      systemPrompt: ['Implement the requested change by editing complete top-level source blocks, not whole-file regeneration.',
+      systemPrompt: ['Implement the requested change by editing complete offered source declarations, not whole-file regeneration.',
         'Keep unrelated imports, exports and existing behavior unchanged. Return complete replacement text for each edit, not placeholders.',
         'Choose from as a listed block ID. Select each block at most once; combine all changes to that block in one edit.',
-        'Use replace with the complete updated declaration, including unchanged members/body, or insert-after to add a complete top-level declaration.',
+        'Prefer a smaller offered function-local declaration when the change does not require replacing the entire function.',
+        'Use replace with the complete updated declaration, including unchanged members/body, or insert-after to add a complete declaration at the same scope.',
         'Keep executable code inside functions, not interfaces. Preserve line breaks and unrelated behavior. Do not edit other files.',
         buildToolCallSystemPrompt([tool], tool.name)].join('\n'),
       context: [Object.entries(scenario.fixtures).map(([path, content]) => `--- ${path} ---\n${content}`).join('\n\n'),
-        `Editable blocks in ${target}:\n` + blocks.map(block => `${block.id}: ${block.type}, lines ${block.lines}\n${block.from}`).join('\n\n')].join('\n\n'),
+        `Editable blocks in ${target}:\n` + blocks.map(block => `${block.id}: ${block.type}, lines ${block.lines} (${block.scope})\n${block.from}`).join('\n\n')].join('\n\n'),
       prompt: [scenario.prompt, ...scenario.expect.behaviors,
         `Delivery protocol: call propose_edits for ${target} instead of returning full files. The harness applies the edits and supplies unchanged source.`].join('\n'),
       tools: [tool], requiredTool: tool.name, temperature: options.temperature ?? 0.2, maxTokens: options.maxTokens ?? 2048, providerCallLimit: 1,
@@ -84,6 +91,8 @@ export function createModelEditGenerate(options: Pick<ModelGenerateOptions, 'mod
         Object.keys(edit).some(key => !['file', 'op', 'from', 'to'].includes(key)) || edit.file !== target ||
         !['replace', 'insert-after'].includes(edit.op) || !anchors.includes(edit.from) || typeof edit.to !== 'string') ||
         new Set(edits.map(edit => edit.from)).size !== edits.length) return []
+      const selected = edits.map(edit => blocks.find(block => block.id === edit.from)!)
+      if (selected.some((block, index) => selected.slice(0, index).some(other => block.start < other.end && other.start < block.end))) return []
       // A truncated block must not consume an unchanged neighboring statement.
       try { for (const edit of edits) parse(edit.to, { sourceType: 'module', plugins: ['typescript', 'jsx'], allowUndeclaredExports: true }) }
       catch { return [] }
