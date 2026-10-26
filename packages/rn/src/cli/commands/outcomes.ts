@@ -2,11 +2,8 @@
  * vc outcomes — engineering outcomes, not feature counts.
  * Business Source License 1.1 (BSL-1.1)
  *
- * Directive #10: the sales material is outcomes. Aggregates every committed
- * deterministic report into the ledger an EM actually reads — issues
- * detected, automatically fixed, PRs reviewed, build failures resolved, hours
- * saved on RN upgrade, regressions prevented — and the estimated engineering
- * savings in dollars.
+ * Reads local report evidence and labels the fixed-hour cost model as an
+ * illustrative estimate, not measured customer savings.
  */
 import { resolve, join } from 'path'
 import pc from 'picocolors'
@@ -28,21 +25,19 @@ export interface OutcomesCommandOptions {
   rate?: string
 }
 
-/** The ledger lines — one per outcome the directive names, Acme-style. */
+/** User-facing labels must not turn findings or plans into verified outcomes. */
 export function renderOutcomeLines(counts: OutcomeCounts, hours: number, savings: number, rate: number): string[] {
   const lines: string[] = []
-  lines.push(`  ${pc.bold(counts.issuesDetected)} issues detected`)
-  lines.push(`  ${pc.bold(counts.buildFailuresFixed + counts.issuesPrevented)} automatically fixed or prevented`)
-  lines.push(`  ${pc.bold(counts.prIssuesCaught)} issues caught in PR review`)
-  lines.push(`  ${pc.bold(counts.buildFailuresDiagnosed)} build failures diagnosed`)
-  lines.push(`  ${pc.bold(counts.buildFailuresFixed)} build failures resolved`)
-  lines.push(`  ${pc.bold(counts.rnUpgradesCompleted)} RN upgrades completed`)
-  lines.push(`  ${pc.bold(counts.testsGenerated)} tests generated`)
-  lines.push(`  ${pc.bold(counts.perfRegressionsDetected)} performance regressions detected`)
-  lines.push(`  ${pc.bold(counts.issuesPrevented)} regressions prevented`)
+  lines.push(`  ${pc.bold(counts.issuesDetected)} scan findings`)
+  lines.push(`  ${pc.bold(counts.prIssuesCaught)} PR review findings`)
+  lines.push(`  ${pc.bold(counts.buildFailuresDiagnosed)} build-log findings`)
+  lines.push(`  ${pc.bold(counts.buildFailuresFixed)} real-tree fixes with passing checks (build recovery unverified)`)
+  lines.push(`  ${pc.bold(counts.rnUpgradesCompleted)} RN upgrade provenance records`)
+  lines.push(`  ${pc.bold(counts.testsGenerated)} test files generated`)
+  lines.push(`  ${pc.bold(counts.perfRegressionsDetected)} performance findings`)
   lines.push('')
-  lines.push(`  ${parchment('Estimated engineering savings:')} ${pc.bold(pc.green(`$${savings.toLocaleString()}`))}`)
-  lines.push(`  ${dim(`${hours.toFixed(1)} developer-hours at $${rate}/hr blended rate`)}`)
+  lines.push(`  ${parchment('Illustrative effort-equivalent, not measured savings:')} ${pc.bold(pc.green(`$${savings.toLocaleString()}`))}`)
+  lines.push(`  ${dim(`${hours.toFixed(1)} assumed developer-hours at $${rate}/hr blended rate`)}`)
   return lines
 }
 
@@ -60,6 +55,7 @@ export async function outcomesCommand(options: OutcomesCommandOptions): Promise<
           counts,
           hoursSaved: Number(hours.toFixed(2)),
           savingsUsd: savings,
+          estimateOnly: true,
           blendedRateUsd: rate,
           perOutcomeHours: OUTCOME_HOURS,
         },
@@ -79,8 +75,8 @@ export async function outcomesCommand(options: OutcomesCommandOptions): Promise<
     reportPath: join(root, 'docs', 'vectalon', 'outcomes', 'report.txt'),
     root,
     done: isZero
-      ? 'No outcome reports yet — run the deterministic agents (fix, review, build-fix, score, sec, upgrade) and re-run vc outcomes. The ledger only counts committed reports.'
-      : `Ledger derived from committed reports under docs/vectalon/ + .vectalon/upgrades/ — zero model calls, fully deterministic.`,
+      ? 'No report-derived outcomes yet — run an agent and re-run vc outcomes. This ledger reads local reports, whether committed or not.'
+      : `Ledger derived from local reports under docs/vectalon/ + .vectalon/upgrades/ — counts are observations; savings are assumed, not measured.`,
   })
 }
 

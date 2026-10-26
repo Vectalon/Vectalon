@@ -2,24 +2,17 @@
  * vc outcomes — engineering outcomes, not feature counts.
  * Business Source License 1.1 (BSL-1.1)
  *
- * Directive #10: stop measuring features; measure outcomes. Every
- * deterministic agent already writes a report.json under docs/vectalon/<agent>/,
- * so the ledger aggregates those committed reports into the counters an
- * engineering manager actually cares about — build failures diagnosed and
- * fixed, PR review issues caught, RN upgrades completed, tests generated,
- * performance regressions detected, issues detected and prevented — and then
- * estimates the developer hours and dollars saved.
- *
- * Sales material is the outcome ledger, not "Vectalon has 47 agents."
+ * Aggregates local agent reports into observed counts. The hours/dollars model
+ * is illustrative, not measured customer savings.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
 import { join } from 'path'
 
 /** The outcome counters — exactly the dimensions the directive lists. */
 export interface OutcomeCounts {
-  /** Build failures diagnosed from build logs (build-fix reports). */
+  /** Error/warning findings in the latest build-fix report. */
   buildFailuresDiagnosed: number
-  /** Build failures fixed (fix/build-fix reports with an applied verdict). */
+  /** Fixes written to the real tree with passing checks; not proof a native build recovered. */
   buildFailuresFixed: number
   /** Issues caught in PR review (review reports). */
   prIssuesCaught: number
@@ -31,7 +24,7 @@ export interface OutcomeCounts {
   perfRegressionsDetected: number
   /** Issues detected across all deterministic scans (sec, arch, a11y, …). */
   issuesDetected: number
-  /** Issues prevented — caught by the score/guardrail pass before they land. */
+  /** Unverified prevention; remains zero until a before/after regression check is recorded. */
   issuesPrevented: number
 }
 
@@ -47,10 +40,7 @@ export const EMPTY_COUNTS: OutcomeCounts = {
 }
 
 /**
- * Hours saved per outcome — the honest model behind the savings estimate.
- * These are deliberately conservative per-item estimates of what a human
- * engineer would spend on the equivalent task (diagnosing a build failure,
- * catching an issue in review, upgrading RN, writing a test).
+ * Assumed hours per report-derived item; not calibrated to customer time.
  */
 export const OUTCOME_HOURS: Record<keyof OutcomeCounts, number> = {
   buildFailuresDiagnosed: 0.5,
@@ -72,7 +62,7 @@ export function blendedRate(): number {
   return Number.isFinite(n) && n > 0 ? n : DEFAULT_BLENDED_RATE
 }
 
-/** Total hours saved from a ledger. */
+/** Legacy API name: illustrative effort-equivalent, not measured hours saved. */
 export function hoursSaved(counts: OutcomeCounts): number {
   return (Object.keys(counts) as (keyof OutcomeCounts)[]).reduce(
     (sum, k) => sum + counts[k] * OUTCOME_HOURS[k],
@@ -80,7 +70,7 @@ export function hoursSaved(counts: OutcomeCounts): number {
   )
 }
 
-/** Estimated dollars saved = hours × blended rate. */
+/** Illustrative dollars = assumed hours × blended rate. */
 export function savingsEstimate(counts: OutcomeCounts, rate = blendedRate()): number {
   return Math.round(hoursSaved(counts) * rate)
 }
@@ -109,7 +99,7 @@ function countFindings(report: ParsedReport | null, severities: string[]): numbe
   return report.findings.filter(f => severities.includes(String(f.severity ?? 'info'))).length
 }
 
-/** List the agent report dirs under docs/vectalon/. */
+/** List local agent report dirs under docs/vectalon/. */
 function agentDirs(root: string): string[] {
   const docs = join(root, 'docs', 'vectalon')
   if (!existsSync(docs)) return []
@@ -119,19 +109,14 @@ function agentDirs(root: string): string[] {
 }
 
 /**
- * Collect the outcome ledger from committed reports. Every count is derived
- * from real report.json artifacts the deterministic agents already write:
+ * Collect the outcome ledger from local reports:
  *
- *   build-fix         → build failures diagnosed (+fixed when the verdict passes)
- *   fix / bug-fix     → build failures fixed
- *   review            → PR issues caught
- *   .vectalon/upgrades→ RN upgrades completed (one provenance dir per run)
- *   feature runs      → tests generated (test files under the run docs)
- *   score             → perf regressions (perf findings) + issues prevented (new problems)
- *   sec/arch/a11y/…   → issues detected (error+warning findings)
+ *   build-fix → diagnosed findings; fix → applied real-tree edits with passing checks;
+ *   review/scans → findings; upgrades → provenance dirs; feature runs → test files.
  */
 export function collectOutcomes(root: string): OutcomeCounts {
   const counts: OutcomeCounts = { ...EMPTY_COUNTS }
+  // shortcut: prevention has no verified before/after evidence in these reports, count none until it does.
   const dirs = agentDirs(root)
 
   for (const dir of dirs) {
@@ -142,15 +127,13 @@ export function collectOutcomes(root: string): OutcomeCounts {
     switch (agent) {
       case 'build-fix':
         counts.buildFailuresDiagnosed += countFindings(report, ['error', 'warning'])
-        if (report.verdict === 'approved' || report.verdict === 'passed') {
-          counts.buildFailuresFixed += 1
-        }
         break
       case 'fix':
       case 'bug-fix': {
-        // applied:true means the fix actually touched the tree
-        const applied = report.applied
-        if (applied === true || (Array.isArray(report.findings) && report.findings.length > 0 && report.verdict === 'approved')) {
+        const checks = report.verification
+        if (report.appliedToTree === true && report.findings?.some(finding => finding.applied === 'applied')
+          && Array.isArray(checks) && checks.length > 0
+          && checks.every(check => check?.status === 'pass')) {
           counts.buildFailuresFixed += 1
         }
         break
@@ -162,8 +145,6 @@ export function collectOutcomes(root: string): OutcomeCounts {
         const perf = (report.dimensions as Array<{ id?: string; findings?: Array<{ severity?: string }> }> | undefined)
         const perfFindings = (perf ?? []).find(d => d.id === 'performance')?.findings ?? []
         counts.perfRegressionsDetected += perfFindings.filter(f => f.severity === 'error' || f.severity === 'warning').length
-        const newProblems = Array.isArray(report.newProblems) ? report.newProblems.length : 0
-        counts.issuesPrevented += newProblems
         break
       }
       case 'sec':
@@ -177,8 +158,6 @@ export function collectOutcomes(root: string): OutcomeCounts {
       case 'deps': {
         const n = countFindings(report, ['error', 'warning'])
         counts.issuesDetected += n
-        // approved scans caught nothing new; needs-attention means issues live
-        if (report.verdict === 'approved') counts.issuesPrevented += 1
         break
       }
       default:

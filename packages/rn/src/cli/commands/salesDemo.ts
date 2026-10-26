@@ -68,7 +68,7 @@ const SCRIPTS: Array<{ act: string; minutes: string; command: string; narration:
     minutes: '10–20',
     command: 'vc fix',
     narration: 'Take a real failure.',
-    say: 'Diagnose → fix → verify. Root cause, evidence with file:line, impact, the fix applied, verification, confidence. No human in the loop — and we proved it on 100 real failures.',
+    say: 'Diagnose the reported failure, preview a scoped fix in a sandbox, and show which checks actually ran. Review and native verification are still needed.',
   },
   {
     act: '4 · brain',
@@ -81,8 +81,8 @@ const SCRIPTS: Array<{ act: string; minutes: string; command: string; narration:
     act: '5 · outcomes',
     minutes: '25–30',
     command: 'vc outcomes',
-    narration: 'This is what Vectalon saved your team.',
-    say: 'Not features — outcomes. Issues detected, fixed, prevented; PR review issues caught; build failures resolved; upgrades completed. Every number comes from the reports the agents committed. That is the sales material.',
+    narration: 'What the local reports recorded.',
+    say: 'Show report-derived findings, verified edits and upgrade records. Estimated effort is illustrative, not measured customer savings.',
   },
 ]
 
@@ -280,21 +280,20 @@ export async function salesDemoCommand(directory: string, options: SalesDemoOpti
     const lines: string[] = []
     if (hours <= 0) {
       lines.push('No outcomes yet — the ledger is empty until the agents run.')
-      lines.push(dim('Run `vc fix`, `vc review`, `vc build-fix`, `vc upgrade`, `vc score` — every report the agents commit lands here, counted deterministically.'))
+      lines.push(dim('Run `vc fix`, `vc review`, `vc build-fix`, `vc upgrade`, `vc score` — local reports are counted deterministically.'))
     } else {
       const rows: Array<[string, number]> = [
-        ['issues detected', counts.issuesDetected],
-        ['issues prevented', counts.issuesPrevented],
-        ['PR review issues caught', counts.prIssuesCaught],
-        ['build failures resolved', counts.buildFailuresFixed],
-        ['RN upgrades completed', counts.rnUpgradesCompleted],
-        ['tests generated', counts.testsGenerated],
+        ['scan findings', counts.issuesDetected],
+        ['PR review findings', counts.prIssuesCaught],
+        ['real-tree fixes with passing checks', counts.buildFailuresFixed],
+        ['RN upgrade provenance records', counts.rnUpgradesCompleted],
+        ['test files generated', counts.testsGenerated],
       ]
       for (const [label, n] of rows) {
         if (n > 0) lines.push(`  ${String(n).padStart(4)}  ${label}`)
       }
-      lines.push('', parchment(`Estimated savings: $${savings.toLocaleString('en-US')}`))
-      lines.push(dim(`${hours.toFixed(1)} engineer-hours · $${rate}/hr blended`))
+      lines.push('', parchment(`Illustrative effort-equivalent, not measured savings: $${savings.toLocaleString('en-US')}`))
+      lines.push(dim(`${hours.toFixed(1)} assumed engineer-hours · $${rate}/hr blended`))
     }
     lines.push('', dim(`Sell: ${SCRIPTS[4].say}`))
     acts.push({ id: 'outcomes', minutes: SCRIPTS[4].minutes, lines, verdict: hours > 0 ? 'ok' : 'info' })

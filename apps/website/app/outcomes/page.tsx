@@ -1,189 +1,59 @@
 import Link from 'next/link'
 
-/**
- * The outcomes page — sales material, not feature counts.
- *
- * Directive #10: stop measuring features; measure outcomes. The hero is the
- * Acme Corp ledger exactly as the roadmap draws it; below it, how `vc
- * outcomes` derives the same ledger from your repo's committed reports.
- */
-
-const ACME = [
-  { n: 127, label: 'issues detected' },
-  { n: 91, label: 'automatically fixed' },
-  { n: 23, label: 'PRs reviewed' },
-  { n: 14, label: 'build failures resolved' },
-  { n: 8, label: 'hours saved on RN upgrade' },
-  { n: 31, label: 'regressions prevented' },
-]
-
 const SIGNALS = [
-  {
-    agent: 'build-fix',
-    outcome: 'build failures diagnosed + resolved',
-    detail: 'every metro/gradle/xcode log you hand it → root cause + fix plan, counted per report',
-  },
-  {
-    agent: 'fix / bug-fix',
-    outcome: 'build failures fixed',
-    detail: 'reports with applied:true mean the fix actually touched the tree',
-  },
-  {
-    agent: 'review',
-    outcome: 'PR issues caught',
-    detail: 'every error/warning finding in a review report, before the PR merges',
-  },
-  {
-    agent: 'score',
-    outcome: 'perf regressions + issues prevented',
-    detail: 'the performance dimension findings, and new problems caught on the latest run',
-  },
-  {
-    agent: 'sec / arch / a11y / soc2',
-    outcome: 'issues detected',
-    detail: 'error+warning findings from every committed scan — and approved scans count as prevented',
-  },
-  {
-    agent: '.vectalon/upgrades/',
-    outcome: 'RN upgrades completed',
-    detail: 'one provenance dir (with UPGRADE.md) per completed upgrade run',
-  },
-  {
-    agent: 'feature-development',
-    outcome: 'tests generated',
-    detail: 'test files written by every workflow run, counted recursively',
-  },
+  { source: 'build-fix', result: 'Build-log findings', limit: 'A diagnosis and fix plan do not prove the build recovered.' },
+  { source: 'fix', result: 'Real-tree fixes with passing checks', limit: 'Sandbox previews and skipped checks do not count; a native rebuild may still be needed.' },
+  { source: 'review / sec / arch / a11y', result: 'Review and scan findings', limit: 'Findings require developer review; a clean scan is not a prevented regression.' },
+  { source: '.vectalon/upgrades/', result: 'Upgrade provenance records', limit: 'A recorded run is not proof of a successful native build or release.' },
+  { source: 'feature-development', result: 'Generated test files', limit: 'Files are counted, not assumed to pass or to cover the feature.' },
 ]
-
-const RATE = 75 // blended rate ($/hr) — matches vc outcomes default
 
 export const metadata = {
-  title: 'Vectalon — engineering outcomes, not feature counts',
-  description:
-    'An experimental demo ledger showing how committed report samples can be aggregated. Example values are not promised customer outcomes.',
+  title: 'Vectalon engineering outcomes — evidence and limits',
+  description: 'See what Vectalon can count from your local engineering reports, and what remains unverified.',
 }
 
-function TermLine({ children }: { children: React.ReactNode }) {
-  return <div className="font-mono text-[12.5px] leading-6 text-term-ink/90">{children}</div>
-}
-
-export default function SavingsPage() {
+export default function OutcomesPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-16">
-      <div className="text-center">
-        <div className="mx-auto mb-5 flex w-fit items-center gap-2">
-          <span className="chip font-mono">
-            vectalon<span className="text-brand">/</span>outcomes
-          </span>
-          <span className="badge badge-warn">○ experimental demo data</span>
-        </div>
-        <h1 className="text-4xl font-bold text-fg sm:text-5xl">
-          Engineering <span className="text-brand">outcomes</span>, not feature counts
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-fg-muted">
-          Anyone can count agents. The ledger an engineering manager actually reads is outcomes —
-          issues detected and fixed, PR issues caught, build failures resolved, hours saved. This
-          example is derived from committed demo <span className="font-mono text-fg-secondary">report.json</span>{' '}
-          files. The analysis capability is experimental and does not promise these outcomes for a customer repository.
+      <header>
+        <span className="chip font-mono">vectalon/outcomes · source preview</span>
+        <h1 className="mt-5 text-4xl font-bold text-fg sm:text-5xl">What the outcome ledger can count</h1>
+        <p className="mt-4 max-w-3xl text-fg-muted">
+          Vectalon reads local agent reports to count findings, applied fixes and recorded work.
+          The next package release will stop inferring prevented regressions or a recovered build from a plan or a clean scan.
         </p>
-      </div>
+      </header>
 
-      {/* The Acme Corp ledger — the hero block */}
-      <div className="mt-12 overflow-hidden rounded-lg border border-frame/60 shadow-2xl" style={{ background: 'rgb(28 20 14)' }}>
-        <div className="term-head">
-          <div className="flex items-center gap-1.5" aria-hidden>
-            <span className="term-dot bg-[#ff5f56]" />
-            <span className="term-dot bg-[#ffbd2e]" />
-            <span className="term-dot bg-[#27c93f]" />
-          </div>
-          <div className="flex min-w-0 items-center gap-2 font-mono text-[11px] text-term-ink/70">
-            <span className="truncate">
-              <span className="text-term-ink">vectalon</span>{' '}
-              <span className="text-[rgb(var(--brand))]">outcomes</span>
-            </span>
-          </div>
-          <span className="badge shrink-0 badge-ok">approved</span>
-        </div>
-        <div className="border-t border-term-frame/60 px-5 py-5">
-          <TermLine>
-            <span className="text-term-ink/50">$</span>{' '}
-            <span className="text-term-ink">vectalon outcomes</span>
-          </TermLine>
-          <TermLine>
-            <span className="text-term-meta">Acme Corp — July</span>
-          </TermLine>
-          <div className="mt-3 space-y-0.5">
-            {ACME.map(item => (
-              <TermLine key={item.label}>
-                <span className="inline-block w-[150px] text-right text-emerald-400">
-                  {item.n.toLocaleString()}
-                </span>{' '}
-                <span className="text-term-ink">{item.label}</span>
-              </TermLine>
-            ))}
-          </div>
-          <div className="mt-4 border-t border-term-frame/40 pt-3">
-            <TermLine>
-              <span className="text-term-ink/60">Estimated engineering savings:</span>{' '}
-              <span className="text-emerald-400">$7,400</span>
-            </TermLine>
-            <TermLine>
-              <span className="text-term-ink/40">~98 developer-hours at ${RATE}/hr blended rate</span>
-            </TermLine>
-          </div>
-        </div>
-      </div>
-
-      {/* How it's derived */}
-      <div className="mt-14">
-        <div className="flex items-center gap-3">
-          <h2 className="text-2xl font-bold text-fg">Your ledger, from your repo</h2>
-          <span className="badge badge-warn">real reports, not estimates</span>
-        </div>
-        <p className="mt-2 max-w-2xl text-fg-muted">
-          <span className="font-mono text-fg-secondary">vc outcomes</span> reads the committed reports
-          under <span className="font-mono text-fg-secondary">docs/vectalon/</span> and{' '}
-          <span className="font-mono text-fg-secondary">.vectalon/upgrades/</span> and counts each
-          outcome from real artifacts — then multiplies the hours by a blended rate ($75/hr by
-          default, override with <span className="font-mono text-fg-secondary">--rate</span>). Nothing
-          is estimated from thin air; if no reports exist yet, the ledger says so.
+      <section aria-labelledby="run-ledger" className="card mt-10">
+        <h2 id="run-ledger" className="text-xl font-semibold text-fg">Release status</h2>
+        <p className="mt-2 text-sm text-fg-muted">
+          The published 0.22.5 package still uses older outcome labels and counters. The corrected behavior below
+          is in repository source, not yet in the npm package. Do not treat the published savings figure as customer evidence.
         </p>
+        <p className="mt-3 text-sm text-fg-muted">
+          The optional dollar figure is an assumed effort-equivalent: counted items × fixed hour weights × your selected
+          hourly rate. It is not tracked developer time or measured savings.
+        </p>
+      </section>
+
+      <section aria-labelledby="report-signals" className="mt-14">
+        <h2 id="report-signals" className="text-2xl font-semibold text-fg">What the ledger can count</h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
-          {SIGNALS.map(s => (
-            <div key={s.agent} className="rounded-lg border border-frame p-5 bg-surface-elevated">
-              <div className="font-mono text-sm font-semibold text-brand">{s.agent}</div>
-              <div className="mt-1 font-mono text-[12px] text-fg-secondary">→ {s.outcome}</div>
-              <p className="mt-2 text-sm leading-relaxed text-fg-dim">{s.detail}</p>
+          {SIGNALS.map(signal => (
+            <div key={signal.source} className="card">
+              <p className="font-mono text-xs text-brand">{signal.source}</p>
+              <h3 className="mt-2 font-semibold text-fg">{signal.result}</h3>
+              <p className="mt-2 text-sm text-fg-muted">{signal.limit}</p>
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* CTA */}
-      <div className="mt-14 text-center">
-        <div className="mx-auto max-w-xl rounded-lg border border-frame p-6 bg-surface-elevated">
-          <p className="font-mono text-sm text-fg-secondary">
-            See your own ledger — it takes as long as the agents you&apos;ve already run:
-          </p>
-          <div className="mt-3 font-mono text-sm text-fg-dim">
-            <span className="text-brand">$</span> npx --package @vectalon-dev/rn vectalon outcomes --rate 75
-          </div>
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="/demo"
-              className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-on-brand transition hover:opacity-90"
-            >
-              See the flagship demo
-            </Link>
-            <Link
-              href="/agents"
-              className="rounded-md border border-frame px-4 py-2 text-sm font-semibold text-fg-secondary transition hover:border-brand hover:text-brand"
-            >
-              Browse the 48 agents
-            </Link>
-          </div>
-        </div>
-      </div>
+      <p className="mt-12 text-sm text-fg-muted">
+        For verified task outcomes with and without Vectalon, see the{' '}
+        <Link href="/benchmarks" className="text-brand hover:underline">React Native evidence</Link>.
+      </p>
     </div>
   )
 }

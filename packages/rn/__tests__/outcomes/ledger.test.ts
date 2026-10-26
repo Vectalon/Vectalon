@@ -52,18 +52,22 @@ describe('collectOutcomes', () => {
     expect(counts.buildFailuresFixed).toBe(0)
   })
 
-  it('counts a build failure as fixed when the verdict passes', () => {
+  it('does not call a build-fix plan a resolved build', () => {
     writeReport(root, 'build-fix', { verdict: 'approved', findings: [{ severity: 'error' }] })
     const counts = collectOutcomes(root)
     expect(counts.buildFailuresDiagnosed).toBe(1)
-    expect(counts.buildFailuresFixed).toBe(1)
+    expect(counts.buildFailuresFixed).toBe(0)
   })
 
-  it('counts fix/bug-fix reports with applied:true as build failures fixed', () => {
+  it('requires real-tree application and passing checks before counting a verified fix', () => {
     writeReport(root, 'bug-fix', { verdict: 'changes-requested', applied: true, findings: [{ severity: 'error' }] })
-    writeReport(root, 'fix', { verdict: 'approved', applied: true, findings: [{ severity: 'warning' }] })
+    writeReport(root, 'fix', { appliedToTree: true, findings: [{ applied: 'applied' }], verification: [{ status: 'pass' }] })
     const counts = collectOutcomes(root)
-    expect(counts.buildFailuresFixed).toBe(2)
+    expect(counts.buildFailuresFixed).toBe(1)
+    writeReport(root, 'fix', { appliedToTree: true, findings: [{ applied: 'applied' }], verification: [{ status: 'pass' }, { status: 'fail' }] })
+    expect(collectOutcomes(root).buildFailuresFixed).toBe(0)
+    writeReport(root, 'fix', { appliedToTree: true, findings: [{ applied: 'manual' }], verification: [{ status: 'pass' }] })
+    expect(collectOutcomes(root).buildFailuresFixed).toBe(0)
   })
 
   it('counts PR review issues caught from review reports', () => {
@@ -86,7 +90,7 @@ describe('collectOutcomes', () => {
     })
     const counts = collectOutcomes(root)
     expect(counts.perfRegressionsDetected).toBe(2)
-    expect(counts.issuesPrevented).toBe(1) // one new problem
+    expect(counts.issuesPrevented).toBe(0) // a newly detected problem is not a prevented regression
   })
 
   it('counts issues detected across sec/arch/a11y scans', () => {
@@ -95,7 +99,7 @@ describe('collectOutcomes', () => {
     writeReport(root, 'a11y', { verdict: 'approved', findings: [] })
     const counts = collectOutcomes(root)
     expect(counts.issuesDetected).toBe(3) // 2 (sec error+warning) + 1 (arch warning)
-    expect(counts.issuesPrevented).toBe(1) // a11y approved → one scan that found nothing
+    expect(counts.issuesPrevented).toBe(0) // a clean scan is not a prevented regression
   })
 
   it('counts RN upgrades completed from .vectalon/upgrades provenance dirs', () => {
@@ -158,7 +162,7 @@ describe('hours + savings model', () => {
 })
 
 describe('renderOutcomeLines', () => {
-  it('renders the Acme-style ledger with the savings line', () => {
+  it('labels findings and assumptions without claiming verified savings or prevention', () => {
     const counts: typeof EMPTY_COUNTS = {
       buildFailuresDiagnosed: 14,
       buildFailuresFixed: 10,
@@ -173,15 +177,16 @@ describe('renderOutcomeLines', () => {
     const ansi = /\u001b\[[0-9;]*m/g
     const lines = renderOutcomeLines(counts, 100, 7400, 74).map(l => l.replace(ansi, '').trim())
     const joined = lines.join('\n')
-    expect(joined).toContain('127 issues detected')
-    expect(joined).toContain('23 issues caught in PR review')
-    expect(joined).toContain('14 build failures diagnosed')
-    expect(joined).toContain('10 build failures resolved')
-    expect(joined).toContain('1 RN upgrades completed')
-    expect(joined).toContain('40 tests generated')
-    expect(joined).toContain('6 performance regressions detected')
-    expect(joined).toContain('31 regressions prevented')
+    expect(joined).toContain('127 scan findings')
+    expect(joined).toContain('23 PR review findings')
+    expect(joined).toContain('14 build-log findings')
+    expect(joined).toContain('10 real-tree fixes with passing checks')
+    expect(joined).toContain('1 RN upgrade provenance records')
+    expect(joined).toContain('40 test files generated')
+    expect(joined).toContain('6 performance findings')
+    expect(joined).not.toContain('regressions prevented')
     expect(joined).toContain('$7,400')
-    expect(joined).toContain('100.0 developer-hours at $74/hr')
+    expect(joined).toContain('Illustrative effort-equivalent, not measured savings')
+    expect(joined).toContain('100.0 assumed developer-hours at $74/hr')
   })
 })
