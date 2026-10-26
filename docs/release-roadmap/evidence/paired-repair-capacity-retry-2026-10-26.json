@@ -1,0 +1,45 @@
+{
+  "date": "2026-10-26",
+  "kind": "infrastructure-failure-not-task-performance",
+  "revision": "7b0f008ca5a8d6146d2a6ffff0a24b436fed9e0f",
+  "protocol": "scripts/experiments/one-app-evaluation-paired-repair-7b.json",
+  "model": "qwen2.5-coder-7b",
+  "expectedArtifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+  "originalLocalReport": "/private/tmp/vectalon-cart-pilot-y3PQNg/report.json",
+  "originalReportSha256": "8eba125eddd1d5f12a04a41d255331b030cabd34c1e6fe2a73e1ded217e5e4a5",
+  "capacity": {
+    "metric": "macos-pressure-estimate",
+    "beforeLaunchAvailableBytes": 6871947673,
+    "firstRowAvailableBytes": 5841155522,
+    "requiredColdLoadBytes": 6140685024,
+    "unchangedReserveBytes": 2147483648
+  },
+  "plannedWorkflows": 12,
+  "attemptedWorkflows": 1,
+  "observedNativeCalls": 1,
+  "successfulTaskResponses": 0,
+  "observedModelIdentities": 0,
+  "repairAttempts": 0,
+  "candidateAppChecks": 0,
+  "runs": [
+    { "task": "cart-membership", "condition": "task-only", "repetition": 1, "status": "error", "attemptKind": "initial", "nativeCallStatus": "error", "failureCategory": "insufficient-memory", "nativeCallDurationMs": 4, "temperature": 0.2, "maxTokens": 2048, "requestSha256": "cc61b11f2a73aa1ba34b166aace5c5a2b825b66c647c8b93a1c8338e85da60b3" },
+    { "task": "cart-membership", "condition": "vectalon", "repetition": 1, "status": "not-run" },
+    { "task": "cart-membership", "condition": "vectalon", "repetition": 2, "status": "not-run" },
+    { "task": "cart-membership", "condition": "task-only", "repetition": 2, "status": "not-run" },
+    { "task": "cart-membership", "condition": "task-only", "repetition": 3, "status": "not-run" },
+    { "task": "cart-membership", "condition": "vectalon", "repetition": 3, "status": "not-run" },
+    { "task": "order-total-review", "condition": "task-only", "repetition": 1, "status": "not-run" },
+    { "task": "order-total-review", "condition": "vectalon", "repetition": 1, "status": "not-run" },
+    { "task": "order-total-review", "condition": "vectalon", "repetition": 2, "status": "not-run" },
+    { "task": "order-total-review", "condition": "task-only", "repetition": 2, "status": "not-run" },
+    { "task": "order-total-review", "condition": "task-only", "repetition": 3, "status": "not-run" },
+    { "task": "order-total-review", "condition": "vectalon", "repetition": 3, "status": "not-run" }
+  ],
+  "interpretation": [
+    "The initial read-only estimate cleared the cold-load requirement; capacity fell below it before the first inference call.",
+    "The native error category explicitly records insufficient memory. No raw error, prompt, response or generated source is included here.",
+    "Runner exited nonzero after the first capacity refusal; the shell did not launch the review task.",
+    "Missing model identity is unrecorded, not an identity mismatch. No task-quality, safety or improvement score was measured.",
+    "No further retries, model switches, reserve reductions, budget changes or releases were performed. Earlier startup failures and connectivity diagnostic remain separate."
+  ]
+}
