@@ -1,0 +1,1100 @@
+{
+  "kind": "paired-repair-startup-failure",
+  "date": "2026-10-25",
+  "protocolRevision": "3c99363",
+  "plannedWorkflowRows": 12,
+  "attemptedNativeCalls": 12,
+  "successfulTaskGenerations": 0,
+  "verifiedModelIdentities": 0,
+  "repairs": 0,
+  "modelImprovementEstablished": false,
+  "originalReportSha256": [
+    "2485b3fbbbee9022301dafd80eee47a70a4544ad2e88d6e154f345c1223fe694",
+    "fafcda93dd9d13a986da98ccd63cc3f73d8627f212b4bb91a711198b579baba9"
+  ],
+  "reports": [
+    {
+      "kind": "bounded-one-app-resource-pair",
+      "revision": "3c9936380ae54e52d73eb483ced627f525f1e36a",
+      "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+      "startedAt": "2026-10-25T08:48:45.526Z",
+      "resourceProtocol": {
+        "routing": "direct native; no router enrichment/fallback; default sampling unchanged",
+        "rowLimit": 6,
+        "reserveBytes": 2147483648,
+        "sampleIntervalMs": 1000,
+        "hardStopGraceMs": 5000,
+        "maxNativeCalls": 2,
+        "guardSha256": "eb638785341c4705f40f3920c80ed3bf0f2416e78737244378146480c1ba91fd",
+        "adapterSha256": "d622c26847b63efeaa3ed280b6f04b8287ce5ae9848cb26316eb8590325e1691",
+        "memoryModuleSha256": "a3cf0ae9e88f8ff63ecd5bfeaba7563abd617e96770d28fd20ee717d070d9ac4"
+      },
+      "task": {
+        "id": "cart-membership",
+        "kind": "feature"
+      },
+      "installedDependencyVersions": {
+        "@react-navigation/native": "7.3.16",
+        "@react-navigation/native-stack": "7.18.8",
+        "expo": "58.0.17",
+        "expo-status-bar": "58.0.4",
+        "react": "19.3.0",
+        "react-native": "0.88.0",
+        "react-native-safe-area-context": "5.10.1",
+        "react-native-screens": "4.30.0",
+        "@babel/core": "7.29.7",
+        "@reduxjs/toolkit": "2.12.0",
+        "@testing-library/react-native": "14.0.1",
+        "@types/jest": "30.0.0",
+        "@types/react": "19.3.0",
+        "@react-native/jest-preset": "0.88.0",
+        "babel-preset-expo": "58.0.19",
+        "jest": "30.2.0",
+        "jest-expo": "58.0.12",
+        "react-redux": "9.3.0",
+        "react-test-renderer": "19.3.0",
+        "typescript": "5.8.3"
+      },
+      "evaluationLane": "paired-repair-7b",
+      "freezeSha256": "31345a4c1a1f5e882826f28141c67ddf1d9717b83a67dccdbd6d121e10b034ec",
+      "taskDefinitionsSha256": "1bb6f0aa12b8af1ecfaee67aa5e98926d9ad7529785202ae4a32be4d772f2d76",
+      "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+      "nativeVerification": "not-run",
+      "runnerSha256": "41e5d198bf573291f00db3e39ca9c1577a885c2b91aa2958ba003ff30fe5294e",
+      "appArchiveSha256": "85f494af47a4d19013fbae471533281db459a859317ce86f7778f4c768716fb2",
+      "generationModuleSha256": "be34d34579ffa7ee84e5867908d46feaaccdd9814d466cdceb665673f4e6edc5",
+      "rubricModuleSha256": "746ef7071c2d8ff59e3174c15097162c8f0e93939e8de77fb66693db16900b79",
+      "inferenceModuleSha256": "a6431f4d10327a44ed93cb145224df51e91429046e096ba793c9081a2673fcc0",
+      "acceptanceSha256": "48138540d396e63c0111e55d452ae5661edefea62627ef9bf0e2f080af5e152f",
+      "taskSha256": "d940fbef8136e4ffacc20ae2c77efd1d5ce8b5828da6467ef88632400c1f0013",
+      "runtime": {
+        "node": "v24.22.1",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "settings": {
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "maxAttempts": 2,
+        "providerCallLimit": 1
+      },
+      "verificationMode": "Both conditions: same bounded app verifier and existing non-regressing repair selection; at most two calls, 4096 requested output tokens, 360 seconds including checks. Initial, parse retry, repair and selected evidence stay separate; actual input work/cost differs.",
+      "model": "qwen2.5-coder-7b",
+      "expectedArtifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+      "limitations": [
+        "No native build",
+        "Installed dependencies reused",
+        "Tokens/cost not measured",
+        "No human correction-time measurement",
+        "Two newly authored public development tasks in one installed app, not private held-out launch evidence; pretraining exposure unknown",
+        "Both conditions use the same existing full-file generator, verifier and non-regressing repair selection; only prompt guidance differs",
+        "At most two native calls and 4096 requested output tokens per row; one shared 360-second generation/check deadline; actual input work and costs differ",
+        "Initial temperature 0.2; parse retry or repair temperature 0; no grammar override, enrichment, fallback or model substitution",
+        "Three repetitions per task/condition, alternating order; memory/deadline stops retain remaining planned rows",
+        "Acceptance and assistant-authored controls excluded from prompts and training exports; repair gets scoped compiler diagnostics and generic test failure only",
+        "Repair selection is not qualification; 100% tested guardrails, at least 80% adherence where scored, native and customer gates are unchanged",
+        "Seeds, actual tokens/cost, human correction time, native/device and external acceptance remain unmeasured"
+      ],
+      "runs": [
+        {
+          "repetition": 1,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 5497558138,
+            "minimumSampledAvailableBudgetBytes": 5497558138,
+            "maximumSampledRssBytes": 59162624,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 360000,
+            "availableBudgetBytesAfter": 5497558138
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "error",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "cc61b11f2a73aa1ba34b166aace5c5a2b825b66c647c8b93a1c8338e85da60b3",
+              "durationMs": 4
+            }
+          ],
+          "result": {
+            "id": "cart-membership",
+            "title": "cart-membership",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "error",
+                "selected": false,
+                "durationMs": 5,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:2803d349a2dc5d37289d729c3a320a6153ef5cda9946f058559e6c8aa8891587",
+                "maxAttempts": 2,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:55a1de32855ded1df6674e5555fe0d6edecb0d45c0a896a1c0225ac579686003"
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/hooks/useCart.tsx"
+            ]
+          },
+          "identityMatched": false,
+          "durationMs": 18
+        },
+        {
+          "repetition": 1,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 5497558138,
+            "minimumSampledAvailableBudgetBytes": 5497558138,
+            "maximumSampledRssBytes": 60112896,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 360000,
+            "availableBudgetBytesAfter": 5497558138
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "error",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "176846923d6332eee9cc27aba79493b98c288542ee23148546b19382eea63854",
+              "durationMs": 2
+            }
+          ],
+          "result": {
+            "id": "cart-membership",
+            "title": "cart-membership",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "error",
+                "selected": false,
+                "durationMs": 3,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:2803d349a2dc5d37289d729c3a320a6153ef5cda9946f058559e6c8aa8891587",
+                "maxAttempts": 2,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:167a6a8f3974a66388fc90462227abe109592349cd48adb1d2c6d50e864b0e4d"
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/hooks/useCart.tsx"
+            ]
+          },
+          "identityMatched": false,
+          "durationMs": 10
+        },
+        {
+          "repetition": 2,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 5497558138,
+            "minimumSampledAvailableBudgetBytes": 5497558138,
+            "maximumSampledRssBytes": 60964864,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 360000,
+            "availableBudgetBytesAfter": 5497558138
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "error",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "176846923d6332eee9cc27aba79493b98c288542ee23148546b19382eea63854",
+              "durationMs": 2
+            }
+          ],
+          "result": {
+            "id": "cart-membership",
+            "title": "cart-membership",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "error",
+                "selected": false,
+                "durationMs": 4,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:2803d349a2dc5d37289d729c3a320a6153ef5cda9946f058559e6c8aa8891587",
+                "maxAttempts": 2,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:167a6a8f3974a66388fc90462227abe109592349cd48adb1d2c6d50e864b0e4d"
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/hooks/useCart.tsx"
+            ]
+          },
+          "identityMatched": false,
+          "durationMs": 9
+        },
+        {
+          "repetition": 2,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 5497558138,
+            "minimumSampledAvailableBudgetBytes": 5497558138,
+            "maximumSampledRssBytes": 61833216,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 360000,
+            "availableBudgetBytesAfter": 5497558138
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "error",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "cc61b11f2a73aa1ba34b166aace5c5a2b825b66c647c8b93a1c8338e85da60b3",
+              "durationMs": 2
+            }
+          ],
+          "result": {
+            "id": "cart-membership",
+            "title": "cart-membership",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "error",
+                "selected": false,
+                "durationMs": 3,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:2803d349a2dc5d37289d729c3a320a6153ef5cda9946f058559e6c8aa8891587",
+                "maxAttempts": 2,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:55a1de32855ded1df6674e5555fe0d6edecb0d45c0a896a1c0225ac579686003"
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/hooks/useCart.tsx"
+            ]
+          },
+          "identityMatched": false,
+          "durationMs": 9
+        },
+        {
+          "repetition": 3,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 5497558138,
+            "minimumSampledAvailableBudgetBytes": 5497558138,
+            "maximumSampledRssBytes": 62767104,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 360000,
+            "availableBudgetBytesAfter": 5497558138
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "error",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "cc61b11f2a73aa1ba34b166aace5c5a2b825b66c647c8b93a1c8338e85da60b3",
+              "durationMs": 2
+            }
+          ],
+          "result": {
+            "id": "cart-membership",
+            "title": "cart-membership",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "error",
+                "selected": false,
+                "durationMs": 4,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:2803d349a2dc5d37289d729c3a320a6153ef5cda9946f058559e6c8aa8891587",
+                "maxAttempts": 2,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:55a1de32855ded1df6674e5555fe0d6edecb0d45c0a896a1c0225ac579686003"
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/hooks/useCart.tsx"
+            ]
+          },
+          "identityMatched": false,
+          "durationMs": 9
+        },
+        {
+          "repetition": 3,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 5497558138,
+            "minimumSampledAvailableBudgetBytes": 5497558138,
+            "maximumSampledRssBytes": 63602688,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 360000,
+            "availableBudgetBytesAfter": 5497558138
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "error",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "176846923d6332eee9cc27aba79493b98c288542ee23148546b19382eea63854",
+              "durationMs": 2
+            }
+          ],
+          "result": {
+            "id": "cart-membership",
+            "title": "cart-membership",
+            "suite": "feature",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "error",
+                "selected": false,
+                "durationMs": 2,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:2803d349a2dc5d37289d729c3a320a6153ef5cda9946f058559e6c8aa8891587",
+                "maxAttempts": 2,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:167a6a8f3974a66388fc90462227abe109592349cd48adb1d2c6d50e864b0e4d"
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/hooks/useCart.tsx"
+            ]
+          },
+          "identityMatched": false,
+          "durationMs": 8
+        }
+      ],
+      "negativeControl": {
+        "typecheck": {
+          "ok": false,
+          "exitCode": 2,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1410
+        },
+        "tests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 8844
+        }
+      },
+      "positiveControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1239
+        },
+        "tests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7675
+        }
+      }
+    },
+    {
+      "kind": "bounded-one-app-resource-pair",
+      "revision": "3c9936380ae54e52d73eb483ced627f525f1e36a",
+      "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+      "startedAt": "2026-10-25T08:49:05.413Z",
+      "resourceProtocol": {
+        "routing": "direct native; no router enrichment/fallback; default sampling unchanged",
+        "rowLimit": 6,
+        "reserveBytes": 2147483648,
+        "sampleIntervalMs": 1000,
+        "hardStopGraceMs": 5000,
+        "maxNativeCalls": 2,
+        "guardSha256": "eb638785341c4705f40f3920c80ed3bf0f2416e78737244378146480c1ba91fd",
+        "adapterSha256": "d622c26847b63efeaa3ed280b6f04b8287ce5ae9848cb26316eb8590325e1691",
+        "memoryModuleSha256": "a3cf0ae9e88f8ff63ecd5bfeaba7563abd617e96770d28fd20ee717d070d9ac4"
+      },
+      "task": {
+        "id": "order-total-review",
+        "kind": "review"
+      },
+      "installedDependencyVersions": {
+        "@react-navigation/native": "7.3.16",
+        "@react-navigation/native-stack": "7.18.8",
+        "expo": "58.0.17",
+        "expo-status-bar": "58.0.4",
+        "react": "19.3.0",
+        "react-native": "0.88.0",
+        "react-native-safe-area-context": "5.10.1",
+        "react-native-screens": "4.30.0",
+        "@babel/core": "7.29.7",
+        "@reduxjs/toolkit": "2.12.0",
+        "@testing-library/react-native": "14.0.1",
+        "@types/jest": "30.0.0",
+        "@types/react": "19.3.0",
+        "@react-native/jest-preset": "0.88.0",
+        "babel-preset-expo": "58.0.19",
+        "jest": "30.2.0",
+        "jest-expo": "58.0.12",
+        "react-redux": "9.3.0",
+        "react-test-renderer": "19.3.0",
+        "typescript": "5.8.3"
+      },
+      "evaluationLane": "paired-repair-7b",
+      "freezeSha256": "31345a4c1a1f5e882826f28141c67ddf1d9717b83a67dccdbd6d121e10b034ec",
+      "taskDefinitionsSha256": "1bb6f0aa12b8af1ecfaee67aa5e98926d9ad7529785202ae4a32be4d772f2d76",
+      "dependencyLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+      "nativeVerification": "not-run",
+      "runnerSha256": "41e5d198bf573291f00db3e39ca9c1577a885c2b91aa2958ba003ff30fe5294e",
+      "appArchiveSha256": "85f494af47a4d19013fbae471533281db459a859317ce86f7778f4c768716fb2",
+      "generationModuleSha256": "be34d34579ffa7ee84e5867908d46feaaccdd9814d466cdceb665673f4e6edc5",
+      "rubricModuleSha256": "746ef7071c2d8ff59e3174c15097162c8f0e93939e8de77fb66693db16900b79",
+      "inferenceModuleSha256": "a6431f4d10327a44ed93cb145224df51e91429046e096ba793c9081a2673fcc0",
+      "acceptanceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "taskSha256": "17499d838915d3c99ea7ebbf9de88945b2d02bb1f08324a20248a4051247201e",
+      "runtime": {
+        "node": "v24.22.1",
+        "platform": "darwin",
+        "arch": "arm64"
+      },
+      "settings": {
+        "temperature": 0.2,
+        "maxTokens": 2048,
+        "maxAttempts": 2,
+        "providerCallLimit": 1
+      },
+      "verificationMode": "Both conditions: same bounded app verifier and existing non-regressing repair selection; at most two calls, 4096 requested output tokens, 360 seconds including checks. Initial, parse retry, repair and selected evidence stay separate; actual input work/cost differs.",
+      "model": "qwen2.5-coder-7b",
+      "expectedArtifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+      "limitations": [
+        "No native build",
+        "Installed dependencies reused",
+        "Tokens/cost not measured",
+        "No human correction-time measurement",
+        "Two newly authored public development tasks in one installed app, not private held-out launch evidence; pretraining exposure unknown",
+        "Both conditions use the same existing full-file generator, verifier and non-regressing repair selection; only prompt guidance differs",
+        "At most two native calls and 4096 requested output tokens per row; one shared 360-second generation/check deadline; actual input work and costs differ",
+        "Initial temperature 0.2; parse retry or repair temperature 0; no grammar override, enrichment, fallback or model substitution",
+        "Three repetitions per task/condition, alternating order; memory/deadline stops retain remaining planned rows",
+        "Acceptance and assistant-authored controls excluded from prompts and training exports; repair gets scoped compiler diagnostics and generic test failure only",
+        "Repair selection is not qualification; 100% tested guardrails, at least 80% adherence where scored, native and customer gates are unchanged",
+        "Seeds, actual tokens/cost, human correction time, native/device and external acceptance remain unmeasured"
+      ],
+      "runs": [
+        {
+          "repetition": 1,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 5325759447,
+            "minimumSampledAvailableBudgetBytes": 5325759447,
+            "maximumSampledRssBytes": 66879488,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 360000,
+            "availableBudgetBytesAfter": 5325759447
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "error",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "6c99c368e1582f3cabb3132ee75278a58f1e38be353df9b6a03024b37de4f9f4",
+              "durationMs": 2
+            }
+          ],
+          "result": {
+            "id": "order-total-review",
+            "title": "order-total-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "error",
+                "selected": false,
+                "durationMs": 4,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:cbd5165024cb5f5bd353d2ad7459173e613b35437cfc047eb0a7b2249c6c3228",
+                "maxAttempts": 2,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:9e77de0a5c12d56f04be7e690bad405dc8754c00c833a398f62ed70bfdedc0ec"
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/__tests__/orderTotalReview.ts"
+            ]
+          },
+          "identityMatched": false,
+          "durationMs": 14
+        },
+        {
+          "repetition": 1,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 5325759447,
+            "minimumSampledAvailableBudgetBytes": 5325759447,
+            "maximumSampledRssBytes": 67764224,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 360000,
+            "availableBudgetBytesAfter": 5325759447
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "error",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "058be696a147d4890781987f7da26679e9ca0b44d7b403d0142ee714c14392cd",
+              "durationMs": 2
+            }
+          ],
+          "result": {
+            "id": "order-total-review",
+            "title": "order-total-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "error",
+                "selected": false,
+                "durationMs": 3,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:cbd5165024cb5f5bd353d2ad7459173e613b35437cfc047eb0a7b2249c6c3228",
+                "maxAttempts": 2,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:21ed2f1bc2c06f190200fb5ef63249ba6dd95e4d5118e9328f8b9a158e0098eb"
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/__tests__/orderTotalReview.ts"
+            ]
+          },
+          "identityMatched": false,
+          "durationMs": 9
+        },
+        {
+          "repetition": 2,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 5325759447,
+            "minimumSampledAvailableBudgetBytes": 5325759447,
+            "maximumSampledRssBytes": 68550656,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 360000,
+            "availableBudgetBytesAfter": 5325759447
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "error",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "058be696a147d4890781987f7da26679e9ca0b44d7b403d0142ee714c14392cd",
+              "durationMs": 2
+            }
+          ],
+          "result": {
+            "id": "order-total-review",
+            "title": "order-total-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "error",
+                "selected": false,
+                "durationMs": 2,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:cbd5165024cb5f5bd353d2ad7459173e613b35437cfc047eb0a7b2249c6c3228",
+                "maxAttempts": 2,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:21ed2f1bc2c06f190200fb5ef63249ba6dd95e4d5118e9328f8b9a158e0098eb"
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/__tests__/orderTotalReview.ts"
+            ]
+          },
+          "identityMatched": false,
+          "durationMs": 8
+        },
+        {
+          "repetition": 2,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 5325759447,
+            "minimumSampledAvailableBudgetBytes": 5325759447,
+            "maximumSampledRssBytes": 69255168,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 360000,
+            "availableBudgetBytesAfter": 5325759447
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "error",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "6c99c368e1582f3cabb3132ee75278a58f1e38be353df9b6a03024b37de4f9f4",
+              "durationMs": 3
+            }
+          ],
+          "result": {
+            "id": "order-total-review",
+            "title": "order-total-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "error",
+                "selected": false,
+                "durationMs": 3,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:cbd5165024cb5f5bd353d2ad7459173e613b35437cfc047eb0a7b2249c6c3228",
+                "maxAttempts": 2,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:9e77de0a5c12d56f04be7e690bad405dc8754c00c833a398f62ed70bfdedc0ec"
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/__tests__/orderTotalReview.ts"
+            ]
+          },
+          "identityMatched": false,
+          "durationMs": 10
+        },
+        {
+          "repetition": 3,
+          "condition": "task-only",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 5325759447,
+            "minimumSampledAvailableBudgetBytes": 5325759447,
+            "maximumSampledRssBytes": 70074368,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 360000,
+            "availableBudgetBytesAfter": 5325759447
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "error",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "6c99c368e1582f3cabb3132ee75278a58f1e38be353df9b6a03024b37de4f9f4",
+              "durationMs": 2
+            }
+          ],
+          "result": {
+            "id": "order-total-review",
+            "title": "order-total-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "error",
+                "selected": false,
+                "durationMs": 2,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:cbd5165024cb5f5bd353d2ad7459173e613b35437cfc047eb0a7b2249c6c3228",
+                "maxAttempts": 2,
+                "providerCallLimit": 1,
+                "promptMode": "task-only",
+                "requestDigest": "sha256:9e77de0a5c12d56f04be7e690bad405dc8754c00c833a398f62ed70bfdedc0ec"
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/__tests__/orderTotalReview.ts"
+            ]
+          },
+          "identityMatched": false,
+          "durationMs": 10
+        },
+        {
+          "repetition": 3,
+          "condition": "vectalon",
+          "status": "failed",
+          "phase": "complete",
+          "verifications": [],
+          "resources": {
+            "memoryMetric": "macos-pressure-estimate",
+            "availableBudgetBytesBefore": 5325759447,
+            "minimumSampledAvailableBudgetBytes": 5325759447,
+            "maximumSampledRssBytes": 70975488,
+            "reserveBytes": 2147483648,
+            "sampleIntervalMs": 1000,
+            "timeoutMs": 360000,
+            "availableBudgetBytesAfter": 5325759447
+          },
+          "nativeCalls": [
+            {
+              "index": 1,
+              "status": "error",
+              "temperature": 0.2,
+              "maxTokens": 2048,
+              "requestSha256": "058be696a147d4890781987f7da26679e9ca0b44d7b403d0142ee714c14392cd",
+              "durationMs": 2
+            }
+          ],
+          "result": {
+            "id": "order-total-review",
+            "title": "order-total-review",
+            "suite": "review",
+            "scaffoldable": false,
+            "generatedFiles": [],
+            "attempts": [
+              {
+                "index": 1,
+                "kind": "initial",
+                "status": "error",
+                "selected": false,
+                "durationMs": 3,
+                "temperature": 0.2,
+                "maxTokens": 2048,
+                "fileCount": 0,
+                "adherence": 0,
+                "guardrails": 0,
+                "artifactIdentity": "unverified",
+                "taskDigest": "sha256:cbd5165024cb5f5bd353d2ad7459173e613b35437cfc047eb0a7b2249c6c3228",
+                "maxAttempts": 2,
+                "providerCallLimit": 1,
+                "promptMode": "vectalon",
+                "requestDigest": "sha256:21ed2f1bc2c06f190200fb5ef63249ba6dd95e4d5118e9328f8b9a158e0098eb"
+              }
+            ],
+            "guardrail": [],
+            "axes": {
+              "correctness": null,
+              "adherence": 0,
+              "guardrails": 0
+            },
+            "composite": 0,
+            "correctnessDetails": [
+              "Model generation produced no non-empty files.",
+              "Missing required output files: src/__tests__/orderTotalReview.ts"
+            ]
+          },
+          "identityMatched": false,
+          "durationMs": 9
+        }
+      ],
+      "negativeControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1091
+        },
+        "tests": {
+          "ok": false,
+          "durationMs": 8466
+        },
+        "originalTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7157
+        },
+        "proposedTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1309,
+          "assertionFailures": 0
+        }
+      },
+      "positiveControl": {
+        "typecheck": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1069
+        },
+        "tests": {
+          "ok": true,
+          "durationMs": 8864
+        },
+        "originalTests": {
+          "ok": true,
+          "exitCode": 0,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 7500
+        },
+        "proposedTests": {
+          "ok": false,
+          "exitCode": 1,
+          "timedOut": false,
+          "isolation": "sandbox-exec",
+          "durationMs": 1364,
+          "assertionFailures": 1
+        }
+      }
+    }
+  ],
+  "capacityReplay": {
+    "kind": "offline-capacity-gate-replay",
+    "newModelCalls": 0,
+    "nativeLoadReached": false,
+    "availableBytes": 5497558138,
+    "result": "insufficient-memory"
+  },
+  "separateDiagnostic": {
+    "task": "One-token unrelated connectivity diagnostic",
+    "attemptedCalls": 1,
+    "successfulCalls": 1,
+    "artifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+    "contentRetained": false,
+    "notTaskEvidence": true
+  },
+  "interpretation": [
+    "Original reports remain unchanged: row status failed, native call/attempt status error; no candidate app checks or verified model identities.",
+    "Recorded free-budget estimates (5.0–5.1 GiB) are below model bytes 3993201376 plus the unchanged 2 GiB reserve. Offline replay reproduces the refusal before native loading; original error text was not retained, so attribution is inferred, not exact per-call attestation.",
+    "New runner labels capacity refusals as infrastructure errors and stops remaining rows instead of repeating startup errors. No model, prompt, acceptance, scoring, reserve, token or time budget changed.",
+    "One unrelated one-token diagnostic succeeded later under sufficient capacity. It does not establish model or workflow qualification."
+  ]
+}

@@ -352,7 +352,11 @@ async function main() {
           const result = await load('model/local/inference.js').runInference(model, { ...nativeOptions, signal: guard.signal });
           Object.assign(call, { status: 'response', artifact: result.artifact, localContext: result.localContext, stopReason: result.stopReason });
           return result;
-        } catch (error) { call.status = guard.signal.aborted ? 'aborted' : 'error'; throw error; }
+        } catch (error) {
+          call.status = guard.signal.aborted ? 'aborted' : 'error';
+          call.failureCategory = error instanceof Error && error.message.includes('Insufficient free RAM budget') ? 'insufficient-memory' : 'native-error';
+          throw error;
+        }
         finally { call.durationMs = Date.now() - callStarted; save(); }
       }, report.model, false) : undefined;
       // Both diagnostic conditions bypass enrichment; keep their supplied prompt/context unchanged.
@@ -401,14 +405,17 @@ async function main() {
       row.result = await runScenario(scenario, { generate, includeGenerated: true });
       guard?.signal.throwIfAborted();
       if (Date.now() >= deadline) { row.status = 'timeout'; save(); process.exitCode = 1; break; }
-      row.identityMatched = Boolean(row.result.attempts?.length) && row.result.attempts.every(attempt =>
-        attempt.provider === 'local' && attempt.artifact?.sha256 === report.expectedArtifactSha256);
+      const attempts = row.result.attempts || [];
+      row.identityMatched = attempts.some(attempt => (attempt.artifact?.sha256 && attempt.artifact.sha256 !== report.expectedArtifactSha256)
+        || (attempt.provider && attempt.provider !== 'local')) ? false
+        : attempts.length && attempts.every(attempt => attempt.provider === 'local' && attempt.artifact?.sha256 === report.expectedArtifactSha256) ? true : undefined;
       const files = row.result.generatedArtifacts || [];
       row.phase = 'verification';
       const verifierError = editRepair && row.result.attempts?.some(attempt => attempt.verification?.status === 'error');
       if (files.length === 1 && files[0].path === target && row.identityMatched && !verifierError) row.checks = verified.get(hash(JSON.stringify(files))) || await verify(files, deadline);
       if ((editMode || args.diagnostic) && !row.checks) row.checks = { typecheck: { ok: false, skipped: true }, tests: { ok: false, skipped: true } };
-      row.status = Date.now() >= deadline ? 'timeout' : row.checks?.typecheck.ok && row.checks?.tests.ok ? 'passed' : 'failed';
+      row.status = Date.now() >= deadline ? 'timeout' : row.checks?.typecheck.ok && row.checks?.tests.ok ? 'passed'
+        : !files.length && row.result.attempts?.some(attempt => attempt.status === 'error') ? 'error' : 'failed';
       row.phase = 'complete';
     } catch { row.status = Date.now() >= deadline ? 'timeout' : 'error'; }
     finally {
@@ -417,7 +424,7 @@ async function main() {
       row.durationMs = Date.now() - started; save();
     }
     console.log(`End ${row.repetition} ${row.condition}: ${row.status}`);
-    if (guard?.signal.aborted) { process.exitCode = 1; break; }
+    if (guard?.signal.aborted || row.nativeCalls?.some(call => call.failureCategory === 'insufficient-memory')) { process.exitCode = 1; break; }
   }
 }
 main().then(() => process.exit(process.exitCode || 0)).catch(() => { report.error = 'Pilot failed; retained partial evidence'; save(); process.exit(1); });

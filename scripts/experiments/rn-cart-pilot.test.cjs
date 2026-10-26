@@ -189,6 +189,37 @@ Module._load = function(request, ...args) {
   }
 });
 
+test('native memory refusal is an infrastructure error and stops remaining paired rows without echoing diagnostics', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-native-refusal-test-'));
+  let output;
+  try {
+    const preload = path.join(root, 'stubs.cjs');
+    fs.writeFileSync(preload, `const Module = require('node:module'), load = Module._load; let checks = 0;
+Module._load = function(request, ...args) {
+  if (request.endsWith('/dist/model/local/memory.js')) return { nativeMemoryBudget: () => ({ availableBytes: 8 * 1024 ** 3, source: 'os-free' }) };
+  if (request.endsWith('/dist/sandbox/run.js')) return { runSandboxed: async () => { const ok = ++checks !== 2; return { ok, exitCode: ok ? 0 : 1, durationMs: 1, stdout: '', stderr: '' }; } };
+  if (request.endsWith('/dist/model/local/inference.js')) return { runInference: async () => { throw new Error('Inference failed: Insufficient free RAM budget for local model and reserve; PRIVATE_DATA'); } };
+  return load.call(this, request, ...args);
+};`);
+    const result = spawnSync(process.execPath, ['--require', preload, path.join(__dirname, 'rn-cart-pilot.cjs'),
+      '--task', 'cart-membership', '--evaluation-lane', 'paired-repair-7b', '--resource-pair'], { encoding: 'utf8', timeout: 15000 });
+    assert.equal(result.status, 1);
+    output = result.stdout.match(/^Evidence: (.+)$/m)?.[1];
+    const serialized = fs.readFileSync(path.join(output, 'report.json'), 'utf8');
+    const report = JSON.parse(serialized);
+    assert.equal(report.runs[0].status, 'error');
+    assert.equal(report.runs[0].identityMatched, undefined);
+    assert.equal(report.runs[0].nativeCalls[0].failureCategory, 'insufficient-memory');
+    assert.equal(report.runs[0].nativeCalls.length, 1);
+    assert.ok(report.runs.slice(1).every(row => row.status === 'not-run'));
+    assert.ok(!serialized.includes('PRIVATE_DATA'));
+    assert.ok(!(result.stdout + result.stderr).includes('PRIVATE_DATA'));
+  } finally {
+    if (output) fs.rmSync(output, { recursive: true, force: true });
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('recorded resume invokes only one native repair and labels historical initial separately', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-recorded-resume-test-'));
   let output;
