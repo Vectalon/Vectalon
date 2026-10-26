@@ -559,6 +559,21 @@ test('shows workflow gate failures separately from missing qualification evidenc
   assert.ok(text.includes('No automatic qualification'));
 });
 
+test('capacity refusal leaves qualification unverified while a task failure remains failed', () => {
+  const text = formatPilotReport({ runs: [
+    { condition: 'capacity', status: 'error', identityMatched: undefined,
+      nativeCalls: [{ status: 'error', failureCategory: 'insufficient-memory' }],
+      result: { axes: { guardrails: 0, adherence: 0 }, attempts: [{ kind: 'initial', status: 'error' }] } },
+    { condition: 'task', status: 'failed', identityMatched: true,
+      nativeCalls: [{ status: 'response' }],
+      checks: { typecheck: { ok: false }, tests: { ok: false } } },
+  ] });
+  assert.ok(text.includes('| capacity | unverified | 0 | 0 | 0/0 |'));
+  assert.ok(text.includes('| task | failed | 1 | 0 | 0/0 |'));
+  assert.ok(text.includes('| capacity | unrecorded | error | unrecorded | unrecorded | unrecorded | initial: error / unrecorded | unrecorded | unrecorded | unscored | unscored |'));
+  assert.ok(text.includes('Capacity refusals are infrastructure errors'));
+});
+
 test('never counts a successful recorded recheck as a new first-attempt pass', () => {
   const report = { recordedInitial: { candidateSha256: 'recorded' }, verificationMode: 'assisted only', runs: [
     { condition: 'repair', identityMatched: true, status: 'passed',
