@@ -13,7 +13,7 @@
 
 import { mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
-import { ECOSYSTEM_MATRIX } from '../projectDiagnostics/deps'
+import { KNOWN_EXPO_REACT_SERIES, KNOWN_EXPO_RN_PAIRS } from '../projectDiagnostics/deps'
 import { detectWorkspace } from '../harness'
 import { runNpmAudit } from '../security/audit'
 import type { DepFinding, DepOptions, DepReport, DepSummary, DepVerdict } from './types'
@@ -80,22 +80,6 @@ function pairingFindings(root: string): { findings: DepFinding[]; depCount: numb
     return { findings, depCount, rnVersion: null }
   }
 
-  // Reuse the curated matrix only where its version semantics are sound for
-  // RN's 0.x.y scheme: the react-pairing rule keys off the 0.7x prefixes. The
-  // hermes/new-arch rules parse the semver major (0 for every RN release) and
-  // would fire on every modern project — that signal lives in diagnostics.
-  const reactPairingRule = ECOSYSTEM_MATRIX.find(r => r.id === 'react-native-react')
-  if (reactPairingRule) {
-    const violation = reactPairingRule.check(rnVersion)
-    if (violation !== null) {
-      findings.push({
-        id: reactPairingRule.id, category: 'pairing', severity: 'warning', package: 'react-native', current: rnVersion,
-        message: violation,
-        suggestion: reactPairingRule.fix,
-      })
-    }
-  }
-
   // RN's meaningful major is the minor segment: 0.80.0 → 80.
   const rnMajor = rnEffectiveMajor(rnVersion)
   const reactVersion = deps['react'] ? versionOf(deps['react']) : null
@@ -114,12 +98,20 @@ function pairingFindings(root: string): { findings: DepFinding[]; depCount: numb
   if (expoVersion) {
     const expoMajor = parseMajor(expoVersion)
     if (expoMajor !== null && rnMajor !== null) {
-      const expectedRn = expoMajor >= 54 ? 81 : expoMajor >= 53 ? 79 : expoMajor >= 52 ? 76 : null
-      if (expectedRn !== null && rnMajor !== expectedRn) {
+      const expectedRn = KNOWN_EXPO_RN_PAIRS[expoMajor]
+      if (expectedRn !== undefined && rnMajor !== expectedRn) {
         findings.push({
           id: 'expo-rn-alignment', category: 'pairing', severity: 'warning', package: 'expo', current: expoVersion,
           message: `Expo SDK ${expoMajor} expects react-native ~0.${expectedRn}, found 0.${rnMajor}.`,
           suggestion: 'Run `npx expo install react-native react` to align to the SDK-pinned versions — mixing SDK majors with an unaligned RN breaks native builds.',
+        })
+      }
+      const reactSeries = KNOWN_EXPO_REACT_SERIES[expoMajor]
+      if (reactSeries && reactVersion && reactVersion.split('.').slice(0, 2).join('.') !== reactSeries) {
+        findings.push({
+          id: 'expo-react-alignment', category: 'pairing', severity: 'warning', package: 'react', current: reactVersion,
+          message: `Expo SDK ${expoMajor} expects react ${reactSeries}.x, found ${reactVersion}.`,
+          suggestion: 'Run `npx expo install react` to align to the SDK-pinned version.',
         })
       }
     }

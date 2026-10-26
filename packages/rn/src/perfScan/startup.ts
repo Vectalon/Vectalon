@@ -61,11 +61,19 @@ export function scanStartupHazards(content: string, file: string): PerfScanFindi
   if (!ast) return findings
 
   const entry = isEntryFile(file)
+  const expoRootRegistrars = new Set<string>()
 
   // Import declarations: flag known-heavy packages.
   walk(ast, (node) => {
     if (node.type !== 'ImportDeclaration') return
     const source = (node.source?.value ?? '') as string
+    if (source === 'expo') {
+      for (const specifier of node.specifiers ?? []) {
+        if (specifier.type === 'ImportSpecifier' && specifier.imported?.name === 'registerRootComponent') {
+          expoRootRegistrars.add(specifier.local?.name ?? 'registerRootComponent')
+        }
+      }
+    }
     for (const pkg of HEAVY_PACKAGES) {
       if (source === pkg.name || source.startsWith(`${pkg.name}/`)) {
         findings.push({
@@ -97,6 +105,8 @@ export function scanStartupHazards(content: string, file: string): PerfScanFindi
       const expr = (node as { expression?: unknown }).expression as
         | { type: string; name?: string; callee?: unknown; object?: unknown }
         | null
+      const callee = expr?.callee as { type?: string; name?: string } | undefined
+      if (expr?.type === 'CallExpression' && callee?.type === 'Identifier' && expoRootRegistrars.has(callee.name ?? '')) return
       const desc = expr ? describeTopLevelSideEffect(expr) : null
       if (desc) {
         findings.push({

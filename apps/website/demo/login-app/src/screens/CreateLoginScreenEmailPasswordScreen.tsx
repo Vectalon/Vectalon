@@ -1,5 +1,6 @@
 import React from 'react';
-import { Text, Pressable, ActivityIndicator, StyleSheet, SafeAreaView } from 'react-native';
+import { Text, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCreateLoginScreenEmailPassword } from '../hooks/useCreateLoginScreenEmailPassword';
 
 export function CreateLoginScreenEmailPasswordScreen(): React.JSX.Element {

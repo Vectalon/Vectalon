@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { runDepsScan, writeDepsReport, renderDepsMarkdown, verdictOf, depsDocsDir } from '../../src/deps'
+import { dependencyConflictChecks } from '../../src/projectDiagnostics/deps'
 import { createTempProject, cleanup } from '../helpers/tmp'
 import type { DepFinding } from '../../src/deps/types'
 
@@ -41,6 +42,24 @@ describe('deps: runDepsScan', () => {
     expect(alignment!.severity).toBe('warning')
     expect(alignment!.suggestion).toContain('npx expo install')
     expect(report.verdict).toBe('needs-attention')
+  })
+
+  it('accepts the official Expo 58, RN 0.88, React 19.3 pairing', async () => {
+    dir = createTempProject({
+      'package.json': JSON.stringify({ name: 'app', version: '1.0.0', dependencies: { expo: '58.0.17', 'react-native': '0.88.0', react: '19.3.0' } }),
+    })
+    const report = await runDepsScan(dir, { skipAudit: true })
+    expect(report.findings.filter(f => f.category === 'pairing')).toEqual([])
+    expect(dependencyConflictChecks(dir).filter(c => c.status === 'warn' || c.status === 'fail')).toEqual([])
+  })
+
+  it('warns when Expo 58 keeps the right RN but the wrong React', async () => {
+    dir = createTempProject({
+      'package.json': JSON.stringify({ name: 'app', version: '1.0.0', dependencies: { expo: '58.0.17', 'react-native': '0.88.0', react: '18.3.1' } }),
+    })
+    const report = await runDepsScan(dir, { skipAudit: true })
+    expect(report.findings.some(f => f.id === 'expo-react-alignment')).toBe(true)
+    expect(dependencyConflictChecks(dir).some(c => c.id === 'deps-expo-react')).toBe(true)
   })
 
   it('detects duplicate versions across workspace members', async () => {

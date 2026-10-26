@@ -23,44 +23,29 @@ function parseMajor(version: string): number | null {
   return m ? Number(m[1]) : null
 }
 
+function rnMinor(version: string): number | null {
+  const m = version.match(/^0\.(\d+)/)
+  return m ? Number(m[1]) : null
+}
+
+/** Explicit SDK pairings only; unknown releases stay unverified, never guessed. See https://docs.expo.dev/versions/v58.0.0/. */
+export const KNOWN_EXPO_RN_PAIRS: Record<number, number> = { 52: 76, 53: 79, 54: 81, 55: 83, 56: 85, 57: 86, 58: 88 }
+export const KNOWN_EXPO_REACT_SERIES: Record<number, string> = { 56: '19.2', 57: '19.2', 58: '19.3' }
+
 export const ECOSYSTEM_MATRIX: MatrixRule[] = [
   {
     id: 'react-native-hermes',
     name: 'Hermes engine',
-    check: v => (parseMajor(v) !== null && parseMajor(v)! >= 70 ? null : 'Hermes is default since RN 0.70 — an older RN still supports it but needs explicit config.'),
+    check: v => (rnMinor(v) !== null && rnMinor(v)! >= 70 ? null : 'Hermes is default since RN 0.70 — an older RN still supports it but needs explicit config.'),
     fix: 'Enable Hermes (newArchEnabled / hermesEnabled) or upgrade RN — see the upgrade copilot (`vectalon upgrade --to <version>`).',
-  },
-  {
-    id: 'react-native-react',
-    name: 'react-native ↔ react pairing',
-    check: v => {
-      const major = parseMajor(v)
-      if (major === null) return null
-      // RN 0.7x ships with react 18.x; RN 0.76+ allows react 18.3; RN 0.80 targets react 19.
-      const react = ['0.76', '0.77', '0.78', '0.79', '0.80', '0.81'].some(p => v.startsWith(p))
-      return react ? null : 'react 18.x is the tested pairing for RN 0.7x releases — verify your react version against the RN release notes.'
-    },
-    fix: 'Align react to the version the RN release template pins (check `react` in your package.json vs the RN changelog template).',
-  },
-  {
-    id: 'expo-sdk-react-native',
-    name: 'Expo SDK ↔ react-native pairing',
-    check: v => {
-      // Expo SDK 52 → RN 0.76, SDK 53 → RN 0.79, SDK 54 → RN 0.81 (approx. recent).
-      if (v.startsWith('0.76')) return null
-      if (v.startsWith('0.79')) return null
-      if (v.startsWith('0.81')) return null
-      return 'This react-native version may not match the Expo SDK you are on — Expo pins a specific RN version per SDK release.'
-    },
-    fix: 'Use the exact react-native version your Expo SDK pins (Expo docs → SDK changelog) or run `npx expo install react-native` to auto-align.',
   },
   {
     id: 'react-native-new-arch',
     name: 'New Architecture readiness',
     check: v => {
-      const major = parseMajor(v)
-      if (major !== null && major >= 76) return null
-      return major !== null && major >= 70 ? 'New Architecture is opt-in before RN 0.76 — some packages may not be ready.' : 'New Architecture requires RN 0.76+ (stable) — older versions are legacy bridge.'
+      const minor = rnMinor(v)
+      if (minor !== null && minor >= 76) return null
+      return minor !== null && minor >= 70 ? 'New Architecture is opt-in before RN 0.76 — some packages may not be ready.' : 'New Architecture requires RN 0.76+ (stable) — older versions are legacy bridge.'
     },
     fix: 'Upgrade to RN 0.76+ to use the New Architecture (Fabric + TurboModules) with the current ecosystem.',
   },
@@ -100,14 +85,13 @@ export function dependencyConflictChecks(root: string): DiagnosticCheck[] {
 
   // The matrix: run every rule against the detected versions.
   for (const rule of ECOSYSTEM_MATRIX) {
-    const target = rule.id === 'expo-sdk-react-native' ? rnVersion : rnVersion
-    const violation = rule.check(target)
+    const violation = rule.check(rnVersion)
     if (violation === null) continue
     checks.push({ id: rule.id, title: rule.name, category: 'deps', status: 'warn', detail: violation, fix: rule.fix })
   }
 
   if (reactVersion) {
-    const rnMajor = parseMajor(rnVersion)
+    const rnMajor = rnMinor(rnVersion)
     const reactMajor = parseMajor(reactVersion)
     if (rnMajor !== null && reactMajor !== null && rnMajor >= 76 && reactMajor < 18) {
       checks.push({ id: 'deps-react-floor', title: 'react minimum', category: 'deps', status: 'fail', detail: `RN ${rnVersion} requires react 18+, found react ${reactVersion}.`, fix: 'Upgrade react to 18.3.x (or 19 for RN 0.80+).' })
@@ -116,11 +100,15 @@ export function dependencyConflictChecks(root: string): DiagnosticCheck[] {
 
   if (expoVersion) {
     const expoMajor = parseMajor(expoVersion)
-    const rnMajor = parseMajor(rnVersion)
+    const rnMajor = rnMinor(rnVersion)
     if (expoMajor !== null && rnMajor !== null) {
-      const expectedRn = expoMajor >= 54 ? 81 : expoMajor >= 53 ? 79 : expoMajor >= 52 ? 76 : null
-      if (expectedRn !== null && rnMajor !== expectedRn) {
+      const expectedRn = KNOWN_EXPO_RN_PAIRS[expoMajor]
+      if (expectedRn !== undefined && rnMajor !== expectedRn) {
         checks.push({ id: 'deps-expo-rn', title: 'Expo SDK ↔ RN alignment', category: 'deps', status: 'warn', detail: `Expo SDK ${expoMajor} expects react-native ~0.${expectedRn}, found 0.${rnMajor}.`, fix: 'Run `npx expo install react-native` to align to the SDK-pinned version.' })
+      }
+      const reactSeries = KNOWN_EXPO_REACT_SERIES[expoMajor]
+      if (reactSeries && reactVersion && reactVersion.split('.').slice(0, 2).join('.') !== reactSeries) {
+        checks.push({ id: 'deps-expo-react', title: 'Expo SDK ↔ React alignment', category: 'deps', status: 'warn', detail: `Expo SDK ${expoMajor} expects react ${reactSeries}.x, found ${reactVersion}.`, fix: 'Run `npx expo install react` to align to the SDK-pinned version.' })
       }
     }
   }

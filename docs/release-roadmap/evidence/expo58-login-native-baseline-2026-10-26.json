@@ -1,0 +1,33 @@
+{
+  "kind": "installed-app-native-baseline",
+  "date": "2026-10-26",
+  "app": "apps/website/demo/login-app",
+  "baseCommit": "590f3d59bd2da977ea718e0ae19c7cf9dfa3a3da",
+  "baseAppTree": "d7eb45ce5cdfd0a19f088e2fe83eae41f7c2fedd",
+  "packageLockSha256": "1eb15e3cf08358bb15a388c156132d09a1b19cff534bbcf70b5ddefe80fc5b2e",
+  "sourceAdjustment": "SafeAreaView import moved to react-native-safe-area-context in an unmounted demo screen; the native bundle hash did not change.",
+  "environment": {
+    "xcode": "27.0 (27A266a)",
+    "simulator": "iPhone Air, iOS 26.5",
+    "packageInstall": "npm ci --offline --ignore-scripts in a private tracked-source copy",
+    "nativeProject": "Expo prebuild for iOS in the private copy; CocoaPods installed there"
+  },
+  "checks": {
+    "appTypecheck": "pass",
+    "appTests": "14 suites, 34 passed, 0 failed",
+    "iosDebugSimulatorBuild": "pass",
+    "iosReleaseSimulatorBuild": "pass",
+    "releaseBundleSha256": "f19e669d94afde02c3245cfd7e8f02f77aa7e63831cd608c43f2d88414276d56",
+    "simulatorInstallLaunch": "pass",
+    "observedInteraction": "Welcome rendered; Continue opened Sign in; empty Sign in showed Invalid email address"
+  },
+  "modelCalls": 0,
+  "generatedCandidateTested": false,
+  "limits": [
+    "This is the tracked demo app baseline, not a generated task candidate or evidence of model improvement.",
+    "Only iOS simulator was built and operated; Android, physical devices, and customer apps were not checked.",
+    "The test app was reinstalled on a simulator without an existing copy; no account credentials were used.",
+    "The source CLI was installed into the scratch app after native builds, so those builds do not qualify that CLI installation or its changed dependency tree.",
+    "Build toolchain warnings were not treated as app failures; generated native files and build products remain temporary, not release artifacts."
+  ]
+}

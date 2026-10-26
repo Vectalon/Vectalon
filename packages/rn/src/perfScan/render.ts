@@ -33,7 +33,7 @@ export interface RenderScanResult {
  */
 export function scanRenderHazards(content: string, file: string): PerfScanFinding[] {
   const findings: PerfScanFinding[] = []
-  if (!/\.[tj]sx?$/.test(file) || !/<\w/.test(content)) return findings
+  if (!/\.[tj]sx?$/.test(file)) return findings
 
   const ast = parseSource(content, file)
   if (!ast) return findings
@@ -44,8 +44,10 @@ export function scanRenderHazards(content: string, file: string): PerfScanFindin
     number,
     { element: string; inlineHandlers: number; inlineLiterals: number }
   >()
+  const parents = new WeakMap<object, { type: string; id?: { name?: string } } | null>()
 
   walk(ast, (node, parent) => {
+    parents.set(node, parent)
     if (node.type === 'JSXOpeningElement') {
       const element = nameOf(node.name)
       const line = nodeLine(node)
@@ -105,8 +107,18 @@ export function scanRenderHazards(content: string, file: string): PerfScanFindin
     if (node.type === 'CallExpression') {
       const callee = node.callee as { type?: string; name?: string }
       if (callee && callee.type === 'Identifier' && /^set[A-Z]/.test(callee.name ?? '')) {
-        // Only flag when the call sits at statement level of a function body.
+        // Only flag statement-level calls in a component/hook itself, not its
+        // deferred event, effect, or callback functions.
         if (parent && parent.type === 'ExpressionStatement') {
+          let scope = parents.get(parent) ?? null
+          while (scope && !['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression'].includes(scope.type)) {
+            scope = parents.get(scope) ?? null
+          }
+          const container = scope ? parents.get(scope) : null
+          const name = scope?.id?.name ?? (container?.type === 'VariableDeclarator' ? container.id?.name : undefined)
+          // shortcut: anonymous wrapper components and synchronous nested
+          // callbacks are not classified; add call-site analysis for measured misses.
+          if (!name || !/^(?:[A-Z]|use[A-Z])/.test(name)) return
           const fn = callee.name as string
           const line = nodeLine(node)
           findings.push({

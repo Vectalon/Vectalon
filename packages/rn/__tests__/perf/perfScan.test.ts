@@ -62,6 +62,41 @@ function Counter() {
     expect(f?.roadmap).toBe('021')
   })
 
+  test('does not treat deferred callbacks as render-phase state updates', () => {
+    const content = `
+function useCatalog() {
+  const [state, setState] = useState({ loading: false })
+  const refresh = useCallback(() => { setState({ loading: true }) }, [])
+  useEffect(() => { setState({ loading: false }) }, [])
+  return <Button onPress={() => setState({ loading: true })} />
+}`
+    expect(ids(scanRenderHazards(content, 'src/useCatalog.tsx'))).not.toContain('set-state-during-render')
+  })
+
+  test('still flags direct updates in a hook or arrow component branch', () => {
+    const content = `
+function useCounter() {
+  const [count, setCount] = useState(0)
+  if (count < 0) setCount(0)
+  return count
+}
+const Counter = () => {
+  const [count, setCount] = useState(0)
+  setCount(count + 1)
+  return <Text>{count}</Text>
+}`
+    expect(scanRenderHazards(content, 'src/Counter.tsx').filter(f => f.id === 'set-state-during-render')).toHaveLength(2)
+  })
+
+  test('checks render-phase updates in plain TypeScript hooks without JSX', () => {
+    const content = `function useCounter() {
+  const [count, setCount] = useState(0)
+  setCount(count + 1)
+  return count
+}`
+    expect(ids(scanRenderHazards(content, 'src/useCounter.ts'))).toContain('set-state-during-render')
+  })
+
   test('flags unmemoized context provider values', () => {
     const content = `
 export const App = () => (
@@ -101,6 +136,11 @@ console.log('boot')`
 init()`
     const nonEntryFindings = scanStartupHazards(nonEntry, 'src/lib/boot.ts')
     expect(ids(nonEntryFindings)).not.toContain('top-level-side-effect')
+  })
+
+  test('does not tell Expo apps to defer required root registration', () => {
+    const entry = `import { registerRootComponent } from 'expo'\nimport App from './App'\nregisterRootComponent(App)`
+    expect(ids(scanStartupHazards(entry, 'index.js'))).not.toContain('top-level-side-effect')
   })
 })
 
