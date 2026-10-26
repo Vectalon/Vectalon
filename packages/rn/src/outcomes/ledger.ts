@@ -12,7 +12,7 @@ import { join } from 'path'
 export interface OutcomeCounts {
   /** Error/warning findings in the latest build-fix report. */
   buildFailuresDiagnosed: number
-  /** Fixes written to the real tree with passing checks; not proof a native build recovered. */
+  /** Fixes written to the real tree with passing available checks; not proof a native build recovered. */
   buildFailuresFixed: number
   /** Issues caught in PR review (review reports). */
   prIssuesCaught: number
@@ -111,7 +111,7 @@ function agentDirs(root: string): string[] {
 /**
  * Collect the outcome ledger from local reports:
  *
- *   build-fix → diagnosed findings; fix → applied real-tree edits with passing checks;
+ *   build-fix → diagnosed findings; fix → applied real-tree edits with passing available checks;
  *   review/scans → findings; upgrades → provenance dirs; feature runs → test files.
  */
 export function collectOutcomes(root: string): OutcomeCounts {
@@ -133,7 +133,8 @@ export function collectOutcomes(root: string): OutcomeCounts {
         const checks = report.verification
         if (report.appliedToTree === true && report.findings?.some(finding => finding.applied === 'applied')
           && Array.isArray(checks) && checks.length > 0
-          && checks.every(check => check?.status === 'pass')) {
+          && checks.some(check => check?.status === 'pass')
+          && checks.every(check => check?.status === 'pass' || check?.status === 'skipped')) {
           counts.buildFailuresFixed += 1
         }
         break

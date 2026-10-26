@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 const SIGNALS = [
   { source: 'build-fix', result: 'Build-log findings', limit: 'A diagnosis and fix plan do not prove the build recovered.' },
-  { source: 'fix', result: 'Real-tree fixes with passing checks', limit: 'Sandbox previews and skipped checks do not count; a native rebuild may still be needed.' },
+  { source: 'fix', result: 'Real-tree fixes with passing available checks', limit: 'Sandbox previews and reports with only skipped checks do not count; a native rebuild may still be needed.' },
   { source: 'review / sec / arch / a11y', result: 'Review and scan findings', limit: 'Findings require developer review; a clean scan is not a prevented regression.' },
   { source: '.vectalon/upgrades/', result: 'Upgrade provenance records', limit: 'A recorded run is not proof of a successful native build or release.' },
   { source: 'feature-development', result: 'Generated test files', limit: 'Files are counted, not assumed to pass or to cover the feature.' },

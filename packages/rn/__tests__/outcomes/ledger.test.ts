@@ -68,6 +68,8 @@ describe('collectOutcomes', () => {
     expect(collectOutcomes(root).buildFailuresFixed).toBe(0)
     writeReport(root, 'fix', { appliedToTree: true, findings: [{ applied: 'manual' }], verification: [{ status: 'pass' }] })
     expect(collectOutcomes(root).buildFailuresFixed).toBe(0)
+    writeReport(root, 'fix', { appliedToTree: true, findings: [{ applied: 'applied' }], verification: [{ status: 'skipped' }] })
+    expect(collectOutcomes(root).buildFailuresFixed).toBe(0)
   })
 
   it('counts PR review issues caught from review reports', () => {
@@ -180,7 +182,7 @@ describe('renderOutcomeLines', () => {
     expect(joined).toContain('127 scan findings')
     expect(joined).toContain('23 PR review findings')
     expect(joined).toContain('14 build-log findings')
-    expect(joined).toContain('10 real-tree fixes with passing checks')
+    expect(joined).toContain('10 real-tree fixes with passing available checks')
     expect(joined).toContain('1 RN upgrade provenance records')
     expect(joined).toContain('40 test files generated')
     expect(joined).toContain('6 performance findings')

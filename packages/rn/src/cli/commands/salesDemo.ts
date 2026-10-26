@@ -285,7 +285,7 @@ export async function salesDemoCommand(directory: string, options: SalesDemoOpti
       const rows: Array<[string, number]> = [
         ['scan findings', counts.issuesDetected],
         ['PR review findings', counts.prIssuesCaught],
-        ['real-tree fixes with passing checks', counts.buildFailuresFixed],
+        ['real-tree fixes with passing available checks', counts.buildFailuresFixed],
         ['RN upgrade provenance records', counts.rnUpgradesCompleted],
         ['test files generated', counts.testsGenerated],
       ]

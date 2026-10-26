@@ -31,7 +31,7 @@ export function renderOutcomeLines(counts: OutcomeCounts, hours: number, savings
   lines.push(`  ${pc.bold(counts.issuesDetected)} scan findings`)
   lines.push(`  ${pc.bold(counts.prIssuesCaught)} PR review findings`)
   lines.push(`  ${pc.bold(counts.buildFailuresDiagnosed)} build-log findings`)
-  lines.push(`  ${pc.bold(counts.buildFailuresFixed)} real-tree fixes with passing checks (build recovery unverified)`)
+  lines.push(`  ${pc.bold(counts.buildFailuresFixed)} real-tree fixes with passing available checks (build recovery unverified)`)
   lines.push(`  ${pc.bold(counts.rnUpgradesCompleted)} RN upgrade provenance records`)
   lines.push(`  ${pc.bold(counts.testsGenerated)} test files generated`)
   lines.push(`  ${pc.bold(counts.perfRegressionsDetected)} performance findings`)

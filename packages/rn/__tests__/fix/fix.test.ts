@@ -17,6 +17,7 @@ import { planEdits } from '../../src/fix/planner'
 import { makeSandbox, applyEdits, diffEdits } from '../../src/fix/apply'
 import { unifiedDiff } from '../../src/fix/diff'
 import { computeConfidence } from '../../src/fix/confidence'
+import { collectOutcomes } from '../../src/outcomes/ledger'
 import type { FixFinding } from '../../src/fix'
 
 function writeFixture(root: string): void {
@@ -254,6 +255,20 @@ describe('vc fix — sandbox apply + diff', () => {
 })
 
 describe('vc fix — runFix end-to-end', () => {
+  it('credits an applied fix when available checks pass and unavailable native verification is disclosed', async () => {
+    const root = tempFixture()
+    try {
+      const report = await runFix(root, {
+        issue: 'Android build started failing after upgrading RN — react-native-x requires Kotlin >= 1.9.24', apply: true,
+        run: async () => ({ success: true, stdout: '', stderr: '', exitCode: 0 }),
+      })
+      expect(report.appliedToTree).toBe(true)
+      expect(report.verification.map(check => check.status)).toEqual(['pass', 'pass', 'skipped'])
+      writeFixReport(root, report)
+      expect(collectOutcomes(root).buildFailuresFixed).toBe(1)
+    } finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
   it.each(['complete', 'partial', 'refused'])('reports %s real-tree application from actual writes', async mode => {
     const root = tempFixture()
     try {
