@@ -104,7 +104,7 @@ describe('shipped ProductDefinition contract', () => {
     } finally { rmSync(home, { recursive: true, force: true }) }
   })
 
-  test('an isolated packed install grants a V2 paid gate through its one bundled Core runtime', () => {
+  test('an isolated packed install preserves paid gates and source outcome semantics', () => {
     const consumer = mkdtempSync(path.join(tmpdir(), 'vectalon-clean-install-'))
     const pair = generateKeyPairSync('rsa', { modulusLength: 2048 })
     const now = 1_800_000_000_000
@@ -139,6 +139,16 @@ describe('shipped ProductDefinition contract', () => {
       const verify = lifecycle.createCustomerLicenseVerifier({ keys: [key], now: () => now })
       expect(store.save(credential, verify, now)).toEqual({ ok: true })
       expect(lifecycle.evaluateCustomerTier('pro', { store, verify, now: () => now })).toMatchObject({ allowed: true, currentTier: 'team' })
+
+      const outcomes = installed('@vectalon-dev/rn/dist/outcomes/ledger.js') as typeof import('../../src/outcomes/ledger')
+      const reportDir = path.join(consumer, 'docs', 'vectalon', 'fix')
+      mkdirSync(reportDir, { recursive: true })
+      const report = { appliedToTree: true, findings: [{ applied: 'applied' }], verification: [{ status: 'pass' }, { status: 'skipped' }] }
+      writeFileSync(path.join(reportDir, 'report.json'), JSON.stringify(report))
+      expect(outcomes.collectOutcomes(consumer).buildFailuresFixed).toBe(1)
+      report.verification = [{ status: 'skipped' }]
+      writeFileSync(path.join(reportDir, 'report.json'), JSON.stringify(report))
+      expect(outcomes.collectOutcomes(consumer).buildFailuresFixed).toBe(0)
     } finally {
       if (tarball && existsSync(tarball)) rmSync(tarball, { force: true })
       rmSync(consumer, { recursive: true, force: true })

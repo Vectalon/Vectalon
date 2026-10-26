@@ -12,7 +12,7 @@ import {
   blendedRate,
   EMPTY_COUNTS,
 } from '../../src/outcomes/ledger'
-import { renderOutcomeLines } from '../../src/cli/commands/outcomes'
+import { outcomesCommand, renderOutcomeLines } from '../../src/cli/commands/outcomes'
 
 function scratch(): string {
   return join(os.tmpdir(), `vectalon-outcomes-${Date.now()}-${Math.floor(Math.random() * 1e6)}`)
@@ -190,5 +190,11 @@ describe('renderOutcomeLines', () => {
     expect(joined).toContain('$7,400')
     expect(joined).toContain('Illustrative effort-equivalent, not measured savings')
     expect(joined).toContain('100.0 assumed developer-hours at $74/hr')
+  })
+})
+
+describe('outcomesCommand', () => {
+  it.each(['garbage', '0', '-1', 'Infinity'])('rejects an invalid blended rate: %s', async rate => {
+    await expect(outcomesCommand({ json: true, rate })).rejects.toThrow('--rate must be a finite positive number')
   })
 })

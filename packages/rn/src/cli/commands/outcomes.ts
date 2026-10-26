@@ -42,9 +42,10 @@ export function renderOutcomeLines(counts: OutcomeCounts, hours: number, savings
 }
 
 export async function outcomesCommand(options: OutcomesCommandOptions): Promise<void> {
+  const rate = options.rate !== undefined ? Number(options.rate) : blendedRate()
+  if (!Number.isFinite(rate) || rate <= 0) throw new Error('--rate must be a finite positive number')
   const root = resolve(process.cwd())
   const counts = collectOutcomes(root)
-  const rate = options.rate ? Number(options.rate) : blendedRate()
   const hours = hoursSaved(counts)
   const savings = savingsEstimate(counts, rate)
 
