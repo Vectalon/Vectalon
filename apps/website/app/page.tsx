@@ -515,7 +515,7 @@ export default async function Home() {
           </div>
           <div className="mt-8 text-center">
             <Link href="/benchmarks" className="text-sm text-brand transition hover:text-brand-strong hover:underline">
-              Full leaderboard: benchmark scenarios, measured against human references →
+              See measured RN task outcomes and benchmark limits →
             </Link>
           </div>
         </div>

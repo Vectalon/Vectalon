@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "apps/website/app/globals.css"
+        ],
+        "createdAt": "2026-10-26T09:57:21.521Z",
+        "reason": "Existing apps/website/DESIGN.md explicitly permits the homepage hero gradient; only that selector in this file uses gradient text"
+      }
+    ]
+  }
+}

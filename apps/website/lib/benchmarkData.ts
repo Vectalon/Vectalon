@@ -1,41 +1,27 @@
 import localResult from '../../../packages/rn/bench/results/local.json'
+import balancedResult from '../../../packages/rn/bench/results/local-3b.json'
+import qualityResult from '../../../packages/rn/bench/results/local-7b.json'
+import outcomeEvidence from '../../../docs/release-roadmap/evidence/one-app-v2-comparison-2026-10-25.json'
 
 const pct = (value: number | null | undefined): number | null =>
   typeof value === 'number' ? Math.round(value * 100) : null
 
-export const RUNS = localResult.runs.map(run => ({
-  id: run.id.split('-').slice(0, 2).join('-'),
-  title: run.title,
-  suite: run.suite,
-  composite: pct(run.composite),
-  correctness: pct(run.axes.correctness),
-  adherence: pct(run.axes.adherence),
-  guardrails: pct(run.axes.guardrails),
-  relative: pct(run.reference?.relative?.composite),
+export const MODEL_RESULTS = [
+  { file: 'local.json', model: 'Qwen2.5-Coder 1.5B', result: localResult },
+  { file: 'local-3b.json', model: 'Qwen2.5-Coder 3B', result: balancedResult },
+  { file: 'local-7b.json', model: 'Qwen2.5-Coder 7B', result: qualityResult },
+].map(({ file, model, result }) => ({
+  file, model, scenarios: result.runs.length,
+  composite: pct(result.overallComposite), guardrails: pct(result.overallGuardrails),
 }))
 
-const SUITE_WHY: Record<string, string> = {
-  navigation: 'typed params + deep links',
-  'core-ui': 'theming, tokens, feature flags',
-  'forms-security': 'auth + forms — the highest-stakes screen',
-  refactor: 'hooks migration + dependency removal',
-  'data-flow': 'pagination + offline queues',
-  a11y: 'screen-reader-friendly onboarding',
-  perf: 'image-heavy feeds',
-  upgrades: 'React Native version migration repairs',
-  debugging: 'Metro, Hermes, TypeScript, and native linking repairs',
-}
-
-export const SUITES = localResult.suites.map(suite => ({
-  name: suite.suite,
-  composite: pct(suite.composite),
-  guardrails: pct(suite.guardrails),
-  why: SUITE_WHY[suite.suite],
-}))
-
-export const OVERALL = {
-  composite: pct(localResult.overallComposite),
-  guardrails: pct(localResult.overallGuardrails),
-  referenceComposite: pct(localResult.overallReferenceComposite),
-  relativeComposite: pct(localResult.overallRelativeComposite),
-}
+export const TASK_OUTCOMES = outcomeEvidence.reports.map(report => {
+  const runs = (condition: string) => report.runs.filter(row => row.condition === condition)
+  const passes = (condition: string) => runs(condition).filter(row => row.status === 'passed' && row.identityMatched === true
+    && row.checks?.typecheck?.ok === true && row.checks?.tests?.ok === true).length
+  return {
+    id: report.task.id, skill: report.task.kind,
+    taskOnlyPasses: passes('task-only'), taskOnlyPlanned: runs('task-only').length,
+    guidedPasses: passes('vectalon'), guidedPlanned: runs('vectalon').length,
+  }
+})

@@ -4,7 +4,6 @@ const RELEASES = [
   {
     version: 'v0.19.2',
     date: '2026-09-05',
-    tag: 'latest',
     core: 'Core 0.9.1',
     highlights: [
       'Fix: generate CI and release workflows with the published scoped npm package, so fresh runners no longer attempt to install the nonexistent `vectalon` package',
@@ -294,8 +293,12 @@ export default function ChangelogPage() {
       <div className="mb-10">
         <h1 className="text-4xl font-bold text-fg">Changelog</h1>
         <p className="mt-3 text-fg-muted">
-          Every release of <span className="font-mono text-brand">@vectalon-dev/rn</span>.
-          The model stays current with the ecosystem; these notes keep you current with the model.
+          Selected historical notes for <span className="font-mono text-brand">@vectalon-dev/rn</span> through v0.19.2.
+        </p>
+        <p className="mt-4 text-sm text-fg-secondary">
+          The published package is v0.22.5. Older benchmark and capability claims below are historical,
+          not current qualification. See the <Link href="/benchmarks" className="text-brand hover:underline">current evidence and limits</Link>
+          {' '}or the <Link href="https://github.com/Vectalon/Vectalon/blob/main/packages/rn/CHANGELOG.md" className="text-brand hover:underline">full release history</Link>.
         </p>
       </div>
 
@@ -304,11 +307,6 @@ export default function ChangelogPage() {
           <div key={r.version} className="card">
             <div className="flex items-center gap-3">
               <h2 className="font-mono text-lg font-bold text-slate-50">{r.version}</h2>
-              {r.tag && (
-                <span className="rounded-full bg-brand/15 px-2.5 py-0.5 text-xs font-semibold text-brand">
-                  {r.tag}
-                </span>
-              )}
               {r.core && (
                 <span className="rounded-full bg-violet/15 px-2.5 py-0.5 text-xs font-semibold text-violet">
                   {r.core}
