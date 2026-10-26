@@ -76,8 +76,11 @@ function formatPilotReport(report) {
       const rows = runs.filter(row => row.condition === condition);
       const attempts = rows.flatMap(row => row.result?.attempts || []);
       const repairs = attempts.filter(attempt => attempt.kind === 'repair');
-      const knownCalls = attempts.reduce((sum, attempt) => sum + (attempt.providerCalls?.length ?? 0), 0);
-      const calls = rows.every(row => row.result?.attempts?.length) && attempts.every(attempt => Array.isArray(attempt.providerCalls))
+      const nativeCalls = rows.flatMap(row => row.nativeCalls || []);
+      const nativeObserved = rows.some(row => Array.isArray(row.nativeCalls));
+      const knownCalls = nativeObserved ? nativeCalls.length : attempts.reduce((sum, attempt) => sum + (attempt.providerCalls?.length ?? 0), 0);
+      const calls = (nativeObserved ? rows.every(row => !pending(row) && Array.isArray(row.nativeCalls))
+        : rows.every(row => row.result?.attempts?.length) && attempts.every(attempt => Array.isArray(attempt.providerCalls)))
         ? knownCalls : knownCalls ? `${knownCalls} recorded; remainder unrecorded` : 'unrecorded';
       const initialPasses = rows.filter(row => !report.recordedInitial && row.identityMatched === true && row.result?.attempts?.[0]?.kind === 'initial' && row.result.attempts[0].origin !== 'recorded-candidate-recheck' && row.result.attempts[0].verification?.status === 'passed').length;
       lines.push(`| ${cell(condition)} | ${initialPasses}/${rows.length} | ${attempts.filter(attempt => attempt.kind === 'parse-retry').length} | ${repairs.filter(attempt => attempt.verification?.status === 'passed').length}/${repairs.length} | ${rows.filter(passed).length} | ${calls} |`);
