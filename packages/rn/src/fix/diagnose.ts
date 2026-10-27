@@ -69,7 +69,7 @@ const EXPO_RN: Array<{ sdk: number; rn: number }> = [
 ]
 
 export function requirementsForRn(rnVersion: number | null): RnRequirements | null {
-  if (rnVersion === null) return null
+  if (rnVersion === null || rnVersion < 0.71 || rnVersion > 0.78) return null
   const row = RN_REQUIREMENTS_TABLE.find(r => rnVersion >= r.minR) ?? RN_REQUIREMENTS_TABLE[RN_REQUIREMENTS_TABLE.length - 1]
   return row.req
 }

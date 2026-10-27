@@ -229,46 +229,54 @@ function scoreBuildHealthDim(root: string): ScoreDimension | null {
     }
   }
   const req = requirementsForRn(ctx.rnVersion)
-  const findings: ScoreFinding[] = []
-  const evidence: string[] = [`react-native ${ctx.rnVersion}${req ? ` requires compileSdk ${req.compileSdk} · Kotlin ${req.kotlin} · Gradle ${req.gradle} · AGP ${req.agp}` : ''}`]
-
-  if (req) {
-    const checks: Array<[string, string, number | string | null, number | string, string]> = [
-      ['compileSdk', 'compileSdkVersion', ctx.compileSdk, req.compileSdk, 'sdk'],
-      ['Kotlin', 'kotlinVersion', ctx.kotlinVersion, req.kotlin, 'version'],
-      ['Gradle wrapper', 'gradle-wrapper.properties', ctx.gradleVersion, req.gradle, 'version'],
-      ['AGP', 'com.android.tools.build:gradle', ctx.agpVersion, req.agp, 'version'],
-    ]
-    for (const [label, key, current, required, kind] of checks) {
-      const cur = typeof current === 'number' ? current : versionOf(current)
-      const reqNum = typeof required === 'number' ? required : versionOf(required)
-      if (current === null || current === undefined) {
-        findings.push({
-          id: `build-${key}`, dimension: 'build-health', severity: 'warning', file: 'android/build.gradle',
-          message: `${label} not detected — cannot verify against the ${req.compileSdk} SDK requirement`,
-          action: `Declare ${label} in android/build.gradle (RN ${ctx.rnVersion} needs ${label} ${required}${kind === 'sdk' ? '' : '+'}).`,
-        })
-        evidence.push(`${label}: not detected`)
-      } else if (typeof cur === 'number' && cur < (reqNum as number)) {
-        findings.push({
-          id: `build-${key}`, dimension: 'build-health', severity: 'error', file: 'android/build.gradle',
-          message: `${label} ${current} is below the ${required} RN ${ctx.rnVersion} requires`,
-          action: `Bump ${label} to ${required} in android/build.gradle.`,
-        })
-        evidence.push(`${label}: ${current} < required ${required}`)
-      } else if (cur === null) {
-        findings.push({
-          id: `build-${key}`, dimension: 'build-health', severity: 'warning', file: 'android/build.gradle',
-          message: `${label} ${current} does not satisfy the RN ${ctx.rnVersion} requirement (${required})`,
-          action: `Align ${label} to ${required}.`,
-        })
-        evidence.push(`${label}: ${current} vs required ${required}`)
-      } else {
-        evidence.push(`${label}: ${current} ✓`)
-      }
+  if (!req) {
+    return {
+      id: 'build-health', label: 'Build Health', score: 50, weight: 0.15,
+      detail: `Native build requirements unverified for react-native ${ctx.rnVersion}`,
+      findings: [{
+        id: 'build-requirements-unknown', dimension: 'build-health', severity: 'warning', file: 'package.json',
+        message: `No verified native build requirements are catalogued for react-native ${ctx.rnVersion}.`,
+        action: 'Check the official RN/Expo release requirements and run a native build; do not apply an older template automatically.',
+      }],
+      evidence: [`react-native ${ctx.rnVersion}; native requirement table ends at 0.78`],
     }
-  } else {
-    evidence.push('No RN-required table entry for this version — build health best-effort only')
+  }
+  const findings: ScoreFinding[] = []
+  const evidence: string[] = [`react-native ${ctx.rnVersion} requires compileSdk ${req.compileSdk} · Kotlin ${req.kotlin} · Gradle ${req.gradle} · AGP ${req.agp}`]
+
+  const checks: Array<[string, string, number | string | null, number | string, string]> = [
+    ['compileSdk', 'compileSdkVersion', ctx.compileSdk, req.compileSdk, 'sdk'],
+    ['Kotlin', 'kotlinVersion', ctx.kotlinVersion, req.kotlin, 'version'],
+    ['Gradle wrapper', 'gradle-wrapper.properties', ctx.gradleVersion, req.gradle, 'version'],
+    ['AGP', 'com.android.tools.build:gradle', ctx.agpVersion, req.agp, 'version'],
+  ]
+  for (const [label, key, current, required, kind] of checks) {
+    const cur = typeof current === 'number' ? current : versionOf(current)
+    const reqNum = typeof required === 'number' ? required : versionOf(required)
+    if (current === null || current === undefined) {
+      findings.push({
+        id: `build-${key}`, dimension: 'build-health', severity: 'warning', file: 'android/build.gradle',
+        message: `${label} not detected — cannot verify against the ${req.compileSdk} SDK requirement`,
+        action: `Declare ${label} in android/build.gradle (RN ${ctx.rnVersion} needs ${label} ${required}${kind === 'sdk' ? '' : '+'}).`,
+      })
+      evidence.push(`${label}: not detected`)
+    } else if (typeof cur === 'number' && cur < (reqNum as number)) {
+      findings.push({
+        id: `build-${key}`, dimension: 'build-health', severity: 'error', file: 'android/build.gradle',
+        message: `${label} ${current} is below the ${required} RN ${ctx.rnVersion} requires`,
+        action: `Bump ${label} to ${required} in android/build.gradle.`,
+      })
+      evidence.push(`${label}: ${current} < required ${required}`)
+    } else if (cur === null) {
+      findings.push({
+        id: `build-${key}`, dimension: 'build-health', severity: 'warning', file: 'android/build.gradle',
+        message: `${label} ${current} does not satisfy the RN ${ctx.rnVersion} requirement (${required})`,
+        action: `Align ${label} to ${required}.`,
+      })
+      evidence.push(`${label}: ${current} vs required ${required}`)
+    } else {
+      evidence.push(`${label}: ${current} ✓`)
+    }
   }
   return {
     id: 'build-health', label: 'Build Health', score: scoreFromFindings(findings), weight: 0.15,

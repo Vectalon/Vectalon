@@ -3,7 +3,7 @@ import { PRODUCT_MANIFEST } from '../../lib/product-manifest'
 
 const FREE: Array<[string, string]> = [
   ['fix "issue"', 'THE workflow — tell it what\'s broken (or pass --log) and get root cause → evidence → impact → recommended fix → applied → verification → confidence in one structured verdict, applied in a sandbox by default'],
-  ['score', 'The Vectalon Engineering Health Score — one 0-100 number from eight dimensions, the delta vs your last run, and P0/P1/P2 actions'],
+  ['score', 'A static 0-100 engineering health score across eight dimensions, with trends and ranked actions. Unknown native-version requirements are marked unverified; this is not a native build or model-task pass'],
   ['init', 'The 15-minute proof of value — scan the project, build the knowledge base, and end with the scan summary + Health Score + Top 5 problems. No LLM config asked'],
   ['mode', 'Where your source runs — Cloud (hosted models) / Private (company LLM) / Air-gapped (local model, nothing leaves the machine); enforced, not labeled'],
   ['demo', 'The flagship demonstration — the feature workflow, live: Requirement → … → PR + the self-healing loop, from a real prior run when present, zero model calls'],

@@ -1,0 +1,28 @@
+{
+  "kind": "frozen-paired-repair-capacity-refusal",
+  "date": "2026-10-26",
+  "sourceRevision": "f8aaaf16ff9b5c0ccc0828701869b947f4bfdc23",
+  "freezeSha256": "31345a4c1a1f5e882826f28141c67ddf1d9717b83a67dccdbd6d121e10b034ec",
+  "task": "cart-membership",
+  "model": "qwen2.5-coder-7b",
+  "expectedArtifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+  "rubricModuleSha256": "746ef7071c2d8ff59e3174c15097162c8f0e93939e8de77fb66693db16900b79",
+  "memory": {
+    "metric": "macos-pressure-estimate",
+    "preflightSamplesBytes": [7043746365, 7559142440, 7387343749, 7387343749, 7215545057],
+    "availableBeforeFirstCallBytes": 6012954214,
+    "unchangedColdLoadRequirementBytes": 6140685024,
+    "reserveBytes": 2147483648
+  },
+  "observed": {
+    "firstRow": "task-only repetition 1: insufficient-memory before model response",
+    "nativeCallRecords": 1,
+    "modelResponses": 0,
+    "candidateAppChecks": 0,
+    "unstartedRowsForThisTask": 5,
+    "otherTask": "order-total-review not started",
+    "modelArtifactIdentity": "unverified because no response was produced"
+  },
+  "interpretation": "Infrastructure capacity refusal, not a task failure, model-quality result, or changed qualification threshold. Earlier capacity attempts remain separate.",
+  "localRawReport": "/private/tmp/vectalon-cart-pilot-FVWAyz/report.json"
+}

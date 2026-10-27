@@ -5,7 +5,7 @@
   "capabilities": [
     {
       "id": "rn.project.inspect",
-      "version": "1.0.30",
+      "version": "1.0.31",
       "lifecycle": "beta",
       "implemented": true,
       "owner": {
@@ -857,6 +857,24 @@
           "recordedAt": "2026-10-25T04:14:24.125Z",
           "productVersion": "0.22.5",
           "capabilityVersion": "1.0.30"
+        },
+        {
+          "kind": "implementation",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.project.inspect.1.0.31.0.22.5.implementation.json",
+          "digest": "sha256:6ff6ca90f23d5b3983411809959a82e0174ed296fe0564bb4100f81e20ae1bc5",
+          "recordedAt": "2026-10-27T07:13:03.585Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.31"
+        },
+        {
+          "kind": "customer-workflow",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.project.inspect.1.0.31.0.22.5.customer-workflow.json",
+          "digest": "sha256:59b335ed652913bb6412a448f4ab38d79a724899c59243786a8e7bd0b5f60641",
+          "recordedAt": "2026-10-27T07:13:03.585Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.31"
         }
       ]
     },
@@ -4673,7 +4691,7 @@
     },
     {
       "id": "rn.upgrade-and-fix",
-      "version": "1.0.20",
+      "version": "1.0.21",
       "lifecycle": "experimental",
       "implemented": true,
       "owner": {
@@ -5034,6 +5052,15 @@
           "recordedAt": "2026-10-25T04:14:31.676Z",
           "productVersion": "0.22.5",
           "capabilityVersion": "1.0.20"
+        },
+        {
+          "kind": "implementation",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.upgrade-and-fix.1.0.21.0.22.5.implementation.json",
+          "digest": "sha256:b007ed83b45a714417b5f669f2fdc295be20048a579a8deef7d6211762af2a20",
+          "recordedAt": "2026-10-27T07:13:06.876Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.21"
         }
       ]
     },

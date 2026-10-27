@@ -131,6 +131,18 @@ describe('vc score — source/test collection', () => {
 })
 
 describe('vc score — end to end on a clean fixture', () => {
+  it('marks newer RN native requirements unverified instead of reusing an old table row', async () => {
+    const root = cleanFixture()
+    writeFileSync(join(root, 'package.json'), JSON.stringify({
+      name: 'expo-58-fixture', dependencies: { expo: '58.0.17', react: '19.3.0', 'react-native': '0.88.0' },
+    }))
+    const report = await runScore(root, { skipAudit: true })
+    const build = report.dimensions.find(d => d.id === 'build-health')!
+    expect(build.detail).toMatch(/unverified/i)
+    expect(build.findings.map(f => f.message).join(' ')).not.toMatch(/35 SDK requirement/)
+    rmSync(root, { recursive: true, force: true })
+  })
+
   it('scores all eight dimensions and writes reports + history', async () => {
     const root = cleanFixture()
     const report = await runScore(root, { skipAudit: true })

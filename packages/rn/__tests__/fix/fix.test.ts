@@ -103,6 +103,7 @@ describe('vc fix — diagnose', () => {
     const req = requirementsForRn(0.76)
     expect(req).toEqual({ compileSdk: 35, kotlin: '1.9.24', gradle: '8.10.2', agp: '8.6.0', ndk: '26.1.10909125' })
     expect(requirementsForRn(0.71)?.compileSdk).toBe(33)
+    expect(requirementsForRn(0.88)).toBeNull()
   })
 
   it('reads the project native context', () => {

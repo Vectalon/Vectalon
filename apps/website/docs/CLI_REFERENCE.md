@@ -2571,6 +2571,10 @@ Performance (perf-scan), Security (secrets/unsafe/audit), Accessibility
 (a11y scan), and RN Upgrade Risk (impact vs the latest known RN). Zero model
 calls. Report + history to `docs/vectalon/score/`.
 
+This is a static diagnostic, not a native build or model-task pass. If the RN
+version is outside the verified native requirements table, Build Health is
+marked unverified instead of borrowing an older release's requirements.
+
 ```bash
 npx --package @vectalon-dev/rn vectalon score                # the full scorecard — overall + 8 dimensions
 npx --package @vectalon-dev/rn vectalon score --json         # machine-readable report
