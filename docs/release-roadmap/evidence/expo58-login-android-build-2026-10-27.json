@@ -37,6 +37,7 @@
     "debugApkInstall": "passed on Pixel_3a_API_33_arm64-v8a",
     "firstLaunch": "invalid test: host port 8081 served a different Expo project and the app loaded that project's bundle, displaying an ExpoLinking red screen",
     "correctedLaunch": "failed to produce app UI: demo Metro ran on 8082 with emulator port forwards, but agent-device open failed with ADB code 224 and the screen was black",
+    "uncontendedRetry": "after stopping Gradle, the API 33 device booted but run-as could not stat the installed app sandbox; an APK reinstall did not finish within the bounded wait and was canceled",
     "releaseApk": "not produced: optional self-contained release build was stopped after more than 25 minutes without completion"
   },
   "modelTaskResult": "not run; this is baseline native-build evidence only",
