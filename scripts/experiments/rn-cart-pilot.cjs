@@ -25,6 +25,7 @@ const { values: args } = require('node:util').parseArgs({ options: {
   'repair-from': { type: 'string' },
 } });
 const scopedEdits = args['scoped-edits'];
+const scopedCart = args['evaluation-lane'] === 'scoped-cart-7b';
 const pinnedAsyncControl = args.diagnostic === 'delayed-label-v1' && !args.task && !args['evaluation-lane']
   && args.model === 'qwen2.5-coder-7b' && args['artifact-sha256'] === require('./one-app-evaluation-7b.json').artifactSha256;
 const editRepair = args['edit-repair'];
@@ -37,7 +38,7 @@ if (args['repair-from'] !== undefined) {
       require('../../docs/release-roadmap/evidence/react-async-edits-2026-10-25.json'));
   } catch { throw new Error('Recorded candidate unavailable or does not match pinned evidence; no source logged'); }
 }
-assert.ok(!scopedEdits || (args['resource-pair'] && ((args.task === 'current-session' && args['evaluation-lane'] === '7b' && !args.diagnostic) || pinnedAsyncControl)
+assert.ok(!scopedEdits || (args['resource-pair'] && ((args.task === 'current-session' && args['evaluation-lane'] === '7b' && !args.diagnostic) || pinnedAsyncControl || (scopedCart && args.task === 'cart-membership' && !args.diagnostic))
   && !args.edits && !args['guided-repair'] && !args['raw-guided'] && !args.repair && !args.constrained
   && !args.guided && !args['task-relevant'] && !args['verified-controls'] && !args['sampling-control']), '--scoped-edits requires guarded current-session 7b or pinned delayed-label-v1 without other generation modes');
 const editMode = args.edits || scopedEdits;
@@ -48,6 +49,7 @@ const v2Evaluation = args['evaluation-lane'] === 'v2-7b';
 const pairedRepair = args['evaluation-lane'] === 'paired-repair-7b';
 const pairedGrammar = args['evaluation-lane'] === 'paired-grammar-7b';
 const pairedFeature = pairedRepair || pairedGrammar;
+assert.ok(!scopedCart || (scopedEdits && args.task === 'cart-membership' && args['resource-pair']), 'Scoped cart diagnostic requires frozen cart-membership --scoped-edits --resource-pair');
 assert.ok(!pairedRepair || (args['resource-pair'] && !args['guided-repair'] && !args['raw-guided'] && !args.repair && !editMode && !args.diagnostic && !args.constrained), 'Paired repair requires --resource-pair without generation overrides');
 assert.ok(!pairedGrammar || (args['resource-pair'] && args.task === 'cart-membership' && !args['guided-repair'] && !args['raw-guided'] && !args.repair && !editMode && !args.diagnostic && !args.constrained), 'Paired grammar requires frozen cart-membership and --resource-pair without generation overrides');
 assert.ok(!v2Evaluation || (args['resource-pair'] && !args['guided-repair'] && !args['raw-guided'] && !args.repair && !editMode && !args.diagnostic), 'V2 evaluation requires --resource-pair without generation overrides');
@@ -55,12 +57,12 @@ const asyncControlPair = pinnedAsyncControl && args['task-relevant']
   && !args['verified-controls'] && !args['sampling-control'] && !args['guided-repair'] && !args['raw-guided'];
 assert.ok(!freshEvaluation || (args['resource-pair'] && !args['guided-repair'] && !args['raw-guided']), 'Fresh evaluation requires --resource-pair without diagnostic repair/raw-guided modes');
 assert.ok(!args['resource-pair'] || ((args.task === 'stock-filter' || scopedEdits) && args['evaluation-lane'] === '7b')
-  || pairedFeature || v2Evaluation || (freshEvaluation && args.task === 'orders-refresh-race') || asyncControlPair || (scopedEdits && pinnedAsyncControl), '--resource-pair requires a supported frozen guarded evaluation or diagnostic');
-assert.ok(args['evaluation-lane'] === undefined || ['3b', '7b', 'fresh-7b', 'v2-7b', 'paired-repair-7b', 'paired-grammar-7b'].includes(args['evaluation-lane']), 'Unknown evaluation lane');
+  || pairedFeature || scopedCart || v2Evaluation || (freshEvaluation && args.task === 'orders-refresh-race') || asyncControlPair || (scopedEdits && pinnedAsyncControl), '--resource-pair requires a supported frozen guarded evaluation or diagnostic');
+assert.ok(args['evaluation-lane'] === undefined || ['3b', '7b', 'fresh-7b', 'v2-7b', 'paired-repair-7b', 'paired-grammar-7b', 'scoped-cart-7b'].includes(args['evaluation-lane']), 'Unknown evaluation lane');
 assert.ok(args['evaluation-lane'] === undefined || args.task !== undefined, '--evaluation-lane requires --task');
-const freezeFile = pairedGrammar ? 'one-app-evaluation-paired-grammar-7b.json' : pairedRepair ? 'one-app-evaluation-paired-repair-7b.json' : v2Evaluation ? 'one-app-evaluation-v2-7b.json' : freshEvaluation ? 'one-app-evaluation-fresh-7b.json' : args['evaluation-lane'] === '7b' ? 'one-app-evaluation-7b.json' : 'one-app-evaluation.json';
+const freezeFile = scopedCart ? 'one-app-evaluation-scoped-cart-7b.json' : pairedGrammar ? 'one-app-evaluation-paired-grammar-7b.json' : pairedRepair ? 'one-app-evaluation-paired-repair-7b.json' : v2Evaluation ? 'one-app-evaluation-v2-7b.json' : freshEvaluation ? 'one-app-evaluation-fresh-7b.json' : args['evaluation-lane'] === '7b' ? 'one-app-evaluation-7b.json' : 'one-app-evaluation.json';
 const freeze = require(`./${freezeFile}`);
-const taskDefinitionsFile = pairedFeature ? 'one-app-paired-repair-tasks.cjs' : v2Evaluation ? 'one-app-v2-tasks.cjs' : freshEvaluation ? 'one-app-fresh-tasks.cjs' : 'one-app-tasks.cjs';
+const taskDefinitionsFile = pairedFeature || scopedCart ? 'one-app-paired-repair-tasks.cjs' : v2Evaluation ? 'one-app-v2-tasks.cjs' : freshEvaluation ? 'one-app-fresh-tasks.cjs' : 'one-app-tasks.cjs';
 const { taskDefinition } = require(`./${taskDefinitionsFile}`);
 assert.equal(args.model !== undefined, args['artifact-sha256'] !== undefined, '--model and --artifact-sha256 must be supplied together');
 assert.ok(args['artifact-sha256'] === undefined || /^[a-f0-9]{64}$/.test(args['artifact-sha256']), 'Expected a lowercase SHA-256 artifact hash');
@@ -93,7 +95,7 @@ const { createModelEditGenerate } = editMode || args.diagnostic ? load('bench/mo
 const { runScenario } = load('bench/runner.js');
 const { ModelRouter } = load('model/ModelRouter.js');
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
-if (pairedFeature) assert.equal(hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/bench/rubric.js'))), freeze.rubricModuleSha256, 'Frozen scoring runtime changed');
+if (pairedFeature || scopedCart) assert.equal(hash(fs.readFileSync(path.join(repo, 'packages/rn/dist/bench/rubric.js'))), freeze.rubricModuleSha256, 'Frozen scoring runtime changed');
 for (const [file, expected] of Object.entries(freeze.inputs ?? {})) {
   if (args.task) assert.equal(hash(fs.readFileSync(path.join(__dirname, file))), expected, `Frozen evaluation input changed: ${file}`);
 }

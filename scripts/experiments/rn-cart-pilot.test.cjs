@@ -5,10 +5,10 @@ const path = require('node:path');
 const fs = require('node:fs');
 const os = require('node:os');
 
-for (const [lowMemory, singleGuided, guidedRepair, structured, scoped, fresh = false, asyncControl = false, editRepair = false] of [[false, false, false, false, false], [true, false, false, false, false], [false, true, false, false, false], [false, false, true, false, false], [false, false, true, true, false], [false, false, false, false, true], [false, false, false, false, false, true], [false, false, false, false, false, false, true], [false, false, false, false, true, false, true], [false, false, false, false, true, false, true, true]]) test(`bounded diagnostics retain planned rows and stop safely (lowMemory=${lowMemory}, singleGuided=${singleGuided}, repair=${guidedRepair}, structured=${structured}, scoped=${scoped}, fresh=${fresh}, asyncControl=${asyncControl}, editRepair=${editRepair})`, () => {
+for (const [lowMemory, singleGuided, guidedRepair, structured, scoped, fresh = false, asyncControl = false, editRepair = false, cart = false] of [[false, false, false, false, false], [true, false, false, false, false], [false, true, false, false, false], [false, false, true, false, false], [false, false, true, true, false], [false, false, false, false, true], [false, false, false, false, false, true], [false, false, false, false, false, false, true], [false, false, false, false, true, false, true], [false, false, false, false, true, false, true, true], [false, false, false, false, true, false, false, false, true]]) test(`bounded diagnostics retain planned rows and stop safely (lowMemory=${lowMemory}, singleGuided=${singleGuided}, repair=${guidedRepair}, structured=${structured}, scoped=${scoped}, fresh=${fresh}, asyncControl=${asyncControl}, editRepair=${editRepair}, cart=${cart})`, () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vectalon-resource-pair-test-'));
   let output;
-  const scopedTarget = asyncControl ? 'src/hooks/useDelayedLabel.ts' : 'src/hooks/useSecuritySettings.ts';
+  const scopedTarget = asyncControl ? 'src/hooks/useDelayedLabel.ts' : cart ? 'src/hooks/useCart.tsx' : 'src/hooks/useSecuritySettings.ts';
   try {
     const preload = path.join(root, 'stubs.cjs');
     fs.writeFileSync(preload, `const Module = require('node:module'); const load = Module._load; let checks = 0, calls = 0;
@@ -46,7 +46,7 @@ Module._load = function(request, ...args) {
 };\n`);
     const result = spawnSync(process.execPath, ['--require', preload, path.join(__dirname, 'rn-cart-pilot.cjs'),
       ...(asyncControl ? ['--diagnostic', 'delayed-label-v1', ...(!scoped ? ['--task-relevant'] : []), '--model', 'qwen2.5-coder-7b', '--artifact-sha256', require('./one-app-evaluation-7b.json').artifactSha256]
-        : ['--task', fresh ? 'orders-refresh-race' : scoped ? 'current-session' : 'stock-filter', '--evaluation-lane', fresh ? 'fresh-7b' : '7b']), '--resource-pair',
+        : ['--task', fresh ? 'orders-refresh-race' : cart ? 'cart-membership' : scoped ? 'current-session' : 'stock-filter', '--evaluation-lane', fresh ? 'fresh-7b' : cart ? 'scoped-cart-7b' : '7b']), '--resource-pair',
       ...(singleGuided ? ['--raw-guided', '--include-raw-response', '--include-generated'] : []),
       ...(guidedRepair ? ['--guided-repair'] : []), ...(structured ? ['--constrained'] : []),
       ...(scoped ? ['--scoped-edits', '--include-generated'] : []), ...(editRepair ? ['--edit-repair'] : [])], { encoding: 'utf8', timeout: 15000 });
@@ -67,6 +67,10 @@ Module._load = function(request, ...args) {
     }
     if (scoped) {
       assert.equal(report.kind, editRepair ? 'bounded-scoped-edit-repair' : 'bounded-scoped-edit-diagnostic');
+      if (cart) {
+        assert.equal(report.evaluationLane, 'scoped-cart-7b');
+        assert.equal(report.task.id, 'cart-membership');
+      }
       assert.equal(report.resourceProtocol.rowLimit, 1);
       assert.equal(report.runs.length, 3);
       const row = report.runs[0];
@@ -84,7 +88,7 @@ Module._load = function(request, ...args) {
       assert.equal(row.nativeCalls[0].grammarSchemaSha256, report.resourceProtocol.grammarSchemaSha256);
       assert.ok(report.runs.slice(1).every(row => row.status === 'not-run'));
       const original = asyncControl ? require('./react-async-control.cjs').original
-        : spawnSync('git', ['show', require('./one-app-evaluation-7b.json').appRevision + ':apps/website/demo/login-app/src/hooks/useSecuritySettings.ts'], { encoding: 'utf8' }).stdout;
+        : spawnSync('git', ['show', (cart ? require('./one-app-evaluation-scoped-cart-7b.json') : require('./one-app-evaluation-7b.json')).appRevision + ':apps/website/demo/login-app/' + scopedTarget], { encoding: 'utf8' }).stdout;
       assert.equal(report.runs[0].condition, 'vectalon-edits');
       if (asyncControl) assert.deepEqual(Object.keys(report.conditionSettings), ['vectalon-edits']);
       assert.equal(row.result.generatedArtifacts[0].content, 'import { useState, useCallback } from "react";' + original.slice(original.indexOf('\n')));
@@ -320,6 +324,10 @@ for (const [name, args, message] of [
   ['paired grammar with output override', ['--task', 'cart-membership', '--evaluation-lane', 'paired-grammar-7b', '--resource-pair', '--constrained'], 'Paired grammar requires'],
   ['paired grammar on review task', ['--task', 'order-total-review', '--evaluation-lane', 'paired-grammar-7b', '--resource-pair'], 'Paired grammar requires'],
   ['paired grammar model substitution', ['--task', 'cart-membership', '--evaluation-lane', 'paired-grammar-7b', '--resource-pair', '--model', 'qwen2.5-coder-3b', '--artifact-sha256', 'a'.repeat(64)], 'model cannot change'],
+  ['scoped cart without edits', ['--task', 'cart-membership', '--evaluation-lane', 'scoped-cart-7b', '--resource-pair'], 'Scoped cart diagnostic requires'],
+  ['scoped cart without guards', ['--task', 'cart-membership', '--evaluation-lane', 'scoped-cart-7b', '--scoped-edits'], '--scoped-edits requires'],
+  ['scoped cart on review task', ['--task', 'order-total-review', '--evaluation-lane', 'scoped-cart-7b', '--scoped-edits', '--resource-pair'], '--scoped-edits requires'],
+  ['scoped cart model substitution', ['--task', 'cart-membership', '--evaluation-lane', 'scoped-cart-7b', '--scoped-edits', '--resource-pair', '--model', 'qwen2.5-coder-3b', '--artifact-sha256', 'a'.repeat(64)], 'model cannot change'],
   ['v2 without resource guards', ['--task', 'cart-distinct-count', '--evaluation-lane', 'v2-7b'], 'V2 evaluation requires'],
   ['v2 with repair', ['--task', 'cart-distinct-count', '--evaluation-lane', 'v2-7b', '--resource-pair', '--guided-repair'], 'V2 evaluation requires'],
   ['v2 model substitution', ['--task', 'cart-distinct-count', '--evaluation-lane', 'v2-7b', '--resource-pair', '--model', 'qwen2.5-coder-3b', '--artifact-sha256', 'a'.repeat(64)], 'model cannot change'],
