@@ -1,0 +1,36 @@
+{
+  "kind": "installed-demo-android-native-ui-baseline",
+  "date": "2026-10-27",
+  "sourceRevision": "9df2686",
+  "app": "apps/website/demo/login-app",
+  "environment": {
+    "device": "Pixel_3a_API_33_arm64-v8a Android emulator",
+    "abi": "arm64-v8a",
+    "java": "OpenJDK 17.0.21.0.2 arm64",
+    "gradle": "9.4.1"
+  },
+  "build": {
+    "command": "JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:assembleRelease -PreactNativeArchitectures=arm64-v8a -Pandroid.enableMinifyInReleaseBuilds=false --no-daemon --max-workers=1",
+    "result": "passed",
+    "tasks": "358 actionable; 42 executed, 316 up-to-date",
+    "duration": "1m 39s",
+    "type": "self-contained verification APK; release-mode, non-minified, debug-key-signed; not a production release artifact",
+    "package": "in.vectalon.nativeproof",
+    "apkBytes": 30322379,
+    "apkSha256": "07be28fc8b13e2504034dea2da53cb3310e039d57084f174b5505d496f92ff1a",
+    "bundledJsBytes": 1633020
+  },
+  "deviceInteraction": {
+    "install": "passed",
+    "launch": "passed via Android activity manager; no Metro dependency or red screen",
+    "welcome": "rendered the Welcome heading, benefit list and Continue button",
+    "continue": "opened Sign in screen with email and password fields",
+    "emptySignIn": "displayed Invalid email address validation message",
+    "screenshotSha256": {
+      "welcome": "6b677e21f6a5a14918e8b987ffc76bdcf9ff9b88604797aa60802c73cdfe3d62",
+      "signIn": "26e628234799b972bdf32a74c472f0639d8cedcc3bfe2bfa0f6fe8c15fcbc3da",
+      "emptyValidation": "0af978c58933e8f6d00883d4dd1fc5ce01429043f37976b8575259a32bb5745f"
+    }
+  },
+  "limitations": "One isolated demo baseline on one Android emulator. No minified production APK, model-generated candidate, held-out task success, repair outcome, real authentication, customer app, or same-model improvement comparison was verified. The device tool's app-open helper could not attach because this release-mode APK is non-debuggable; launch used Android's activity manager and screen observations used the device tool."
+}

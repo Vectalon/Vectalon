@@ -102,6 +102,20 @@ describe('guardrails', () => {
     expect(finding?.passed).toBe(false)
   })
 
+  it('does not demand try/catch in awaited Jest tests, but still checks production async functions', () => {
+    const content = "it('checks an order', async () => { const order = await ordersApi.place([]); expect(order.total).toBe(0); });"
+    const testResult = runGuardrails({ filePath: 'src/__tests__/orderTotalReview.ts', content })
+    expect(testResult.findings.find(f => f.rule === 'Async functions have error handling')).toBeUndefined()
+    const specResult = runGuardrails({ filePath: 'src/order.spec.ts', content })
+    expect(specResult.findings.find(f => f.rule === 'Async functions have error handling')).toBeUndefined()
+
+    const productionResult = runGuardrails({
+      filePath: 'src/services/OrdersApi.ts',
+      content: 'export async function place() { return await fetch("/orders"); }',
+    })
+    expect(productionResult.findings.find(f => f.rule === 'Async functions have error handling')?.passed).toBe(false)
+  })
+
   it('flags TouchableOpacity with use-pressable', () => {
     const result = runGuardrails({
       filePath: 'src/screens/Bad.tsx',

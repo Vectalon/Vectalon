@@ -1,0 +1,30 @@
+{
+  "kind": "one-app-public-development-paired-repair",
+  "date": "2026-10-27",
+  "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+  "model": "qwen2.5-coder-7b",
+  "artifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+  "freezeSha256": "31345a4c1a1f5e882826f28141c67ddf1d9717b83a67dccdbd6d121e10b034ec",
+  "runnerSha256": "0552a64be16c144d32e923e1a845d85d8c8333b44739572571b54d71b7422c18",
+  "protocol": "Two public development tasks; three repetitions per condition, alternating order. Both conditions used the same pinned model, at most two calls and 4,096 requested output tokens per row, with a shared 360-second deadline and unchanged resource reserve. Guided versus task-only prompt context differed. The unchanged app failed each task's control checks; the assistant-authored positive controls passed. Raw responses and generated source remain in local temporary reports, not this artifact.",
+  "sourceReportsSha256": {
+    "cart-membership": "1adb36744f7379a704a0b5d7663e22c1262f04fb71bd81acdfd11afeb46cbea5",
+    "order-total-review": "8e5da6d7d159aa4c18ecf055146fa6a132ba8036ea49281d3b27c3b69262565b"
+  },
+  "rows": [
+    { "task": "cart-membership", "rep": 1, "condition": "task-only", "first": "invalid", "second": "parse-retry", "selected": 2, "app": "failed", "typecheck": false, "tests": false, "guardrails": 0.92, "adherence": 0.5, "calls": 2, "durationMs": 77898 },
+    { "task": "cart-membership", "rep": 1, "condition": "vectalon", "first": "invalid", "second": "parse-retry", "selected": null, "app": "failed", "typecheck": false, "tests": false, "guardrails": 0, "adherence": 0, "calls": 2, "durationMs": 66025 },
+    { "task": "cart-membership", "rep": 2, "condition": "vectalon", "first": "invalid", "second": "parse-retry", "selected": null, "app": "failed", "typecheck": false, "tests": false, "guardrails": 0, "adherence": 0, "calls": 2, "durationMs": 78687 },
+    { "task": "cart-membership", "rep": 2, "condition": "task-only", "first": "parsed", "second": "repair", "selected": 1, "app": "failed", "typecheck": false, "tests": true, "guardrails": 0.92, "adherence": 0.6666666666666666, "calls": 2, "durationMs": 144335 },
+    { "task": "cart-membership", "rep": 3, "condition": "task-only", "first": "parsed", "second": "repair", "selected": 1, "app": "failed", "typecheck": false, "tests": true, "guardrails": 0.92, "adherence": 0.6666666666666666, "calls": 2, "durationMs": 80038 },
+    { "task": "cart-membership", "rep": 3, "condition": "vectalon", "first": "invalid", "second": "parse-retry", "selected": null, "app": "failed", "typecheck": false, "tests": false, "guardrails": 0, "adherence": 0, "calls": 2, "durationMs": 97195 },
+    { "task": "order-total-review", "rep": 1, "condition": "task-only", "first": "parsed", "second": "repair", "selected": 1, "app": "failed", "typecheck": false, "tests": false, "guardrails": 1, "adherence": 1, "calls": 2, "durationMs": 78147 },
+    { "task": "order-total-review", "rep": 1, "condition": "vectalon", "first": "parsed", "second": "repair", "selected": 1, "app": "passed", "typecheck": true, "tests": true, "guardrails": 0.9444444444444444, "adherence": null, "calls": 2, "durationMs": 66655 },
+    { "task": "order-total-review", "rep": 2, "condition": "vectalon", "first": "parsed", "second": "repair", "selected": 1, "app": "passed", "typecheck": true, "tests": true, "guardrails": 0.9444444444444444, "adherence": null, "calls": 2, "durationMs": 76216 },
+    { "task": "order-total-review", "rep": 2, "condition": "task-only", "first": "parsed", "second": "repair", "selected": 1, "app": "failed", "typecheck": false, "tests": false, "guardrails": 1, "adherence": null, "calls": 2, "durationMs": 97255 },
+    { "task": "order-total-review", "rep": 3, "condition": "task-only", "first": "parsed", "second": "repair", "selected": 1, "app": "failed", "typecheck": false, "tests": false, "guardrails": 1, "adherence": null, "calls": 2, "durationMs": 88194 },
+    { "task": "order-total-review", "rep": 3, "condition": "vectalon", "first": "parsed", "second": "repair", "selected": 1, "app": "passed", "typecheck": true, "tests": true, "guardrails": 0.9444444444444444, "adherence": null, "calls": 2, "durationMs": 76068 }
+  ],
+  "interpretation": "Cart feature: 0/3 app-check passes in each condition. Review: 0/3 task-only versus 3/3 guided app-check passes, all guided selected on first attempt; none passes the unchanged 100% guardrail gate because the generic async try/catch rule flags awaited Jest test callbacks. The rule appears inapplicable to Jest callbacks, but the recorded score is retained unchanged. Repairs were attempted and not selected. This is a small public development observation, not a held-out launch result or native/device verification of generated code.",
+  "limitations": "No native build of generated candidates, private held-out tasks, developer effort or cost accounting, model output token measurement, independent review, or customer acceptance. Guided and task-only input tokens differ; repeats are not independent unseen tasks. Do not advertise product improvement from this artifact."
+}

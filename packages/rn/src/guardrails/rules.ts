@@ -164,6 +164,8 @@ export const rules: GuardrailRule[] = [
     name: 'Async functions have error handling',
     description: 'Async functions should use try/catch or propagate errors to avoid unhandled promise rejections.',
     severity: 'warning',
+    // Jest observes rejected async test callbacks; catching them would hide failures.
+    applicable: ({ filePath }) => !/(?:^|\/)__tests__\/|(?:^|\/)[^/]+\.(?:test|spec)\.[jt]sx?$/.test(filePath.replace(/\\/g, '/')),
     check: ({ content }) => {
       const asyncFunctions = content.match(/async\s+function\s+\w+\s*\([^)]*\)\s*\{/g) || []
       const asyncArrows = content.match(/async\s*\([^)]*\)\s*=>\s*\{/g) || []
