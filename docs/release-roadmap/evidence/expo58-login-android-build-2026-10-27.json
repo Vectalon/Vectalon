@@ -1,0 +1,44 @@
+{
+  "kind": "installed-demo-android-native-baseline",
+  "date": "2026-10-27",
+  "sourceRevision": "fa97a17",
+  "app": "apps/website/demo/login-app",
+  "environment": {
+    "host": "macOS arm64",
+    "java": "OpenJDK 17.0.21.0.2 arm64",
+    "gradle": "9.4.1",
+    "androidVirtualDevices": ["Kinsfold_API36; remained offline", "Pixel_3a_API_33_arm64-v8a; booted, then became unresponsive during corrected relaunch"]
+  },
+  "generatedNativeConfiguration": {
+    "expo": "58.0.17",
+    "reactNative": "0.88.0",
+    "compileSdk": 37,
+    "targetSdk": 36,
+    "minSdk": 24,
+    "kotlin": "2.2.10",
+    "ndk": "27.1.12297006"
+  },
+  "build": {
+    "command": "JAVA_HOME=/opt/homebrew/opt/openjdk@17 ./gradlew :app:assembleDebug --no-daemon --max-workers=2",
+    "result": "passed",
+    "tasks": "241 actionable; 108 executed, 133 up-to-date",
+    "duration": "7m 29s",
+    "apkPackage": "in.vectalon.nativeproof",
+    "apkBytes": 172927981,
+    "apkSha256": "af55e37ffb33edead801cda900f2110e7082ddfc70cb2bf29769e7b5cd445b1a"
+  },
+  "attemptsBeforePass": [
+    "Default Java path pointed to an Intel-only JDK on this arm64 host.",
+    "Offline Gradle build lacked the uncached Kotlin plugin.",
+    "First online build lost the React Native 0.88 Android archive download to a connection reset."
+  ],
+  "deviceLaunch": {
+    "result": "unverified",
+    "debugApkInstall": "passed on Pixel_3a_API_33_arm64-v8a",
+    "firstLaunch": "invalid test: host port 8081 served a different Expo project and the app loaded that project's bundle, displaying an ExpoLinking red screen",
+    "correctedLaunch": "failed to produce app UI: demo Metro ran on 8082 with emulator port forwards, but agent-device open failed with ADB code 224 and the screen was black",
+    "releaseApk": "not produced: optional self-contained release build was stopped after more than 25 minutes without completion"
+  },
+  "modelTaskResult": "not run; this is baseline native-build evidence only",
+  "limitations": "One isolated installed Expo demo debug build. No valid Android UI, customer app, model candidate, repair or task-success claim."
+}
