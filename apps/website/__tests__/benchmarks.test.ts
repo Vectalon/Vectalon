@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { MODEL_RESULTS, TASK_OUTCOMES } from '../lib/benchmarkData'
+import { MODEL_RESULTS, TASK_OUTCOMES, REPAIR_TASK_OUTCOMES } from '../lib/benchmarkData'
 
 const repo = path.resolve(__dirname, '../../..')
 const readJson = (file: string) => JSON.parse(fs.readFileSync(path.join(repo, file), 'utf8'))
@@ -35,9 +35,32 @@ describe('public benchmark evidence', () => {
     expect(MODEL_RESULTS.map(item => item.scenarios)).toEqual([43, 13, 41])
   })
 
+  it('keeps first-attempt and repair-selected app passes separate in the latest comparison', () => {
+    const evidence = readJson('docs/release-roadmap/evidence/paired-repair-7b-2026-10-27.json')
+    expect(REPAIR_TASK_OUTCOMES).toHaveLength(2)
+    for (const task of REPAIR_TASK_OUTCOMES) {
+      const rows = evidence.rows.filter((row: { task: string }) => row.task === task.id)
+      for (const [condition, first, assisted, planned] of [
+        ['task-only', task.taskOnlyFirst, task.taskOnlyAssisted, task.taskOnlyRuns],
+        ['vectalon', task.guidedFirst, task.guidedAssisted, task.guidedRuns],
+      ] as const) {
+        const runs = rows.filter((row: { condition: string }) => row.condition === condition)
+        expect(planned).toBe(runs.length)
+        for (const [selected, actual] of [[1, first], [2, assisted]]) {
+          expect(actual).toBe(runs.filter((row: { app: string; typecheck: boolean; tests: boolean; selected: number | null; first: string; second: string }) =>
+            row.app === 'passed' && row.typecheck && row.tests && row.selected === selected
+            && (selected === 1 ? row.first === 'parsed' : row.second === 'repair')).length)
+        }
+      }
+    }
+    expect(REPAIR_TASK_OUTCOMES.map(task => [task.taskOnlyFirst, task.guidedFirst, task.taskOnlyAssisted, task.guidedAssisted]))
+      .toEqual([[0, 0, 0, 0], [0, 3, 0, 0]])
+  })
+
   it('keeps task evidence distinct from historical rubric marketing', () => {
     const page = fs.readFileSync(path.join(repo, 'apps/website/app/benchmarks/page.tsx'), 'utf8')
     expect(page).toContain('TASK_OUTCOMES.map')
+    expect(page).toContain('REPAIR_TASK_OUTCOMES.map')
     expect(page).toContain('MODEL_RESULTS.map')
     expect(page).not.toMatch(/human-authored|LoRA fine-tuning|97% composite/)
   })

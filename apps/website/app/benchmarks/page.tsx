@@ -1,4 +1,4 @@
-import { MODEL_RESULTS, TASK_OUTCOMES } from '../../lib/benchmarkData'
+import { MODEL_RESULTS, TASK_OUTCOMES, REPAIR_TASK_OUTCOMES } from '../../lib/benchmarkData'
 
 export const metadata = {
   title: 'React Native engineering evidence — Vectalon',
@@ -13,8 +13,8 @@ export default function BenchmarksPage() {
         <h1 className="mt-5 text-4xl font-bold text-slate-50 sm:text-5xl">What Vectalon has proved so far</h1>
         <p className="mt-4 max-w-3xl text-slate-300">
           Our goal is to help your chosen model complete more verified engineering tasks in your app.
-          The first same-model comparison below has not shown an advantage yet. We publish the misses
-          alongside the passes and keep rubric scores separate from task completion.
+          We publish both passes and misses from same-model development checks. A promising review
+          result is not yet evidence of reliable improvement or a qualified model.
         </p>
       </header>
 
@@ -62,6 +62,45 @@ export default function BenchmarksPage() {
         </a>
       </section>
 
+      <section aria-labelledby="repair-outcomes" className="mt-16">
+        <h2 id="repair-outcomes" className="text-2xl font-semibold text-slate-50">Latest bounded comparison</h2>
+        <p className="mt-2 max-w-3xl text-sm text-slate-400">
+          The same pinned Qwen2.5-Coder 7B model attempted a new feature and review task in the
+          installed app, three times per condition. Both sides had the same call, output-token and
+          time limits. First-attempt passes and repair-selected passes are separate; a pass here
+          means TypeScript and task tests passed, not native or customer qualification.
+        </p>
+        <div className="card !p-0 mt-5 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="tbl min-w-[660px]">
+              <caption className="sr-only">First-attempt and repair-selected app passes in the bounded comparison</caption>
+              <thead><tr><th scope="col">Task</th><th scope="col">Task alone, first</th><th scope="col">With Vectalon, first</th><th scope="col">Task alone, repair</th><th scope="col">With Vectalon, repair</th></tr></thead>
+              <tbody>
+                {REPAIR_TASK_OUTCOMES.map(task => (
+                  <tr key={task.id}>
+                    <th scope="row" className="text-left font-mono text-sm font-normal text-slate-200">{task.id}</th>
+                    <td className="font-mono text-slate-300">{task.taskOnlyFirst}/{task.taskOnlyRuns}</td>
+                    <td className="font-mono text-slate-300">{task.guidedFirst}/{task.guidedRuns}</td>
+                    <td className="font-mono text-slate-300">{task.taskOnlyAssisted}/{task.taskOnlyRuns}</td>
+                    <td className="font-mono text-slate-300">{task.guidedAssisted}/{task.guidedRuns}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p className="mt-3 text-sm text-slate-400">
+          The feature failed in both conditions. The guided review passed app checks 3/3, but its
+          recorded guardrail score was below the launch gate; a later rule correction was not new
+          inference. A separate JSON-grammar follow-up completed only one failing pair before a
+          memory safety stop. These are public development tasks, not unseen or native proof.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+          <a className="text-brand hover:underline" href="https://github.com/Vectalon/Vectalon/blob/main/docs/release-roadmap/evidence/paired-repair-7b-2026-10-27.json">Bounded comparison evidence →</a>
+          <a className="text-brand hover:underline" href="https://github.com/Vectalon/Vectalon/blob/main/docs/release-roadmap/evidence/paired-grammar-7b-2026-10-27.json">Grammar follow-up and memory stop →</a>
+        </div>
+      </section>
+
       <section aria-labelledby="rubric-results" className="mt-16">
         <h2 id="rubric-results" className="text-2xl font-semibold text-slate-50">Older benchmark scores</h2>
         <p className="mt-2 max-w-3xl text-sm text-slate-400">
@@ -97,7 +136,7 @@ export default function BenchmarksPage() {
       <section aria-labelledby="next-evidence" className="mt-16 card">
         <h2 id="next-evidence" className="text-xl font-semibold text-slate-50">What we still need to prove</h2>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-400">
-          <li>Finish the same-model, equal-budget verification and repair comparison. Local 7B runs are currently limited by available memory.</li>
+          <li>Resolve the feature failures and repeat a complete same-model comparison; the latest grammar follow-up stopped early under its memory guard.</li>
           <li>Repeat on unseen tasks across installed RN and Expo apps, with native checks and visible failures.</li>
           <li>Measure developer correction time and confirm useful workflows with external developers.</li>
         </ul>

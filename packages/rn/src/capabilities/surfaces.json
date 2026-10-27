@@ -2957,7 +2957,7 @@
     "kind": "claims",
     "name": "apps/website/app/benchmarks/page.tsx",
     "source": "apps/website/app/benchmarks/page.tsx",
-    "digest": "sha256:cb3bc201d76453603a65e273a1c648773579d9beb4d8c0e252ead88c75e09f7a",
+    "digest": "sha256:c777b2a1dc9166a1546366101e904ce827f6cd1925abf943f690b02b51665bd0",
     "historical": false,
     "capabilityId": "rn.evaluation",
     "capabilityLifecycle": "experimental",

@@ -2,6 +2,7 @@ import localResult from '../../../packages/rn/bench/results/local.json'
 import balancedResult from '../../../packages/rn/bench/results/local-3b.json'
 import qualityResult from '../../../packages/rn/bench/results/local-7b.json'
 import outcomeEvidence from '../../../docs/release-roadmap/evidence/one-app-v2-comparison-2026-10-25.json'
+import repairEvidence from '../../../docs/release-roadmap/evidence/paired-repair-7b-2026-10-27.json'
 
 const pct = (value: number | null | undefined): number | null =>
   typeof value === 'number' ? Math.round(value * 100) : null
@@ -23,5 +24,19 @@ export const TASK_OUTCOMES = outcomeEvidence.reports.map(report => {
     id: report.task.id, skill: report.task.kind,
     taskOnlyPasses: passes('task-only'), taskOnlyPlanned: runs('task-only').length,
     guidedPasses: passes('vectalon'), guidedPlanned: runs('vectalon').length,
+  }
+})
+
+export const REPAIR_TASK_OUTCOMES = [...new Set(repairEvidence.rows.map(row => row.task))].map(id => {
+  const runs = repairEvidence.rows.filter(row => row.task === id)
+  const count = (condition: string, selected: number) => runs.filter(row => row.condition === condition
+    && row.app === 'passed' && row.typecheck && row.tests && row.selected === selected
+    && (selected === 1 ? row.first === 'parsed' : row.second === 'repair')).length
+  return {
+    id,
+    taskOnlyFirst: count('task-only', 1), guidedFirst: count('vectalon', 1),
+    taskOnlyAssisted: count('task-only', 2), guidedAssisted: count('vectalon', 2),
+    taskOnlyRuns: runs.filter(row => row.condition === 'task-only').length,
+    guidedRuns: runs.filter(row => row.condition === 'vectalon').length,
   }
 })
