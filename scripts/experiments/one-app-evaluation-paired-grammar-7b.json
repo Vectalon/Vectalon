@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+  "model": "qwen2.5-coder-7b",
+  "artifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+  "tasks": ["cart-membership"],
+  "conditions": ["task-only", "vectalon"],
+  "repetitions": 3,
+  "settings": { "temperature": 0.2, "maxTokens": 2048, "maxAttempts": 2, "providerCallLimit": 1, "outputFormat": "files-json" },
+  "timeoutMs": 360000,
+  "rubricModuleSha256": "746ef7071c2d8ff59e3174c15097162c8f0e93939e8de77fb66693db16900b79",
+  "grammarSchemaSha256": "3782765f598c9353b76387002e30900fc132910cd5a9ad84bcd57abe5cb7cd0a",
+  "inputs": {
+    "one-app-paired-repair-tasks.cjs": "1bb6f0aa12b8af1ecfaee67aa5e98926d9ad7529785202ae4a32be4d772f2d76",
+    "cart-membership.acceptance.tsx": "48138540d396e63c0111e55d452ae5661edefea62627ef9bf0e2f080af5e152f",
+    "one-app-tasks.cjs": "91ea35672bf7d810c54357f4d548d2a68b987b3827e5d4e3ba06165694aa0a7e"
+  },
+  "limitations": [
+    "Separate prospective development diagnostic after the unconstrained paired-repair run; not a rewrite of its frozen results",
+    "Same pinned model, app, task, call/output-token/deadline/reserve caps and verifier in both conditions; both now use the identical files-JSON grammar",
+    "Grammar constrains the transport envelope, not complete TypeScript, task behavior, path safety, or model skill",
+    "Public development task, not private held-out launch evidence; pretraining exposure unknown",
+    "Three repetitions per condition, alternating order; all errors, resource stops, rejected repairs and not-run rows remain visible",
+    "Generated code stays local and opt-in; acceptance/control answers remain outside prompts and training exports",
+    "Actual input tokens, costs, seeds, human correction, native/device and external acceptance remain unmeasured"
+  ]
+}

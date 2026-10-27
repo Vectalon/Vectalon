@@ -1,0 +1,23 @@
+{
+  "kind": "one-app-public-development-paired-grammar-diagnostic",
+  "date": "2026-10-27",
+  "task": "cart-membership",
+  "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+  "model": "qwen2.5-coder-7b",
+  "artifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+  "freezeSha256": "dc16573e4bbdad12f3d13bb144723decc01d3e38298c4701c3592e6e16b57c0f",
+  "grammarSchemaSha256": "3782765f598c9353b76387002e30900fc132910cd5a9ad84bcd57abe5cb7cd0a",
+  "preflightReportSha256": "1d14fbbabaf2337d72e23d26e7c5c2a4f93cf2d627f5931de649979f2e93e9fd",
+  "sourceReportSha256": "832d8403b53f0d215650e22251e7c41c786e5a4d2dc05d57606770bbd5f0870d",
+  "protocol": "Separate prospective diagnostic after the frozen unconstrained paired-repair run. Both conditions used the same pinned model, app, public feature task, files-JSON grammar, two-call/4096-requested-output-token cap, 360-second deadline, default sampling, app verifier and 2 GiB reserve. Task-only and guided prompts differed. Negative control failed and assistant-authored positive control passed before inference. Generated source and raw responses remain opt-in in the local private report.",
+  "rows": [
+    { "rep": 1, "condition": "task-only", "status": "failed", "first": "parsed", "second": "repair-parsed", "selected": 1, "typecheck": false, "tests": true, "guardrails": 0.92, "adherence": 0.6666666666666666, "calls": 2, "durationMs": 131119 },
+    { "rep": 1, "condition": "vectalon", "status": "failed", "first": "parsed", "second": "repair-parsed", "selected": 1, "typecheck": false, "tests": false, "guardrails": 0.96, "adherence": 0.5, "calls": 2, "durationMs": 160186 },
+    { "rep": 2, "condition": "vectalon", "status": "resource-aborted", "reason": "memory-metric-changed", "completedCalls": 0, "durationMs": 4303 },
+    { "rep": 2, "condition": "task-only", "status": "not-run" },
+    { "rep": 3, "condition": "task-only", "status": "not-run" },
+    { "rep": 3, "condition": "vectalon", "status": "not-run" }
+  ],
+  "interpretation": "Grammar produced parseable file envelopes for the completed pair, but neither condition passed both TypeScript and app tests. The selected task-only candidate passed tests but failed TypeScript because its public interface omitted hasProduct. The guided candidate failed TypeScript and tests; its repair also failed and was rejected. The resource guard then stopped a subsequent call after the memory observation changed, with available budget falling below the reserved 2 GiB. Four planned trials were not run. No feature improvement or qualification is established.",
+  "limitations": "Only one completed pair on a public development task. Grammar constrains the JSON envelope, not code correctness. The earlier unconstrained run is not a causal comparator because this is a separate stochastic run with different output constraints. No private held-out tasks, native build of generated code, human correction, model input-token/cost accounting, independent review or customer acceptance. Keep this failed/incomplete evidence visible; do not lower gates or alter customer grants. Core/Admin unchanged; no package release."
+}
