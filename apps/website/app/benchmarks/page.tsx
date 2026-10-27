@@ -93,11 +93,14 @@ export default function BenchmarksPage() {
           The feature failed in both conditions. The guided review passed app checks 3/3, but its
           recorded guardrail score was below the launch gate; a later rule correction was not new
           inference. A separate JSON-grammar follow-up completed only one failing pair before a
-          memory safety stop. These are public development tasks, not unseen or native proof.
+          memory safety stop. A later source-grounded edit attempt produced no candidate: the
+          local 7B provider refused for insufficient memory, leaving two planned repeats unrun.
+          These are public development tasks, not unseen or native proof.
         </p>
         <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm">
           <a className="text-brand hover:underline" href="https://github.com/Vectalon/Vectalon/blob/main/docs/release-roadmap/evidence/paired-repair-7b-2026-10-27.json">Bounded comparison evidence →</a>
           <a className="text-brand hover:underline" href="https://github.com/Vectalon/Vectalon/blob/main/docs/release-roadmap/evidence/paired-grammar-7b-2026-10-27.json">Grammar follow-up and memory stop →</a>
+          <a className="text-brand hover:underline" href="https://github.com/Vectalon/Vectalon/blob/main/docs/release-roadmap/evidence/scoped-cart-7b-capacity-2026-10-27.json">Edit-attempt capacity refusal →</a>
         </div>
       </section>
 

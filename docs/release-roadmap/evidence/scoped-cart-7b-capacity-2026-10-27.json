@@ -1,0 +1,32 @@
+{
+  "kind": "source-free-scoped-cart-capacity-observation",
+  "date": "2026-10-27",
+  "sourceRevision": "8c2b686b5455512b2606f40690ed6c7fa71de90a",
+  "task": "cart-membership",
+  "appRevision": "7da3f6e52049980f53460d0ccfce35130e1763aa",
+  "model": "qwen2.5-coder-7b",
+  "artifactSha256": "89f120544682078148c5a86117de9af3a65c339111262f2d3ff01d80d48b14be",
+  "freezeSha256": "6d8e7e624f7c3fbc6606edea4d714b1f403a690527c3bd864b7192a99d8423df",
+  "localOptInReportSha256": "f69c197a111739a63e077c4c206450f7425ee2055da510b08bf34a6f6e4484e8",
+  "protocol": "One permitted public development edit diagnostic; three planned repetitions, 2048 requested output tokens and one call per attempted row, 180-second deadline and 2 GiB reserve. Original app failed the acceptance control; assistant-authored positive control passed TypeScript and Jest. No task answer or acceptance source was sent to the model.",
+  "rows": [
+    {
+      "repetition": 1,
+      "condition": "vectalon-edits",
+      "recordedStatus": "error",
+      "classification": "infrastructure-capacity-refusal",
+      "nativeCallStatus": "error",
+      "nativeFailureCategory": "insufficient-memory",
+      "availableBudgetBytesBeforeCall": 5841155522,
+      "coldLoadRequirementBytes": 6140685024,
+      "nativeCallDurationMs": 3,
+      "completedModelResponses": 0,
+      "candidateChecks": "not-run"
+    },
+    { "repetition": 2, "condition": "vectalon-edits", "status": "not-run" },
+    { "repetition": 3, "condition": "vectalon-edits", "status": "not-run" }
+  ],
+  "interpretation": "The model returned no candidate. Neither edit delivery nor app task success was tested. The run's old generic error label has been corrected in subsequent runner code to resource-aborted/insufficient-memory; this original report was not rewritten. Retain both unstarted rows and do not count capacity refusal as model-quality failure or success.",
+  "nextAction": "Run the same pinned protocol on a host with sustained capacity, or continue other independent product checks. Then repeat on fresh held-out feature/fix/review tasks and native model candidates before any qualification claim.",
+  "limits": "Public task, no generated candidate, no native task build, no human correction/cost/customer evidence. Core/Admin, production defaults and grants unchanged; no package release."
+}

@@ -59,6 +59,11 @@ describe('public benchmark evidence', () => {
 
   it('keeps task evidence distinct from historical rubric marketing', () => {
     const page = fs.readFileSync(path.join(repo, 'apps/website/app/benchmarks/page.tsx'), 'utf8')
+    const capacity = readJson('docs/release-roadmap/evidence/scoped-cart-7b-capacity-2026-10-27.json')
+    expect(capacity.rows.map((row: { status?: string; nativeFailureCategory?: string }) => row.status ?? row.nativeFailureCategory))
+      .toEqual(['insufficient-memory', 'not-run', 'not-run'])
+    expect(page).toContain('scoped-cart-7b-capacity-2026-10-27.json')
+    expect(page).toContain('produced no candidate')
     expect(page).toContain('TASK_OUTCOMES.map')
     expect(page).toContain('REPAIR_TASK_OUTCOMES.map')
     expect(page).toContain('MODEL_RESULTS.map')

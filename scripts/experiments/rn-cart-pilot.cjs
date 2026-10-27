@@ -426,6 +426,9 @@ async function main() {
     } catch { row.status = Date.now() >= deadline ? 'timeout' : 'error'; }
     finally {
       clearTimeout(timer); guard?.dispose();
+      if (row.nativeCalls?.some(call => call.failureCategory === 'insufficient-memory')) {
+        row.status = 'resource-aborted'; row.resourceStopReason = 'insufficient-memory';
+      }
       if (guard?.signal.aborted) row.status = row.resourceStopReason === 'deadline' ? 'timeout' : 'resource-aborted';
       row.durationMs = Date.now() - started; save();
     }

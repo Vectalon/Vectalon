@@ -219,7 +219,8 @@ Module._load = function(request, ...args) {
     output = result.stdout.match(/^Evidence: (.+)$/m)?.[1];
     const serialized = fs.readFileSync(path.join(output, 'report.json'), 'utf8');
     const report = JSON.parse(serialized);
-    assert.equal(report.runs[0].status, 'error');
+    assert.equal(report.runs[0].status, 'resource-aborted');
+    assert.equal(report.runs[0].resourceStopReason, 'insufficient-memory');
     assert.equal(report.runs[0].identityMatched, undefined);
     assert.equal(report.runs[0].nativeCalls[0].failureCategory, 'insufficient-memory');
     assert.equal(report.runs[0].nativeCalls.length, 1);

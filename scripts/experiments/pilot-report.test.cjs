@@ -561,7 +561,7 @@ test('shows workflow gate failures separately from missing qualification evidenc
 
 test('capacity refusal leaves qualification unverified while a task failure remains failed', () => {
   const text = formatPilotReport({ verificationMode: 'bounded verifier', runs: [
-    { condition: 'capacity', status: 'error', identityMatched: undefined,
+    { condition: 'capacity', status: 'resource-aborted', resourceStopReason: 'insufficient-memory', identityMatched: undefined,
       nativeCalls: [{ status: 'error', failureCategory: 'insufficient-memory' }],
       result: { axes: { guardrails: 0, adherence: 0 }, attempts: [{ kind: 'initial', status: 'error' }] } },
     { condition: 'task', status: 'failed', identityMatched: true,
@@ -571,7 +571,7 @@ test('capacity refusal leaves qualification unverified while a task failure rema
   assert.ok(text.includes('| capacity | unverified | 0 | 0 | 0/0 |'));
   assert.ok(text.includes('| task | failed | 1 | 0 | 0/0 |'));
   assert.ok(text.includes('| capacity | 0/1 | 0 | 0/0 | 0 | 1 |'));
-  assert.ok(text.includes('| capacity | unrecorded | error | unrecorded | unrecorded | unrecorded | initial: error / unrecorded | unrecorded | unrecorded | unscored | unscored |'));
+  assert.ok(text.includes('| capacity | unrecorded | resource-aborted | unrecorded | unrecorded | unrecorded | initial: error / unrecorded | unrecorded | unrecorded | unscored | unscored |'));
   assert.ok(text.includes('Capacity refusals are infrastructure errors'));
 });
 
