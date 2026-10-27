@@ -1,5 +1,5 @@
-import { mkdirSync, writeFileSync, readFileSync } from 'fs'
-import { join, isAbsolute, dirname } from 'path'
+import { readFileSync, realpathSync } from 'fs'
+import { join, isAbsolute, relative, sep } from 'path'
 import type { WorkflowPhase, WorkflowArtifact, HealDecision } from '../../adapters/types'
 import { phaseResult, failedPhase, detectConventions } from './helpers'
 import { CodeReviewAnalyzer, ReviewFinding, RULES } from '../../sdlc/CodeReviewAnalyzer'
@@ -10,7 +10,6 @@ import {
   type LLMReviewFinding,
 } from '../../sdlc/LLMCodeReviewer'
 import { getGeneratedOutputRoot, writeProjectFile, isSafeProjectPath } from './fileOutput'
-import { reportPathChange } from '../../utils/fileDiff'
 import { PolicyEngine, defaultCodeReviewPolicy } from '../../guardrails/PolicyEngine'
 import { loadFailedHeals, recordFailedHeals, formatFailedHeals, type FailedHealRecord } from './healMemory'
 import { analyzeBundleStats, checkBundleBudgets, checkStaticBudgets, runMetroBundleCommand, formatBytes, type BudgetFinding } from '../../utils/bundleAnalyzer'
@@ -153,11 +152,16 @@ function readFileSafe(path: string): string | null {
 // .vectalon/generated/ when the workflow runs inside the rn-vectalon package
 // itself — so honor the same output-root logic the write path uses.
 function resolveArtifactPath(projectRoot: string | undefined, artifactPath: string): string | null {
-  if (!artifactPath) return null
-  if (isAbsolute(artifactPath) || artifactPath.startsWith('.')) return artifactPath
   if (!projectRoot) return null
   const root = getGeneratedOutputRoot(projectRoot)
-  return join(root, artifactPath)
+  const path = isAbsolute(artifactPath) ? relative(root, artifactPath)
+    : artifactPath.startsWith('./') ? artifactPath.slice(2) : artifactPath
+  if (!isSafeProjectPath(path)) return null
+  const candidate = join(root, path)
+  try {
+    if (!realpathSync(candidate).startsWith(realpathSync(root) + sep)) return null
+  } catch { /* Missing artifacts have no disk content to expose. */ }
+  return candidate
 }
 
 function formatFinding(f: ReviewFinding): string {
@@ -191,27 +195,13 @@ function countSeverityAtLeast(reviewed: FileReview[], thresholdRank: number): nu
   return total
 }
 
-// Persist a corrected file and surface the change through the diff-reporting
-// sink (the CLI streams these as Claude-style modified diffs). Reuses the
-// canonical writeProjectFile (which handles the output root, safe-path guard,
-// and diff reporting) for relative paths; falls back to a manual write only
-// for absolute/`.`-prefixed artifact paths that writeProjectFile rejects.
-function writeFixedFile(projectRoot: string | undefined, filePath: string, content: string): string | null {
-  if (projectRoot && isSafeProjectPath(filePath)) {
-    return writeProjectFile(projectRoot, filePath, content)
-  }
-  const fullPath = resolveArtifactPath(projectRoot, filePath)
-  if (!fullPath) return null
-  const oldContent = readFileSafe(fullPath)
-  try {
-    mkdirSync(dirname(fullPath), { recursive: true })
-    writeFileSync(fullPath, content, 'utf-8')
-  } catch (err) {
-    reportError(err, 'codeReview: writing fixed file')
-    return null
-  }
-  reportPathChange(filePath, oldContent, content)
-  return fullPath
+// All fixes and reverts use the same guarded output root as implementation.
+export function writeFixedFile(projectRoot: string | undefined, filePath: string, content: string): string | null {
+  if (!projectRoot) return null
+  const root = getGeneratedOutputRoot(projectRoot)
+  const path = isAbsolute(filePath) ? relative(root, filePath)
+    : filePath.startsWith('./') ? filePath.slice(2) : filePath
+  return isSafeProjectPath(path) ? writeProjectFile(projectRoot, path, content) : null
 }
 
 /** Tolerant parser for eslint (`file:line:col - msg (rule)`) and tsc (`file(line,col): error ...`). */

@@ -1,5 +1,5 @@
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'fs'
-import { join, dirname } from 'path'
+import { mkdirSync, readFileSync, writeFileSync, existsSync, lstatSync, realpathSync } from 'fs'
+import { join, dirname, relative, sep } from 'path'
 import { reportPathChange } from '../../utils/fileDiff'
 import { reportError } from '../../utils/safe'
 
@@ -12,7 +12,7 @@ export function isSafeProjectPath(filePath: string): boolean {
   if (!FILE_PATH_RE.test(filePath)) return false
   const normalized = filePath.replace(/\\/g, '/')
   if (normalized.startsWith('/')) return false
-  if (normalized.split('/').includes('..')) return false
+  if (normalized.split('/').some(part => !part || part === '.' || part === '..')) return false
   return true
 }
 
@@ -35,14 +35,32 @@ export function getGeneratedOutputRoot(projectRoot: string): string {
 
 export function writeProjectFile(projectRoot: string, filePath: string, content: string): string | null {
   if (!isSafeProjectPath(filePath)) return null
-  const fullPath = join(getGeneratedOutputRoot(projectRoot), filePath)
-  const oldContent = existsSync(fullPath) ? readFileSync(fullPath, 'utf-8') : null
-  mkdirSync(dirname(fullPath), { recursive: true })
-  writeFileSync(fullPath, content, 'utf-8')
+  const reportedPath = join(getGeneratedOutputRoot(projectRoot), filePath)
+  let fullPath: string
+  let oldContent: string | null
+  try {
+    const root = realpathSync(projectRoot)
+    const outputRoot = isSelfPackageRepo(projectRoot) ? join(root, GENERATED_OUTPUT_DIR) : root
+    fullPath = join(outputRoot, filePath)
+    let current = root
+    const parts = relative(root, fullPath).split(sep)
+    if (!parts.length || parts.some(part => !part || part === '.' || part === '..')) return null
+    for (const [index, part] of parts.entries()) {
+      current = join(current, part)
+      let stat
+      try { stat = lstatSync(current) }
+      catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') continue; return null }
+      if (stat.isSymbolicLink() || (index === parts.length - 1 ? !stat.isFile() || stat.nlink !== 1 : !stat.isDirectory())) return null
+    }
+    oldContent = existsSync(fullPath) ? readFileSync(fullPath, 'utf-8') : null
+    // shortcut: checked local hierarchy can still race a concurrent writer; use an OS-isolated workspace for hostile shared volumes.
+    mkdirSync(dirname(fullPath), { recursive: true })
+    writeFileSync(fullPath, content, 'utf-8')
+  } catch { return null }
   // Skip reporting byte-identical rewrites so idempotent regenerations don't
   // produce `+0 -0` no-op diff noise.
   if (oldContent !== content) {
     reportPathChange(filePath, oldContent, content)
   }
-  return fullPath
+  return reportedPath
 }
