@@ -18,5 +18,7 @@ describe('release Core checkout build contract', () => {
     }
     expect(workflow).toContain('ref: ${{ env.VECTALON_CORE_RELEASE_REF }}')
     expect(workflow).toContain('ref: ${{ needs.bench-gate.outputs.core-sha }}')
+    expect(workflow.match(/- name: Verify bundled capability catalog/g)).toHaveLength(2)
+    expect(workflow.match(/validateCapabilityCatalog\(require\('\.\/packages\/rn\/dist\/capabilities\/catalog\.json'\)\)/g)).toHaveLength(2)
   })
 })

@@ -105,6 +105,7 @@ describe('vc init — proof of value', () => {
     const window = renderPovWindow('/x', score, mockIntel())
     expect(window).toContain('Vectalon Health Score:')
     expect(window).toContain('76/100')
+    expect(window).toContain('Static score only; app build, tests, and model tasks not verified.')
     expect(window).toContain('Top problems Vectalon found:')
     expect(window).toContain('Android dependency conflict')
     expect(window).toContain('RN upgrade risk detected')
@@ -129,11 +130,13 @@ describe('vc init — proof of value', () => {
     ] })
     const window = renderPovWindow('/x', score, null)
     expect(window).toContain('… and 2 more')
+    expect(window).toContain('vc --experimental score')
   })
 
   it('renders the no-problems message when nothing is found', () => {
     const score = mockScore({ recommendations: [], overall: 92, grade: 'A', verdict: 'excellent' })
     const window = renderPovWindow('/x', score, mockIntel())
-    expect(window).toContain('No problems found')
+    expect(window).toContain('No problems detected by this static scan.')
+    expect(window).not.toContain(' excellent ')
   })
 })

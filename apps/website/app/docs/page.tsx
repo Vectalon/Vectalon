@@ -4,7 +4,7 @@ import { PRODUCT_MANIFEST } from '../../lib/product-manifest'
 const FREE: Array<[string, string]> = [
   ['fix "issue"', 'THE workflow — tell it what\'s broken (or pass --log) and get root cause → evidence → impact → recommended fix → applied → verification → confidence in one structured verdict, applied in a sandbox by default'],
   ['score', 'A static 0-100 engineering health score across eight dimensions, with trends and ranked actions. Unknown native-version requirements are marked unverified; this is not a native build or model-task pass'],
-  ['init', 'The 15-minute proof of value — scan the project, build the knowledge base, and end with the scan summary + Health Score + Top 5 problems. No LLM config asked'],
+  ['init', 'Scan the project, seed local knowledge, and show a static score and findings. Choose a model provider interactively or with --model; this does not verify app builds or model task success'],
   ['mode', 'Where your source runs — Cloud (hosted models) / Private (company LLM) / Air-gapped (local model, nothing leaves the machine); enforced, not labeled'],
   ['demo', 'The flagship demonstration — the feature workflow, live: Requirement → … → PR + the self-healing loop, from a real prior run when present, zero model calls'],
   ['brain', 'The productized Team Brain — ask "Why Zustand?" and get the decision card (ADR, reason, approver, related, reviewed); ask "Who owns auth?" and get the expertise tree (owner, experts, ADRs, services, changes)'],
@@ -16,7 +16,7 @@ const FREE: Array<[string, string]> = [
   ['refresh', 'Re-fetch web intel + re-seed knowledge from the repo'],
   ['status', 'One read-only health screen — daemon, MCP server, model, license'],
   ['ecosystem', 'Browse the tooling catalog — MCP servers, skills, hooks; grouped, with --info cards'],
-  ['models', 'List the local model tiers — fast (1.5B) / balanced (3B) / quality (7B) — with the one auto-selected for your RAM; init picks it for you'],
+  ['models', 'List local model tiers — fast (1.5B) / balanced (3B) / quality (7B). Init proposes a RAM-based default, and --preset lets you choose'],
   ['pull [tier]', 'Download the local GGUF model — a usage tier (fast|balanced|quality) or a model id; defaults to your machine’s auto-selected tier'],
   ['selftest', 'Test every harness feature in isolated sandboxes — live pass/fail stream'],
   ['impact', 'Cross-package blast radius — affected screens, navigation stacks, and the Maestro E2E flows that must run (with accessibility variants for covered screens)'],

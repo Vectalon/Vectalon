@@ -5,7 +5,7 @@
   "capabilities": [
     {
       "id": "rn.project.inspect",
-      "version": "1.0.33",
+      "version": "1.0.34",
       "lifecycle": "beta",
       "implemented": true,
       "owner": {
@@ -911,6 +911,24 @@
           "recordedAt": "2026-10-27T14:10:27.018Z",
           "productVersion": "0.22.5",
           "capabilityVersion": "1.0.33"
+        },
+        {
+          "kind": "implementation",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.project.inspect.1.0.34.0.22.5.implementation.json",
+          "digest": "sha256:45e70c0fe1ea7765191875e1151305cef520b62246126c1e26f0bac83f7b9d54",
+          "recordedAt": "2026-10-28T08:45:22.511Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.34"
+        },
+        {
+          "kind": "customer-workflow",
+          "status": "passed",
+          "reference": "capabilities/evidence/rn.project.inspect.1.0.34.0.22.5.customer-workflow.json",
+          "digest": "sha256:9816cebae7a046ef4a63d19fa6b55cad1638eeb51e042e13e25d189c30e5ba0b",
+          "recordedAt": "2026-10-28T08:45:22.511Z",
+          "productVersion": "0.22.5",
+          "capabilityVersion": "1.0.34"
         }
       ]
     },

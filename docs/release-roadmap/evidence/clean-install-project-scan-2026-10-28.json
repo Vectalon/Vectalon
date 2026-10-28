@@ -1,0 +1,24 @@
+{
+  "kind": "source-free-clean-install-project-scan",
+  "date": "2026-10-28",
+  "package": "@vectalon-dev/rn@0.22.5 source candidate",
+  "archiveSha256": "77ba3790d2f0691de2e3d2c602bd67decc3792742293512a30da16e64d705500",
+  "installation": "npm pack --ignore-scripts followed by npm install --offline --ignore-scripts in a fresh directory, with 185 dependencies installed from a temporary cache",
+  "fixture": "Disposable one-file React Native 0.78 declaration; no installed React Native dependency, native project, customer files or credentials",
+  "checks": {
+    "version": "0.22.5",
+    "init": "passed with explicit local fast/1.5B choice; knowledge seeded and source score shown",
+    "status": "passed; Free tier reported",
+    "doctor": "returned 1 with 25 missing and 7 warnings after init enabled unavailable optional ecosystem items; rn-cli detected",
+    "scoreDisclosure": "Static score only; app build, tests, and model tasks not verified; no excellent verdict",
+    "bundledCapabilityCatalog": "valid after qualification and rebuild",
+    "capability": "rn.project.inspect 1.0.34 fixture workflow passed; beta lifecycle unchanged",
+    "regression": "RN 322 suites / 3228 passed / 1 skipped; website 133 passed / 1 skipped; capability tamper 22 passed; RN and website builds passed"
+  },
+  "preliminaryStops": [
+    "Default npm cache was unwritable; used a task-local temporary cache.",
+    "Restricted-network install could not resolve the npm registry; the permitted fetch populated the temporary cache before final offline installation.",
+    "A pre-qualification build produced a stale bundled capability evidence list and correctly refused init as invalid-catalog; rebuilding after qualification resolved this. The release workflow now validates the bundled catalog before publish."
+  ],
+  "limitations": "This is a source-candidate package, not a downloaded published version. The tiny fixture was not runnable: no dependency install for its RN app, TypeScript/Jest/native build, simulator, model task, external developer or time-to-first-useful-result measurement. No customer qualification, Core/Admin change, entitlement promotion or npm release."
+}

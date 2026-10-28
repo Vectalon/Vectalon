@@ -98,6 +98,9 @@ jobs:
         env:
           CORE_REPO_DIR: packages/core/src
 
+      - name: Verify bundled capability catalog
+        run: node -e "const {validateCapabilityCatalog}=require('./packages/rn/dist/node_modules/@vectalon-dev/core/capabilities/CapabilityCatalog.js'); const result=validateCapabilityCatalog(require('./packages/rn/dist/capabilities/catalog.json')); if (!result.valid) { console.error(result.errors); process.exit(1) }"
+
       - name: Verify packed Core and key provenance
         run: pnpm --filter @vectalon-dev/rn test -- --runInBand __tests__/contracts/productDefinition.test.ts
 
@@ -174,6 +177,9 @@ jobs:
         run: pnpm turbo run build --filter=@vectalon-dev/rn
         env:
           CORE_REPO_DIR: packages/core/src
+
+      - name: Verify bundled capability catalog
+        run: node -e "const {validateCapabilityCatalog}=require('./packages/rn/dist/node_modules/@vectalon-dev/core/capabilities/CapabilityCatalog.js'); const result=validateCapabilityCatalog(require('./packages/rn/dist/capabilities/catalog.json')); if (!result.valid) { console.error(result.errors); process.exit(1) }"
 
       - name: Verify packed Core and key provenance
         run: pnpm --filter @vectalon-dev/rn test -- --runInBand __tests__/contracts/productDefinition.test.ts

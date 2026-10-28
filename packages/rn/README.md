@@ -54,18 +54,18 @@ npx vc smoke --full    # npx resolves your local install first
 
 ---
 
-## Quick Start — the 15-minute proof of value
+## Quick Start — first project scan
 
 ```bash
 npx --package @vectalon-dev/rn vectalon init      # or: vc init
 ```
 
-That single command is the whole commercial experience. It scans the
-project, seeds the knowledge base, and configures the model router silently
-underneath — **no LLM configuration is ever asked of you** (the local tier is
-auto-selected for your machine's RAM; local / WASM / remote providers all
-work with automatic fallback). When init finishes, you immediately see the
-payoff — zero model calls:
+This scans the project and seeds local project knowledge. Interactive setup
+asks you to choose a model provider; non-interactive setup defaults to local,
+and `--model` / `--preset` let you choose explicitly. A configured or downloaded
+model is **not** a qualified model. The first result is a deterministic source
+scan, not an app build, test run, or proof that AI improved a task. Example
+output (counts and findings depend on your app):
 
 ```
 Scanning React Native project...
@@ -94,7 +94,7 @@ Then, when you're ready to go further:
 
 ```bash
 npx --package @vectalon-dev/rn vectalon serve     # or: vc serve — start the MCP server for agents
-npx --package @vectalon-dev/rn vectalon score     # or: vc score — the full 8-dimension scorecard + delta
+npx --package @vectalon-dev/rn vectalon --experimental score  # static scorecard; experimental opt-in
 npx --package @vectalon-dev/rn vectalon           # or: vc — the interactive menu
 ```
 
@@ -106,7 +106,7 @@ Run `npx --package @vectalon-dev/rn vectalon <command> --help` for detailed opti
 
 | Command | Description | Key Options |
 |---------|-------------|-------------|
-| `init [dir]` | The **15-minute proof of value** — scans the project, builds the knowledge base automatically (project snapshot, knowledge graph, code graph, native config, learned patterns), configures the model router silently (local auto-select, no LLM config asked), and ends with the **scan summary + Vectalon Health Score + Top 5 problems** in the proof-of-value window. Transactional: a failed init is recoverable (resume / clean restart) and a completed one is a no-op | `--model <provider>`, `--resume`, `--clean-restart`, `--force` |
+| `init [dir]` | Scans the project, builds local knowledge, configures the chosen/default model provider, and shows a static score and findings. It does not verify an app build or model task. Failed init can resume or roll back; completed init is a no-op | `--model <provider>`, `--preset <id>`, `--resume`, `--clean-restart`, `--force` |
 | `serve` | Start the MCP server (MCP/stdio/SSE/HTTP) | `-p <port>`, `--protocol <type>`, `--model <provider>`, `--safe-mode` |
 | `feature [prompt]` | Full SDLC workflow: PRD → design → architecture → implementation → tests → code-review → PR → docs | `--workflow`, `--resume`, `--from`, `--ticket <key>`, `--push`, `--device`, `--heal-interactive`, `--dry-run`, `--model <provider>` |
 | `upgrade [dir]` | React Native / Expo upgrade copilot (impact, codemods, verification) | `--to <version>`, `--dry-run`, `--apply`, `--force` |

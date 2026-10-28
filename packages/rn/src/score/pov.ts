@@ -1,14 +1,9 @@
 /**
- * vc init — the 15-minute proof of value.
+ * vc init — deterministic project scan summary.
  * Business Source License 1.1 (BSL-1.1)
  *
- * The commercial experience: `npx @vectalon-dev/rn init` ends with the
- * payoff — "Scanning React Native project…" counts (files, components,
- * screens, native modules, dependencies, navigation stacks, tests,
- * architecture risks), the Vectalon Health Score, and the Top 5 problems
- * Vectalon found, each with its P0/P1/P2 severity. Zero model calls, zero
- * configuration asked of the user — the model router's local auto-select
- * runs silently underneath.
+ * `vectalon init` ends with source-scan counts, a static health score and
+ * ranked findings. This does not run app checks or qualify a model.
  */
 import pc from 'picocolors'
 import { renderCarbonWindow, parchment, dim } from '../cli/carbon'
@@ -82,7 +77,7 @@ function renderTopProblems(score: ScoreReport, top = 5): string[] {
   const dot: Record<string, string> = { P0: pc.red('●'), P1: pc.yellow('●'), P2: pc.dim('○') }
   const recs = score.recommendations.slice(0, top)
   if (recs.length === 0) {
-    lines.push(parchment('No problems found — the project is in great shape.'))
+    lines.push(parchment('No problems detected by this static scan.'))
     return lines
   }
   lines.push(pc.bold('Top problems Vectalon found:'))
@@ -102,15 +97,15 @@ export function renderPovWindow(root: string, score: ScoreReport, intel: IntelRe
   body.push(...renderScanSummary(counts))
   body.push('')
   body.push(`${parchment('Vectalon Health Score:')} ${pc.bold(color(String(overall) + '/100'))}  ${dim(`grade ${score.grade} · ${score.historyNote}`)}`)
+  body.push(dim('Static score only; app build, tests, and model tasks not verified.'))
   body.push('')
   body.push(...renderTopProblems(score))
   if (score.recommendations.length > 5) {
-    body.push(`  ${dim(`… and ${score.recommendations.length - 5} more — run \`vc score\` for the full scorecard.`)}`)
+    body.push(`  ${dim(`… and ${score.recommendations.length - 5} more — run \`vc --experimental score\` for the full scorecard.`)}`)
   }
   return renderCarbonWindow({
-    title: 'vectalon init — proof of value',
-    verdict: score.verdict,
+    title: 'vectalon init — project scan',
     lines: body,
-    footer: 'zero model calls · no configuration required',
+    footer: 'zero model calls · run app checks before relying on this score',
   })
 }

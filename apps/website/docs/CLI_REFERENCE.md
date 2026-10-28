@@ -32,15 +32,14 @@ policy, serve, pull, models, help).
 
 ## `init`
 
-**The 15-minute proof of value.** Initialize vectalon in a React Native
+**First project scan.** Initialize Vectalon in a React Native
 project with one command: scan the codebase, build the context snapshot,
 detect tooling (Expo vs bare RN-CLI), set up the model provider, and enable
-the recommended ecosystem items — then end with the **payoff**: the scan
+the recommended ecosystem items — then show the scan
 summary, the **Vectalon Health Score**, and the **Top 5 problems** Vectalon
-found, in the proof-of-value window. **No LLM configuration is ever asked**
-— the model router's local auto-select (or WASM/remote with automatic
-fallback) runs silently underneath, and the summary itself is zero model
-calls.
+found. Interactive setup asks for a model provider; non-interactive setup
+defaults to local, and `--model` / `--preset` allow explicit choice. The summary
+uses zero model calls and is a static scan, not a build, test, or model-task pass.
 
 ```bash
 npx --package @vectalon-dev/rn vectalon init                  # scan cwd, create .vectalon/, and show the score + top problems
@@ -55,7 +54,7 @@ npx --package @vectalon-dev/rn vectalon init --model ollama   # local Ollama ser
 npx --package @vectalon-dev/rn vectalon init --model vllm     # local vLLM server — no API key
 ```
 
-The proof-of-value window is exactly the commercial surface:
+Illustrative scan output (counts and findings vary by project):
 
 ```
 Scanning React Native project...
@@ -82,7 +81,7 @@ Top problems Vectalon found:
 
 The counts come from the shared Project Intelligence model; the score is the
 eight-dimension `vc score` aggregation (offline, deterministic). The run also
-seeds the intel + score-history caches, so the next `vc score` is instant
+seeds the intel + score-history caches, so the next `vc --experimental score` is instant
 and already has a baseline for its "↓ N points this week" delta.
 
 **Options**
@@ -92,6 +91,7 @@ and already has a baseline for its "↓ N points this week" delta.
 | `[directory]` | Project root to scan (default: cwd) |
 | `--mode <mode>` | Deployment mode (`cloud` \| `private` \| `air-gapped`) — constrains the provider to the mode's privacy ladder and records it in the manifest |
 | `--model <provider>` | Default model provider: `local` \| `wasm` \| `openai` \| `anthropic` \| `azure-openai` \| `groq` \| `ollama` \| `vllm` (refused when outside `--mode`) |
+| `--preset <id>` | Local model tier or model ID; use with `--model local` for an explicit choice |
 | `--resume` | Resume an interrupted init from its last completed phase |
 | `--clean-restart` | Roll back an interrupted init (restore originals) and start over |
 | `--force` | Re-initialize even when the project is already initialized |
@@ -2576,8 +2576,8 @@ version is outside the verified native requirements table, Build Health is
 marked unverified instead of borrowing an older release's requirements.
 
 ```bash
-npx --package @vectalon-dev/rn vectalon score                # the full scorecard — overall + 8 dimensions
-npx --package @vectalon-dev/rn vectalon score --json         # machine-readable report
+npx --package @vectalon-dev/rn vectalon --experimental score                # static scorecard — overall + 8 dimensions
+npx --package @vectalon-dev/rn vectalon --experimental score --json         # machine-readable report
 ```
 
 The scorecard is the sellable number:

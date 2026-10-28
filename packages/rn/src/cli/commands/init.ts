@@ -148,10 +148,8 @@ export async function initCommand(rootDir: string, options: InitOptions = {}): P
     state.updatedAt = Date.now()
     writeInitState(root, state)
 
-    // The 15-minute proof of value: the payoff of init. Deterministic and
-    // offline (no model calls), so it never blocks on LLM configuration —
-    // the local auto-select already ran silently underneath. It also seeds
-    // the intel + score-history caches, so the next `vc score` is instant.
+    // Show the deterministic scan after setup; this does not run a model task
+    // or verify an app build. It also seeds the score-history cache.
     try {
       const score = await runScore(root, { skipAudit: true })
       const intel = readProjectIntel(root).report
@@ -256,9 +254,8 @@ async function runInitPhases(
   } else {
     model = await setupModelProvider(options)
     // Local provider: auto-select (or honor --preset) the GGUF model tier and
-    // persist it as modelConfig.modelName so the ModelRouter actually runs
-    // the chosen model — the user never has to think about which size fits
-    // their machine.
+    // persist it as modelConfig.modelName so the ModelRouter uses the
+    // explicit or auto-selected local model.
     if (model.provider === 'local') {
       const resolvedPreset = resolveInitModelPreset(options)
       model = { provider: 'local', modelConfig: { modelName: resolvedPreset.modelId }, modelPreset: resolvedPreset.tier }
@@ -402,7 +399,7 @@ function logModelSetup(model: ResolvedModelSetup): void {
     const availability = detectModelAvailability()
     const modelName = model.modelConfig?.modelName || getDefaultPreset().id
     const tier = model.modelPreset
-    const tierText = tier ? ` — ${tier} tier (auto-selected for your RAM)` : ''
+    const tierText = tier ? ` — ${tier} tier` : ''
     if (availability.localDownloaded) {
       logger.dim(`  Model: local provider configured — ${modelName} downloaded${tierText}.`)
     } else {
