@@ -32,7 +32,7 @@ import { readProjectContext, requirementsForRn } from '../fix/diagnose'
 import { runPerfScan } from '../perfScan'
 import { runSecurityReview } from '../security'
 import { runA11yScan } from '../a11y'
-import { detectVersions } from '../upgrade/detect'
+import { compareMajorMinor, detectVersions, versionParts } from '../upgrade/detect'
 import { analyzeUpgradeImpact } from '../upgrade/impact'
 import { LATEST_KNOWN_RN } from '../upgrade/catalog'
 import type { ScoreDimension, ScoreDimensionDelta, ScoreFinding, ScoreHistory, ScoreHistoryEntry, ScoreOptions, ScorePriority, ScoreRecommendation, ScoreReport, ScoreTrendPoint, ScoreVerdict } from './types'
@@ -413,6 +413,21 @@ function scoreUpgradeRiskDim(root: string): ScoreDimension | null {
   let versions, findings
   try {
     versions = detectVersions(root)
+    const current = versions.rnVersion ? versionParts(versions.rnVersion) : null
+    const latest = versionParts(LATEST_KNOWN_RN)
+    if (current && latest && compareMajorMinor([current[0], current[1]], [latest[0], latest[1]]) > 0) {
+      // shortcut: use the existing unknown-version midpoint until this RN line has verified upgrade rules.
+      return {
+        id: 'upgrade-risk', label: 'RN Upgrade Risk', score: 50, weight: 0.09,
+        detail: `Unverified: react-native ${versions.rnVersion} is newer than the latest known ${LATEST_KNOWN_RN}`,
+        findings: [{
+          id: 'upgrade-version-unverified', dimension: 'upgrade-risk', severity: 'warning', file: 'package.json',
+          message: `Upgrade risk is unverified for react-native ${versions.rnVersion}; the rule catalog ends at ${LATEST_KNOWN_RN}.`,
+          action: 'Check this RN/Expo version against official requirements and run native builds before relying on upgrade guidance.',
+        }],
+        evidence: [`react-native ${versions.rnVersion} · latest known ${LATEST_KNOWN_RN}; upgrade impact not assessed`],
+      }
+    }
     findings = analyzeUpgradeImpact(versions, LATEST_KNOWN_RN)
   } catch (err) {
     reportError(err, 'vc score: upgrade-risk dimension')

@@ -2,6 +2,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { tmpdir } from 'os'
 import { runPrReview, renderPrComment, verdictOf, PR_REVIEW_MARKER } from '../../src/prReview'
+import { checkArchitecture } from '../../src/prReview/checks'
 import type { PrReviewIssue, PrReviewReport } from '../../src/prReview'
 
 function fixture(): string {
@@ -112,6 +113,15 @@ const CLEAN_DIFF = [
 ].join('\n')
 
 describe('vc pr — the five-check review', () => {
+  it('does not call normal navigation and service imports layering violations', () => {
+    expect(checkArchitecture('.', [
+      { path: 'src/navigation/AppNavigator.tsx', additions: 1, deletions: 0, addedLines: [{ line: 1, text: "import Home from '../screens/Home'" }] },
+      { path: 'src/hooks/useHome.ts', additions: 1, deletions: 0, addedLines: [{ line: 1, text: "import { load } from '../services/HomeApi'" }] },
+    ])).toEqual([])
+    expect(checkArchitecture('.', [
+      { path: 'src/utils/helper.ts', additions: 1, deletions: 0, addedLines: [{ line: 1, text: "import Home from '../screens/Home'" }] },
+    ])).toHaveLength(1)
+  })
   afterEach(() => {
     const memo = (globalThis as Record<string, unknown>)['__scoreMemo']
     void memo

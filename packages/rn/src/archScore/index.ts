@@ -22,8 +22,9 @@ export const runArchScore = scoreArchitecture
 /** Where arch-score reports are written. */
 export const archScoreDocsDir = (root: string): string => join(root, 'docs', 'vectalon', 'arch-score')
 
-const SHARED_DIRS = new Set(['utils', 'components', 'api', 'hooks', 'lib', 'shared', 'common', 'constants', 'types', 'navigation'])
-const FEATURE_DIRS = new Set(['screens', 'features', 'pages', 'modules', 'services'])
+// Navigation composes screens; hooks may depend on app-wide services.
+const SHARED_DIRS = new Set(['utils', 'components', 'api', 'hooks', 'lib', 'shared', 'common', 'constants', 'types'])
+const FEATURE_DIRS = new Set(['screens', 'features', 'pages', 'modules'])
 
 function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v))

@@ -49,6 +49,16 @@ describe('arch-score: scoring', () => {
     expect(report.topImprovements.some(i => i.includes('layering') || i.includes('shared→feature'))).toBe(true)
   })
 
+  it('does not penalize navigation composition or hooks calling services', () => {
+    const files = baseProject()
+    files['src/navigation/AppNavigator.tsx'] = "import Home from '../screens/Home'\nexport default Home\n"
+    files['src/hooks/useHome.ts'] = "import { load } from '../services/HomeApi'\nexport const useHome = load\n"
+    files['src/services/HomeApi.ts'] = 'export const load = () => null\n'
+    dir = createTempProject(files)
+    const report = scoreArchitecture(dir)
+    expect(report.dimensions.find(d => d.id === 'layering')?.score).toBe(100)
+  })
+
   it('verdict thresholds', () => {
     expect(verdictOf(90)).toBe('approved')
     expect(verdictOf(75)).toBe('needs-attention')

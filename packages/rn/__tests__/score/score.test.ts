@@ -140,6 +140,10 @@ describe('vc score — end to end on a clean fixture', () => {
     const build = report.dimensions.find(d => d.id === 'build-health')!
     expect(build.detail).toMatch(/unverified/i)
     expect(build.findings.map(f => f.message).join(' ')).not.toMatch(/35 SDK requirement/)
+    const upgrade = report.dimensions.find(d => d.id === 'upgrade-risk')!
+    expect(upgrade.detail).toMatch(/unverified/i)
+    expect(upgrade.score).toBeLessThan(100)
+    expect(upgrade.findings[0]?.id).toBe('upgrade-version-unverified')
     rmSync(root, { recursive: true, force: true })
   })
 

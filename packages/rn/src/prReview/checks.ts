@@ -18,7 +18,7 @@ import { addedLineSet } from './diff'
 import type { PrChangedFile, PrReviewIssue, PrReviewSeverity } from './types'
 
 /** Feature dirs — the arch-score layering boundary (features depend on shared). */
-export const FEATURE_DIRS = new Set(['screens', 'features', 'pages', 'modules', 'services'])
+export const FEATURE_DIRS = new Set(['screens', 'features', 'pages', 'modules'])
 
 export const LOCKFILES = ['package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'bun.lockb']
 
@@ -89,6 +89,7 @@ export function checkArchitecture(root: string, changed: PrChangedFile[]): PrRev
   for (const f of changed) {
     if (!/\.(ts|tsx|js|jsx)$/.test(f.path)) continue
     if (!isSharedPath(f.path)) continue // only shared files can violate (shared → feature)
+    if (f.path.split(/[\\/]/).includes('navigation')) continue // route composition legitimately imports screens
     for (const line of f.addedLines) {
       for (const spec of importSpecifiers(line.text)) {
         const target = resolveRelative(f.path, spec)
