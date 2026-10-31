@@ -1,9 +1,9 @@
 {
   "specVersion": 1,
   "provenance": {
-    "runId": "32193cd6-8246-46fe-9157-1a5c3e242fa6",
-    "startedAt": "2026-10-30T09:39:11.531Z",
-    "durationMs": 3566656,
+    "runId": "96ed1727-b255-4bbd-adac-e565a074bc68",
+    "startedAt": "2026-10-31T09:18:48.389Z",
+    "durationMs": 6096668,
     "taskSetDigest": "sha256:de024bee793c539f8e119b52621b8d8862436e33a78f6e2fc95703404303f07e",
     "runtime": {
       "node": "v22.23.4",
@@ -25,7 +25,7 @@
       "suite": "forms-security",
       "scaffoldable": true,
       "generatedFiles": [
-        "src/services/auth.ts"
+        "src/screens/LoginScreen.tsx"
       ],
       "attempts": [
         {
@@ -33,12 +33,12 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 37123,
+          "durationMs": 77115,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 1,
           "adherence": 0,
-          "guardrails": 0.9444444444444444,
+          "guardrails": 0.8928571428571429,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:c86a83ef46e0d8e528a87d8c17dae612ca86e27f84b5382db7272315ecdf41b2",
           "maxAttempts": 3,
@@ -56,7 +56,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 36976
+              "durationMs": 76798
             }
           ],
           "model": {
@@ -72,32 +72,32 @@
         {
           "index": 2,
           "kind": "repair",
-          "status": "parsed",
+          "status": "invalid",
           "selected": false,
-          "durationMs": 41602,
+          "durationMs": 69167,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 1,
+          "fileCount": 0,
           "adherence": 0,
-          "guardrails": 0.9444444444444444,
+          "guardrails": 0,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:c86a83ef46e0d8e528a87d8c17dae612ca86e27f84b5382db7272315ecdf41b2",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:fee2dfc67ab7cc6188da167c69fcc6100a59ba12febcb15420b5346be14e2f57",
+          "requestDigest": "sha256:07684a3c70dca2b5c52c08d07d1a4185578414aaf39246292f379d487b915ead",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 1921,
+            "inputTokens": 2555,
             "maxOutputTokens": 8192,
-            "contextSize": 10496,
+            "contextSize": 11008,
             "batchSize": 128
           },
           "providerCalls": [
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 41599
+              "durationMs": 69165
             }
           ],
           "model": {
@@ -113,27 +113,29 @@
       ],
       "guardrail": [
         {
-          "path": "src/services/auth.ts",
-          "passed": 17,
-          "failed": 1,
-          "skipped": 18,
+          "path": "src/screens/LoginScreen.tsx",
+          "passed": 25,
+          "failed": 3,
+          "skipped": 8,
           "ok": false,
           "failedRules": [
-            "Directly exported function declarations have return annotations"
+            "No console.log statements",
+            "No unused imports",
+            "Screens use SafeAreaView or safe-area-aware layout"
           ]
         }
       ],
       "axes": {
-        "correctness": 0.75,
+        "correctness": 0.5,
         "adherence": 0,
-        "guardrails": 0.9444444444444444
+        "guardrails": 0.8928571428571429
       },
-      "composite": 0.5833333333333334,
+      "composite": 0.46785714285714286,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: passed",
-        "Missing required output files: src/screens/LoginScreen.tsx"
+        "- Lint: failed (exit 1)",
+        "Missing required output files: src/services/auth.ts"
       ],
       "reference": {
         "files": [
@@ -149,8 +151,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0,
-          "guardrails": 0.9873737373737373,
-          "composite": 0.6641914191419142
+          "guardrails": 0.9334415584415585,
+          "composite": 0.5327086280056577
         }
       }
     },
@@ -169,12 +171,12 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 26155,
+          "durationMs": 51455,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 2,
-          "adherence": 0.5,
-          "guardrails": 0.9318181818181818,
+          "adherence": 0.5714285714285714,
+          "guardrails": 0.9090909090909091,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:2a3ba1e9937e21cecd7e2f57fc196161f2ca45648c3df0210adf47d424b75cf8",
           "maxAttempts": 3,
@@ -192,7 +194,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 26143
+              "durationMs": 51436
             }
           ],
           "model": {
@@ -208,32 +210,32 @@
         {
           "index": 2,
           "kind": "repair",
-          "status": "invalid",
+          "status": "parsed",
           "selected": false,
-          "durationMs": 49477,
+          "durationMs": 68670,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 0,
-          "adherence": 0,
-          "guardrails": 0,
+          "fileCount": 2,
+          "adherence": 0.42857142857142855,
+          "guardrails": 0.8636363636363636,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:2a3ba1e9937e21cecd7e2f57fc196161f2ca45648c3df0210adf47d424b75cf8",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:a868602a9ae23d4bc3b66ffd72609a16af0324222e3fb9314db72c104489a617",
+          "requestDigest": "sha256:db8ed5bc11065ccca06cb188553e70311c92a630499fda75a8b84467fa4acfc4",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2331,
+            "inputTokens": 2298,
             "maxOutputTokens": 8192,
-            "contextSize": 11008,
+            "contextSize": 10752,
             "batchSize": 128
           },
           "providerCalls": [
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 49476
+              "durationMs": 68663
             }
           ],
           "model": {
@@ -261,21 +263,22 @@
         },
         {
           "path": "src/services/items.ts",
-          "passed": 17,
-          "failed": 1,
+          "passed": 16,
+          "failed": 2,
           "skipped": 18,
           "ok": false,
           "failedRules": [
-            "No console.log statements"
+            "No console.log statements",
+            "No explicit any types"
           ]
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.5,
-        "guardrails": 0.9318181818181818
+        "adherence": 0.5714285714285714,
+        "guardrails": 0.9090909090909091
       },
-      "composite": 0.6295454545454545,
+      "composite": 0.6441558441558441,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -294,9 +297,9 @@
         "composite": 0.9063492063492062,
         "relative": {
           "correctness": null,
-          "adherence": 0.5833333333333334,
-          "guardrails": 0.9751585623678646,
-          "composite": 0.6945948097436715
+          "adherence": 0.6666666666666666,
+          "guardrails": 0.9513742071881606,
+          "composite": 0.7107148543225602
         }
       }
     },
@@ -313,13 +316,13 @@
           "index": 1,
           "kind": "initial",
           "status": "parsed",
-          "selected": false,
-          "durationMs": 17441,
+          "selected": true,
+          "durationMs": 42101,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 1,
-          "adherence": 0,
-          "guardrails": 0.96,
+          "adherence": 1,
+          "guardrails": 1,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:8c1e942612d9ec9072c3a5f0f1b14e7c527452805c2cc29e8e05b7a4d1d09cad",
           "maxAttempts": 3,
@@ -337,48 +340,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 17438
-            }
-          ],
-          "model": {
-            "id": "qwen2.5-coder-1.5b",
-            "source": "configured"
-          },
-          "artifact": {
-            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
-            "sizeBytes": 1117320768,
-            "source": "local-file-at-load"
-          }
-        },
-        {
-          "index": 2,
-          "kind": "repair",
-          "status": "parsed",
-          "selected": true,
-          "durationMs": 19991,
-          "temperature": 0,
-          "maxTokens": 8192,
-          "fileCount": 1,
-          "adherence": 1,
-          "guardrails": 1,
-          "artifactIdentity": "unverified",
-          "taskDigest": "sha256:8c1e942612d9ec9072c3a5f0f1b14e7c527452805c2cc29e8e05b7a4d1d09cad",
-          "maxAttempts": 3,
-          "promptMode": "vectalon",
-          "requestDigest": "sha256:a6321b2181fe06ca11181914527ab3093d5b0ec4cfdf94e275c18831870bd244",
-          "provider": "local",
-          "stopReason": "eogToken",
-          "localContext": {
-            "inputTokens": 1900,
-            "maxOutputTokens": 8192,
-            "contextSize": 10496,
-            "batchSize": 128
-          },
-          "providerCalls": [
-            {
-              "provider": "local",
-              "status": "response",
-              "durationMs": 19988
+              "durationMs": 42094
             }
           ],
           "model": {
@@ -403,15 +365,15 @@
         }
       ],
       "axes": {
-        "correctness": 0.5,
+        "correctness": 0.75,
         "adherence": 1,
         "guardrails": 1
       },
-      "composite": 0.8,
+      "composite": 0.9000000000000001,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "- Lint: passed"
       ],
       "reference": {
         "files": [
@@ -427,7 +389,7 @@
           "correctness": null,
           "adherence": 1,
           "guardrails": 1,
-          "composite": 0.8
+          "composite": 0.9000000000000001
         }
       }
     },
@@ -437,21 +399,20 @@
       "suite": "navigation",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/navigation/SettingsStack.tsx",
-        "src/screens/SettingsScreen.tsx"
+        "src/navigation/SettingsStack.tsx"
       ],
       "attempts": [
         {
           "index": 1,
           "kind": "initial",
           "status": "parsed",
-          "selected": true,
-          "durationMs": 25610,
+          "selected": false,
+          "durationMs": 48979,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 2,
           "adherence": 0,
-          "guardrails": 0.9411764705882353,
+          "guardrails": 0.9803921568627451,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:a700ea6c4ac4f70cd454d3d3f63db982702925dd6b7d2e81db6d7532175080a0",
           "maxAttempts": 3,
@@ -469,7 +430,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 25603
+              "durationMs": 48970
             }
           ],
           "model": {
@@ -486,22 +447,22 @@
           "index": 2,
           "kind": "repair",
           "status": "parsed",
-          "selected": false,
-          "durationMs": 33331,
+          "selected": true,
+          "durationMs": 49891,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 2,
+          "fileCount": 1,
           "adherence": 0,
-          "guardrails": 0.9411764705882353,
+          "guardrails": 1,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:a700ea6c4ac4f70cd454d3d3f63db982702925dd6b7d2e81db6d7532175080a0",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:da936c457c7b895dfc2dc16025d79310d4f9a982eb28f4283a62d25ef6d16859",
+          "requestDigest": "sha256:e604a2e260e9f017c0e8659205e17576ee6518c21056150ac6929341d90b9ec2",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2283,
+            "inputTokens": 2168,
             "maxOutputTokens": 8192,
             "contextSize": 10752,
             "batchSize": 128
@@ -510,7 +471,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 33325
+              "durationMs": 49887
             }
           ],
           "model": {
@@ -527,36 +488,23 @@
       "guardrail": [
         {
           "path": "src/navigation/SettingsStack.tsx",
-          "passed": 24,
-          "failed": 1,
+          "passed": 25,
+          "failed": 0,
           "skipped": 11,
-          "ok": false,
-          "failedRules": [
-            "Directly exported function declarations have return annotations"
-          ]
-        },
-        {
-          "path": "src/screens/SettingsScreen.tsx",
-          "passed": 24,
-          "failed": 2,
-          "skipped": 10,
-          "ok": false,
-          "failedRules": [
-            "No unused imports",
-            "Directly exported function declarations have return annotations"
-          ]
+          "ok": true,
+          "failedRules": []
         }
       ],
       "axes": {
-        "correctness": 0.5,
+        "correctness": 0.75,
         "adherence": 0,
-        "guardrails": 0.9411764705882353
+        "guardrails": 1
       },
-      "composite": 0.4823529411764706,
+      "composite": 0.6000000000000001,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)",
+        "- Lint: passed",
         "Missing required output files: src/screens/SettingsDetailScreen.tsx"
       ],
       "reference": {
@@ -576,8 +524,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0,
-          "guardrails": 0.9411764705882353,
-          "composite": 0.4823529411764706
+          "guardrails": 1,
+          "composite": 0.6000000000000001
         }
       }
     },
@@ -587,7 +535,8 @@
       "suite": "forms-security",
       "scaffoldable": true,
       "generatedFiles": [
-        "src/screens/ProfileFormScreen.tsx"
+        "src/screens/ProfileFormScreen.tsx",
+        "src/services/storage.ts"
       ],
       "attempts": [
         {
@@ -595,12 +544,12 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 35171,
+          "durationMs": 74081,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 1,
-          "adherence": 0,
-          "guardrails": 0.8571428571428571,
+          "fileCount": 2,
+          "adherence": 0.6,
+          "guardrails": 0.9130434782608695,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:0161ee5dfecbe3580407c2eb5075e4f1d442710f11a92a92266a3d70c3cd5828",
           "maxAttempts": 3,
@@ -618,7 +567,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 35165
+              "durationMs": 74056
             }
           ],
           "model": {
@@ -634,32 +583,32 @@
         {
           "index": 2,
           "kind": "repair",
-          "status": "invalid",
+          "status": "parsed",
           "selected": false,
-          "durationMs": 44465,
+          "durationMs": 110127,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 0,
-          "adherence": 0,
-          "guardrails": 0,
+          "fileCount": 2,
+          "adherence": 0.6,
+          "guardrails": 0.8695652173913043,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:0161ee5dfecbe3580407c2eb5075e4f1d442710f11a92a92266a3d70c3cd5828",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:6180f6750ddd576547fb8e7edd56053a5e1f84642aa5fb959567362dbbeeeefb",
+          "requestDigest": "sha256:05c1c6d32d7aa872b247f4c08cb907c14bb6033a672d0d7129a67a09a9e37e0c",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2542,
+            "inputTokens": 2889,
             "maxOutputTokens": 8192,
-            "contextSize": 11008,
+            "contextSize": 11520,
             "batchSize": 128
           },
           "providerCalls": [
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 44465
+              "durationMs": 110119
             }
           ],
           "model": {
@@ -676,29 +625,37 @@
       "guardrail": [
         {
           "path": "src/screens/ProfileFormScreen.tsx",
-          "passed": 24,
-          "failed": 4,
+          "passed": 25,
+          "failed": 3,
           "skipped": 8,
           "ok": false,
           "failedRules": [
             "No console.log statements",
             "No unused imports",
-            "Forms use KeyboardAvoidingView on iOS",
             "Screens use SafeAreaView or safe-area-aware layout"
+          ]
+        },
+        {
+          "path": "src/services/storage.ts",
+          "passed": 17,
+          "failed": 1,
+          "skipped": 18,
+          "ok": false,
+          "failedRules": [
+            "No console.log statements"
           ]
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0,
-        "guardrails": 0.8571428571428571
+        "adherence": 0.6,
+        "guardrails": 0.9130434782608695
       },
-      "composite": 0.45714285714285713,
+      "composite": 0.6539130434782608,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)",
-        "Missing required output files: src/services/storage.ts"
+        "- Lint: failed (exit 1)"
       ],
       "reference": {
         "files": [
@@ -713,9 +670,9 @@
         "composite": 0.9891304347826088,
         "relative": {
           "correctness": null,
-          "adherence": 0,
-          "guardrails": 0.8761904761904761,
-          "composite": 0.46216640502354783
+          "adherence": 0.6,
+          "guardrails": 0.9333333333333332,
+          "composite": 0.661098901098901
         }
       }
     },
@@ -725,6 +682,7 @@
       "suite": "data-flow",
       "scaffoldable": true,
       "generatedFiles": [
+        "src/store/queue.ts",
         "src/hooks/useOfflineQueue.ts",
         "src/screens/QueueScreen.tsx"
       ],
@@ -734,12 +692,12 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 30632,
+          "durationMs": 63242,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 2,
-          "adherence": 0,
-          "guardrails": 0.9111111111111111,
+          "fileCount": 3,
+          "adherence": 0.6666666666666666,
+          "guardrails": 0.9047619047619048,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:0cc198867e07ee566b87bdfc93e565203cb8e7d983a8fe6d876e26a5559d0261",
           "maxAttempts": 3,
@@ -757,7 +715,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 30626
+              "durationMs": 63219
             }
           ],
           "model": {
@@ -775,30 +733,30 @@
           "kind": "repair",
           "status": "parsed",
           "selected": false,
-          "durationMs": 54941,
+          "durationMs": 92975,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 1,
-          "adherence": 0,
+          "fileCount": 3,
+          "adherence": 0.6,
           "guardrails": 0.8888888888888888,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:0cc198867e07ee566b87bdfc93e565203cb8e7d983a8fe6d876e26a5559d0261",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:36a0b7899b8b02993a47d6265fb88f509bb3383838bd3d27aa9e8ba5b4e96fa0",
+          "requestDigest": "sha256:2a34f23de441a4101db8ae67006e34af2285ac6ac45590f264e5d49598985717",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2407,
+            "inputTokens": 2701,
             "maxOutputTokens": 8192,
-            "contextSize": 11008,
+            "contextSize": 11264,
             "batchSize": 128
           },
           "providerCalls": [
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 54935
+              "durationMs": 92967
             }
           ],
           "model": {
@@ -814,39 +772,48 @@
       ],
       "guardrail": [
         {
-          "path": "src/hooks/useOfflineQueue.ts",
-          "passed": 17,
-          "failed": 1,
+          "path": "src/store/queue.ts",
+          "passed": 16,
+          "failed": 2,
           "skipped": 18,
           "ok": false,
           "failedRules": [
-            "useEffect subscriptions return cleanup"
+            "No console.log statements",
+            "No unused imports"
           ]
         },
         {
+          "path": "src/hooks/useOfflineQueue.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true,
+          "failedRules": []
+        },
+        {
           "path": "src/screens/QueueScreen.tsx",
-          "passed": 24,
-          "failed": 3,
+          "passed": 23,
+          "failed": 4,
           "skipped": 9,
           "ok": false,
           "failedRules": [
+            "No console.log statements",
             "No inline style objects in JSX",
             "No unused imports",
-            "Interactive elements have accessibility labels"
+            "Prefer Pressable over TouchableOpacity"
           ]
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0,
-        "guardrails": 0.9111111111111111
+        "adherence": 0.6666666666666666,
+        "guardrails": 0.9047619047619048
       },
-      "composite": 0.47333333333333333,
+      "composite": 0.6714285714285715,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)",
-        "Missing required output files: src/store/queue.ts"
+        "- Lint: failed (exit 1)"
       ],
       "reference": {
         "files": [
@@ -862,9 +829,9 @@
         "composite": 1,
         "relative": {
           "correctness": null,
-          "adherence": 0,
-          "guardrails": 0.9111111111111111,
-          "composite": 0.47333333333333333
+          "adherence": 0.6666666666666666,
+          "guardrails": 0.9047619047619048,
+          "composite": 0.6714285714285715
         }
       }
     },
@@ -874,8 +841,7 @@
       "suite": "perf",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/screens/FeedScreen.tsx",
-        "src/components/FeedRow.tsx"
+        "src/screens/FeedScreen.tsx"
       ],
       "attempts": [
         {
@@ -883,12 +849,12 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 30831,
+          "durationMs": 51210,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 2,
-          "adherence": 0.5555555555555556,
-          "guardrails": 0.9411764705882353,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.9230769230769231,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:9a5f905b75dd75c5a239b11de8d85b4e1dee1fc66d9a45d58a1489e765fd6a9f",
           "maxAttempts": 3,
@@ -906,7 +872,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 30819
+              "durationMs": 51201
             }
           ],
           "model": {
@@ -924,30 +890,30 @@
           "kind": "repair",
           "status": "parsed",
           "selected": false,
-          "durationMs": 46314,
+          "durationMs": 67355,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 2,
-          "adherence": 0.5555555555555556,
-          "guardrails": 0.9215686274509803,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.8461538461538461,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:9a5f905b75dd75c5a239b11de8d85b4e1dee1fc66d9a45d58a1489e765fd6a9f",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:d7216767a8bbb3d6e19bbb402d5fef010cac7082560e40fee37bb075948f1359",
+          "requestDigest": "sha256:82d641bb568194c670309bf25c4469c631c519a33e97e77cea3467557d3e121e",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2572,
+            "inputTokens": 2296,
             "maxOutputTokens": 8192,
-            "contextSize": 11264,
+            "contextSize": 10752,
             "batchSize": 128
           },
           "providerCalls": [
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 46304
+              "durationMs": 67346
             }
           ],
           "model": {
@@ -964,35 +930,27 @@
       "guardrail": [
         {
           "path": "src/screens/FeedScreen.tsx",
-          "passed": 23,
-          "failed": 3,
+          "passed": 24,
+          "failed": 2,
           "skipped": 10,
           "ok": false,
           "failedRules": [
             "No console.log statements",
-            "No hardcoded API URLs",
-            "No unused imports"
+            "No hardcoded API URLs"
           ]
-        },
-        {
-          "path": "src/components/FeedRow.tsx",
-          "passed": 25,
-          "failed": 0,
-          "skipped": 11,
-          "ok": true,
-          "failedRules": []
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.5555555555555556,
-        "guardrails": 0.9411764705882353
+        "adherence": 0,
+        "guardrails": 0.9230769230769231
       },
-      "composite": 0.6490196078431373,
+      "composite": 0.47692307692307695,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "- Lint: failed (exit 1)",
+        "Missing required output files: src/components/FeedRow.tsx"
       ],
       "reference": {
         "files": [
@@ -1007,9 +965,9 @@
         "composite": 1,
         "relative": {
           "correctness": null,
-          "adherence": 0.5555555555555556,
-          "guardrails": 0.9411764705882353,
-          "composite": 0.6490196078431373
+          "adherence": 0,
+          "guardrails": 0.9230769230769231,
+          "composite": 0.47692307692307695
         }
       }
     },
@@ -1019,7 +977,8 @@
       "suite": "core-ui",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/components/FeatureFlag.tsx"
+        "src/components/FeatureFlag.tsx",
+        "src/hooks/useFeatureFlag.ts"
       ],
       "attempts": [
         {
@@ -1027,11 +986,11 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 20436,
+          "durationMs": 44968,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 1,
-          "adherence": 0,
+          "fileCount": 2,
+          "adherence": 1,
           "guardrails": 1,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:9f4b63a42536183d44d07b93d875023c2419a072a77dd8d3c13ad328f4aad94b",
@@ -1050,48 +1009,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 20432
-            }
-          ],
-          "model": {
-            "id": "qwen2.5-coder-1.5b",
-            "source": "configured"
-          },
-          "artifact": {
-            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
-            "sizeBytes": 1117320768,
-            "source": "local-file-at-load"
-          }
-        },
-        {
-          "index": 2,
-          "kind": "repair",
-          "status": "parsed",
-          "selected": false,
-          "durationMs": 22364,
-          "temperature": 0,
-          "maxTokens": 8192,
-          "fileCount": 1,
-          "adherence": 0,
-          "guardrails": 1,
-          "artifactIdentity": "unverified",
-          "taskDigest": "sha256:9f4b63a42536183d44d07b93d875023c2419a072a77dd8d3c13ad328f4aad94b",
-          "maxAttempts": 3,
-          "promptMode": "vectalon",
-          "requestDigest": "sha256:7b2af341d6cd59b8a16b5ac19116cd9ae8aaf6fdf2e1792d2d6f26db67868b31",
-          "provider": "local",
-          "stopReason": "eogToken",
-          "localContext": {
-            "inputTokens": 1933,
-            "maxOutputTokens": 8192,
-            "contextSize": 10496,
-            "batchSize": 128
-          },
-          "providerCalls": [
-            {
-              "provider": "local",
-              "status": "response",
-              "durationMs": 22359
+              "durationMs": 44958
             }
           ],
           "model": {
@@ -1113,19 +1031,26 @@
           "skipped": 11,
           "ok": true,
           "failedRules": []
+        },
+        {
+          "path": "src/hooks/useFeatureFlag.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true,
+          "failedRules": []
         }
       ],
       "axes": {
-        "correctness": 0.75,
-        "adherence": 0,
+        "correctness": 0.5,
+        "adherence": 1,
         "guardrails": 1
       },
-      "composite": 0.6000000000000001,
+      "composite": 0.8,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: passed",
-        "Missing required output files: src/hooks/useFeatureFlag.ts"
+        "- Lint: failed (exit 1)"
       ],
       "reference": {
         "files": [
@@ -1142,7 +1067,7 @@
           "correctness": null,
           "adherence": null,
           "guardrails": 1,
-          "composite": 0.6000000000000001
+          "composite": 0.8
         }
       }
     },
@@ -1152,10 +1077,7 @@
       "suite": "a11y",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/screens/OnboardingFormScreen.tsx",
-        "src/screens/HomeScreen.tsx",
-        "src/config/app.ts",
-        "__tests__/smoke.test.ts"
+        "src/screens/OnboardingFormScreen.tsx"
       ],
       "attempts": [
         {
@@ -1163,12 +1085,12 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 40421,
+          "durationMs": 56677,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 4,
-          "adherence": 0.6,
-          "guardrails": 0.9325842696629213,
+          "fileCount": 1,
+          "adherence": 0.7142857142857143,
+          "guardrails": 0.8928571428571429,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:1c91a50a8e12da7e4c31d367e387caa9f0d311869c223fc7c34a1d10fb99abd6",
           "maxAttempts": 3,
@@ -1186,7 +1108,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 40405
+              "durationMs": 56662
             }
           ],
           "model": {
@@ -1204,30 +1126,30 @@
           "kind": "repair",
           "status": "parsed",
           "selected": false,
-          "durationMs": 56423,
+          "durationMs": 73161,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 4,
-          "adherence": 0.6,
-          "guardrails": 0.9213483146067416,
+          "fileCount": 1,
+          "adherence": 0.7142857142857143,
+          "guardrails": 0.8928571428571429,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:1c91a50a8e12da7e4c31d367e387caa9f0d311869c223fc7c34a1d10fb99abd6",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:6d64ba5248cec3721f94ad25622614d3c2b3bce433fa4109683b86742e8793c2",
+          "requestDigest": "sha256:1c68889edb7608a6d8c7831faca937b5a4cd992e21cb733e25808694a6ae35d9",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2782,
+            "inputTokens": 2367,
             "maxOutputTokens": 8192,
-            "contextSize": 11264,
+            "contextSize": 11008,
             "batchSize": 128
           },
           "providerCalls": [
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 56411
+              "durationMs": 73145
             }
           ],
           "model": {
@@ -1244,51 +1166,23 @@
       "guardrail": [
         {
           "path": "src/screens/OnboardingFormScreen.tsx",
-          "passed": 23,
-          "failed": 5,
+          "passed": 25,
+          "failed": 3,
           "skipped": 8,
           "ok": false,
           "failedRules": [
             "No console.log statements",
             "No unused imports",
-            "Prefer Pressable over TouchableOpacity",
-            "Screens use SafeAreaView or safe-area-aware layout",
             "Directly exported function declarations have return annotations"
           ]
-        },
-        {
-          "path": "src/screens/HomeScreen.tsx",
-          "passed": 25,
-          "failed": 1,
-          "skipped": 10,
-          "ok": false,
-          "failedRules": [
-            "Screens use SafeAreaView or safe-area-aware layout"
-          ]
-        },
-        {
-          "path": "src/config/app.ts",
-          "passed": 18,
-          "failed": 0,
-          "skipped": 18,
-          "ok": true,
-          "failedRules": []
-        },
-        {
-          "path": "__tests__/smoke.test.ts",
-          "passed": 17,
-          "failed": 0,
-          "skipped": 19,
-          "ok": true,
-          "failedRules": []
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.6,
-        "guardrails": 0.9325842696629213
+        "adherence": 0.7142857142857143,
+        "guardrails": 0.8928571428571429
       },
-      "composite": 0.6597752808988764,
+      "composite": 0.6821428571428572,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -1306,9 +1200,9 @@
         "composite": 1,
         "relative": {
           "correctness": null,
-          "adherence": 0.6,
-          "guardrails": 0.9325842696629213,
-          "composite": 0.6597752808988764
+          "adherence": 0.7142857142857143,
+          "guardrails": 0.8928571428571429,
+          "composite": 0.6821428571428572
         }
       }
     },
@@ -1326,12 +1220,12 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 19760,
+          "durationMs": 40708,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 1,
           "adherence": 0.6,
-          "guardrails": 0.96,
+          "guardrails": 0.88,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:52c6cb237429fde79a22da1972b534bf0986485a59b622e4800d4c8e38785cf0",
           "maxAttempts": 3,
@@ -1349,7 +1243,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 19752
+              "durationMs": 40704
             }
           ],
           "model": {
@@ -1367,21 +1261,21 @@
           "kind": "repair",
           "status": "parsed",
           "selected": false,
-          "durationMs": 24453,
+          "durationMs": 52134,
           "temperature": 0,
           "maxTokens": 8192,
           "fileCount": 1,
           "adherence": 0.6,
-          "guardrails": 0.96,
+          "guardrails": 0.88,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:52c6cb237429fde79a22da1972b534bf0986485a59b622e4800d4c8e38785cf0",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:30fb3d9d33e0d5def76be0ff7c64727479cf43e370d3088a091c8f6e72a55057",
+          "requestDigest": "sha256:7768b07fbb927302249e00b9f494a01a1ffb6a1c3942332ec06123c273a65867",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2061,
+            "inputTokens": 2093,
             "maxOutputTokens": 8192,
             "contextSize": 10752,
             "batchSize": 128
@@ -1390,7 +1284,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 24444
+              "durationMs": 52124
             }
           ],
           "model": {
@@ -1407,21 +1301,23 @@
       "guardrail": [
         {
           "path": "src/components/Profile.tsx",
-          "passed": 24,
-          "failed": 1,
+          "passed": 22,
+          "failed": 3,
           "skipped": 11,
           "ok": false,
           "failedRules": [
-            "No hardcoded API URLs"
+            "No hardcoded API URLs",
+            "Directly exported function declarations have return annotations",
+            "Components are exported as named exports"
           ]
         }
       ],
       "axes": {
         "correctness": 0.5,
         "adherence": 0.6,
-        "guardrails": 0.96
+        "guardrails": 0.88
       },
-      "composite": 0.6679999999999999,
+      "composite": 0.644,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -1441,8 +1337,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0.6,
-          "guardrails": 0.96,
-          "composite": 0.6679999999999999
+          "guardrails": 0.88,
+          "composite": 0.644
         }
       }
     },
@@ -1452,6 +1348,7 @@
       "suite": "refactor",
       "scaffoldable": false,
       "generatedFiles": [
+        "package.json",
         "ios/Podfile",
         "android/settings.gradle",
         "android/app/src/main/AndroidManifest.xml"
@@ -1460,14 +1357,14 @@
         {
           "index": 1,
           "kind": "initial",
-          "status": "invalid",
-          "selected": false,
-          "durationMs": 24434,
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 39328,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 0,
+          "fileCount": 4,
           "adherence": 0,
-          "guardrails": 0,
+          "guardrails": 0.9807692307692307,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:522e4fc339ed095c6547152d79a5ad3868aa4289eeaac9aee9bf6c108318d50c",
           "maxAttempts": 3,
@@ -1485,7 +1382,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 24433
+              "durationMs": 39327
             }
           ],
           "model": {
@@ -1500,65 +1397,24 @@
         },
         {
           "index": 2,
-          "kind": "parse-retry",
-          "status": "parsed",
-          "selected": true,
-          "durationMs": 21408,
-          "temperature": 0,
-          "maxTokens": 8192,
-          "fileCount": 3,
-          "adherence": 0,
-          "guardrails": 0.9743589743589743,
-          "artifactIdentity": "unverified",
-          "taskDigest": "sha256:522e4fc339ed095c6547152d79a5ad3868aa4289eeaac9aee9bf6c108318d50c",
-          "maxAttempts": 3,
-          "promptMode": "vectalon",
-          "requestDigest": "sha256:b93a29ab186d048fe10ed6415ea3f8e0db0914fba2831ce5accf80d58237c08b",
-          "provider": "local",
-          "stopReason": "eogToken",
-          "localContext": {
-            "inputTokens": 1860,
-            "maxOutputTokens": 8192,
-            "contextSize": 10496,
-            "batchSize": 128
-          },
-          "providerCalls": [
-            {
-              "provider": "local",
-              "status": "response",
-              "durationMs": 21407
-            }
-          ],
-          "model": {
-            "id": "qwen2.5-coder-1.5b",
-            "source": "configured"
-          },
-          "artifact": {
-            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
-            "sizeBytes": 1117320768,
-            "source": "local-file-at-load"
-          }
-        },
-        {
-          "index": 3,
           "kind": "repair",
           "status": "parsed",
           "selected": false,
-          "durationMs": 17353,
+          "durationMs": 42933,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 3,
+          "fileCount": 4,
           "adherence": 0,
-          "guardrails": 0.9743589743589743,
+          "guardrails": 0.9807692307692307,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:522e4fc339ed095c6547152d79a5ad3868aa4289eeaac9aee9bf6c108318d50c",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:ec2a4aed75b97abbbc7e92c70ba44fb06b42ad28367c9baaafa2b07af2d0af28",
+          "requestDigest": "sha256:0962c7b340267a1ac5b7766690c6844b79287707ebb06348b5f3a8136e6f8d1e",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 1987,
+            "inputTokens": 2005,
             "maxOutputTokens": 8192,
             "contextSize": 10496,
             "batchSize": 128
@@ -1567,7 +1423,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 17352
+              "durationMs": 42932
             }
           ],
           "model": {
@@ -1582,6 +1438,14 @@
         }
       ],
       "guardrail": [
+        {
+          "path": "package.json",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 23,
+          "ok": true,
+          "failedRules": []
+        },
         {
           "path": "ios/Podfile",
           "passed": 13,
@@ -1612,11 +1476,11 @@
       "axes": {
         "correctness": null,
         "adherence": 0,
-        "guardrails": 0.9743589743589743
+        "guardrails": 0.9807692307692307
       },
-      "composite": 0.4871794871794871,
+      "composite": 0.4903846153846153,
       "correctnessDetails": [
-        "Missing required output files: package.json, ios/Podfile, android/settings.gradle"
+        "Missing required output files: ios/Podfile, android/settings.gradle"
       ],
       "reference": {
         "files": [
@@ -1634,8 +1498,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0,
-          "guardrails": 0.9934640522875817,
-          "composite": 0.49190938511326865
+          "guardrails": 1,
+          "composite": 0.49514563106796117
         }
       }
     },
@@ -1644,21 +1508,19 @@
       "title": "Notifications screen with list fetch",
       "suite": "data-flow",
       "scaffoldable": true,
-      "generatedFiles": [
-        "src/screens/NotificationsScreen.tsx"
-      ],
+      "generatedFiles": [],
       "attempts": [
         {
           "index": 1,
           "kind": "initial",
-          "status": "parsed",
-          "selected": true,
-          "durationMs": 28191,
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 60946,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 1,
+          "fileCount": 0,
           "adherence": 0,
-          "guardrails": 0.9615384615384616,
+          "guardrails": 0,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:82a8231e015af35ccf85b0d87395030bf751546b92d3afea8ea5897224ac7aaf",
           "maxAttempts": 3,
@@ -1676,7 +1538,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 28183
+              "durationMs": 60945
             }
           ],
           "model": {
@@ -1691,33 +1553,33 @@
         },
         {
           "index": 2,
-          "kind": "repair",
-          "status": "parsed",
+          "kind": "parse-retry",
+          "status": "invalid",
           "selected": false,
-          "durationMs": 35748,
+          "durationMs": 55857,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 1,
+          "fileCount": 0,
           "adherence": 0,
-          "guardrails": 0.9230769230769231,
+          "guardrails": 0,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:82a8231e015af35ccf85b0d87395030bf751546b92d3afea8ea5897224ac7aaf",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:07518c2c48ef532ce1831f97d470ab1ddf493813a7d49f24456c3395a9504f94",
+          "requestDigest": "sha256:fa7dfc3a30187368fa966657d332a9324f403f466fc8dfe6ed222cbbc896337e",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2275,
+            "inputTokens": 1636,
             "maxOutputTokens": 8192,
-            "contextSize": 10752,
+            "contextSize": 10240,
             "batchSize": 128
           },
           "providerCalls": [
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 35743
+              "durationMs": 55857
             }
           ],
           "model": {
@@ -1731,29 +1593,16 @@
           }
         }
       ],
-      "guardrail": [
-        {
-          "path": "src/screens/NotificationsScreen.tsx",
-          "passed": 25,
-          "failed": 1,
-          "skipped": 10,
-          "ok": false,
-          "failedRules": [
-            "No unused imports"
-          ]
-        }
-      ],
+      "guardrail": [],
       "axes": {
-        "correctness": 0.5,
+        "correctness": 0,
         "adherence": 0,
-        "guardrails": 0.9615384615384616
+        "guardrails": 0
       },
-      "composite": 0.48846153846153845,
+      "composite": 0,
       "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)",
-        "Missing required output files: src/services/notifications.ts"
+        "Model generation produced no non-empty files.",
+        "Missing required output files: src/screens/NotificationsScreen.tsx, src/services/notifications.ts"
       ],
       "reference": {
         "files": [
@@ -1769,8 +1618,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0,
-          "guardrails": 0.9615384615384616,
-          "composite": 0.521025641025641
+          "guardrails": 0,
+          "composite": 0
         }
       }
     },
@@ -1786,14 +1635,14 @@
         {
           "index": 1,
           "kind": "initial",
-          "status": "parsed",
-          "selected": true,
-          "durationMs": 29103,
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 52853,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 1,
+          "fileCount": 0,
           "adherence": 0,
-          "guardrails": 0.9259259259259259,
+          "guardrails": 0,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:5955690e8d1c56fb955f2d1b8b144b748970b382317031efb6b0e8ac12d75c8d",
           "maxAttempts": 3,
@@ -1811,7 +1660,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 29098
+              "durationMs": 52853
             }
           ],
           "model": {
@@ -1826,24 +1675,65 @@
         },
         {
           "index": 2,
-          "kind": "repair",
-          "status": "invalid",
-          "selected": false,
-          "durationMs": 28444,
+          "kind": "parse-retry",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 47146,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 0,
+          "fileCount": 1,
           "adherence": 0,
-          "guardrails": 0,
+          "guardrails": 0.9259259259259259,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:5955690e8d1c56fb955f2d1b8b144b748970b382317031efb6b0e8ac12d75c8d",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:22b493cfed53c64e518e003c72a8e7752170d24042a0cb69c19ff73414a5532d",
+          "requestDigest": "sha256:5f7464d7b7fae105cafca456080da6474ddd73d3f73aceba9ded2d4c6bdc1574",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2212,
+            "inputTokens": 1632,
+            "maxOutputTokens": 8192,
+            "contextSize": 10240,
+            "batchSize": 128
+          },
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 47138
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 3,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 55807,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.9259259259259259,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:5955690e8d1c56fb955f2d1b8b144b748970b382317031efb6b0e8ac12d75c8d",
+          "maxAttempts": 3,
+          "promptMode": "vectalon",
+          "requestDigest": "sha256:d9177dd72f1b030de57b1216b57f8d4be9fb3d67333799fcee0d0e5a239190d2",
+          "provider": "local",
+          "stopReason": "eogToken",
+          "localContext": {
+            "inputTokens": 2062,
             "maxOutputTokens": 8192,
             "contextSize": 10752,
             "batchSize": 128
@@ -1852,7 +1742,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 28443
+              "durationMs": 55803
             }
           ],
           "model": {
@@ -1874,8 +1764,8 @@
           "skipped": 9,
           "ok": false,
           "failedRules": [
-            "Screens use SafeAreaView or safe-area-aware layout",
-            "Directly exported function declarations have return annotations"
+            "No unused imports",
+            "Screens use SafeAreaView or safe-area-aware layout"
           ]
         }
       ],
@@ -1916,20 +1806,21 @@
       "suite": "e-commerce",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/screens/CheckoutScreen.tsx"
+        "src/screens/CheckoutScreen.tsx",
+        "src/services/orders.ts"
       ],
       "attempts": [
         {
           "index": 1,
           "kind": "initial",
-          "status": "invalid",
-          "selected": false,
-          "durationMs": 55357,
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 80911,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 0,
-          "adherence": 0,
-          "guardrails": 0,
+          "fileCount": 2,
+          "adherence": 0.5454545454545454,
+          "guardrails": 0.8913043478260869,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:c141179204a32df809a7d46aa96bd38ee7de37eee3f0b45513539f7003d8b194",
           "maxAttempts": 3,
@@ -1947,7 +1838,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 55355
+              "durationMs": 80886
             }
           ],
           "model": {
@@ -1962,65 +1853,24 @@
         },
         {
           "index": 2,
-          "kind": "parse-retry",
-          "status": "parsed",
-          "selected": true,
-          "durationMs": 51139,
-          "temperature": 0,
-          "maxTokens": 8192,
-          "fileCount": 1,
-          "adherence": 0,
-          "guardrails": 0.8928571428571429,
-          "artifactIdentity": "unverified",
-          "taskDigest": "sha256:c141179204a32df809a7d46aa96bd38ee7de37eee3f0b45513539f7003d8b194",
-          "maxAttempts": 3,
-          "promptMode": "vectalon",
-          "requestDigest": "sha256:dd64a46d74232c3898af489c8707aeb638103aa3b4547d4c276326c67839bd1f",
-          "provider": "local",
-          "stopReason": "eogToken",
-          "localContext": {
-            "inputTokens": 1673,
-            "maxOutputTokens": 8192,
-            "contextSize": 10240,
-            "batchSize": 128
-          },
-          "providerCalls": [
-            {
-              "provider": "local",
-              "status": "response",
-              "durationMs": 51131
-            }
-          ],
-          "model": {
-            "id": "qwen2.5-coder-1.5b",
-            "source": "configured"
-          },
-          "artifact": {
-            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
-            "sizeBytes": 1117320768,
-            "source": "local-file-at-load"
-          }
-        },
-        {
-          "index": 3,
           "kind": "repair",
           "status": "parsed",
           "selected": false,
-          "durationMs": 38836,
+          "durationMs": 83920,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 1,
-          "adherence": 0,
-          "guardrails": 0.8571428571428571,
+          "fileCount": 2,
+          "adherence": 0.5,
+          "guardrails": 0.8913043478260869,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:c141179204a32df809a7d46aa96bd38ee7de37eee3f0b45513539f7003d8b194",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:06e2d03b4bf6ef682dd4c6ad37328c7db7ca32bf730192cbfb80b7a206491c9c",
+          "requestDigest": "sha256:6d5cac217b120480c3bb4876a36ea2d9f9ea9cee5fb34ed1c72caaffbd6554fb",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2914,
+            "inputTokens": 2915,
             "maxOutputTokens": 8192,
             "contextSize": 11520,
             "batchSize": 128
@@ -2029,7 +1879,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 38831
+              "durationMs": 83904
             }
           ],
           "model": {
@@ -2046,28 +1896,38 @@
       "guardrail": [
         {
           "path": "src/screens/CheckoutScreen.tsx",
-          "passed": 25,
-          "failed": 3,
+          "passed": 24,
+          "failed": 4,
           "skipped": 8,
           "ok": false,
           "failedRules": [
-            "No console.log statements",
+            "No hardcoded API URLs",
             "No unused imports",
-            "Interactive elements have accessibility labels"
+            "useEffect/useCallback dependencies checked",
+            "Directly exported function declarations have return annotations"
+          ]
+        },
+        {
+          "path": "src/services/orders.ts",
+          "passed": 17,
+          "failed": 1,
+          "skipped": 18,
+          "ok": false,
+          "failedRules": [
+            "No hardcoded API URLs"
           ]
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0,
-        "guardrails": 0.8928571428571429
+        "adherence": 0.5454545454545454,
+        "guardrails": 0.8913043478260869
       },
-      "composite": 0.46785714285714286,
+      "composite": 0.6310276679841897,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)",
-        "Missing required output files: src/services/orders.ts"
+        "- Lint: failed (exit 1)"
       ],
       "reference": {
         "files": [
@@ -2082,9 +1942,9 @@
         "composite": 0.8764822134387351,
         "relative": {
           "correctness": null,
-          "adherence": 0,
-          "guardrails": 0.9551495016611296,
-          "composite": 0.5337896601707199
+          "adherence": 0.6666666666666666,
+          "guardrails": 0.9534883720930232,
+          "composite": 0.7199549041713642
         }
       }
     },
@@ -2093,21 +1953,19 @@
       "title": "Product catalog with debounced search and filters",
       "suite": "e-commerce",
       "scaffoldable": false,
-      "generatedFiles": [
-        "src/screens/CatalogScreen.tsx"
-      ],
+      "generatedFiles": [],
       "attempts": [
         {
           "index": 1,
           "kind": "initial",
-          "status": "parsed",
-          "selected": true,
-          "durationMs": 43405,
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 66741,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 1,
+          "fileCount": 0,
           "adherence": 0,
-          "guardrails": 0.9259259259259259,
+          "guardrails": 0,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:6820f913f0c22cb1428214aca13732a8c2358a63de7e6985ddc7430e73f81b14",
           "maxAttempts": 3,
@@ -2125,7 +1983,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 43398
+              "durationMs": 66739
             }
           ],
           "model": {
@@ -2140,33 +1998,33 @@
         },
         {
           "index": 2,
-          "kind": "repair",
-          "status": "parsed",
+          "kind": "parse-retry",
+          "status": "invalid",
           "selected": false,
-          "durationMs": 45495,
+          "durationMs": 69429,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 1,
+          "fileCount": 0,
           "adherence": 0,
-          "guardrails": 0.8888888888888888,
+          "guardrails": 0,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:6820f913f0c22cb1428214aca13732a8c2358a63de7e6985ddc7430e73f81b14",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:417910c92ae3a792d945ce6443b9172bce14264ffd73f05e8744d9606b62fe8d",
+          "requestDigest": "sha256:31b02eca3b97a6d53fe8f9b182625235bf01549af3a8da75a94436f28e9f1ef8",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2661,
+            "inputTokens": 1668,
             "maxOutputTokens": 8192,
-            "contextSize": 11264,
+            "contextSize": 10240,
             "batchSize": 128
           },
           "providerCalls": [
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 45490
+              "durationMs": 69428
             }
           ],
           "model": {
@@ -2180,30 +2038,16 @@
           }
         }
       ],
-      "guardrail": [
-        {
-          "path": "src/screens/CatalogScreen.tsx",
-          "passed": 25,
-          "failed": 2,
-          "skipped": 9,
-          "ok": false,
-          "failedRules": [
-            "No unused imports",
-            "useEffect/useCallback dependencies checked"
-          ]
-        }
-      ],
+      "guardrail": [],
       "axes": {
-        "correctness": 0.5,
+        "correctness": 0,
         "adherence": 0,
-        "guardrails": 0.9259259259259259
+        "guardrails": 0
       },
-      "composite": 0.4777777777777778,
+      "composite": 0,
       "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)",
-        "Missing required output files: src/services/products.ts"
+        "Model generation produced no non-empty files.",
+        "Missing required output files: src/screens/CatalogScreen.tsx, src/services/products.ts"
       ],
       "reference": {
         "files": [
@@ -2219,8 +2063,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0,
-          "guardrails": 1.038843721770551,
-          "composite": 0.5589723827874118
+          "guardrails": 0,
+          "composite": 0
         }
       }
     },
@@ -2229,17 +2073,14 @@
       "title": "Chat thread with optimistic send",
       "suite": "social-chat",
       "scaffoldable": false,
-      "generatedFiles": [
-        "src/screens/ChatScreen.tsx",
-        "src/services/messages.ts"
-      ],
+      "generatedFiles": [],
       "attempts": [
         {
           "index": 1,
           "kind": "initial",
           "status": "invalid",
           "selected": false,
-          "durationMs": 37903,
+          "durationMs": 55653,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 0,
@@ -2262,7 +2103,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 37902
+              "durationMs": 55651
             }
           ],
           "model": {
@@ -2278,14 +2119,14 @@
         {
           "index": 2,
           "kind": "parse-retry",
-          "status": "parsed",
-          "selected": true,
-          "durationMs": 39856,
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 65533,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 2,
-          "adherence": 0.7142857142857143,
-          "guardrails": 0.9347826086956522,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:1133584514c53dfa8cecb8de0ebf34669e54ffc58d65f0d321891b4615ed3ad3",
           "maxAttempts": 3,
@@ -2303,48 +2144,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 39840
-            }
-          ],
-          "model": {
-            "id": "qwen2.5-coder-1.5b",
-            "source": "configured"
-          },
-          "artifact": {
-            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
-            "sizeBytes": 1117320768,
-            "source": "local-file-at-load"
-          }
-        },
-        {
-          "index": 3,
-          "kind": "repair",
-          "status": "invalid",
-          "selected": false,
-          "durationMs": 36076,
-          "temperature": 0,
-          "maxTokens": 8192,
-          "fileCount": 0,
-          "adherence": 0,
-          "guardrails": 0,
-          "artifactIdentity": "unverified",
-          "taskDigest": "sha256:1133584514c53dfa8cecb8de0ebf34669e54ffc58d65f0d321891b4615ed3ad3",
-          "maxAttempts": 3,
-          "promptMode": "vectalon",
-          "requestDigest": "sha256:5f413cddc8f37b68347c1d4859cf34c8f1c1287d572f99b4472c96043e81f643",
-          "provider": "local",
-          "stopReason": "eogToken",
-          "localContext": {
-            "inputTokens": 2734,
-            "maxOutputTokens": 8192,
-            "contextSize": 11264,
-            "batchSize": 128
-          },
-          "providerCalls": [
-            {
-              "provider": "local",
-              "status": "response",
-              "durationMs": 36075
+              "durationMs": 65533
             }
           ],
           "model": {
@@ -2358,39 +2158,16 @@
           }
         }
       ],
-      "guardrail": [
-        {
-          "path": "src/screens/ChatScreen.tsx",
-          "passed": 27,
-          "failed": 1,
-          "skipped": 8,
-          "ok": false,
-          "failedRules": [
-            "No console.log statements"
-          ]
-        },
-        {
-          "path": "src/services/messages.ts",
-          "passed": 16,
-          "failed": 2,
-          "skipped": 18,
-          "ok": false,
-          "failedRules": [
-            "No console.log statements",
-            "No unused imports"
-          ]
-        }
-      ],
+      "guardrail": [],
       "axes": {
-        "correctness": 0.5,
-        "adherence": 0.7142857142857143,
-        "guardrails": 0.9347826086956522
+        "correctness": 0,
+        "adherence": 0,
+        "guardrails": 0
       },
-      "composite": 0.6947204968944098,
+      "composite": 0,
       "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "Model generation produced no non-empty files.",
+        "Missing required output files: src/screens/ChatScreen.tsx, src/services/messages.ts"
       ],
       "reference": {
         "files": [
@@ -2405,9 +2182,9 @@
         "composite": 0.9257246376811594,
         "relative": {
           "correctness": null,
-          "adherence": 0.7792207792207793,
-          "guardrails": 1,
-          "composite": 0.7504612804025719
+          "adherence": 0,
+          "guardrails": 0,
+          "composite": 0
         }
       }
     },
@@ -2416,21 +2193,19 @@
       "title": "Social feed with likes and comment counts",
       "suite": "social-chat",
       "scaffoldable": false,
-      "generatedFiles": [
-        "src/services/posts.ts"
-      ],
+      "generatedFiles": [],
       "attempts": [
         {
           "index": 1,
           "kind": "initial",
-          "status": "parsed",
-          "selected": true,
-          "durationMs": 42746,
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 74860,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 1,
+          "fileCount": 0,
           "adherence": 0,
-          "guardrails": 0.9444444444444444,
+          "guardrails": 0,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:6fe4034f1589404756e51097bd667cb95b1c8040480ca4218a988bf25493796e",
           "maxAttempts": 3,
@@ -2448,7 +2223,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 42742
+              "durationMs": 74859
             }
           ],
           "model": {
@@ -2463,33 +2238,33 @@
         },
         {
           "index": 2,
-          "kind": "repair",
-          "status": "parsed",
+          "kind": "parse-retry",
+          "status": "invalid",
           "selected": false,
-          "durationMs": 32601,
+          "durationMs": 58768,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 1,
+          "fileCount": 0,
           "adherence": 0,
-          "guardrails": 0.9444444444444444,
+          "guardrails": 0,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:6fe4034f1589404756e51097bd667cb95b1c8040480ca4218a988bf25493796e",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:408359957152b479ac6204c7fab21e1ec4d886b00c409c345e23384e95f38468",
+          "requestDigest": "sha256:26f1029c79ec92374095979ebbdd15c954aee5985a098b38491bd613aec695fb",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 1810,
+            "inputTokens": 1668,
             "maxOutputTokens": 8192,
-            "contextSize": 10496,
+            "contextSize": 10240,
             "batchSize": 128
           },
           "providerCalls": [
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 32599
+              "durationMs": 58767
             }
           ],
           "model": {
@@ -2503,29 +2278,16 @@
           }
         }
       ],
-      "guardrail": [
-        {
-          "path": "src/services/posts.ts",
-          "passed": 17,
-          "failed": 1,
-          "skipped": 18,
-          "ok": false,
-          "failedRules": [
-            "No hardcoded API URLs"
-          ]
-        }
-      ],
+      "guardrail": [],
       "axes": {
-        "correctness": 0.75,
+        "correctness": 0,
         "adherence": 0,
-        "guardrails": 0.9444444444444444
+        "guardrails": 0
       },
-      "composite": 0.5833333333333334,
+      "composite": 0,
       "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: passed",
-        "Missing required output files: src/screens/FeedScreen.tsx"
+        "Model generation produced no non-empty files.",
+        "Missing required output files: src/screens/FeedScreen.tsx, src/services/posts.ts"
       ],
       "reference": {
         "files": [
@@ -2541,8 +2303,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0,
-          "guardrails": 1.0119047619047619,
-          "composite": 0.6402439024390244
+          "guardrails": 0,
+          "composite": 0
         }
       }
     },
@@ -2551,21 +2313,19 @@
       "title": "Appointment booking with availability slots",
       "suite": "booking-payments",
       "scaffoldable": false,
-      "generatedFiles": [
-        "src/screens/BookingScreen.tsx"
-      ],
+      "generatedFiles": [],
       "attempts": [
         {
           "index": 1,
           "kind": "initial",
-          "status": "parsed",
-          "selected": true,
-          "durationMs": 43392,
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 68787,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 1,
+          "fileCount": 0,
           "adherence": 0,
-          "guardrails": 0.9259259259259259,
+          "guardrails": 0,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:d98d1d94d307473d72c44ff659c1491966c221104be6c4f1dcaa00ad87b7ed9f",
           "maxAttempts": 3,
@@ -2583,7 +2343,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 43383
+              "durationMs": 68787
             }
           ],
           "model": {
@@ -2598,33 +2358,33 @@
         },
         {
           "index": 2,
-          "kind": "repair",
-          "status": "parsed",
+          "kind": "parse-retry",
+          "status": "invalid",
           "selected": false,
-          "durationMs": 39480,
+          "durationMs": 65078,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 1,
+          "fileCount": 0,
           "adherence": 0,
-          "guardrails": 0.8888888888888888,
+          "guardrails": 0,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:d98d1d94d307473d72c44ff659c1491966c221104be6c4f1dcaa00ad87b7ed9f",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:814cd6ae38f50a9cbed84bd2e12a5c70b97a91b91f25657a66e95448e7a81f41",
+          "requestDigest": "sha256:486338f5d596dbd49c7986b4c2f59589741864fe3c520af7e617a9a1e712de61",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2509,
+            "inputTokens": 1670,
             "maxOutputTokens": 8192,
-            "contextSize": 11008,
+            "contextSize": 10240,
             "batchSize": 128
           },
           "providerCalls": [
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 39475
+              "durationMs": 65078
             }
           ],
           "model": {
@@ -2638,30 +2398,16 @@
           }
         }
       ],
-      "guardrail": [
-        {
-          "path": "src/screens/BookingScreen.tsx",
-          "passed": 25,
-          "failed": 2,
-          "skipped": 9,
-          "ok": false,
-          "failedRules": [
-            "No console.log statements",
-            "No unused imports"
-          ]
-        }
-      ],
+      "guardrail": [],
       "axes": {
-        "correctness": 0.5,
+        "correctness": 0,
         "adherence": 0,
-        "guardrails": 0.9259259259259259
+        "guardrails": 0
       },
-      "composite": 0.4777777777777778,
+      "composite": 0,
       "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)",
-        "Missing required output files: src/services/booking.ts"
+        "Model generation produced no non-empty files.",
+        "Missing required output files: src/screens/BookingScreen.tsx, src/services/booking.ts"
       ],
       "reference": {
         "files": [
@@ -2677,8 +2423,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0,
-          "guardrails": 1.016260162601626,
-          "composite": 0.5657894736842106
+          "guardrails": 0,
+          "composite": 0
         }
       }
     },
@@ -2694,14 +2440,14 @@
         {
           "index": 1,
           "kind": "initial",
-          "status": "parsed",
-          "selected": true,
-          "durationMs": 47028,
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 71124,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 1,
+          "fileCount": 0,
           "adherence": 0,
-          "guardrails": 0.9285714285714286,
+          "guardrails": 0,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:5a547ce4cc660068190090b6347d5e6cf7f5884e66db4397c7669fc25ca1ed1e",
           "maxAttempts": 3,
@@ -2719,7 +2465,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 47020
+              "durationMs": 71124
             }
           ],
           "model": {
@@ -2734,10 +2480,51 @@
         },
         {
           "index": 2,
+          "kind": "parse-retry",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 73208,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.9285714285714286,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:5a547ce4cc660068190090b6347d5e6cf7f5884e66db4397c7669fc25ca1ed1e",
+          "maxAttempts": 3,
+          "promptMode": "vectalon",
+          "requestDigest": "sha256:67c48892de7ea4d645f41d9dc9937ad30d8fc91215963ebfea07904e6a6dbd9c",
+          "provider": "local",
+          "stopReason": "eogToken",
+          "localContext": {
+            "inputTokens": 1672,
+            "maxOutputTokens": 8192,
+            "contextSize": 10240,
+            "batchSize": 128
+          },
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 73192
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 3,
           "kind": "repair",
           "status": "parsed",
           "selected": false,
-          "durationMs": 41536,
+          "durationMs": 87748,
           "temperature": 0,
           "maxTokens": 8192,
           "fileCount": 1,
@@ -2747,11 +2534,11 @@
           "taskDigest": "sha256:5a547ce4cc660068190090b6347d5e6cf7f5884e66db4397c7669fc25ca1ed1e",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:4acf1c1ef9da4b8f60160575ffb4d9c4ca9351c3376b774a4a12e0aaa5d3633f",
+          "requestDigest": "sha256:e674cae9cd25a80c1d4faa5ea518ce57f3509ad28e3d264e2b5535dd8470cbb5",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2654,
+            "inputTokens": 2642,
             "maxOutputTokens": 8192,
             "contextSize": 11264,
             "batchSize": 128
@@ -2760,7 +2547,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 41532
+              "durationMs": 87741
             }
           ],
           "model": {
@@ -2823,19 +2610,21 @@
       "title": "Order tracking timeline with live status",
       "suite": "booking-payments",
       "scaffoldable": false,
-      "generatedFiles": [],
+      "generatedFiles": [
+        "src/services/tracking.ts"
+      ],
       "attempts": [
         {
           "index": 1,
           "kind": "initial",
-          "status": "invalid",
-          "selected": false,
-          "durationMs": 42113,
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 65021,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 0,
+          "fileCount": 1,
           "adherence": 0,
-          "guardrails": 0,
+          "guardrails": 0.8888888888888888,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:70d52f9ca0f57e817be84cdb901be055390e1f19aa2913676139f497516cbbc5",
           "maxAttempts": 3,
@@ -2853,129 +2642,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 42111
-            }
-          ],
-          "model": {
-            "id": "qwen2.5-coder-1.5b",
-            "source": "configured"
-          },
-          "artifact": {
-            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
-            "sizeBytes": 1117320768,
-            "source": "local-file-at-load"
-          }
-        },
-        {
-          "index": 2,
-          "kind": "parse-retry",
-          "status": "invalid",
-          "selected": false,
-          "durationMs": 33431,
-          "temperature": 0,
-          "maxTokens": 8192,
-          "fileCount": 0,
-          "adherence": 0,
-          "guardrails": 0,
-          "artifactIdentity": "unverified",
-          "taskDigest": "sha256:70d52f9ca0f57e817be84cdb901be055390e1f19aa2913676139f497516cbbc5",
-          "maxAttempts": 3,
-          "promptMode": "vectalon",
-          "requestDigest": "sha256:1c611e2f1443b018c2d44004fd9e6b239e16cc743dc09c70dc1f1ea507d993b7",
-          "provider": "local",
-          "stopReason": "eogToken",
-          "localContext": {
-            "inputTokens": 1672,
-            "maxOutputTokens": 8192,
-            "contextSize": 10240,
-            "batchSize": 128
-          },
-          "providerCalls": [
-            {
-              "provider": "local",
-              "status": "response",
-              "durationMs": 33431
-            }
-          ],
-          "model": {
-            "id": "qwen2.5-coder-1.5b",
-            "source": "configured"
-          },
-          "artifact": {
-            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
-            "sizeBytes": 1117320768,
-            "source": "local-file-at-load"
-          }
-        }
-      ],
-      "guardrail": [],
-      "axes": {
-        "correctness": 0,
-        "adherence": 0,
-        "guardrails": 0
-      },
-      "composite": 0,
-      "correctnessDetails": [
-        "Model generation produced no non-empty files.",
-        "Missing required output files: src/screens/TrackingScreen.tsx, src/services/tracking.ts"
-      ],
-      "reference": {
-        "files": [
-          "src/services/tracking.ts",
-          "src/screens/TrackingScreen.tsx"
-        ],
-        "axes": {
-          "correctness": null,
-          "adherence": 0.75,
-          "guardrails": 0.9545454545454546
-        },
-        "composite": 0.8522727272727273,
-        "relative": {
-          "correctness": null,
-          "adherence": 0,
-          "guardrails": 0,
-          "composite": 0
-        }
-      }
-    },
-    {
-      "id": "rn-21-health-dashboard",
-      "title": "Health dashboard with activity rings",
-      "suite": "health-fitness",
-      "scaffoldable": false,
-      "generatedFiles": [
-        "src/services/health.ts"
-      ],
-      "attempts": [
-        {
-          "index": 1,
-          "kind": "initial",
-          "status": "parsed",
-          "selected": true,
-          "durationMs": 46357,
-          "temperature": 0.2,
-          "maxTokens": 8192,
-          "fileCount": 1,
-          "adherence": 0,
-          "guardrails": 0.8888888888888888,
-          "artifactIdentity": "unverified",
-          "taskDigest": "sha256:4ead3c6b59bc141a01ebf5a8b1a4afd90b583eabfe3f587817625144bd12e971",
-          "maxAttempts": 3,
-          "promptMode": "vectalon",
-          "requestDigest": "sha256:a760bdc12c73c039135e96b799e129691f2efe9ddf6fd908a0402287ea45f6e6",
-          "provider": "local",
-          "stopReason": "eogToken",
-          "localContext": {
-            "inputTokens": 1650,
-            "maxOutputTokens": 8192,
-            "contextSize": 10240,
-            "batchSize": 128
-          },
-          "providerCalls": [
-            {
-              "provider": "local",
-              "status": "response",
-              "durationMs": 46354
+              "durationMs": 65019
             }
           ],
           "model": {
@@ -2993,21 +2660,21 @@
           "kind": "repair",
           "status": "parsed",
           "selected": false,
-          "durationMs": 46621,
+          "durationMs": 56022,
           "temperature": 0,
           "maxTokens": 8192,
           "fileCount": 1,
           "adherence": 0,
           "guardrails": 0.8888888888888888,
           "artifactIdentity": "unverified",
-          "taskDigest": "sha256:4ead3c6b59bc141a01ebf5a8b1a4afd90b583eabfe3f587817625144bd12e971",
+          "taskDigest": "sha256:70d52f9ca0f57e817be84cdb901be055390e1f19aa2913676139f497516cbbc5",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:63aebc47699777190dc9f988d6db1f2c3cb3ea89cb24f451b3a3bf1eb9e7e885",
+          "requestDigest": "sha256:71f5bdcf005db3c6382bb07e3e4b6a54e3ca68c125b76c5b874f4cb7714e8338",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 1870,
+            "inputTokens": 1842,
             "maxOutputTokens": 8192,
             "contextSize": 10496,
             "batchSize": 128
@@ -3016,7 +2683,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 46617
+              "durationMs": 56021
             }
           ],
           "model": {
@@ -3032,7 +2699,7 @@
       ],
       "guardrail": [
         {
-          "path": "src/services/health.ts",
+          "path": "src/services/tracking.ts",
           "passed": 16,
           "failed": 2,
           "skipped": 18,
@@ -3053,12 +2720,12 @@
         "- Tests: passed",
         "- Type check: failed (exit 2)",
         "- Lint: passed",
-        "Missing required output files: src/screens/HealthDashboardScreen.tsx"
+        "Missing required output files: src/screens/TrackingScreen.tsx"
       ],
       "reference": {
         "files": [
-          "src/services/health.ts",
-          "src/screens/HealthDashboardScreen.tsx"
+          "src/services/tracking.ts",
+          "src/screens/TrackingScreen.tsx"
         ],
         "axes": {
           "correctness": null,
@@ -3075,23 +2742,201 @@
       }
     },
     {
-      "id": "rn-22-workout-timer",
-      "title": "Interval workout timer with lap history",
+      "id": "rn-21-health-dashboard",
+      "title": "Health dashboard with activity rings",
       "suite": "health-fitness",
       "scaffoldable": false,
-      "generatedFiles": [],
+      "generatedFiles": [
+        "src/services/health.ts"
+      ],
       "attempts": [
         {
           "index": 1,
           "kind": "initial",
           "status": "invalid",
           "selected": false,
-          "durationMs": 49506,
+          "durationMs": 78931,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 0,
           "adherence": 0,
           "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:4ead3c6b59bc141a01ebf5a8b1a4afd90b583eabfe3f587817625144bd12e971",
+          "maxAttempts": 3,
+          "promptMode": "vectalon",
+          "requestDigest": "sha256:a760bdc12c73c039135e96b799e129691f2efe9ddf6fd908a0402287ea45f6e6",
+          "provider": "local",
+          "stopReason": "eogToken",
+          "localContext": {
+            "inputTokens": 1650,
+            "maxOutputTokens": 8192,
+            "contextSize": 10240,
+            "batchSize": 128
+          },
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 78931
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "parse-retry",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 60386,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.9444444444444444,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:4ead3c6b59bc141a01ebf5a8b1a4afd90b583eabfe3f587817625144bd12e971",
+          "maxAttempts": 3,
+          "promptMode": "vectalon",
+          "requestDigest": "sha256:05f916896dc4635c403ae93e2aa944ea2355706f90c95483eacdd7e507132922",
+          "provider": "local",
+          "stopReason": "eogToken",
+          "localContext": {
+            "inputTokens": 1670,
+            "maxOutputTokens": 8192,
+            "contextSize": 10240,
+            "batchSize": 128
+          },
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 60382
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 3,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 66100,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.9444444444444444,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:4ead3c6b59bc141a01ebf5a8b1a4afd90b583eabfe3f587817625144bd12e971",
+          "maxAttempts": 3,
+          "promptMode": "vectalon",
+          "requestDigest": "sha256:235b036b5e16044d65bb741c41adf5d874bfde9db74afc7310a12ff746b3e16d",
+          "provider": "local",
+          "stopReason": "eogToken",
+          "localContext": {
+            "inputTokens": 1831,
+            "maxOutputTokens": 8192,
+            "contextSize": 10496,
+            "batchSize": 128
+          },
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 66097
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "guardrail": [
+        {
+          "path": "src/services/health.ts",
+          "passed": 17,
+          "failed": 1,
+          "skipped": 18,
+          "ok": false,
+          "failedRules": [
+            "No hardcoded API URLs"
+          ]
+        }
+      ],
+      "axes": {
+        "correctness": 0.75,
+        "adherence": 0,
+        "guardrails": 0.9444444444444444
+      },
+      "composite": 0.5833333333333334,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: failed (exit 2)",
+        "- Lint: passed",
+        "Missing required output files: src/screens/HealthDashboardScreen.tsx"
+      ],
+      "reference": {
+        "files": [
+          "src/services/health.ts",
+          "src/screens/HealthDashboardScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.75,
+          "guardrails": 0.9545454545454546
+        },
+        "composite": 0.8522727272727273,
+        "relative": {
+          "correctness": null,
+          "adherence": 0,
+          "guardrails": 0.9894179894179893,
+          "composite": 0.6844444444444445
+        }
+      }
+    },
+    {
+      "id": "rn-22-workout-timer",
+      "title": "Interval workout timer with lap history",
+      "suite": "health-fitness",
+      "scaffoldable": false,
+      "generatedFiles": [
+        "src/hooks/useIntervalTimer.ts"
+      ],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 76065,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 1,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:a6715cccbe9da3dfa5d98f8278b19ab72cc2fa60649913ff6aa2778393e97af5",
           "maxAttempts": 3,
@@ -3109,7 +2954,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 49505
+              "durationMs": 76063
             }
           ],
           "model": {
@@ -3124,10 +2969,10 @@
         },
         {
           "index": 2,
-          "kind": "parse-retry",
+          "kind": "repair",
           "status": "invalid",
           "selected": false,
-          "durationMs": 44354,
+          "durationMs": 117125,
           "temperature": 0,
           "maxTokens": 8192,
           "fileCount": 0,
@@ -3137,20 +2982,20 @@
           "taskDigest": "sha256:a6715cccbe9da3dfa5d98f8278b19ab72cc2fa60649913ff6aa2778393e97af5",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:388873b7f1c72df12b35f4c762b7ae3b8893d432a121339b709742dda8f04d85",
+          "requestDigest": "sha256:e4516af30aab4285d923bfbcfc06bf482b51b6c582fbf48a7cfd2084dc4d6ec8",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 1673,
+            "inputTokens": 1837,
             "maxOutputTokens": 8192,
-            "contextSize": 10240,
+            "contextSize": 10496,
             "batchSize": 128
           },
           "providerCalls": [
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 44354
+              "durationMs": 117125
             }
           ],
           "model": {
@@ -3164,16 +3009,27 @@
           }
         }
       ],
-      "guardrail": [],
+      "guardrail": [
+        {
+          "path": "src/hooks/useIntervalTimer.ts",
+          "passed": 18,
+          "failed": 0,
+          "skipped": 18,
+          "ok": true,
+          "failedRules": []
+        }
+      ],
       "axes": {
-        "correctness": 0,
+        "correctness": 0.5,
         "adherence": 0,
-        "guardrails": 0
+        "guardrails": 1
       },
-      "composite": 0,
+      "composite": 0.5,
       "correctnessDetails": [
-        "Model generation produced no non-empty files.",
-        "Missing required output files: src/screens/WorkoutTimerScreen.tsx, src/hooks/useIntervalTimer.ts"
+        "- Tests: passed",
+        "- Type check: failed (exit 2)",
+        "- Lint: failed (exit 1)",
+        "Missing required output files: src/screens/WorkoutTimerScreen.tsx"
       ],
       "reference": {
         "files": [
@@ -3189,8 +3045,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0,
-          "guardrails": 0,
-          "composite": 0
+          "guardrails": 1.0465116279069766,
+          "composite": 0.569620253164557
         }
       }
     },
@@ -3206,7 +3062,7 @@
           "kind": "initial",
           "status": "invalid",
           "selected": false,
-          "durationMs": 44705,
+          "durationMs": 85624,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 0,
@@ -3229,7 +3085,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 44704
+              "durationMs": 85624
             }
           ],
           "model": {
@@ -3247,7 +3103,7 @@
           "kind": "parse-retry",
           "status": "invalid",
           "selected": false,
-          "durationMs": 57900,
+          "durationMs": 80708,
           "temperature": 0,
           "maxTokens": 8192,
           "fileCount": 0,
@@ -3270,7 +3126,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 57899
+              "durationMs": 80707
             }
           ],
           "model": {
@@ -3326,7 +3182,7 @@
           "kind": "initial",
           "status": "invalid",
           "selected": false,
-          "durationMs": 45347,
+          "durationMs": 82515,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 0,
@@ -3349,7 +3205,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 45346
+              "durationMs": 82513
             }
           ],
           "model": {
@@ -3367,7 +3223,7 @@
           "kind": "parse-retry",
           "status": "invalid",
           "selected": false,
-          "durationMs": 68139,
+          "durationMs": 91708,
           "temperature": 0,
           "maxTokens": 8192,
           "fileCount": 0,
@@ -3390,7 +3246,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 68138
+              "durationMs": 91707
             }
           ],
           "model": {
@@ -3440,21 +3296,20 @@
       "suite": "profile-onboarding",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/screens/ProfileEditScreen.tsx",
-        "src/services/profile.ts"
+        "src/screens/ProfileEditScreen.tsx"
       ],
       "attempts": [
         {
           "index": 1,
           "kind": "initial",
-          "status": "parsed",
-          "selected": true,
-          "durationMs": 38569,
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 78589,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 2,
-          "adherence": 0.5555555555555556,
-          "guardrails": 0.9130434782608695,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:0e52cc349d7dce5d49ef7937c4e5f4941a2749698aedcb75ecfe5feb88ad9f77",
           "maxAttempts": 3,
@@ -3472,7 +3327,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 38560
+              "durationMs": 78589
             }
           ],
           "model": {
@@ -3487,10 +3342,51 @@
         },
         {
           "index": 2,
+          "kind": "parse-retry",
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 69070,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.8928571428571429,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:0e52cc349d7dce5d49ef7937c4e5f4941a2749698aedcb75ecfe5feb88ad9f77",
+          "maxAttempts": 3,
+          "promptMode": "vectalon",
+          "requestDigest": "sha256:bcb09e6d3451dca70f0b792e5cbdbcfc4975c84874ebbc9ddedbcf543b893d33",
+          "provider": "local",
+          "stopReason": "eogToken",
+          "localContext": {
+            "inputTokens": 1669,
+            "maxOutputTokens": 8192,
+            "contextSize": 10240,
+            "batchSize": 128
+          },
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 69058
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 3,
           "kind": "repair",
           "status": "invalid",
           "selected": false,
-          "durationMs": 45668,
+          "durationMs": 71777,
           "temperature": 0,
           "maxTokens": 8192,
           "fileCount": 0,
@@ -3500,11 +3396,11 @@
           "taskDigest": "sha256:0e52cc349d7dce5d49ef7937c4e5f4941a2749698aedcb75ecfe5feb88ad9f77",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:e6207fc5f87ccfde457a6a6399f514ce07e386fdfb03e5addc7582ee2693240e",
+          "requestDigest": "sha256:e0c9bf3df3fae7cca8a6367d3e15c25b028a0b4c4fa0d7ad9af6f6cccbb3b50d",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2614,
+            "inputTokens": 2644,
             "maxOutputTokens": 8192,
             "contextSize": 11264,
             "batchSize": 128
@@ -3513,7 +3409,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 45667
+              "durationMs": 71777
             }
           ],
           "model": {
@@ -3539,28 +3435,19 @@
             "Forms use KeyboardAvoidingView on iOS",
             "Interactive elements have accessibility labels"
           ]
-        },
-        {
-          "path": "src/services/profile.ts",
-          "passed": 17,
-          "failed": 1,
-          "skipped": 18,
-          "ok": false,
-          "failedRules": [
-            "No console.log statements"
-          ]
         }
       ],
       "axes": {
-        "correctness": 0.5,
-        "adherence": 0.5555555555555556,
-        "guardrails": 0.9130434782608695
+        "correctness": 0.75,
+        "adherence": 0,
+        "guardrails": 0.8928571428571429
       },
-      "composite": 0.6405797101449275,
+      "composite": 0.5678571428571428,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)"
+        "- Lint: passed",
+        "Missing required output files: src/services/profile.ts"
       ],
       "reference": {
         "files": [
@@ -3575,9 +3462,9 @@
         "composite": 0.9065217391304348,
         "relative": {
           "correctness": null,
-          "adherence": 0.6172839506172839,
-          "guardrails": 1,
-          "composite": 0.706634692246203
+          "adherence": 0,
+          "guardrails": 0.9778911564625852,
+          "composite": 0.6264131551901336
         }
       }
     },
@@ -3595,12 +3482,12 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 54325,
+          "durationMs": 69975,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 1,
           "adherence": 0,
-          "guardrails": 0.9444444444444444,
+          "guardrails": 1,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:92f2d594f25cc338170aa281383a44b567621de600f715b2fa2c14ee6ec244da",
           "maxAttempts": 3,
@@ -3618,7 +3505,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 54322
+              "durationMs": 69972
             }
           ],
           "model": {
@@ -3636,7 +3523,7 @@
           "kind": "repair",
           "status": "invalid",
           "selected": false,
-          "durationMs": 83860,
+          "durationMs": 57823,
           "temperature": 0,
           "maxTokens": 8192,
           "fileCount": 0,
@@ -3646,11 +3533,11 @@
           "taskDigest": "sha256:92f2d594f25cc338170aa281383a44b567621de600f715b2fa2c14ee6ec244da",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:054c2131f2fa7c7f9be544d9a7d7cb6c062ac6acc358a6552da27c9224a8405c",
+          "requestDigest": "sha256:02a38366046a7a5d39c7a0b82c6b1439e3e585e0ef85b6e55711a86bfdfeaba4",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 1901,
+            "inputTokens": 1880,
             "maxOutputTokens": 8192,
             "contextSize": 10496,
             "batchSize": 128
@@ -3659,7 +3546,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 83858
+              "durationMs": 57822
             }
           ],
           "model": {
@@ -3676,21 +3563,19 @@
       "guardrail": [
         {
           "path": "src/services/onboarding.ts",
-          "passed": 17,
-          "failed": 1,
+          "passed": 18,
+          "failed": 0,
           "skipped": 18,
-          "ok": false,
-          "failedRules": [
-            "Directly exported function declarations have return annotations"
-          ]
+          "ok": true,
+          "failedRules": []
         }
       ],
       "axes": {
         "correctness": 0.5,
         "adherence": 0,
-        "guardrails": 0.9444444444444444
+        "guardrails": 1
       },
-      "composite": 0.48333333333333334,
+      "composite": 0.5,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -3711,8 +3596,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0,
-          "guardrails": 1.0119047619047619,
-          "composite": 0.564935064935065
+          "guardrails": 1.0714285714285714,
+          "composite": 0.5844155844155845
         }
       }
     },
@@ -3722,8 +3607,8 @@
       "suite": "security",
       "scaffoldable": false,
       "generatedFiles": [
-        "src/services/authLocal.ts",
-        "src/config/api.ts"
+        "src/screens/LockScreen.tsx",
+        "src/services/authLocal.ts"
       ],
       "attempts": [
         {
@@ -3731,12 +3616,12 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 77606,
+          "durationMs": 77191,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 2,
-          "adherence": 0,
-          "guardrails": 0.9166666666666666,
+          "adherence": 0.5,
+          "guardrails": 0.8666666666666667,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:a250a309be0860ff9433d32d8431cd1be7f411c4b0b1b509828344727dd7ee86",
           "maxAttempts": 3,
@@ -3754,7 +3639,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 77601
+              "durationMs": 77183
             }
           ],
           "model": {
@@ -3772,30 +3657,30 @@
           "kind": "repair",
           "status": "parsed",
           "selected": false,
-          "durationMs": 45165,
+          "durationMs": 110897,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 2,
-          "adherence": 0.3333333333333333,
-          "guardrails": 0.8863636363636364,
+          "fileCount": 1,
+          "adherence": 0,
+          "guardrails": 0.9444444444444444,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:a250a309be0860ff9433d32d8431cd1be7f411c4b0b1b509828344727dd7ee86",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:f87142d132ddb3a418a2afd62c111017b117d6ff704754c5f752c75d602d2f25",
+          "requestDigest": "sha256:c09b180dec8ccf720ffea9778b5db11729d3c34262b761a79165cb2e572781dd",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2636,
+            "inputTokens": 2979,
             "maxOutputTokens": 8192,
-            "contextSize": 11264,
+            "contextSize": 11520,
             "batchSize": 128
           },
           "providerCalls": [
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 45159
+              "durationMs": 110893
             }
           ],
           "model": {
@@ -3811,38 +3696,40 @@
       ],
       "guardrail": [
         {
-          "path": "src/services/authLocal.ts",
-          "passed": 16,
-          "failed": 2,
-          "skipped": 18,
+          "path": "src/screens/LockScreen.tsx",
+          "passed": 22,
+          "failed": 5,
+          "skipped": 9,
           "ok": false,
           "failedRules": [
-            "Async functions have error handling",
+            "No console.log statements",
+            "No unused imports",
+            "Interactive elements have accessibility labels",
+            "Prefer Pressable over TouchableOpacity",
             "Directly exported function declarations have return annotations"
           ]
         },
         {
-          "path": "src/config/api.ts",
+          "path": "src/services/authLocal.ts",
           "passed": 17,
           "failed": 1,
           "skipped": 18,
           "ok": false,
           "failedRules": [
-            "No unused imports"
+            "No console.log statements"
           ]
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0,
-        "guardrails": 0.9166666666666666
+        "adherence": 0.5,
+        "guardrails": 0.8666666666666667
       },
-      "composite": 0.475,
+      "composite": 0.61,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)",
-        "Missing required output files: src/screens/LockScreen.tsx"
+        "- Lint: failed (exit 1)"
       ],
       "reference": {
         "files": [
@@ -3857,9 +3744,9 @@
         "composite": 0.9222222222222223,
         "relative": {
           "correctness": null,
-          "adherence": 0,
-          "guardrails": 0.9593023255813953,
-          "composite": 0.5150602409638554
+          "adherence": 0.5625,
+          "guardrails": 0.9069767441860465,
+          "composite": 0.6614457831325301
         }
       }
     },
@@ -3875,7 +3762,7 @@
           "kind": "initial",
           "status": "invalid",
           "selected": false,
-          "durationMs": 37401,
+          "durationMs": 80065,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 0,
@@ -3898,7 +3785,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 37400
+              "durationMs": 80064
             }
           ],
           "model": {
@@ -3916,7 +3803,7 @@
           "kind": "parse-retry",
           "status": "invalid",
           "selected": false,
-          "durationMs": 52808,
+          "durationMs": 76100,
           "temperature": 0,
           "maxTokens": 8192,
           "fileCount": 0,
@@ -3939,7 +3826,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 52807
+              "durationMs": 76100
             }
           ],
           "model": {
@@ -3995,7 +3882,7 @@
           "kind": "initial",
           "status": "invalid",
           "selected": false,
-          "durationMs": 49550,
+          "durationMs": 75009,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 0,
@@ -4018,7 +3905,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 49549
+              "durationMs": 75009
             }
           ],
           "model": {
@@ -4036,7 +3923,7 @@
           "kind": "parse-retry",
           "status": "invalid",
           "selected": false,
-          "durationMs": 46377,
+          "durationMs": 76732,
           "temperature": 0,
           "maxTokens": 8192,
           "fileCount": 0,
@@ -4059,7 +3946,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 46376
+              "durationMs": 76731
             }
           ],
           "model": {
@@ -4108,19 +3995,22 @@
       "title": "Subscription plan picker with comparison",
       "suite": "commerce-subscriptions",
       "scaffoldable": false,
-      "generatedFiles": [],
+      "generatedFiles": [
+        "src/screens/PlansScreen.tsx",
+        "src/services/subscriptions.ts"
+      ],
       "attempts": [
         {
           "index": 1,
           "kind": "initial",
-          "status": "invalid",
-          "selected": false,
-          "durationMs": 47513,
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 66825,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 0,
-          "adherence": 0,
-          "guardrails": 0,
+          "fileCount": 2,
+          "adherence": 0.625,
+          "guardrails": 0.9333333333333333,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:3792aa8bdb90b85a3c7b15acdd2fdc52c0b72e517b7678efac39ae3faf4e0537",
           "maxAttempts": 3,
@@ -4138,7 +4028,150 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 47513
+              "durationMs": 66800
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 105409,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:3792aa8bdb90b85a3c7b15acdd2fdc52c0b72e517b7678efac39ae3faf4e0537",
+          "maxAttempts": 3,
+          "promptMode": "vectalon",
+          "requestDigest": "sha256:f15bb58b9fc49287e84e222f8de07b767a52c23308a40ed62e647d6dd8a9ce12",
+          "provider": "local",
+          "stopReason": "eogToken",
+          "localContext": {
+            "inputTokens": 2745,
+            "maxOutputTokens": 8192,
+            "contextSize": 11264,
+            "batchSize": 128
+          },
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 105408
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        }
+      ],
+      "guardrail": [
+        {
+          "path": "src/screens/PlansScreen.tsx",
+          "passed": 25,
+          "failed": 2,
+          "skipped": 9,
+          "ok": false,
+          "failedRules": [
+            "No console.log statements",
+            "Prefer Pressable over TouchableOpacity"
+          ]
+        },
+        {
+          "path": "src/services/subscriptions.ts",
+          "passed": 17,
+          "failed": 1,
+          "skipped": 18,
+          "ok": false,
+          "failedRules": [
+            "No console.log statements"
+          ]
+        }
+      ],
+      "axes": {
+        "correctness": 0.5,
+        "adherence": 0.625,
+        "guardrails": 0.9333333333333333
+      },
+      "composite": 0.6675,
+      "correctnessDetails": [
+        "- Tests: passed",
+        "- Type check: failed (exit 2)",
+        "- Lint: failed (exit 1)"
+      ],
+      "reference": {
+        "files": [
+          "src/services/subscriptions.ts",
+          "src/screens/PlansScreen.tsx"
+        ],
+        "axes": {
+          "correctness": null,
+          "adherence": 0.7777777777777778,
+          "guardrails": 0.9111111111111111
+        },
+        "composite": 0.8444444444444443,
+        "relative": {
+          "correctness": null,
+          "adherence": 0.8035714285714286,
+          "guardrails": 1.024390243902439,
+          "composite": 0.7904605263157896
+        }
+      }
+    },
+    {
+      "id": "rn-31-places-nearby",
+      "title": "Nearby places list with distance sorting",
+      "suite": "travel-weather",
+      "scaffoldable": false,
+      "generatedFiles": [],
+      "attempts": [
+        {
+          "index": 1,
+          "kind": "initial",
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 73874,
+          "temperature": 0.2,
+          "maxTokens": 8192,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:09da695f6e6b3b41a340c7dc76e1ab4c28cecbb8e9a5514ba719e82e556284ae",
+          "maxAttempts": 3,
+          "promptMode": "vectalon",
+          "requestDigest": "sha256:00e7d541ea74cc86bf7c46158b8079a286bfb509e688f149e58b1ce9fe12f4ad",
+          "provider": "local",
+          "stopReason": "eogToken",
+          "localContext": {
+            "inputTokens": 1658,
+            "maxOutputTokens": 8192,
+            "contextSize": 10240,
+            "batchSize": 128
+          },
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 73869
             }
           ],
           "model": {
@@ -4156,21 +4189,21 @@
           "kind": "parse-retry",
           "status": "invalid",
           "selected": false,
-          "durationMs": 36945,
+          "durationMs": 65978,
           "temperature": 0,
           "maxTokens": 8192,
           "fileCount": 0,
           "adherence": 0,
           "guardrails": 0,
           "artifactIdentity": "unverified",
-          "taskDigest": "sha256:3792aa8bdb90b85a3c7b15acdd2fdc52c0b72e517b7678efac39ae3faf4e0537",
+          "taskDigest": "sha256:09da695f6e6b3b41a340c7dc76e1ab4c28cecbb8e9a5514ba719e82e556284ae",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:09999b246ed2b7037a25b126a754c25c2af2c08767127d12099a476d862dcba2",
+          "requestDigest": "sha256:1c96696e956bf5180dfcfb2ec30a0e1cc1dea5c4f757df35dd7abff797e1229f",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 1672,
+            "inputTokens": 1678,
             "maxOutputTokens": 8192,
             "contextSize": 10240,
             "batchSize": 128
@@ -4179,7 +4212,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 36944
+              "durationMs": 65977
             }
           ],
           "model": {
@@ -4202,144 +4235,7 @@
       "composite": 0,
       "correctnessDetails": [
         "Model generation produced no non-empty files.",
-        "Missing required output files: src/screens/PlansScreen.tsx, src/services/subscriptions.ts"
-      ],
-      "reference": {
-        "files": [
-          "src/services/subscriptions.ts",
-          "src/screens/PlansScreen.tsx"
-        ],
-        "axes": {
-          "correctness": null,
-          "adherence": 0.7777777777777778,
-          "guardrails": 0.9111111111111111
-        },
-        "composite": 0.8444444444444443,
-        "relative": {
-          "correctness": null,
-          "adherence": 0,
-          "guardrails": 0,
-          "composite": 0
-        }
-      }
-    },
-    {
-      "id": "rn-31-places-nearby",
-      "title": "Nearby places list with distance sorting",
-      "suite": "travel-weather",
-      "scaffoldable": false,
-      "generatedFiles": [
-        "src/screens/PlacesScreen.tsx"
-      ],
-      "attempts": [
-        {
-          "index": 1,
-          "kind": "initial",
-          "status": "parsed",
-          "selected": true,
-          "durationMs": 43909,
-          "temperature": 0.2,
-          "maxTokens": 8192,
-          "fileCount": 1,
-          "adherence": 0,
-          "guardrails": 0.8888888888888888,
-          "artifactIdentity": "unverified",
-          "taskDigest": "sha256:09da695f6e6b3b41a340c7dc76e1ab4c28cecbb8e9a5514ba719e82e556284ae",
-          "maxAttempts": 3,
-          "promptMode": "vectalon",
-          "requestDigest": "sha256:00e7d541ea74cc86bf7c46158b8079a286bfb509e688f149e58b1ce9fe12f4ad",
-          "provider": "local",
-          "stopReason": "eogToken",
-          "localContext": {
-            "inputTokens": 1658,
-            "maxOutputTokens": 8192,
-            "contextSize": 10240,
-            "batchSize": 128
-          },
-          "providerCalls": [
-            {
-              "provider": "local",
-              "status": "response",
-              "durationMs": 43904
-            }
-          ],
-          "model": {
-            "id": "qwen2.5-coder-1.5b",
-            "source": "configured"
-          },
-          "artifact": {
-            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
-            "sizeBytes": 1117320768,
-            "source": "local-file-at-load"
-          }
-        },
-        {
-          "index": 2,
-          "kind": "repair",
-          "status": "invalid",
-          "selected": false,
-          "durationMs": 36997,
-          "temperature": 0,
-          "maxTokens": 8192,
-          "fileCount": 0,
-          "adherence": 0,
-          "guardrails": 0,
-          "artifactIdentity": "unverified",
-          "taskDigest": "sha256:09da695f6e6b3b41a340c7dc76e1ab4c28cecbb8e9a5514ba719e82e556284ae",
-          "maxAttempts": 3,
-          "promptMode": "vectalon",
-          "requestDigest": "sha256:04e81d20fca268378c2f82aa614b7886c03ba00b0f26243ed2ff07b5a66ba94f",
-          "provider": "local",
-          "stopReason": "eogToken",
-          "localContext": {
-            "inputTokens": 2599,
-            "maxOutputTokens": 8192,
-            "contextSize": 11264,
-            "batchSize": 128
-          },
-          "providerCalls": [
-            {
-              "provider": "local",
-              "status": "response",
-              "durationMs": 36996
-            }
-          ],
-          "model": {
-            "id": "qwen2.5-coder-1.5b",
-            "source": "configured"
-          },
-          "artifact": {
-            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
-            "sizeBytes": 1117320768,
-            "source": "local-file-at-load"
-          }
-        }
-      ],
-      "guardrail": [
-        {
-          "path": "src/screens/PlacesScreen.tsx",
-          "passed": 24,
-          "failed": 3,
-          "skipped": 9,
-          "ok": false,
-          "failedRules": [
-            "No unused imports",
-            "useEffect/useCallback dependencies checked",
-            "Prefer Pressable over TouchableOpacity"
-          ]
-        }
-      ],
-      "axes": {
-        "correctness": 0.5,
-        "adherence": 0,
-        "guardrails": 0.8888888888888888
-      },
-      "composite": 0.4666666666666667,
-      "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: failed (exit 1)",
-        "Missing required output files: src/services/places.ts"
+        "Missing required output files: src/screens/PlacesScreen.tsx, src/services/places.ts"
       ],
       "reference": {
         "files": [
@@ -4355,8 +4251,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0,
-          "guardrails": 0.9523809523809523,
-          "composite": 0.5384615384615384
+          "guardrails": 0,
+          "composite": 0
         }
       }
     },
@@ -4365,21 +4261,19 @@
       "title": "Hourly forecast with temperature curve",
       "suite": "travel-weather",
       "scaffoldable": false,
-      "generatedFiles": [
-        "src/services/weather.ts"
-      ],
+      "generatedFiles": [],
       "attempts": [
         {
           "index": 1,
           "kind": "initial",
-          "status": "parsed",
-          "selected": true,
-          "durationMs": 42834,
+          "status": "invalid",
+          "selected": false,
+          "durationMs": 72964,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 1,
+          "fileCount": 0,
           "adherence": 0,
-          "guardrails": 0.8888888888888888,
+          "guardrails": 0,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:f4f3cd08b5a08f16bd9d3c162d0b1e4dfccb5de6dfe2b2112291248b7c624d7e",
           "maxAttempts": 3,
@@ -4397,7 +4291,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 42831
+              "durationMs": 72960
             }
           ],
           "model": {
@@ -4412,33 +4306,33 @@
         },
         {
           "index": 2,
-          "kind": "repair",
-          "status": "parsed",
+          "kind": "parse-retry",
+          "status": "invalid",
           "selected": false,
-          "durationMs": 51199,
+          "durationMs": 75282,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 2,
-          "adherence": 0.6363636363636364,
-          "guardrails": 0.8444444444444444,
+          "fileCount": 0,
+          "adherence": 0,
+          "guardrails": 0,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:f4f3cd08b5a08f16bd9d3c162d0b1e4dfccb5de6dfe2b2112291248b7c624d7e",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:9655b69ba4672253a8107f73aa3495b9ad08b24ae72baca1e234261a56add0a1",
+          "requestDigest": "sha256:7c7a20c109077b2199fc441985ec962cd9aa922600cbd3e16a67bfcd74a55544",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 1828,
+            "inputTokens": 1671,
             "maxOutputTokens": 8192,
-            "contextSize": 10496,
+            "contextSize": 10240,
             "batchSize": 128
           },
           "providerCalls": [
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 51191
+              "durationMs": 75282
             }
           ],
           "model": {
@@ -4452,30 +4346,16 @@
           }
         }
       ],
-      "guardrail": [
-        {
-          "path": "src/services/weather.ts",
-          "passed": 16,
-          "failed": 2,
-          "skipped": 18,
-          "ok": false,
-          "failedRules": [
-            "No hardcoded API URLs",
-            "Async functions have error handling"
-          ]
-        }
-      ],
+      "guardrail": [],
       "axes": {
-        "correctness": 0.75,
+        "correctness": 0,
         "adherence": 0,
-        "guardrails": 0.8888888888888888
+        "guardrails": 0
       },
-      "composite": 0.5666666666666667,
+      "composite": 0,
       "correctnessDetails": [
-        "- Tests: passed",
-        "- Type check: failed (exit 2)",
-        "- Lint: passed",
-        "Missing required output files: src/screens/WeatherScreen.tsx"
+        "Model generation produced no non-empty files.",
+        "Missing required output files: src/screens/WeatherScreen.tsx, src/services/weather.ts"
       ],
       "reference": {
         "files": [
@@ -4491,8 +4371,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0,
-          "guardrails": 0.9523809523809523,
-          "composite": 0.6219512195121951
+          "guardrails": 0,
+          "composite": 0
         }
       }
     },
@@ -4511,12 +4391,12 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 45285,
+          "durationMs": 80906,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 2,
-          "adherence": 0.7142857142857143,
-          "guardrails": 0.9111111111111111,
+          "adherence": 0.6666666666666666,
+          "guardrails": 0.8888888888888888,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:e78f76851113d25c27d84b47e082753c9139d13dc922dd69a71e4bc1e30def3e",
           "maxAttempts": 3,
@@ -4534,7 +4414,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 45269
+              "durationMs": 80879
             }
           ],
           "model": {
@@ -4552,7 +4432,7 @@
           "kind": "repair",
           "status": "invalid",
           "selected": false,
-          "durationMs": 41853,
+          "durationMs": 82441,
           "temperature": 0,
           "maxTokens": 8192,
           "fileCount": 0,
@@ -4562,20 +4442,20 @@
           "taskDigest": "sha256:e78f76851113d25c27d84b47e082753c9139d13dc922dd69a71e4bc1e30def3e",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:70a8988274f97e5c2a6d6263efdf4f804dd291cd79eeb17dcd31e46dbe849c05",
+          "requestDigest": "sha256:bf1a5d2d58e254a4769e63ea3e750023b601058bc5b8b06d4f85ffd112628e05",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2744,
+            "inputTokens": 3032,
             "maxOutputTokens": 8192,
-            "contextSize": 11264,
+            "contextSize": 11520,
             "batchSize": 128
           },
           "providerCalls": [
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 41852
+              "durationMs": 82440
             }
           ],
           "model": {
@@ -4597,28 +4477,29 @@
           "skipped": 9,
           "ok": false,
           "failedRules": [
+            "No console.log statements",
             "No unused imports",
-            "Interactive elements have accessibility labels",
             "Prefer Pressable over TouchableOpacity"
           ]
         },
         {
           "path": "src/services/privacy.ts",
-          "passed": 17,
-          "failed": 1,
+          "passed": 16,
+          "failed": 2,
           "skipped": 18,
           "ok": false,
           "failedRules": [
-            "No unused imports"
+            "No console.log statements",
+            "Directly exported function declarations have return annotations"
           ]
         }
       ],
       "axes": {
         "correctness": 0.5,
-        "adherence": 0.7142857142857143,
-        "guardrails": 0.9111111111111111
+        "adherence": 0.6666666666666666,
+        "guardrails": 0.8888888888888888
       },
-      "composite": 0.6876190476190476,
+      "composite": 0.6666666666666667,
       "correctnessDetails": [
         "- Tests: passed",
         "- Type check: failed (exit 2)",
@@ -4637,9 +4518,9 @@
         "composite": 0.8444444444444443,
         "relative": {
           "correctness": null,
-          "adherence": 0.9183673469387755,
-          "guardrails": 1,
-          "composite": 0.8142857142857144
+          "adherence": 0.8571428571428571,
+          "guardrails": 0.975609756097561,
+          "composite": 0.7894736842105265
         }
       }
     },
@@ -4649,7 +4530,8 @@
       "suite": "refactor",
       "scaffoldable": false,
       "generatedFiles": [
-        "ios/Podfile"
+        "ios/Podfile",
+        "android/app/src/main/AndroidManifest.xml"
       ],
       "attempts": [
         {
@@ -4657,12 +4539,12 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 37225,
+          "durationMs": 96559,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 1,
+          "fileCount": 2,
           "adherence": 0,
-          "guardrails": 1,
+          "guardrails": 0.9615384615384616,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:62207aa22483a614e81374e9b4edd836024549b23a35421cfef86d4e04b0545b",
           "maxAttempts": 3,
@@ -4680,7 +4562,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 37223
+              "durationMs": 96558
             }
           ],
           "model": {
@@ -4698,30 +4580,30 @@
           "kind": "repair",
           "status": "parsed",
           "selected": false,
-          "durationMs": 58950,
+          "durationMs": 92782,
           "temperature": 0,
           "maxTokens": 8192,
           "fileCount": 2,
           "adherence": 0,
-          "guardrails": 0.9615384615384616,
+          "guardrails": 1,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:62207aa22483a614e81374e9b4edd836024549b23a35421cfef86d4e04b0545b",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:4f53f9df98bbce6a6edb189be567b99c015ffae0ed5e98a20a4c8f8f581c530b",
+          "requestDigest": "sha256:b2f82325ed27c4c91e233ce7f60c18c175e8d2e9d52bd3a67ea8a5c1ce9a2370",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2774,
+            "inputTokens": 2879,
             "maxOutputTokens": 8192,
-            "contextSize": 11264,
+            "contextSize": 11520,
             "batchSize": 128
           },
           "providerCalls": [
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 58949
+              "durationMs": 92782
             }
           ],
           "model": {
@@ -4743,16 +4625,26 @@
           "skipped": 23,
           "ok": true,
           "failedRules": []
+        },
+        {
+          "path": "android/app/src/main/AndroidManifest.xml",
+          "passed": 12,
+          "failed": 1,
+          "skipped": 23,
+          "ok": false,
+          "failedRules": [
+            "No hardcoded API URLs"
+          ]
         }
       ],
       "axes": {
         "correctness": null,
         "adherence": 0,
-        "guardrails": 1
+        "guardrails": 0.9615384615384616
       },
-      "composite": 0.5,
+      "composite": 0.4807692307692307,
       "correctnessDetails": [
-        "Missing required output files: package.json, ios/Info.plist, ios/vectalon.xcodeproj/project.pbxproj, android/settings.gradle, android/app/build.gradle, android/app/src/main/AndroidManifest.xml"
+        "Missing required output files: package.json, ios/Info.plist, ios/vectalon.xcodeproj/project.pbxproj, android/settings.gradle, android/app/build.gradle"
       ],
       "reference": {
         "files": [
@@ -4773,8 +4665,8 @@
         "relative": {
           "correctness": null,
           "adherence": 0,
-          "guardrails": 1.0224719101123596,
-          "composite": 0.5055555555555556
+          "guardrails": 0.9831460674157304,
+          "composite": 0.48611111111111116
         }
       }
     },
@@ -4783,19 +4675,25 @@
       "title": "Remove the Firebase SDK (@react-native-firebase/app + messaging) with full native cleanup",
       "suite": "refactor",
       "scaffoldable": false,
-      "generatedFiles": [],
+      "generatedFiles": [
+        "package.json",
+        "ios/Podfile",
+        "android/settings.gradle",
+        "android/app/build.gradle",
+        "android/app/src/main/AndroidManifest.xml"
+      ],
       "attempts": [
         {
           "index": 1,
           "kind": "initial",
-          "status": "invalid",
-          "selected": false,
-          "durationMs": 24923,
+          "status": "parsed",
+          "selected": true,
+          "durationMs": 63850,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 0,
-          "adherence": 0,
-          "guardrails": 0,
+          "fileCount": 5,
+          "adherence": 0.5,
+          "guardrails": 0.9846153846153847,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:5b533052d2c8f02692bcfc282bdd64a666c89740dab28588ffb7bb62dc1e360c",
           "maxAttempts": 3,
@@ -4813,7 +4711,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 24923
+              "durationMs": 63845
             }
           ],
           "model": {
@@ -4828,33 +4726,33 @@
         },
         {
           "index": 2,
-          "kind": "parse-retry",
-          "status": "empty",
+          "kind": "repair",
+          "status": "parsed",
           "selected": false,
-          "durationMs": 24778,
+          "durationMs": 68044,
           "temperature": 0,
           "maxTokens": 8192,
-          "fileCount": 0,
+          "fileCount": 2,
           "adherence": 0,
-          "guardrails": 0,
+          "guardrails": 1,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:5b533052d2c8f02692bcfc282bdd64a666c89740dab28588ffb7bb62dc1e360c",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:bac50ab8af3c4ef4f24ad4ea49144b7755f1c18057eb345ef411fe912bb6ae07",
+          "requestDigest": "sha256:f8c31ad9724f5f2a4f05caacd19879116baf66aa22ea4373b81a56aa6bcd864e",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 2225,
+            "inputTokens": 2792,
             "maxOutputTokens": 8192,
-            "contextSize": 10752,
+            "contextSize": 11264,
             "batchSize": 128
           },
           "providerCalls": [
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 24777
+              "durationMs": 68043
             }
           ],
           "model": {
@@ -4868,17 +4766,56 @@
           }
         }
       ],
-      "guardrail": [],
-      "axes": {
-        "correctness": 0,
-        "adherence": 0,
-        "guardrails": 0
-      },
-      "composite": 0,
-      "correctnessDetails": [
-        "Model generation produced no non-empty files.",
-        "Missing required output files: package.json, ios/Podfile, android/settings.gradle, android/app/build.gradle, android/app/src/main/AndroidManifest.xml"
+      "guardrail": [
+        {
+          "path": "package.json",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 23,
+          "ok": true,
+          "failedRules": []
+        },
+        {
+          "path": "ios/Podfile",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 23,
+          "ok": true,
+          "failedRules": []
+        },
+        {
+          "path": "android/settings.gradle",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 23,
+          "ok": true,
+          "failedRules": []
+        },
+        {
+          "path": "android/app/build.gradle",
+          "passed": 13,
+          "failed": 0,
+          "skipped": 23,
+          "ok": true,
+          "failedRules": []
+        },
+        {
+          "path": "android/app/src/main/AndroidManifest.xml",
+          "passed": 12,
+          "failed": 1,
+          "skipped": 23,
+          "ok": false,
+          "failedRules": [
+            "No hardcoded API URLs"
+          ]
+        }
       ],
+      "axes": {
+        "correctness": null,
+        "adherence": 0.5,
+        "guardrails": 0.9846153846153847
+      },
+      "composite": 0.7423076923076923,
       "reference": {
         "files": [
           "package.json",
@@ -4895,9 +4832,9 @@
         "composite": 0.9923076923076923,
         "relative": {
           "correctness": null,
-          "adherence": 0,
-          "guardrails": 0,
-          "composite": 0
+          "adherence": 0.5,
+          "guardrails": 1,
+          "composite": 0.748062015503876
         }
       }
     },
@@ -4907,7 +4844,8 @@
       "suite": "upgrades",
       "scaffoldable": false,
       "generatedFiles": [
-        "android/build.gradle"
+        "android/build.gradle",
+        "__tests__/smoke.test.ts"
       ],
       "attempts": [
         {
@@ -4915,10 +4853,10 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 20384,
+          "durationMs": 47652,
           "temperature": 0.2,
           "maxTokens": 8192,
-          "fileCount": 1,
+          "fileCount": 2,
           "adherence": 1,
           "guardrails": 1,
           "artifactIdentity": "unverified",
@@ -4938,7 +4876,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 20382
+              "durationMs": 47649
             }
           ],
           "model": {
@@ -4958,6 +4896,14 @@
           "passed": 13,
           "failed": 0,
           "skipped": 23,
+          "ok": true,
+          "failedRules": []
+        },
+        {
+          "path": "__tests__/smoke.test.ts",
+          "passed": 17,
+          "failed": 0,
+          "skipped": 19,
           "ok": true,
           "failedRules": []
         }
@@ -5001,7 +4947,7 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 23809,
+          "durationMs": 48962,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 2,
@@ -5024,7 +4970,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 23807
+              "durationMs": 48961
             }
           ],
           "model": {
@@ -5095,7 +5041,7 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 15861,
+          "durationMs": 36018,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 1,
@@ -5118,7 +5064,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 15860
+              "durationMs": 36016
             }
           ],
           "model": {
@@ -5180,11 +5126,11 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 18561,
+          "durationMs": 39179,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 1,
-          "adherence": 1,
+          "adherence": 0.6666666666666666,
           "guardrails": 1,
           "artifactIdentity": "unverified",
           "taskDigest": "sha256:d3d94943544dd34e778d255152be74b877d09786e6dc4ac4159b186cfd527c91",
@@ -5203,7 +5149,48 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 18558
+              "durationMs": 39175
+            }
+          ],
+          "model": {
+            "id": "qwen2.5-coder-1.5b",
+            "source": "configured"
+          },
+          "artifact": {
+            "sha256": "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            "sizeBytes": 1117320768,
+            "source": "local-file-at-load"
+          }
+        },
+        {
+          "index": 2,
+          "kind": "repair",
+          "status": "parsed",
+          "selected": false,
+          "durationMs": 41390,
+          "temperature": 0,
+          "maxTokens": 8192,
+          "fileCount": 1,
+          "adherence": 0.6666666666666666,
+          "guardrails": 1,
+          "artifactIdentity": "unverified",
+          "taskDigest": "sha256:d3d94943544dd34e778d255152be74b877d09786e6dc4ac4159b186cfd527c91",
+          "maxAttempts": 3,
+          "promptMode": "vectalon",
+          "requestDigest": "sha256:77c896aeacce0d2a105c6c9bcfdcc3e891e9914dce109144a8d2da0ce609c2d9",
+          "provider": "local",
+          "stopReason": "eogToken",
+          "localContext": {
+            "inputTokens": 1914,
+            "maxOutputTokens": 8192,
+            "contextSize": 10496,
+            "batchSize": 128
+          },
+          "providerCalls": [
+            {
+              "provider": "local",
+              "status": "response",
+              "durationMs": 41386
             }
           ],
           "model": {
@@ -5229,10 +5216,10 @@
       ],
       "axes": {
         "correctness": null,
-        "adherence": 1,
+        "adherence": 0.6666666666666666,
         "guardrails": 1
       },
-      "composite": 1,
+      "composite": 0.8333333333333334,
       "reference": {
         "files": [
           "src/screens/HomeScreen.tsx"
@@ -5245,9 +5232,9 @@
         "composite": 1,
         "relative": {
           "correctness": null,
-          "adherence": 1,
+          "adherence": 0.6666666666666666,
           "guardrails": 1,
-          "composite": 1
+          "composite": 0.8333333333333334
         }
       }
     },
@@ -5265,7 +5252,7 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 17200,
+          "durationMs": 38263,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 1,
@@ -5288,7 +5275,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 17193
+              "durationMs": 38260
             }
           ],
           "model": {
@@ -5351,7 +5338,7 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 15968,
+          "durationMs": 36752,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 2,
@@ -5374,7 +5361,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 15965
+              "durationMs": 36750
             }
           ],
           "model": {
@@ -5392,7 +5379,7 @@
           "kind": "repair",
           "status": "parsed",
           "selected": false,
-          "durationMs": 17276,
+          "durationMs": 40431,
           "temperature": 0,
           "maxTokens": 8192,
           "fileCount": 2,
@@ -5402,11 +5389,11 @@
           "taskDigest": "sha256:ebe29577da5ff9ef6786ef29ab982ae9f5546584abd725f49e3144002363f177",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:bf4b297fba1046785b19c88f98df39570e0e856cb7ee3ace6c29dc707e81de30",
+          "requestDigest": "sha256:8222528ec0bfeba391a174b18dcf3c57b3a222c5f2303d7a8dd1afe0edcd8d7b",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 1821,
+            "inputTokens": 1850,
             "maxOutputTokens": 8192,
             "contextSize": 10496,
             "batchSize": 128
@@ -5415,7 +5402,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 17275
+              "durationMs": 40429
             }
           ],
           "model": {
@@ -5486,7 +5473,7 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 14508,
+          "durationMs": 32967,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 1,
@@ -5509,7 +5496,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 14505
+              "durationMs": 32965
             }
           ],
           "model": {
@@ -5527,7 +5514,7 @@
           "kind": "repair",
           "status": "parsed",
           "selected": false,
-          "durationMs": 16066,
+          "durationMs": 36854,
           "temperature": 0,
           "maxTokens": 8192,
           "fileCount": 1,
@@ -5537,11 +5524,11 @@
           "taskDigest": "sha256:0983327ef0287affa18fcbc570f29900d6c835a1af9ca3e0db818c85382527a7",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:3b521fa4a1b4e42784635d808624ab15a9bc310ed05b51764b5525a5b3131b5d",
+          "requestDigest": "sha256:60cc797fd9c2ba1f2f3ef48ad0747f5571563ef02b6249536b6ef69777dcf4fc",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 1779,
+            "inputTokens": 1758,
             "maxOutputTokens": 8192,
             "contextSize": 10240,
             "batchSize": 128
@@ -5550,7 +5537,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 16062
+              "durationMs": 36851
             }
           ],
           "model": {
@@ -5613,7 +5600,7 @@
           "kind": "initial",
           "status": "parsed",
           "selected": true,
-          "durationMs": 18806,
+          "durationMs": 39604,
           "temperature": 0.2,
           "maxTokens": 8192,
           "fileCount": 2,
@@ -5636,7 +5623,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 18804
+              "durationMs": 39602
             }
           ],
           "model": {
@@ -5654,7 +5641,7 @@
           "kind": "repair",
           "status": "parsed",
           "selected": false,
-          "durationMs": 21037,
+          "durationMs": 43773,
           "temperature": 0,
           "maxTokens": 8192,
           "fileCount": 2,
@@ -5664,11 +5651,11 @@
           "taskDigest": "sha256:f38331db536267560aaeb023e339685f4d88689329fcace89a323e41fe0a8b5c",
           "maxAttempts": 3,
           "promptMode": "vectalon",
-          "requestDigest": "sha256:26068e985cbf6b49949a284ee781ecd093b1563ef2f74317a26ac36c8b1fbd01",
+          "requestDigest": "sha256:dacee43b8d25fb465efd1ad64bfc9aaf2887279753ca7fc60712e85fb29d7e8c",
           "provider": "local",
           "stopReason": "eogToken",
           "localContext": {
-            "inputTokens": 1952,
+            "inputTokens": 1925,
             "maxOutputTokens": 8192,
             "contextSize": 10496,
             "batchSize": 128
@@ -5677,7 +5664,7 @@
             {
               "provider": "local",
               "status": "response",
-              "durationMs": 21036
+              "durationMs": 43772
             }
           ],
           "model": {
@@ -5743,8 +5730,8 @@
         "rn-05-form-validation",
         "rn-13-account-delete-screen"
       ],
-      "composite": 0.5060846560846561,
-      "guardrails": 0.9091710758377425
+      "composite": 0.5331826547043939,
+      "guardrails": 0.9106088490146461
     },
     {
       "suite": "data-flow",
@@ -5753,8 +5740,8 @@
         "rn-06-offline-queue",
         "rn-12-notifications-screen"
       ],
-      "composite": 0.5304467754467754,
-      "guardrails": 0.9348225848225847
+      "composite": 0.43852813852813854,
+      "guardrails": 0.6046176046176046
     },
     {
       "suite": "core-ui",
@@ -5762,7 +5749,7 @@
         "rn-03-dark-mode-component",
         "rn-08-feature-flags"
       ],
-      "composite": 0.7000000000000001,
+      "composite": 0.8500000000000001,
       "guardrails": 1
     },
     {
@@ -5770,24 +5757,24 @@
       "scenarioIds": [
         "rn-04-typed-navigation"
       ],
-      "composite": 0.4823529411764706,
-      "guardrails": 0.9411764705882353
+      "composite": 0.6000000000000001,
+      "guardrails": 1
     },
     {
       "suite": "perf",
       "scenarioIds": [
         "rn-07-image-feed"
       ],
-      "composite": 0.6490196078431373,
-      "guardrails": 0.9411764705882353
+      "composite": 0.47692307692307695,
+      "guardrails": 0.9230769230769231
     },
     {
       "suite": "a11y",
       "scenarioIds": [
         "rn-09-accessible-form"
       ],
-      "composite": 0.6597752808988764,
-      "guardrails": 0.9325842696629213
+      "composite": 0.6821428571428572,
+      "guardrails": 0.8928571428571429
     },
     {
       "suite": "refactor",
@@ -5797,8 +5784,8 @@
         "rn-34-remove-sentry-sdk",
         "rn-35-remove-firebase-sdk"
       ],
-      "composite": 0.41379487179487173,
-      "guardrails": 0.7335897435897436
+      "composite": 0.5893653846153846,
+      "guardrails": 0.9517307692307693
     },
     {
       "suite": "e-commerce",
@@ -5806,8 +5793,8 @@
         "rn-14-checkout-flow",
         "rn-15-product-search"
       ],
-      "composite": 0.4728174603174603,
-      "guardrails": 0.9093915343915344
+      "composite": 0.31551383399209487,
+      "guardrails": 0.44565217391304346
     },
     {
       "suite": "social-chat",
@@ -5815,8 +5802,8 @@
         "rn-16-chat-thread",
         "rn-17-social-feed"
       ],
-      "composite": 0.6390269151138717,
-      "guardrails": 0.9396135265700483
+      "composite": 0,
+      "guardrails": 0
     },
     {
       "suite": "booking-payments",
@@ -5825,8 +5812,8 @@
         "rn-19-payment-methods",
         "rn-20-order-tracking"
       ],
-      "composite": 0.3187830687830688,
-      "guardrails": 0.6181657848324514
+      "composite": 0.34841269841269845,
+      "guardrails": 0.6058201058201058
     },
     {
       "suite": "health-fitness",
@@ -5834,8 +5821,8 @@
         "rn-21-health-dashboard",
         "rn-22-workout-timer"
       ],
-      "composite": 0.2833333333333333,
-      "guardrails": 0.4444444444444444
+      "composite": 0.5416666666666667,
+      "guardrails": 0.9722222222222222
     },
     {
       "suite": "media",
@@ -5852,16 +5839,16 @@
         "rn-25-profile-edit",
         "rn-26-onboarding-wizard"
       ],
-      "composite": 0.5619565217391305,
-      "guardrails": 0.9287439613526569
+      "composite": 0.5339285714285714,
+      "guardrails": 0.9464285714285714
     },
     {
       "suite": "security",
       "scenarioIds": [
         "rn-27-biometric-gate"
       ],
-      "composite": 0.475,
-      "guardrails": 0.9166666666666666
+      "composite": 0.61,
+      "guardrails": 0.8666666666666667
     },
     {
       "suite": "productivity",
@@ -5877,8 +5864,8 @@
       "scenarioIds": [
         "rn-30-subscription-plans"
       ],
-      "composite": 0,
-      "guardrails": 0
+      "composite": 0.6675,
+      "guardrails": 0.9333333333333333
     },
     {
       "suite": "travel-weather",
@@ -5886,16 +5873,16 @@
         "rn-31-places-nearby",
         "rn-32-weather-forecast"
       ],
-      "composite": 0.5166666666666666,
-      "guardrails": 0.8888888888888888
+      "composite": 0,
+      "guardrails": 0
     },
     {
       "suite": "settings",
       "scenarioIds": [
         "rn-33-privacy-settings"
       ],
-      "composite": 0.6876190476190476,
-      "guardrails": 0.9111111111111111
+      "composite": 0.6666666666666667,
+      "guardrails": 0.8888888888888888
     },
     {
       "suite": "upgrades",
@@ -5905,7 +5892,7 @@
         "rn-38-upgrade-new-arch",
         "rn-39-upgrade-deprecated-api"
       ],
-      "composite": 1,
+      "composite": 0.9583333333333334,
       "guardrails": 1
     },
     {
@@ -5920,8 +5907,8 @@
       "guardrails": 1
     }
   ],
-  "overallComposite": 0.5063370153488708,
-  "overallGuardrails": 0.7717608607151076,
+  "overallComposite": 0.4903864207357634,
+  "overallGuardrails": 0.707057945237925,
   "overallReferenceComposite": 0.9349833067729931,
-  "overallRelativeComposite": 0.5332254326864108
+  "overallRelativeComposite": 0.5142809621338272
 }
