@@ -1,69 +1,69 @@
 # RN Coding Tests — Model Leaderboard
 
-_Generated: 2026-11-03T11:30:03.433Z · spec v1 · 4 model(s) · 43 scenario(s)_
+_Generated: 2026-11-04T12:21:31.104Z · spec v1 · 4 model(s) · 43 scenario(s)_
 
 ## Composite
 
 | Scenario | baseline | local | local-3b | local-7b |
 | --- | --- | --- | --- | --- |
 | rn-01-login-screen | 100% | 47% | 45% | 59% |
-| rn-02-flatlist-fetch | 100% | 64% | 63% | 83% |
+| rn-02-flatlist-fetch | 100% | 0% | 63% | 83% |
 | rn-03-dark-mode-component | — | 90% | 65% | 100% |
-| rn-04-typed-navigation | — | 48% | 48% | 100% |
-| rn-05-form-validation | 100% | 58% | 100% | 100% |
-| rn-06-offline-queue | 100% | 47% | 36% | 100% |
-| rn-07-image-feed | — | 48% | 100% | 100% |
-| rn-08-feature-flags | — | 59% | 100% | 100% |
-| rn-09-accessible-form | — | 64% | 73% | 100% |
+| rn-04-typed-navigation | — | 60% | 48% | 100% |
+| rn-05-form-validation | 100% | 66% | 100% | 100% |
+| rn-06-offline-queue | 100% | 62% | 36% | 100% |
+| rn-07-image-feed | — | 64% | 100% | 100% |
+| rn-08-feature-flags | — | 65% | 100% | 100% |
+| rn-09-accessible-form | — | 46% | 73% | 100% |
 | rn-10-refactor-hooks-ts | — | 67% | 40% | 75% |
 | rn-11-remove-dependency-native | 99% | 49% | n/a | n/a |
 | rn-12-notifications-screen | 100% | 0% | 64% | 100% |
-| rn-13-account-delete-screen | 100% | 49% | 70% | 100% |
-| rn-14-checkout-flow | — | 47% | — | 100% |
+| rn-13-account-delete-screen | 100% | 48% | 70% | 100% |
+| rn-14-checkout-flow | — | 49% | — | 100% |
 | rn-15-product-search | — | 0% | — | 100% |
-| rn-16-chat-thread | — | 69% | — | 100% |
-| rn-17-social-feed | — | 0% | — | 100% |
-| rn-18-booking-slots | — | 48% | — | 100% |
+| rn-16-chat-thread | — | 49% | — | 100% |
+| rn-17-social-feed | — | 58% | — | 100% |
+| rn-18-booking-slots | — | 0% | — | 100% |
 | rn-19-payment-methods | — | 48% | — | 100% |
-| rn-20-order-tracking | — | 57% | — | 100% |
-| rn-21-health-dashboard | — | 0% | — | 100% |
-| rn-22-workout-timer | — | 62% | — | 100% |
+| rn-20-order-tracking | — | 0% | — | 100% |
+| rn-21-health-dashboard | — | 50% | — | 100% |
+| rn-22-workout-timer | — | 74% | — | 100% |
 | rn-23-music-player | — | 0% | — | 100% |
 | rn-24-video-detail | — | 0% | — | 100% |
-| rn-25-profile-edit | — | 46% | — | 100% |
-| rn-26-onboarding-wizard | — | 48% | — | 100% |
-| rn-27-biometric-gate | — | 60% | — | 100% |
+| rn-25-profile-edit | — | 57% | — | 100% |
+| rn-26-onboarding-wizard | — | 47% | — | 100% |
+| rn-27-biometric-gate | — | 58% | — | 100% |
 | rn-28-document-list | — | 0% | — | 100% |
 | rn-29-task-board | — | 0% | — | 100% |
-| rn-30-subscription-plans | — | 0% | — | 100% |
+| rn-30-subscription-plans | — | 47% | — | 100% |
 | rn-31-places-nearby | — | 0% | — | 100% |
-| rn-32-weather-forecast | — | 57% | — | 100% |
-| rn-33-privacy-settings | — | 64% | — | 100% |
-| rn-34-remove-sentry-sdk | 99% | 49% | — | — |
+| rn-32-weather-forecast | — | 0% | — | 100% |
+| rn-33-privacy-settings | — | 48% | — | 100% |
+| rn-34-remove-sentry-sdk | 99% | 50% | — | — |
 | rn-35-remove-firebase-sdk | 99% | 0% | — | — |
 | rn-36-upgrade-compile-sdk | 100% | 100% | — | 100% |
-| rn-37-upgrade-kotlin-gradle | 100% | 100% | — | 75% |
+| rn-37-upgrade-kotlin-gradle | 100% | 75% | — | 75% |
 | rn-38-upgrade-new-arch | 100% | 100% | — | 100% |
 | rn-39-upgrade-deprecated-api | 100% | 100% | — | 46% |
 | rn-40-debug-metro-resolution | 100% | 100% | — | 63% |
 | rn-41-debug-hermes-crash | 100% | 75% | — | 75% |
 | rn-42-debug-ts-regression | 100% | 50% | — | 50% |
 | rn-43-debug-linking | 100% | 50% | — | 50% |
-| **Overall** | 100% | 47% | 67% | 92% |
+| **Overall** | 100% | 45% | 67% | 92% |
 
 ## Correctness
 
 | Scenario | baseline | local | local-3b | local-7b |
 | --- | --- | --- | --- | --- |
 | rn-01-login-screen | n/a | 50% | 0% | 50% |
-| rn-02-flatlist-fetch | n/a | 50% | 50% | 75% |
+| rn-02-flatlist-fetch | n/a | 0% | 50% | 75% |
 | rn-03-dark-mode-component | — | 75% | 50% | 100% |
-| rn-04-typed-navigation | — | 50% | 50% | 100% |
-| rn-05-form-validation | n/a | 75% | 100% | 100% |
+| rn-04-typed-navigation | — | 75% | 50% | 100% |
+| rn-05-form-validation | n/a | 50% | 100% | 100% |
 | rn-06-offline-queue | n/a | 50% | 0% | 100% |
 | rn-07-image-feed | — | 50% | 100% | 100% |
 | rn-08-feature-flags | — | 50% | 100% | 100% |
-| rn-09-accessible-form | — | 50% | 50% | 100% |
+| rn-09-accessible-form | — | 0% | 50% | 100% |
 | rn-10-refactor-hooks-ts | — | 50% | 0% | 75% |
 | rn-11-remove-dependency-native | n/a | n/a | n/a | n/a |
 | rn-12-notifications-screen | n/a | 0% | 50% | 100% |
@@ -71,22 +71,22 @@ _Generated: 2026-11-03T11:30:03.433Z · spec v1 · 4 model(s) · 43 scenario(s)_
 | rn-14-checkout-flow | — | 50% | — | 100% |
 | rn-15-product-search | — | 0% | — | 100% |
 | rn-16-chat-thread | — | 50% | — | 100% |
-| rn-17-social-feed | — | 0% | — | 100% |
-| rn-18-booking-slots | — | 50% | — | 100% |
+| rn-17-social-feed | — | 75% | — | 100% |
+| rn-18-booking-slots | — | 0% | — | 100% |
 | rn-19-payment-methods | — | 50% | — | 100% |
-| rn-20-order-tracking | — | 75% | — | 100% |
-| rn-21-health-dashboard | — | 0% | — | 100% |
+| rn-20-order-tracking | — | 0% | — | 100% |
+| rn-21-health-dashboard | — | 50% | — | 100% |
 | rn-22-workout-timer | — | 50% | — | 100% |
 | rn-23-music-player | — | 0% | — | 100% |
 | rn-24-video-detail | — | 0% | — | 100% |
-| rn-25-profile-edit | — | 50% | — | 100% |
+| rn-25-profile-edit | — | 75% | — | 100% |
 | rn-26-onboarding-wizard | — | 50% | — | 100% |
 | rn-27-biometric-gate | — | 75% | — | 100% |
 | rn-28-document-list | — | 0% | — | 100% |
 | rn-29-task-board | — | 0% | — | 100% |
-| rn-30-subscription-plans | — | 0% | — | 100% |
+| rn-30-subscription-plans | — | 50% | — | 100% |
 | rn-31-places-nearby | — | 0% | — | 100% |
-| rn-32-weather-forecast | — | 75% | — | 100% |
+| rn-32-weather-forecast | — | 0% | — | 100% |
 | rn-33-privacy-settings | — | 50% | — | 100% |
 | rn-34-remove-sentry-sdk | n/a | n/a | — | — |
 | rn-35-remove-firebase-sdk | n/a | 0% | — | — |
@@ -104,27 +104,27 @@ _Generated: 2026-11-03T11:30:03.433Z · spec v1 · 4 model(s) · 43 scenario(s)_
 | Scenario | baseline | local | local-3b | local-7b |
 | --- | --- | --- | --- | --- |
 | rn-01-login-screen | 100% | 0% | 57% | 50% |
-| rn-02-flatlist-fetch | 100% | 57% | 50% | 83% |
+| rn-02-flatlist-fetch | 100% | 0% | 50% | 83% |
 | rn-03-dark-mode-component | — | 100% | 50% | n/a |
 | rn-04-typed-navigation | — | 0% | 0% | n/a |
-| rn-05-form-validation | 100% | 0% | n/a | n/a |
-| rn-06-offline-queue | 100% | 0% | 33% | n/a |
-| rn-07-image-feed | — | 0% | n/a | n/a |
-| rn-08-feature-flags | — | 33% | n/a | n/a |
-| rn-09-accessible-form | — | 60% | 80% | n/a |
+| rn-05-form-validation | 100% | 63% | n/a | n/a |
+| rn-06-offline-queue | 100% | 50% | 33% | n/a |
+| rn-07-image-feed | — | 58% | n/a | n/a |
+| rn-08-feature-flags | — | 50% | n/a | n/a |
+| rn-09-accessible-form | — | 63% | 80% | n/a |
 | rn-10-refactor-hooks-ts | — | 60% | 44% | n/a |
 | rn-11-remove-dependency-native | 100% | 0% | n/a | n/a |
 | rn-12-notifications-screen | 100% | 0% | 50% | n/a |
 | rn-13-account-delete-screen | 100% | 0% | 75% | n/a |
 | rn-14-checkout-flow | — | 0% | — | n/a |
 | rn-15-product-search | — | 0% | — | n/a |
-| rn-16-chat-thread | — | 71% | — | n/a |
+| rn-16-chat-thread | — | 0% | — | n/a |
 | rn-17-social-feed | — | 0% | — | n/a |
 | rn-18-booking-slots | — | 0% | — | n/a |
 | rn-19-payment-methods | — | 0% | — | n/a |
 | rn-20-order-tracking | — | 0% | — | n/a |
 | rn-21-health-dashboard | — | 0% | — | n/a |
-| rn-22-workout-timer | — | 50% | — | n/a |
+| rn-22-workout-timer | — | 86% | — | n/a |
 | rn-23-music-player | — | 0% | — | n/a |
 | rn-24-video-detail | — | 0% | — | n/a |
 | rn-25-profile-edit | — | 0% | — | n/a |
@@ -135,11 +135,11 @@ _Generated: 2026-11-03T11:30:03.433Z · spec v1 · 4 model(s) · 43 scenario(s)_
 | rn-30-subscription-plans | — | 0% | — | n/a |
 | rn-31-places-nearby | — | 0% | — | n/a |
 | rn-32-weather-forecast | — | 0% | — | n/a |
-| rn-33-privacy-settings | — | 57% | — | n/a |
+| rn-33-privacy-settings | — | 0% | — | n/a |
 | rn-34-remove-sentry-sdk | 100% | 0% | — | — |
 | rn-35-remove-firebase-sdk | 100% | 0% | — | — |
 | rn-36-upgrade-compile-sdk | 100% | 100% | — | 100% |
-| rn-37-upgrade-kotlin-gradle | 100% | 100% | — | 50% |
+| rn-37-upgrade-kotlin-gradle | 100% | 50% | — | 50% |
 | rn-38-upgrade-new-arch | 100% | 100% | — | 100% |
 | rn-39-upgrade-deprecated-api | 100% | 100% | — | 0% |
 | rn-40-debug-metro-resolution | 100% | 100% | — | 33% |
@@ -152,39 +152,39 @@ _Generated: 2026-11-03T11:30:03.433Z · spec v1 · 4 model(s) · 43 scenario(s)_
 | Scenario | baseline | local | local-3b | local-7b |
 | --- | --- | --- | --- | --- |
 | rn-01-login-screen | 100% | 89% | 94% | 81% |
-| rn-02-flatlist-fetch | 100% | 89% | 93% | 92% |
+| rn-02-flatlist-fetch | 100% | 0% | 93% | 92% |
 | rn-03-dark-mode-component | — | 100% | 100% | n/a |
-| rn-04-typed-navigation | — | 93% | 94% | n/a |
-| rn-05-form-validation | 100% | 94% | n/a | n/a |
+| rn-04-typed-navigation | — | 100% | 94% | n/a |
+| rn-05-form-validation | 100% | 91% | n/a | n/a |
 | rn-06-offline-queue | 100% | 89% | 86% | n/a |
-| rn-07-image-feed | — | 92% | n/a | n/a |
-| rn-08-feature-flags | — | 95% | n/a | n/a |
-| rn-09-accessible-form | — | 87% | 96% | n/a |
+| rn-07-image-feed | — | 88% | n/a | n/a |
+| rn-08-feature-flags | — | 100% | n/a | n/a |
+| rn-09-accessible-form | — | 91% | 96% | n/a |
 | rn-10-refactor-hooks-ts | — | 96% | 90% | n/a |
 | rn-11-remove-dependency-native | 98% | 97% | n/a | n/a |
 | rn-12-notifications-screen | 100% | 0% | 97% | n/a |
-| rn-13-account-delete-screen | 100% | 96% | 91% | n/a |
-| rn-14-checkout-flow | — | 89% | — | n/a |
+| rn-13-account-delete-screen | 100% | 93% | 91% | n/a |
+| rn-14-checkout-flow | — | 96% | — | n/a |
 | rn-15-product-search | — | 0% | — | n/a |
-| rn-16-chat-thread | — | 93% | — | n/a |
-| rn-17-social-feed | — | 0% | — | n/a |
-| rn-18-booking-slots | — | 94% | — | n/a |
-| rn-19-payment-methods | — | 94% | — | n/a |
-| rn-20-order-tracking | — | 89% | — | n/a |
-| rn-21-health-dashboard | — | 0% | — | n/a |
-| rn-22-workout-timer | — | 89% | — | n/a |
+| rn-16-chat-thread | — | 96% | — | n/a |
+| rn-17-social-feed | — | 94% | — | n/a |
+| rn-18-booking-slots | — | 0% | — | n/a |
+| rn-19-payment-methods | — | 93% | — | n/a |
+| rn-20-order-tracking | — | 0% | — | n/a |
+| rn-21-health-dashboard | — | 100% | — | n/a |
+| rn-22-workout-timer | — | 96% | — | n/a |
 | rn-23-music-player | — | 0% | — | n/a |
 | rn-24-video-detail | — | 0% | — | n/a |
-| rn-25-profile-edit | — | 86% | — | n/a |
-| rn-26-onboarding-wizard | — | 94% | — | n/a |
-| rn-27-biometric-gate | — | 100% | — | n/a |
+| rn-25-profile-edit | — | 89% | — | n/a |
+| rn-26-onboarding-wizard | — | 89% | — | n/a |
+| rn-27-biometric-gate | — | 94% | — | n/a |
 | rn-28-document-list | — | 0% | — | n/a |
 | rn-29-task-board | — | 0% | — | n/a |
-| rn-30-subscription-plans | — | 0% | — | n/a |
+| rn-30-subscription-plans | — | 89% | — | n/a |
 | rn-31-places-nearby | — | 0% | — | n/a |
-| rn-32-weather-forecast | — | 89% | — | n/a |
-| rn-33-privacy-settings | — | 89% | — | n/a |
-| rn-34-remove-sentry-sdk | 98% | 97% | — | — |
+| rn-32-weather-forecast | — | 0% | — | n/a |
+| rn-33-privacy-settings | — | 93% | — | n/a |
+| rn-34-remove-sentry-sdk | 98% | 100% | — | — |
 | rn-35-remove-firebase-sdk | 98% | 0% | — | — |
 | rn-36-upgrade-compile-sdk | 100% | 100% | — | 100% |
 | rn-37-upgrade-kotlin-gradle | 100% | 100% | — | 100% |
@@ -194,7 +194,7 @@ _Generated: 2026-11-03T11:30:03.433Z · spec v1 · 4 model(s) · 43 scenario(s)_
 | rn-41-debug-hermes-crash | 100% | 100% | — | 100% |
 | rn-42-debug-ts-regression | 100% | 100% | — | 100% |
 | rn-43-debug-linking | 100% | 100% | — | 100% |
-| **Overall** | 100% | 70% | 93% | 96% |
+| **Overall** | 100% | 69% | 93% | 96% |
 
 ## Relative to reference (overall)
 
@@ -203,7 +203,7 @@ Reference authorship and independent review are unverified. Ratios compare rubri
 | Model | Relative composite | Reference composite |
 | --- | --- | --- |
 | baseline | 107% | 94% |
-| local | 49% | 93% |
+| local | 47% | 93% |
 | local-3b | 76% | 89% |
 | local-7b | 114% | 89% |
 
